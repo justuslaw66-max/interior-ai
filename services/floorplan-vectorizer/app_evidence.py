@@ -39,14 +39,15 @@ class ToSource:
     def __init__(self, m):
         self.ws = float(m.get("work_scale", 1) or 1); self.pre = float(m.get("pre_scale", 1.0) or 1.0)
         self.W0, self.H0 = m.get("source_size", m["size"])
-        W, H = m["size"]; w, h = W / self.ws, H / self.ws          # the image the deskew turned
+        self.ox, self.oy = m.get("crop_offset", [0, 0])            # the traced part's place on the page
+        w, h = (m["page_size"] if m.get("page_size") else [m["size"][0] / self.ws, m["size"][1] / self.ws])   # the image the deskew turned
         ang = math.radians(float(m.get("skew_deg", 0.0) or 0.0))
         # cv2.getRotationMatrix2D(centre, ang): x' = a x + b y + ..., y' = -b x + a y + ...; its inverse turns by -ang
         self.a, self.b, self.cx, self.cy = math.cos(ang), math.sin(ang), w / 2.0, h / 2.0
         self.k = 1.0 / (self.ws * self.pre)                         # length factor working px -> source px
 
     def __call__(self, x, y):
-        x, y = x / self.ws, y / self.ws
+        x, y = x / self.ws + self.ox, y / self.ws + self.oy
         dx, dy = x - self.cx, y - self.cy
         x, y = self.cx + self.a * dx - self.b * dy, self.cy + self.b * dx + self.a * dy
         return [x / self.pre, y / self.pre]
@@ -1446,6 +1447,43 @@ def point_in_poly(p, poly):
 
 # ----------------------------------------------------------------------------------------------- assemble
 
+def area_check(m, rooms_out):
+    """The floor area printed on the page against the rooms found: at the right scale they agree to within the walls and
+    the parts a brochure leaves out (ledges are non-strata).  A check for the reviewer, never a scale."""
+    st = m.get("stated_area")
+    if not st:
+        return None
+    named = [r_ for r_ in rooms_out if r_.get("areaM2")]
+    if not named:
+        return {"statedM2": st["m2"], "statedText": st["text"], "roomsM2": None, "verdict": "no scaled rooms"}
+    strata = sum(r_["areaM2"] for r_ in named if not any(w_ in (r_.get("label") or "").upper() for w_ in ("LEDGE", "AC ", "A/C", "PLANTER", "VOID")))
+    # rooms are measured wall face to wall face; the strata area includes the walls: allow for them
+    ratio = strata / st["m2"] if st["m2"] else None
+    verdict = "agrees" if ratio is not None and 0.75 <= ratio <= 1.05 else ("rooms too small: some are missing or the scale is off" if ratio is not None and ratio < 0.75 else "rooms too large for the stated area")
+    return {"statedM2": st["m2"], "statedText": st["text"], "roomsM2": round(strata, 1), "ratio": round(ratio, 3) if ratio is not None else None, "verdict": verdict}
+
+
+def scale_estimate(m, edges, mm_per_source_px):
+    """What an estimated scale rests on, for the reviewer: the assumed door-leaf width and the door openings it can be
+    checked or confirmed against (jamb to jamb, in source pixels, with the width each would have at the estimate)."""
+    src = m.get("scale_source") or {}
+    seen = set(); doors = []
+    for e in edges:
+        op = e.get("opening")
+        if not op or op["kind"] != "door" or op.get("operation") != "swing" or op.get("confidence", 0) < 0.75:
+            continue
+        (x0, y0), (x1, y1) = e["sourcePx"]
+        key = (round((x0 + x1) / 16), round((y0 + y1) / 16))
+        if key in seen:
+            continue
+        seen.add(key)
+        doors.append({"openingId": e["id"], "sourcePx": e["sourcePx"], "widthPx": round(math.hypot(x1 - x0, y1 - y0), 2),
+                      "widthMmAtEstimate": int(round(math.hypot(x1 - x0, y1 - y0) * mm_per_source_px / 10.0) * 10)})
+    doors.sort(key=lambda d: -d["widthPx"])
+    return {"method": str(src.get("from") or "door leaves"), "assumedLeafMm": float(src.get("assumed_leaf_mm") or 850.0),
+            "swingsMeasured": int(src.get("swings") or 0), "doorOpenings": doors[:8]}
+
+
 def build(m, gray=None):
     T = float(m["wall_thickness_px"]); S = ToSource(m)
     W, H = m["size"]
@@ -1723,7 +1761,8 @@ def build(m, gray=None):
         "scale": {"millimetresPerPixel": round(scale_work / k_len, 5) if scale_work else None,
                   "basis": "none" if not scale_work else "estimated_door_leaf" if estimated else "explicit_dimension",
                   "dimensionCount": len(sem_dims), "needsReview": bool(estimated or not scale_work),
-                  "chainsChecked": (m.get("dimension_report") or {}).get("chains", [])},
+                  "chainsChecked": (m.get("dimension_report") or {}).get("chains", []),
+                  "estimate": scale_estimate(m, walls_out, scale_work / k_len) if (estimated and scale_work) else None},
         "semantics": {"planRegion": {"bbox": ext, "rotationDegrees": float(m.get("skew_deg", 0.0)), "confidence": 0.9, "evidenceKind": "vectorizer"} if ext else None,
                       "unitSystem": "metric_mm" if sem_dims else "unknown", "roomLabels": sem_labels,
                       "roomBoundaries": [{"label": r_["label"] or "Room", "roomType": r_["roomType"], "confidence": r_["confidence"], "evidenceKind": "vectorizer",
@@ -1732,7 +1771,10 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "unsupportedWallPx": int(unsupported), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg")},
+                        "unsupportedWallPx": int(unsupported), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
+                        "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
+                        "areaCheck": area_check(m, rooms_out)},
     }
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels}
     return out, dbg
@@ -1741,7 +1783,11 @@ def build(m, gray=None):
 def check_picture(m, out, dbg, path, source=None):
     W, H = m["size"]
     if source is not None and m.get("skew_deg", 0) == 0:
-        img = cv2.resize(cv2.imread(source), (W, H), interpolation=cv2.INTER_CUBIC)
+        img = cv2.imread(source)
+        if m.get("crop_offset"):                              # only the traced part of the page is drawn
+            ox, oy = m["crop_offset"]; ws_ = float(m.get("work_scale", 1) or 1)
+            img = img[int(oy):int(oy + H / ws_), int(ox):int(ox + W / ws_)]
+        img = cv2.resize(img, (W, H), interpolation=cv2.INTER_CUBIC)
         img = cv2.addWeighted(img, 0.35, np.full_like(img, 255), 0.65, 0)
     else:
         img = cv2.cvtColor(255 - dbg["k"] // 4, cv2.COLOR_GRAY2BGR)

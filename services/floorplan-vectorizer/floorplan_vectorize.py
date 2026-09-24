@@ -751,6 +751,149 @@ def detect_hatched_walls(gray):
     return {"solid": solid, "spacing": sp, "slash": bool(slash), "outline_px": round(ow, 1), "grey": int(np.percentile(hp_, 25))}
 
 
+def plan_region(gray):
+    """The part of a page that is the drawing.  A brochure page carries the plan in a corner with a title, legend,
+    footnotes and a key plan around it; tracing all of that costs minutes and starves the plan of resolution.  The drawing is
+    the cluster of ink richest in long straight runs (walls, dimension lines), grown to take in whatever touches it."""
+    H, W = gray.shape; L = max(W, H)
+    ink = ((gray < 235) * 255).astype(np.uint8)
+    run = int(max(12, 0.02 * L))
+    long_h = cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones((1, run), np.uint8))
+    long_v = cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones((run, 1), np.uint8))
+    long_ = cv2.bitwise_or(long_h, long_v)
+    k = int(max(9, 0.015 * L)) | 1
+    blob = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, np.ones((k, k), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(blob, connectivity=8)
+    comps = []
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        mine = lab[y:y + h, x:x + w] == i
+        # walls run both ways; a paragraph, a scale bar or a title runs one way only
+        both = min(int((long_h[y:y + h, x:x + w] > 0)[mine].sum()), int((long_v[y:y + h, x:x + w] > 0)[mine].sum()))
+        comps.append([int((long_[y:y + h, x:x + w] > 0)[mine].sum()), int(x), int(y), int(x + w), int(y + h), both])
+    if not comps:
+        return None
+    comps.sort(reverse=True)
+    _s, x0, y0, x1, y1, _b = comps[0]; m = int(0.03 * L)
+    taken = {0}; changed = True
+    while changed:
+        changed = False
+        for j, (_sc, a, b, c, d, _b2) in enumerate(comps):
+            if j not in taken and a < x1 + m and c > x0 - m and b < y1 + m and d > y0 - m:
+                x0, y0, x1, y1 = min(x0, a), min(y0, b), max(x1, c), max(y1, d); taken.add(j); changed = True
+    # Nothing that could be part of the plan may be left outside: if any piece left out carries more than a small share
+    # of the drawing's two-way linework (a key plan has a little; a detached wing of the plan has a lot), the page is
+    # traced whole.  A wrong crop would lose rooms for good; a needless full-page run only costs time.
+    inside = sum(comps[j][5] for j in taken)
+    if any(comps[j][5] > 0.08 * inside for j in range(len(comps)) if j not in taken):
+        return None
+    m2 = int(0.04 * L)
+    return max(0, x0 - m2), max(0, y0 - m2), min(W, x1 + m2), min(H, y1 + m2)
+
+
+def find_scale_bar(g, exclude=None):
+    """A graphic scale bar on the page: a wide flat mark (blocks or a line with ticks) with numbers and a unit written
+    along it.  Returns page-pixel geometry and mm per page pixel, or None."""
+    H, W = g.shape
+    ink = ((g < 200) * 255).astype(np.uint8)
+    ink = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, np.ones((1, 7), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(ink, connectivity=8)
+    cands = []
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        if not (1 <= h <= 40 and w >= 8 * h and 0.04 * W <= w <= 0.6 * W):
+            continue
+        if exclude and x < exclude[2] and x + w > exclude[0] and y < exclude[3] and y + h > exclude[1]:
+            continue
+        cands.append((int(x), int(y), int(w), int(h)))
+    best = None
+    cands.sort(key=lambda c_: -c_[1])                          # scale bars sit low on the page
+    for x, y, w, h in cands[:25]:
+        x0, x1 = max(0, x - int(0.12 * w)), min(W, x + w + int(0.15 * w))
+        y0, y1 = max(0, y - 3 * h - 30), min(H, y + h + 30)
+        band = g[y0:y1, x0:x1]
+        big = cv2.resize(band, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+        toks = []
+        for psm in (7, 11):
+            d = pytesseract.image_to_data(big, config="--psm %d -c tessedit_char_whitelist=0123456789.mMftFT" % psm, output_type=pytesseract.Output.DICT)
+            got = []
+            for t, l, wd, cf in zip(d["text"], d["left"], d["width"], d["conf"]):
+                t = t.strip()
+                mm_ = re.match(r"^(\d+(?:\.\d+)?)\s*(m|M|ft|FT)?$", t)
+                if mm_ and float(cf) > 30:
+                    got.append((float(mm_.group(1)), (mm_.group(2) or "").lower(), x0 + (l + wd / 2.0) / 3.0))
+            if len(got) > len(toks):
+                toks = got
+        if len(toks) < 2:
+            continue
+        unit = "ft" if any(u == "ft" for _v, u, _x in toks) else "m"
+        per = 304.8 if unit == "ft" else 1000.0
+        vals = sorted(set(v for v, _u, _x in toks))
+        if len(vals) < 2 or max(vals) > (60 if unit == "ft" else 30):
+            continue
+        # the numbers are written near the stops, not on them: snap each to the nearest tick (a column where the mark
+        # stands taller than its bar - an end tick, or the step of a stepped line)
+        mine = ink[y:y + h, x:x + w] > 0
+        extent = mine.sum(axis=0)
+        tall = extent >= max(2.0, 0.45 * extent.max())
+        ticks = [float(x), float(x + w - 1)]                       # the mark's two ends are stops as well
+        for cx_ in range(w):
+            if tall[cx_] and (cx_ == 0 or not tall[cx_ - 1]):
+                run_end = cx_
+                while run_end + 1 < w and tall[run_end + 1]:
+                    run_end += 1
+                ticks.append(x + 0.5 * (cx_ + run_end))
+        if ticks:
+            snapped = []
+            for v_, u_, px_ in toks:
+                near = min(ticks, key=lambda t_: abs(t_ - px_))
+                snapped.append((v_, u_, near if abs(near - px_) <= max(6.0, 1.2 * h) + 0.06 * w else px_))
+            toks = snapped
+        # least squares mm per px over the labels; they must line up (a caption of numbers would not)
+        xs = np.array([t[2] for t in toks]); vs = np.array([t[0] * per for t in toks])
+        A = np.vstack([xs, np.ones_like(xs)]).T
+        (k, b), res, _r, _s = np.linalg.lstsq(A, vs, rcond=None)
+        if k <= 0:
+            continue
+        pred = A @ np.array([k, b]); err = float(np.abs(pred - vs).max())
+        if err > 0.08 * (vs.max() - vs.min() + 1e-9) + 0.5 * k * h:
+            continue
+        # the drawn bar must span about the labelled length
+        span_px = (vs.max() - vs.min()) / k
+        if not (0.8 * w <= span_px <= 1.25 * w):
+            continue
+        zero_x = -b / k
+        cand = {"x0": float(zero_x), "x1": float(zero_x + vs.max() / k), "y": float(y + h / 2.0), "mm": float(vs.max()),
+                "mm_per_px": float(k), "unit": unit, "labels": [[float(v), float(px)] for v, _u, px in toks], "labelFitErrorMm": round(err, 1)}
+        if best is None or len(toks) > len(best["labels"]):
+            best = cand
+    return best
+
+
+def stated_area(page_gray, exclude=None):
+    """The floor area printed on a brochure page ("81 sqm / 872 sqft", "Area : 71 sq.m"), read off the whole page in
+    one pass.  A check on the scale, never a scale: at the right scale the rooms add up to about this figure."""
+    g = page_gray
+    if exclude is not None:                                      # the drawing itself carries no area statement
+        g = g.copy(); g[exclude[1]:exclude[3], exclude[0]:exclude[2]] = 255
+    try:
+        text = pytesseract.image_to_string(g, config="--psm 11")
+    except Exception:
+        return None
+    found = []
+    for mt in re.finditer(r"(\d{2,4}(?:\.\d)?)\s*(sqm|sq\.?\s*m\b|m2|m\u00b2|sqft|sq\.?\s*ft\b)", text, re.I):
+        v = float(mt.group(1)); u = mt.group(2).lower().replace(" ", "").replace(".", "")
+        m2 = v / 10.7639 if u.startswith("sqft") or u == "sqft" else v
+        if 15 <= m2 <= 1500:
+            found.append({"text": mt.group(0).strip(), "m2": round(m2, 1)})
+    if not found:
+        return None
+    # the largest sqm figure is the unit; "(inclusive of 6 sqm balcony)" and the like are its parts
+    main = max(found, key=lambda f_: f_["m2"])
+    inc = re.search(r"inclusive of ([^)\n]*)", text, re.I)
+    return {"m2": main["m2"], "text": main["text"], "parts": [f_ for f_ in found if f_ is not main], "inclusiveNote": inc.group(0).strip() if inc else None}
+
+
 def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
@@ -775,6 +918,15 @@ def extract(path):
     if hatch is not None:
         gray = gray.copy(); gray[hatch["solid"] > 0] = 0    # from here on a hatched wall is a wall like any other; it is DRAWN hatched again at the end
     H0, W0 = gray.shape
+    page_gray = gray                                             # the whole deskewed page (a scale bar or a title lives outside the plan)
+    crop = plan_region(gray)
+    if crop is not None and (crop[2] - crop[0]) * (crop[3] - crop[1]) < 0.5 * W0 * H0:
+        gray = gray[crop[1]:crop[3], crop[0]:crop[2]]
+    else:
+        crop = None
+    # A graphic scale bar (brochure pages) gives the scale before anything is traced: it is read off the whole page, and
+    # it decides the working resolution when the drawing itself is small.
+    bar = find_scale_bar(page_gray, exclude=crop)
     # ---- working resolution ------------------------------------------------------------------------------------------
     # Every pixel constant below was tuned where a structural wall is ~30 px thick. A brochure JPEG has 10 px walls and
     # 9 px lettering, so it is enlarged to the same working scale first (the model and the SVG viewBox are then in working
@@ -811,6 +963,16 @@ def extract(path):
     ink = ((gray < thr) * 255).astype(np.uint8)
     model = {"size": [W, H], "source_size": [W0, H0], "work_scale": work_scale, "skew_deg": round(skew, 3),
              "ink_threshold": int(thr), "edge_softness": round(soft_R, 2), "soft_input": bool(soft)}
+    if crop is not None:
+        model["crop_offset"] = [int(crop[0]), int(crop[1])]     # of the traced part within the deskewed page, in page pixels
+        model["page_size"] = [int(W0), int(H0)]
+    if bar is not None:
+        model["scale_bar"] = bar                                  # page pixels; mm_per_px there is per PAGE pixel
+    if crop is not None or bar is not None:                      # a page with margins around the plan: look for its printed area
+        area = stated_area(page_gray, exclude=crop)
+        if area:
+            model["stated_area"] = area
+    model["_page_gray"] = page_gray
     if flattened:
         model["background_flattened"] = True
     if pre_scale != 1.0:
@@ -3334,6 +3496,39 @@ def find_swings(gray, rmin=25, rmax=None):
 
 
 DOOR_LEAF_MM = 850.0         # a room door: 800-900 mm leaf.  Used ONLY to estimate a scale for a plan that writes no dimensions
+
+
+def scale_from_bar(m):
+    """A page with a graphic scale bar and no written dimensions is scaled by the bar: an exact scale, not an estimate.
+    The bar's labelled stops also go into dim_spans, so the app can check them against the drawing like any dimension.
+    Where written dimensions exist they win; the bar is only recorded beside them."""
+    bar = m.get("scale_bar")
+    if not bar:
+        return
+    ws = float(m.get("work_scale", 1) or 1); ox, oy = m.get("crop_offset", [0, 0])
+    to_work = lambda x, y: ((x - ox) * ws, (y - oy) * ws)
+    per_work = bar["mm_per_px"] / ws
+    if m.get("mm_per_px"):
+        m["dimension_report"] = dict(m.get("dimension_report") or {}, scale_bar_mm_per_px=round(per_work, 4), scale_bar_agrees=abs(per_work / m["mm_per_px"] - 1) <= 0.03)
+        return
+    m["mm_per_px"] = round(per_work, 4)
+    m["scale_source"] = {"estimated": False, "from": "scale bar", "unit": bar["unit"], "labels": len(bar["labels"])}
+    labels = sorted(bar["labels"])                                # [value, page x]
+    per = 304.8 if bar["unit"] == "ft" else 1000.0
+    y_w = to_work(0, bar["y"])[1]
+    items = []
+    pairs = [(labels[i], labels[i + 1]) for i in range(len(labels) - 1)]
+    if len(labels) > 2:
+        pairs.append((labels[0], labels[-1]))
+    for (v0, x0), (v1, x1) in pairs:
+        mm = int(round((v1 - v0) * per))
+        if mm <= 0:
+            continue
+        p_, q_ = to_work(x0, 0)[0], to_work(x1, 0)[0]
+        items.append({"axis": "x", "p": float(min(p_, q_)), "q": float(max(p_, q_)), "mm": mm, "lc": float(y_w),
+                      "s": "%g%s" % (v1, bar["unit"]), "tc": [float((p_ + q_) / 2.0), float(y_w - 3 * ws)], "conf": 0.9, "vote_strong": True, "clean": True,
+                      "from": "scale bar"})
+    m["_dim_items"] = (m.get("_dim_items") or []) + items
 
 
 def estimate_scale(m):
@@ -6715,7 +6910,7 @@ def rectify_to_dimensions(m):
     """The written dimensions are the truth.  On a soft scan the traced stops are a few px off, so 3300 measures as 3275.
     Move every dimensioned position to where its numbers put it (least squares over all dimensions, staying as close to the
     traced positions as the numbers allow) and carry the rest of the drawing along, piecewise-linearly, per axis."""
-    items = m.get("_dim_items") or []
+    items = [it for it in (m.get("_dim_items") or []) if it.get("from") != "scale bar"]     # (the bar lies outside the drawing)
     scale = m.get("mm_per_px")
     if not scale or len(items) < 3:
         return
@@ -7444,6 +7639,7 @@ if __name__ == "__main__":
     sanity_texts(m)
     vote_verify_numbers(m)
     solve_dimensions(m)
+    scale_from_bar(m)
     estimate_scale(m)
     diagonal_dimensions(m)
     complete_labels(m)
@@ -7468,7 +7664,7 @@ if __name__ == "__main__":
     structure(m)
     match_symbols(m)
     save_work_image(m, base + ".work.png")
-    m.pop("_gray", None); m.pop("_unrect", None)
+    m.pop("_gray", None); m.pop("_unrect", None); m.pop("_page_gray", None)
     m["round_numbers"] = m.pop("_round_plan", None)
     open(base + ".json", "w").write(json.dumps(m))
     # default: flat, one object per editable thing. --grouped: the older category groups (walls / lines / text ...)
