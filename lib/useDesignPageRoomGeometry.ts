@@ -25,11 +25,6 @@ import {
   type RoomSnapshot,
 } from "@/lib/room-types";
 
-type RoomGeometryHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
-
 export function useDesignPageRoomGeometry({
   state,
   refs,
@@ -41,7 +36,6 @@ export function useDesignPageRoomGeometry({
     setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
     setPlanOpenings: Dispatch<SetStateAction<RoomOpening2D[]>>;
     setPlanFixedElements: Dispatch<SetStateAction<FixedElement2D[]>>;
-    history: RoomGeometryHistory;
     runHistoryTransaction: (name: string, mutation: () => void) => void;
     runCoalescedHistoryTransaction: (name: string, mutation: () => void) => void;
     showToast: (message: string) => void;
@@ -53,7 +47,6 @@ export function useDesignPageRoomGeometry({
     setDesignSnapshot,
     setPlanOpenings,
     setPlanFixedElements,
-    history,
     runHistoryTransaction,
     runCoalescedHistoryTransaction,
     showToast,
@@ -72,12 +65,12 @@ export function useDesignPageRoomGeometry({
         ...room,
         geometry: updateGeometry(room.geometry),
       });
-      history.begin(actionName);
-      designSnapshotRef.current = nextSnapshot;
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
+      runHistoryTransaction(actionName, () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
     },
-    [designSnapshotRef, history, setDesignSnapshot]
+    [designSnapshotRef, runHistoryTransaction, setDesignSnapshot]
   );
 
   const changeActiveRoomHeightMm = useCallback(
@@ -417,13 +410,13 @@ export function useDesignPageRoomGeometry({
         ...room,
         ceilingVisible: visible,
       });
-      history.begin(visible ? "Show ceiling" : "Hide ceiling");
-      designSnapshotRef.current = nextSnapshot;
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
+      runHistoryTransaction(visible ? "Show ceiling" : "Hide ceiling", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
       track("editor_ceiling_visibility_changed", { visible });
     },
-    [designSnapshotRef, history, setDesignSnapshot]
+    [designSnapshotRef, runHistoryTransaction, setDesignSnapshot]
   );
 
   const changeActiveRoomCeilingColor = useCallback(
@@ -444,13 +437,13 @@ export function useDesignPageRoomGeometry({
           ceilingColor: safeColor,
         },
       });
-      history.begin("Edit ceiling colour");
-      designSnapshotRef.current = nextSnapshot;
-      setDesignSnapshot(nextSnapshot);
-      history.commit();
+      runHistoryTransaction("Edit ceiling colour", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+      });
       track("editor_ceiling_color_changed");
     },
-    [designSnapshotRef, history, setDesignSnapshot]
+    [designSnapshotRef, runHistoryTransaction, setDesignSnapshot]
   );
 
   return {

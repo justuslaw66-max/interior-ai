@@ -121,10 +121,10 @@ export function useDesignPageSelectionInspectionRuntime({
     actions: {
       clearSelection: itemSelection.actions.clearSelection,
       commitItems: itemDocument.actions.commitItems,
-      history: historyBoundary.refs.history,
       preserveCameraAfterPlanOverlaySelection:
         planViewport.actions.camera.navigation
           .preserveCameraAfterPlanOverlaySelection,
+      runHistoryTransaction: historyBoundary.actions.runHistoryTransaction,
       setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
       setEditorMode: editorShell.actions.editor.setEditorMode,
       setPlanAnnotations: planDocument.actions.setPlanAnnotations,
@@ -162,7 +162,6 @@ export function useDesignPageSelectionInspectionRuntime({
       setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
       setPlanOpenings: planDocument.actions.setPlanOpenings,
       setPlanFixedElements: planDocument.actions.setPlanFixedElements,
-      history: historyBoundary.refs.history,
       runHistoryTransaction:
         historyBoundary.actions.runHistoryTransaction,
       runCoalescedHistoryTransaction:

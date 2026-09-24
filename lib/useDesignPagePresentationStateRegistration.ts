@@ -30,7 +30,7 @@ export type UseDesignPagePresentationStateRegistrationInput = {
       | "handleEditorViewModeChange"
       | "transitionToCameraView"
     >;
-    history: Pick<DesignPageLayoutVersionsActions, "history">;
+    history: Pick<DesignPageLayoutVersionsActions, "runHistoryTransaction">;
     selection: Pick<DesignPageLayoutVersionsActions, "updateSelection">;
     feedback: Pick<
       DesignPageNamedCameraViewsControllerActions,
@@ -69,7 +69,7 @@ export function useDesignPagePresentationStateRegistration({
     refs,
     actions: {
       setDesignSnapshot: actions.document.setDesignSnapshot,
-      history: actions.history.history,
+      runHistoryTransaction: actions.history.runHistoryTransaction,
       updateSelection: actions.selection.updateSelection,
       showToast: actions.feedback.showToast,
     },

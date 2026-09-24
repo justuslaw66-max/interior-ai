@@ -41,11 +41,6 @@ import { useDesignPageFloorPlanTracingKeyboard } from "@/lib/useDesignPageFloorP
 import { useFloorPlanRoomCreation } from "@/lib/useFloorPlanRoomCreation";
 import { useFloorPlanRoomDrawing } from "@/lib/useFloorPlanRoomDrawing";
 
-type HistoryAdapter = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
-
 type AddFloorPlanRoomOptions = {
   roomType?: RoomType;
   shape?: RoomPlanShape;
@@ -91,7 +86,7 @@ type UseDesignPageFloorPlanTracingInput = {
     keyboardOwnership: DesignPageKeyboardOwnershipSource;
   };
   actions: {
-    history: HistoryAdapter;
+    runHistoryTransaction: (name: string, mutation: () => void) => void;
     handleAddRoom: (options?: AddFloorPlanRoomOptions) => void;
     setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
     setPlanOpenings: Dispatch<SetStateAction<RoomOpening2D[]>>;
@@ -155,7 +150,7 @@ export function useDesignPageFloorPlanTracing({
     keyboardShortcutsEnabled
   );
   const {
-    history,
+    runHistoryTransaction,
     handleAddRoom,
     setDesignSnapshot,
     setPlanOpenings,
@@ -433,9 +428,9 @@ export function useDesignPageFloorPlanTracing({
       }
 
       const id = `opening-${Date.now()}`;
-      history.begin(opening.kind === "door" ? "Trace door" : "Trace window");
-      setPlanOpenings((previous) => [...previous, { id, ...opening }]);
-      history.commit();
+      runHistoryTransaction(opening.kind === "door" ? "Trace door" : "Trace window", () =>
+        setPlanOpenings((previous) => [...previous, { id, ...opening }])
+      );
       handleSelectPlanOverlay(id);
       setFloorPlanTraceOpeningPoints([]);
       completeConsumerOpeningPlacement();
@@ -452,9 +447,9 @@ export function useDesignPageFloorPlanTracing({
       floorPlanTraceOpeningKind,
       floorPlanTraceOpeningPoints,
       handleSelectPlanOverlay,
-      history,
       housePlanRooms,
       planOpenings,
+      runHistoryTransaction,
       setFloorPlanTraceOpeningPoints,
       setPlanOpenings,
       showRuleToast,
@@ -478,9 +473,9 @@ export function useDesignPageFloorPlanTracing({
 
       const opening = preview.opening;
       const id = `opening-${Date.now()}`;
-      history.begin(opening.kind === "door" ? "Place door" : "Place window");
-      setPlanOpenings((previous) => [...previous, { id, ...opening }]);
-      history.commit();
+      runHistoryTransaction(opening.kind === "door" ? "Place door" : "Place window", () =>
+        setPlanOpenings((previous) => [...previous, { id, ...opening }])
+      );
       handleSelectPlanOverlay(id);
       completeConsumerOpeningPlacement();
       showRuleToast(opening.kind === "door" ? "Door placed" : "Window placed");
@@ -497,9 +492,9 @@ export function useDesignPageFloorPlanTracing({
       floorPlanTraceOpeningMode,
       floorPlanUnderlay,
       handleSelectPlanOverlay,
-      history,
       housePlanRooms,
       planOpenings,
+      runHistoryTransaction,
       setPlanOpenings,
       showRuleToast,
     ]

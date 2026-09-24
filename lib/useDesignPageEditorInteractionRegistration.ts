@@ -49,7 +49,7 @@ export function useDesignPageEditorInteractionRegistration({
   const { cameraBridge } = planViewport.boundaries;
   const snapshotDocument = documentSelection.boundaries.snapshotDocument;
   const history = documentRoom.boundaries.history.refs.history;
-  const { flushCoalescedHistoryTransaction } = documentRoom.actions.history;
+  const { flushCoalescedHistoryTransaction, runHistoryTransaction } = documentRoom.actions.history;
   const { activeRoom, items, zones, roomWidth, roomDepth, roomHeight, wallThickness } =
     documentRoom.derived.room;
   const { housePlan2D, planViewWidth, planViewDepth, activeRoomPlanOffset } =
@@ -134,7 +134,7 @@ export function useDesignPageEditorInteractionRegistration({
         transitionToCameraView:
           cameraBridge.actions.navigation.transitionToCameraView,
       },
-      history: { history },
+      history: { runHistoryTransaction },
       selection: { updateSelection: itemSelection.actions.updateSelection },
       feedback: { showToast: showRuleToast },
     },
@@ -162,7 +162,7 @@ export function useDesignPageEditorInteractionRegistration({
       setSelectedZoneId: documentSelection.actions.setSelectedZoneId,
       clearSelection: itemSelection.actions.clearSelection,
       commitItems: itemDocument.actions.commitItems,
-      history,
+      runHistoryTransaction,
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
       getSelectionBounds:
         selectionInspection.actions.geometry.getSelectionBounds,
