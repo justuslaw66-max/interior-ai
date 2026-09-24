@@ -221,7 +221,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 957,
+      "lines": 914,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -2005,11 +2005,11 @@
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 674
+        "maximum": 630
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 47
+        "maximum": 37
       }
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
