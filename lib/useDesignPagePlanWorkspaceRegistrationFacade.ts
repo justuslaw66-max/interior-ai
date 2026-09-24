@@ -307,7 +307,6 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
           cameraBridge.actions.navigation.prepareCameraForPlanTemplate,
       },
       history: {
-        history: history.refs.history,
         runHistoryTransaction: history.actions.runHistoryTransaction,
         runCoalescedHistoryTransaction:
           history.actions.runCoalescedHistoryTransaction,

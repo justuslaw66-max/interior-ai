@@ -133,7 +133,7 @@ assert.match(
 );
 assert.match(
   controllerSource,
-  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("Create zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);[\s\S]*?clearSelection\(\);/,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?runHistoryTransaction\("Create zone", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);[\s\S]*?clearSelection\(\);/,
   "Manual creation should reconcile auto zones, persist active-room zones, and preserve history/select ordering."
 );
 
@@ -188,7 +188,7 @@ assert.ok(
 );
 assert.match(
   controllerSource,
-  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("Create seating area"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?runHistoryTransaction\("Create seating area", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
   "Automatic creation should reconcile auto zones and preserve its active-room update, history, and selection behavior."
 );
 assert.match(
@@ -208,7 +208,7 @@ for (const historyLabel of [
 ] as const) {
   assert.match(
     controllerSource,
-    new RegExp("(?:begin|commitItems)\\([^\\n]*" + historyLabel),
+    new RegExp("(?:runHistoryTransaction|commitItems)\\([^\\n]*" + historyLabel),
     `The controller should preserve the ${historyLabel} history label.`
   );
 }
@@ -245,7 +245,7 @@ assert.match(
 );
 assert.match(
   controllerSource,
-  /history\.begin\("Ungroup zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(null\);/,
+  /runHistoryTransaction\("Ungroup zone", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);[\s\S]*?setSelectedZoneId\(null\);/,
   "Ungroup should persist active-room zones and preserve history/selection ordering."
 );
 assert.ok(

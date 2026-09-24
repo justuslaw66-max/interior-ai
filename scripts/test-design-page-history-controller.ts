@@ -230,7 +230,7 @@ for (const gesture of [
 }
 assert.match(
   editorInteractionRegistrationSource,
-  /const \{ flushCoalescedHistoryTransaction \} = documentRoom\.actions\.history;[\s\S]*?canvas: \{ history, flushCoalescedHistoryTransaction \}/,
+  /const \{ flushCoalescedHistoryTransaction, runHistoryTransaction \} = documentRoom\.actions\.history;[\s\S]*?canvas: \{ history, flushCoalescedHistoryTransaction \}/,
   "The canvas controller must receive the design page's own coalesced-transaction flush."
 );
 
