@@ -229,6 +229,7 @@ type NavigationActions = ActionSlice<
   | "onSignIn"
   | "onGoFurnish"
   | "onGoAiDesign"
+  | "onOpenBuiltIns"
   | "onGoShop"
   | "onSelectRoom"
   | "onPlacementAddModeChange"

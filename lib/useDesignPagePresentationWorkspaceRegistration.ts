@@ -212,7 +212,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
       canUseAdvancedExportStyles:
         coreShell.derived.access.capabilities.exportMultipleViews,
       canUseDesigner: coreShell.derived.access.canUseDesigner,
-      canUseCabinetryStudio: cabinetry.state.canUseStudio,
       compactRoomStatus: planWorkspace.derived.compactRoomPlanStatusBar,
       showRoomHealth: planWorkspace.derived.showRoomPlanStatusHealth,
       eyeLevelTransitionDurationMs: 500,
@@ -313,7 +312,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
       navigation: {
         plan: viewportShell.actions.panels.goPlan,
         furnish: viewportShell.actions.panels.goFurnish,
-        aiDesign: viewportShell.actions.panels.goAiDesign,
         shop: viewportShell.actions.panels.goShop,
       },
       dialogs: {
@@ -330,7 +328,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         retrySaveStatus: persistence.actions.persistence.retrySaveStatus,
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
       },
-      cabinetry: { openStudio: cabinetry.actions.openCreateStudio },
       room: {
         reviewHealth: sceneRoomRead.actions.room.reviewActiveRoomHealth,
         rename: planWorkspace.actions.room.startRoomRename,

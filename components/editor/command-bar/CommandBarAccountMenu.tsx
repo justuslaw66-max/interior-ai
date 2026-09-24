@@ -38,13 +38,13 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
         aria-expanded={open}
         className={
           dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none sm:w-auto sm:px-3"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
+            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none lg:w-auto lg:px-3"
+            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 lg:w-auto lg:px-3"
         }
         onClick={onToggle}
       >
-        <UserRound className="h-4 w-4 sm:hidden" aria-hidden="true" />
-        <span className="hidden sm:inline">Account</span>
+        <UserRound className="h-4 w-4 lg:hidden" aria-hidden="true" />
+        <span className="hidden lg:inline">Account</span>
       </button>
       {open && (
         <div

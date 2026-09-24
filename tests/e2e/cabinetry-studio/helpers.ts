@@ -38,14 +38,15 @@ export async function dismissBlockingPrompt(page: import("@playwright/test").Pag
   ).toHaveCount(0, { timeout: 5000 });
 }
 
+// Built-ins opens from inside the Furnish step.
 export async function openMillworkStudioFromWorkspaceMenu(
   page: import("@playwright/test").Page
 ) {
-  const workspaceMenu = page.getByTestId("editor-command-workspace");
-  await expect(workspaceMenu).toBeVisible({ timeout: 30000 });
+  const furnishStep = page.getByTestId("editor-workflow-furnish");
+  await expect(furnishStep).toBeVisible({ timeout: 30000 });
   await page.waitForLoadState("networkidle");
   await dismissBlockingPrompt(page);
-  await workspaceMenu.click();
+  await furnishStep.click();
   const openStudio = page.getByTestId("editor-workflow-millwork");
   await expect(openStudio).toBeVisible();
   await openStudio.click();

@@ -72,6 +72,9 @@ non-obscured semantic actions in this order:
 - checkout: `guest-checkout-action`, then
   `editor-command-workspace-action`.
 
+`editor-command-workspace-action` sits on the current design step in the
+command bar (Plan, Furnish or Shop), or on Plan when no step is current.
+
 Responsive replacement carrying the same semantic ID is valid; a removed or
 disabled reason-specific action is skipped. Route, requested/actual design,
 workspace/project, homeowner/designer mode, preview state, plan/auth identity,

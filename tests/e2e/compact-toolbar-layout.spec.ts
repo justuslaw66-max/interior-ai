@@ -5,7 +5,7 @@ const CLOSED_CONTROL_TEST_IDS = [
   "command-undo",
   "command-redo",
   "editor-view-toggle",
-  "editor-command-workspace",
+  "editor-design-steps",
   "editor-command-new-plan",
   "save-status",
   "save-design",
@@ -54,38 +54,20 @@ async function expectCompactToolbarGeometry(page: Page) {
   }
 }
 
-async function openWorkspaceMenu(page: Page) {
-  const trigger = page.getByTestId("editor-command-workspace");
-  await expect
-    .poll(
-      async () => {
-        if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-          await trigger.evaluate((button) => (button as HTMLButtonElement).click());
-        }
-        return trigger.getAttribute("aria-expanded");
-      },
-      { timeout: 30_000 },
-    )
-    .toBe("true");
-  await expect(page.getByTestId("editor-command-workspace-menu")).toBeVisible();
+async function chooseStep(page: Page, testId: string) {
+  const step = page.getByTestId(testId);
+  await expect(step).toBeVisible();
+  await step.click();
+  await expect(step).toHaveAttribute("data-active", "true");
+  await expect(step).toHaveAttribute("aria-current", "step");
 }
 
-async function chooseWorkspace(page: Page, testId: string, label: string) {
-  const option = page.getByTestId(testId);
-  await expect(async () => {
-    await openWorkspaceMenu(page);
-    await expect(option).toBeVisible();
-    const bounds = await option.boundingBox();
-    expect(
-      bounds?.height,
-      `${label} menu row should retain comfortable sizing`,
-    ).toBeGreaterThanOrEqual(36);
-    await option.evaluate((button) => (button as HTMLButtonElement).click());
-    await expect(option).toHaveAttribute("data-active", "true", {
-      timeout: 5_000,
-    });
-  }).toPass({ timeout: 30_000 });
-  await expect(page.getByTestId("editor-command-workspace")).toContainText(label);
+// Suggest a layout opens from inside the Furnish step, which stays current.
+async function openSuggestLayout(page: Page) {
+  await chooseStep(page, "editor-workflow-furnish");
+  await page.getByTestId("editor-workflow-ai").click();
+  await expect(page.getByTestId("furnish-step-back-to-products")).toBeVisible();
+  await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("aria-current", "step");
 }
 
 async function expectMenuRowsStayComfortable(menu: Locator) {
@@ -113,19 +95,13 @@ test.describe("compact top toolbar", () => {
     await expectCompactToolbarGeometry(page);
     await expect(page.getByTestId("room-plan-status")).toBeVisible();
     await expect(page.getByTestId("room-plan-status")).toHaveCSS("height", "30px");
-    await expect(page.getByTestId("editor-command-workspace").getByText("Workspace", {
-      exact: true,
-    })).toBeVisible();
+    // Wide screens show each step's number and name.
+    await expect(page.getByTestId("editor-workflow-furnish").getByText("2", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-furnish").getByText("Furnish", { exact: true })).toBeVisible();
 
-    await openWorkspaceMenu(page);
-    await expectMenuRowsStayComfortable(
-      page.getByTestId("editor-command-workspace-menu"),
-    );
-    await page.keyboard.press("Escape");
-
-    await chooseWorkspace(page, "editor-workflow-furnish", "Furnish");
-    await chooseWorkspace(page, "editor-workflow-ai", "Suggest a layout");
-    await chooseWorkspace(page, "editor-workflow-plan", "Plan");
+    await chooseStep(page, "editor-workflow-furnish");
+    await openSuggestLayout(page);
+    await chooseStep(page, "editor-workflow-plan");
 
     const sidebarToggle = page.getByTestId("editor-design-sidebar-toggle");
     await sidebarToggle.click();
@@ -148,13 +124,13 @@ test.describe("compact top toolbar", () => {
 
     await page.setViewportSize({ width: 900, height: 800 });
     await expectCompactToolbarGeometry(page);
-    await expect(page.getByTestId("editor-command-workspace").getByText("Workspace", {
-      exact: true,
-    })).toBeHidden();
+    // Compact desktops keep the step names and drop the numbers.
+    await expect(page.getByTestId("editor-workflow-furnish").getByText("2", { exact: true })).toBeHidden();
+    await expect(page.getByTestId("editor-workflow-furnish").getByText("Furnish", { exact: true })).toBeVisible();
     await expect(page.getByTestId("room-plan-status")).toBeHidden();
-    await chooseWorkspace(page, "editor-workflow-furnish", "Furnish");
-    await chooseWorkspace(page, "editor-workflow-ai", "Suggest a layout");
-    await chooseWorkspace(page, "editor-workflow-plan", "Plan");
+    await chooseStep(page, "editor-workflow-furnish");
+    await openSuggestLayout(page);
+    await chooseStep(page, "editor-workflow-plan");
 
     await page.screenshot({
       path: testInfo.outputPath("compact-toolbar-consumer-900px.png"),

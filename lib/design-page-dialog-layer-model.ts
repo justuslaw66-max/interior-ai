@@ -310,7 +310,7 @@ export function buildDesignPageDialogLayerModel({
         onToggle: cart.onToggle,
         triggerClassName: cart.controlsPanelVisible
           ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
-          : "bottom-4 right-4",
+          : "bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-4",
       },
     },
   };

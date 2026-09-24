@@ -602,8 +602,8 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-1 right-1 top-auto[\s\S]*?md:top-11/,
-  "Main left design controls column should sit as close to the viewport edge as the right overlay stack."
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-\[calc\(4\.25rem\+env\(safe-area-inset-bottom\)\)\] right-1 top-auto[\s\S]*?md:top-11/,
+  "Main left design controls column should sit as close to the viewport edge as the right overlay stack, and just above the phone step bar."
 );
 
 assert.match(
@@ -663,7 +663,6 @@ for (const historyTestId of ["command-undo", "command-redo"] as const) {
 
 for (const controlTestId of [
   "editor-design-sidebar-toggle",
-  "editor-command-workspace",
   "editor-command-new-plan",
   "save-status",
   "save-design",
@@ -676,6 +675,18 @@ for (const controlTestId of [
     `${controlTestId} should use the shared 30px closed-control height.`
   );
 }
+
+// The steps sit in the bar from tablet width up; phones get them as a bar along the bottom.
+assert.match(
+  editorCommandBarSource,
+  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-\[30px\]/,
+  "The design steps should use the shared 30px closed-control height in the bar and a bottom bar on phones."
+);
+assert.match(
+  editorCommandBarSource,
+  /md:h-9 md:gap-2 md:backdrop-blur/,
+  "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
+);
 
 assert.match(
   editorViewToggleSource,
@@ -703,43 +714,37 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /id: "plan"[\s\S]{0,1200}?id: "millwork"[\s\S]{0,1200}?id: "furnish"/,
-  "The primary workflow should place Millwork between Plan and Furnish."
+  /id: "plan"[\s\S]{0,400}?testId: "editor-workflow-plan"[\s\S]{0,400}?id: "furnish"[\s\S]{0,400}?testId: "editor-workflow-furnish"[\s\S]{0,400}?id: "shop"[\s\S]{0,400}?testId: "editor-workflow-shop"/,
+  "The command bar should show the three design steps in order: Plan, Furnish, Shop."
 );
 
 assert.match(
   editorCommandBarSource,
-  /testId: "editor-workflow-millwork"[\s\S]{0,500}?legacyTestId: "open-custom-millwork-studio"/,
-  "The top-bar Millwork entry should retain stable workflow and cabinetry test hooks."
+  /aria-label="Design steps"[\s\S]*?data-testid="editor-design-steps"[\s\S]*?steps\.map[\s\S]*?data-testid=\{step\.testId\}/,
+  "Every width should show the design steps instead of a Workspace menu."
+);
+
+assert.doesNotMatch(
+  editorCommandBarSource,
+  /data-testid="editor-command-workspace/,
+  "The Workspace menu should not come back next to the design steps."
 );
 
 assert.match(
-  editorCommandBarSource,
-  /data-testid="editor-command-workspace"[\s\S]*?aria-label=\{`Workspace: \$\{activeWorkflowStep\.label\}`\}[\s\S]*?data-testid="editor-command-workspace-menu"[\s\S]*?workflowSteps\.map[\s\S]*?data-testid=\{step\.testId\}/,
-  "Every desktop width should expose the complete workflow through the dedicated Workspace menu."
-);
-
-assert.doesNotMatch(
-  editorCommandBarSource,
-  /aria-label="Design workflow"/,
-  "The permanently collapsed workflow should not return as a width-dependent command strip."
-);
-
-assert.doesNotMatch(
   designControlsPanelSource,
-  /open-custom-millwork-studio|onOpenCabinetryStudio/,
-  "Custom Millwork Studio should not return to the lower-left design panel."
+  /\(effectivePanelMode === "furnish" \|\| effectivePanelMode === "ai"\) && \([\s\S]*?<FurnishStepModes/,
+  "The Furnish step should carry its own switch to Suggest a layout and its Built-ins entry."
 );
 
 assert.match(
   presentationWorkspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*millworkActive:\s*cabinetry\.state\.studio !== null[\s\S]*canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*openStudio:\s*cabinetry\.actions\.openCreateStudio/,
-  "The presentation workspace should inject Millwork state and capability at the presentation/QA boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*millworkActive:\s*cabinetry\.state\.studio !== null/,
+  "The presentation workspace should tell the command bar while the Built-ins studio is open."
 );
-assert.match(
+assert.doesNotMatch(
   editorChromeControllerSource,
-  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
-  "The editor-chrome controller should preserve Millwork availability policy without changing the active room, wall, or editor workflow."
+  /onMillwork/,
+  "Built-ins opens from the Furnish step, so the editor-chrome controller no longer carries it."
 );
 
 assert.doesNotMatch(
@@ -750,8 +755,8 @@ assert.doesNotMatch(
 
 assert.match(
   cabinetryControllerSource,
-  /millwork_studio_opened[\s\S]{0,200}?entry_point: "command_bar"/,
-  "Millwork analytics should identify the promoted command-bar entry point."
+  /millwork_studio_opened[\s\S]{0,200}?entry_point: "furnish_step"/,
+  "Built-ins analytics should identify the Furnish step as its entry point."
 );
 
 assert.match(

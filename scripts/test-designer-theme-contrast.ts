@@ -255,13 +255,18 @@ assert.match(commandBarSource, /designer-command-bar/, "The Pro command bar shou
 assert.match(commandBarSource, /designer-control/, "The Pro command bar should use strong control boundaries.");
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-workspace"[\s\S]*?designer-control/,
-  "The Pro workspace trigger should use a restrained neutral command control."
+  /data-testid="editor-design-steps"[\s\S]*?dark \? "designer-control md:border"/,
+  "The Pro design steps should sit in a restrained neutral command control."
 );
 assert.match(
   commandBarSource,
-  /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "page" : undefined\}[\s\S]*?step\.active[\s\S]*?Current/,
-  "The Pro workspace menu should expose its current workflow semantically."
+  /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "step" : undefined\}/,
+  "The design steps should expose the current step semantically."
+);
+assert.match(
+  commandBarSource,
+  /if \(dark\) return `\$\{shape\} \$\{active \? "designer-control-active" : "designer-work-control"\}`;/,
+  "The current Pro design step should use the active control token."
 );
 assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
 assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");

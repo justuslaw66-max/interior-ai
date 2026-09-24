@@ -293,10 +293,10 @@ assert.match(
   /useDesignPagePresentationQaFacade\(\{[\s\S]*?editor:\s*\{[\s\S]*?activeRoom:\s*documentRoom\.derived\.room\.activeRoom \?\? null[\s\S]*?scene:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
   "The presentation workspace should inject grouped command, room, and performance state, configuration, and actions through the presentation/QA facade."
 );
-assert.match(
+assert.doesNotMatch(
   editorChromeControllerSource,
-  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
-  "Unavailable Millwork should remain undefined so the leaf hides both command entries."
+  /onMillwork|onAiDesign/,
+  "Built-ins and Suggest a layout open from the Furnish step, so the command bar carries neither."
 );
 assert.match(
   presentationWorkspaceSource,

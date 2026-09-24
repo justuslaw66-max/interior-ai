@@ -33,11 +33,9 @@ async function openCatalog(page: Page, mode: "consumer" | "pro" = "consumer") {
     }
   }
   if (!(await searchInput.isVisible().catch(() => false))) {
-    const workspaceTrigger = page.getByTestId("editor-command-workspace");
-    await expect(workspaceTrigger).toBeVisible({ timeout: 20_000 });
-    await workspaceTrigger.click();
-    await expect(page.getByTestId("editor-command-workspace-menu")).toBeVisible();
-    await page.getByTestId("editor-workflow-furnish").evaluate((button) => {
+    const furnishStep = page.getByTestId("editor-workflow-furnish");
+    await expect(furnishStep).toBeVisible({ timeout: 20_000 });
+    await furnishStep.evaluate((button) => {
       (button as HTMLButtonElement).click();
     });
   }
@@ -334,24 +332,15 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
     await page.locator("#entry-race-test-modal").evaluate((modal) => modal.remove());
 
     await nextOpener.click();
-    await page.getByTestId("editor-command-workspace").evaluate((button) => {
-      (button as HTMLButtonElement).click();
-    });
-    const workspaceTrigger = page.getByTestId("editor-command-workspace");
-    const workspaceMenu = page.getByTestId("editor-command-workspace-menu");
-    const planWorkspaceItem = page.getByTestId("editor-workflow-plan");
-    await expect(workspaceTrigger).toHaveAttribute("aria-expanded", "true");
-    await expect(workspaceMenu).toBeVisible();
-    await expectConnectedActionableFocus(planWorkspaceItem);
+    const planStep = page.getByTestId("editor-workflow-plan");
     await expect(page.getByTestId("catalog-item-drawer")).toBeVisible();
 
-    await planWorkspaceItem.evaluate((button) => {
+    await planStep.evaluate((button) => {
       (button as HTMLButtonElement).click();
     });
-    await expect(workspaceTrigger).toHaveAttribute("aria-expanded", "false");
-    await expect(workspaceMenu).toBeHidden();
+    await expect(planStep).toHaveAttribute("aria-current", "step");
     await expect(page.getByTestId("catalog-item-drawer")).toBeHidden();
     await waitForTwoAnimationFrames(page);
-    await expectConnectedActionableFocus(workspaceTrigger);
+    await expectConnectedActionableFocus(planStep);
   });
 });

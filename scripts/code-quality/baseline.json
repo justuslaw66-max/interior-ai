@@ -221,7 +221,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 914,
+      "lines": 904,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -233,7 +233,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 460,
+      "lines": 318,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -517,7 +517,7 @@
       "limit": 400
     },
     "lib/design-page-panel-registration.ts": {
-      "lines": 484,
+      "lines": 483,
       "limit": 400
     },
     "lib/design-page-product-data.ts": {
@@ -685,7 +685,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 506,
+      "lines": 501,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -2005,11 +2005,11 @@
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 630
+        "maximum": 616
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 37
+        "maximum": 34
       }
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -2031,11 +2031,11 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 399
+        "maximum": 260
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 23
       }
     },
     "components/editor/EditorToolRail.tsx": {
@@ -3335,7 +3335,7 @@
     "lib/design-page-panel-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 475
+        "maximum": 474
       }
     },
     "lib/design-page-panel-workspace-registration.ts": {
@@ -4435,7 +4435,7 @@
     "lib/useDesignPageEditorChromeController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 158
+        "maximum": 148
       }
     },
     "lib/useDesignPageEditorClientLifecycle.ts": {
@@ -4733,13 +4733,13 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 312
+        "maximum": 309
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 340
+        "maximum": 337
       }
     },
     "lib/useDesignPagePresentExportController.ts": {

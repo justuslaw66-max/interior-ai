@@ -492,7 +492,7 @@ export function DesignPageWorkspace() {
   return (
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
-      <div className="absolute inset-0">
+      <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
         <DesignPageSceneRegion {...sceneRegionModel} />
         <DesignPageEditorChrome {...editorChromeModel} />
         {viewMode === "2d" &&

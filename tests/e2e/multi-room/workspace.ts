@@ -9,10 +9,13 @@ import {
   getEmptyCanvasPoint,
 } from "./helpers";
 
+// Plan, Furnish and Shop are steps in the command bar; Present & export sits in the More menu.
 async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop" | "export") {
-  const trigger = page.getByTestId("editor-command-workspace");
-  if ((await trigger.getAttribute("aria-expanded")) !== "true") {
-    await trigger.click({ timeout: 10_000 });
+  if (workspace === "export") {
+    const more = page.getByTestId("editor-command-overflow");
+    if ((await more.getAttribute("aria-expanded")) !== "true") {
+      await more.click({ timeout: 10_000 });
+    }
   }
   const item = page.getByTestId(`editor-workflow-${workspace}`);
   await expect(item).toBeVisible();
@@ -183,10 +186,10 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
     await selectWorkspace(page, "export");
-    await expect(page.getByTestId("editor-workflow-export")).toHaveAttribute("data-active", "true");
     await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
       timeout: 10000,
     });
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
     await page.getByTestId("camera-view-name-input").fill("Client hero angle");
     await clickWithFallback(page.getByTestId("save-named-camera-view"));
     await expect(page.getByTestId("saved-camera-view-list")).toContainText("Client hero angle");
@@ -195,6 +198,14 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("saved-camera-view-list")).toHaveCount(0);
     await expect(page.getByText("Saved views appear on share links and export packs.")).toBeVisible();
     await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
+
+    // Presenting outlasts the panel, so More now offers the way back.
+    await page.getByTestId("editor-command-overflow").click();
+    const presentToggle = page.getByTestId("editor-workflow-export");
+    await expect(presentToggle).toHaveAttribute("data-active", "true");
+    await expect(presentToggle).toHaveText("Back to editing");
+    await page.keyboard.press("Escape");
+    await expect(presentToggle).toHaveCount(0);
 
     await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");

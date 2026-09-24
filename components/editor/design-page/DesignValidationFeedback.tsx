@@ -160,7 +160,7 @@ export function DesignValidationFeedback({
       {constraints.length > 0 && (
         <div
           data-testid="constraint-feedback"
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 transform animate-fade-in"
+          className="fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 transform animate-fade-in md:bottom-24"
         >
           <div className="flex items-center gap-2">
             {constraints.map((item) => (
@@ -184,7 +184,7 @@ export function DesignValidationFeedback({
       {confidence && (
         <div
           data-testid="layout-confidence"
-          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transform animate-fade-in"
+          className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-50 -translate-x-1/2 transform animate-fade-in md:bottom-6"
         >
           <div className="rounded-full bg-neutral-900/90 px-4 py-2 text-xs font-medium text-white shadow-lg backdrop-blur">
             {confidence}

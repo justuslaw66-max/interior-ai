@@ -65,13 +65,6 @@ export function CabinetryStudioDialog({
     const opener = document.activeElement instanceof HTMLElement
       ? document.activeElement
       : null;
-    const workspaceTrigger = document.querySelector<HTMLElement>(
-      '[data-testid="editor-command-workspace"]'
-    );
-    const returnFocus = mode === "create" ||
-      opener?.closest('[data-testid="editor-command-workspace-menu"]')
-      ? workspaceTrigger
-      : opener;
     const frame = window.requestAnimationFrame(() => dialogRef.current?.focus());
 
     return () => {
@@ -80,6 +73,12 @@ export function CabinetryStudioDialog({
         const replacementDialog = document.querySelector(
           '[role="dialog"][aria-label="Built-ins"]'
         );
+        // A new studio opens from the Furnish step's Built-ins button, so focus goes back there,
+        // or to the Furnish step if the button is gone. An edited cabinet returns to its opener.
+        const returnFocus = mode === "create"
+          ? document.querySelector<HTMLElement>('[data-testid="editor-workflow-millwork"]') ??
+            document.querySelector<HTMLElement>('[data-testid="editor-workflow-furnish"]')
+          : opener;
         if (!replacementDialog && returnFocus?.isConnected) returnFocus.focus();
       });
     };

@@ -413,7 +413,6 @@ export function registerDrawingTests() {
     await expect(bedroomLabel).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
 
-    await page.getByTestId("editor-command-workspace").click();
     await page.getByTestId("editor-workflow-furnish").click({ timeout: 5_000, noWaitAfter: true });
     const catalogMode = page.getByTestId("furnish-mode-catalog");
     if (await catalogMode.isVisible().catch(() => false)) {

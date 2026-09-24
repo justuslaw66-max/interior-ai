@@ -38,6 +38,8 @@ import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
 import DesignControlsFurnishPanel from "./DesignControlsFurnishPanel";
 import DesignControlsPlanPanel, { type FloorPlanLifecycleIdentity, type PlanStartMode } from "./DesignControlsPlanPanel";
+import { FurnishStepModes } from "./FurnishStepModes";
+import { ProGridSnapToggles } from "./ProGridSnapToggles";
 import { SelectedObjectContextCard } from "./SelectedObjectContextCard";
 import type { FloorPlanTool } from "./FloorPlanToolStrip";
 import type { SurfaceRoomSummary } from "./design-controls-plan/surfaceCatalog";
@@ -188,6 +190,8 @@ export type DesignControlsPanelProps = {
   onSignIn: () => void;
   onGoFurnish: () => void;
   onGoAiDesign: () => void;
+  /** Opens the Built-ins studio from the Furnish step; absent when the studio isn't available. */
+  onOpenBuiltIns?: () => void;
   onGoShop: () => void;
   onGoView3D?: () => void;
   onSelectRoom: (roomId: string) => void;
@@ -407,6 +411,7 @@ export default function DesignControlsPanel({
   onAddFloorPlanOpeningFromTool,
   onGoFurnish,
   onGoAiDesign,
+  onOpenBuiltIns,
   onGoShop,
   onGoView3D,
   onSelectRoom,
@@ -565,19 +570,18 @@ export default function DesignControlsPanel({
     ? "designer-divider border-b p-3"
     : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur";
   const panelSubtitleClass = dark ? "designer-text-secondary mt-1 text-xs" : "mt-1 text-xs text-neutral-500";
-  const selectedButtonClass = dark ? "designer-control-active border" : "bg-neutral-900 text-white";
   const panelLeftClass = temporarilyRevealed
     ? "left-0 md:left-0"
     : isDesigner
       ? "left-1 md:left-20"
       : "left-1 md:left-1";
-  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-1 right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-11 md:w-[18.15rem] ${panelLeftClass}`;
+  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-11 md:w-[18.15rem] ${panelLeftClass}`;
 
   if (collapsed && !temporarilyRevealed) {
     return (
       <div
         data-testid="design-controls-edge-reveal"
-        className="group absolute bottom-0 left-0 top-9 z-40 w-8 md:top-11 md:w-4"
+        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-9 z-40 w-8 md:bottom-0 md:top-11 md:w-4"
         onMouseEnter={openEdgePreview}
       >
         <div
@@ -613,7 +617,7 @@ export default function DesignControlsPanel({
     <div
       data-testid="design-controls-panel"
       data-temporary-reveal={temporarilyRevealed ? "true" : "false"}
-      className={`${panelShellClass} max-h-[64vh] overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
+      className={`${panelShellClass} max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] overflow-y-auto pb-3 md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
         temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
       }`}
       onMouseEnter={cancelEdgePreviewClose}
@@ -824,6 +828,9 @@ export default function DesignControlsPanel({
             onUpdateOpeningMetrics={onUpdateOpeningMetrics}
           />
         )}
+        {(effectivePanelMode === "furnish" || effectivePanelMode === "ai") && (
+          <FurnishStepModes mode={effectivePanelMode} {...{ dark, aiDesignEnabled, onGoFurnish, onGoAiDesign, onOpenBuiltIns }} />
+        )}
         {effectivePanelMode === "ai" && aiDesignEnabled && (
           <DesignControlsAiPanel
             dark={dark}
@@ -889,24 +896,7 @@ export default function DesignControlsPanel({
         )}
 
         {effectivePanelMode !== "ai" && isDesigner && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                showGrid ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onGridToggle}
-            >
-              Grid
-            </button>
-            <button
-              className={`text-xs px-3 py-2 rounded-lg ${
-                snapEnabled ? selectedButtonClass : dark ? "designer-raised text-neutral-200" : "bg-neutral-100"
-              }`}
-              onClick={onSnapToggle}
-            >
-              Snap
-            </button>
-          </div>
+          <ProGridSnapToggles {...{ dark, showGrid, snapEnabled, onGridToggle, onSnapToggle }} />
         )}
       </div>
     </div>

@@ -38,7 +38,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       isDesigner: boolean;
       authenticated: boolean;
       plan: DesignPageBetaFeedbackInput["editor"]["plan"];
-      aiDesignEnabled: ChromeCommandState["aiDesignEnabled"];
+      aiDesignEnabled: boolean;
       canUndo: ChromeCommandState["canUndo"];
       canRedo: ChromeCommandState["canRedo"];
       undoName: ChromeCommandState["undoName"];
@@ -117,7 +117,6 @@ export type UseDesignPagePresentationQaFacadeInput = {
     canUseAdvancedPlanControls: boolean;
     canUseAdvancedExportStyles: boolean;
     canUseDesigner: ChromeInput["configuration"]["canUseDesigner"];
-    canUseCabinetryStudio: ChromeInput["configuration"]["canUseCabinetryStudio"];
     compactRoomStatus: ChromeInput["configuration"]["commandBar"]["compactRoomStatus"];
     showRoomHealth: ChromeInput["configuration"]["commandBar"]["showRoomHealth"];
     eyeLevelTransitionDurationMs: number;
@@ -162,7 +161,6 @@ export type UseDesignPagePresentationQaFacadeInput = {
     dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "openNewPlan" | "setFeedbackOpen">;
     billing: ChromeActions["billing"];
     persistence: ChromeActions["persistence"];
-    cabinetry: ChromeActions["cabinetry"];
     room: ChromeActions["room"];
     scenePerformance: ChromeActions["scenePerformance"];
     lighting: {
@@ -364,7 +362,6 @@ export function useDesignPagePresentationQaFacade({
           planLabel: getEditorPlanLabel(state.editor.plan),
           canManageBilling: editorCapabilities.manageSubscription,
           isOpeningBillingPortal: state.chrome.openingBillingPortal,
-          aiDesignEnabled: state.editor.aiDesignEnabled,
           canUndo: state.editor.canUndo,
           canRedo: state.editor.canRedo,
           undoName: state.editor.undoName,
@@ -425,7 +422,6 @@ export function useDesignPagePresentationQaFacade({
         aiDesignEnabled: state.editor.aiDesignEnabled,
       },
       canUseDesigner: configuration.canUseDesigner,
-      canUseCabinetryStudio: configuration.canUseCabinetryStudio,
     },
     actions: {
       navigation: {
@@ -450,7 +446,6 @@ export function useDesignPagePresentationQaFacade({
       },
       billing: actions.billing,
       persistence: actions.persistence,
-      cabinetry: actions.cabinetry,
       room: actions.room,
       scenePerformance: actions.scenePerformance,
       sceneLighting: {

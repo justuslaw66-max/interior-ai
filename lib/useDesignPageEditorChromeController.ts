@@ -31,13 +31,11 @@ export type UseDesignPageEditorChromeControllerInput = {
     commandBar: DesignPageEditorChromeConfiguration["commandBar"];
     toolRail: DesignPageEditorChromeConfiguration["toolRail"];
     canUseDesigner: boolean;
-    canUseCabinetryStudio: boolean;
   };
   actions: {
     navigation: {
       plan: CommandBarActions["onPlan"];
       furnish: CommandBarActions["onFurnish"];
-      aiDesign: CommandBarActions["onAiDesign"];
       shop: CommandBarActions["onShop"];
       changeViewMode: CommandBarActions["onViewModeChange"];
       fitPlan: NonNullable<RoomActions["onFitPlan"]>;
@@ -74,9 +72,6 @@ export type UseDesignPageEditorChromeControllerInput = {
         onContinue: () => void
       ) => void;
     };
-    cabinetry: {
-      openStudio: () => void;
-    };
     room: {
       reviewHealth: RoomActions["onReviewHealth"];
       rename: RoomActions["rename"];
@@ -96,12 +91,6 @@ export function useDesignPageEditorChromeController({
   actions,
 }: UseDesignPageEditorChromeControllerInput): DesignPageEditorChromeProps {
   const commandState = state.commandBar.commandBar;
-
-  const runAiDesign = () => {
-    if (commandState.aiDesignEnabled) {
-      actions.navigation.aiDesign();
-    }
-  };
 
   const togglePresentMode = () => {
     if (commandState.editorMode === "present") {
@@ -203,11 +192,7 @@ export function useDesignPageEditorChromeController({
       commandBar: {
         commandBar: {
           onPlan: actions.navigation.plan,
-          onMillwork: configuration.canUseCabinetryStudio
-            ? actions.cabinetry.openStudio
-            : undefined,
           onFurnish: actions.navigation.furnish,
-          onAiDesign: runAiDesign,
           onShop: actions.navigation.shop,
           onExport: togglePresentMode,
           onUndo: actions.history.undo,
