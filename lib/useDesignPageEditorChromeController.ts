@@ -155,10 +155,13 @@ export function useDesignPageEditorChromeController({
     actions.dialogs.setPresentOpen(true);
   };
 
-  const openDesignTools = () => {
-    actions.editor.setMode("design");
+  // The Pro tool rail's steps show their panel even when the sidebar was collapsed (ST13).
+  const openToolsPanel = (mode: "design" | "adjust" | "ai") => {
+    actions.editor.setMode(mode);
     actions.editor.setDesignPanelOpen(true);
+    actions.editor.setDesignPanelCollapsed(false);
   };
+  const openDesignTools = () => openToolsPanel("design");
 
   const toggleDesignSidebar = () => {
     if (!state.designPanelOpen) {
@@ -169,15 +172,8 @@ export function useDesignPageEditorChromeController({
     actions.editor.setDesignPanelCollapsed((collapsed) => !collapsed);
   };
 
-  const openAdjustTools = () => {
-    actions.editor.setMode("adjust");
-    actions.editor.setDesignPanelOpen(true);
-  };
-
-  const openAiTools = () => {
-    actions.editor.setMode("ai");
-    actions.editor.setDesignPanelOpen(true);
-  };
+  const openAdjustTools = () => openToolsPanel("adjust");
+  const openAiTools = () => openToolsPanel("ai");
 
   const openCart = () => {
     actions.editor.setMode("buy");
