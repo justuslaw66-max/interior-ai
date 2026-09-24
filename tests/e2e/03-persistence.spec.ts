@@ -187,12 +187,16 @@ async function openMyDesigns(page: Page) {
   await loadDesigns.click();
 }
 
-// My designs is its own page (MD1): its cards open a design in the editor.
+// My designs is its own page (MD1): its cards open a design in the editor, which restores its
+// saved design and products first, then loads the one asked for.
 async function openDesignFromMyDesigns(page: Page, designId: string) {
   await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
   await page.getByTestId(`my-design-open-${designId}`).click();
   await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`), { timeout: 30_000 });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute("data-design-id", designId, {
+    timeout: 30_000,
+  });
 }
 
 async function loadSeedDesign(

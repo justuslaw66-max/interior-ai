@@ -173,7 +173,8 @@ test.describe("19. Staging Signoff Evidence", () => {
       await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
       await page.getByTestId(`my-design-open-${seed.designId}`).click();
       await expect(page).toHaveURL(new RegExp(`[?&]designId=${seed.designId}(?:&|$)`), { timeout: 30_000 });
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");
+      // The editor restores the furnished local design and its products before loading this one.
+      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms", { timeout: 30_000 });
       await expect(page.getByTestId("save-status")).toHaveAttribute(
         "data-status",
         "saved",

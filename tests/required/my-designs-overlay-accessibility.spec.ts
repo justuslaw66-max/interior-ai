@@ -133,7 +133,9 @@ async function openMyDesignsPage(page: Page, seed: Seed | null, viewport = DESKT
   await page.setViewportSize(viewport);
   if (seed) await signIn(page, seed);
   await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId(seed ? "my-designs-page" : "my-designs-signed-out")).toBeVisible();
+  // Server-rendered first: clicks before React hydrates the page do nothing.
+  await expect(page.getByTestId(seed ? "my-designs-page" : "my-designs-signed-out"))
+    .toHaveAttribute("data-client-hydrated", "true");
 }
 
 async function openEditor(page: Page, path: string) {

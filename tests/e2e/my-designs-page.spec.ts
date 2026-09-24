@@ -1,3 +1,4 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   addAuthCookies,
@@ -9,9 +10,15 @@ import {
 import { getE2EBaseUrl } from "./release-environment";
 
 // My designs as one page (audit findings MD1–MD4 and MD6), laid out as in the mockup. The
-// editor's My designs dialog is unchanged for now.
+// editor's More → My designs comes here once the design is saved.
 
 const baseURL = getE2EBaseUrl();
+
+// The page is rendered on the server first, and a click before React hydrates it does nothing.
+async function openMyDesignsPage(page: Page, main: "my-designs-page" | "my-designs-signed-out" = "my-designs-page") {
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId(main)).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+}
 
 test.describe("My designs page", () => {
   test.afterAll(async () => {
@@ -19,7 +26,7 @@ test.describe("My designs page", () => {
   });
 
   test("guests get a sign-in prompt instead of a redirect", async ({ page }) => {
-    await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+    await openMyDesignsPage(page, "my-designs-signed-out");
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByTestId("my-designs-signed-out")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Sign in to see your designs" })).toBeVisible();
@@ -32,7 +39,7 @@ test.describe("My designs page", () => {
     const seed = await createBetaSeedDesign();
     try {
       await addAuthCookies(page.context(), baseURL, seed.sessionToken);
-      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+      await openMyDesignsPage(page);
       const card = page.getByTestId(`my-design-card-${seed.designId}`);
       await expect(card).toContainText("Beta Smoke Whole Home");
       await expect(card).toContainText("Edited today");
@@ -57,7 +64,7 @@ test.describe("My designs page", () => {
     const seed = await createBetaSeedDesign();
     try {
       await addAuthCookies(page.context(), baseURL, seed.sessionToken);
-      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+      await openMyDesignsPage(page);
       const actions = page.getByTestId(`my-design-actions-${seed.designId}`);
       await actions.click();
       await expect(actions).toHaveAttribute("aria-expanded", "true");
@@ -95,7 +102,7 @@ test.describe("My designs page", () => {
     try {
       await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: baseURL });
       await addAuthCookies(context, baseURL, seed.sessionToken);
-      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+      await openMyDesignsPage(page);
       const actions = page.getByTestId(`my-design-actions-${seed.designId}`);
       await actions.click();
       await page.keyboard.press("Escape");
@@ -125,7 +132,7 @@ test.describe("My designs page", () => {
     try {
       await page.setViewportSize({ width: 390, height: 844 });
       await addAuthCookies(page.context(), baseURL, seed.sessionToken);
-      await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+      await openMyDesignsPage(page);
       await expect(page.getByTestId(`my-design-card-${seed.designId}`)).toBeVisible();
       for (const testId of ["app-header-home", "app-header-my-designs", "app-header-pricing", "app-header-account"]) {
         const box = await page.getByTestId(testId).boundingBox();

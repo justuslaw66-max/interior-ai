@@ -16,6 +16,7 @@ import {
 } from "@/components/my-designs/useMyDesignsPageState";
 import { designLimitSummary } from "@/lib/design-limits";
 import type { MyDesignCard } from "@/lib/my-designs";
+import { useClientHydrated } from "@/lib/useClientHydrated";
 import { NEW_DESIGN_HREF, PRICING_HREF } from "@/lib/start-design-link";
 
 const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
@@ -32,8 +33,10 @@ export type MyDesignsViewProps = {
 export function MyDesignsView({ designs, limit: planLimit }: MyDesignsViewProps) {
   const state = useMyDesignsPageState(designs);
   const limit = designLimitSummary(state.visibleDesigns.length, planLimit);
+  const hydrated = useClientHydrated();
   return (
-    <main data-testid="my-designs-page" className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
+    <main data-testid="my-designs-page" data-client-hydrated={hydrated ? "true" : "false"}
+      className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-[30px] font-bold leading-9 tracking-tight">My designs</h1>

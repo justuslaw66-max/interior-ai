@@ -529,9 +529,9 @@ export function useDesignPagePersistence({
     setLastCloudRevision(null);
   }, [cloudWriteQueue, detachCloudBaseline]);
 
+  // A share-status read may finish after the editor closes (for My designs); React drops it.
   useEffect(() => {
     return () => {
-      shareStatusAbortRef.current?.abort();
       designLoadRequest.cancel();
     };
   }, [designLoadRequest]);

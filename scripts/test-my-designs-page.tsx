@@ -163,6 +163,9 @@ const signedOut = render(createElement(MyDesignsSignedOut));
 assert.match(signedOut, /Sign in to see your designs/);
 assert.match(signedOut, /data-testid="my-designs-sign-in"[^>]*>Continue with Google<\/button>/);
 assert.ok(tagWithTestId(signedOut, "my-designs-continue-as-guest").includes('href="/design"'));
+// Rendered on the server, both say they aren't hydrated yet, so browser tests wait before clicking.
+assert.ok(tagWithTestId(free, "my-designs-page").includes('data-client-hydrated="false"'));
+assert.ok(tagWithTestId(signedOut, "my-designs-signed-out").includes('data-client-hydrated="false"'));
 
 // The page: a sign-in prompt for guests, never a redirect.
 const page = read("app/dashboard/page.tsx");

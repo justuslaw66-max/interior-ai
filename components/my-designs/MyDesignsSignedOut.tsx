@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useClientHydrated } from "@/lib/useClientHydrated";
 
 const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
@@ -10,8 +11,10 @@ const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-60
  * Signing in comes back here.
  */
 export function MyDesignsSignedOut() {
+  const hydrated = useClientHydrated();
   return (
-    <main data-testid="my-designs-signed-out" className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
+    <main data-testid="my-designs-signed-out" data-client-hydrated={hydrated ? "true" : "false"}
+      className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
       <h1 className="text-[30px] font-bold leading-9 tracking-tight">My designs</h1>
       <section aria-labelledby="my-designs-sign-in-title"
         className="mt-6 flex max-w-[560px] flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-6">

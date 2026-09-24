@@ -4504,16 +4504,6 @@
         "maximum": 129
       }
     },
-    "lib/useDesignPageLiveCatalog.ts": {
-      "overlongFunctions": {
-        "count": 3,
-        "maximum": 96
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 26
-      }
-    },
     "lib/useDesignPageLocalBackupHydration.ts": {
       "overlongFunctions": {
         "count": 2,

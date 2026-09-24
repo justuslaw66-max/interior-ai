@@ -13,7 +13,7 @@ const PAGE = "flex min-h-screen flex-col bg-[#fafaf9] text-neutral-950";
 
 /**
  * My designs (audit findings MD1–MD4 and MD6), laid out as in the mockup. Guests get a sign-in
- * prompt; the editor's My designs dialog stays until a later change points it here.
+ * prompt. The editor's More → My designs saves the design, then comes here.
  */
 export default async function DashboardPage() {
   const session = await auth();
