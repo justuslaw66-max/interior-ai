@@ -24,7 +24,7 @@ type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
 };
 
 async function frameLivingEastWall(page: Page) {
-  const navigator = page.getByRole("region", { name: "Room view navigator" });
+  const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
@@ -121,7 +121,7 @@ async function setLivingEastWallAngle(
     direction *
       Math.tan(THREE_DEGREES_TO_RADIANS * angleDeg) *
       normalDistance;
-  await dragNavigatorHandle(page, "Drag view center", targetX, targetY);
+  await dragNavigatorHandle(page, "Drag view centre", targetX, targetY);
   await dragNavigatorHandle(page, "Drag camera position", cameraX, cameraY);
   await page.waitForTimeout(300);
 }
@@ -439,7 +439,7 @@ async function wallPaintColorMetrics(
 async function rapidOrbitGridLeakMetrics(
   page: Page
 ): Promise<RapidOrbitFrame[]> {
-  const navigator = page.getByRole("region", { name: "Room view navigator" });
+  const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
@@ -706,14 +706,14 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -855,14 +855,14 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 },
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -956,14 +956,14 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -1045,14 +1045,14 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });

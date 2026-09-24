@@ -108,7 +108,7 @@ export function ConsumerMeasurementPreferenceRegion({
       {!ready ? (
         <>
           <MeasurementPreferencePlaceholder dark={dark} />
-          <span className="sr-only" role="status">Loading display units.</span>
+          <span className="sr-only" role="status">Loading units…</span>
         </>
       ) : (
         <ReadyMeasurementPreference dark={dark} canEditPlanGeometry={canEditPlanGeometry}

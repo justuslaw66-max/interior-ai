@@ -193,7 +193,7 @@ export default function ItemCartDrawer({
             <div>
               <p className="text-xl">No items selected</p>
               <p className="mt-1 text-sm">
-                Add products from the catalog or imported furniture panel.
+                Add products from the catalogue or imported furniture panel.
               </p>
             </div>
           </div>

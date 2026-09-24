@@ -110,7 +110,7 @@ const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   detail: string;
   shortcut: string;
 }> = [
-  { id: "rectangle_wall", label: "Outline room", detail: "Fastest start", shortcut: "F" },
+  { id: "rectangle_wall", label: "Rectangle room", detail: "Fastest start", shortcut: "F" },
   { id: "straight_wall", label: "Custom shape", detail: "Click corners", shortcut: "B" },
 ];
 
@@ -284,7 +284,7 @@ export default function FloorPlanUploadPanel({
           disabled={disabled}
           onClick={() => dialog.openWorkspace(FLOOR_PLAN_IMPORT_ACTION_ID)}
         >
-          Import
+          Upload
         </button>
       </div>
 
@@ -293,7 +293,7 @@ export default function FloorPlanUploadPanel({
         id={FLOOR_PLAN_FILE_INPUT_ACTION_ID}
         type="file"
         data-testid="floor-plan-upload-input"
-        aria-label="Choose a floor plan to import"
+        aria-label="Floor plan file"
         accept={ACCEPTED_PLAN_FILE_TYPES}
         className="sr-only"
         onChange={(event) => {
@@ -338,10 +338,10 @@ export default function FloorPlanUploadPanel({
                   : "block text-xs font-semibold text-neutral-800"
               }
             >
-              Open import workspace
+              Open floor plan upload
             </span>
             <span className={`${subtleClass} mt-0.5 block`}>
-              Review the source at full size without covering your design.
+              See your floor plan at full size without covering your design.
             </span>
           </span>
           <span aria-hidden="true" className="shrink-0 text-lg">
@@ -357,7 +357,7 @@ export default function FloorPlanUploadPanel({
               Upload a floor-plan image, PDF, DXF, IFC, or DWG
             </div>
             <div className={`${subtleClass} mt-1`}>
-              Imports are analyzed in a separate review workspace and never
+              Your floor plan is read in a separate window and never
               placed over the design you are currently editing.
             </div>
           </div>
@@ -380,10 +380,10 @@ export default function FloorPlanUploadPanel({
                     : "text-xs font-semibold text-neutral-800"
                 }
               >
-                Source reference
+                Floor plan image
               </div>
               <div className={subtleClass}>
-                Locked visual reference; it is not editable room geometry.
+                A locked tracing guide, not editable walls or rooms.
               </div>
             </div>
             <button
@@ -403,7 +403,7 @@ export default function FloorPlanUploadPanel({
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">
-              <span className={subtleClass}>Plan visibility</span>
+              <span className={subtleClass}>Image opacity</span>
               <span className={subtleClass}>{Math.round(underlay.opacity * 100)}%</span>
             </div>
             <input
@@ -495,7 +495,7 @@ export default function FloorPlanUploadPanel({
                 <div className={subtleClass}>
                   {canTraceRooms
                     ? traceRoomHint
-                    : "Set the uploaded plan scale before drawing over it."}
+                    : "Set scale on your floor plan before drawing over it."}
                 </div>
               </div>
               <button
@@ -734,12 +734,12 @@ export default function FloorPlanUploadPanel({
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
-                  Trace opening
+                  Doors & windows
                 </div>
                 <div className={subtleClass}>
                   {canTraceOpenings
                     ? "Click along a wall for a door or window."
-                    : "Draw a room before adding openings."}
+                    : "Draw a room before adding doors or windows."}
                 </div>
               </div>
               <button
@@ -749,14 +749,14 @@ export default function FloorPlanUploadPanel({
                 disabled={disabled || !canTraceOpenings}
                 onClick={() => onTraceOpeningModeChange?.(!traceOpeningMode)}
               >
-                {traceOpeningMode ? "Done" : "Opening"}
+                {traceOpeningMode ? "Done" : "Trace"}
               </button>
             </div>
 
             {traceOpeningMode && (
               <div className="mt-3 space-y-2">
                 <div className={subtleClass}>
-                  Opening points: {traceOpeningPointCount}/2
+                  Points: {traceOpeningPointCount}/2
                 </div>
                 <div className="flex items-center gap-2">
                   <select
@@ -837,7 +837,7 @@ export default function FloorPlanUploadPanel({
                     })}
                   </select>
                   {pdfPageChanging && (
-                    <span className={subtleClass}>Rendering...</span>
+                    <span className={subtleClass}>Rendering…</span>
                   )}
                   {!canSelectPdfPage && !pdfPageChanging && (
                     <span className={subtleClass}>Re-upload PDF to switch pages.</span>

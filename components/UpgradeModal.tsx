@@ -91,7 +91,7 @@ export function UpgradeModal({
             {isUpgrading ? "Opening secure checkout…" : `Start Pro monthly — ${priceLabel}`}
           </button>
           <p className="text-xs text-gray-500">
-            Clean PDFs, multi-angle images, and Pro planning controls.
+            Clean PDFs, multi-angle images, and Pro tools.
           </p>
           <button
             onClick={onClose}

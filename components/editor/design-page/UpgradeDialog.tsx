@@ -78,7 +78,7 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
         >
           {state.contentVariant === "unlock_pro_exports" ? (
             <div data-testid="upgrade-variant-unlock-pro-exports">
-              <div className="font-medium text-neutral-900">Best for active projects</div>
+              <div className="font-medium text-neutral-900">Best for ongoing design work</div>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-neutral-600">
                 <li>Clean PDF exports without watermark</li>
                 <li>Up to four image angles and clean presentation packs</li>
@@ -100,7 +100,7 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
                 <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
                   <div className="font-semibold text-neutral-900">Pro</div>
                   <div className="mt-1">Clean PDF and image exports</div>
-                  <div>Pro planning controls</div>
+                  <div>Pro tools</div>
                 </div>
               </div>
               <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">

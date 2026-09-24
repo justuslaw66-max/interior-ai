@@ -33,7 +33,7 @@ const markup = renderToStaticMarkup(
     onChange: () => undefined,
   })
 );
-assert.match(markup, /^<div role="tablist" aria-label="Millwork outputs"/);
+assert.match(markup, /^<div role="tablist" aria-label="Built-in outputs"/);
 assert.equal(markup.match(/role="tab"/g)?.length, 6);
 assert.match(
   markup,
@@ -69,7 +69,7 @@ assert.match(outputsPanelSource, /<CabinetOutputTabs/);
 assert.match(detailedViewSource, /<CabinetStudioOutputsPanel\b/);
 assert.doesNotMatch(
   `${studioSource}\n${detailedViewSource}`,
-  /aria-label="Millwork outputs"|handleOutputTabKeyDown/,
+  /aria-label="Built-in outputs"|handleOutputTabKeyDown/,
   "The studio shell must not regain output-tab navigation behavior."
 );
 

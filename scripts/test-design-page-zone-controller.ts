@@ -188,7 +188,7 @@ assert.ok(
 );
 assert.match(
   controllerSource,
-  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("auto_create_seating_zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("Create seating area"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
   "Automatic creation should reconcile auto zones and preserve its active-room update, history, and selection behavior."
 );
 assert.match(

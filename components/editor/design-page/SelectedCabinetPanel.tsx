@@ -97,7 +97,7 @@ export function SelectedCabinetPanel({
                   : "sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur"
               }
             >
-              Selected Millwork
+              Selected built-in
             </div>
             <div className={showDesignerTheme ? "text-neutral-100" : "text-neutral-900"}>
               <div className="text-sm font-semibold">
@@ -164,7 +164,7 @@ export function SelectedCabinetPanel({
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.center}
                   >
-                    Center
+                    Centre
                   </button>
                   <button
                     type="button"
@@ -748,7 +748,7 @@ export function SelectedCabinetPanel({
                 disabled={!canEdit || !canUseCabinetryStudio}
                 onClick={actions.edit}
               >
-                <span data-testid="edit-placed-cabinet">Edit Millwork</span>
+                <span data-testid="edit-placed-cabinet">Edit built-in</span>
               </button>
               <button
                 type="button"
@@ -760,7 +760,7 @@ export function SelectedCabinetPanel({
                 disabled={!canEdit}
                 onClick={actions.delete}
               >
-                Delete Millwork
+                Delete built-in
               </button>
             </div>
           </div>

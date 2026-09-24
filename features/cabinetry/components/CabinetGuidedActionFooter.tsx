@@ -134,7 +134,7 @@ export function CabinetGuidedActionFooter({
                   ? "Saving…"
                   : mode === "create"
                     ? "Save as template"
-                    : "Save design"}
+                    : "Save built-in"}
               </button>
             ) : null}
             {canPlaceInPlan ? (

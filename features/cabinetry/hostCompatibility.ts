@@ -36,7 +36,7 @@ export function resolveCabinetTemplateHostCompatibility(
       status: "compatible",
       requiredHostType,
       supportedHostTypes,
-      message: `${space.label} can host this flexible millwork template.`,
+      message: `${space.label} can host this flexible built-in template.`,
     };
   }
   if (supportedHostTypes.includes(requiredHostType)) {

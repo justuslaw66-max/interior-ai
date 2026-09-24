@@ -27,8 +27,8 @@ function UnavailableCompareCard({
       <div className="text-xs font-semibold text-neutral-900">Product unavailable</div>
       <div className="mt-1 text-[11px] text-neutral-500">
         {item.reason === "variant"
-          ? "The selected variant is no longer available in the public catalog."
-          : "This product is no longer available in the public catalog."}
+          ? "The selected variant is no longer available in the public catalogue."
+          : "This product is no longer available in the public catalogue."}
       </div>
       <button
         type="button"

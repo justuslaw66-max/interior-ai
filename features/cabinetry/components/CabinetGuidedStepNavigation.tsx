@@ -19,7 +19,7 @@ export function CabinetGuidedStepNavigation({
   onStepChange: (index: number) => void;
 }) {
   return (
-    <nav aria-label="Guided millwork steps" className="mb-7 grid grid-cols-6 gap-1 sm:gap-2">
+    <nav aria-label="Guided built-in steps" className="mb-7 grid grid-cols-6 gap-1 sm:gap-2">
       {CABINET_GUIDED_STEPS.map((step, index) => {
         const StepIcon = step.icon;
         const isActive = index === currentStepIndex;

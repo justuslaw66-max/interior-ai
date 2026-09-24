@@ -208,7 +208,7 @@ test.describe("2. Editor Correctness", () => {
     await page.keyboard.press("Enter");
 
     const picker = page.getByTestId("starter-floor-plan-picker");
-    const pickerHeading = page.getByRole("heading", { name: "Choose a floor plan" });
+    const pickerHeading = page.getByRole("heading", { name: "Choose a template" });
     await expect(picker).toBeVisible();
     await expect(pickerHeading).toBeFocused();
 

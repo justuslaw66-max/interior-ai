@@ -241,7 +241,7 @@ export function useDesignPageZoneController({
         catalogItems,
       });
 
-      history.begin("auto_create_seating_zone");
+      history.begin("Create seating area");
 
       setDesignSnapshot((previous) =>
         updateActiveRoomZones(previous, nextZones)

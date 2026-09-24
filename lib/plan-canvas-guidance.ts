@@ -61,7 +61,7 @@ function resolveCalibrationGuidance(pointCount: number): PlanCanvasGuidance {
   }
 
   return {
-    title: "Set plan scale",
+    title: "Set scale",
     detail: "Pick two points on a wall with a known real length.",
     label: "Scale",
     tone: "active",
@@ -157,7 +157,7 @@ function resolveOpeningGuidance(params: {
     return {
       title: `Place ${openingLabel}`,
       detail: "Click the wall where it belongs.",
-      label: "Opening",
+      label: params.kind === "window" ? "Window" : "Door",
       tone: "active",
     };
   }
@@ -166,15 +166,15 @@ function resolveOpeningGuidance(params: {
     return {
       title: `Finish ${openingLabel}`,
       detail: "Pick the other end along the same wall.",
-      label: "Opening",
+      label: params.kind === "window" ? "Window" : "Door",
       tone: "active",
     };
   }
 
   return {
     title: `Trace ${openingLabel}`,
-    detail: "Pick one end of the opening on the plan.",
-    label: "Opening",
+    detail: `Pick one end of the ${openingLabel} on the plan.`,
+    label: params.kind === "window" ? "Window" : "Door",
     tone: "active",
   };
 }
@@ -215,8 +215,8 @@ export function resolvePlanCanvasGuidance(
 
   if (params.floorPlanUnderlay && !params.floorPlanUnderlay.calibration) {
     return {
-      title: "Set plan scale",
-      detail: "Calibrate the upload before tracing rooms from it.",
+      title: "Scale needed",
+      detail: "Set scale on your floor plan before tracing rooms over it.",
       label: "Scale",
       tone: "active",
       action: "scale",
@@ -225,7 +225,7 @@ export function resolvePlanCanvasGuidance(
 
   if (params.hasConnectionBlockers) {
     return {
-      title: "Add doorway link",
+      title: "Add a door between rooms",
       detail: "Connect adjacent rooms before furnishing the full plan.",
       label: "Fix needed",
       tone: "blocked",

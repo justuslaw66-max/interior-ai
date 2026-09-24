@@ -24,7 +24,7 @@ const PresentExportProfessionalPlanControls = dynamic(
     ssr: false,
     loading: () => (
       <div role="status" aria-live="polite" className="rounded-lg border border-gray-200/70 p-3 text-xs text-gray-500">
-        Loading professional plan controls…
+        Loading detailed options…
       </div>
     ),
   }
@@ -220,7 +220,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 ? "designer-text-primary mb-2 text-sm font-semibold"
                 : "mb-2 text-sm font-semibold text-gray-800"
             }>
-              Camera Views
+              Saved views
             </h3>
             <div className="space-y-2">
               <EditorViewToggle
@@ -255,7 +255,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                       : "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
                   }
                 >
-                  Named camera view
+                  View name
                 </label>
                 <div className="grid grid-cols-[1fr_auto] gap-2">
                   <input
@@ -505,11 +505,11 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     }
                     onClick={actions.onEnableSimplePlanControls}
                   >
-                    Simple controls
+                    Simple
                   </button>
                   <button
                     aria-disabled={!canUseAdvancedPlanControls}
-                    title={!canUseAdvancedPlanControls ? "Upgrade to Pro to use advanced plan controls" : undefined}
+                    title={!canUseAdvancedPlanControls ? "Upgrade to Pro for layers, doors & windows, and themes" : undefined}
                     className={
                       !simplePlanControls
                         ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
@@ -519,7 +519,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     }
                     onClick={actions.onEnableProPlanControls}
                   >
-                    Pro controls
+                    Detailed
                   </button>
                 </div>
 
@@ -531,7 +531,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                         : "rounded-lg bg-gray-100 p-3 text-xs text-gray-600"
                     }
                   >
-                    Simple mode keeps the plan clean. Use Pro controls for layers, doors/windows, and theme tuning.
+                    Simple keeps the plan clean. Choose Detailed for layers, doors & windows, and theme tuning.
                   </div>
                 ) : (
                   <PresentExportProfessionalPlanControls
@@ -712,16 +712,16 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 ? "designer-text-primary mb-2 text-sm font-semibold"
                 : "mb-2 text-sm font-semibold text-gray-800"
             }>
-              Client Handoff
+              Share
             </h3>
             <button
               id={PRESENT_EXPORT_CREATE_SHARE_ACTION_ID} data-testid="create-share"
               className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-none hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
               disabled={sharingDesign || !designId}
               onClick={actions.onCreateShareLink}
-              title={!designId ? "Save your design first to create a share link" : ""}
+              title={!designId ? "Save your design first to share it" : ""}
             >
-              {sharingDesign ? "Creating link..." : shareToken ? "🔗 Copy Share Link" : "🔗 Create Share Link"}
+              {sharingDesign ? "Creating link…" : shareToken ? "Copy link" : "Create link"}
             </button>
             {!designId && (
               <div className={
@@ -729,7 +729,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                   ? "text-xs text-neutral-400"
                   : "text-xs text-gray-500"
               }>
-                💡 Save your design first to create a share link
+                Save your design first to share it
               </div>
             )}
             {shareToken && (
@@ -794,7 +794,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={isExporting || !sceneReady}
               onClick={actions.onExportImages}
             >
-              {isExporting ? "Exporting..." : "📸 Export Images"}
+              {isExporting ? "Exporting…" : "📸 Export Images"}
             </button>
             <button
               className={
@@ -805,7 +805,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={isPdfExporting || !sceneReady}
               onClick={actions.onExportPdf}
             >
-              {isPdfExporting ? "Generating..." : "📄 Export PDF"}
+              {isPdfExporting ? "Generating…" : "📄 Export PDF"}
             </button>
             <button
               className={
@@ -816,7 +816,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={aiNotesLoading || !hasItems}
               onClick={actions.onGenerateAiNotes}
             >
-              {aiNotesLoading ? "Generating..." : "✨ AI Notes"}
+              {aiNotesLoading ? "Generating…" : "✨ AI Notes"}
             </button>
           </div>
 

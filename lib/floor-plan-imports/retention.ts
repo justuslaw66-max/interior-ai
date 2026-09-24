@@ -464,7 +464,7 @@ export class PrismaFloorPlanRetentionService {
             statusChangedAt: input.now,
             progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
             errorMessage:
-              "Private floor-plan source retention expired before the import finished",
+              "Your uploaded file reached its deletion date before processing finished",
             leaseToken: null,
             leaseOwner: null,
             leaseExpiresAt: null,

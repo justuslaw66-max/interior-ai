@@ -92,7 +92,7 @@ export async function executeSaveCurrentAndStartNewPlan({
     confirmPendingReplacement();
     clearHistory();
     clearPlanAnnotations();
-    showToast("Current design saved. New plan started.");
+    showToast("Current design saved. New design started.");
   } finally {
     inFlight.current = false;
     setStarting(false);
@@ -131,7 +131,7 @@ export function useDesignPageNewPlanController({
     setViewMode("2d");
     setDesignPanelOpen(true);
     setDesignPanelCollapsed(false);
-    showToast("Search by address or choose a floor plan template");
+    showToast("Search by address or choose a template");
   }, [
     closeMyDesigns,
     goPlan,

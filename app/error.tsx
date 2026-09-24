@@ -22,7 +22,7 @@ export default function GlobalError({
         <h1 className="text-xl font-semibold text-neutral-900">Something went wrong</h1>
         <p className="mt-2 text-sm text-neutral-600">
           Your saved design data has not been removed. Retry this screen; if the
-          problem continues, return to your dashboard and reopen the design.
+          problem continues, return to My designs and reopen the design.
         </p>
         <div className="mt-5 flex justify-center gap-2">
           <button
@@ -36,7 +36,7 @@ export default function GlobalError({
             href="/dashboard"
             className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800"
           >
-            Dashboard
+            My designs
           </a>
         </div>
       </section>

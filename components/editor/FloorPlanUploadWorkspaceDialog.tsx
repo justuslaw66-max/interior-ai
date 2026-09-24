@@ -47,10 +47,10 @@ function WorkspaceHeader({
         <div className={dark
           ? "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300"
           : "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700"}>
-          Import workspace
+          Private upload
         </div>
         <h2 id="floor-plan-import-dialog-title" className="truncate text-lg font-semibold sm:text-xl">
-          Import a floor plan
+          Upload floor plan
         </h2>
         <p className={`${subtleClass} hidden sm:block`}>
           Upload once. AI builds an editable 2D and 3D design.
@@ -61,7 +61,7 @@ function WorkspaceHeader({
           data-floor-plan-workspace-focus="primary" className={buttonClass}
           disabled={disabled} onClick={onChooseFile}>Choose file</button>
         <button ref={closeButtonRef} id={FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID}
-          type="button" aria-label="Close floor-plan import"
+          type="button" aria-label="Close floor plan upload"
           className={dark
             ? "designer-control flex h-10 w-10 items-center justify-center rounded-full border text-xl text-neutral-100 hover:bg-white/10"
             : "flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-xl text-neutral-700 hover:bg-neutral-100"}

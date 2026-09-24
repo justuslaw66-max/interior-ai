@@ -164,7 +164,7 @@ export function registerPlacementTests() {
       await page.getByTestId("cabinet-dimension-width").fill("1200");
       await page.getByTestId("cabinet-input-front-material").selectOption("matte_black_laminate");
       const updatePlacedMillwork = page.getByRole("button", {
-        name: "Update Placed Millwork",
+        name: "Update in plan",
         exact: true,
       });
       await expect(updatePlacedMillwork).toBeEnabled();
@@ -423,7 +423,7 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-position", beforePosition);
       await expect(placedCabinet).toHaveAttribute("data-rotation-y", beforeRotation);
 
-      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+      await page.getByRole("button", { name: "2D", exact: true }).click();
       await expect(layoutDebug).toHaveAttribute("data-view-mode", "2d");
       await expect(layoutDebug).toHaveAttribute("data-plan-2d-camera-valid", "true");
       await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(

@@ -75,5 +75,5 @@ export function resolveEditorCapabilities(
 }
 
 export function getEditorPlanLabel(plan?: Plan | string | null): string {
-  return plan === "pro" ? "Pro plan" : "Free plan";
+  return plan === "pro" ? "Pro" : "Free";
 }

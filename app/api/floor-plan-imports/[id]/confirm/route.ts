@@ -32,7 +32,7 @@ export async function POST(
   const title =
     body && typeof body === "object" && typeof (body as Record<string, unknown>).title === "string"
       ? (body as Record<string, unknown>).title!.toString().trim().slice(0, 160)
-      : "Imported floor plan";
+      : "Uploaded floor plan";
   const expectedCandidateVersion =
     body && typeof body === "object"
       ? (body as Record<string, unknown>).candidateVersion
@@ -104,7 +104,7 @@ export async function POST(
       return error("The floor-plan candidate is not bound to its uploaded source", 409);
     }
     canonicalDesign = canonicalFloorPlanToDesignSnapshot(compiled.document, {
-      title: title || "Imported floor plan",
+      title: title || "Uploaded floor plan",
       sourceJobId: id,
       sourceAssetSha256: job.sourceAsset.sha256,
       orientationConfirmed: true,
@@ -189,8 +189,8 @@ export async function POST(
       })(),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Invalid canonical floor plan";
-    return error(message, 409);
+    console.error("Floor-plan candidate could not become a design", cause);
+    return error("This floor plan couldn't be turned into a design. Review it and try again.", 409);
   }
 
   const user = await prisma.user.findUnique({

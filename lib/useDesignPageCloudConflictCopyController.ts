@@ -27,6 +27,7 @@ import type {
   DesignPageCloudWriteQueue,
 } from "@/lib/design-page-cloud-write-queue";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import {
   snapshotToLegacyApi,
   storedToSnapshot,
@@ -253,9 +254,7 @@ function recordFailure(
   error: unknown,
   copyCreated: boolean,
 ) {
-  const detail = error instanceof Error
-    ? error.message
-    : "The local copy could not be saved to the cloud.";
+  const detail = userFacingErrorMessage(error, "The local copy could not be saved to the cloud.");
   const message = copyCreated
     ? `A cloud copy was created but was not activated. ${detail}`
     : detail;

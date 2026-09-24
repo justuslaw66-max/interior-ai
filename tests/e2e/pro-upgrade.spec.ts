@@ -67,7 +67,7 @@ test.describe("Pro Upgrade Flow", () => {
 
       await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
       await expect(page.getByRole("button", { name: /Download PDF(?: \(Pro\))?/i })).toBeVisible();
-      await expect(page.getByRole("heading", { name: "Practical Checks" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Practical checks" })).toBeVisible();
       await expect(page.getByText(/Measurements: 12 m2 captured across 1 room/i)).toBeVisible();
     } finally {
       if (designId) {

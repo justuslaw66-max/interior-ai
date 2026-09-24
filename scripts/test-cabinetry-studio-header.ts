@@ -62,7 +62,7 @@ const detailedMarkup = renderToStaticMarkup(
   })
 );
 assert.match(detailedMarkup, /^<div/);
-assert.match(detailedMarkup, /Edit custom cabinetry/);
+assert.match(detailedMarkup, /Edit a built-in/);
 assert.match(
   detailedMarkup,
   /data-testid="cabinet-experience-guided" aria-pressed="false"/

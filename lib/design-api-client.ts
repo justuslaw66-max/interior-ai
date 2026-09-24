@@ -1,4 +1,5 @@
 import type { legacyApiToSnapshot } from "@/lib/room-persistence";
+import { UserFacingError } from "@/lib/user-facing-error";
 
 const MAX_RESPONSE_BYTES = 6 * 1024 * 1024;
 const DEFAULT_TIMEOUT_MS = 20_000;
@@ -15,7 +16,7 @@ export type DesignApiErrorKind =
   | "invalid_response"
   | "server";
 
-export class DesignApiError extends Error {
+export class DesignApiError extends UserFacingError {
   constructor(
     message: string,
     readonly kind: DesignApiErrorKind,

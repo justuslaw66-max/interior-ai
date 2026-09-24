@@ -737,7 +737,7 @@ export function useDesignPageCabinetry({
               includeInCheckout: false,
             };
           }),
-        "Update cabinet"
+        "Update built-in"
       );
 
       if (!nextItems) return false;
@@ -750,7 +750,7 @@ export function useDesignPageCabinetry({
       }
       updateSelection(new Set([instanceId]), instanceId);
       if (options.closeStudio) setStudio(null);
-      showToast("Millwork updated");
+      showToast("Built-in updated");
       return true;
     },
     [
@@ -771,7 +771,7 @@ export function useDesignPageCabinetry({
         return updateCabinetItemDefinition(studio.instanceId, definition);
       }
 
-      showToast("Millwork definition ready");
+      showToast("Built-in ready");
       return false;
     },
     [canUseStudio, showToast, studio, updateCabinetItemDefinition]
@@ -913,7 +913,7 @@ export function useDesignPageCabinetry({
       const nextItems = commitItemsToRoom(
         room.id,
         (previous) => [...previous, item],
-        "Place cabinet",
+        "Place built-in",
         { activateRoom: true }
       );
       if (!nextItems) {
@@ -937,7 +937,7 @@ export function useDesignPageCabinetry({
       });
       openedAtRef.current = null;
       setStudio(null);
-      showToast("Millwork placed");
+      showToast("Built-in placed");
       return true;
     },
     [
@@ -981,7 +981,7 @@ export function useDesignPageCabinetry({
   );
 
   const moveSelectedToPosition = useCallback(
-    (targetX: number, targetZ: number, actionLabel = "Move millwork") => {
+    (targetX: number, targetZ: number, actionLabel = "Move built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
       if (isDesigner && selected.item.locked) return;
       const { item, planningDimensionsMm } = selected;
@@ -1058,7 +1058,7 @@ export function useDesignPageCabinetry({
   );
 
   const centerSelected = useCallback(() => {
-    moveSelectedToPosition(0, 0, "Center millwork");
+    moveSelectedToPosition(0, 0, "Centre built-in");
   }, [moveSelectedToPosition]);
 
   const nudgeSelected = useCallback(
@@ -1067,7 +1067,7 @@ export function useDesignPageCabinetry({
       moveSelectedToPosition(
         selected.item.position[0] + deltaX,
         selected.item.position[2] + deltaZ,
-        "Nudge millwork"
+        "Nudge built-in"
       );
     },
     [moveSelectedToPosition, selected]
@@ -1104,7 +1104,7 @@ export function useDesignPageCabinetry({
       );
       return candidateDistance < bestDistance ? candidate : best;
     }, candidates[0]);
-    moveSelectedToPosition(targetX, targetZ, "Snap millwork to wall");
+    moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");
   }, [
     canEdit,
     isDesigner,
@@ -1116,7 +1116,7 @@ export function useDesignPageCabinetry({
   ]);
 
   const setSelectedRotation = useCallback(
-    (targetRotationY: number, actionLabel = "Rotate millwork") => {
+    (targetRotationY: number, actionLabel = "Rotate built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
       if (isDesigner && selected.item.locked) return;
       const planningDimensionsMm = selected.planningDimensionsMm;
@@ -1202,14 +1202,14 @@ export function useDesignPageCabinetry({
       const deltaRadians = (deltaDegrees * Math.PI) / 180;
       setSelectedRotation(
         getCabinetRotationY(selected.item) + deltaRadians,
-        `Rotate millwork ${deltaDegrees > 0 ? "+" : ""}${deltaDegrees} deg`
+        `Rotate built-in ${deltaDegrees > 0 ? "+" : ""}${deltaDegrees} deg`
       );
     },
     [selected, setSelectedRotation]
   );
 
   const resetSelectedRotation = useCallback(() => {
-    setSelectedRotation(0, "Reset millwork rotation");
+    setSelectedRotation(0, "Reset built-in rotation");
   }, [setSelectedRotation]);
 
   const exportSelected = useCallback(

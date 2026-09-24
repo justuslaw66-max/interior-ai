@@ -31,7 +31,7 @@ assert.doesNotMatch(search, /floorPlanRequest(?:=1|\b)/);
 assert.doesNotMatch(search, /new URLSearchParams\(\{\s*q:/);
 assert.match(client, /method:\s*"POST"/);
 assert.match(client, /"Content-Type":\s*"application\/json"/);
-assert.match(search, /Upload your floor plan/);
+assert.match(search, /Upload floor plan/);
 assert.doesNotMatch(search, /Request (?:noted|this address)|requestRecorded/);
 
 assert.match(route, /export async function POST/);

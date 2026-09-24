@@ -13,7 +13,7 @@ export function registerEditingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const planStartTemplate = page.getByTestId("plan-start-template");
     let duplicateRoomCount = "3 rooms";
     let deleteRoomCount = "2 rooms";
@@ -120,7 +120,7 @@ export function registerEditingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
@@ -227,7 +227,7 @@ export function registerEditingTests() {
     await page.waitForLoadState("domcontentloaded");
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await page.getByTestId("plan-tool-door").click();
     await expect(page.getByTestId("plan-canvas-guidance")).toContainText("Click the wall where it belongs.");
     await expectPlan2DProjectionHealthy(page);

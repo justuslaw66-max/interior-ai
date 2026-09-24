@@ -15,6 +15,7 @@ import type { Plan } from "@/lib/plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import type { ExportStylePreset } from "@/lib/useDesignPagePlanState";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type ExportUpgradeReason = "designer" | "export_images" | "export_pdf" | null;
 
@@ -435,9 +436,7 @@ export function useDesignPageExport({
       const message =
         error instanceof Error && error.name === "AbortError"
           ? "PDF generation timed out. Please try again."
-          : error instanceof Error
-            ? error.message
-            : "PDF export failed";
+          : userFacingErrorMessage(error, "PDF export failed. Please try again.");
       console.error("PDF export error:", error);
       showToast(message);
     } finally {

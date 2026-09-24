@@ -40,19 +40,19 @@ assert.equal(
 );
 assert.equal(
   roomSetupOpeningStatus({ hasConnectionBlockers: false, planSettingsReady: true, openingCount: 2 }),
-  "2 door/window openings placed."
+  "2 doors and windows placed."
 );
 assert.equal(
   roomSetupOpeningStatus({ hasConnectionBlockers: false, planSettingsReady: true, openingCount: 0 }),
-  "No doors or windows placed yet. Add only the openings that affect fit."
+  "No doors or windows placed yet. Add only the ones that affect fit."
 );
 assert.equal(
   roomSetupOpeningStatus({ hasConnectionBlockers: true, planSettingsReady: false, openingCount: 0 }),
-  "A connected room still needs a doorway. Add one before furnishing."
+  "A connected room still needs a door. Add one before furnishing."
 );
 assert.equal(planPaletteOpeningSummary(false, 0), "");
-assert.equal(planPaletteOpeningSummary(true, 2), "2 openings placed.");
-assert.equal(planPaletteOpeningSummary(true, 0), "Openings optional.");
+assert.equal(planPaletteOpeningSummary(true, 2), "2 doors and windows placed.");
+assert.equal(planPaletteOpeningSummary(true, 0), "Doors and windows are optional.");
 assert.match(
   read("components/editor/ConsumerRoomSetupCard.tsx"),
   /roomSetupOpeningStatus\(\{ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount \}\)/,

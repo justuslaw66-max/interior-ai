@@ -470,7 +470,7 @@ export function DesignPageSelectionInspector({
               }
               onClick={actions.item.center}
             >
-              Center
+              Centre
             </button>
             <button
               type="button"

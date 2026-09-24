@@ -345,7 +345,7 @@ const pinnedDoor: RoomOpening2D = { id: "pinned-door", roomId: "entry", wall: "w
 assert.deepEqual(
   validateDesignPageOpeningPlacement(pinnedDoor, [], pinnedDoor.id,
     { rooms: pinnedRooms, planWidthMeters: 10, planDepthMeters: 10 }),
-  { valid: false, reason: "opening_too_wide", label: "Opening is too wide for this wall" },
+  { valid: false, reason: "opening_too_wide", label: "Too wide for this wall" },
   "Precondition: 0.9 m of door plus two 0.18 m corner clearances does not fit the 1.2 m these rooms "
   + "share, so no centre on that host is legal."
 );

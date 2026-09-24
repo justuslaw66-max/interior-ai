@@ -112,7 +112,7 @@ export default function PlanSvgDownload({
   const getSerializedSvg = () => {
     const source = document.getElementById(targetId);
     if (!(source instanceof SVGSVGElement)) {
-      setMessage("2D plan is not ready yet.");
+      setMessage("The 2D drawing is not ready yet.");
       return null;
     }
 
@@ -189,7 +189,7 @@ export default function PlanSvgDownload({
           disabled={isPngExporting}
           className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPngExporting ? "Preparing PNG..." : "Download 2D PNG"}
+          {isPngExporting ? "Preparing PNG…" : "Download 2D PNG"}
         </button>
         <button
           type="button"

@@ -112,7 +112,7 @@ export default function CatalogCard({
             data-testid={`catalog-favorite-toggle-${item.id}`}
             aria-pressed={isFavorite}
           >
-            {isFavorite ? "Saved" : "Save"}
+            {isFavorite ? "Favourited" : "Favourite"}
           </button>
         </div>
         <div className="grid grid-cols-3 gap-1.5">

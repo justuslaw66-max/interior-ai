@@ -153,8 +153,8 @@ export default function FloorPropertiesPanel({
     description: string;
   }> = [
     { mode: "blank", label: "Blank floor", description: "Start with one empty room." },
-    { mode: "layout", label: "Duplicate layout", description: "Copy rooms, openings, furniture." },
-    { mode: "walls", label: "Walls only", description: "Copy rooms and openings only." },
+    { mode: "layout", label: "Duplicate layout", description: "Copy rooms, doors, windows and furniture." },
+    { mode: "walls", label: "Walls only", description: "Copy rooms, doors and windows only." },
   ];
   const commitFloorCreation = (mode: FloorCreationMode) => {
     if (pendingAddDirection === "upper") onAddUpperFloor(mode);
@@ -604,7 +604,7 @@ export default function FloorPropertiesPanel({
               Delete {activeFloorLabel}?
             </div>
             <div className={dark ? "mt-0.5 text-[10px]" : "mt-0.5 text-[10px] text-red-700"}>
-              This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and linked openings.
+              This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and their doors and windows.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               <button
@@ -674,7 +674,7 @@ export default function FloorPropertiesPanel({
             <span className={fieldLabelClass}>Visible in 3D</span>
           </label>
           <label className="flex items-center gap-2 text-xs">
-            <span className={fieldLabelClass}>Color</span>
+            <span className={fieldLabelClass}>Colour</span>
             <input
               type="color"
               value={activeRoomCeilingColor}

@@ -76,7 +76,7 @@ export function useDesignPageBetaStartController({
     actions.goPlan();
     actions.setViewMode("2d");
     actions.setDesignPanelOpen(true);
-    actions.showToast("Choose a room template in the Plan panel");
+    actions.showToast("Choose a template in the Plan panel");
     dismiss();
   }, [actions, dismiss]);
 
@@ -87,7 +87,7 @@ export function useDesignPageBetaStartController({
     actions.setViewMode("2d");
     actions.activateFloorPlanRoomTrace(true);
     actions.setDesignPanelOpen(true);
-    actions.showToast("Draw room walls in 2D plan mode");
+    actions.showToast("Draw room walls in 2D");
     dismiss();
   }, [actions, dismiss]);
 
@@ -98,7 +98,7 @@ export function useDesignPageBetaStartController({
     actions.setViewMode("2d");
     actions.setDesignPanelOpen(true);
     actions.showToast(
-      "Upload a plan from the Plan panel, then calibrate and trace"
+      "Upload your floor plan from the Plan panel, then set scale and trace"
     );
     dismiss();
   }, [actions, dismiss]);
@@ -107,7 +107,7 @@ export function useDesignPageBetaStartController({
     track("launch_path_selected", { path: "ai", source: "beta_start" });
     actions.goAiDesign();
     actions.setDesignPanelOpen(true);
-    actions.showToast("Complete the AI brief, then generate a layout");
+    actions.showToast("Fill in the brief, then choose Suggest a layout");
     dismiss();
   }, [actions, dismiss]);
 

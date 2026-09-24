@@ -27,14 +27,14 @@ export function buildExportReadinessItems({
 }: BuildExportReadinessItemsParams): ExportReadinessItem[] {
   return [
     {
-      label: "2D plan",
+      label: "2D drawing",
       value: roomCount > 0 ? `${roomCount} room${roomCount === 1 ? "" : "s"}` : "No rooms",
       ready: roomCount > 0,
     },
     {
-      label: "Doors/windows",
+      label: "Doors & windows",
       value: hasRoomConnectionBlockers
-        ? "Review links"
+        ? "Review connections"
         : openingCount > 0
           ? `${openingCount} placed`
           : "Optional",

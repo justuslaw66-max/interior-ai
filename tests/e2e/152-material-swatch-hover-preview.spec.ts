@@ -22,7 +22,7 @@ test.describe("152. Material Swatch Detail Preview", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     await selectEditorWorkspace(page, "editor-workflow-furnish");
-    const catalogSearch = page.getByRole("textbox", { name: "Search catalog products" });
+    const catalogSearch = page.getByRole("textbox", { name: "Search catalogue products" });
     await expect(catalogSearch).toBeVisible({ timeout: 20000 });
     await catalogSearch.fill("Owen 3 Seater");
 

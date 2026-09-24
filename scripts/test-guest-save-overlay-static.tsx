@@ -47,8 +47,8 @@ assert.doesNotMatch(closed, /role="dialog"|guest-save-prompt-primary/);
 const open = render({ reason: "save" });
 assert.equal((open.match(/role="dialog"/g) ?? []).length, 1);
 assert.match(open, /aria-modal="true"/);
-assert.match(open, /Save and sync this design/);
-assert.match(open, /aria-label="Close save and sync prompt"/);
+assert.match(open, /Sign in to save this design/);
+assert.match(open, /aria-label="Close sign-in prompt"/);
 
 let continuationCalls = 0;
 const firstSession = createGuestPromptSession(
@@ -89,7 +89,7 @@ assert.equal(continuationCalls, 1);
 
 assert.match(
   promptSource,
-  /<EditorDialog[\s\S]*?title="Save and sync this design\?"[\s\S]*?manageBackground/,
+  /<EditorDialog[\s\S]*?title="Sign in to save this design"[\s\S]*?manageBackground/,
   "Guest Save Prompt must compose the shared managed EditorDialog lifecycle."
 );
 assert.match(promptSource, /reason: GuestPromptReason \| null/);

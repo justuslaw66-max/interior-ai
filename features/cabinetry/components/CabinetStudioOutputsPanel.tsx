@@ -143,7 +143,7 @@ export function CabinetStudioOutputsPanel({
                 data-testid="cabinet-validation-success"
                 className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800"
               >
-                Cabinet parameters are valid.
+                Built-in parameters are valid.
               </p>
             ) : (
               <div className="grid gap-2">
@@ -217,14 +217,14 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadGlb}
                 icon="download"
-                label={busyAction === "download" ? "Exporting..." : "Download GLB"}
+                label={busyAction === "download" ? "Exporting…" : "Download GLB"}
               />
               <OutputButton
                 testId="cabinet-download-source-definition"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadSource}
                 label={
-                  busyAction === "source" ? "Exporting..." : "Download Source JSON"
+                  busyAction === "source" ? "Exporting…" : "Download Source JSON"
                 }
               />
               <OutputButton
@@ -233,14 +233,14 @@ export function CabinetStudioOutputsPanel({
                 onClick={() => sourceImportInputRef.current?.click()}
                 icon="upload"
                 label={
-                  busyAction === "import" ? "Importing..." : "Import Source JSON"
+                  busyAction === "import" ? "Importing…" : "Import Source JSON"
                 }
               />
               <OutputButton
                 testId="cabinet-download-documentation"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDocumentation}
-                label={busyAction === "docs" ? "Exporting..." : "Download Docs CSV"}
+                label={busyAction === "docs" ? "Exporting…" : "Download Docs CSV"}
               />
               <OutputButton
                 testId="cabinet-download-shop-drawing-svg"
@@ -248,7 +248,7 @@ export function CabinetStudioOutputsPanel({
                 onClick={onDownloadShopDrawing}
                 label={
                   busyAction === "shopDrawing"
-                    ? "Exporting..."
+                    ? "Exporting…"
                     : "Download Shop Drawing SVG"
                 }
               />
@@ -257,21 +257,21 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDxf}
                 label={
-                  busyAction === "dxf" ? "Exporting..." : "Download Fabrication DXF"
+                  busyAction === "dxf" ? "Exporting…" : "Download Fabrication DXF"
                 }
               />
               <OutputButton
                 testId="cabinet-download-fabrication-rfq"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadRfq}
-                label={busyAction === "rfq" ? "Exporting..." : "Download RFQ JSON"}
+                label={busyAction === "rfq" ? "Exporting…" : "Download RFQ JSON"}
               />
               <OutputButton
                 testId="cabinet-download-package-json"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadPackage}
                 label={
-                  busyAction === "package" ? "Exporting..." : "Download Package JSON"
+                  busyAction === "package" ? "Exporting…" : "Download Package JSON"
                 }
               />
             </div>
@@ -292,7 +292,7 @@ export function CabinetStudioOutputsPanel({
                   onClick={onSaveAsCopy}
                   icon="copy"
                   muted
-                  label={busyAction === "copy" ? "Copying..." : "Save as copy"}
+                  label={busyAction === "copy" ? "Copying…" : "Save as copy"}
                 />
               ) : null}
               {mode === "create" || (!canPlaceInPlan && canSaveDefinition) ? (
@@ -304,10 +304,10 @@ export function CabinetStudioOutputsPanel({
                   strongBorder
                   label={
                     busyAction === "save"
-                      ? "Saving..."
+                      ? "Saving…"
                       : mode === "create"
-                        ? "Save as Reusable Template"
-                        : "Save Definition"
+                        ? "Save as template"
+                        : "Save built-in"
                   }
                 />
               ) : null}
@@ -324,10 +324,10 @@ export function CabinetStudioOutputsPanel({
                   onClick={onPlaceInPlan}
                 >
                   {busyAction === "place"
-                    ? "Generating..."
+                    ? "Generating…"
                     : mode === "edit"
-                      ? "Update Placed Millwork"
-                      : "Place in Plan"}
+                      ? "Update in plan"
+                      : "Place in plan"}
                 </button>
               ) : null}
             </div>
@@ -351,14 +351,14 @@ function busyActionLabel(
     dxf: "Exporting fabrication DXF...",
     rfq: "Exporting fabrication RFQ...",
     package: "Exporting package...",
-    copy: "Creating a separate millwork copy...",
-    save: "Saving millwork...",
+    copy: "Creating a separate copy…",
+    save: "Saving built-in…",
   };
   return (
     labels[action] ??
     (mode === "edit"
-      ? "Updating placed millwork..."
-      : "Generating millwork asset...")
+      ? "Updating placed built-in…"
+      : "Generating built-in…")
   );
 }
 

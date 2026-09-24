@@ -193,7 +193,7 @@ export function useDesignPageSelectionCoordinator({
         planAnnotationsRef.current.some((entry) => entry.id === overlayId);
       if (!overlayExists) return false;
 
-      history.begin("Delete plan overlay");
+      history.begin(deletedOpening ? `Delete ${deletedOpening.kind}` : "Delete plan item");
       const canonicalDelete = deletedOpening
         ? canonicalTopology.actions.removeOpening(overlayId)
         : "not_canonical";

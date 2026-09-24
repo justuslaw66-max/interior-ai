@@ -131,7 +131,7 @@ export default function CatalogCategoryTabs({
       >
         <span className="min-w-0">
           <span className="block truncate text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-            {selectedGroup?.label ?? "Catalog"}
+            {selectedGroup?.label ?? "Catalogue"}
           </span>
           <span className="block truncate text-sm font-semibold text-neutral-950">{selectedLabel}</span>
         </span>

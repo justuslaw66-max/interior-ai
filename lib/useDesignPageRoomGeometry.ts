@@ -13,9 +13,9 @@ import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import { commitCanonicalTopologyMutationToSnapshotV2 } from "@/lib/floor-plan-topology-editor";
 import {
   applyFloorPlanMeasuredPropertyMutationV2,
-  FloorPlanMeasuredPropertyMutationErrorV2,
   type FloorPlanConsumerMeasurementEvidenceV2,
 } from "@/lib/floor-plan-measured-property-mutations";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import {
@@ -135,7 +135,7 @@ export function useDesignPageRoomGeometry({
             currentSnapshot,
             result
           );
-          runHistoryTransaction("Edit canonical floor wall height", () => {
+          runHistoryTransaction("Edit floor wall height", () => {
             designSnapshotRef.current = committed.snapshot;
             setDesignSnapshot(committed.snapshot);
             setPlanOpenings(committed.openings);
@@ -147,11 +147,7 @@ export function useDesignPageRoomGeometry({
               : "Wall height saved as user confirmed"
           );
         } catch (cause) {
-          showToast(
-            cause instanceof FloorPlanMeasuredPropertyMutationErrorV2
-              ? cause.message
-              : "The canonical floor height could not be changed"
-          );
+          showToast(userFacingErrorMessage(cause, "The wall height couldn't be changed."));
         }
         return;
       }
@@ -322,7 +318,7 @@ export function useDesignPageRoomGeometry({
             currentSnapshot,
             result
           );
-          runHistoryTransaction("Edit canonical slab thickness", () => {
+          runHistoryTransaction("Edit slab thickness", () => {
             designSnapshotRef.current = committed.snapshot;
             setDesignSnapshot(committed.snapshot);
             setPlanOpenings(committed.openings);
@@ -334,11 +330,7 @@ export function useDesignPageRoomGeometry({
               : "Slab thickness saved as user confirmed"
           );
         } catch (cause) {
-          showToast(
-            cause instanceof FloorPlanMeasuredPropertyMutationErrorV2
-              ? cause.message
-              : "The canonical slab thickness could not be changed"
-          );
+          showToast(userFacingErrorMessage(cause, "The slab thickness couldn't be changed."));
         }
         return;
       }
@@ -452,7 +444,7 @@ export function useDesignPageRoomGeometry({
           ceilingColor: safeColor,
         },
       });
-      history.begin("Edit ceiling color");
+      history.begin("Edit ceiling colour");
       designSnapshotRef.current = nextSnapshot;
       setDesignSnapshot(nextSnapshot);
       history.commit();

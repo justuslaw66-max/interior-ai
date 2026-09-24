@@ -397,7 +397,7 @@ assert.deepEqual(
   {
     kind: "Built-in",
     title: "Kitchen island",
-    detail: "Plan fixture",
+    detail: "Drawn in 2D",
     metrics: ["1,800 mm x 800 mm", "90°"],
   },
   "A selected built-in should take precedence over annotations and rooms."

@@ -54,7 +54,7 @@ export default function DuplicateDesignButton({
         : null;
 
     if (!endpoint) {
-      setMessage("Unable to duplicate this design.");
+      setMessage("Unable to make a copy of this design.");
       return;
     }
 
@@ -64,7 +64,7 @@ export default function DuplicateDesignButton({
       const res = await fetch(endpoint, { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const errorMessage = data?.error ?? "Duplication failed";
+        const errorMessage = data?.error ?? "Could not make a copy";
         track("duplicate_design_failed", {
           source,
           status: res.status,
@@ -81,7 +81,7 @@ export default function DuplicateDesignButton({
           status: 200,
           error: "Missing id in duplicate response",
         });
-        setMessage("Duplication failed: invalid response");
+        setMessage("Could not make a copy. Please try again.");
         return;
       }
 
@@ -111,10 +111,10 @@ export default function DuplicateDesignButton({
         disabled={busy}
       >
         {busy
-          ? "Duplicating..."
+          ? "Making a copy…"
           : status === "unauthenticated" && unauthenticatedChildren
             ? unauthenticatedChildren
-            : (children ?? "Duplicate")}
+            : (children ?? "Make a copy")}
       </button>
       {message && (
         <span className="text-xs text-red-600" role="alert">

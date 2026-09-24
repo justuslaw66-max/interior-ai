@@ -7,6 +7,7 @@ import {
 } from "@/lib/floor-plan-import-client";
 import type { ConsumerFloorPlanImportJob, ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
 import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanImportHistoryProps = {
   dark?: boolean;
@@ -82,7 +83,7 @@ export default function FloorPlanImportHistory({
         headers: { Accept: "application/json" },
       });
       const payload = (await response.json().catch(() => ({}))) as ImportListResponse;
-      if (!response.ok) throw new Error(payload.error ?? "Imports could not be loaded");
+      if (!response.ok) throw new UserFacingError(payload.error ?? "Your uploads could not be loaded");
       const page = Array.isArray(payload.jobs) ? payload.jobs : [];
       setJobs((current) => append ? [...current, ...page] : page);
       if (!append) {
@@ -94,7 +95,7 @@ export default function FloorPlanImportHistory({
       }
       setNextCursor(typeof payload.nextCursor === "string" ? payload.nextCursor : null);
     } catch (cause) {
-      setErrorMessage(cause instanceof Error ? cause.message : "Imports could not be loaded");
+      setErrorMessage(userFacingErrorMessage(cause, "Your uploads could not be loaded"));
     } finally {
       if (!silent) {
         setLoading(false);
@@ -162,7 +163,7 @@ export default function FloorPlanImportHistory({
         error?: string;
         job?: { id?: string };
       };
-      if (!response.ok) throw new Error(payload.error ?? `Unable to ${action} this import`);
+      if (!response.ok) throw new UserFacingError(payload.error ?? `Unable to ${action} this upload`);
       if (action === "retry" && typeof payload.job?.id === "string") {
         onResume(payload.job.id);
       } else if (activeJobId === job.id) {
@@ -179,7 +180,7 @@ export default function FloorPlanImportHistory({
       }
       await load(null, false);
     } catch (cause) {
-      setErrorMessage(cause instanceof Error ? cause.message : `Unable to ${action} this import`);
+      setErrorMessage(userFacingErrorMessage(cause, `Unable to ${action} this upload`));
     } finally {
       setActionJobId(null);
     }
@@ -207,7 +208,7 @@ export default function FloorPlanImportHistory({
         skippedBusyCount?: number;
       };
       if (!response.ok) {
-        throw new Error(payload.error ?? "Unable to delete these imports");
+        throw new UserFacingError(payload.error ?? "Unable to delete these uploads");
       }
       if (
         scope === "all" ||
@@ -221,15 +222,13 @@ export default function FloorPlanImportHistory({
       await load(null, false);
       if ((payload.skippedBusyCount ?? 0) > 0) {
         setErrorMessage(
-          `${payload.deletedCount ?? 0} imports were deleted. ${
+          `${payload.deletedCount ?? 0} uploads were deleted. ${
             payload.skippedBusyCount
           } still finishing a processing step can be deleted shortly.`
         );
       }
     } catch (cause) {
-      setErrorMessage(
-        cause instanceof Error ? cause.message : "Unable to delete these imports"
-      );
+      setErrorMessage(userFacingErrorMessage(cause, "Unable to delete these uploads"));
     } finally {
       setBulkDeleting(false);
     }
@@ -263,9 +262,9 @@ export default function FloorPlanImportHistory({
       onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
       onKeyDownCapture={guardConfirmationEscape}
     >
-      <summary className="cursor-pointer text-xs font-semibold">My floor-plan imports</summary>
+      <summary className="cursor-pointer text-xs font-semibold">Your uploads</summary>
       <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
-        Resume a review after refreshing or leaving the editor. Imports remain private to your account.
+        Resume a review after refreshing or leaving the editor. Uploads stay private to your account.
       </p>
       {!loading && jobs.length > 0 ? (
         <div
@@ -326,14 +325,14 @@ export default function FloorPlanImportHistory({
             className="text-[11px] font-semibold"
           >
             {bulkDeleteScope === "all"
-              ? "Delete all imports from your history?"
+              ? "Delete all uploads from your history?"
               : `Delete ${selectedJobIds.size} selected ${
-                  selectedJobIds.size === 1 ? "import" : "imports"
+                  selectedJobIds.size === 1 ? "upload" : "uploads"
                 }?`}
           </p>
           <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
-            Generated designs will stay. Unfinished imports will be stopped
-            when safe, and uploaded sources continue to follow your private
+            Generated designs will stay. Unfinished uploads will be stopped
+            when safe, and uploaded files continue to follow your private
             retention settings.
           </p>
           <div className="mt-2 flex gap-1.5">
@@ -343,7 +342,7 @@ export default function FloorPlanImportHistory({
               disabled={disabled || bulkDeleting}
               onClick={() => setBulkDeleteScope(null)}
             >
-              Keep imports
+              Keep uploads
             </button>
             <button
               type="button"
@@ -354,15 +353,15 @@ export default function FloorPlanImportHistory({
               {bulkDeleting
                 ? "Deleting…"
                 : bulkDeleteScope === "all"
-                  ? "Delete all imports"
-                  : "Delete selected imports"}
+                  ? "Delete all uploads"
+                  : "Delete selected uploads"}
             </button>
           </div>
         </div>
       ) : null}
-      {loading ? <p className={`mt-2 text-xs ${subtle}`}>Loading imports…</p> : null}
+      {loading ? <p className={`mt-2 text-xs ${subtle}`}>Loading uploads…</p> : null}
       {!loading && jobs.length === 0 ? (
-        <p className={`mt-2 text-xs ${subtle}`}>No previous imports yet.</p>
+        <p className={`mt-2 text-xs ${subtle}`}>No previous uploads yet.</p>
       ) : null}
       <div className="mt-2 grid gap-2">
         {jobs.map((job) => {
@@ -433,7 +432,7 @@ export default function FloorPlanImportHistory({
                 ) : null}
                 {job.status === "failed" ? (
                   <button type="button" className={secondary} disabled={disabled || busy} onClick={() => void runAction(job, "retry")}>
-                    {busy ? "Retrying…" : "Retry from source"}
+                    {busy ? "Retrying…" : "Try again"}
                   </button>
                 ) : null}
                 {CANCELLABLE_STATUSES.has(job.status) ? (
@@ -469,13 +468,13 @@ export default function FloorPlanImportHistory({
                     id={`floor-plan-delete-title-${job.id}`}
                     className="text-[11px] font-semibold"
                   >
-                    Delete this import from your history?
+                    Delete this upload from your history?
                   </p>
                   <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
                     Any design already created from it will stay. Its uploaded
-                    source continues to follow your private retention settings.
+                    file continues to follow your private retention settings.
                     {CANCELLABLE_STATUSES.has(job.status)
-                      ? " This will also stop this import."
+                      ? " This will also stop this upload."
                       : ""}
                   </p>
                   <div className="mt-2 flex gap-1.5">
@@ -485,7 +484,7 @@ export default function FloorPlanImportHistory({
                       disabled={disabled || busy}
                       onClick={() => setConfirmDeleteJobId(null)}
                     >
-                      Keep import
+                      Keep upload
                     </button>
                     <button
                       type="button"
@@ -493,7 +492,7 @@ export default function FloorPlanImportHistory({
                       disabled={disabled || busy}
                       onClick={() => void runAction(job, "delete")}
                     >
-                      {busy ? "Deleting…" : "Delete import"}
+                      {busy ? "Deleting…" : "Delete upload"}
                     </button>
                   </div>
                 </div>
@@ -504,7 +503,7 @@ export default function FloorPlanImportHistory({
       </div>
       {nextCursor ? (
         <button type="button" className={`${secondary} mt-2 w-full`} disabled={loadingMore} onClick={() => void load(nextCursor, true)}>
-          {loadingMore ? "Loading…" : "Show older imports"}
+          {loadingMore ? "Loading…" : "Show older uploads"}
         </button>
       ) : null}
       {errorMessage ? <p role="alert" className="mt-2 text-[10px] text-red-600">{errorMessage}</p> : null}

@@ -30,8 +30,8 @@ export default function FloorPlanPageSelectionPanel({
     <section data-testid="floor-plan-page-selection" data-floor-plan-workspace-state="page-selection">
       <div className="text-xs font-semibold">Choose the floor-plan page</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>
-        We ranked the pages using architectural linework, room labels, and
-        printed dimensions. Confirm one page before geometry is created.
+        We ranked the pages by their wall lines, room labels, and
+        printed dimensions. Confirm one page before your rooms are created.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {candidates.map((candidate) => {
@@ -60,7 +60,7 @@ export default function FloorPlanPageSelectionPanel({
                 // This owner-scoped route verifies both the job and asset IDs.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  alt={`Floor-plan candidate page ${candidate.pageNumber}`}
+                  alt={`Floor plan page ${candidate.pageNumber}`}
                   className="aspect-[4/3] w-full bg-white object-contain"
                   src={`/api/floor-plan-imports/${encodeURIComponent(
                     job.id
@@ -104,7 +104,7 @@ export default function FloorPlanPageSelectionPanel({
         }
         onClick={onConfirm}
       >
-        {submitting ? "Analyzing selected page…" : "Use this page"}
+        {submitting ? "Analysing selected page…" : "Use this page"}
       </button>
     </section>
   );

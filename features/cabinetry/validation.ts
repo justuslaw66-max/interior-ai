@@ -413,7 +413,7 @@ export function validateCabinetDefinition(definition: CabinetDefinition): Cabine
   const assemblyProfile = getMillworkAssemblyProfile(assemblyType, family);
 
   if (definition.units !== "mm") {
-    issues.push({ severity: "error", field: "units", message: "Cabinet dimensions must use millimeters." });
+    issues.push({ severity: "error", field: "units", message: "Cabinet dimensions must use millimetres." });
   }
   if (
     definition.requiredHostType !== undefined &&
@@ -1166,7 +1166,7 @@ export function validateCabinetDefinition(definition: CabinetDefinition): Cabine
         "fold_down_worksurface",
       ];
       if (!validComponentTypes.includes(module.millworkComponentType)) {
-        issues.push({ severity: "error", field: `${prefix}.millworkComponentType`, message: "Millwork component type is not supported." });
+        issues.push({ severity: "error", field: `${prefix}.millworkComponentType`, message: "Built-in component type is not supported." });
       }
     }
     if ((module.ceilingBeamCount ?? 0) < 0) {

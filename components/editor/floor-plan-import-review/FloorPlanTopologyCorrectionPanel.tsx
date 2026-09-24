@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import FloorPlanDimensionCorrectionFields from "./FloorPlanDimensionCorrectionFields";
 import FloorPlanOpeningCorrectionFields from "./FloorPlanOpeningCorrectionFields";
 import FloorPlanStructureCorrectionFields from "./FloorPlanStructureCorrectionFields";
@@ -68,9 +69,7 @@ export default function FloorPlanTopologyCorrectionPanel({
       );
       return true;
     } catch (cause) {
-      onError(
-        cause instanceof Error ? cause.message : "The correction was rejected."
-      );
+      onError(userFacingErrorMessage(cause, "The correction was rejected."));
       return false;
     }
   };
@@ -90,9 +89,9 @@ export default function FloorPlanTopologyCorrectionPanel({
               onChange={(event) => selectVertex(event.target.value)}
             >
               <option value="">Choose a vertex…</option>
-              {floor.vertices.map((item) => (
+              {floor.vertices.map((item, index) => (
                 <option key={item.id} value={item.id}>
-                  {item.id}
+                  Corner {index + 1}
                 </option>
               ))}
             </select>

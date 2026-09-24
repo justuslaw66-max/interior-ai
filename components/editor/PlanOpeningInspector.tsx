@@ -26,9 +26,9 @@ function OpeningHeader({ opening, roomName, dark }: {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>Opening</div>
+        <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>{opening.kind === "door" ? "Door" : "Window"}</div>
         <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-gray-500"}>
-          {opening.kind === "door" ? "Door" : "Window"} on {opening.wall} wall
+          On the {opening.wall} wall
         </div>
       </div>
       <div className={dark

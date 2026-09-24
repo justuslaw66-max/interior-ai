@@ -458,7 +458,7 @@ export function LightingSettingsControls({
             : "border-t border-neutral-200 pt-4 text-xs text-neutral-500"
         }
       >
-        Interactive visualization only; this is not certified photometric
+        Interactive visualisation only; this is not certified photometric
         analysis.
       </p>
     </div>

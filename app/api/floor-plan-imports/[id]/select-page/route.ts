@@ -118,9 +118,7 @@ export async function POST(
       { headers: { "Cache-Control": "private, no-store" } }
     );
   } catch (cause) {
-    return error(
-      cause instanceof Error ? cause.message : "Unable to select this page",
-      400
-    );
+    console.error("Floor-plan page selection failed", cause);
+    return error("Unable to select this page. Try again.", 400);
   }
 }

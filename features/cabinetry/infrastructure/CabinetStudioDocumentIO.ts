@@ -17,6 +17,7 @@ import {
   type CabinetSourceImportFileInfo,
 } from "../importPolicy";
 import type { CabinetBOMItem, CabinetDefinition } from "../types";
+import { UserFacingError } from "@/lib/user-facing-error";
 
 export type CabinetStudioExportArtifact =
   | "glb"
@@ -74,13 +75,13 @@ const exportDescriptors: Record<
   glb: {
     artifact: "glb",
     busyAction: "download",
-    successMessage: "Millwork GLB exported.",
-    fallbackError: "Unable to export cabinet GLB.",
+    successMessage: "Built-in GLB exported.",
+    fallbackError: "Unable to export built-in GLB.",
   },
   documentation_csv: {
     artifact: "documentation_csv",
     busyAction: "docs",
-    successMessage: "Millwork documentation exported.",
+    successMessage: "Built-in documentation exported.",
     fallbackError: "Unable to export documentation.",
   },
   source_definition_json: {
@@ -110,8 +111,8 @@ const exportDescriptors: Record<
   millwork_package_json: {
     artifact: "millwork_package_json",
     busyAction: "package",
-    successMessage: "Millwork package exported.",
-    fallbackError: "Unable to export millwork package.",
+    successMessage: "Built-in package exported.",
+    fallbackError: "Unable to export built-in package.",
   },
 };
 
@@ -161,7 +162,7 @@ export async function readCabinetStudioSourceDefinition(
   file: CabinetStudioSourceDefinitionFile
 ): Promise<CabinetDefinition> {
   const validation = validateCabinetSourceImportFile(file);
-  if (!validation.ok) throw new Error(validation.error);
+  if (!validation.ok) throw new UserFacingError(validation.error);
   return parseCabinetSourceDefinitionJson(await file.text());
 }
 

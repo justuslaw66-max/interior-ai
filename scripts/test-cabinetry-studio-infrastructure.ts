@@ -29,10 +29,10 @@ async function main() {
     "millwork_package_json",
   ];
   const expectedDescriptors = {
-    glb: ["download", "Millwork GLB exported.", "Unable to export cabinet GLB."],
+    glb: ["download", "Built-in GLB exported.", "Unable to export built-in GLB."],
     documentation_csv: [
       "docs",
-      "Millwork documentation exported.",
+      "Built-in documentation exported.",
       "Unable to export documentation.",
     ],
     source_definition_json: [
@@ -57,8 +57,8 @@ async function main() {
     ],
     millwork_package_json: [
       "package",
-      "Millwork package exported.",
-      "Unable to export millwork package.",
+      "Built-in package exported.",
+      "Unable to export built-in package.",
     ],
   } as const;
 

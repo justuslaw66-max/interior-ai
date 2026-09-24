@@ -9,7 +9,7 @@ export default function PublicShareError({ reset }: { reset: () => void }) {
       <div className="rounded-xl border bg-white p-6">
         <h1 className="text-lg font-semibold">Shared design could not load</h1>
         <p className="mt-1 text-sm text-neutral-600">
-          The link may still be valid. Try loading the public presentation again.
+          The link may still work. Try loading this design again.
         </p>
         <button
           type="button"
