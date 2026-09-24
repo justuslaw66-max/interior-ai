@@ -17,6 +17,13 @@ function HostWarning({
   dark: boolean;
   onChange: (id: string, patch: DesignPageOpeningMetricsPatch) => void;
 }) {
+  if (opening.canonicalHost) return (
+    <div data-testid="plan-opening-host-warning" className={warningClass(dark)}>
+      {opening.canonicalHost.pathKind === "arc"
+        ? "This opening is retained on its curved wall. Position and width editing on curves is not supported."
+        : "This opening needs a valid wall position before it can be edited."}
+    </div>
+  );
   return (
     <div data-testid="plan-opening-host-warning" className={warningClass(dark)}>
       <div className="font-semibold">{opening.kind === "door" ? "Door" : "Window"} needs wall repair</div>

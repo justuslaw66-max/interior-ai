@@ -51,7 +51,7 @@ export type FloorPlanScaleCalibration = {
   ];
 };
 
-export type FloorPlanUnderlay = {
+export type FloorPlanUnderlay = import("./floor-plan-underlay-geometry").FloorPlanReferenceDeformation & {
   id: string;
   floorId: string;
   name: string;

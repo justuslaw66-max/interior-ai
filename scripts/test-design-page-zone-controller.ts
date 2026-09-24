@@ -288,9 +288,9 @@ assert.equal(
   "Normalization and both creation paths should share one zone reconciler."
 );
 assert.equal(
-  controllerSource.match(/updateActiveRoomZones\(/g)?.length,
-  4,
-  "Every zone write path should use the shared active-room updater."
+  [controllerSource, readSource("lib/design-page-seating-zone-history.ts")].join("\n").match(/updateActiveRoomZones\(/g)?.length,
+  5,
+  "Every zone write path (normalisation, both creation paths, ungrouping, and the placement-joined seating zone) should use the shared active-room updater."
 );
 assert.doesNotMatch(
   controllerSource,

@@ -118,6 +118,26 @@ function makePage(): RegisteredPageEvidence {
 }
 
 const page = makePage();
+// A midpoint can lie exactly on a source stroke while both ends miss it.
+// These are authored detector fixtures, not recognition evidence for a client plan.
+function skewedBoundaryPage(driftPx: number): RegisteredPageEvidence {
+  const points = [{x:100,y:300},{x:600,y:300},{x:600,y:700},{x:100,y:700}];
+  const hint = points.map((p, i) => ({xRatio:p.x/1000,yRatio:(p.y+(i===0||i===3?-driftPx:driftPx))/1000}));
+  return {pageNumber:1,widthPx:1000,heightPx:1000,vectorPaths:[],text:[],
+    vectorSegments:points.map((start,i)=>({id:`observed-${i}`,pageNumber:1,start,end:points[(i+1)%4],strokeWidthPx:8,confidence:1,evidenceKind:"raster_linework"})),
+    semantics:{roomLabels:[],dimensionLabels:[],openingSymbols:[],notes:[],roomBoundaries:[{
+      label:"Authored boundary",roomType:"other",confidence:0.55,evidenceKind:"vision",points:hint,
+    }]}};
+}
+const erroneousAngle=skewedBoundaryPage(10),unchangedAngleEvidence=JSON.stringify(erroneousAngle);
+const rejectedAngle=registerVisionGuidedRoomBoundaries(erroneousAngle);
+assert.equal(rejectedAngle.diagnostics.rejectionCounts.excessiveResidual,1,"Zero midpoint error must not conceal ~10px endpoint errors.");
+assert.equal(rejectedAngle.rooms.length,0);
+assert.equal(JSON.stringify(erroneousAngle),unchangedAngleEvidence,"Checking residuals cannot rotate or rewrite source evidence.");
+assert.equal(registerVisionGuidedRoomBoundaries(skewedBoundaryPage(0)).rooms.length,1,"An aligned source-supported boundary remains usable.");
+assert.equal(registerVisionGuidedRoomBoundaries(skewedBoundaryPage(4)).rooms.length,1,"Keep the existing median/max gates, rather than imposing an unrelated threshold.");
+const downsampledAngle=skewedBoundaryPage(4);downsampledAngle.originalPixelMapping=[2,0,0,0,2,0,0,0,1];
+assert.equal(registerVisionGuidedRoomBoundaries(downsampledAngle).rooms.length,0,"A rendered4px error is8px in the original source frame and fails the existing maximum gate.");
 const visionHigh = applySemanticEvidencePrior(
   {
     ...page.semantics,

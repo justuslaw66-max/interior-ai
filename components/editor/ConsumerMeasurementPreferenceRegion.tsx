@@ -119,3 +119,13 @@ export function ConsumerMeasurementPreferenceRegion({
     </div>
   );
 }
+
+export function consumerRoomMeasurementDimensions(input: {
+  hasRooms: boolean; roomWidth: number; roomDepth: number; roomWidthInput: string; roomDepthInput: string;
+}) {
+  const dimension = (value: string, fallback: number) => {
+    const parsed = Number(value);
+    return (input.hasRooms || !Number.isFinite(parsed) || parsed <= 0 ? fallback : parsed) * 1000;
+  };
+  return { widthMm: dimension(input.roomWidthInput, input.roomWidth), depthMm: dimension(input.roomDepthInput, input.roomDepth) };
+}

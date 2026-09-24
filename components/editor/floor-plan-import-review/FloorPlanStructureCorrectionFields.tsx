@@ -152,7 +152,7 @@ export default function FloorPlanStructureCorrectionFields({
   };
 
   return (
-    <div className="grid gap-2 border-t border-neutral-200 pt-2">
+    <div data-review-controls="structure" className="grid gap-2 border-t border-neutral-200 pt-2">
       <label className={`text-[10px] ${subtleClassName}`}>
         Add or edit a structural rectangle
         <select

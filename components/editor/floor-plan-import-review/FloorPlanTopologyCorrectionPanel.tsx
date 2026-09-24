@@ -75,7 +75,7 @@ export default function FloorPlanTopologyCorrectionPanel({
   };
 
   return (
-    <details className="mt-3">
+    <details data-review-controls="vertex" className="mt-3">
       <summary className="cursor-pointer text-xs font-semibold">
         Correct walls, openings and structures
       </summary>

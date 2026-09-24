@@ -275,8 +275,8 @@ export function projectPublicFloorPlanDocumentV2(
           // but its uploader-controlled text is replaced by a semantic label.
           .filter(
             (annotation) =>
-              annotation.kind === "suggested_room" ||
-              annotation.kind === "optional_partition"
+              annotation.geometry.kind !== "source_drawing" &&
+              (annotation.kind === "suggested_room" || annotation.kind === "optional_partition")
           )
           .map((entity) => ({
             ...entity,

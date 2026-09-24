@@ -1,3 +1,5 @@
+import { projectCanonicalFloorOpenings } from "@/lib/floor-plan-opening-projection";
+import { transformSourceCalibration } from "./floor-plan-source-calibration-transform";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
   compileFloorPlanDocumentV2,
@@ -236,30 +238,6 @@ function roomPolygon(
   });
 }
 
-function midpoint(
-  start: { xMm: number; zMm: number },
-  end: { xMm: number; zMm: number }
-) {
-  return { xMm: (start.xMm + end.xMm) / 2, zMm: (start.zMm + end.zMm) / 2 };
-}
-
-function wallOrientationForRoom(
-  wall: CompiledFloorPlanWallV2,
-  bounds: { left: number; right: number; top: number; bottom: number }
-): RoomOpening2D["wall"] | null {
-  if (wall.path.kind !== "line") return null;
-  const center = midpoint(wall.start, wall.end);
-  const horizontal = Math.abs(wall.end.xMm - wall.start.xMm) >= Math.abs(wall.end.zMm - wall.start.zMm);
-  if (horizontal) {
-    return Math.abs(center.zMm - bounds.top) <= Math.abs(center.zMm - bounds.bottom)
-      ? "north"
-      : "south";
-  }
-  return Math.abs(center.xMm - bounds.left) <= Math.abs(center.xMm - bounds.right)
-    ? "west"
-    : "east";
-}
-
 function transformPoint(
   point: { xMm: number; zMm: number },
   transform: FloorPlanAddressTransform
@@ -332,18 +310,10 @@ export function applyFloorPlanAddressTransformV2(
       entry.vertex.xMm = entry.point.xMm - minX;
       entry.vertex.zMm = entry.point.zMm - minZ;
     }
-    // Registration coordinates live in the same canonical plan space as the
-    // vertices. Materialising an address transform without transforming these
-    // points would leave a verified source overlay registered to the original
-    // orientation while the saved design uses the mirrored/rotated geometry.
+    // Keep source registration and geometry in one coordinate system, including handedness.
     for (const calibration of floor.calibrations) {
-      for (const controlPoint of calibration.controlPoints) {
-        const planPoint = transformPoint(controlPoint.planMm, transform);
-        controlPoint.planMm = {
-          xMm: planPoint.xMm - minX,
-          zMm: planPoint.zMm - minZ,
-        };
-      }
+      transformSourceCalibration(calibration, (point) => transformPoint(point, transform),
+        { xMm: minX, zMm: minZ }, reversesOrientation(transform));
     }
     if (swapsPlanAxes(transform)) {
       for (const dimension of floor.dimensions) {
@@ -498,67 +468,7 @@ export function canonicalFloorPlanToDesignSnapshot(
     });
   });
 
-  const openings: RoomOpening2D[] = scene.floors.flatMap((floor) => {
-    const wallById = new Map(floor.walls.map((wall) => [wall.id, wall]));
-    const boundsByRoom = new Map(
-      floor.rooms.flatMap((room) => {
-        const outer = room.wallLoops.find((loop) => loop.kind === "outer");
-        if (!outer) return [];
-        const polygon = roomPolygon(outer, wallById);
-        if (polygon.length < 3) return [];
-        return [[room.id, {
-          left: Math.min(...polygon.map((point) => point.xMm)),
-          right: Math.max(...polygon.map((point) => point.xMm)),
-          top: Math.min(...polygon.map((point) => point.zMm)),
-          bottom: Math.max(...polygon.map((point) => point.zMm)),
-        }] as const];
-      })
-    );
-    return floor.openings.flatMap((opening) => {
-      const wall = wallById.get(opening.wallId);
-      const roomId = wall?.adjacentRoomIds[0];
-      const bounds = roomId ? boundsByRoom.get(roomId) : null;
-      if (!wall || !roomId || !bounds) return [];
-      const orientation = wallOrientationForRoom(wall, bounds);
-      if (!orientation) return [];
-      const center = midpoint(opening.start, opening.end);
-      const roomCenterX = (bounds.left + bounds.right) / 2;
-      const roomCenterZ = (bounds.top + bounds.bottom) / 2;
-      const offsetMm = Math.round(
-        orientation === "north" || orientation === "south"
-          ? center.xMm - roomCenterX
-          : center.zMm - roomCenterZ
-      );
-      const doorStyle: RoomOpening2D["doorStyle"] =
-        opening.operation === "open"
-          ? "open"
-          : opening.operation === "sliding"
-            ? "sliding"
-            : opening.operation === "folding"
-              ? "folding"
-              : "swing";
-      return [{
-        id: opening.id,
-        roomId,
-        wall: orientation,
-        offsetMm,
-        widthMm: opening.widthMm,
-        heightMm: opening.heightMm,
-        bottomMm: opening.bottomMm,
-        kind:
-          opening.kind === "window" || opening.kind === "vent" || opening.kind === "louvre"
-            ? "window"
-            : "door",
-        doorStyle,
-        canonicalWallId: opening.wallId,
-        operation: opening.operation,
-        evidence: {
-          width: opening.widthEvidence, height: opening.heightEvidence,
-          sillHeight: opening.sillHeightEvidence,
-        },
-      }];
-    });
-  });
+  const openings = scene.floors.flatMap((floor) => projectCanonicalFloorOpenings(floor, rooms));
 
   const fixedElements: FixedElement2D[] = scene.floors.flatMap((floor) =>
     floor.structures.map((structure) => {

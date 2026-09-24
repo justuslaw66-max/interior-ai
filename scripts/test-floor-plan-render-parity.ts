@@ -632,9 +632,12 @@ const sceneRegionRegistration = read(
 
 assert.match(
   structureLayer,
-  /const canonicalResolution = useMemo\([\s\S]*?compileCanonicalFloorPlanRenderModel\([\s\S]*?state\.plan\.canonicalDocument,[\s\S]*?state\.plan\.canonicalGeometryHash/,
+  /const canonicalResolution = useMemo\([\s\S]*?resolveCanonicalSceneModel\([\s\S]*?state\.plan\.canonicalDocument,[\s\S]*?state\.plan\.canonicalGeometryHash/,
   "The scene boundary should compile a canonical snapshot exactly once."
 );
+assert.match(read("lib/floor-plan-scene-model-resolution.ts"),
+  /compileCanonicalFloorPlanRenderModel\(document, geometryHash\)/,
+  "The shared scene resolver must preserve the canonical hash integrity check.");
 assert.match(
   structureLayer,
   /<RoomRenderer2D[\s\S]*?canonicalPlan=\{canonicalPlan\}/,
