@@ -17,6 +17,21 @@ function stopPointer(event: ThreeEvent<PointerEvent>) {
   event.stopPropagation(); event.nativeEvent.stopImmediatePropagation();
 }
 
+// A move clamps the opening centre to [halfWidth, wallLengthMm - halfWidth]. On a wall no
+// longer than the opening itself that range is a single point, so the drag would capture the
+// pointer and never emit a different centre -- the stuck door 8bd6a150 refused in
+// RoomRenderer2D. Emitted centres are rounded to whole millimetres, so travel below one
+// millimetre commits nothing either.
+const MINIMUM_MOVE_TRAVEL_MM = 1;
+
+function openingCanMoveOnWall(wallLengthMm: number, widthMm: number) {
+  return wallLengthMm - widthMm >= MINIMUM_MOVE_TRAVEL_MM;
+}
+
+function wallLengthMmOf(input: Pick<Input, "wallStart" | "wallEnd">) {
+  return Math.hypot(input.wallEnd.xMm - input.wallStart.xMm, input.wallEnd.zMm - input.wallStart.zMm);
+}
+
 type Session = { pointerId: number; target: CaptureTarget; nativeTarget: Element; revisionId: string; anchor: OpeningGestureAnchor; draft: CanonicalOpeningDragMetricsV2 | null };
 
 function useOpeningPointerOffset(input: Input) {
@@ -95,6 +110,20 @@ export function useCanonicalOpeningDrag(input: Input) {
     sessionRef.current = drag;
     current.onDragStateChange?.(true, drag.anchor.mode);
   }, [offsetAt]);
+  // The refusal sits ahead of the capture (and its stopPropagation), so a pinned opening still
+  // propagates: the camera keeps the gesture and onSelectTarget still opens the inspector.
+  const beginMove = useCallback((event: ThreeEvent<PointerEvent>) => {
+    const { enabled, opening } = latestRef.current, wallLengthMm = wallLengthMmOf(latestRef.current);
+    if (!enabled || !openingCanMoveOnWall(wallLengthMm, opening.widthMm)) return;
+    begin(null, event);
+  }, [begin]);
+  // Resize is deliberately not gated on room to move: an opening that fills its wall can still be
+  // made narrower, and that is how a user gives it room to move.
+  const beginResize = useCallback((edge: "start" | "end", event: ThreeEvent<PointerEvent>) => {
+    const { enabled } = latestRef.current;
+    if (!enabled) return;
+    begin(edge, event);
+  }, [begin]);
   const move = useCallback((event: ThreeEvent<PointerEvent>) => {
     const drag = sessionRef.current, current = latestRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
@@ -118,8 +147,7 @@ export function useCanonicalOpeningDrag(input: Input) {
       if (current.enabled && drag.revisionId === current.revisionId && drag.draft) current.onEdit?.(current.opening.id, drag.draft, drag.anchor.mode);
     } finally { cancel(); }
   }, [move, cancel, markRelease]);
-  return { previewRef, beginMove: (event: ThreeEvent<PointerEvent>) => begin(null, event),
-    beginResize: (edge: "start" | "end", event: ThreeEvent<PointerEvent>) => begin(edge, event), move, finish, cancel: (event: ThreeEvent<PointerEvent>) => { stopPointer(event); cancel(); } };
+  return { previewRef, beginMove, beginResize, move, finish, cancel: (event: ThreeEvent<PointerEvent>) => { stopPointer(event); cancel(); } };
 }
 
 function captureOpeningGesture(current: Input, event: ThreeEvent<PointerEvent>, edge: "start" | "end" | null, pointer: number): Session | null {

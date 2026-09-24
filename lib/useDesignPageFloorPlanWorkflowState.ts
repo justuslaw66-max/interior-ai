@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import type { DisplayUnit } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { formatFloorPlanCalibrationSummary } from "@/lib/floor-plan-calibration";
 import type {
   FloorPlanDrawAngleLockMode,
   FloorPlanDrawRoomMode,
@@ -17,12 +19,7 @@ type ResetFloorPlanInteractionOptions = {
   resetCalibrationDistance?: boolean;
 };
 
-function getFloorPlanCalibrationSummary(underlay: FloorPlanUnderlay | null) {
-  if (!underlay?.calibration) return null;
-  return `${underlay.calibration.referenceLengthMeters}m set (${underlay.widthMeters} x ${underlay.depthMeters}m)`;
-}
-
-export function useDesignPageFloorPlanWorkflowState() {
+export function useDesignPageFloorPlanWorkflowState(measurementUnit: DisplayUnit) {
   const [floorPlanUnderlay, setFloorPlanUnderlay] = useState<FloorPlanUnderlay | null>(null);
   const [floorPlanCalibrationMode, setFloorPlanCalibrationMode] = useState(false);
   const [floorPlanCalibrationPoints, setFloorPlanCalibrationPoints] = useState<FloorPlanPoint[]>([]);
@@ -117,8 +114,8 @@ export function useDesignPageFloorPlanWorkflowState() {
   }, []);
 
   const floorPlanCalibrationSummary = useMemo(
-    () => getFloorPlanCalibrationSummary(floorPlanUnderlay),
-    [floorPlanUnderlay]
+    () => formatFloorPlanCalibrationSummary(floorPlanUnderlay, measurementUnit),
+    [floorPlanUnderlay, measurementUnit]
   );
 
   const blankGridRoomDrawActive = floorPlanTraceRoomMode && !floorPlanUnderlay;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { createDefaultPlanOpenings } from "@/lib/design-page-opening-dimensions";
 import type { EditorAnnotation2D, FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import {
   PLAN_LAYER_PRESETS,
@@ -88,12 +89,12 @@ export function useDesignPagePlanState() {
   const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
   const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
   const [planSettingsLoaded, setPlanSettingsLoaded] = useState(false);
-  const [planOpeningsStorageState, setPlanOpeningsStorageState] =
-    useState<"pending" | "missing" | "present">("pending");
 
-  useEffect(() => {
+  // Load in the layout phase: the editor hydrates inside a Suspense boundary, so updates from
+  // its passive mount effects get idle priority and could land seconds after the room renders.
+  useLayoutEffect(() => {
     if (typeof window === "undefined") return;
-    let openingsStorageState: "missing" | "present" = "missing";
+    let storedOpeningsFound = false;
     try {
       const storedTheme = localStorage.getItem("plan_theme");
       if (storedTheme === "consumer" || storedTheme === "pro") {
@@ -134,7 +135,7 @@ export function useDesignPagePlanState() {
       if (annotations) setPlanAnnotations(annotations);
 
       const storedOpenings = localStorage.getItem("plan_openings");
-      openingsStorageState = storedOpenings === null ? "missing" : "present";
+      storedOpeningsFound = storedOpenings !== null;
       const openings = readJsonArray<RoomOpening2D>(storedOpenings);
       if (openings) setPlanOpenings(openings);
 
@@ -143,7 +144,8 @@ export function useDesignPagePlanState() {
     } catch {
       // ignore malformed storage payloads
     } finally {
-      setPlanOpeningsStorageState(openingsStorageState);
+      // Seed once, with the load: saved or deleted openings keep the key present.
+      if (!storedOpeningsFound) setPlanOpenings(createDefaultPlanOpenings());
       setPlanSettingsLoaded(true);
     }
   }, []);
@@ -226,7 +228,6 @@ export function useDesignPagePlanState() {
     setPlanGuidedActionsEnabled,
     planGuidedActionsChoiceSeen,
     setPlanGuidedActionsChoiceSeen,
-    planOpeningsStorageState,
     planSettingsLoaded,
     planMeasurementUnitReady: planSettingsLoaded,
   };

@@ -178,7 +178,7 @@ function normalizeWallPanelIdToken(value: string): string {
     .replace(/^_+|_+$/g, "") || "unknown";
 }
 
-function getWallSurfacePanelId({
+export function getWallSurfacePanelId({
   room,
   segment,
   startAnchor,
@@ -314,7 +314,7 @@ export function offsetRoomOutlinePoints(room: HousePlanRoom2D, offset: number) {
   const outline = getRoomOutlinePoints(room);
   const openPoints = outline.slice(0, -1);
 
-  if (offset <= 0.001 || openPoints.length < 3) {
+  if (Math.abs(offset) <= 0.001 || openPoints.length < 3) {
     return outline;
   }
 
@@ -362,7 +362,7 @@ export function buildShapeFromOutlinePoints(
 }
 
 export function buildHorizontalRoomGeometry(room: HousePlanRoom2D, edgeOffset = 0) {
-  const points = edgeOffset > 0.001
+  const points = Math.abs(edgeOffset) > 0.001
     ? offsetRoomOutlinePoints(room, edgeOffset)
     : getRoomOutlinePoints(room);
   const geometry = new THREE.ShapeGeometry(

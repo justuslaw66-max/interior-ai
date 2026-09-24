@@ -1,6 +1,17 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import { syncGestureTransaction } from "@/lib/design-page-gesture-history";
+import { SCENE_ITEM_DRAG_COMMAND_ID } from "@/lib/design-page-item-commands";
+import { createRoom, type RoomSnapshot } from "@/lib/room-types";
+import {
+  useDesignPageHistory,
+  type DesignPageHistorySnapshot,
+  type UseDesignPageHistoryInput,
+} from "@/lib/useDesignPageHistory";
 
 const root = process.cwd();
 const historyManagerSource = readFileSync(join(root, "lib/historyManager.ts"), "utf8");
@@ -135,6 +146,29 @@ assert.doesNotMatch(
   /history\.begin\("Apply plan template"\)/,
   "Persistence hydration must not leave an uncommitted user-history transaction."
 );
+const floorPlanUnderlayControllerSource = readFileSync(
+  join(root, "lib/useDesignPageFloorPlanUnderlayController.ts"),
+  "utf8"
+);
+assert.equal(
+  floorPlanUnderlayControllerSource.match(/history\.commit\(\)/g)?.length ?? 0,
+  floorPlanUnderlayControllerSource.match(/history\.begin\(/g)?.length ?? 0,
+  "Every floor-plan history commit must close a transaction the same controller began."
+);
+const applyPlanTemplateSource = floorPlanUnderlayControllerSource.slice(
+  floorPlanUnderlayControllerSource.indexOf("const applyPlanTemplate = useCallback"),
+  floorPlanUnderlayControllerSource.indexOf("const confirmPendingTemplateReplacement")
+);
+assert.match(
+  applyPlanTemplateSource,
+  /const replacePlanDocument = \([\s\S]*?runHistoryTransaction\("Apply plan template", \(\) => \{[\s\S]*?setDesignSnapshot\(snapshot\);\s*\}\);/,
+  "Applying a template must replace the plan inside one undoable history transaction."
+);
+assert.equal(
+  applyPlanTemplateSource.match(/replacePlanDocument\(/g)?.length,
+  2,
+  "Canonical and generated templates should both use the transactional plan replacement."
+);
 assert.match(
   documentHistoryWorkspaceSource,
   /useDesignPageDocumentRefSynchronization\(\{[\s\S]*?useDesignPageDocumentHistoryController\(\{/,
@@ -159,5 +193,186 @@ assert.ok(
     ),
   "The document facade should register room ownership before scene read models."
 );
+
+const canvasInteractionControllerSource = readFileSync(
+  join(root, "lib/useDesignPageCanvasInteractionController.ts"),
+  "utf8"
+);
+const editorInteractionRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPageEditorInteractionRegistration.ts"),
+  "utf8"
+);
+assert.doesNotMatch(
+  canvasInteractionControllerSource,
+  /history\.(?:begin|commit)\(/,
+  "Room moves, room resizes and overlay drags must open and close their transactions through "
+  + "syncGestureTransaction, not by driving the history manager directly."
+);
+assert.match(
+  canvasInteractionControllerSource,
+  /syncGestureTransaction\(\s*history,\s*flushCoalescedHistoryTransaction,/,
+  "The canvas controller must hand syncGestureTransaction the design page's coalesced flush."
+);
+for (const gesture of [
+  /syncGestureHistory\(roomDragHistoryActiveRef, dragging, "Move room"\)/,
+  /syncGestureHistory\(roomResizeHistoryActiveRef, resizing, "Resize room"\)/,
+  /syncGestureHistory\(\s*overlayDragHistoryActiveRef,\s*dragging,\s*getPlanOverlayMoveHistoryLabel\(kind\)\s*\)/,
+]) {
+  assert.match(
+    canvasInteractionControllerSource,
+    gesture,
+    "Every canvas gesture should bracket its history transaction the same way."
+  );
+}
+assert.match(
+  editorInteractionRegistrationSource,
+  /const \{ flushCoalescedHistoryTransaction \} = documentRoom\.actions\.history;[\s\S]*?canvas: \{ history, flushCoalescedHistoryTransaction \}/,
+  "The canvas controller must receive the design page's own coalesced-transaction flush."
+);
+
+// Behavioural: syncGestureTransaction against the real design-page history. The hook renders once
+// on the server so its callbacks can be driven directly; runCoalescedHistoryTransaction schedules
+// its idle commit on window, which node does not define.
+if (typeof window === "undefined") Object.assign(globalThis, { window: globalThis });
+
+type DesignPageHistory = ReturnType<typeof useDesignPageHistory>;
+
+function DesignPageHistoryProbe({
+  adapters,
+  onRender,
+}: {
+  adapters: UseDesignPageHistoryInput["adapters"];
+  onRender: (designHistory: DesignPageHistory) => void;
+}) {
+  const designHistory = useDesignPageHistory({ adapters });
+  onRender(designHistory);
+  return null;
+}
+
+function renderDesignPageHistory() {
+  const room = createRoom("gesture-room", "Gesture room");
+  let snapshot: DesignPageHistorySnapshot = {
+    designSnapshot: { version: 3, rooms: [room], activeRoomId: room.id },
+    planAnnotations: [],
+    planFixedElements: [],
+    planOpenings: [],
+    floorPlanUnderlay: null,
+  };
+  const editRoom = (edit: (target: RoomSnapshot) => RoomSnapshot) => {
+    snapshot = {
+      ...snapshot,
+      designSnapshot: {
+        ...snapshot.designSnapshot,
+        rooms: snapshot.designSnapshot.rooms.map(edit),
+      },
+    };
+  };
+  const probe: { designHistory: DesignPageHistory | null } = { designHistory: null };
+  renderToStaticMarkup(
+    createElement(DesignPageHistoryProbe, {
+      adapters: {
+        captureSnapshot: () => snapshot,
+        restoreSnapshot: (next) => {
+          snapshot = next;
+        },
+        onHistoryChange: () => undefined,
+      },
+      onRender: (designHistory) => {
+        probe.designHistory = designHistory;
+      },
+    })
+  );
+  assert.ok(probe.designHistory, "The design-page history should render.");
+  return {
+    designHistory: probe.designHistory,
+    room: () => {
+      const [current] = snapshot.designSnapshot.rooms;
+      assert.ok(current);
+      return current;
+    },
+    setCeilingHeight: (height: number) =>
+      editRoom((target) => ({ ...target, geometry: { ...target.geometry, height } })),
+    moveRoom: (x: number) => editRoom((target) => ({ ...target, planPosition: { x, z: 0 } })),
+  };
+}
+
+function captureHistoryWarnings(run: () => void): string[] {
+  const warnings: string[] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args.map(String).join(" "));
+  };
+  try {
+    run();
+  } finally {
+    console.warn = originalWarn;
+  }
+  return warnings;
+}
+
+{
+  const fixture = renderDesignPageHistory();
+  const { history, runCoalescedHistoryTransaction, flushCoalescedHistoryTransaction } =
+    fixture.designHistory;
+  const gestureActive = { current: false };
+  const setMoving = (active: boolean) =>
+    syncGestureTransaction(
+      history,
+      flushCoalescedHistoryTransaction,
+      gestureActive,
+      active,
+      "Move room"
+    );
+  const warnings = captureHistoryWarnings(() => {
+    runCoalescedHistoryTransaction("Change ceiling height", () => fixture.setCeilingHeight(2.9));
+    setMoving(true);
+    fixture.moveRoom(1.5);
+    setMoving(false);
+    // What the slider's idle timer does 420 ms later.
+    flushCoalescedHistoryTransaction();
+  });
+  assert.deepEqual(
+    warnings,
+    [],
+    "A gesture started inside a slider's coalesced transaction must open its own instead of "
+    + "joining the slider's and committing it."
+  );
+  assert.equal(history.getUndoName(), "Move room", "The gesture should be its own undo step.");
+  history.undo();
+  assert.deepEqual(fixture.room().planPosition, { x: 0, z: 0 }, "Undo should revert the gesture.");
+  assert.equal(fixture.room().geometry.height, 2.9, "Undoing the gesture must keep the slider edit.");
+  assert.equal(history.getUndoName(), "Change ceiling height");
+}
+
+{
+  const fixture = renderDesignPageHistory();
+  const { history, flushCoalescedHistoryTransaction } = fixture.designHistory;
+  const gestureActive = { current: false };
+  const setResizing = (active: boolean) =>
+    syncGestureTransaction(
+      history,
+      flushCoalescedHistoryTransaction,
+      gestureActive,
+      active,
+      "Resize room"
+    );
+  const warnings = captureHistoryWarnings(() => {
+    history.beginContinuousCommand({ id: SCENE_ITEM_DRAG_COMMAND_ID, description: "Move item" });
+    setResizing(true);
+    fixture.moveRoom(2);
+    setResizing(false);
+    history.commitContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+  });
+  assert.deepEqual(
+    warnings,
+    ['Transaction already active: "Move item". Ignoring begin("Resize room")'],
+    "A gesture whose begin() is refused should report it once and do nothing else."
+  );
+  assert.equal(
+    history.getUndoName(),
+    "Move item",
+    "A gesture must never commit a transaction it did not open."
+  );
+}
 
 console.log("design page history controller guardrails passed");

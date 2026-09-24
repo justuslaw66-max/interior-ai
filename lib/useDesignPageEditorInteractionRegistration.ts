@@ -49,9 +49,10 @@ export function useDesignPageEditorInteractionRegistration({
   const { cameraBridge } = planViewport.boundaries;
   const snapshotDocument = documentSelection.boundaries.snapshotDocument;
   const history = documentRoom.boundaries.history.refs.history;
+  const { flushCoalescedHistoryTransaction } = documentRoom.actions.history;
   const { activeRoom, items, zones, roomWidth, roomDepth, roomHeight, wallThickness } =
     documentRoom.derived.room;
-  const { housePlan2D, planViewWidth, planViewDepth } =
+  const { housePlan2D, planViewWidth, planViewDepth, activeRoomPlanOffset } =
     documentRoom.derived.plan;
   const selectionInspection =
     planAuthoring.boundaries.selectionInspection;
@@ -97,9 +98,9 @@ export function useDesignPageEditorInteractionRegistration({
         floatingPlanOverlayStackWidthPx:
           planAuthoring.configuration.floatingOverlayStackWidthPx,
         activeRoomFloorWorldY: resolveCanonicalFloorElevationMeters(activeRoom ?? {}) ?? 0,
+        activeRoomPlanOffset,
         roomHeight,
-        planViewWidth,
-        planViewDepth,
+        planViewWidth, planViewDepth,
         min3DPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
         max3DPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
       },
@@ -114,7 +115,7 @@ export function useDesignPageEditorInteractionRegistration({
         showRuleToast,
         switchRoom: planWorkspace.actions.room.switchRoom,
       },
-      canvas: { history },
+      canvas: { history, flushCoalescedHistoryTransaction },
     },
   });
 
@@ -175,10 +176,7 @@ export function useDesignPageEditorInteractionRegistration({
       updateCameraViewFromScene();
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [
-    sceneRoom.state.scene.sceneReady,
-    updateCameraViewFromScene,
-  ]);
+  }, [sceneRoom.state.scene.sceneReady, updateCameraViewFromScene]);
 
   return {
     boundaries: { camera, tracing, presentationState, zone },

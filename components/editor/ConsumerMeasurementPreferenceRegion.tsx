@@ -13,7 +13,8 @@ type ConsumerMeasurementPreferenceRegionProps = {
   ready: boolean;
   widthMm: number;
   depthMm: number;
-  areaSquareMeters?: number;
+  /** The existing room's polygon-aware floor area; a draft uses width × depth. */
+  roomFloorAreaSqm: number;
   measurementUnit: PlanMeasurementUnit;
   onChangeUnit: (unit: PlanMeasurementUnit) => void;
   onChangeDraft: (axis: "width" | "depth", value: string) => void;
@@ -50,7 +51,7 @@ function ReadyMeasurementPreference({
   hasRooms,
   widthMm,
   depthMm,
-  areaSquareMeters,
+  roomFloorAreaSqm,
   measurementUnit,
   onChangeUnit,
   onChangeDraft,
@@ -80,7 +81,7 @@ function ReadyMeasurementPreference({
       <span className="font-semibold">Visible scale:</span>{" "}
       {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
       {formatDisplayLength(depthMm, measurementUnit)} ·{" "}
-      {formatDisplayArea(areaSquareMeters ?? (widthMm * depthMm) / 1_000_000, measurementUnit)}
+      {formatDisplayArea(hasRooms ? roomFloorAreaSqm : (widthMm * depthMm) / 1_000_000, measurementUnit)}
     </div>
   </>;
 }
@@ -92,7 +93,7 @@ export function ConsumerMeasurementPreferenceRegion({
   ready,
   widthMm,
   depthMm,
-  areaSquareMeters,
+  roomFloorAreaSqm,
   measurementUnit,
   onChangeUnit,
   onChangeDraft,
@@ -111,7 +112,7 @@ export function ConsumerMeasurementPreferenceRegion({
         </>
       ) : (
         <ReadyMeasurementPreference dark={dark} canEditPlanGeometry={canEditPlanGeometry}
-          hasRooms={hasRooms} widthMm={widthMm} depthMm={depthMm} areaSquareMeters={areaSquareMeters}
+          hasRooms={hasRooms} widthMm={widthMm} depthMm={depthMm} roomFloorAreaSqm={roomFloorAreaSqm}
           measurementUnit={measurementUnit} onChangeUnit={onChangeUnit}
           onChangeDraft={onChangeDraft} onCommitDimension={onCommitDimension} />
       )}

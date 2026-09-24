@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
-import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/lib/share-shopping-csv";
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
+import { getPlanRoomFloorAreaSqm, getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import {
@@ -34,19 +35,13 @@ import PlanSvgDownload from "./PlanSvgDownload";
 import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
 import { SurfaceMaterialBomSection } from "@/components/SurfaceMaterialBomSection";
+import { formatSgd } from "@/lib/money-format";
+import { PublicShareUnavailableCard } from "@/components/public-share/PublicShareUnavailableCard";
 
 export const metadata = {
   robots: { index: false, follow: false },
   title: "Design Export",
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function formatRoomType(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -59,15 +54,6 @@ const PLAN_SVG_PADDING = 28;
 
 function formatMeasurement(value: number, unit: string) {
   return `${value.toFixed(1).replace(/\.0$/, "")} ${unit}`;
-}
-
-function getPolygonArea(points: NonNullable<RoomSnapshot["planPolygon"]>) {
-  if (points.length < 3) return 0;
-  const area = points.reduce((sum, point, index) => {
-    const next = points[(index + 1) % points.length];
-    return sum + point.x * next.z - next.x * point.z;
-  }, 0);
-  return Math.abs(area) / 2;
 }
 
 function getPolygonPerimeter(points: NonNullable<RoomSnapshot["planPolygon"]>) {
@@ -98,9 +84,7 @@ function getRoomMetrics(
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   const holes = room.planHoles ?? [];
-  const areaSqm = polygon?.length
-    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
-    : width * depth;
+  const areaSqm = getRoomSnapshotFloorAreaSqm(room);
   const perimeterM = polygon?.length
     ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
     : (width + depth) * 2;
@@ -285,26 +269,6 @@ function buildOpeningScheduleRows(
   );
 }
 
-function getPlanRoomPoints(room: ReturnType<typeof buildHousePlan2D>["rooms"][number]): PlanPoint[] {
-  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
-    return room.polygon.map((point) => ({
-      x: room.x + point.x,
-      z: room.z + point.z,
-    }));
-  }
-
-  const left = room.x - room.w / 2;
-  const right = room.x + room.w / 2;
-  const top = room.z - room.d / 2;
-  const bottom = room.z + room.d / 2;
-  return [
-    { x: left, z: top },
-    { x: right, z: top },
-    { x: right, z: bottom },
-    { x: left, z: bottom },
-  ];
-}
-
 function getPlanPointsBounds(points: PlanPoint[]) {
   return points.reduce(
     (bounds, point) => ({
@@ -476,7 +440,7 @@ function buildPlanDiagramFloors(
     const floorLevel = sourceRoom?.floorLevel ?? room.floorLevel ?? 1;
     const floorLabel = sourceRoom?.floorLabel ?? room.floorLabel ?? `Floor ${floorLevel}`;
     const floorKey = String(floorLevel);
-    const points = getPlanRoomPoints(room);
+    const points = getHouseRoomPlanPolygon(room);
     const bounds = getPlanPointsBounds(points);
     const metrics = roomMetricsById.get(room.id);
     const diagramOpenings = buildPlanDiagramOpenings(room, sourceRoom, rooms, openings);
@@ -492,7 +456,7 @@ function buildPlanDiagramFloors(
       labelZ: (bounds.minZ + bounds.maxZ) / 2,
       width: room.w,
       depth: room.d,
-      areaSqm: metrics?.areaSqm ?? room.w * room.d,
+      areaSqm: metrics?.areaSqm ?? getPlanRoomFloorAreaSqm(room),
       itemCount: sourceRoom?.items.length ?? 0,
       openingCount: metrics?.openingCount ?? 0,
     };
@@ -864,7 +828,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
         </div>
         <div className="text-right text-sm">
           <div className="font-semibold text-gray-900">
-            {formatCurrency(rows.reduce((sum, row) => sum + row.linePrice, 0))}
+            {formatSgd(rows.reduce((sum, row) => sum + row.linePrice, 0))}
           </div>
           <div className="text-xs text-gray-500">Estimated shopping total</div>
         </div>
@@ -891,7 +855,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
               <td className="p-2 text-center text-gray-600">{row.quantity}</td>
               <td className="p-2 text-gray-600">{getCheckoutStatusLabel(row)}</td>
               <td className="p-2 text-gray-600">{getCheckoutSourceLabel(row)}</td>
-              <td className="p-2 text-right text-gray-600">{formatCurrency(row.linePrice)}</td>
+              <td className="p-2 text-right text-gray-600">{formatSgd(row.linePrice)}</td>
             </tr>
           ))}
         </tbody>
@@ -1023,12 +987,7 @@ export default async function ExportPage({
   if (!design) {
     return (
       <main className="min-h-screen flex items-center justify-center p-8">
-        <div className="rounded-xl border bg-white p-6">
-          <div className="text-lg font-semibold">Link not available</div>
-          <div className="text-sm text-neutral-600">
-            This share link is disabled or invalid.
-          </div>
-        </div>
+        <PublicShareUnavailableCard />
       </main>
     );
   }
@@ -1276,7 +1235,7 @@ export default async function ExportPage({
               </div>
               <div className="rounded-lg border bg-gray-50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Estimated Total</div>
-                <div className="mt-1 text-2xl font-bold text-gray-900">{formatCurrency(homeSummary.subtotal)}</div>
+                <div className="mt-1 text-2xl font-bold text-gray-900">{formatSgd(homeSummary.subtotal)}</div>
               </div>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-4">
@@ -1359,7 +1318,7 @@ export default async function ExportPage({
                           {health ? `${health.level} ${health.placementScore}` : "review"}
                         </td>
                         <td className="p-2 text-center">{room.shoppableCount}</td>
-                        <td className="p-2 text-right">{formatCurrency(room.subtotal)}</td>
+                        <td className="p-2 text-right">{formatSgd(room.subtotal)}</td>
                       </tr>
                     );
                   })}

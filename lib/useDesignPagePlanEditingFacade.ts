@@ -78,7 +78,7 @@ export type UseDesignPagePlanEditingFacadeInput = {
   actions: {
     document: Pick<
       RoomPlanInput["actions"],
-      "setDesignSnapshot" | "setPlanOpenings"
+      "setDesignSnapshot" | "setPlanOpenings" | "clearPlanForEmptyCanvas"
     > &
       Pick<
         OverlayInput["actions"],
@@ -109,10 +109,7 @@ export type UseDesignPagePlanEditingFacadeInput = {
     > & {
       setTraceOpeningKind: QualityInput["actions"]["setTraceOpeningKind"];
     };
-    history: Pick<
-      RoomPlanInput["actions"],
-      "history" | "runHistoryTransaction"
-    >;
+    history: Pick<RoomPlanInput["actions"], "runHistoryTransaction">;
     feedback: {
       showToast: RoomPlanInput["actions"]["showToast"];
       track: OverlayInput["actions"]["track"];
@@ -139,20 +136,19 @@ export function useDesignPagePlanEditingFacade({
       canEdit: configuration.canEdit,
       viewMode: state.editor.viewMode,
       catalogItems: configuration.catalogItems,
-      resolveConfiguredPlanningDimsMm:
-        configuration.resolveConfiguredPlanningDimsMm,
+      resolveConfiguredPlanningDimsMm: configuration.resolveConfiguredPlanningDimsMm,
     },
     refs: { designSnapshot: refs.designSnapshot },
     actions: {
       setDesignSnapshot: actions.document.setDesignSnapshot,
       setPlanOpenings: actions.document.setPlanOpenings,
+      clearPlanForEmptyCanvas: actions.document.clearPlanForEmptyCanvas,
       setSelectedPlanRoomId: actions.room.setSelectedPlanRoomId,
       setRoomWidthInput: actions.room.setRoomWidthInput,
       setRoomDepthInput: actions.room.setRoomDepthInput,
       clearNonRoomSelection: actions.selection.clearNonRoomSelection,
       renameRoom: actions.room.renameRoom,
       moveRoom2D: actions.room.moveRoom2D,
-      history: actions.history.history,
       runHistoryTransaction: actions.history.runHistoryTransaction,
       showToast: actions.feedback.showToast,
     },

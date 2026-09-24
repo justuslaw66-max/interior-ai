@@ -3,6 +3,7 @@
 import { useDesignPageFloorPlanTracing } from "@/lib/useDesignPageFloorPlanTracing";
 import { useDesignPageFloorPlanUnderlayController } from "@/lib/useDesignPageFloorPlanUnderlayController";
 import { useDesignPagePlanEditingFacade } from "@/lib/useDesignPagePlanEditingFacade";
+import { useDesignPagePlanEmptyCanvasReset } from "@/lib/useDesignPagePlanEmptyCanvasReset";
 import { useDesignPagePlanPresentationModel } from "@/lib/useDesignPagePlanPresentationModel";
 
 type EditingInput = Parameters<typeof useDesignPagePlanEditingFacade>[0];
@@ -102,7 +103,10 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
     keyboardOwnership: TracingInput["refs"]["keyboardOwnership"];
   };
   actions: {
-    document: EditingInput["actions"]["document"];
+    document: Omit<
+      EditingInput["actions"]["document"],
+      "clearPlanForEmptyCanvas"
+    >;
     selection: EditingInput["actions"]["selection"] &
       Pick<
         UnderlayInput["actions"],
@@ -120,7 +124,7 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
         "setViewMode" | "prepareCameraForPlanTemplate"
       >;
     history: EditingInput["actions"]["history"] &
-      Pick<UnderlayInput["actions"], "runCoalescedHistoryTransaction">;
+      Pick<UnderlayInput["actions"], "history" | "runCoalescedHistoryTransaction">;
     feedback: EditingInput["actions"]["feedback"];
     floorPlanState: Pick<
       UnderlayInput["actions"],
@@ -163,14 +167,9 @@ export function useDesignPagePlanWorkspaceFacade({
   actions,
 }: UseDesignPagePlanWorkspaceFacadeInput) {
   const { document, plan, floorPlan, room, selection, editor, layout } = state;
+  const clearPlanForEmptyCanvas = useDesignPagePlanEmptyCanvasReset(actions);
   const editing = useDesignPagePlanEditingFacade({
-    state: {
-      document,
-      plan,
-      selection,
-      editor,
-      surfaceInspector: state.surfaceInspector,
-    },
+    state: { document, plan, selection, editor, surfaceInspector: state.surfaceInspector },
     derived,
     configuration: {
       canEdit: configuration.canEdit,
@@ -187,7 +186,7 @@ export function useDesignPagePlanWorkspaceFacade({
       planOpenings: refs.planOpenings,
     },
     actions: {
-      document: actions.document,
+      document: { ...actions.document, clearPlanForEmptyCanvas },
       selection: actions.selection,
       room: actions.room,
       navigation: actions.navigation,

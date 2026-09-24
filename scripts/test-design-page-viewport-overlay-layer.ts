@@ -155,6 +155,7 @@ const viewportOpening: DesignPageViewportOpening = {
   widthMm: 1200,
   heightMm: 1100,
   bottomMm: 700,
+  offsetMm: 0,
   wallSpanMeters: 5,
 };
 

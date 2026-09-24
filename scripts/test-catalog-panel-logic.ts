@@ -442,6 +442,11 @@ function run(): void {
     1,
     "Consumer and Pro must share one CatalogPanel and compare identity path",
   );
+  assert.doesNotMatch(
+    furnishPanelSource,
+    /QA catalog controls|Imported furniture (?:family|product)/,
+    "Consumers see the imported-model picker, so its copy must not use QA or import jargon.",
+  );
 
   const sofaTemplate = items[0];
   assert(sofaTemplate, "Expected a catalog fixture for sofa filter tests");

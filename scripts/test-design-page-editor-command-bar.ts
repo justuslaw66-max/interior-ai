@@ -182,8 +182,24 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?room\.widthMeters\.toFixed\(1\)[\s\S]*?room\.depthMeters\.toFixed\(1\)/,
-  "Compact desktop overflow should preserve room identity and dimensions when the header context is hidden."
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
+  "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
+);
+// The room size waits for the saved display unit instead of flashing the default unit.
+assert.match(
+  fs.readFileSync(path.join(root, "lib/useDesignPagePresentationQaFacade.ts"), "utf8"),
+  /measurementUnit: state\.plan\.planMeasurementUnitReady \? state\.plan\.planMeasurementUnit : null,/,
+  "The command-bar room status should receive no display unit until the saved plan unit has loaded."
+);
+assert.match(
+  presentationWorkspaceSource,
+  /planMeasurementUnitReady: viewportShell\.state\.plan\.planSettingsLoaded,/,
+  "The presentation facade should learn when the saved plan display unit has loaded."
+);
+assert.doesNotMatch(
+  commandBarSource,
+  /toFixed\(1\)\}m\b|\.toFixed\(1\)\} ×/,
+  "Command-bar room dimensions must not hard-code metre strings."
 );
 assert.match(
   commandBarSource,
@@ -193,8 +209,8 @@ assert.match(
 
 assert.match(
   commandBarSource,
-  /<RoomPlanStatusBar[\s\S]*?roomName=\{room\.roomName\}[\s\S]*?roomTypeLabel=\{room\.roomTypeLabel\}[\s\S]*?roomCount=\{room\.roomCount\}[\s\S]*?widthMeters=\{room\.widthMeters\}[\s\S]*?depthMeters=\{room\.depthMeters\}/,
-  "The command context should preserve the active room identity, count, and dimensions."
+  /<RoomPlanStatusBar[\s\S]*?roomName=\{room\.roomName\}[\s\S]*?roomTypeLabel=\{room\.roomTypeLabel\}[\s\S]*?roomCount=\{room\.roomCount\}[\s\S]*?widthMeters=\{room\.widthMeters\}[\s\S]*?depthMeters=\{room\.depthMeters\}[\s\S]*?measurementUnit=\{room\.measurementUnit\}/,
+  "The command context should preserve the active room identity, count, and dimensions in the plan display unit."
 );
 assert.match(
   commandBarSource,

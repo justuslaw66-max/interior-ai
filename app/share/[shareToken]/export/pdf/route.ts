@@ -8,8 +8,10 @@ import { prisma } from "@/lib/prisma";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
+import { formatSgd } from "@/lib/money-format";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,14 +42,6 @@ function slugify(value: string) {
   return slug || "interior-ai-export-pack";
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
 function formatMaterialCurrency(currency: string | null, value: number | null) {
   if (value === null) return "Quote";
   return new Intl.NumberFormat("en-US", {
@@ -63,15 +57,6 @@ function formatMeasurement(value: number, unit: string) {
 
 function formatRoomType(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function getPolygonArea(points: NonNullable<RoomSnapshot["planPolygon"]>) {
-  if (points.length < 3) return 0;
-  const area = points.reduce((sum, point, index) => {
-    const next = points[(index + 1) % points.length];
-    return sum + point.x * next.z - next.x * point.z;
-  }, 0);
-  return Math.abs(area) / 2;
 }
 
 function getPolygonPerimeter(points: NonNullable<RoomSnapshot["planPolygon"]>) {
@@ -94,9 +79,7 @@ function getRoomMetrics(room: RoomSnapshot, rooms: RoomSnapshot[], openings: Per
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   const holes = room.planHoles ?? [];
-  const areaSqm = polygon?.length
-    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
-    : width * depth;
+  const areaSqm = getRoomSnapshotFloorAreaSqm(room);
   const perimeterM = polygon?.length
     ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
     : (width + depth) * 2;
@@ -326,7 +309,7 @@ export async function GET(
       `Rooms: ${rooms.length}`,
       `Items: ${homeSummary.itemCount}`,
       `Shoppable items: ${homeSummary.shoppableCount}`,
-      `Estimated shopping total: ${formatCurrency(homeSummary.subtotal)}`,
+      `Estimated shopping total: ${formatSgd(homeSummary.subtotal)}`,
       `Measured area: ${formatMeasurement(totalAreaSqm, "m2")} / ${formatMeasurement(totalAreaSqm * SQM_TO_SQFT, "sq ft")}`,
       `Doors and windows: ${totalOpenings}`,
       `Export access: ${watermarked ? "Free watermarked preview" : "Pro clean export"}`,
@@ -345,7 +328,7 @@ export async function GET(
       drawTextLine(page, formatRoomType(room.roomType), 180, y, fonts.regular, 9, rgb(0.35, 0.35, 0.35));
       drawTextLine(page, `${metric ? formatMeasurement(metric.areaSqm, "m2") : "Area n/a"}`, 285, y, fonts.regular, 9, rgb(0.35, 0.35, 0.35));
       drawTextLine(page, `${room.itemCount} items`, 380, y, fonts.regular, 9, rgb(0.35, 0.35, 0.35));
-      drawTextLine(page, formatCurrency(room.subtotal), 475, y, fonts.bold, 9);
+      drawTextLine(page, formatSgd(room.subtotal), 475, y, fonts.bold, 9);
       y -= 16;
     }
     y -= 12;
@@ -416,7 +399,7 @@ export async function GET(
             ? item.includeInCheckout ? "Cart-ready" : "Shopify item"
             : "Retailer link"
           : item.warningLabel ?? "Needs review";
-        drawTextLine(page, `${status} • Qty ${item.quantity} • ${formatCurrency(item.linePrice)}`, MARGIN + 12, y, fonts.regular, 8, rgb(0.36, 0.36, 0.36));
+        drawTextLine(page, `${status} • Qty ${item.quantity} • ${formatSgd(item.linePrice)}`, MARGIN + 12, y, fonts.regular, 8, rgb(0.36, 0.36, 0.36));
         y -= 14;
       }
     }

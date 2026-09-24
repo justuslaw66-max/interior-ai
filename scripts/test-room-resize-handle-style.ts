@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { ROOM_PLAN_CLICK_DISTANCE_PX } from "../components/editor/renderers/room-renderer-2d-surface-selection";
+import {
+  formatWallDrawLengthInput,
+  parseWallDrawLengthMm,
+  wallDrawLengthUnitIndicator,
+  wallDrawSegmentEditorIsStale,
+} from "../components/editor/renderers/room-renderer-2d-wall-length-editor";
 
 const rendererPath = path.join(
   process.cwd(),
@@ -11,6 +17,11 @@ const rendererPath = path.join(
   "RoomRenderer2D.tsx"
 );
 const source = fs.readFileSync(rendererPath, "utf8");
+const wallLengthEditorSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "renderers",
+    "room-renderer-2d-wall-length-editor.ts"),
+  "utf8"
+);
 for (const testId of ["house-room-2d-label", "house-room-2d-hit-probe"]) {
   const wrapper = source.match(new RegExp(
     `<Html\\b[^>]*>\\s*<div\\s+data-testid="${testId}"`
@@ -173,7 +184,7 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  source,
+  wallLengthEditorSource,
   /MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS\.max/,
   "Wall draw measurement labels should share the room dimension maximum."
 );
@@ -204,9 +215,59 @@ assert.match(
 
 assert.match(
   source,
-  /max=\{MAX_WALL_DRAW_SEGMENT_LENGTH_METERS \* 1000\}/,
-  "Wall segment length editors should expose the same maximum used by validation."
+  /finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS \* 1000/,
+  "Wall segment length editors should still refuse the maximum used by validation. It is "
+  + "enforced on the typed value, not by an input max attribute, because a ft + in length is "
+  + "not a number the browser can clamp."
 );
+assert.doesNotMatch(
+  source,
+  /data-testid="wall-draw-segment-length-editor"[\s\S]{0,240}?type="number"/,
+  "A number input cannot hold a ft + in length, so the wall-length editor must not be one."
+);
+
+// The read-only label has followed the display unit since #37. These pin the edit state to it too:
+// seeding, both parses and the suffix.
+assert.match(
+  source,
+  /value: formatWallDrawLengthInput\(lengthMm, measurementUnit\)/,
+  "Clicking a wall length should open the editor in the plan's unit, not in millimetres."
+);
+assert.match(
+  source,
+  /const finalMillimeters = parseWallDrawLengthMm\(text, measurementUnit\)/,
+  "Committing a wall length should read the text in the plan's unit."
+);
+assert.match(
+  source,
+  /const finalMillimeters = parseWallDrawLengthMm\(value, measurementUnit\)/,
+  "Each keystroke should be measured in the plan's unit before the over-length auto-commit."
+);
+assert.match(
+  source,
+  /\{wallDrawLengthUnitIndicator\(measurementUnit\)\}/,
+  "The suffix beside the input should name the plan's unit instead of a hard-coded mm."
+);
+
+for (const [unit, indicator] of [
+  ["mm", "mm"], ["cm", "cm"], ["in", "in"], ["ft-in", "ft + in"],
+] as const) {
+  const seeded = formatWallDrawLengthInput(2400, unit);
+  assert.equal(wallDrawLengthUnitIndicator(unit), indicator,
+    `The ${unit} editor should be labelled "${indicator}".`);
+  assert.ok(Math.abs(parseWallDrawLengthMm(seeded, unit) - 2400) < 1,
+    `A 2.4 m wall shown as "${seeded}" must come back as 2.4 m: the editor seeds and parses the `
+    + "same text, so a round trip that drifts would move the wall the user only looked at.");
+}
+assert.ok(Number.isNaN(parseWallDrawLengthMm("", "cm")),
+  "Empty text is not a length. It parsed as 0 while the editor was millimetres-only, and both "
+  + "fall the same way through the caller's Number.isFinite checks.");
+assert.equal(wallDrawSegmentEditorIsStale({ segmentIndex: 1, value: "240" }, "cm", true, 3), false,
+  "A live segment with a legal length keeps its editor open.");
+assert.equal(wallDrawSegmentEditorIsStale({ segmentIndex: 3, value: "240" }, "cm", true, 3), true,
+  "An editor outlives its segment when the trace shortens, and must close.");
+assert.equal(wallDrawSegmentEditorIsStale({ segmentIndex: 1, value: "9999" }, "cm", true, 3), true,
+  "A length past the room maximum closes the editor, in whichever unit it was typed.");
 
 assert.match(
   source,
@@ -321,6 +382,32 @@ assert.match(
   /const stopNativeRoomDragEvent = \(event: ThreeEvent<PointerEvent>\) => \{[\s\S]*?event\.nativeEvent\.stopImmediatePropagation\?\.\(\);[\s\S]*?\};/,
   "Room drag start and move should stop immediate native propagation so 2D pan controls never start during room drags."
 );
+
+const stopNativeRoomDragEventBody = source.match(
+  /const stopNativeRoomDragEvent = \(event: ThreeEvent<PointerEvent>\) => \{([\s\S]*?)\n  \};/
+)?.[1];
+assert.ok(stopNativeRoomDragEventBody, "RoomRenderer2D should define stopNativeRoomDragEvent.");
+assert.doesNotMatch(
+  stopNativeRoomDragEventBody,
+  /preventDefault/,
+  "stopNativeRoomDragEvent runs inside R3F pointer handlers, which R3F registers as passive listeners (DOM_EVENTS), so preventDefault only logs a console error; scene-canvas touch-action:none already blocks native scrolling."
+);
+
+const listTsxFilesRecursively = (directory: string): string[] =>
+  fs.readdirSync(directory, { recursive: true, encoding: "utf8" })
+    .filter((entry) => entry.endsWith(".tsx"))
+    .map((entry) => path.join(directory, entry));
+
+for (const filePath of [
+  ...listTsxFilesRecursively(path.join(process.cwd(), "components", "editor", "renderers")),
+  ...listTsxFilesRecursively(path.join(process.cwd(), "components", "scene")),
+]) {
+  assert.doesNotMatch(
+    fs.readFileSync(filePath, "utf8"),
+    /nativeEvent\.preventDefault\(/,
+    `${path.relative(process.cwd(), filePath)} must not call nativeEvent.preventDefault(): R3F registers pointer and wheel listeners as passive (DOM_EVENTS), so the call is ignored and logs "Unable to preventDefault inside passive event listener".`
+  );
+}
 
 assert.match(
   source,

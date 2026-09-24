@@ -8,6 +8,7 @@ import { replaceShoppingItemWithRecommendation } from "../lib/design-page-shoppi
 import { resolveRoomShoppingItems, type ActiveRoomShoppingItem } from "../lib/room-shopping";
 import type { DesignItem } from "../lib/room-types";
 import { buildShoppingReplacementSuggestions } from "../lib/shopping-replacements";
+import { formatSgd } from "../lib/money-format";
 
 const furnishSource = readFileSync(
   join(process.cwd(), "components/editor/DesignControlsFurnishPanel.tsx"),
@@ -349,6 +350,46 @@ assert.ok(
     (suggestion) => suggestion.productId !== invalidReplacementCandidate.id
   ),
   "Replacement suggestions must exclude products without a valid price and commerce URL."
+);
+
+// One money format everywhere (UX audit FU9): Singapore dollars with the
+// currency visible and grouped whole dollars, never a bare or US dollar.
+assert.equal(formatSgd(1738), "S$1,738");
+assert.equal(formatSgd(1737.6), "S$1,738");
+assert.equal(formatSgd(0), "S$0");
+assert.equal(formatSgd(-45), "-S$45");
+const readSource = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), "utf8");
+for (const relativePath of [
+  "app/share/[shareToken]/(presentation)/page.tsx",
+  "app/share/[shareToken]/export/page.tsx",
+  "app/share/[shareToken]/export/ShoppingList.tsx",
+  "app/share/[shareToken]/export/pdf/route.ts",
+  "components/public-share/PublicShareRoomSchedule.tsx",
+]) {
+  assert.doesNotMatch(
+    readSource(relativePath),
+    /currency: "USD",\s*maximumFractionDigits: 0/,
+    `${relativePath} must format catalog prices as SGD through formatSgd, not as US dollars.`
+  );
+}
+for (const relativePath of [
+  "components/CartSidebar.tsx",
+  "components/editor/ShoppingOverviewPanel.tsx",
+  "lib/useDesignPageSelectionInspectorModel.ts",
+]) {
+  const source = readSource(relativePath);
+  assert.doesNotMatch(
+    source,
+    /\$\$\{|>\$\{|Subtotal \$\{|\$\{[^}]*toFixed\(0\)\}/,
+    `${relativePath} must not print a bare "$" before a raw number.`
+  );
+  assert.match(source, /format(?:Sgd|Money)\(/, `${relativePath} should format money through the shared formatter.`);
+}
+const catalogCardSource = readSource("components/catalog/CatalogCard.tsx");
+assert.match(
+  catalogCardSource,
+  /function CatalogCardHeading[\s\S]*?item\.priceAmount != null[\s\S]*?data-testid=\{`catalog-card-price-\$\{item\.id\}`\}[\s\S]*?formatSgd\(item\.priceAmount\)[\s\S]*?<CatalogCardHeading item=\{item\} \/>/,
+  "Catalog cards should show the price when the catalog has one (UX audit FU2)."
 );
 
 console.log("Shopping readiness polish checks passed.");

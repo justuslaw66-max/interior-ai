@@ -1,4 +1,6 @@
+import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 export type DesignSelectionContext = {
   label: string;
@@ -21,6 +23,7 @@ type SelectedPlanRoomContext = {
 type BuildDesignSelectionContextParams = {
   selectedFurniture: SelectedFurnitureContext;
   activeRoomName: string;
+  planMeasurementUnit: DisplayUnit;
   visiblePlanOpening: RoomOpening2D | null;
   visiblePlanOpeningRoomName: string;
   selectedPlanRoom: SelectedPlanRoomContext;
@@ -29,6 +32,7 @@ type BuildDesignSelectionContextParams = {
 export function buildDesignSelectionContext({
   selectedFurniture,
   activeRoomName,
+  planMeasurementUnit,
   visiblePlanOpening,
   visiblePlanOpeningRoomName,
   selectedPlanRoom,
@@ -46,7 +50,7 @@ export function buildDesignSelectionContext({
     return {
       label: visiblePlanOpening.kind === "door" ? "Selected door" : "Selected window",
       title: `${visiblePlanOpening.kind === "door" ? "Door" : "Window"} in ${visiblePlanOpeningRoomName}`,
-      detail: `${(visiblePlanOpening.widthMm / 1000).toFixed(2)}m wide`,
+      detail: `${formatDisplayLength(visiblePlanOpening.widthMm, planMeasurementUnit)} wide`,
       tone: "plan",
     };
   }
@@ -55,7 +59,7 @@ export function buildDesignSelectionContext({
     return {
       label: "Selected room",
       title: selectedPlanRoom.name,
-      detail: `${selectedPlanRoom.w.toFixed(1)} x ${selectedPlanRoom.d.toFixed(1)}m`,
+      detail: formatPlanDimensionsLabel(selectedPlanRoom.w, selectedPlanRoom.d, planMeasurementUnit),
       tone: "plan",
     };
   }

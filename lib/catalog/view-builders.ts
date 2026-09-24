@@ -14,6 +14,7 @@ import {
 } from "./variant-normalization";
 import { CASTLERY_SWATCH_IMAGE_BY_FINISH_CODE, HUGG_WOOD_SWATCH_IMAGE_BY_FINISH_CODE } from "../design-page-product-data";
 import { CATALOG_ITEMS } from "../catalog";
+import { getPriceLabel, getPriceNumber } from "./price-labels";
 
 const CATEGORY_FALLBACK_THUMB_URL: Partial<Record<CatalogTopCategory, string>> = {
   bed:
@@ -130,6 +131,7 @@ export type CatalogCardView = {
   thumbUrl: string | null;
   fallbackThumbUrl: string | null;
   priceLabel?: string;
+  priceAmount?: number | null;
   dimsLabel: string;
   dimsMm: { w: number; d: number; h: number };
   primarySwatches: { label: string; hex?: string }[];
@@ -316,29 +318,6 @@ function resolveCastlerySwatchTextureUrl(variant: CatalogItemSchema["variants"][
   }
 
   return undefined;
-}
-
-export function getPriceLabel(item: CatalogItemSchema, variantId?: string): string {
-  const resolved = resolveCatalogVariant(item, variantId);
-  if (resolved.commerce.type === "shopify") {
-    return "Buy on this site";
-  }
-  if (resolved.commerce.type === "affiliate") {
-    const amount = resolved.commerce.priceHint;
-    if (typeof amount === "number" && Number.isFinite(amount)) {
-      return `SGD ${amount.toLocaleString()}`;
-    }
-    return "External retailer";
-  }
-  return "External retailer";
-}
-
-function getPriceNumber(item: CatalogItemSchema, variantId?: string): number | null {
-  const resolved = resolveCatalogVariant(item, variantId);
-  if (resolved.commerce.type === "affiliate") {
-    return resolved.commerce.priceHint ?? null;
-  }
-  return null;
 }
 
 export function getPrimarySwatches(item: CatalogItemSchema) {
@@ -674,6 +653,7 @@ export function buildCatalogCardView(item: CatalogItemSchema, variantId?: string
     thumbUrl: cardThumbUrl,
     fallbackThumbUrl: categoryFallbackThumb,
     priceLabel: getPriceLabel(item, resolved.variantId),
+    priceAmount: getPriceNumber(item, resolved.variantId),
     dimsLabel: `${(resolved.dimsMm.w / 10).toFixed(1).replace(/\.0$/, "")} x ${(resolved.dimsMm.d / 10)
       .toFixed(1)
       .replace(/\.0$/, "")} cm`,

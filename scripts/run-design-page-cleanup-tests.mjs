@@ -52,6 +52,7 @@ const typescriptGuardFiles = [
   "test-design-page-room-placement-operations.ts",
   "test-design-page-room-plan-controller.ts",
   "test-design-page-save-status.ts",
+  "test-design-page-scene-domain-boundaries.ts",
   "test-design-page-scene-layers.ts",
   "test-design-page-scene-region-workspace-registration.ts",
   "test-design-page-selected-item-panel-controller.ts",
@@ -92,6 +93,8 @@ const typescriptGuardFiles = [
   "test-shopping-readiness-polish.ts",
   "test-tap-target-placement.ts",
   "test-touch-placement-polish.ts",
+  "test-window-opening-drag.ts",
+  "test-ux-states-and-fallbacks.ts",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];

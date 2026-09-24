@@ -2,7 +2,9 @@ import { test, expect } from "../fixtures";
 import {
   chooseTemplateStart,
   clickWithFallback,
+  expectPlan2DProjectionHealthy,
   getEmptyCanvasPoint,
+  readNumberAttribute,
 } from "./helpers";
 
 export function registerEditingTests() {
@@ -215,5 +217,53 @@ export function registerEditingTests() {
     await expect(bedroomLabel).toHaveAttribute("data-room-z", afterReleaseRoomZ ?? "");
   });
 
+  test("dragging a 2D door along its wall logs no passive-listener preventDefault errors", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text());
+    });
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByTestId("plan-tool-door").click();
+    await expect(page.getByTestId("plan-canvas-guidance")).toContainText("Click the wall where it belongs.");
+    await expectPlan2DProjectionHealthy(page);
+
+    const canvasBox = await sceneCanvas.boundingBox();
+    if (!canvasBox) throw new Error("Scene canvas is missing a bounding box");
+    const roomWidthPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-width-px");
+    const roomHeightPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-height-px");
+    const northWallY = canvasBox.y + canvasBox.height / 2 - roomHeightPx / 2;
+    await page.mouse.click(canvasBox.x + canvasBox.width / 2 - roomWidthPx * 0.36, northWallY);
+
+    const openingLabel = page.getByTestId("plan-opening-live-label").first();
+    await expect(openingLabel).toContainText("north");
+    const labelBefore = await openingLabel.textContent();
+    const labelBox = await openingLabel.boundingBox();
+    if (!labelBox) throw new Error("Placed door label is missing a bounding box");
+    const grabPoint = { x: labelBox.x + labelBox.width / 2 - 20, y: northWallY };
+    const grabTargetIsCanvas = await sceneCanvas.evaluate(
+      (canvas, point) => {
+        const hit = document.elementFromPoint(point.x, point.y);
+        return hit === canvas || (hit !== null && canvas.contains(hit));
+      },
+      grabPoint
+    );
+    expect(grabTargetIsCanvas, "The door grab point should not be covered by DOM overlays").toBe(true);
+
+    await page.mouse.move(grabPoint.x, grabPoint.y);
+    await page.mouse.down();
+    await page.mouse.move(grabPoint.x + 60, grabPoint.y, { steps: 6 });
+    await page.mouse.up();
+    await expect(openingLabel).toContainText("north");
+    await expect(openingLabel).not.toHaveText(labelBefore ?? "");
+
+    expect(
+      consoleErrors.filter((text) => /preventDefault inside passive event listener/.test(text))
+    ).toEqual([]);
+  });
 }
 

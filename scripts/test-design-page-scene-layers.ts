@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
   mergeDesignPageCameraDiagnostics,
   mergeDesignPagePlanMetrics,
 } from "../lib/design-page-editor-shell-metrics";
+import { buildHousePlan2D } from "../lib/design-page-house-plan";
+import { resolveLoneRoomPlanFrame2D } from "../lib/room-renderer-2d-lone-room";
+import { createRoom } from "../lib/room-types";
 
 const root = process.cwd();
 const readSource = (relativePath: string) =>
@@ -20,6 +23,10 @@ const regionSource = readSource(
 const canvasSource = readSource(
   "components/editor/design-page/DesignSceneCanvas.tsx"
 );
+const workspacePlanningGridSource =
+  canvasSource.match(
+    /function WorkspacePlanningGrid\([\s\S]*?\n}\n\nexport function DesignSceneCanvas/
+  )?.[0] ?? "";
 const lightingSystemSource = readSource(
   "components/editor/design-page/lighting/LightingSystem.tsx"
 );
@@ -85,6 +92,9 @@ const cameraNavigationSource = readSource(
 );
 const canonicalStructureSource = readSource(
   "components/editor/renderers/CanonicalFloorPlanStructure.tsx"
+);
+const housePlanRenderer3DSource = readSource(
+  "components/editor/renderers/HousePlanRenderer3D.tsx"
 );
 const coreShellBaseRegistrationSource = readSource(
   "lib/useDesignPageCoreShellBaseRegistration.ts"
@@ -171,12 +181,19 @@ assertSourceOrder(
   "Workspace should preserve deferred paywall registration order"
 );
 assertSourceOrder(
-  planAuthoringRegistrationSource,
+  readSource("lib/useDesignPagePlanState.ts"),
   [
-    "if (!planSettingsLoaded)",
-    "useDesignPageSelectionInspectionRuntime({",
+    "useLayoutEffect(() => {",
+    'localStorage.getItem("plan_openings")',
+    "setPlanOpenings(createDefaultPlanOpenings());",
+    "setPlanSettingsLoaded(true);",
   ],
-  "Plan authoring should seed default openings before selection inspection"
+  "The plan-settings load should seed default openings in the mount commit, before selection inspection"
+);
+assert.doesNotMatch(
+  planAuthoringRegistrationSource,
+  /if \(!planSettingsLoaded\)|setPlanOpenings\(\[/,
+  "Plan authoring should not defer default openings behind the plan-settings load"
 );
 assert.match(
   presentationBackupRegistrationSource,
@@ -200,7 +217,7 @@ assertSourceOrder(
     "showLayoutDebugOverlay, setShowLayoutDebugOverlay",
     "viewportSize, setViewportSize",
     "useDesignPagePlanDocumentState()",
-    "useDesignPageFloorPlanDocumentState()",
+    "useDesignPageFloorPlanDocumentState(planDocument.state.planMeasurementUnit)",
     "selectedPlanOverlayId, setSelectedPlanOverlayId",
     "suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys",
     "planRoomSelection, setPlanRoomSelection",
@@ -435,7 +452,6 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "<Room",
   "mapPlanOpeningsToRoomRenderer(",
   "mapPlanFixedElementsToRoomRenderer(",
   "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
@@ -491,6 +507,88 @@ assert.match(
   /const PLAN_GRID_MIN_SIZE_METERS = 80;/,
   "The Pro plan grid should cover a useful workspace beyond the plan footprint."
 );
+const offOriginLoneRoom = createRoom("living", "Living Room", "living", {
+  width: 4.8,
+  depth: 4.2,
+  wallThickness: 0.12,
+  height: 2.6,
+});
+offOriginLoneRoom.planPosition = { x: 2.4, z: 2.1 };
+const offOriginLonePlan = buildHousePlan2D([offOriginLoneRoom], 4.8, 4.2);
+assert.deepEqual(
+  [offOriginLonePlan.width, offOriginLonePlan.depth],
+  [9.6, 8.4],
+  "The plan extent handed to the 2D renderer is origin-symmetric, so it cannot size a lone off-origin room."
+);
+assert.deepEqual(
+  resolveLoneRoomPlanFrame2D(offOriginLonePlan.rooms),
+  {
+    centerX: 2.4,
+    centerZ: 2.1,
+    width: 4.8,
+    depth: 4.2,
+    outline: [
+      [0, 0],
+      [4.8, 0],
+      [4.8, 4.2],
+      [0, 4.2],
+      [0, 0],
+    ],
+  },
+  "A lone off-origin room should be framed by its own plan rectangle, not by the plan extent at the origin."
+);
+const originLoneRoom = createRoom("origin", "Bedroom", "bedroom", {
+  width: 5,
+  depth: 4,
+  wallThickness: 0.12,
+  height: 2.6,
+});
+originLoneRoom.planPosition = { x: 0, z: 0 };
+const originLonePlan = buildHousePlan2D([originLoneRoom], 5, 4);
+assert.deepEqual(
+  resolveLoneRoomPlanFrame2D(originLonePlan.rooms),
+  {
+    centerX: 0,
+    centerZ: 0,
+    width: originLonePlan.width,
+    depth: originLonePlan.depth,
+    outline: [
+      [-2.5, -2],
+      [2.5, -2],
+      [2.5, 2],
+      [-2.5, 2],
+      [-2.5, -2],
+    ],
+  },
+  "A lone room at the origin should keep the rectangle it has always been drawn with."
+);
+assert.equal(
+  resolveLoneRoomPlanFrame2D([]),
+  null,
+  "A zero-room design must not render the legacy single-room floor or outline."
+);
+assert.equal(
+  resolveLoneRoomPlanFrame2D(
+    buildHousePlan2D([offOriginLoneRoom, originLoneRoom], 5, 4).rooms
+  ),
+  null,
+  "Multi-room plans should keep drawing every room through the house-room path."
+);
+assert.match(
+  planRendererSource,
+  /const hasHouseRooms = shouldRenderRoomPlanGeometry\(rooms\);[\s\S]*?const loneRoomFrame = useMemo\(\(\) => \(hasHouseRooms \? null : resolveLoneRoomPlanFrame2D\(rooms\)\), \[hasHouseRooms, rooms\]\);/,
+  "The 2D renderer should derive the lone-room floor and outline from the plan rooms, leaving a lone non-rectangular room to the plan-geometry path."
+);
+assert.match(
+  planRendererSource,
+  /\{loneRoomFrame && \(\s*<mesh[\s\S]*?position=\{\[loneRoomFrame\.centerX, 0\.0005, loneRoomFrame\.centerZ\]\}[\s\S]*?<planeGeometry args=\{\[loneRoomFrame\.width, loneRoomFrame\.depth\]\}/,
+  "The lone-room floor should be drawn at the room's plan position and size."
+);
+assert.match(
+  planRendererSource,
+  /\{loneRoomFrame && \(\s*<Line\s*points=\{loneRoomFrame\.outline\.map\(/,
+  "The lone-room outline should follow the room's plan rectangle."
+);
 assert.match(
   planRendererSource,
   /Math\.floor\(\(gridCenterX - gridWidth \/ 2\) \/ gridStep\) \* gridStep/,
@@ -502,9 +600,34 @@ assert.match(
   "Whole-home structure interaction should remain disabled in present and client-preview modes."
 );
 assert.match(
+  housePlanRenderer3DSource,
+  /const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS\.slabThickness;[\s\S]*?room\.slabThickness \?\? FLOOR_THICKNESS_METERS/,
+  "The house-plan renderer should retain its default slab-thickness fallback."
+);
+assert.match(
   structureSource,
-  /state\.singleRoom\.slabThickness \?\?\s*ROOM_DIMENSION_DEFAULTS\.slabThickness/,
-  "The single-room renderer should retain its default slab-thickness fallback."
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?return \([\s\S]*?<HousePlanRenderer3D[\s\S]*?\{canonicalIntegrityWarning\}\s*\{canonicalEditingNotice\}[\s\S]*?\);\s*\}\s*return \(\s*<>\s*\{canonicalIntegrityWarning\}\s*\{canonicalEditingNotice\}\s*<\/>\s*\);\s*\}\s*$/,
+  "Every design with rooms should render through the house-plan scene, and a zero-room design should render only the canonical notices."
+);
+assert.doesNotMatch(
+  structureSource,
+  /DesignSceneSingleRoom|RoomEnvironment|singleRoom|wholeHome\.enabled/,
+  "The legacy single-room 3D shell must not return to the structure layer."
+);
+for (const retiredShell of [
+  "components/editor/design-page/DesignSceneSingleRoom.tsx",
+  "components/scene/RoomEnvironment.tsx",
+]) {
+  assert.equal(
+    existsSync(join(root, retiredShell)),
+    false,
+    `${retiredShell} should stay deleted now that single rooms use the house-plan scene.`
+  );
+}
+assert.doesNotMatch(
+  regionSource,
+  /wholeHome\.enabled/,
+  "Active-room focus should depend on the room count, not a renderer-routing flag."
 );
 
 for (const contractName of [
@@ -614,18 +737,66 @@ assert.doesNotMatch(
 
 assert.match(
   adapterSource,
-  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*plan: projectStructurePlan\(plan\),[\s\S]*enabled: room\.wholeHomeEnabled,[\s\S]*width: room\.width,/,
-  "The scene adapter should map live 2D, whole-home, and single-room structure state."
+  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*plan: projectStructurePlan\(plan\),[\s\S]*wholeHome: \{\s*rooms: room\.wholeHomeRooms,[\s\S]*?wallHeight: room\.height/,
+  "The scene adapter should map live 2D and house-plan structure state."
 );
 assert.match(
   adapterSource,
   /function projectStructurePlan\([\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*canonicalDocument: plan\.canonicalDocument,/,
   "The extracted plan projection must retain the underlay, legacy scene and canonical geometry."
 );
+assert.doesNotMatch(
+  adapterSource,
+  /singleRoom|wholeHomeEnabled/,
+  "The scene adapter should not project state for the retired single-room shell."
+);
+const structureConfigurationSource =
+  adapterSource.match(
+    /structure:\s*\{\s*editorMode: editor\.editorMode,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
+  )?.[0] ?? "";
+assert.match(
+  structureConfigurationSource,
+  /editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
+  "The scene adapter should map editor and plan structure configuration."
+);
+assert.doesNotMatch(
+  structureConfigurationSource,
+  /renderQuality/,
+  "The structure layer draws no quality-dependent shell, so it should not receive render quality."
+);
+const canonicalStructureSource3D = readSource(
+  "components/editor/renderers/CanonicalFloorPlanStructure.tsx"
+);
+for (const handler of canonicalStructureSource3D.match(
+  /onSelectWall\?\.\(wallId, (?:roomId|room\.id), event\);[^\n]*\n[^\n]*/g
+) ?? []) {
+  assert.doesNotMatch(
+    handler,
+    /onSelectOpening\?\.\(null\)/,
+    "Canonical 3D wall clicks should leave opening deselection to selectStructureTarget, which ignores orbit drags."
+  );
+}
+const itemsConfigurationSource =
+  adapterSource.match(/items: \{[^{}]*\},\s*preview: \{/)?.[0] ?? "";
+assert.match(
+  itemsConfigurationSource,
+  /renderQuality: scene\.renderQuality,/,
+  "Scene items should keep receiving the active render quality."
+);
+assert.match(
+  itemsConfigurationSource,
+  /hasWholeHousePlan: room\.hasWholeHousePlan,/,
+  "Scene items should allow cross-room drags only when the plan has several rooms, not whenever the house-plan scene draws a lone room."
+);
 assert.match(
   adapterSource,
-  /structure:\s*\{[\s\S]*editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,[\s\S]*renderQuality: scene\.renderQuality/,
-  "The scene adapter should map editor, plan, and render structure configuration."
+  /preview: \{\s*hasWholeHousePlan: room\.hasWholeHousePlan,/,
+  "Placement preview planes should span the whole plan only for multi-room plans and stay inside a lone room."
+);
+assert.match(
+  sceneWorkspaceSource,
+  /hasWholeHousePlan: scene\.hasWholeHousePlan,/,
+  "Scene workspace should feed the multi-room flag into item and preview semantics, because a lone room also renders through the house-plan scene."
 );
 assert.match(
   sceneWorkspaceSource,
@@ -670,14 +841,19 @@ assert.match(
   "Canonical 3D focus should retain only walls adjacent to the focused room."
 );
 assert.match(
+  housePlanRenderer3DSource,
+  /const selectStructureTarget = \([\s\S]*?if \(!interactive\) return;\s*event\.stopPropagation\(\);\s*if \(event\.delta > 2\) return;/,
+  "An orbit drag must not select floor, wall, ceiling or opening surfaces, while the nearest surface still keeps the drag's click from reaching items behind it."
+);
+assert.match(
   cameraNavigationSource,
   /handleFitSelectedPlanRoom[\s\S]*if \(viewMode === "3d"\)[\s\S]*applyQueued3DView\([\s\S]*room\.name\} focused/,
   "Focused rooms should receive a dedicated 3D camera fit."
 );
 assert.match(
   [canvasSource, lightingSystemSource, sunControllerSource].join("\n"),
-  /receiveShadow=\{shadowsEnabled\}[\s\S]*const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" && lighting\.shadows\.enabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*<LightingSystem[\s\S]*<SunController[\s\S]*castShadow=\{lighting\.sun\.castShadow && lighting\.shadows\.enabled\}/,
-  "Quality-mode 3D should provide user-controlled shadow maps, a matching key light, and a shadow-receiving workspace plane."
+  /const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" && lighting\.shadows\.enabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*<LightingSystem[\s\S]*<SunController[\s\S]*castShadow=\{lighting\.sun\.castShadow && lighting\.shadows\.enabled\}/,
+  "Quality-mode 3D should provide user-controlled shadow maps and a matching key light."
 );
 assert.match(
   canvasSource,
@@ -686,8 +862,17 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{shadowsEnabled \? 0\.08 : 0\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
-  "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
+  "The 3D grid should cover a full light workspace and fade before its boundary."
+);
+assert.ok(
+  workspacePlanningGridSource.length > 0,
+  "The workspace planning grid implementation should remain directly testable."
+);
+assert.doesNotMatch(
+  workspacePlanningGridSource,
+  /receiveShadow|<shadowMaterial/,
+  "The nonphysical workspace grid must not catch shadows from room or ceiling geometry."
 );
 assert.match(
   canvasSource,
@@ -701,8 +886,8 @@ assert.match(
 );
 assert.match(
   [canvasSource, sunControllerSource].join("\n"),
-  /shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{lighting\.shadows\.mapSize\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
-  "Quality-mode 3D shadows should use a high-resolution map fitted to the visible plan instead of a low-resolution fixed frustum."
+  /const ceilingShadowOverhang = planBounds\.roomHeight \* 2;[\s\S]*Math\.hypot\([\s\S]*presentationBounds\.widthMeters,[\s\S]*presentationBounds\.depthMeters[\s\S]*?\)\s*\/\s*2\s*\+[\s\S]*ceilingShadowOverhang \+[\s\S]*SHADOW_CAMERA_PADDING_METERS[\s\S]*shadow-mapSize-width=\{lighting\.shadows\.mapSize\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
+  "Quality-mode 3D shadows should fit the plan diagonal and bounded ceiling occluders inside the high-resolution shadow camera."
 );
 assert.match(
   [canvasSource, sunControllerSource].join("\n"),

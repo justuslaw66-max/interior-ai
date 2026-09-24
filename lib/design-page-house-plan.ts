@@ -479,7 +479,7 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         shape: "rectangle",
         width: 3.2,
         depth: 3.2,
-        x: 7.2,
+        x: 7.6,
         z: 5.4,
       },
       {
@@ -487,15 +487,15 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         name: "Bathroom",
         roomType: "toilet",
         shape: "rectangle",
-        width: 2.4,
+        width: 2.8,
         depth: 2.2,
-        x: 4.4,
+        x: 4.6,
         z: 4.9,
       },
     ],
     doorways: [
       { fromRoomId: "entry", toRoomId: "living", wall: "west", offsetMeters: -0.2 },
-      { fromRoomId: "entry", toRoomId: "bathroom", wall: "south", offsetMeters: 0 },
+      { fromRoomId: "entry", toRoomId: "bathroom", wall: "south", offsetMeters: -0.7, widthMeters: 0.8 },
       { fromRoomId: "living", toRoomId: "kitchen", wall: "east", offsetMeters: -0.9 },
       { fromRoomId: "living", toRoomId: "bedroom", wall: "south", offsetMeters: -0.6 },
       { fromRoomId: "entry", toRoomId: "bedroom_2", wall: "south", offsetMeters: 0.7 },
@@ -697,9 +697,9 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         roomType: "kitchen",
         shape: "rectangle",
         width: 2.2,
-        depth: 3,
+        depth: 2.6,
         x: 4.5,
-        z: 1.5,
+        z: 1.3,
       },
       {
         id: "entry",
@@ -707,9 +707,9 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         roomType: "custom",
         shape: "rectangle",
         width: 2.2,
-        depth: 2.2,
+        depth: 2.6,
         x: 4.5,
-        z: 4.1,
+        z: 3.9,
       },
       {
         id: "bedroom",
@@ -733,7 +733,7 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
       },
     ],
     doorways: [
-      { fromRoomId: "entry", toRoomId: "living", wall: "west", offsetMeters: -0.4 },
+      { fromRoomId: "entry", toRoomId: "living", wall: "west", offsetMeters: -0.5 },
       { fromRoomId: "entry", toRoomId: "kitchen", wall: "north", offsetMeters: 0 },
       { fromRoomId: "entry", toRoomId: "bathroom", wall: "south", offsetMeters: 0 },
       { fromRoomId: "living", toRoomId: "bedroom", wall: "south", offsetMeters: -0.6 },
@@ -1973,15 +1973,12 @@ export function getNextRoomPlanPosition(
   fallbackRoomWidth: number,
   newRoomWidth: number
 ): { x: number; z: number } {
+  if (rooms.length === 0) return { x: 0, z: 0 };
   const rightEdge = rooms.reduce(
     (edge, room) => Math.max(edge, room.x + room.w / 2),
     fallbackRoomWidth / 2
   );
-
-  return {
-    x: rightEdge + newRoomWidth / 2,
-    z: 0,
-  };
+  return { x: rightEdge + newRoomWidth / 2, z: 0 };
 }
 
 function getHouseRoomBounds(
@@ -2010,7 +2007,7 @@ function getHouseRoomOverlapArea(
 
 type HouseRoomPlanPoint = { x: number; z: number };
 
-function getHouseRoomPlanPolygon(
+export function getHouseRoomPlanPolygon(
   room: HousePlanRoom2D,
   x = room.x,
   z = room.z,

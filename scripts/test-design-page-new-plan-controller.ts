@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { executeSaveCurrentAndStartNewPlan } from "@/lib/useDesignPageNewPlanController";
+import { buildPlanTemplateReplacementSnapshot } from "@/lib/design-page-plan-template-replacement";
 import type { PreserveCurrentDesignResult } from "@/lib/useDesignPagePersistence";
+import { createRoom, type DesignSnapshot } from "@/lib/room-types";
 
 type FixtureOptions = {
   authenticated?: boolean;
@@ -183,6 +185,45 @@ async function testSynchronousDuplicateSuppression() {
   assert.equal(fixture.pendingReplacement, false);
 }
 
+function testReplacementDropsPreviousFloorPlanGeometry() {
+  const previousRoom = createRoom("previous-room", "Previous room");
+  const replacementRoom = createRoom("replacement-room", "Replacement room");
+  const previous: DesignSnapshot = {
+    version: 3,
+    rooms: [previousRoom],
+    activeRoomId: previousRoom.id,
+    title: "Preserved preferences",
+    style: "warm",
+    floorPlan: {
+      revisionId: "previous-source-revision",
+      canonicalGeometryHash: "previous-source-geometry",
+      openings: [],
+    },
+  };
+
+  const replacement = buildPlanTemplateReplacementSnapshot(
+    previous,
+    [replacementRoom],
+    replacementRoom.id
+  );
+
+  assert.deepEqual(replacement.rooms, [replacementRoom]);
+  assert.equal(replacement.activeRoomId, replacementRoom.id);
+  assert.equal(replacement.title, previous.title);
+  assert.equal(replacement.style, previous.style);
+  assert.equal(replacement.floorPlan, undefined);
+  assert.equal(
+    Object.hasOwn(replacement, "floorPlan"),
+    false,
+    "A starter template must not retain imported plan geometry from the saved design."
+  );
+  assert.equal(
+    previous.floorPlan?.canonicalGeometryHash,
+    "previous-source-geometry",
+    "Building the replacement should not mutate the design that was just saved."
+  );
+}
+
 const root = process.cwd();
 const controllerSource = readFileSync(
   join(root, "lib/useDesignPageNewPlanController.ts"),
@@ -252,6 +293,7 @@ async function main() {
   await testPreserveFailureKeepsReplacementPending();
   await testSuccessfulCallbackOrder();
   await testSynchronousDuplicateSuppression();
+  testReplacementDropsPreviousFloorPlanGeometry();
   console.log("design page new-plan controller guardrails passed");
 }
 

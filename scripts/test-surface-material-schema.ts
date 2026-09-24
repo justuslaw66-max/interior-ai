@@ -20,6 +20,15 @@ import {
 } from "../lib/share-shopping-csv";
 import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
 import {
+  buildSurfaceRoomSummaries,
+  buildSurfaceSummaryRows,
+  getActiveSurfaceRoomFloorAreaSqm,
+} from "../components/editor/design-controls-plan/surfaceSummaryRows";
+import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
+import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
+import { getContinuousWallPanelId } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
+import { getWallOpenings, getWallSegments } from "../components/editor/renderers/house-plan-3d/geometry";
+import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   getRuntimeSurfaceMaterialById,
 } from "../lib/surface-material-runtime";
@@ -1055,7 +1064,7 @@ const canonicalInheritedWallRow = canonicalPanelBomRows.find(
 assert.ok(canonicalInheritedWallRow);
 assert.equal(
   canonicalInheritedWallRow.surfaceAreaSqm,
-  28.75,
+  29.15,
   "The overridden panel area must be subtracted from the inherited wall material."
 );
 assert.equal(
@@ -1066,8 +1075,167 @@ assert.equal(
         : sum,
     0
   ),
-  32.5,
+  32.9,
   "Wall BOM rows must cover the solid wall area exactly once after subtracting the doorway."
+);
+
+const bomWindow = {
+  id: "bom-window", roomId: roomWithCanonicalPanelFinish.id, kind: "window" as const,
+  wall: "north" as const, widthMm: 1400, offsetMm: 0, heightMm: 1200, bottomMm: 900,
+};
+const bomTopology = buildHousePlan2D([roomWithCanonicalPanelFinish], 4, 3).rooms;
+const bomSegment = getWallSegments(bomTopology[0]).find((segment) => segment.wall === "north");
+assert.ok(bomSegment);
+const bomWindowPanels = buildOpeningWallSurfacePanels(bomTopology[0], bomTopology, bomSegment,
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow], bomTopology)), 2.5);
+const sillPanel = bomWindowPanels.find((panel) => panel.role === "interior" && panel.part.key.endsWith("-sill"));
+assert.ok(sillPanel);
+const windowPanelRoom: RoomSnapshot = {
+  ...roomWithCanonicalPanelFinish,
+  surfaces: { walls: {
+    default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" },
+    panels: { [sillPanel.panelId]: { materialId: "goodrich-geff-novaclick-gnv-003-ash-oak" } },
+  } },
+};
+const windowBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bomWindow]);
+assert.equal(windowBomRows.find((row) => row.wallPanelId === sillPanel.panelId)?.surfaceAreaSqm, 1.26,
+  "A saved fragment material must retain its area until the continuous wall is repainted.");
+assert.equal(Math.round(windowBomRows.reduce((sum, row) => sum + row.surfaceAreaSqm, 0) * 100), 3332,
+  "The window aperture must be excluded and its lintel/sill areas counted exactly once.");
+const continuousPanelId = getContinuousWallPanelId(bomTopology[0], bomSegment,
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow], bomTopology)), "interior");
+assert.ok(continuousPanelId);
+windowPanelRoom.surfaces!.walls!.panels![continuousPanelId] = { materialId: "goodrich-geff-novaclick-gnv-003-ash-oak" };
+const continuousBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bomWindow]);
+const continuousRows = continuousBomRows.filter((row) => row.wallPanelId === continuousPanelId);
+assert.equal(continuousRows.length, 1, "One selected wall must produce one material quantity row.");
+assert.equal(continuousRows[0].surfaceAreaSqm, 8.32, "A continuous wall finish includes all solid sections minus the window.");
+assert.equal(continuousBomRows.some((row) => row.wallPanelId === sillPanel.panelId), false,
+  "A whole wall assignment must supersede old fragment assignments without double counting.");
+
+const roundSummaryArea = (areaSqm: number | undefined) =>
+  areaSqm === undefined ? undefined : Math.round(areaSqm * 100) / 100;
+const noSampleUrl = () => null;
+const panelSummaryRows = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([windowPanelRoom], [bomWindow]),
+  noSampleUrl
+);
+const panelSummaryRow = panelSummaryRows.find(
+  (row) => row.id === `${windowPanelRoom.id}-wall-panel-${continuousPanelId}`
+);
+assert.ok(panelSummaryRow, "A finish applied to a selected wall must appear in the Surface Summary.");
+assert.deepEqual(
+  [panelSummaryRow.target, panelSummaryRow.surfaceLabel, panelSummaryRow.materialName],
+  ["selected_wall", continuousRows[0].surfaceLabel, continuousRows[0].materialName],
+  "The Surface Summary panel row must name the same wall and material as the export BOM."
+);
+assert.equal(roundSummaryArea(panelSummaryRow.areaSqm), continuousRows[0].surfaceAreaSqm,
+  "The Surface Summary panel area must match the export BOM, excluding the window aperture.");
+assert.equal(
+  panelSummaryRows.filter((row) => row.id.includes("-wall-panel-")).length,
+  continuousBomRows.filter((row) => row.wallPanelId).length,
+  "Superseded fragment finishes must not add Surface Summary rows the export BOM does not have."
+);
+assert.equal(
+  roundSummaryArea(panelSummaryRows.find((row) => row.target === "walls")?.areaSqm),
+  continuousBomRows.find((row) => row.surface === "walls")?.surfaceAreaSqm,
+  "The Surface Summary remaining-wall area must match the export BOM after the panel override."
+);
+const undonePanelSummaryRows = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([roomWithCanonicalPanelFinish].map((room) => ({
+    ...room,
+    surfaces: { walls: { default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" } } },
+  })), [bomWindow]),
+  noSampleUrl
+);
+assert.equal(undonePanelSummaryRows.some((row) => row.id.includes("-wall-panel-")), false,
+  "Removing the panel finish must remove its Surface Summary row.");
+const paintedPanelSummaryRow = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([{
+    ...windowPanelRoom,
+    surfaces: { walls: { panels: { [continuousPanelId]: { paintColorHex: "#F5F1E8", paintName: "Soft Gallery White" } } } },
+  }], [bomWindow]),
+  noSampleUrl
+).find((row) => row.id.endsWith(continuousPanelId));
+assert.deepEqual(
+  [paintedPanelSummaryRow?.materialName, roundSummaryArea(paintedPanelSummaryRow?.areaSqm)],
+  ["Soft Gallery White", 8.32],
+  "A painted selected wall must appear in the Surface Summary with its aperture-free area."
+);
+// 4 m × 4 m bounds, minus a 2 m × 2 m notch and a 1 m × 1 m courtyard hole = 11 m².
+const notchedPolygonRoom: RoomSnapshot = {
+  id: "notched_polygon_room",
+  name: "Notched polygon room",
+  roomType: "custom",
+  geometry: { width: 4, depth: 4, height: 2.5 },
+  planPosition: { x: 0, z: 0 },
+  planShape: "custom_polygon",
+  planPolygon: [
+    { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+    { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+  ],
+  planHoles: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+  surfaces: { floorMaterialId: "goodrich-geff-novaclick-gnv-001-ivory-oak" },
+  items: [],
+  zones: [],
+  savedViews: [],
+};
+const notchedFloorBomRow = buildRoomSurfaceMaterialBomRows([notchedPolygonRoom]).find((row) => row.surface === "floor");
+assert.deepEqual([notchedFloorBomRow?.surfaceAreaSqm, notchedFloorBomRow?.roomAreaSqm], [11, 11],
+  "The BOM floor must use the custom polygon minus its hole, not width × depth.");
+const notchedSummaryRows = buildSurfaceSummaryRows(buildSurfaceRoomSummaries([notchedPolygonRoom], []), noSampleUrl);
+assert.deepEqual(
+  (["floor", "ceiling"] as const).map((target) =>
+    roundSummaryArea(notchedSummaryRows.find((row) => row.target === target)?.areaSqm)),
+  [11, 11],
+  "Surface Summary floor and ceiling areas must match the BOM floor area for a notched room with a hole."
+);
+assert.doesNotMatch(fs.readFileSync("lib/surface-material-bom.ts", "utf8"), /function getRoomAreaSqm/,
+  "The BOM must read floor area from lib/room-floor-area.ts instead of a private copy.");
+assert.match(
+  fs.readFileSync("components/editor/design-controls-plan/surfaceSummaryRows.ts", "utf8"),
+  /export function buildSurfaceRoomSummaries\([\s\S]*?floorAreaSqm: getRoomSnapshotFloorAreaSqm\(room\),/,
+  "Surface Summary floor and ceiling rows must read the room floor area from lib/room-floor-area.ts."
+);
+const notchedSurfaceRooms = buildSurfaceRoomSummaries(
+  [{ ...notchedPolygonRoom, id: "plain_room", planShape: "rectangle", planHoles: undefined }, notchedPolygonRoom], []);
+assert.deepEqual(
+  [
+    getActiveSurfaceRoomFloorAreaSqm(notchedSurfaceRooms, "notched_polygon_room"),
+    getActiveSurfaceRoomFloorAreaSqm(notchedSurfaceRooms, "missing_room"),
+    getActiveSurfaceRoomFloorAreaSqm([], "notched_polygon_room"),
+  ],
+  [11, 16, 0],
+  "The active-room area readout must use the summary floor area and fall back to the first room like getActiveRoom."
+);
+// 5 m × 4 m L-shape minus the drawn 2.1 m × 1.68 m notch = 16.472 m²; its walls keep the 18 m bounding perimeter.
+const lShapeRoom: RoomSnapshot = {
+  ...notchedPolygonRoom,
+  id: "l_shape_room",
+  geometry: { width: 5, depth: 4, height: 2.5 },
+  planShape: "l_shape",
+  planHoles: undefined,
+  surfaces: {
+    floorMaterialId: "goodrich-geff-novaclick-gnv-001-ivory-oak",
+    walls: { default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" } },
+  },
+};
+const lShapeBomRows = buildRoomSurfaceMaterialBomRows([lShapeRoom]);
+const lShapeFloorBomRow = lShapeBomRows.find((row) => row.surface === "floor");
+assert.deepEqual([lShapeFloorBomRow?.surfaceAreaSqm, lShapeFloorBomRow?.roomAreaSqm], [16.47, 16.47],
+  "The BOM floor must exclude the L-shape notch, not bill width × depth.");
+assert.equal(lShapeBomRows.find((row) => row.surface === "walls")?.surfaceAreaSqm, 45,
+  "L-shape walls must follow the drawn outline, whose perimeter equals its bounding rectangle's.");
+const lShapeSurfaceRooms = buildSurfaceRoomSummaries([lShapeRoom], []);
+const lShapeSummaryRows = buildSurfaceSummaryRows(lShapeSurfaceRooms, noSampleUrl);
+assert.deepEqual(
+  [
+    lShapeSurfaceRooms[0].floorAreaSqm,
+    ...(["floor", "ceiling"] as const).map((target) =>
+      lShapeSummaryRows.find((row) => row.target === target)?.areaSqm),
+  ],
+  [16.472, 16.472, 16.472],
+  "Surface Summary floor and ceiling areas must exclude the L-shape notch like the BOM."
 );
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");

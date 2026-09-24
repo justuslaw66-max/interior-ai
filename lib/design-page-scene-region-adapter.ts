@@ -38,7 +38,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       liteEnabled: CanvasState["liteSceneEnabled"];
       loadingVisible: CanvasState["showSceneLoadingVeil"];
       performanceMode: CanvasState["scenePerformanceMode"];
-      renderQuality: StructureConfiguration["renderQuality"];
+      renderQuality: ItemsConfiguration["renderQuality"];
       controlsEnabled: CanvasState["controlsEnabled"];
       cameraY: CanvasState["cameraY"];
       planDiagnostics: CanvasState["planDiagnostics"];
@@ -84,20 +84,12 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       activePlanOffset: DesignPageSceneRegionConfiguration["guidance"]["activeRoomOffset"];
       activeFloorLevel: StructureState["wholeHome"]["activeFloorLevel"];
       stackedFloors: StructureState["wholeHome"]["stackedFloors"];
-      wholeHomeEnabled: StructureState["wholeHome"]["enabled"];
+      hasWholeHousePlan: ItemsConfiguration["hasWholeHousePlan"];
       wholeHomeRooms: StructureState["wholeHome"]["rooms"];
       selectedSurfaceTarget: StructureState["wholeHome"]["selectedSurfaceTarget"];
-      floorWorldY: StructureState["singleRoom"]["floorWorldY"];
-      width: StructureState["singleRoom"]["width"];
-      depth: StructureState["singleRoom"]["depth"];
-      height: StructureState["singleRoom"]["height"];
-      wallThickness: StructureState["singleRoom"]["wallThickness"];
-      slabThickness: StructureState["singleRoom"]["slabThickness"];
-      wallOpacity: StructureState["singleRoom"]["wallOpacity"];
-      floorOpacity: StructureState["singleRoom"]["floorOpacity"];
-      ceilingOpacity: StructureState["singleRoom"]["ceilingOpacity"];
-      ceilingVisible: StructureState["singleRoom"]["ceilingVisible"];
-      ceilingColor: StructureState["singleRoom"]["ceilingColor"];
+      width: DesignPageSceneRegionConfiguration["preview"]["activeRoomWidth"];
+      depth: DesignPageSceneRegionConfiguration["preview"]["activeRoomDepth"];
+      height: StructureState["wholeHome"]["wallHeight"];
       walls: ItemsConfiguration["walls"];
     };
     placement: {
@@ -171,7 +163,6 @@ export function buildDesignPageSceneRegionAdapter({
         viewMode: editor.viewMode,
         plan: projectStructurePlan(plan),
         wholeHome: {
-          enabled: room.wholeHomeEnabled,
           rooms: room.wholeHomeRooms,
           activeRoomId: room.activeId,
           activeFloorLevel: room.activeFloorLevel,
@@ -179,19 +170,6 @@ export function buildDesignPageSceneRegionAdapter({
           stackedFloors: room.stackedFloors,
           selectedOpeningId: plan.selectedOverlayId,
           selectedSurfaceTarget: room.selectedSurfaceTarget,
-        },
-        singleRoom: {
-          floorWorldY: room.floorWorldY,
-          width: room.width,
-          depth: room.depth,
-          height: room.height,
-          wallThickness: room.wallThickness,
-          slabThickness: room.slabThickness,
-          wallOpacity: room.wallOpacity,
-          floorOpacity: room.floorOpacity,
-          ceilingOpacity: room.ceilingOpacity,
-          ceilingVisible: room.ceilingVisible,
-          ceilingColor: room.ceilingColor,
         },
       },
       guidance: {
@@ -247,7 +225,6 @@ export function buildDesignPageSceneRegionAdapter({
           orientation: plan.orientation,
           gridBounds: plan.fitBounds,
         },
-        renderQuality: scene.renderQuality,
       },
       guidance: {
         grid: {
@@ -270,7 +247,7 @@ export function buildDesignPageSceneRegionAdapter({
         isClientPreview: editor.isClientPreview,
         canEdit: editor.canEdit,
         isDesigner: editor.isDesigner,
-        hasWholeHousePlan: room.wholeHomeEnabled,
+        hasWholeHousePlan: room.hasWholeHousePlan,
         renderQuality: scene.renderQuality,
         walls: room.walls,
         snapEnabled: configuration.snapEnabled,
@@ -281,7 +258,7 @@ export function buildDesignPageSceneRegionAdapter({
         planMeasurementUnit: plan.measurementUnit,
       },
       preview: {
-        hasWholeHousePlan: room.wholeHomeEnabled,
+        hasWholeHousePlan: room.hasWholeHousePlan,
         planWidth: plan.width,
         planDepth: plan.depth,
         activeRoomWidth: room.width,

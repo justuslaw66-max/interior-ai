@@ -11,6 +11,7 @@ import {
   ROOM_DIMENSION_DEFAULTS,
 } from "@/lib/design-page-house-plan";
 import { track } from "@/lib/analytics";
+import type { DisplayUnit } from "@/lib/display-units";
 import type {
   EditorAnnotation2D,
   FixedElement2D,
@@ -55,7 +56,6 @@ export function useDesignPagePlanDocumentState() {
     setPlanGuidedActionsEnabled,
     planGuidedActionsChoiceSeen,
     setPlanGuidedActionsChoiceSeen,
-    planOpeningsStorageState,
     planSettingsLoaded, planMeasurementUnitReady,
   } = useDesignPagePlanState();
 
@@ -125,11 +125,6 @@ export function useDesignPagePlanDocumentState() {
     [setPlanMeasurementUnitState]
   );
 
-  const defaultPlanOpeningsSeededRef = useRef(false);
-  const markDefaultPlanOpeningsSeeded = useCallback(() => {
-    defaultPlanOpeningsSeededRef.current = true;
-  }, []);
-
   return {
     state: {
       planTheme,
@@ -143,7 +138,6 @@ export function useDesignPagePlanDocumentState() {
       exportStylePreset,
       planGuidedActionsEnabled,
       planGuidedActionsChoiceSeen,
-      planOpeningsStorageState,
       planSettingsLoaded, planMeasurementUnitReady,
     },
     actions: {
@@ -158,19 +152,17 @@ export function useDesignPagePlanDocumentState() {
       setExportStylePreset: setExportStylePresetState,
       setPlanGuidedActionsEnabled,
       setPlanGuidedActionsChoiceSeen,
-      markDefaultPlanOpeningsSeeded,
     },
     refs: {
       planOpeningsRef,
       planAnnotationsRef,
       planFixedElementsRef,
-      defaultPlanOpeningsSeededRef,
     },
   };
 }
 
-export function useDesignPageFloorPlanDocumentState() {
-  const workflow = useDesignPageFloorPlanWorkflowState();
+export function useDesignPageFloorPlanDocumentState(measurementUnit: DisplayUnit) {
+  const workflow = useDesignPageFloorPlanWorkflowState(measurementUnit);
   const { setFloorPlanUnderlay: setFloorPlanUnderlayState } = workflow;
   const {
     refs: {

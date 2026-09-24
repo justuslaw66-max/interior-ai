@@ -354,7 +354,6 @@ function CanonicalWallSolidHitMesh({
   geometryHash,
   roomId,
   onSelectWall,
-  onSelectOpening,
 }: {
   solid: CanonicalFloorPlanWallSolid;
   wallId: string;
@@ -368,7 +367,6 @@ function CanonicalWallSolidHitMesh({
     roomId: string | null,
     event: CanonicalPointerEvent
   ) => void;
-  onSelectOpening?: (openingId: string | null) => void;
 }) {
   const shape = useMemo(() => wallSolidShape(solid), [solid]);
   const height = Math.max(0.001, (solid.topMm - solid.bottomMm) / 1000);
@@ -386,7 +384,6 @@ function CanonicalWallSolidHitMesh({
       onClick={(event: CanonicalPointerEvent) => {
         event.stopPropagation();
         onSelectWall?.(wallId, roomId, event);
-        onSelectOpening?.(null);
       }}
     >
       <extrudeGeometry
@@ -551,7 +548,6 @@ function CanonicalWallSurfaceMesh({
   geometryHash,
   interactive,
   onSelectWall,
-  onSelectOpening,
 }: {
   solid: CanonicalFloorPlanWallSolid;
   wallId: string;
@@ -564,7 +560,6 @@ function CanonicalWallSurfaceMesh({
   geometryHash: string;
   interactive: boolean;
   onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
-  onSelectOpening?: (openingId: string | null) => void;
 }) {
   const { gl } = useThree();
   const edge = wallSurfaceEdge(solid, side);
@@ -631,7 +626,6 @@ function CanonicalWallSurfaceMesh({
           ? (event: CanonicalPointerEvent) => {
               event.stopPropagation();
               onSelectWall?.(wallId, room.id, event);
-              onSelectOpening?.(null);
             }
           : undefined
       }
@@ -1171,7 +1165,6 @@ export function CanonicalFloorPlanWalls3D({
                 geometryHash={model.geometryHash}
                 roomId={roomId}
                 onSelectWall={onSelectWall}
-                onSelectOpening={onSelectOpening}
               />
             ) : null;
             const surfaces = wall.roomSides.flatMap(({ roomId: surfaceRoomId, side }) => {
@@ -1194,7 +1187,6 @@ export function CanonicalFloorPlanWalls3D({
                   geometryHash={model.geometryHash}
                   interactive={interactive}
                   onSelectWall={onSelectWall}
-                  onSelectOpening={onSelectOpening}
                 />,
               ];
             });

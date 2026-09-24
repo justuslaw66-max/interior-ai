@@ -2,13 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { InboxFiltersUI } from "@/components/admin/InboxFiltersUI";
+import { InboxFiltersUI, type InboxQueueFilter } from "@/components/admin/InboxFiltersUI";
 import {
   getAdminImportWorkflowData,
   getImportJobValidationBlockers,
 } from "@/lib/import-jobs/admin-workflow";
 
-type QueueFilter = "all" | "scrape" | "normalize" | "review" | "publish";
 
 export default async function AdminCatalogInboxPage({
   searchParams,
@@ -25,7 +24,7 @@ export default async function AdminCatalogInboxPage({
   const queueFilter =
     typeof requestedQueue === "string" &&
     ["all", "scrape", "normalize", "review", "publish"].includes(requestedQueue)
-      ? (requestedQueue as QueueFilter)
+      ? (requestedQueue as InboxQueueFilter)
       : "all";
   const blockersOnly =
     resolvedSearchParams?.blocked === "1" ||
@@ -78,7 +77,7 @@ export default async function AdminCatalogInboxPage({
         </div>
       </section>
 
-      <InboxFiltersUI initialQueue={queueFilter} initialBlocked={blockersOnly} />
+      <InboxFiltersUI queue={queueFilter} blockersOnly={blockersOnly} />
 
       <section className="rounded-xl border p-4">
         <div className="flex items-center justify-between gap-3">

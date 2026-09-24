@@ -352,6 +352,11 @@ assert.match(
   /id="room-setup-opening-status"[\s\S]*?data-testid="room-setup-continue-furnish"[\s\S]*?aria-describedby=\{hasConnectionBlockers \? "room-setup-opening-status" : undefined\}/,
   "Blocked Consumer progression should be disabled and described by the visible doorway correction status."
 );
+assert.doesNotMatch(
+  source,
+  /Continue to Furnish|data-testid="plan-palette-furnish"/,
+  "The room setup card owns the one Continue to Furnish action; a second, ungated copy in the Plan palette contradicted it."
+);
 
 assert.match(
   source,
@@ -594,7 +599,7 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /setPlanOpenings\(templateOpenings\)/,
+  /replacePlanDocument\(templateOpenings, templateFixedElements,/,
   "Applying a template should install automatic doorways instead of clearing openings."
 );
 
@@ -606,7 +611,7 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(templateFixedElements\);/,
+  /const replacePlanDocument = \([\s\S]*?setPlanOpenings\(openings\);[\s\S]*?setPlanFixedElements\(fixedElements\);/,
   "Applying a template should replace standalone built-ins with template-owned reference zones so stale rectangles cannot survive."
 );
 

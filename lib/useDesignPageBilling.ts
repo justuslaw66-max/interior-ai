@@ -84,17 +84,15 @@ export function useDesignPageBilling({
         setShowUpgrade(false);
         setUpgradeReason(null);
       }
-      showToast(`Plan status: ${nextPlan === "pro" ? "Pro" : "Free"}`);
       track("plan_refreshed", { plan: nextPlan });
     } catch {
-      showToast("Failed to refresh plan status");
+      console.warn("Failed to refresh plan status");
       setPlan("free");
     }
   }, [
     setPlan,
     setShowUpgrade,
     setUpgradeReason,
-    showToast,
   ]);
 
   const openBillingPortal = useCallback(async () => {

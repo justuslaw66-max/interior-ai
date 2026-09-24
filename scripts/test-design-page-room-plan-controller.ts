@@ -1,6 +1,20 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createRoom, deleteRoom, type DesignSnapshot } from "@/lib/room-types";
+
+const onlyRoom = createRoom("only-room", "Only room");
+const sourceSnapshot: DesignSnapshot = {
+  version: 3,
+  rooms: [onlyRoom],
+  activeRoomId: onlyRoom.id,
+  floorPlan: { canonicalGeometryHash: "source-plan" },
+};
+const blankSnapshot = deleteRoom(sourceSnapshot, onlyRoom.id);
+assert.deepEqual(blankSnapshot.rooms, []);
+assert.equal(blankSnapshot.activeRoomId, "");
+assert.equal(blankSnapshot.floorPlan, undefined);
+assert.equal(sourceSnapshot.rooms.length, 1, "Deleting must not mutate the saved source snapshot.");
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -23,6 +37,10 @@ const controllerSource = readFileSync(
   join(root, "lib/useDesignPageRoomPlanController.ts"),
   "utf8"
 );
+const deleteRoomActionSource = readFileSync(
+  join(root, "lib/useDesignPageDeleteRoomAction.ts"),
+  "utf8"
+);
 const planEditingFacadeSource = readFileSync(
   join(root, "lib/useDesignPagePlanEditingFacade.ts"),
   "utf8"
@@ -33,6 +51,10 @@ const planWorkspaceFacadeSource = readFileSync(
 );
 const planAuthoringRegistrationSource = readFileSync(
   join(root, "lib/useDesignPagePlanAuthoringRegistration.ts"),
+  "utf8"
+);
+const viewportRegionAdapterSource = readFileSync(
+  join(root, "lib/design-page-viewport-region-adapter.ts"),
   "utf8"
 );
 
@@ -74,31 +96,64 @@ for (const inlineHandler of [
   );
 }
 
-for (const historyLabel of [
-  "Duplicate room",
-  "Delete room",
-  "Edit room dimension",
-  "Resize room",
-  "Nudge room",
-]) {
+for (const [source, historyLabel] of [
+  [controllerSource, "Duplicate room"],
+  [deleteRoomActionSource, "Delete room"],
+  [controllerSource, "Edit room dimension"],
+  [controllerSource, "Resize room"],
+  [controllerSource, "Nudge room"],
+] as const) {
   assert.match(
-    controllerSource,
-    new RegExp(`(?:begin|runHistoryTransaction)\\(\"${historyLabel}\"`),
-    `The controller should preserve the ${historyLabel} history transaction.`
+    source,
+    new RegExp(`runHistoryTransaction\\(\"${historyLabel}\"`),
+    `The owning module should preserve the ${historyLabel} history transaction.`
   );
 }
 
-for (const eventName of [
-  "editor_room_switched",
-  "floor_plan_room_duplicated",
-  "floor_plan_room_deleted",
-  "editor_room_dimension_edited",
-  "editor_room_resized",
-]) {
+for (const [source, eventName] of [
+  [controllerSource, "editor_room_switched"],
+  [controllerSource, "floor_plan_room_duplicated"],
+  [deleteRoomActionSource, "floor_plan_room_deleted"],
+  [controllerSource, "editor_room_dimension_edited"],
+  [controllerSource, "editor_room_resized"],
+] as const) {
+  assert.match(
+    source,
+    new RegExp(`track\\(\"${eventName}\"`),
+    `The owning module should preserve the ${eventName} analytics event.`
+  );
+}
+
+assert.match(
+  controllerSource,
+  /const deleteSelectedRoom = useDesignPageDeleteRoomAction\(\{[\s\S]*?clearPlanForEmptyCanvas,[\s\S]*?\}\);/,
+  "The controller must delegate room deletion to the focused delete-room action."
+);
+
+assert.doesNotMatch(
+  deleteRoomActionSource,
+  /history\.(?:begin|commit)\(/,
+  "Room deletion must not drive the history manager directly: begin() is ignored while a coalesced "
+  + "transaction is open, so the commit that follows closes that transaction instead of its own."
+);
+assert.match(
+  deleteRoomActionSource,
+  /runHistoryTransaction\("Delete room", \(\) => \{[\s\S]*?clearPlanForEmptyCanvas\(\);\s*\}\);/,
+  "Every mutation the deletion has to undo belongs inside its transaction, including the "
+  + "empty-canvas reset that runs when the last room goes."
+);
+assert.doesNotMatch(
+  controllerSource,
+  /history\.(?:begin|commit)\(/,
+  "Duplicate, dimension and resize edits must not drive the history manager directly either: "
+  + "begin() is ignored while a coalesced transaction is open, so the commit that follows closes "
+  + "that transaction instead of its own."
+);
+for (const historyLabel of ["Duplicate room", "Edit room dimension", "Resize room"]) {
   assert.match(
     controllerSource,
-    new RegExp(`track\\(\"${eventName}\"`),
-    `The controller should preserve the ${eventName} analytics event.`
+    new RegExp(`runHistoryTransaction\\("${historyLabel}", \\(\\) => \\{\\s*setDesignSnapshot\\(`),
+    `${historyLabel} must write the snapshot inside its own transaction, not after it.`
   );
 }
 
@@ -111,6 +166,21 @@ assert.match(
   controllerSource,
   /valueMeters > ROOM_DIMENSION_DEFAULTS\.max[\s\S]*?showToast\("Enter a valid room dimension\."\)/,
   "Numeric room edits should retain explicit dimension validation."
+);
+assert.doesNotMatch(
+  controllerSource + deleteRoomActionSource,
+  /Keep at least one room/,
+  "The editor must allow the final room to transition into its existing empty-plan state."
+);
+assert.match(
+  viewportRegionAdapterSource,
+  /canDeleteSelectedRoom:\s*state\.selectionInspector\.designRoomCount > 0/,
+  "The room inspector must keep Delete enabled for the final room."
+);
+assert.match(
+  deleteRoomActionSource,
+  /deletingLastRoom[\s\S]*?clearPlanForEmptyCanvas\(\)[\s\S]*?All rooms deleted\. Start with a blank canvas\./,
+  "Deleting the final room should clear plan artifacts and explain the blank-canvas transition."
 );
 assert.match(
   commandBarWrapperSource,

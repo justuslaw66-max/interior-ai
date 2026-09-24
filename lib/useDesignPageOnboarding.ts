@@ -50,7 +50,7 @@ export type DesignPageOnboardingState = {
   items: DesignItem[];
   zones: ZoneMin[];
   constraintResults: ConstraintResult[];
-  showBetaStart: boolean;
+  saveStatusSource: string;
   designRoomCount: number;
   planRoomCount: number;
   saveStatusKind: string;
@@ -580,17 +580,14 @@ export function useDesignPageOnboarding({
             ? mapToTopCategory(catalogItem.category, catalogItem) === "sofa"
             : false;
         });
-        const rugItem = state.items.find(
-          (item) => CATALOG_ITEMS[item.productId]?.category === "rug"
-        );
-        const coffeeItem = state.items.find(
-          (item) => CATALOG_ITEMS[item.productId]?.category === "coffee_table"
-        );
+        const hasCategory = (category: string) =>
+          state.items.some((item) => CATALOG_ITEMS[item.productId]?.category === category);
         const nudgeText = getNextBestActionNudge({
+          roomCount: state.designRoomCount,
           hasItems: state.items.length > 0,
           hasSofa: Boolean(sofaItem),
-          hasRug: Boolean(rugItem),
-          hasCoffeeTable: Boolean(coffeeItem),
+          hasRug: hasCategory("rug"),
+          hasCoffeeTable: hasCategory("coffee_table"),
           contentWarningCount: state.constraintResults.filter(
             (result) => result.level === "warn" || result.level === "error"
           ).length,
@@ -624,6 +621,7 @@ export function useDesignPageOnboarding({
     onboardingState.enabled,
     state.constraintResults,
     state.designId,
+    state.designRoomCount,
     state.editorMode,
     state.isClientPreview,
     state.items,
@@ -632,13 +630,10 @@ export function useDesignPageOnboarding({
   const firstRunActivationState = useMemo(
     () =>
       buildFirstRunActivationState({
-        templateChosen:
-          !state.showBetaStart ||
-          state.designRoomCount > 1 ||
-          state.items.length > 0,
+        templateChosen: state.designRoomCount > 1 || state.items.length > 0,
         itemCount: state.items.length,
         saveState:
-          state.saveStatusKind === "saved"
+          state.saveStatusKind === "saved" && state.saveStatusSource === "cloud"
             ? "saved"
             : state.saveStatusKind === "saving"
               ? "saving"
@@ -654,7 +649,7 @@ export function useDesignPageOnboarding({
       state.items.length,
       state.saveStatusKind,
       state.shareToken,
-      state.showBetaStart,
+      state.saveStatusSource,
     ]
   );
 

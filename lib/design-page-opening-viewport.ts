@@ -4,7 +4,7 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 
 export type DesignPageViewportOpening = Pick<
   RoomOpening2D,
-  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "evidence" | "canonicalHost"
+  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "offsetMm" | "evidence" | "canonicalHost"
 > & {
   wallSpanMeters: number;
 };
@@ -79,6 +79,8 @@ export function resolveDesignPageOpeningViewportState(
       dimensionIssues: vertical.issues,
       maxWidthMm,
       maxHeightMm,
+      offsetMm: opening.offsetMm,
+      maxOffsetMm: Math.max(0, (opening.wallSpanMeters * 1000 - opening.widthMm) / 2),
       ...openingEvidenceState(opening),
     },
   };
@@ -88,7 +90,7 @@ export function projectDesignPageViewportOpening(opening: Omit<DesignPageViewpor
   if (!opening) return null;
   return { id: opening.id, kind: opening.kind, wall: opening.wall,
     widthMm: opening.widthMm, heightMm: opening.heightMm, bottomMm: opening.bottomMm,
-    evidence: opening.evidence, wallSpanMeters,
+    offsetMm: opening.offsetMm, evidence: opening.evidence, wallSpanMeters,
     ...(opening.canonicalHost ? { canonicalHost: opening.canonicalHost } : {}),
   };
 }

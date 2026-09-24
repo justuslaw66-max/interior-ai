@@ -38,6 +38,7 @@ import {
   mergeSharedWallSegments2D,
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
+import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 import {
@@ -48,10 +49,15 @@ import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-mode
 import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 import { ROOM_PLAN_CLICK_DISTANCE_PX, selectRoomSurfaceFromClick } from "./room-renderer-2d-surface-selection";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
-import { formatDisplayLength } from "@/lib/display-units";
+import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { formatRoomDrawPreviewLabel } from "@/lib/plan-room-summary";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { buildOpeningRenderSegments, type Opening2D,
   resolveCanonicalOpeningEditMetrics, type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
+import { formatWallDrawLengthInput, MAX_WALL_DRAW_SEGMENT_LENGTH_METERS,
+  parseWallDrawLengthMm, wallDrawLengthUnitIndicator,
+  wallDrawSegmentEditorIsStale } from "./room-renderer-2d-wall-length-editor";
 import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
@@ -1240,22 +1246,6 @@ function buildWallDrawSnapMarker(
   };
 }
 
-function buildRoomDrawPreviewLabel(preview: RoomDrawPreview): string {
-  const width = preview.width.toFixed(1).replace(/\.0$/, "");
-  const depth = preview.depth.toFixed(1).replace(/\.0$/, "");
-  const area = preview.areaSqm.toFixed(1).replace(/\.0$/, "");
-  return preview.rectangle ? `${width} x ${depth}m (${area} m2)` : `${width} x ${depth}m`;
-}
-
-function buildWallDrawPreviewLabel(
-  start: FloorPlanPoint,
-  end: FloorPlanPoint
-): string {
-  const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
-  return `${lengthMm} mm`;
-}
-
-const MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS.max;
 const ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.min * 1000;
 const ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.max * 1000;
 
@@ -1275,10 +1265,6 @@ function areWallDrawSegmentsRenderable(points: FloorPlanPoint[]): boolean {
     }
   }
   return true;
-}
-
-function formatMillimeters(meters: number): string {
-  return `${Math.round(meters * 1000)} mm`;
 }
 
 function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null {
@@ -1303,11 +1289,14 @@ function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null
   return "Choose another point on the wall.";
 }
 
-function getOpeningPreviewDetailText(preview: TracedOpeningPreview): string | null {
+function getOpeningPreviewDetailText(
+  preview: TracedOpeningPreview,
+  unit: PlanMeasurementUnit
+): string | null {
   if (!preview.opening) return null;
 
-  const widthLabel = formatMillimeters(preview.opening.widthMm / 1000);
-  const offsetLabel = formatMillimeters(Math.abs(preview.opening.offsetMm) / 1000);
+  const widthLabel = formatDisplayLength(preview.opening.widthMm, unit);
+  const offsetLabel = formatDisplayLength(Math.abs(preview.opening.offsetMm), unit);
   const offsetSuffix = preview.opening.offsetMm === 0 ? "centered" : `${offsetLabel} from center`;
   return `${widthLabel} · ${preview.opening.wall} wall · ${offsetSuffix}`;
 }
@@ -1442,6 +1431,8 @@ export default function RoomRenderer2D({
   const halfD = depth / 2;
   const isPro = theme === "pro";
   const hasHouseRooms = shouldRenderRoomPlanGeometry(rooms);
+  // A lone non-rectangular room draws its own plan geometry instead of the plain frame.
+  const loneRoomFrame = useMemo(() => (hasHouseRooms ? null : resolveLoneRoomPlanFrame2D(rooms)), [hasHouseRooms, rooms]);
   const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
   const canEditRoomGeometry = canEditPlan && !canonicalStructureExpected;
   const canClearRoomSelection = canEditPlan && Boolean(onClearRoomSelection);
@@ -1968,10 +1959,10 @@ export default function RoomRenderer2D({
       const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
       setEditingWallDrawSegment({
         segmentIndex,
-        value: String(lengthMm),
+        value: formatWallDrawLengthInput(lengthMm, measurementUnit),
       });
     },
-    []
+    [measurementUnit]
   );
   const cancelWallDrawSegmentLengthEdit = useCallback(() => {
     setEditingWallDrawSegment(null);
@@ -1979,7 +1970,8 @@ export default function RoomRenderer2D({
   const commitWallDrawSegmentLengthEdit = useCallback(
     (rawValue?: string) => {
       if (!editingWallDrawSegment) return;
-      const finalMillimeters = Number(rawValue ?? editingWallDrawSegment.value);
+      const text = rawValue ?? editingWallDrawSegment.value;
+      const finalMillimeters = parseWallDrawLengthMm(text, measurementUnit);
       if (!Number.isFinite(finalMillimeters) || finalMillimeters <= 0) {
         setEditingWallDrawSegment(null);
         return;
@@ -1990,12 +1982,12 @@ export default function RoomRenderer2D({
       );
       setEditingWallDrawSegment(null);
     },
-    [editingWallDrawSegment, onCommitWallDrawSegmentLength]
+    [editingWallDrawSegment, measurementUnit, onCommitWallDrawSegmentLength]
   );
   const updateWallDrawSegmentEditorValue = useCallback(
     (value: string) => {
       setEditingWallDrawSegment((current) => (current ? { ...current, value } : current));
-      const finalMillimeters = Number(value);
+      const finalMillimeters = parseWallDrawLengthMm(value, measurementUnit);
       if (
         Number.isFinite(finalMillimeters) &&
         finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000
@@ -2003,20 +1995,15 @@ export default function RoomRenderer2D({
         commitWallDrawSegmentLengthEdit(value);
       }
     },
-    [commitWallDrawSegmentLengthEdit]
+    [commitWallDrawSegmentLengthEdit, measurementUnit]
   );
 
-  if (editingWallDrawSegment) {
-    const finalMillimeters = Number(editingWallDrawSegment.value);
-    if (
-      !canRenderWallDrawSegmentMeasurements ||
-      editingWallDrawSegment.segmentIndex <= 0 ||
-      editingWallDrawSegment.segmentIndex >= activeDrawRoomPoints.length ||
-      (Number.isFinite(finalMillimeters) &&
-        finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000)
-    ) {
-      setEditingWallDrawSegment(null);
-    }
+  if (
+    editingWallDrawSegment &&
+    wallDrawSegmentEditorIsStale(editingWallDrawSegment, measurementUnit,
+      canRenderWallDrawSegmentMeasurements, activeDrawRoomPoints.length)
+  ) {
+    setEditingWallDrawSegment(null);
   }
 
   const openingPreview = useMemo<TracedOpeningPreview | null>(() => {
@@ -2039,7 +2026,7 @@ export default function RoomRenderer2D({
   const openingPreviewWallGuide = buildOpeningPreviewWallGuide(openingPreview, rooms);
   const openingPreviewHelpText = openingPreview ? getOpeningPreviewHelpText(openingPreview) : null;
   const openingPreviewDetailText = openingPreview
-    ? getOpeningPreviewDetailText(openingPreview)
+    ? getOpeningPreviewDetailText(openingPreview, measurementUnit)
     : null;
 
   const formatDimension = (meters: number) =>
@@ -2566,7 +2553,7 @@ export default function RoomRenderer2D({
     if (!opening) return false;
 
     const host = getResolvedOpeningHost(opening);
-    if (!host) return false;
+    if (!host || !opening.movableOnHost) return false;
     const pointerAlong = projectWorldPointToOpeningHost(
       host, getPlanPointFromPointerEvent(event)
     );
@@ -3091,16 +3078,16 @@ export default function RoomRenderer2D({
         </group>
       )}
 
-      {!hasHouseRooms && (
+      {loneRoomFrame && (
         <mesh
           rotation-x={-Math.PI / 2}
-          position={[0, 0.0005, 0]}
+          position={[loneRoomFrame.centerX, 0.0005, loneRoomFrame.centerZ]}
           onPointerDown={handleOpeningTraceCommit}
           onPointerMove={handleOpeningTracePointerMove}
           onPointerOut={handleOpeningTracePointerOut}
           onClick={handleOpeningTraceCommit}
         >
-          <planeGeometry args={[width, depth]} />
+          <planeGeometry args={[loneRoomFrame.width, loneRoomFrame.depth]} />
           <meshBasicMaterial color={floorColor} />
         </mesh>
       )}
@@ -3367,8 +3354,8 @@ export default function RoomRenderer2D({
                       <span>{dragHudStatusLabel}</span>
                     </div>
                     <div style={{ color: "#4b5563", display: "flex", gap: 8, fontWeight: 650 }}>
-                      <span>X {renderX.toFixed(2)}m</span>
-                      <span>Z {renderZ.toFixed(2)}m</span>
+                      <span>X {formatDimension(renderX)}</span>
+                      <span>Z {formatDimension(renderZ)}</span>
                       <span>Shift: no snap</span>
                     </div>
                   </div>
@@ -3557,7 +3544,7 @@ export default function RoomRenderer2D({
                     <div style={{ color: "#166534", fontSize: 11 }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
                       <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
-                        {(room.w * room.d).toFixed(1)} m2
+                        {formatDisplayArea(getPlanRoomFloorAreaSqm(room), measurementUnit)}
                       </span>
                     </div>
                     <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 650, marginTop: 1 }}>
@@ -4425,7 +4412,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.14)",
               }}
             >
-              Shared wall · {formatMillimeters(sharedWallPreviewSegment.lengthMeters)}
+              Shared wall · {formatDimension(sharedWallPreviewSegment.lengthMeters)}
             </div>
           </Html>
         </>
@@ -4597,11 +4584,8 @@ export default function RoomRenderer2D({
                   <input
                     data-testid="wall-draw-segment-length-editor"
                     autoFocus
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    max={MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000}
-                    step={1}
+                    type="text"
+                    inputMode={measurementUnit === "ft-in" ? "text" : "decimal"}
                     value={editingWallDrawSegment.value}
                     onChange={(event) =>
                       updateWallDrawSegmentEditorValue(event.currentTarget.value)
@@ -4628,7 +4612,9 @@ export default function RoomRenderer2D({
                       outline: "none",
                     }}
                   />
-                  <span style={{ color: "#4b5563", fontWeight: 700 }}>mm</span>
+                  <span style={{ color: "#4b5563", fontWeight: 700 }}>
+                    {wallDrawLengthUnitIndicator(measurementUnit)}
+                  </span>
                 </div>
               ) : (
                 <button
@@ -4654,7 +4640,7 @@ export default function RoomRenderer2D({
                     boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
                   }}
                 >
-                  {buildWallDrawPreviewLabel(previousPoint, point)}
+                  {formatDimension(getWallDrawSegmentLengthMeters(previousPoint, point))}
                 </button>
               )}
             </Html>
@@ -4699,7 +4685,7 @@ export default function RoomRenderer2D({
               boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
             }}
           >
-            {buildWallDrawPreviewLabel(lastWallDrawPoint, activeDrawRoomPreviewPoint)}
+            {formatDimension(getWallDrawSegmentLengthMeters(lastWallDrawPoint, activeDrawRoomPreviewPoint))}
           </div>
         </Html>
       )}
@@ -4740,7 +4726,7 @@ export default function RoomRenderer2D({
               boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
             }}
           >
-            {buildRoomDrawPreviewLabel(roomDrawPreview)}
+            {formatRoomDrawPreviewLabel(roomDrawPreview, measurementUnit)}
           </div>
         </Html>
       )}
@@ -4772,7 +4758,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(roomDrawPreview.width)}
+              {formatDimension(roomDrawPreview.width)}
             </div>
           </Html>
           <Html
@@ -4801,7 +4787,7 @@ export default function RoomRenderer2D({
                 writingMode: "vertical-rl",
               }}
             >
-              {formatMillimeters(roomDrawPreview.depth)}
+              {formatDimension(roomDrawPreview.depth)}
             </div>
           </Html>
         </>
@@ -4839,7 +4825,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(arcWallDrawPreview.arcLengthMeters)}
+              {formatDimension(arcWallDrawPreview.arcLengthMeters)}
             </div>
           </Html>
           <Html
@@ -4869,15 +4855,9 @@ export default function RoomRenderer2D({
         </>
       )}
 
-      {!hasHouseRooms && (
+      {loneRoomFrame && (
         <Line
-          points={[
-            [-halfW, 0.002, -halfD],
-            [halfW, 0.002, -halfD],
-            [halfW, 0.002, halfD],
-            [-halfW, 0.002, halfD],
-            [-halfW, 0.002, -halfD],
-          ]}
+          points={loneRoomFrame.outline.map(([x, z]): [number, number, number] => [x, 0.002, z])}
           color={borderColor}
           lineWidth={isPro ? 2 : 1.5}
         />

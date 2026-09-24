@@ -1,5 +1,6 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { resolveDesignPageOpeningHosts } from "@/lib/design-page-opening-host";
+import { designPageOpeningHasMoveRoom } from "@/lib/design-page-opening-placement";
 import type {
   RoomRendererAnnotation,
   RoomRendererFixedElement,
@@ -30,7 +31,10 @@ export function mapPlanOpeningsToRoomRenderer(
   openings: readonly RoomOpening2D[],
   rooms: readonly HousePlanRoom2D[]
 ): RoomRendererOpening[] {
-  return resolveDesignPageOpeningHosts(openings, rooms).map(({ opening, resolution }) => {
+  const resolved = resolveDesignPageOpeningHosts(openings, rooms);
+  const hosted = resolved.flatMap(({ opening, resolution }) => resolution.status === "resolved"
+    ? [{ id: opening.id, host: resolution.host, widthMeters: mmToMeters(opening.widthMm) }] : []);
+  return resolved.map(({ opening, resolution }) => {
     if (resolution.status !== "resolved") return {
       ...baseOpening(opening),
       roomId: opening.roomId,
@@ -50,6 +54,10 @@ export function mapPlanOpeningsToRoomRenderer(
       hostTangent: resolution.host.tangent,
       hostInwardNormal: resolution.host.inwardNormal,
       hostResolution: resolution,
+      movableOnHost: designPageOpeningHasMoveRoom(
+        { host: resolution.host, widthMeters: mmToMeters(opening.widthMm) },
+        hosted.filter((other) => other.id !== opening.id)
+      ),
     };
   });
 }

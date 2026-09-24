@@ -1,11 +1,12 @@
-import type { DesignPageSurfaceRoomSummary as SurfaceRoomSummary } from "@/lib/design-page-surface-room-summary";
 import type { CSSProperties } from "react";
 
-import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { FloorMaterial } from "@/lib/floor-materials";
 import type {
   RoomFloorPattern,
+  RoomSurfaceAssignments,
+  RoomType,
 } from "@/lib/room-types";
+import type { RoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import {
   getSurfaceMaterialTextureSource,
   type SurfaceMaterialCatalogRecord,
@@ -17,7 +18,20 @@ export type SurfaceBrowserViewMode = "grid" | "list";
 export type SurfaceFilterKey = "effect" | "collection" | "size" | "color";
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
-export type { SurfaceRoomSummary };
+export type SurfaceRoomSummary = {
+  id: string;
+  name: string;
+  floorLabel?: string;
+  roomType: RoomType;
+  width: number;
+  depth: number;
+  height?: number;
+  /** Polygon-aware floor and ceiling area from lib/room-floor-area. */
+  floorAreaSqm: number;
+  surfaces?: RoomSurfaceAssignments;
+  surfaceFinishes?: RoomSurfaceAssignments;
+  wallFinishQuantities: RoomWallFinishQuantities;
+};
 
 export type SurfaceFilterState = Partial<Record<SurfaceFilterKey, string>> & {
   favoritesOnly?: boolean;
@@ -254,25 +268,6 @@ export function buildFacetOptions(
   return Array.from(new Set(materials.map(getValue).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b)
   );
-}
-
-export function getSurfaceRoomAreaSqm(room: Pick<SurfaceRoomSummary, "width" | "depth" | "areaSquareMeters">) {
-  return room.areaSquareMeters ?? Math.max(0, room.width * room.depth);
-}
-
-function getSurfaceRoomWallHeight(room: SurfaceRoomSummary) {
-  return Math.max(0.2, room.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight);
-}
-
-export function getSurfaceRoomWallAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, (room.width + room.depth) * 2 * getSurfaceRoomWallHeight(room));
-}
-
-export function getSurfaceRoomWallFaceAreaSqm(room: SurfaceRoomSummary, faceId: string) {
-  const height = getSurfaceRoomWallHeight(room);
-  if (faceId === "north" || faceId === "south") return Math.max(0, room.width * height);
-  if (faceId === "east" || faceId === "west") return Math.max(0, room.depth * height);
-  return Math.max(0, Math.max(room.width, room.depth) * height);
 }
 
 export function getSurfaceMaterialPrimaryId(material: SurfaceMaterialCatalogRecord | null) {

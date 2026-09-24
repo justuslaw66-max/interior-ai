@@ -1,5 +1,11 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { resolveCanonicalOpeningHost } from "@/lib/design-page-canonical-opening-host";
+import type {
+  DesignPageOpeningHostResolution,
+  DesignPagePhysicalWallHost,
+  OpeningHostFailure,
+  OpeningHostInput,
+} from "@/lib/design-page-opening-host-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   buildRoomWallSegments2D,
@@ -20,43 +26,11 @@ function roundHostCoordinate(value: number) {
   return Number(value.toFixed(6));
 }
 
-export type OpeningHostInput = Pick<
-  RoomOpening2D,
-  "id" | "roomId" | "wall" | "offsetMm" | "widthMm" |
-  "canonicalWallId" | "canonicalHost" | "requestedWorldCenterMm"
->;
-
-export type DesignPagePhysicalWallHost = {
-  physicalWallId: string;
-  segment: RoomWallSegment2D;
-  roomId?: string;
-  roomWall: RoomOpening2D["wall"];
-  roomSegmentKey: string;
-  roomSegment: RoomWallSegment2D;
-  offsetOriginMeters?: number;
-  segmentOffsetMeters: number;
-  alongSegmentMeters: number;
-  worldCenter: PlanPoint2D;
-  tangent: PlanPoint2D;
-  inwardNormal: PlanPoint2D;
-  spanMeters: number;
-};
-
-type OpeningHostFailure = {
-  status: "unresolved" | "ambiguous" | "unsupported" | "invalid";
-  code:
-    | "NO_PHYSICAL_WALL"
-    | "AMBIGUOUS_PHYSICAL_WALL"
-    | "UNSUPPORTED_PHYSICAL_WALL"
-    | "INVALID_OPENING_GEOMETRY";
-  diagnostic: string;
-  consumerMessage: string;
-  requestedWorldCenter?: PlanPoint2D;
-};
-
-export type DesignPageOpeningHostResolution =
-  | { status: "resolved"; host: DesignPagePhysicalWallHost }
-  | OpeningHostFailure;
+export type {
+  DesignPageOpeningHostResolution,
+  DesignPagePhysicalWallHost,
+  OpeningHostInput,
+} from "@/lib/design-page-opening-host-types";
 
 export type DesignPageOpeningHostContext = {
   walls: Array<{ floorLevel: number; segment: RoomWallSegment2D }>;

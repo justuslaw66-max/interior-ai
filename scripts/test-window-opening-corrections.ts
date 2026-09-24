@@ -40,6 +40,7 @@ import {
 import { MountedCutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/MountedCutawayWallMesh";
 import { CutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/wallAndOpeningMeshes";
 import {
+  createDefaultPlanOpenings,
   openingMetersToMillimetres,
   openingMillimetresToMeters,
   resolveEffectiveOpeningDimensions,
@@ -85,7 +86,6 @@ import {
 import { HistoryManager } from "@/lib/historyManager";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { createRoom, type DesignSnapshot } from "@/lib/room-types";
-import { shouldUseHousePlanScene } from "@/lib/useDesignPageSceneReadModel";
 import { validateTracedOpeningPlacement } from "@/lib/floor-plan-tracing";
 import { buildFloorPlanQualityReport } from "@/lib/floor-plan-quality";
 import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
@@ -161,6 +161,57 @@ const seededOpenings: RoomOpening2D[] = [
   },
 ];
 
+assert.deepEqual(
+  createDefaultPlanOpenings(),
+  seededOpenings,
+  "A fresh plan must seed exactly the default east door and west window."
+);
+assert.notEqual(
+  createDefaultPlanOpenings(),
+  createDefaultPlanOpenings(),
+  "Each seed must be a fresh list so plan edits never mutate the defaults."
+);
+// The storage load owns the seed and must run in the layout phase of the editor's mount
+// commit. A passive effect there inherits the idle update priority of the Suspense-hydrated
+// workspace, so a fresh room rendered for seconds without its door and window.
+const planSettingsLoadSource = readFileSync("lib/useDesignPagePlanState.ts", "utf8");
+const storedOpeningsRead = planSettingsLoadSource.indexOf('localStorage.getItem("plan_openings")');
+assert.ok(storedOpeningsRead > 0, "The plan-settings load must read the stored plan openings.");
+const planSettingsLoadStart = planSettingsLoadSource.lastIndexOf(
+  "useLayoutEffect(() => {",
+  storedOpeningsRead
+);
+assert.ok(
+  planSettingsLoadStart > planSettingsLoadSource.lastIndexOf("useEffect(() => {", storedOpeningsRead),
+  "Stored plan settings and the default-opening seed must load in a layout effect."
+);
+const planSettingsLoadEffect = planSettingsLoadSource.slice(
+  planSettingsLoadStart,
+  planSettingsLoadSource.indexOf("}, []);", storedOpeningsRead)
+);
+assert.match(
+  planSettingsLoadEffect,
+  /setPlanOpenings\(createDefaultPlanOpenings\(\)\);[\s\S]*setPlanSettingsLoaded\(true\);/,
+  "A profile without stored openings must be seeded in the same batch that marks settings loaded."
+);
+// Only a missing key is a fresh plan. A stored "[]" means the user deleted every opening, and
+// reseeding it would bring back a door and window they removed.
+assert.match(
+  planSettingsLoadEffect,
+  /storedOpeningsFound = storedOpenings !== null;/,
+  "Only a missing plan_openings key may count as a fresh plan; saved or emptied openings are kept."
+);
+assert.match(
+  planSettingsLoadEffect,
+  /if \(!storedOpeningsFound\) setPlanOpenings\(createDefaultPlanOpenings\(\)\);/,
+  "The default door and window may only be seeded when no openings were stored."
+);
+assert.doesNotMatch(
+  readFileSync("lib/useDesignPagePlanAuthoringRegistration.ts", "utf8"),
+  /setPlanOpenings\(\[|createDefaultPlanOpenings|planOpeningsStorageState|defaultPlanOpeningsSeeded/,
+  "Plan authoring must not keep a second, deferred default-opening seed."
+);
+
 for (const opening of seededOpenings) {
   const resolution = resolveDesignPageOpeningHost(opening, [singleRoom]);
   assert.equal(resolution.status, "resolved");
@@ -185,17 +236,17 @@ const seededLegacyCounts = getLegacyWallOpeningCountsForTest(
 ).flatMap((entry) => entry.segments.flat());
 assert.ok(seededLegacyCounts.includes("door-east-main"));
 assert.ok(seededLegacyCounts.includes("window-west-main"));
-assert.equal(
-  shouldUseHousePlanScene({
-    stackedFloorView: false,
-    roomCount: 1,
-    openingCount: seededOpenings.length,
-    editingWallSurface: false,
-    hasWallSurfaceFinishes: false,
-    hasNonRectangularRoom: false,
-  }),
-  true,
+// Every design with rooms, including a single room with seeded openings, renders through the
+// opening-aware house-plan structure; the scene read model keeps no second routing predicate.
+assert.match(
+  readFileSync("components/editor/design-page/DesignSceneStructureLayer.tsx", "utf8"),
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?mapPlanOpeningsToRoomRenderer\([\s\S]*?<HousePlanRenderer3D[\s\S]*?openings=\{topologyOpenings\}/,
   "A single-room scene with seeded openings must use the opening-aware legacy structure renderer."
+);
+assert.doesNotMatch(
+  readFileSync("lib/useDesignPageSceneReadModel.ts", "utf8"),
+  /shouldUseHousePlanScene|usesHousePlanScene/,
+  "The scene read model must not reintroduce a single-room renderer route."
 );
 
 const topologyCountedRooms = [singleRoom];

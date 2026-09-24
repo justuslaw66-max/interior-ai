@@ -6,11 +6,17 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
 
-export function openingHasPhysicalHost(
+/**
+ * The room whose wall physically hosts the opening, or null when no wall does.
+ * Legacy single-room openings carry no roomId; the resolved host still names
+ * the room they cut, so callers must not require opening.roomId.
+ */
+export function openingHostRoomId(
   opening: RoomOpening2D,
   rooms: readonly HousePlanRoom2D[]
-) {
-  return resolveDesignPageOpeningHost(opening, rooms).status === "resolved";
+): string | null {
+  const resolution = resolveDesignPageOpeningHost(opening, rooms);
+  return resolution.status === "resolved" ? resolution.host.roomId ?? null : null;
 }
 
 export function buildOpeningHostQualityIssues(

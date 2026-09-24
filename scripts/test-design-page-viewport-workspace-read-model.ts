@@ -11,6 +11,7 @@ import {
 } from "@/lib/design-page-viewport-workspace-read-model";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
+import type { RoomOpening2D } from "@/lib/editorScene";
 import { createRoom, type DesignItem } from "@/lib/room-types";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
@@ -19,6 +20,11 @@ import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapsh
 const inertCommand = new Proxy((..._args: unknown[]) => undefined, {
   get: () => inertCommand,
 });
+const windowFixture: RoomOpening2D = {
+  id: "opening-1", roomId: "room-a", kind: "window", wall: "north",
+  widthMm: 900, heightMm: 1200, bottomMm: 800, offsetMm: 250,
+  evidence: { height: "assumed", sillHeight: "user_confirmed" },
+};
 
 const roomA: HousePlanRoom2D = {
   id: "room-a",
@@ -221,6 +227,8 @@ function buildPresentationFixture({
                     activeRoomCeilingVisible: true,
                     activeRoomCeilingColor: "#ffffff",
                     roomItemCountsById: itemCountsByRoomId,
+                    // Distinct from w × d so the floor panel must read the owner's projection.
+                    surfaceRoomSummaries: rooms.map((room) => ({ id: room.id, floorAreaSqm: room.w * room.d - 1 })),
                   },
                 },
               },
@@ -244,11 +252,14 @@ function buildPresentationFixture({
                 state: {
                   inspector: {
                     floatingSelectionInspectorVisible: true,
-                    selectedObjectInspector: null,
+                    selectedObjectInspector: selectedOpening
+                      ? { kind: "Window", title: "Window on north", detail: "Living room", metrics: [] }
+                      : null,
                     visiblePlanOpening: selectedOpening
-                      ? { kind: "door", wall: "north", widthMm: 900 }
+                      ? windowFixture
                       : null,
                     visiblePlanOpeningWallSpanMeters: 4,
+                    visiblePlanOpeningMaxHeightMeters: 2.7,
                     selectedPlanFixedElement: null,
                     selectedPlanAnnotation: null,
                   },
@@ -344,11 +355,13 @@ function buildReadModel(options: FixtureOptions = {}) {
   });
 }
 
-function adaptReadModel(readModel: DesignPageViewportWorkspaceReadModel) {
+function adaptReadModel(readModel: DesignPageViewportWorkspaceReadModel,
+  updateOpeningMetrics: BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"] = () => undefined) {
   const inertBoundary = {
     ...readModel,
     references: { planQuality: { setPanel: () => undefined } },
     actions: {
+      updateOpeningMetrics,
       selectionInspector: {},
       floorProperties: {},
       selectionControls: { selectedZone: {} },
@@ -428,10 +441,35 @@ const presentation = adaptReadModel(
 assert.ok(presentation.state.navigator);
 assert.equal(presentation.configuration.navigator.disabled, true);
 
-const selectedOpening = adaptReadModel(
-  buildReadModel({ selectedOpening: true })
-);
+const openingEdits: Parameters<BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"]>[] = [];
+const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, viewMode: "3d" }),
+  (id, metrics) => { openingEdits.push([id, metrics]); });
 assert.equal(selectedOpening.state.selectedOpening?.widthMm, 900);
+assert.deepEqual(selectedOpening.state.selectionInspector?.selectedOpening, {
+  id: windowFixture.id, kind: "window", wall: "north", hostNeedsRepair: false,
+  widthMm: 900, heightMm: 1200, bottomMm: 800, effectiveHeightMm: 1200, effectiveBottomMm: 800,
+  heightStatus: "exact", bottomStatus: "exact", dimensionIssues: [], maxWidthMm: 3940, maxHeightMm: 2700,
+  offsetMm: 250, maxOffsetMm: 1550,
+  widthEvidence: "assumed", heightEvidence: "assumed", sillEvidence: "user_confirmed",
+  widthEditable: true, heightEditable: true, sillEditable: true,
+}, "The visible 3D inspector must retain height, sill, offset, evidence, and wall bounds.");
+const viewportInspectorActions = selectedOpening.actions.selectionInspector;
+viewportInspectorActions.commitOpeningHeightMm(1400);
+viewportInspectorActions.commitOpeningBottomMm(900);
+viewportInspectorActions.commitOpeningWidthMm(1000);
+viewportInspectorActions.commitOpeningWall("east");
+viewportInspectorActions.commitOpeningOffsetMm(-350);
+viewportInspectorActions.commitOpeningHeightMm(1200, "site_measured", "Laser measured");
+viewportInspectorActions.commitOpeningBottomMm(800, "user_confirmed");
+assert.deepEqual(openingEdits, [
+  [windowFixture.id, { heightMeters: 1.4, heightEvidence: "user_confirmed" }],
+  [windowFixture.id, { bottomMeters: 0.9, bottomEvidence: "user_confirmed" }],
+  [windowFixture.id, { widthMeters: 1, widthEvidence: "user_confirmed" }],
+  [windowFixture.id, { wall: "east" }],
+  [windowFixture.id, { offsetMeters: -0.35 }],
+  [windowFixture.id, { heightMeters: 1.2, heightEvidence: "site_measured", measurementNote: "Laser measured" }],
+  [windowFixture.id, { bottomMeters: 0.8, bottomEvidence: "user_confirmed" }],
+], "Viewport edits, offsets and evidence confirmations must reach the existing opening mutation/history action without dropping metrics.");
 assert.deepEqual(
   resolveDesignPageOpeningViewportState(
     {
@@ -439,6 +477,7 @@ assert.deepEqual(
       kind: "window",
       wall: "west",
       widthMm: 1400,
+      offsetMm: 0,
       wallSpanMeters: 5.7,
     },
     2600
@@ -458,6 +497,8 @@ assert.deepEqual(
     dimensionIssues: [],
     maxWidthMm: 5640,
     maxHeightMm: 2600,
+    offsetMm: 0,
+    maxOffsetMm: 2150,
     widthEvidence: "assumed",
     heightEvidence: "assumed",
     sillEvidence: "assumed",
@@ -480,6 +521,11 @@ const roomSwitch = buildReadModel({
   viewMode: "3d",
 });
 assert.equal(roomSwitch.state.navigator.activeRoomId, "room-b");
+assert.equal(
+  roomSwitch.state.floorProperties?.activeRoomFloorAreaSqm,
+  11,
+  "The floor properties area must be the active room's polygon-aware Surface Summary floor area."
+);
 const projectSwitch = buildReadModel({
   rooms: [{ ...roomA, id: "project-2-room" }],
   activeRoomId: "project-2-room",

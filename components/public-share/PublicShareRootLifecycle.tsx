@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { PublicShareUnavailableCard } from "@/components/public-share/PublicShareUnavailableCard";
 
 const safeAreaStyle: CSSProperties = {
   paddingTop: "env(safe-area-inset-top)",
@@ -80,9 +81,8 @@ export function PublicShareInvalidView() {
   return (
     <div className="flex min-h-screen items-center justify-center p-8">
       <PublicShareFallbackStateReporter state="invalid" />
-      <div className="rounded-xl border bg-white p-6" role="status">
-        <div className="text-lg font-semibold">Link not available</div>
-        <div className="text-sm text-neutral-600">This share link is disabled or invalid.</div>
+      <div role="status">
+        <PublicShareUnavailableCard />
       </div>
     </div>
   );

@@ -511,6 +511,7 @@ runFixture("plan overlay mapper converts mm scene overlays to meters", () => {
       hostTangent: { x: 1, z: 0 },
       hostInwardNormal: { x: -0, z: 1 },
       hostResolution: mappedOpenings[0].hostResolution,
+      movableOnHost: true,
     },
   ]);
   assert.equal(mappedOpenings[0].hostResolution?.status, "resolved");

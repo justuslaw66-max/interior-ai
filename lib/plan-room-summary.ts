@@ -1,4 +1,10 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import {
+  formatDisplayArea,
+  formatDisplayLength,
+  type DisplayUnit,
+} from "@/lib/display-units";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
 export type PlanRoomMetric = {
   id: string;
@@ -44,19 +50,9 @@ type Bounds = {
   maxZ: number;
 };
 
-function polygonArea(points: Array<{ x: number; z: number }>): number {
-  if (points.length < 3) return 0;
-  let twiceArea = 0;
-  for (let index = 0; index < points.length; index += 1) {
-    const current = points[index];
-    const next = points[(index + 1) % points.length];
-    twiceArea += current.x * next.z - next.x * current.z;
-  }
-  return Math.abs(twiceArea) / 2;
-}
-
-function getRoomLocalPoints(room: Pick<HousePlanRoom2D, "polygon" | "w" | "d">): Array<{ x: number; z: number }> {
-  if (room.polygon && room.polygon.length >= 3) return room.polygon;
+/** Bounding outline: only a custom polygon replaces the w × d box (an L-shape notch stays inside it). */
+function getRoomLocalPoints(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
+  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) return room.polygon;
   return [
     { x: -room.w / 2, z: -room.d / 2 },
     { x: room.w / 2, z: -room.d / 2 },
@@ -75,15 +71,6 @@ function getRoomBounds(room: HousePlanRoom2D): Bounds {
     }),
     { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity }
   );
-}
-
-export function getPlanRoomAreaSquareMeters(room: Pick<HousePlanRoom2D, "polygon" | "holes" | "w" | "d">): number {
-  const outerArea = polygonArea(getRoomLocalPoints(room));
-  const holesArea = (room.holes ?? []).reduce(
-    (sum, hole) => sum + polygonArea(hole),
-    0
-  );
-  return Math.max(0, outerArea - holesArea);
 }
 
 export function buildPlanRoomSummary(
@@ -115,7 +102,7 @@ export function buildPlanRoomSummary(
       name: room.name,
       widthMeters: bounds.maxX - bounds.minX,
       depthMeters: bounds.maxZ - bounds.minZ,
-      areaSquareMeters: getPlanRoomAreaSquareMeters(room),
+      areaSquareMeters: getPlanRoomFloorAreaSqm(room),
     };
   });
 
@@ -129,4 +116,36 @@ export function buildPlanRoomSummary(
     ),
     rooms: roomMetrics,
   };
+}
+
+/** "Width × depth" in the viewer's display unit. */
+export function formatPlanDimensionsLabel(
+  widthMeters: number,
+  depthMeters: number,
+  unit: DisplayUnit
+): string {
+  const width = formatDisplayLength(widthMeters * 1000, unit);
+  const depth = formatDisplayLength(depthMeters * 1000, unit);
+  return `${width} × ${depth}`;
+}
+
+/** "Width × depth · area" in the viewer's display unit. */
+export function formatPlanRoomMetricLabel(
+  metric: Pick<PlanRoomMetric, "widthMeters" | "depthMeters" | "areaSquareMeters">,
+  unit: DisplayUnit
+): string {
+  const dimensions = formatPlanDimensionsLabel(metric.widthMeters, metric.depthMeters, unit);
+  return `${dimensions} · ${formatDisplayArea(metric.areaSquareMeters, unit)}`;
+}
+
+/** Rectangle-draw preview: dimensions, plus the area once the drag resolves to a room. */
+export function formatRoomDrawPreviewLabel(
+  preview: { width: number; depth: number; areaSqm: number; rectangle: object | null },
+  unit: DisplayUnit
+): string {
+  if (!preview.rectangle) return formatPlanDimensionsLabel(preview.width, preview.depth, unit);
+  return formatPlanRoomMetricLabel(
+    { widthMeters: preview.width, depthMeters: preview.depth, areaSquareMeters: preview.areaSqm },
+    unit
+  );
 }

@@ -19,6 +19,7 @@ import {
   summarizeWholeHomeShopping,
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignSnapshot } from "@/lib/room-types";
 import LazyImage from "@/components/common/LazyImage";
 import ShopLink from "../export/ShopLink";
@@ -32,6 +33,7 @@ import {
   PublicShareRoomSchedule,
   type PublicShareRoomScheduleItem,
 } from "@/components/public-share/PublicShareRoomSchedule";
+import { formatSgd } from "@/lib/money-format";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -57,13 +59,6 @@ function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 export default async function SharePage({
   params,
 }: {
@@ -143,7 +138,7 @@ export default async function SharePage({
   const roomListItems: PublicShareRoomScheduleItem[] = designSnapshot.rooms.map((room) => {
     const shoppingRoom = shoppingRoomById.get(room.id);
     const health = roomHealthById.get(room.id);
-    const areaSqm = room.geometry.width * room.geometry.depth;
+    const areaSqm = getRoomSnapshotFloorAreaSqm(room);
     return {
       id: room.id,
       name: room.name,
@@ -170,10 +165,7 @@ export default async function SharePage({
   const measuredRoomCount = designSnapshot.rooms.filter(
     (room) => room.geometry.width > 0 && room.geometry.depth > 0
   ).length;
-  const totalAreaSqm = designSnapshot.rooms.reduce(
-    (sum, room) => sum + room.geometry.width * room.geometry.depth,
-    0
-  );
+  const totalAreaSqm = designSnapshot.rooms.reduce((sum, room) => sum + getRoomSnapshotFloorAreaSqm(room), 0);
   const totalOpenings = designSnapshot.floorPlan?.openings?.length ?? 0;
   const readyShoppingCount = checkoutReadyRows.length + retailerLinkRows.length;
   const reviewShoppingCount = needsReviewRows.length + notInCartRows.length;
@@ -243,7 +235,7 @@ export default async function SharePage({
     },
     {
       label: "Budget",
-      value: formatCurrency(shoppingSummary.subtotal),
+      value: formatSgd(shoppingSummary.subtotal),
       detail: `${shoppingSummary.itemCount} planned item${shoppingSummary.itemCount === 1 ? "" : "s"}`,
     },
   ];
@@ -373,7 +365,7 @@ export default async function SharePage({
           </div>
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Estimated total</div>
-            <div className="mt-1 text-lg font-semibold text-neutral-950">{formatCurrency(shoppingSummary.subtotal)}</div>
+            <div className="mt-1 text-lg font-semibold text-neutral-950">{formatSgd(shoppingSummary.subtotal)}</div>
           </div>
           <div data-testid="share-handoff-integrity">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Handoff</div>
@@ -391,7 +383,7 @@ export default async function SharePage({
               <div key={room.roomId} className="min-w-[190px] rounded-lg border bg-white px-3 py-2 text-xs shadow-sm">
                 <div className="font-semibold text-neutral-900">{room.roomName}</div>
                 <div className="mt-1 text-neutral-500">
-                  {room.itemCount} items • {formatCurrency(room.subtotal)}
+                  {room.itemCount} items • {formatSgd(room.subtotal)}
                 </div>
                 {room.previewNames.length > 0 ? (
                   <div className="mt-1 truncate text-neutral-500">{room.previewNames.join(", ")}</div>
@@ -504,7 +496,7 @@ export default async function SharePage({
                 {checkoutReadyRows.length}
               </div>
               <div className="text-xs text-neutral-600">
-                {formatCurrency(checkoutReadyTotal)}
+                {formatSgd(checkoutReadyTotal)}
               </div>
             </div>
             <div className="rounded-xl border border-sky-100 bg-sky-50 p-3">
@@ -515,7 +507,7 @@ export default async function SharePage({
                 {retailerLinkRows.length}
               </div>
               <div className="text-xs text-neutral-600">
-                {formatCurrency(retailerLinkTotal)}
+                {formatSgd(retailerLinkTotal)}
               </div>
             </div>
             <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
@@ -617,7 +609,7 @@ export default async function SharePage({
               </div>
             </div>
             <div className="text-right text-sm">
-              <div className="font-semibold text-neutral-950">{formatCurrency(shoppingSummary.subtotal)}</div>
+              <div className="font-semibold text-neutral-950">{formatSgd(shoppingSummary.subtotal)}</div>
               <div className="text-xs text-neutral-500">Estimated total</div>
             </div>
           </div>
@@ -654,7 +646,7 @@ export default async function SharePage({
                           </div>
                         </div>
                         <div className="shrink-0 text-right text-sm font-semibold text-neutral-950">
-                          {formatCurrency(item.linePrice)}
+                          {formatSgd(item.linePrice)}
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

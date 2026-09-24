@@ -80,6 +80,33 @@ assert.ok(
   "AI planning context should expose one room graph node per template room."
 );
 
+// 4 m × 4 m bounds, minus a 2 m × 2 m notch and a 1 m × 1 m courtyard hole = 11 m².
+const notchedCourtyardRoom: HousePlanRoom2D = {
+  id: "notched",
+  name: "Notched room",
+  roomType: "living",
+  shape: "custom_polygon",
+  x: 0,
+  z: 0,
+  w: 4,
+  d: 4,
+  polygon: [
+    { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+    { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+  ],
+  holes: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+};
+assert.deepEqual(
+  buildFloorPlanQualityReport({
+    rooms: [notchedCourtyardRoom, { ...notchedCourtyardRoom, id: "stale", shape: "rectangle", holes: undefined, x: 6 }],
+    openings: [],
+    items: [],
+    activeRoomId: "notched",
+  }).aiPlanningContext.roomGraph.nodes.map((node) => [node.id, node.areaSqm]),
+  [["notched", 11], ["stale", 16]],
+  "Room graph areas must come from lib/room-floor-area: holes subtracted, stale polygons ignored."
+);
+
 const bedroomTemplate = HOUSE_PLAN_TEMPLATES.find((template) =>
   template.rooms.some((room) => room.roomType === "bedroom")
 );
@@ -428,6 +455,43 @@ assert.match(
   aiLayoutControllerSource,
   /\/api\/ai\/layout/,
   "Existing AI layout flow should remain in place for future quality-context consumption."
+);
+
+// The default consumer design is one living room whose seeded door and window
+// are legacy openings without a roomId. The window still sits in that room's
+// exterior wall, so the review must not ask for daylight (UX audit ED4).
+const defaultLivingRoom: HousePlanRoom2D = {
+  id: "room_living",
+  name: "Living Room",
+  roomType: "living",
+  shape: "rectangle",
+  x: 0,
+  z: 0,
+  w: 5,
+  d: 4,
+};
+const defaultRoomReport = buildFloorPlanQualityReport({
+  rooms: [defaultLivingRoom],
+  openings: [
+    { id: "door-east-main", wall: "east", offsetMm: 0, widthMm: 900, kind: "door" },
+    { id: "window-west-main", wall: "west", offsetMm: 0, widthMm: 1200, kind: "window" },
+  ],
+  items: [],
+  activeRoomId: defaultLivingRoom.id,
+});
+assert.ok(
+  !defaultRoomReport.issues.some((issue) => issue.id === "missing-window-room_living"),
+  "A roomless window in the only room's exterior wall must count as that room's daylight."
+);
+const windowlessRoomReport = buildFloorPlanQualityReport({
+  rooms: [defaultLivingRoom],
+  openings: [{ id: "door-east-main", wall: "east", offsetMm: 0, widthMm: 900, kind: "door" }],
+  items: [],
+  activeRoomId: defaultLivingRoom.id,
+});
+assert.ok(
+  windowlessRoomReport.issues.some((issue) => issue.id === "missing-window-room_living"),
+  "A living room with no window at all should still be asked for daylight."
 );
 
 console.log("Floor plan quality checks passed.");

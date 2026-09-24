@@ -84,13 +84,13 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
           <div className="flex h-full flex-col items-center justify-center gap-4 bg-gray-100 p-6">
             <div className="text-center">
               <h2 className="mb-2 text-lg font-semibold text-gray-900">
-                Oops! The 3D view encountered an error
+                The design view hit a problem
               </h2>
               <p className="mb-4 text-sm text-gray-600">
-                The last valid design is still saved. Retry the 3D view or reload the page.
+                Your last valid design is saved. Try again, or reload the page.
               </p>
               <p className="mb-6 text-xs text-gray-500">
-                We&apos;ve logged this issue. Please try refreshing or disabling hardware acceleration.
+                If this keeps happening, turn off hardware acceleration in your browser settings.
               </p>
               <div className="flex gap-2">
                 <button
@@ -103,7 +103,7 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
                   onClick={() => window.location.reload()}
                   className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  Reload Page
+                  Reload page
                 </button>
               </div>
             </div>

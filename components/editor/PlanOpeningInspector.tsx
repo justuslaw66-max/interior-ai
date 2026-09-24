@@ -92,7 +92,7 @@ export default function PlanOpeningInspector({
 
       <PlanOpeningInspectorWarnings
         opening={opening} hostNeedsRepair={wallSpanMeters <= 0}
-        vertical={vertical} dark={dark} onChange={onChange}
+        vertical={vertical} unit={measurementUnit} dark={dark} onChange={onChange}
       />
       <PlanOpeningDimensionFields
         opening={opening} vertical={vertical} wallSpanMeters={wallSpanMeters}

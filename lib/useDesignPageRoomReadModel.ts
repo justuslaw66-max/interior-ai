@@ -7,8 +7,8 @@ import {
   type SetStateAction,
 } from "react";
 
-import { buildSurfaceRoomSummary } from "@/lib/design-page-surface-room-summary";
 import { type CATALOG_ITEMS } from "@/lib/catalog";
+import { buildSurfaceRoomSummaries } from "@/components/editor/design-controls-plan/surfaceSummaryRows";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
@@ -244,8 +244,8 @@ export function useDesignPageRoomReadModel({
     clampFloorPatternScale
   );
   const surfaceRoomSummaries = useMemo(
-    () => designSnapshot.rooms.map(buildSurfaceRoomSummary),
-    [designSnapshot.rooms]
+    () => buildSurfaceRoomSummaries(designSnapshot.rooms, planOpenings),
+    [designSnapshot.rooms, planOpenings]
   );
   const floorInspectorRoom = selectedPlanRoomId
     ? roomSnapshotById.get(selectedPlanRoomId) ?? activeRoom

@@ -662,6 +662,25 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   await expect(action).toBeFocused();
   await activate(action, page, "pointer");
   await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(1);
+  // A later route cleanup can also leave an empty body style. Observe the
+  // release in this document and replacement scope before accepting that value.
+  const scopeRestoration = await page.evaluateHandle(() => {
+    let restoredInScope = false;
+    const observer = new MutationObserver(() => {
+      const url = new URL(location.href);
+      if (
+        url.pathname === "/design" &&
+        url.searchParams.get("designId") === "ch0015i-replacement" &&
+        url.searchParams.get("projectId") === "ch0015i-project" &&
+        document.body.style.overflow === ""
+      ) {
+        restoredInScope = true;
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["style"] });
+    return () => restoredInScope;
+  });
   await page.evaluate(() => {
     history.pushState(
       null,
@@ -672,7 +691,9 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   await expect(page).toHaveURL(/designId=ch0015i-replacement/);
   await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(0);
   await expect(action).not.toBeFocused();
-  expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
+  expect(await scopeRestoration.evaluate((read) => read())).toBe(true);
+  await scopeRestoration.dispose();
 });
 
 test("removed opener falls back and reopen creates a new lifecycle generation", async ({ page }) => {

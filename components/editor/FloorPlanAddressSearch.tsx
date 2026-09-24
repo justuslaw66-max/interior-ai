@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { HousePlanTemplate, HousePlanTemplateApplyOptions } from "@/lib/design-page-house-plan";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
 import {
   buildStructuredFloorPlanAddressQuery,
@@ -21,6 +22,7 @@ import { useFloorPlanResultApplicationRequests } from "./useFloorPlanResultAppli
 type FloorPlanAddressSearchProps = {
   dark?: boolean;
   canEdit: boolean;
+  measurementUnit: PlanMeasurementUnit;
   onApplyPlanTemplate: (
     template: HousePlanTemplate,
     options?: HousePlanTemplateApplyOptions
@@ -30,6 +32,7 @@ type FloorPlanAddressSearchProps = {
 export default function FloorPlanAddressSearch({
   dark = false,
   canEdit,
+  measurementUnit,
   onApplyPlanTemplate,
 }: FloorPlanAddressSearchProps) {
   const [address, setAddress] = useState("");
@@ -52,9 +55,7 @@ export default function FloorPlanAddressSearch({
     onApplyPlanTemplate,
   ]);
   const application = useFloorPlanResultApplicationRequests(applicationOwner);
-  const {
-    results, searchCursor, status, errorMessage, loadMoreSearch,
-  } = exactSearch;
+  const { results, searchCursor, status, errorMessage, loadMoreSearch } = exactSearch;
   const {
     applyingResultId, applyError, pendingApplication,
     applyCatalogResult, chooseAuthoredVariant, cancelPendingApplication,
@@ -221,6 +222,7 @@ export default function FloorPlanAddressSearch({
           applyingResultId={applyingResultId}
           applyError={applyError}
           onUse={(result, startAsNewDesign) => void applyCatalogResult(result, startAsNewDesign)}
+          measurementUnit={measurementUnit}
         />
       ) : null}
 

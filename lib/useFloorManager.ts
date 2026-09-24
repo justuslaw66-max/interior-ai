@@ -48,10 +48,15 @@ type UseFloorManagerParams = {
   roomDepth: number;
   roomHeight: number;
   wallThickness: number;
-  history: {
-    begin: (name: string) => void;
-    commit: () => void;
-  };
+  /**
+   * Not the history manager's begin/commit pair. begin refuses to nest and returns false, and these
+   * actions dropped that boolean, so a floor action starting inside a still-open coalesced
+   * transaction (a slider drag holds one for 420 ms) committed that transaction instead of its own:
+   * the floor change joined the slider's undo entry and the slider's own commit later warned "No
+   * active transaction to commit". runHistoryTransaction flushes first, as 39ae93ac did for room
+   * deletion.
+   */
+  runHistoryTransaction: (name: string, mutation: () => void) => void;
   setPlanOpenings: Dispatch<SetStateAction<RoomOpening2D[]>>;
   setSelectedPlanRoomId: Dispatch<SetStateAction<string | null>>;
   cameraViewRef: MutableRefObject<CameraView>;
@@ -70,7 +75,7 @@ export function useFloorManager({
   roomDepth,
   roomHeight,
   wallThickness,
-  history,
+  runHistoryTransaction,
   setPlanOpenings,
   setSelectedPlanRoomId,
   cameraViewRef,
@@ -177,16 +182,16 @@ export function useFloorManager({
         { ...designSnapshotRef.current, rooms: [...designSnapshotRef.current.rooms, ...nextRooms] },
         firstRoom.id
       );
-      history.begin(direction === "upper" ? "Add upper floor" : "Add lower floor");
-      designSnapshotRef.current = nextSnapshot;
-      setDesignSnapshot(nextSnapshot);
-      if (creationMode === "layout" || creationMode === "walls") {
-        setPlanOpenings((prev) => [
-          ...prev,
-          ...clonePlanOpeningsForRoomMap(prev, roomIdMap, `floor_${timestamp}`),
-        ]);
-      }
-      history.commit();
+      runHistoryTransaction(direction === "upper" ? "Add upper floor" : "Add lower floor", () => {
+        designSnapshotRef.current = nextSnapshot;
+        setDesignSnapshot(nextSnapshot);
+        if (creationMode === "layout" || creationMode === "walls") {
+          setPlanOpenings((prev) => [
+            ...prev,
+            ...clonePlanOpeningsForRoomMap(prev, roomIdMap, `floor_${timestamp}`),
+          ]);
+        }
+      });
       setSelectedPlanRoomId(firstRoom.id);
       setHiddenFloorLevels((prev) => prev.filter((level) => level !== nextLevel));
       actionAdaptersRef.current.clearNonRoomSelection();
@@ -198,7 +203,7 @@ export function useFloorManager({
       activeFloorLevel,
       activeRoom,
       designSnapshotRef,
-      history,
+      runHistoryTransaction,
       roomDepth,
       roomHeight,
       roomWidth,
@@ -227,13 +232,13 @@ export function useFloorManager({
         (room.floorLevel ?? 1) === activeFloorLevel ? { ...room, floorLabel: nextLabel } : room
       ),
     };
-    history.begin("Rename floor");
-    designSnapshotRef.current = nextSnapshot;
-    setDesignSnapshot(nextSnapshot);
-    history.commit();
+    runHistoryTransaction("Rename floor", () => {
+      designSnapshotRef.current = nextSnapshot;
+      setDesignSnapshot(nextSnapshot);
+    });
     showRuleToast(`Renamed floor to ${nextLabel}`);
     track("editor_floor_renamed", { floorLevel: activeFloorLevel });
-  }, [activeFloorLevel, designSnapshotRef, floorOptions, history, setDesignSnapshot, showRuleToast]);
+  }, [activeFloorLevel, designSnapshotRef, floorOptions, runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
   const handleDuplicateFloor = useCallback(() => {
     const rooms = designSnapshotRef.current.rooms;
@@ -250,14 +255,14 @@ export function useFloorManager({
       firstRoom.id
     );
 
-    history.begin("Duplicate floor");
-    designSnapshotRef.current = nextSnapshot;
-    setDesignSnapshot(nextSnapshot);
-    setPlanOpenings((prev) => [
-      ...prev,
-      ...clonePlanOpeningsForRoomMap(prev, roomIdMap, `copy_${timestamp}`),
-    ]);
-    history.commit();
+    runHistoryTransaction("Duplicate floor", () => {
+      designSnapshotRef.current = nextSnapshot;
+      setDesignSnapshot(nextSnapshot);
+      setPlanOpenings((prev) => [
+        ...prev,
+        ...clonePlanOpeningsForRoomMap(prev, roomIdMap, `copy_${timestamp}`),
+      ]);
+    });
     setSelectedPlanRoomId(firstRoom.id);
     actionAdaptersRef.current.clearNonRoomSelection();
     showRuleToast(`Duplicated to ${firstRoom.floorLabel}`);
@@ -266,7 +271,7 @@ export function useFloorManager({
     actionAdaptersRef,
     activeFloorLevel,
     designSnapshotRef,
-    history,
+    runHistoryTransaction,
     setDesignSnapshot,
     setPlanOpenings,
     setSelectedPlanRoomId,
@@ -295,13 +300,13 @@ export function useFloorManager({
       nextActiveRoom.id
     );
 
-    history.begin("Delete floor");
-    designSnapshotRef.current = nextSnapshot;
-    setDesignSnapshot(nextSnapshot);
-    setPlanOpenings((prev) =>
-      prev.filter((opening) => !opening.roomId || !deletedRoomIds.has(opening.roomId))
-    );
-    history.commit();
+    runHistoryTransaction("Delete floor", () => {
+      designSnapshotRef.current = nextSnapshot;
+      setDesignSnapshot(nextSnapshot);
+      setPlanOpenings((prev) =>
+        prev.filter((opening) => !opening.roomId || !deletedRoomIds.has(opening.roomId))
+      );
+    });
     setSelectedPlanRoomId(nextActiveRoom.id);
     actionAdaptersRef.current.clearNonRoomSelection();
     showRuleToast(`${currentLabel} deleted`);
@@ -311,7 +316,7 @@ export function useFloorManager({
     activeFloorLevel,
     designSnapshotRef,
     floorOptions,
-    history,
+    runHistoryTransaction,
     setDesignSnapshot,
     setPlanOpenings,
     setSelectedPlanRoomId,

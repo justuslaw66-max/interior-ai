@@ -1,8 +1,8 @@
 [
   {
     "id": "window-opening-01-visual-matrix",
-    "playwrightId": "3b1d7323a327f963b5b3-3d35bba25f23c63eb7d9",
-    "title": "final window matrix remains visible in full plan, focus, and both 3D directions",
+    "playwrightId": "3b1d7323a327f963b5b3-c69c9223f699c995a074",
+    "title": "final window matrix holds in full plan and focus, and each 3D direction shows only the windows whose walls stand",
     "file": "window-opening-corrections.spec.ts",
     "project": "chromium"
   },

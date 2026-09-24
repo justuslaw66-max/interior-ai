@@ -5,7 +5,8 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import { buildOpeningHostQualityIssues, openingHasPhysicalHost } from "@/lib/floor-plan-opening-quality";
+import { buildOpeningHostQualityIssues, openingHostRoomId } from "@/lib/floor-plan-opening-quality";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem, RoomType } from "@/lib/room-types";
 export type FloorPlanQualityLabel = "Looks good" | "Improve" | "Review";
 export type FloorPlanQualityCategory =
@@ -131,20 +132,7 @@ function clampScore(value: number) {
 }
 
 function roomArea(room: HousePlanRoom2D) {
-  if (
-    room.shape === "custom_polygon" &&
-    room.polygon &&
-    room.polygon.length >= 3
-  ) {
-    const area = Math.abs(
-      room.polygon.reduce((total, point, index) => {
-        const next = room.polygon![(index + 1) % room.polygon!.length];
-        return total + point.x * next.z - next.x * point.z;
-      }, 0) / 2
-    );
-    return Number(area.toFixed(2));
-  }
-  return Number((room.w * room.d).toFixed(2));
+  return Number(getPlanRoomFloorAreaSqm(room).toFixed(2));
 }
 
 function roomBounds(room: HousePlanRoom2D): RoomBounds {
@@ -187,8 +175,7 @@ function roomWindows(room: HousePlanRoom2D, openings: RoomOpening2D[], rooms: Ho
   return openings.filter(
     (opening) =>
       opening.kind === "window" &&
-      opening.roomId === room.id &&
-      openingHasPhysicalHost(opening, rooms) &&
+      openingHostRoomId(opening, rooms) === room.id &&
       wallIsExterior(room, opening.wall, rooms)
   );
 }

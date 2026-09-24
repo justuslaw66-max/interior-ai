@@ -500,7 +500,6 @@ const fixtureEntry: SceneRoomItemEntry = {
   roomHeight: lightingRoom.height!,
   roomPlanShape: "rectangle",
   roomWallThickness: 0.2,
-  roomWallModel: "house-plan-shell",
   isActiveRoom: true,
 };
 const referenceSettings = {
@@ -817,10 +816,10 @@ assert.doesNotMatch(
   /physicallyCorrectLights/,
   "The obsolete physical-light assignment must remain absent."
 );
-assert.match(
+assert.doesNotMatch(
   canvasSource,
-  /receiveShadow=\{shadowsEnabled\}[\s\S]*?opacity=\{shadowsEnabled \? 0\.08 : 0\}/,
-  "The subtle workspace shadow catcher should turn off with shadows."
+  /<shadowMaterial/,
+  "The workspace grid must not keep a separate shadow catcher; ceiling occluders and room surfaces own shadow reception."
 );
 assert.match(
   presentationLightingSource,
@@ -862,7 +861,6 @@ const shadowBudgetSource = read(
 );
 const readOnlyViewerSource = read("components/ReadOnlyViewer.tsx");
 const shareViewerSource = read("components/public-share/ShareScene.tsx");
-const designerCanvasSource = read("components/DesignerCanvas.tsx");
 assert.match(
   lightingSystemSource,
   /<ExposureController[\s\S]*?<EnvironmentController[\s\S]*?<ambientLight[\s\S]*?<SunController/,
@@ -901,7 +899,6 @@ assert.match(
 for (const [name, source] of [
   ["read-only", readOnlyViewerSource],
   ["share", shareViewerSource],
-  ["legacy designer", designerCanvasSource],
 ] as const) {
   assert.match(
     source,

@@ -1,5 +1,5 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import type { DesignPageOpeningHostResolution, OpeningHostInput } from "@/lib/design-page-opening-host";
+import type { DesignPageOpeningHostResolution, OpeningHostInput } from "@/lib/design-page-opening-host-types";
 import type { RoomWallSegment2D } from "@/lib/room-renderer-2d-walls";
 import { getCanonicalPlanLine, pointOnCanonicalPlanLine, projectPointOntoPlanSegment } from "@/lib/wall-segment-geometry";
 

@@ -148,26 +148,17 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         layers: { ...planWorkspace.derived.effectivePlanLayers, dimensions: viewportShell.state.plan.planSettingsLoaded && planWorkspace.derived.effectivePlanLayers.dimensions },
       },
       room: {
-        activeId: coreShell.state.document.designSnapshot.activeRoomId,
+        activeId: room.activeRoom?.id ?? coreShell.state.document.designSnapshot.activeRoomId,
         guidanceActiveId: room.activeRoom?.id ?? null,
         activePlanOffset: plan.activeRoomPlanOffset,
         activeFloorLevel: documentRoom.derived.floor.activeFloorLevel,
         stackedFloors: documentRoom.state.floor.stackedFloorView,
-        wholeHomeEnabled: scene.usesHousePlanScene,
+        hasWholeHousePlan: scene.hasWholeHousePlan,
         wholeHomeRooms: scene.sceneHousePlanRooms3D,
-        selectedSurfaceTarget:
-          viewportShell.state.surface.selectedRendererSurfaceTarget,
-        floorWorldY: resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0,
+        selectedSurfaceTarget: viewportShell.state.surface.selectedRendererSurfaceTarget,
         width: room.roomWidth,
         depth: room.roomDepth,
         height: room.roomHeight,
-        wallThickness: room.wallThickness,
-        slabThickness: room.activeRoom?.geometry.slabThickness,
-        wallOpacity: roomRead.activeRoomWallOpacity,
-        floorOpacity: roomRead.activeRoomFloorOpacity,
-        ceilingOpacity: roomRead.activeRoomCeilingOpacity,
-        ceilingVisible: roomRead.activeRoomCeilingVisible,
-        ceilingColor: roomRead.activeRoomCeilingColor,
         walls: aiWorkspace.derived.walls,
       },
       placement: {
@@ -223,7 +214,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       },
     },
     configuration: {
-      initialCameraView: resolveCameraViewForFloorWorldY(DEFAULT_EDITOR_CAMERA_VIEW, scene.usesHousePlanScene ? 0 : resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0),
+      initialCameraView: resolveCameraViewForFloorWorldY(DEFAULT_EDITOR_CAMERA_VIEW, scene.hasWholeHousePlan ? 0 : resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0),
       orbit: {
         minDistance: EDITOR_3D_MIN_CAMERA_DISTANCE,
         maxDistance: Math.max(24, Math.max(plan.planViewWidth, plan.planViewDepth) * 6),

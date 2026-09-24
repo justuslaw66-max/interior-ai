@@ -82,7 +82,7 @@ export function buildDesignPagePanelRegistration({
   const selectionPanelModels = buildDesignPageSelectionPanelModels({
     cabinet: {
       state: {
-        cabinet: cabinetry.state.selected!,
+        cabinet: cabinetry.state.selected!, measurementUnit: planDocument.state.planMeasurementUnit,
         project: {
           handoffPackage: cabinetry.state.project.handoffPackage,
           hasAssets: cabinetry.state.project.assets.length > 0,

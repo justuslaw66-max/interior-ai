@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
 import { chooseTemplateStart } from "./multi-room/helpers";
@@ -15,6 +16,11 @@ type PixelBounds = {
 type WorkspaceGridLeakMetrics = {
   paintedPixelCount: number;
   p90LocalContrast: number;
+  sceneDigest: string;
+};
+
+type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
+  cameraHandleCenter: { x: number; y: number };
 };
 
 async function frameLivingEastWall(page: Page) {
@@ -312,8 +318,16 @@ async function workspaceGridLeakMetrics(
   const sceneMaxX = Math.round(1000 * pixelScale);
   const sceneMinY = Math.round(48 * pixelScale);
   const sceneMaxY = Math.round(710 * pixelScale);
+  const sceneHash = createHash("sha1");
 
   for (let y = sceneMinY; y < sceneMaxY; y += 1) {
+    const rowOffset = y * info.width * channels;
+    sceneHash.update(
+      data.subarray(
+        rowOffset + sceneMinX * channels,
+        rowOffset + sceneMaxX * channels
+      )
+    );
     for (let x = sceneMinX; x < sceneMaxX; x += 1) {
       if (!isPaintedRed(x, y)) continue;
       let maximumContrast = 0;
@@ -344,6 +358,7 @@ async function workspaceGridLeakMetrics(
     paintedPixelCount: localContrasts.length,
     p90LocalContrast:
       localContrasts[Math.floor(localContrasts.length * 0.9)] ?? 0,
+    sceneDigest: sceneHash.digest("hex"),
   };
 }
 
@@ -421,11 +436,17 @@ async function wallPaintColorMetrics(
   };
 }
 
-async function rapidOrbitGridLeakMetrics(page: Page) {
+async function rapidOrbitGridLeakMetrics(
+  page: Page
+): Promise<RapidOrbitFrame[]> {
   const navigator = page.getByRole("region", { name: "Room view navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
+  // The expanded wall inspector leaves the right rail scrolled so the camera
+  // handle sits above the rail's clipped viewport, where a press lands on the
+  // command bar instead, so bring the navigator back into view first.
+  await navigator.scrollIntoViewIfNeeded();
   const navigatorBox = await navigator.boundingBox();
   const cameraBox = await cameraHandle.boundingBox();
   expect(navigatorBox).not.toBeNull();
@@ -433,6 +454,18 @@ async function rapidOrbitGridLeakMetrics(page: Page) {
   if (!navigatorBox || !cameraBox) {
     throw new Error("Room-view navigator was not measurable.");
   }
+  const press = {
+    x: cameraBox.x + cameraBox.width / 2,
+    y: cameraBox.y + cameraBox.height / 2,
+  };
+  expect(
+    await cameraHandle.evaluate(
+      (handle, point) =>
+        handle.contains(document.elementFromPoint(point.x, point.y)),
+      press
+    ),
+    "The orbit press must land on the navigator camera handle."
+  ).toBe(true);
   const inset = 24;
   const orbitPoints = [
     { x: navigatorBox.x + inset, y: navigatorBox.y + inset },
@@ -454,27 +487,199 @@ async function rapidOrbitGridLeakMetrics(page: Page) {
       y: navigatorBox.y + navigatorBox.height - inset,
     },
   ];
-  const metrics: WorkspaceGridLeakMetrics[] = [];
+  const frames: RapidOrbitFrame[] = [];
 
-  await page.mouse.move(
-    cameraBox.x + cameraBox.width / 2,
-    cameraBox.y + cameraBox.height / 2
-  );
+  await page.mouse.move(press.x, press.y);
   await page.mouse.down();
   try {
     for (const point of orbitPoints) {
       await page.mouse.move(point.x, point.y, { steps: 1 });
       await page.waitForTimeout(24);
-      metrics.push(await workspaceGridLeakMetrics(page));
+      const metrics = await workspaceGridLeakMetrics(page);
+      const handleBox = await cameraHandle.boundingBox();
+      if (!handleBox) throw new Error("The camera handle left the navigator.");
+      frames.push({
+        ...metrics,
+        cameraHandleCenter: {
+          x: handleBox.x + handleBox.width / 2,
+          y: handleBox.y + handleBox.height / 2,
+        },
+      });
     }
   } finally {
     await page.mouse.up();
   }
 
-  return metrics;
+  return frames;
+}
+
+type CompiledMaterialProgram = {
+  testId: string | null;
+  transparent: boolean;
+  opacity: number;
+  alphaPinnedOpaque: boolean;
+};
+
+// three announces every WebGLRenderer and Scene it constructs to
+// window.__THREE_DEVTOOLS__, which lets the test read the compiled programs.
+async function installThreeSceneProbe(page: Page) {
+  await page.addInitScript(() => {
+    const probe: { renderers: unknown[]; scenes: unknown[] } = {
+      renderers: [],
+      scenes: [],
+    };
+    const devtools = new EventTarget();
+    devtools.addEventListener("observe", (event) => {
+      const detail = (
+        event as CustomEvent<{ isWebGLRenderer?: boolean; isScene?: boolean }>
+      ).detail;
+      if (detail?.isWebGLRenderer) probe.renderers.push(detail);
+      else if (detail?.isScene) probe.scenes.push(detail);
+    });
+    Object.assign(window, {
+      __THREE_DEVTOOLS__: devtools,
+      __e2eThreeSceneProbe: probe,
+    });
+  });
+}
+
+// Lists every visible, colour-writing mesh material that has been compiled and
+// whether its fragment shader pins alpha to 1 (three's `#define OPAQUE`).
+async function readCompiledMaterialPrograms(
+  page: Page
+): Promise<CompiledMaterialProgram[]> {
+  return page.evaluate(() => {
+    type ProbeMaterial = {
+      transparent: boolean;
+      opacity: number;
+      colorWrite: boolean;
+    };
+    type ProbeMesh = {
+      isMesh?: boolean;
+      material: ProbeMaterial | ProbeMaterial[];
+      userData: { testId?: string };
+    };
+    type ProbeRenderer = {
+      getContext: () => WebGLRenderingContext;
+      properties: {
+        get: (material: ProbeMaterial) => {
+          currentProgram?: { fragmentShader: WebGLShader };
+        };
+      };
+    };
+    const probe = (
+      window as unknown as {
+        __e2eThreeSceneProbe?: {
+          renderers: ProbeRenderer[];
+          scenes: Array<{
+            traverseVisible: (callback: (object: ProbeMesh) => void) => void;
+          }>;
+        };
+      }
+    ).__e2eThreeSceneProbe;
+    const renderer = probe?.renderers.at(-1);
+    if (!probe || !renderer) return [];
+    const gl = renderer.getContext();
+    const programs: CompiledMaterialProgram[] = [];
+    probe.scenes.forEach((scene) =>
+      scene.traverseVisible((object) => {
+        if (!object.isMesh) return;
+        [object.material].flat().forEach((material) => {
+          const program = renderer.properties.get(material).currentProgram;
+          if (!program || !material.colorWrite) return;
+          programs.push({
+            testId: object.userData.testId ?? null,
+            transparent: material.transparent,
+            opacity: Math.round(material.opacity * 100) / 100,
+            alphaPinnedOpaque: (
+              gl.getShaderSource(program.fragmentShader) ?? ""
+            ).includes("#define OPAQUE"),
+          });
+        });
+      })
+    );
+    return programs;
+  });
 }
 
 test.describe("Studio canonical wall panels", () => {
+  test("the Wall opacity slider fades the wall band and finish panels without a remount", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    });
+    await installThreeSceneProbe(page);
+
+    await page.goto("/design");
+    await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
+      "data-client-hydrated",
+      "true",
+      { timeout: 60_000 }
+    );
+    await expect
+      .poll(
+        async () =>
+          (await readCompiledMaterialPrograms(page)).some(
+            (program) =>
+              program.testId === "legacy-watertight-wall-band-3d" &&
+              program.opacity === 1 &&
+              program.alphaPinnedOpaque
+          ),
+        { timeout: 60_000 }
+      )
+      .toBe(true);
+
+    const floorPanel = page.getByTestId("coohom-floor-panel");
+    await floorPanel.getByRole("button", { name: "Expand floor panel" }).click();
+    await floorPanel.locator("summary", { hasText: "Opacity" }).click();
+    await floorPanel
+      .locator("label")
+      .filter({ has: page.getByText("Wall", { exact: true }) })
+      .locator('input[type="range"]')
+      .fill("40");
+
+    // The band, its top cap and the finish panels keep their materials across
+    // the change, so each must recompile once it becomes transparent. The band
+    // is split into one mesh per piece around openings, so every piece must
+    // fade; a piece left at full opacity shows up as its own entry.
+    await expect
+      .poll(
+        async () => {
+          const programs = await readCompiledMaterialPrograms(page);
+          const faded = programs.filter(
+            (program) =>
+              program.transparent && program.opacity > 0 && program.opacity < 1
+          );
+          return {
+            band: [
+              ...new Set(
+                programs
+                  .filter(({ testId }) => testId?.startsWith("legacy-watertight-wall-"))
+                  .map(({ testId, opacity }) => `${testId}@${opacity}`)
+              ),
+            ].sort(),
+            finishPanelFaded: faded.some(
+              ({ testId, opacity }) => testId === null && opacity === 0.4
+            ),
+            alphaPinnedOpaque: faded.filter(({ alphaPinnedOpaque }) => alphaPinnedOpaque),
+          };
+        },
+        { timeout: 30_000 }
+      )
+      .toEqual({
+        band: [
+          "legacy-watertight-wall-band-3d@0.4",
+          "legacy-watertight-wall-top-cap-3d@0.4",
+        ],
+        finishPanelFaded: true,
+        alphaPinnedOpaque: [],
+      });
+  });
+
   test("each Living east piece has one stable target and isolated material", async ({
     page,
     context,
@@ -781,10 +986,29 @@ test.describe("Studio canonical wall panels", () => {
       .getByTestId("wall-paint-swatch-nippon-0803-spanish-red")
       .click();
     await page.getByTestId("selection-inspector-wall-apply-room").click();
-    await page.waitForTimeout(300);
+    // The orange "applied to … walls" toast lies inside the sampled scene
+    // window and passes as painted red, so sample the walls once it is gone.
+    const appliedToast = page
+      .getByTestId("collision-toast")
+      .filter({ hasText: "applied to" });
+    await expect(appliedToast).toBeVisible();
+    await expect(appliedToast).toBeHidden({ timeout: 5_000 });
 
-    const orbitMetrics = await rapidOrbitGridLeakMetrics(page);
-    const measurableFrames = orbitMetrics.filter(
+    const orbitFrames = await rapidOrbitGridLeakMetrics(page);
+    // The drag must move the camera: sampling one static view proves nothing.
+    const firstHandle = orbitFrames[0]!.cameraHandleCenter;
+    const lastHandle = orbitFrames.at(-1)!.cameraHandleCenter;
+    expect(
+      Math.hypot(lastHandle.x - firstHandle.x, lastHandle.y - firstHandle.y),
+      "The rapid orbit must drag the navigator camera across the map."
+    ).toBeGreaterThan(40);
+    // The path visits four corners (two twice); allow one frame to lag behind
+    // its move while still rejecting a static view, which yields one digest.
+    expect(
+      new Set(orbitFrames.map(({ sceneDigest }) => sceneDigest)).size,
+      "The rapid orbit must render at least three distinct camera views."
+    ).toBeGreaterThanOrEqual(3);
+    const measurableFrames = orbitFrames.filter(
       (metrics) => metrics.paintedPixelCount > 1_000
     );
     expect(measurableFrames.length).toBeGreaterThanOrEqual(4);

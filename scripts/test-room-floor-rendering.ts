@@ -8,7 +8,6 @@ const roomEnvironmentPath = path.join(
   "scene",
   "RoomEnvironment.tsx"
 );
-const source = fs.readFileSync(roomEnvironmentPath, "utf8");
 const housePlanRendererPath = path.join(
   process.cwd(),
   "components",
@@ -18,29 +17,26 @@ const housePlanRendererPath = path.join(
   "surfaceMeshes.tsx"
 );
 const housePlanSource = fs.readFileSync(housePlanRendererPath, "utf8");
-
-assert.match(
-  source,
-  /export const ROOM_FLOOR_SURFACE_OFFSET = 0\.006;/,
-  "Room floor must keep a small height offset above the slab to avoid z-fighting."
+const roomCeilingCapMeshSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "renderers", "house-plan-3d",
+    "RoomCeilingCapMesh.tsx"),
+  "utf8"
+);
+const ceilingShadowOccluderPath = path.join(
+  process.cwd(),
+  "components",
+  "scene",
+  "CeilingShadowOccluder.tsx"
+);
+const ceilingShadowOccluderSource = fs.readFileSync(
+  ceilingShadowOccluderPath,
+  "utf8"
 );
 
-assert.match(
-  source,
-  /position=\{\[0, ROOM_FLOOR_SURFACE_OFFSET, 0\]\}/,
-  "Room floor mesh must render above the slab top face."
-);
-
-assert.match(
-  source,
-  /polygonOffset:\s*true,/,
-  "Room floor material should use polygon offset as an extra depth-fighting guard."
-);
-
-assert.match(
-  source,
-  /polygonOffsetFactor:\s*-1,/,
-  "Room floor material should bias the wood floor toward the camera."
+assert.equal(
+  fs.existsSync(roomEnvironmentPath),
+  false,
+  "Single rooms render their floors through the house-plan scene, so the legacy single-room environment must stay retired."
 );
 
 assert.match(
@@ -59,6 +55,29 @@ assert.match(
   housePlanSource,
   /renderOrder=\{1 \+ floorLayerIndex\}[\s\S]*?polygonOffset[\s\S]*?polygonOffsetFactor=\{-1\}[\s\S]*?polygonOffsetUnits=\{-\(floorLayerIndex \+ 1\)\}/,
   "House-plan room floors must use deterministic depth bias when room surfaces overlap."
+);
+
+assert.match(
+  ceilingShadowOccluderSource,
+  /<mesh[\s\S]*?castShadow[\s\S]*?raycast=\{\(\) => null\}[\s\S]*?<meshBasicMaterial[\s\S]*?colorWrite=\{false\}[\s\S]*?depthWrite=\{false\}/,
+  "A ceiling shadow occluder must cast shadows without drawing into the visible scene or intercepting picks."
+);
+
+assert.match(
+  ceilingShadowOccluderSource,
+  /geometry: THREE\.BufferGeometry;/,
+  "A ceiling shadow occluder must be given its room-shaped caster geometry."
+);
+assert.doesNotMatch(
+  ceilingShadowOccluderSource,
+  /boxSize/,
+  "Only the house-plan scene casts ceiling shadows, so the legacy box caster must stay retired."
+);
+
+assert.match(
+  roomCeilingCapMeshSource,
+  /const ceilingShadowGeometry = useMemo\([\s\S]*?buildHorizontalRoomGeometry\([\s\S]*?room,[\s\S]*?wallHeight \* 2[\s\S]*?geometry=\{ceilingShadowGeometry\}[\s\S]*?<group ref=\{groupRef\}[\s\S]*?visible=\{false\}/,
+  "Whole-home ceiling occlusion must use a height-bounded overhang while visual cutaway state remains independent."
 );
 
 console.log("Room floor rendering guardrails passed.");

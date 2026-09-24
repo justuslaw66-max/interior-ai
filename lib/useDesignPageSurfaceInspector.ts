@@ -49,13 +49,14 @@ import {
 } from "@/lib/design-page-floor-plan-utils";
 import { ROOM_DIMENSION_DEFAULTS, type HousePlan2D } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayArea } from "@/lib/display-units";
 import type { DesignPageSurfaceActions } from "@/lib/useDesignPageSurfaceActions";
 import type {
   SelectedWallSurfaceTarget,
   SurfaceTargetMode,
 } from "@/lib/useDesignPageSurfaceActions";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { RoomFloorPattern, RoomSnapshot } from "@/lib/room-types";
-import { getPlanRoomAreaSquareMeters } from "@/lib/plan-room-summary";
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
@@ -1021,10 +1022,8 @@ export function useDesignPageSurfaceInspector({
           const footer = surfaceInspectorIsWall
             ? `Wall rotation ${wallInspectorSettings.rotationDeg}°`
             : surfaceInspectorIsCeiling
-              ? `Ceiling paint · Height ${Math.round(
-                  wallInspectorDefaultHeight * 1000
-                )} mm`
-              : `Rotation ${floorInspectorRotationDeg}° · Room area ${getPlanRoomAreaSquareMeters(selectedPlanRoom).toFixed(2)} sqm`;
+              ? `Ceiling paint · Height ${formatCabinetMeasurement(wallInspectorDefaultHeight * 1000, planMeasurementUnit)}`
+              : `Rotation ${floorInspectorRotationDeg}° · Room area ${formatDisplayArea(getPlanRoomFloorAreaSqm(selectedPlanRoom), planMeasurementUnit)}`;
           const blockers =
             isDesigner && surfaceInspectorBlockers.length > 0
               ? `Blockers: ${surfaceInspectorBlockers

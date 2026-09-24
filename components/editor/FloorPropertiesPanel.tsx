@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Redo2 } from "lucide-react";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayArea } from "@/lib/display-units";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import MeasurementField from "./MeasurementField";
@@ -13,8 +14,8 @@ export type FloorCreationMode = "blank" | "layout" | "walls";
 export type FloorPropertiesPanelProps = {
   dark: boolean;
   canEdit: boolean;
-  roomWidth: number;
-  roomDepth: number;
+  /** The active room's polygon-aware floor area (lib/room-floor-area). */
+  activeRoomFloorAreaSqm: number;
   floorOptions: Array<{ level: number; label: string; roomCount: number }>;
   hiddenFloorLevels?: number[];
   activeFloorLevel: number;
@@ -64,8 +65,7 @@ export type FloorPropertiesPanelProps = {
 export default function FloorPropertiesPanel({
   dark,
   canEdit,
-  roomWidth,
-  roomDepth,
+  activeRoomFloorAreaSqm,
   floorOptions,
   hiddenFloorLevels = [],
   activeFloorLevel,
@@ -142,7 +142,6 @@ export default function FloorPropertiesPanel({
     : "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
-  const activeRoomArea = Math.max(0, roomWidth * roomDepth);
   const hiddenFloorLevelSet = new Set(hiddenFloorLevels);
   const getFloorAccentColor = (level: number) => {
     const palette = ["#2563eb", "#059669", "#d97706", "#7c3aed", "#dc2626", "#0891b2"];
@@ -396,7 +395,7 @@ export default function FloorPropertiesPanel({
         <div className="mt-2 grid gap-1.5">
           <div className="grid grid-cols-[1fr_7rem] items-center gap-3">
             <span className={fieldLabelClass}>Interior area</span>
-            <div className={inputClass}>{activeRoomArea.toFixed(2)} m2</div>
+            <div className={inputClass}>{formatDisplayArea(activeRoomFloorAreaSqm, measurementUnit)}</div>
           </div>
           <MeasurementField
             label="Floor wall height"

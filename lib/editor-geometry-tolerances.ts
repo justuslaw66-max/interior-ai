@@ -21,9 +21,6 @@ export const EDITOR_GEOMETRY_TOLERANCES = Object.freeze({
   drawSnapMeters: 0.01,
 });
 
-/** Thin visual wall band used by the shared house-plan scene renderers. */
-export const HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS = 0.025;
-
 export function isWithinEditorTolerance(
   first: number,
   second: number,

@@ -9,6 +9,7 @@ import {
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
+import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
@@ -22,7 +23,8 @@ export type ConsumerRoomSetupCardProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
-  roomAreaSquareMeters?: number;
+  /** The active room's polygon-aware floor area (lib/room-floor-area). */
+  activeRoomFloorAreaSqm: number;
   measurementUnit: PlanMeasurementUnit;
   measurementUnitReady: boolean;
   openingCount: number;
@@ -54,7 +56,7 @@ export function ConsumerRoomSetupCard({
   roomDepthInput,
   roomWidth,
   roomDepth,
-  roomAreaSquareMeters,
+  activeRoomFloorAreaSqm,
   measurementUnit,
   measurementUnitReady,
   openingCount,
@@ -62,9 +64,7 @@ export function ConsumerRoomSetupCard({
   actions,
 }: ConsumerRoomSetupCardProps) {
   const dimensions = consumerRoomMeasurementDimensions({ hasRooms, roomWidth, roomDepth, roomWidthInput, roomDepthInput });
-  const roomTypeLabel =
-    HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ??
-    "Room";
+  const roomTypeLabel = HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ?? "Room";
   const shellClass = dark
     ? "designer-recessed border-b border-white/10 p-3"
     : "border-b border-neutral-100 bg-neutral-50/80 p-3";
@@ -179,7 +179,7 @@ export function ConsumerRoomSetupCard({
         hasRooms={hasRooms}
         ready={measurementUnitReady}
         {...dimensions}
-        areaSquareMeters={hasRooms ? roomAreaSquareMeters : undefined}
+        roomFloorAreaSqm={activeRoomFloorAreaSqm}
         measurementUnit={measurementUnit}
         onChangeUnit={actions.changeMeasurementUnit}
         onChangeDraft={(axis, value) => axis === "width"
@@ -239,11 +239,7 @@ export function ConsumerRoomSetupCard({
                   : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
             }
           >
-            {hasConnectionBlockers
-              ? "A connected room still needs a doorway. Add one before furnishing."
-              : openingCount > 0
-                ? `${openingCount} door/window opening${openingCount === 1 ? "" : "s"} placed.`
-                : "No doors or windows placed yet. Add only the openings that affect fit."}
+            {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
           </div>
           <div className="grid grid-cols-2 gap-2" aria-label="Add room openings">
             <button

@@ -9,11 +9,7 @@ import HousePlanRenderer3D from "@/components/editor/renderers/HousePlanRenderer
 import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRenderer2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
-import { Room } from "@/components/scene/RoomEnvironment";
-import {
-  ROOM_DIMENSION_DEFAULTS,
-  type HousePlanRoom2D,
-} from "@/lib/design-page-house-plan";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   mapPlanAnnotationsToRoomRenderer,
   mapPlanFixedElementsToRoomRenderer,
@@ -36,7 +32,6 @@ import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
 type WholeHomeRendererProps = ComponentProps<typeof HousePlanRenderer3D>;
-type SingleRoomRendererProps = ComponentProps<typeof Room>;
 
 export type DesignSceneStructureLayerState = {
   viewMode: EditorViewMode;
@@ -73,7 +68,6 @@ export type DesignSceneStructureLayerState = {
     wallEditing?: Pick<CanonicalWallGestureControls, "enabled" | "selectedWallId">;
   };
   wholeHome: {
-    enabled: boolean;
     rooms: HousePlanRoom2D[];
     activeRoomId: string;
     activeFloorLevel: number;
@@ -81,19 +75,6 @@ export type DesignSceneStructureLayerState = {
     stackedFloors: boolean;
     selectedOpeningId: string | null;
     selectedSurfaceTarget: WholeHomeRendererProps["selectedSurfaceTarget"];
-  };
-  singleRoom: {
-    floorWorldY: number;
-    width: number;
-    depth: number;
-    height: number;
-    wallThickness: number;
-    slabThickness?: number;
-    wallOpacity: number;
-    floorOpacity: number;
-    ceilingOpacity: number;
-    ceilingVisible: boolean;
-    ceilingColor: string;
   };
 };
 export type DesignSceneStructureLayerConfiguration = {
@@ -119,7 +100,6 @@ export type DesignSceneStructureLayerConfiguration = {
       depthMeters: number;
     };
   };
-  renderQuality: NonNullable<SingleRoomRendererProps["renderQuality"]>;
 };
 
 export type DesignSceneStructureLayerActions = {
@@ -152,7 +132,7 @@ export type DesignSceneStructureLayerActions = {
   overlays: {
     select: NonNullable<PlanRendererProps["onSelectOverlay"]>;
     delete: NonNullable<PlanRendererProps["onDeleteOverlay"]>;
-    moveOpening: NonNullable<PlanRendererProps["onMoveOpening"]>;
+    moveOpening: NonNullable<WholeHomeRendererProps["onMoveOpening"]>;
     resizeOpening: NonNullable<PlanRendererProps["onResizeOpening"]>;
     addDoorwaySuggestion: NonNullable<
       PlanRendererProps["onAddDoorwaySuggestion"]
@@ -191,6 +171,10 @@ type DesignSceneStructureLayerProps = {
   actions: DesignSceneStructureLayerActions;
   focusRoomId?: string | null;
 };
+
+function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
+  return state && actions ? { ...state, ...actions } : undefined;
+}
 
 export function DesignSceneStructureLayer({
   state,
@@ -271,6 +255,7 @@ export function DesignSceneStructureLayer({
           rooms={plan.rooms}
           existingOpenings={plan.scene.openings}
           onTraceOpeningPoint={actions.underlay.addOpeningTracePoint}
+          measurementUnit={configuration.plan.measurementUnit}
         />
         <RoomRenderer2D
           canonicalWallEditing={resolveWallGestureControls(plan.wallEditing, actions.walls)}
@@ -341,9 +326,7 @@ export function DesignSceneStructureLayer({
               ? undefined
               : actions.drawing.commitRoomDimension
           }
-          onCommitWallDrawSegmentLength={
-            actions.drawing.commitWallSegmentLength
-          }
+          onCommitWallDrawSegmentLength={actions.drawing.commitWallSegmentLength}
           onDrawRoomDrag={actions.drawing.drawRoom}
           drawRoomInteractionMode={plan.roomTrace.interactionMode}
           traceOpeningMode={plan.openingTrace.enabled && !plan.underlay}
@@ -371,7 +354,7 @@ export function DesignSceneStructureLayer({
     );
   }
 
-  if (state.wholeHome.enabled) {
+  if (state.wholeHome.rooms.length > 0) {
     const visibleRooms = focusRoomId
       ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
       : state.wholeHome.rooms;
@@ -419,26 +402,9 @@ export function DesignSceneStructureLayer({
     );
   }
   return (
-    <Room
-      floorWorldY={state.singleRoom.floorWorldY}
-      width={state.singleRoom.width}
-      depth={state.singleRoom.depth}
-      height={state.singleRoom.height}
-      wallThickness={state.singleRoom.wallThickness}
-      slabThickness={
-        state.singleRoom.slabThickness ??
-        ROOM_DIMENSION_DEFAULTS.slabThickness
-      }
-      wallOpacity={state.singleRoom.wallOpacity}
-      floorOpacity={state.singleRoom.floorOpacity}
-      ceilingOpacity={state.singleRoom.ceilingOpacity}
-      ceilingVisible={state.singleRoom.ceilingVisible}
-      ceilingColor={state.singleRoom.ceilingColor}
-      renderQuality={configuration.renderQuality}
-    />
+    <>
+      {canonicalIntegrityWarning}
+      {canonicalEditingNotice}
+    </>
   );
-}
-
-function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
-  return state && actions ? { ...state, ...actions } : undefined;
 }

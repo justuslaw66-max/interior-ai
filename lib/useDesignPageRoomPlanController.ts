@@ -25,21 +25,16 @@ import {
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import { normalizeItemsToRoom } from "@/lib/design-page-zone-layout";
+import { useDesignPageDeleteRoomAction } from "@/lib/useDesignPageDeleteRoomAction";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   createRoom,
-  deleteRoom,
   switchRoom as switchActiveRoom,
   updateRoom,
   type DesignItem,
   type DesignSnapshot,
   type RoomSnapshot,
 } from "@/lib/room-types";
-
-type RoomPlanHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
 
 type ResolveConfiguredPlanningDimsMm = (
   item: DesignItem,
@@ -80,6 +75,7 @@ export type DesignPageRoomPlanControllerActions = {
   setRoomWidthInput: Dispatch<SetStateAction<string>>;
   setRoomDepthInput: Dispatch<SetStateAction<string>>;
   clearNonRoomSelection: () => void;
+  clearPlanForEmptyCanvas: () => void;
   renameRoom: (roomId: string, nextName: string) => void;
   moveRoom2D: (
     roomId: string,
@@ -87,7 +83,13 @@ export type DesignPageRoomPlanControllerActions = {
     z: number,
     options?: { snap?: boolean }
   ) => void;
-  history: RoomPlanHistory;
+  /**
+   * The only way this controller records history. Duplicate room, Edit room dimension and Resize
+   * room drove begin/commit directly and dropped the boolean begin returns. begin refuses to nest,
+   * so an edit made while a slider's coalesced transaction was still open (it stays open for
+   * 420 ms) closed the slider's transaction instead of its own and joined its undo entry;
+   * runHistoryTransaction flushes that transaction first.
+   */
   runHistoryTransaction: (name: string, mutation: () => void) => void;
   showToast: (message: string) => void;
 };
@@ -126,9 +128,9 @@ export function useDesignPageRoomPlanController({
     setRoomWidthInput,
     setRoomDepthInput,
     clearNonRoomSelection,
+    clearPlanForEmptyCanvas,
     renameRoom,
     moveRoom2D,
-    history,
     runHistoryTransaction,
     showToast,
   } = actions;
@@ -233,14 +235,14 @@ export function useDesignPageRoomPlanController({
         ? { ...source.surfaceFinishes }
         : undefined;
 
-      history.begin("Duplicate room");
-      setDesignSnapshot((previous) =>
-        switchActiveRoom(
-          { ...previous, rooms: [...previous.rooms, newRoom] },
-          newRoom.id
-        )
-      );
-      history.commit();
+      runHistoryTransaction("Duplicate room", () => {
+        setDesignSnapshot((previous) =>
+          switchActiveRoom(
+            { ...previous, rooms: [...previous.rooms, newRoom] },
+            newRoom.id
+          )
+        );
+      });
       setSelectedPlanRoomId(newRoom.id);
       clearNonRoomSelection();
       showToast(`${newRoom.name} duplicated`);
@@ -249,44 +251,24 @@ export function useDesignPageRoomPlanController({
     [
       clearNonRoomSelection,
       designSnapshotRef,
-      history,
       housePlanRooms,
+      runHistoryTransaction,
       setDesignSnapshot,
       setSelectedPlanRoomId,
       showToast,
     ]
   );
 
-  const deleteSelectedRoom = useCallback(
-    (roomId: string) => {
-      if (designSnapshotRef.current.rooms.length <= 1) {
-        showToast("Keep at least one room");
-        return;
-      }
-
-      const room = designSnapshotRef.current.rooms.find((entry) => entry.id === roomId);
-      if (!room) return;
-      history.begin("Delete room");
-      setDesignSnapshot((previous) => deleteRoom(previous, roomId));
-      setPlanOpenings((previous) =>
-        previous.filter((opening) => opening.roomId !== roomId)
-      );
-      history.commit();
-      setSelectedPlanRoomId(null);
-      clearNonRoomSelection();
-      showToast(`${room.name} deleted`);
-      track("floor_plan_room_deleted", { roomId });
-    },
-    [
-      clearNonRoomSelection,
-      designSnapshotRef,
-      history,
-      setDesignSnapshot,
-      setPlanOpenings,
-      setSelectedPlanRoomId,
-      showToast,
-    ]
-  );
+  const deleteSelectedRoom = useDesignPageDeleteRoomAction({
+    designSnapshotRef,
+    runHistoryTransaction,
+    setDesignSnapshot,
+    setPlanOpenings,
+    setSelectedPlanRoomId,
+    clearNonRoomSelection,
+    clearPlanForEmptyCanvas,
+    showToast,
+  });
 
   const resizeRoom2D = useCallback(
     (roomId: string, next: { x: number; z: number; w: number; d: number }) => {
@@ -401,24 +383,24 @@ export function useDesignPageRoomPlanController({
         roundPlanCoordinate(currentPosition.x) !== placement.x ||
         roundPlanCoordinate(currentPosition.z) !== placement.z;
 
-      history.begin("Edit room dimension");
-      setDesignSnapshot((previous) =>
-        updateRoom(previous, {
-          ...targetRoom,
-          geometry: {
-            ...targetRoom.geometry,
-            width,
-            depth,
-            wallThickness: currentWall,
-          },
-          planPosition: {
-            x: roundPlanCoordinate(placement.x),
-            z: roundPlanCoordinate(placement.z),
-          },
-          items: normalizedItems,
-        })
-      );
-      history.commit();
+      runHistoryTransaction("Edit room dimension", () => {
+        setDesignSnapshot((previous) =>
+          updateRoom(previous, {
+            ...targetRoom,
+            geometry: {
+              ...targetRoom.geometry,
+              width,
+              depth,
+              wallThickness: currentWall,
+            },
+            planPosition: {
+              x: roundPlanCoordinate(placement.x),
+              z: roundPlanCoordinate(placement.z),
+            },
+            items: normalizedItems,
+          })
+        );
+      });
 
       if (designSnapshot.activeRoomId === roomId) {
         setRoomWidthInput(width.toFixed(2));
@@ -447,9 +429,9 @@ export function useDesignPageRoomPlanController({
       catalogItems,
       designSnapshot.activeRoomId,
       designSnapshot.rooms,
-      history,
       housePlanRooms,
       resolveConfiguredPlanningDimsMm,
+      runHistoryTransaction,
       setDesignSnapshot,
       setRoomDepthInput,
       setRoomWidthInput,
@@ -525,9 +507,9 @@ export function useDesignPageRoomPlanController({
 
       if (room.geometry.width === width && room.geometry.depth === depth) return;
 
-      history.begin("Resize room");
-      setDesignSnapshot((previous) => updateRoom(previous, nextRoom));
-      history.commit();
+      runHistoryTransaction("Resize room", () => {
+        setDesignSnapshot((previous) => updateRoom(previous, nextRoom));
+      });
       track("editor_room_resized", { roomId: room.id, width, depth });
       trackProductEvent("room_dimensions_completed", {
         source: "room_resize",
@@ -552,9 +534,9 @@ export function useDesignPageRoomPlanController({
     [
       activeRoom,
       catalogItems,
-      history,
       housePlanRooms,
       resolveConfiguredPlanningDimsMm,
+      runHistoryTransaction,
       setDesignSnapshot,
       setRoomDepthInput,
       setRoomWidthInput,

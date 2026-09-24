@@ -89,13 +89,19 @@ assert.doesNotMatch(interactionInput, /\n\s+(state|actions|refs|configuration):/
 assertSourceOrder(
   planAuthoringSource,
   [
-    "if (!planSettingsLoaded) return;",
     "useDesignPageSelectionInspectionRuntime({",
     "useDesignPagePlanWorkspaceRegistrationFacade({",
     "useDesignPageSurfaceWorkspaceFacade({",
     "useDesignPagePlanUnderlayFacade(",
   ],
-  "Plan authoring should preserve default-opening through underlay hook order"
+  "Plan authoring should preserve selection-inspection through underlay hook order"
+);
+// Default openings are seeded by the plan-settings load inside core-shell registration, which
+// the workspace registers before plan authoring; plan authoring must not seed them again later.
+assert.doesNotMatch(
+  planAuthoringSource,
+  /if \(!planSettingsLoaded\)|setPlanOpenings\(\[|defaultPlanOpeningsSeeded/,
+  "Plan authoring should not defer a default-opening seed behind the plan-settings load"
 );
 
 assertSourceOrder(

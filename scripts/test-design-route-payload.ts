@@ -172,6 +172,27 @@ runFixture("create payload rejects snapshots with missing active rooms", () => {
   assert.equal(result.error, "Invalid payload: snapshot must be a v3 design snapshot");
 });
 
+runFixture("create payload accepts an empty canvas snapshot", () => {
+  const snapshot = { ...makeSnapshot(), activeRoomId: "", rooms: [] };
+  const result = parseDesignCreatePayload({
+    roomWidth: 9,
+    roomDepth: 8,
+    items: [{ instanceId: "stale-item" }],
+    zones: [{ id: "stale-zone" }],
+    savedViews: [{ id: "stale-view" }],
+    snapshot,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.value.roomWidth, 4);
+  assert.equal(result.value.roomDepth, 5);
+  assert.deepEqual(result.value.items, []);
+  assert.deepEqual(result.value.zones, []);
+  assert.deepEqual(result.value.savedViews, []);
+  assert.deepEqual(result.value.snapshot?.rooms, []);
+});
+
 runFixture("claim payload derives legacy fields from active v3 snapshot", () => {
   const snapshot = makeSnapshot();
   snapshot.rooms[0].geometry.width = 8.5;
@@ -302,15 +323,19 @@ runFixture("update payload derives legacy fields from active snapshot room", () 
   );
 });
 
-runFixture("update payload rejects invalid snapshots", () => {
+runFixture("update payload persists an empty canvas snapshot", () => {
   const result = buildDesignUpdatePayload({
     notes: "Valid field",
     snapshot: { version: 3, activeRoomId: "", rooms: [] },
   });
 
-  assert.equal(result.ok, false);
-  if (result.ok) return;
-  assert.equal(result.error, "Invalid payload: snapshot must be a v3 design snapshot");
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.value.roomWidth, 4);
+  assert.equal(result.value.roomDepth, 5);
+  assert.deepEqual(result.value.items, []);
+  assert.deepEqual(result.value.zones, []);
+  assert.deepEqual(result.value.savedViews, []);
 });
 
 console.log("Design route payload fixtures passed");
