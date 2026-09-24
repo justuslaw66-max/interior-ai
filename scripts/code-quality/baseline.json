@@ -233,7 +233,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 302,
+      "lines": 290,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -677,7 +677,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1107,
+      "lines": 1047,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -2031,11 +2031,11 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 245
+        "maximum": 230
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 20
       }
     },
     "components/editor/EditorToolRail.tsx": {
@@ -4607,7 +4607,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 973
+        "maximum": 914
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {
@@ -4739,7 +4739,7 @@
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 337
+        "maximum": 336
       }
     },
     "lib/useDesignPagePresentExportController.ts": {

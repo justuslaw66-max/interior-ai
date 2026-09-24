@@ -6,7 +6,8 @@ import { GUEST_SHARE_OPENER_ID } from "@/lib/guest-save-prompt";
 type CommandBarShareButtonProps = {
   dark: boolean;
   isSharing: boolean;
-  onShare: () => void;
+  /** Without a handler there is no Share button. */
+  onShare?: () => void;
 };
 
 /**
@@ -15,6 +16,7 @@ type CommandBarShareButtonProps = {
  * the button ignores clicks but stays focusable, so keyboard users keep their place.
  */
 export function CommandBarShareButton({ dark, isSharing, onShare }: CommandBarShareButtonProps) {
+  if (!onShare) return null;
   return (
     <button
       id={GUEST_SHARE_OPENER_ID}

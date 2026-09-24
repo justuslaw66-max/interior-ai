@@ -4,13 +4,13 @@ import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBarAccountMenu";
 import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
+import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBarSaveButton";
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
 import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
 import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
-import { GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
@@ -49,8 +49,7 @@ type EditorCommandBarProps = {
   onSave: () => void | Promise<void>;
   isSaving?: boolean;
   /** Share shows when a handler is given; it saves the design first if it isn't in the cloud. */
-  onShare?: () => void;
-  isSharing?: boolean;
+  onShare?: () => void; isSharing?: boolean;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
@@ -92,9 +91,7 @@ export default function EditorCommandBar({
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
-  isSaving = false,
-  onShare,
-  isSharing = false,
+  isSaving = false, onShare, isSharing = false,
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
@@ -201,7 +198,7 @@ export default function EditorCommandBar({
             data-testid="pro-mode-indicator"
             role="status"
             aria-label="Pro tools on"
-            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
+            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700 max-[390px]:hidden"
           >
             <span className="lg:hidden">Pro</span>
             <span className="hidden lg:inline">Pro tools</span>
@@ -227,20 +224,8 @@ export default function EditorCommandBar({
           saveStatus={saveStatus}
           onRetrySaveStatus={onRetrySaveStatus}
         />
-        <button id={GUEST_SAVE_OPENER_ID}
-          type="button"
-          data-testid="save-design"
-          className={
-            dark
-              ? "designer-primary-action inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg px-3 text-sm font-semibold leading-none disabled:cursor-wait disabled:opacity-70 sm:px-4"
-              : "inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg bg-neutral-900 px-3 text-sm font-semibold leading-none text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
-          }
-          onClick={onSave}
-          disabled={isSaving}
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </button>
-        {onShare ? <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} /> : null}
+        <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
+        <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
         <CommandBarMoreMenu
           dark={dark}
           containerRef={overflowRef}
@@ -263,9 +248,8 @@ export default function EditorCommandBar({
           overflowSlot={overflowSlot}
           onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
           onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
-          onOpenPresentExport={onOpenPresentExport}
+          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback}
           onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
-          onFeedback={onFeedback}
         />
 
         <CommandBarAccountMenu

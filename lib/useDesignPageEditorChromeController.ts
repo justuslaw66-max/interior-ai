@@ -147,7 +147,6 @@ export function useDesignPageEditorChromeController({
     if (!commandState.isAuthed) return actions.persistence.openGuestPrompt("share", () => {});
     void actions.persistence.shareDesign();
   };
-
   const openPresentExport = () => {
     actions.dialogs.setPresentOpen(true);
   };
