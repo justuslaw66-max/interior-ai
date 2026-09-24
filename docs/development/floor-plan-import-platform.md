@@ -250,6 +250,8 @@ Share-token and public-catalog boundaries never return raw source manifests or p
 
 When the rooms come from the vectorizer, its walls are measured and are solid wherever it found no opening. An opening symbol from another source (OCR, vision) is promoted onto such a wall only when raster jamb or frame pixels support its span; otherwise it is kept as an editable `source-opening-suggestion` annotation on that wall.
 
+A page that prints no dimensions gets no accepted scale from the vectorizer either: its `estimated_door_leaf` figure is never used for geometry. It is surfaced instead: the `scale_unresolved` message says what the estimate rests on, the door openings it was made from become `source-scale-estimate` reference marks, and the scale review panel lists them. Picking one loads its jambs as the two endpoints and pre-fills the width the opening would have at the estimate; applying that number unchanged records the primary measurement with `basis: "assumed_opening_width"`, which the panel shows as an amber, approximate scale until a printed measurement confirms or replaces it.
+
 ## Canonical rendering and compatibility
 
 `compileFloorPlanDocumentV2` produces the shared render model. The 2D and 3D renderers use that same object; a geometry-hash mismatch blocks canonical rendering instead of silently falling back to approximate legacy walls. Canonical wall IDs, opening spans and polygonal structures are rendered directly in both modes. Room outer loops and hole loops compile once and are reused for 2D fill, 3D floors/ceilings and placement containment, so shafts, cores and internal voids cannot become usable floor area.

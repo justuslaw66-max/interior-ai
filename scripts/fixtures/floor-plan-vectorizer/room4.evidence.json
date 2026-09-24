@@ -50,7 +50,8 @@
     ],
     "ok": true
    }
-  ]
+  ],
+  "estimate": null
  },
  "semantics": {
   "planRegion": {
@@ -4440,6 +4441,9 @@
   ],
   "unsupportedWallPx": 0,
   "workScale": 2,
-  "skewDeg": 0.0
+  "skewDeg": 0.0,
+  "pageCrop": null,
+  "scaleBar": null,
+  "areaCheck": null
  }
 }

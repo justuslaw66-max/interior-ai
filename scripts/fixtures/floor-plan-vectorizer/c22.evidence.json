@@ -11,7 +11,89 @@
   "basis": "estimated_door_leaf",
   "dimensionCount": 0,
   "needsReview": true,
-  "chainsChecked": []
+  "chainsChecked": [],
+  "estimate": {
+   "method": "traced swings",
+   "assumedLeafMm": 850.0,
+   "swingsMeasured": 4,
+   "doorOpenings": [
+    {
+     "openingId": "e20",
+     "sourcePx": [
+      [
+       534.625,
+       861.0
+      ],
+      [
+       534.625,
+       775.0
+      ]
+     ],
+     "widthPx": 86.0,
+     "widthMmAtEstimate": 970
+    },
+    {
+     "openingId": "e17",
+     "sourcePx": [
+      [
+       442.0,
+       871.25
+      ],
+      [
+       523.5,
+       871.25
+      ]
+     ],
+     "widthPx": 81.5,
+     "widthMmAtEstimate": 920
+    },
+    {
+     "openingId": "e26",
+     "sourcePx": [
+      [
+       437.14598834760636,
+       532.0
+      ],
+      [
+       437.14598834760636,
+       450.5
+      ]
+     ],
+     "widthPx": 81.5,
+     "widthMmAtEstimate": 920
+    },
+    {
+     "openingId": "e8",
+     "sourcePx": [
+      [
+       203.0,
+       1320.5
+      ],
+      [
+       284.0,
+       1320.5
+      ]
+     ],
+     "widthPx": 81.0,
+     "widthMmAtEstimate": 910
+    },
+    {
+     "openingId": "e23",
+     "sourcePx": [
+      [
+       526.5,
+       763.3387023593467
+      ],
+      [
+       448.5,
+       763.3387023593467
+      ]
+     ],
+     "widthPx": 78.0,
+     "widthMmAtEstimate": 880
+    }
+   ]
+  }
  },
  "semantics": {
   "planRegion": {
@@ -4666,6 +4748,9 @@
   "labelsOutsideRooms": [],
   "unsupportedWallPx": 1193,
   "workScale": 2,
-  "skewDeg": 0.0
+  "skewDeg": 0.0,
+  "pageCrop": null,
+  "scaleBar": null,
+  "areaCheck": null
  }
 }

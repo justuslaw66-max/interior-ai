@@ -51,19 +51,25 @@ assert.deepEqual(swingAgainstWall({ x: 0, y: 0 }, { x: 10, y: 0 }, { double: tru
 // Evidence that is not the exporter's shape is refused at the process boundary.
 assert.throws(() => parseFloorPlanVectorizerEvidence({ kind: "something_else" }));
 
-async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbol[] = []) {
+async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbol[] = [], linework: "walls" | "walls+bar" = "walls") {
   const bytes = readFileSync(path.join(fixtureDirectory, `${name}.evidence.json`));
   const evidence = parseFloorPlanVectorizerEvidence(JSON.parse(bytes.toString("utf8")));
   const page: RegisteredPageEvidence = {
     pageNumber: 1,
     widthPx: evidence.page.widthPx,
     heightPx: evidence.page.heightPx,
-    // Stand-in for the adapter's own raster linework (the scale solver refuses a page without any).
-    vectorSegments: evidence.wallEdges.map((edge, index) => ({
+    // Stand-in for the adapter's own raster linework (the scale solver refuses a page without any): the wall sides,
+    // plus the drawn scale bar where the fixture has one (the raster pass traces that line like any other).
+    vectorSegments: [
+      ...evidence.wallEdges.map((edge) => edge.sourcePx),
+      ...(linework === "walls+bar"
+        ? evidence.semantics.dimensionLabels.filter((label) => /m$/.test(label.rawText ?? "")).map((label) => label.spanSourcePx)
+        : []),
+    ].map((span, index) => ({
       id: `raster-${index + 1}`,
       pageNumber: 1,
-      start: { x: edge.sourcePx[0][0], y: edge.sourcePx[0][1] },
-      end: { x: edge.sourcePx[1][0], y: edge.sourcePx[1][1] },
+      start: { x: span[0][0], y: span[0][1] },
+      end: { x: span[1][0], y: span[1][1] },
       strokeWidthPx: 1,
       evidenceKind: "raster_linework" as const,
     })),
@@ -151,6 +157,17 @@ async function main() {
     );
   }
 
+  // A page with no written dimensions but a graphic scale bar: the bar's labelled stops arrive as printed dimensions,
+  // so the scale is accepted exactly like a dimensioned plan and the rooms are promoted.
+  const bar = await importFixture("c23", [], "walls+bar");
+  assert.equal(bar.evidence.scale.basis, "explicit_dimension");
+  assert.equal(bar.evidence.semantics.dimensionLabels.length, 4, "0-1, 1-3, 3-6 and 0-6 m from the bar");
+  assert.ok(bar.scale, "c23: the scale bar's spans are accepted as a scale");
+  assert.ok(Math.abs(bar.scale.millimetresPerPixel / (bar.evidence.scale.millimetresPerPixel ?? 1) - 1) <= 0.01);
+  assert.ok(bar.document.floors[0].rooms.length >= 8, `c23: rooms promoted (${bar.document.floors[0].rooms.length})`);
+  assert.deepEqual(validateFloorPlanDocumentV2(bar.document).filter((issue) => issue.severity === "error"), []);
+  summary.push(`c23: scale ${bar.scale.millimetresPerPixel.toFixed(2)} mm/px accepted from the graphic scale bar, ${bar.document.floors[0].rooms.length} rooms promoted`);
+
   // A vision guess ("window" behind the sofa, no jamb or frame pixels) on a wall the vectorizer measured as solid
   // stays an editable suggestion; it never cuts the wall.
   const measured = await importFixture("d12");
@@ -183,8 +200,19 @@ async function main() {
   assert.equal(mergeVectorizerDimensionSpans(estimated.page), 0);
   assert.equal(estimated.scale, null);
   assert.equal(estimated.document.floors[0].rooms.length, 0);
-  assert.ok(estimated.issues.some((issue) => issue.code === "scale_unresolved" && issue.severity === "critical"));
-  summary.push("c22: estimated scale is not accepted; scale_unresolved stays critical and no rooms are promoted");
+  const unresolved = estimated.issues.find((issue) => issue.code === "scale_unresolved" && issue.severity === "critical");
+  assert.ok(unresolved);
+  // ...but the reviewer is told what the estimate rests on and gets the door openings to confirm it against.
+  assert.match(unresolved.message, /estimates about 11\.3 mm per pixel from 4 door swings/);
+  const marks = estimated.document.floors[0].annotations.filter(
+    (annotation) => annotation.configurationId === "source-scale-estimate"
+  );
+  assert.equal(marks.length, 5, "one reference mark per door opening the estimate offers");
+  assert.ok(marks.every((mark) => mark.scope === "reference" && mark.geometry.kind === "source_drawing"));
+  assert.match(marks[0].text, /about 970 mm if the estimated scale holds/);
+  summary.push(
+    "c22: estimated scale is not accepted; scale_unresolved stays critical, no rooms are promoted, 5 door openings are offered to confirm the scale"
+  );
 
   // The process boundary, with stand-in programs (the real ones need OpenCV and Tesseract): two programs run in a
   // private temporary folder, the evidence file is parsed, the folder is removed, a slow program is killed.

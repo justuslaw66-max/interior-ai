@@ -15,6 +15,7 @@ export function applyScaleReviewMeasurement(input: Pick<FloorPlanScaleReviewPane
   "document" | "floorId" | "sourceId" | "page" | "calibration" | "scalePoints"> & {
   printedMm: number; firstVertexId: string; secondVertexId: string;
   inputUnit: FloorPlanSourceMeasurementV2["inputUnit"]; sourceQuality: FloorPlanSourceMeasurementV2["sourceQuality"];
+  basis?: FloorPlanSourceMeasurementV2["basis"];
 }) {
   if (!input.page || input.scalePoints.length !== 2) throw new Error("Choose two endpoints on the source page.");
   if(input.calibration?.photoCorrection)throw new Error("Use the photo correction measurements to change this scale, then create a separate corrected review. You can still add independent scale checks here.");
@@ -28,5 +29,6 @@ export function applyScaleReviewMeasurement(input: Pick<FloorPlanScaleReviewPane
   if (!calibration) throw new Error("The source registration could not be retained.");
   return changeReviewMeasurement({ document, floorId: input.floorId, calibrationId: calibration.id, primary: true,
     measurement: { id: "primary-scale", firstPx: args.first, secondPx: args.second, confirmedLengthMm: input.printedMm,
-      inputUnit: input.inputUnit, sourceQuality: input.sourceQuality, confirmedAt: new Date().toISOString() } });
+      inputUnit: input.inputUnit, sourceQuality: input.sourceQuality, confirmedAt: new Date().toISOString(),
+      ...(input.basis && input.basis !== "printed" ? { basis: input.basis } : {}) } });
 }

@@ -19,6 +19,19 @@ export function useFloorPlanScaleReview(props: FloorPlanScaleReviewPanelProps) {
   const hasConflict = calibration?.independentMeasurements?.some((value) => !evaluateSourceMeasurement(calibration, value).agrees) ?? false;
   const [mode, setMode] = useState<"set" | "check">(hasConflict ? "check" : "set");
   const [firstVertexId, setFirstVertexId] = useState(""), [secondVertexId, setSecondVertexId] = useState("");
+  // A door opening offered by the vectorizer's estimate: its assumed width is pre-filled; if the reviewer applies it
+  // unchanged, the measurement is recorded as assumed, not printed.
+  const [assumedMm, setAssumedMm] = useState<number | null>(null);
+  const estimateMarks = useMemo(() => (document.floors.find((entry) => entry.id === floorId)?.annotations ?? []).filter((annotation) =>
+    annotation.configurationId === "source-scale-estimate" && annotation.geometry.kind === "source_drawing" &&
+    annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === page?.pageNumber), [document, floorId, page?.pageNumber, sourceId]);
+  const applyEstimateMark = (annotation: (typeof estimateMarks)[number]) => {
+    if (annotation.geometry.kind !== "source_drawing") return;
+    const mm = Number(/about (\d+) mm/.exec(annotation.text ?? "")?.[1] ?? 0);
+    props.onScalePointsChange(annotation.geometry.points.slice(0, 2).map((point) => ({ x: point.x, y: point.y })));
+    props.onPickingScaleChange(false);
+    if (mm > 0) { input.changeUnit("mm"); input.changeText(String(mm)); setAssumedMm(mm); }
+  };
   const floor = document.floors.find((entry) => entry.id === floorId);
   const canMapExistingVertices = (floor?.vertices.length ?? 0) >= 2;
   const scale = useMemo(() => page ? analyzePointScale({ first: scalePoints[0] ?? null, second: scalePoints[1] ?? null,
@@ -28,11 +41,12 @@ export function useFloorPlanScaleReview(props: FloorPlanScaleReviewPanelProps) {
     try {
       props.onError(null);
       props.onChange(applyScaleReviewMeasurement({ document, floorId, sourceId, page, calibration, scalePoints,
-        printedMm, firstVertexId, secondVertexId, inputUnit: input.unit, sourceQuality: input.sourceQuality }));
+        printedMm, firstVertexId, secondVertexId, inputUnit: input.unit, sourceQuality: input.sourceQuality,
+        basis: assumedMm !== null && Math.round(printedMm) === assumedMm ? "assumed_opening_width" : "printed" }));
       props.onPickingScaleChange(false);
     } catch (cause) { props.onError(scaleReviewFailureMessage(cause)); }
   };
   return { input, printedMm, hasConflict, mode, setMode, floor, canMapExistingVertices, scale, apply,
-    firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId,
+    firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId, estimateMarks, applyEstimateMark, assumedMm,
     canApply: canApplyScale(props, scale, canMapExistingVertices, firstVertexId, secondVertexId) };
 }

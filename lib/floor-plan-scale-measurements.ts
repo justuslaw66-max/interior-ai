@@ -12,6 +12,7 @@ export const sourceMeasurementSchema = z.object({
   confirmedLengthMm: z.number().int().min(100).max(1_000_000),
   inputUnit: z.enum(["mm", "cm", "in", "ft-in"]),
   sourceQuality: z.enum(["clean", "scan"]),
+  basis: z.enum(["printed", "assumed_opening_width"]).optional(),
   confirmedAt: z.string().datetime({ offset: true }),
   residualAtConfirmation: z.object({ millimetres: z.number().finite(), pixels: z.number().finite() }).strict().optional(),
 }).strict();

@@ -13,6 +13,8 @@ import {
   registerVectorizerEvidence,
   swingAgainstWall,
   vectorizerRoomBoundaries,
+  vectorizerScaleEstimateAnnotations,
+  vectorizerScaleEstimateMessage,
   type FloorPlanVectorizerProvider,
 } from "./vectorizer-evidence";
 import { z } from "zod";
@@ -1549,7 +1551,7 @@ function buildCanonicalCandidate(
         "scale_unresolved",
         solvedOtherPage
           ? `Dimensions were solved on source page ${solvedOtherPage.pageNumber}, but the selected plan is on page ${page.pageNumber}. Confirm dimensions from this plan page before geometry can be trusted.`
-          : automaticScaleReviewMessage(page),
+          : (vectorizerScaleEstimateMessage(page) ?? automaticScaleReviewMessage(page)),
         "critical"
       )
     );
@@ -1584,6 +1586,9 @@ function buildCanonicalCandidate(
   const openingByEvidenceId = new Map<string, FloorPlanOpeningV2>();
   const dimensions: FloorPlanDimensionV2[] = [];
   const annotations: FloorPlanAnnotationV2[] = sourceDrawingAnnotations(page, sourceId, EXTRACTION_VERSION, issues);
+  // Where the plan prints no dimensions, the vectorizer's door openings give the reviewer something to confirm the
+  // scale against; they are reference marks, never geometry.
+  if (page && !scale) annotations.push(...vectorizerScaleEstimateAnnotations(page, sourceId, EXTRACTION_VERSION));
   const vertexByPoint = new Map<string, FloorPlanVertexV2>();
   const wallBySpan = new Map<
     string,

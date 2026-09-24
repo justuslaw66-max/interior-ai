@@ -11,7 +11,8 @@
   "basis": "explicit_dimension",
   "dimensionCount": 13,
   "needsReview": false,
-  "chainsChecked": []
+  "chainsChecked": [],
+  "estimate": null
  },
  "semantics": {
   "planRegion": {
@@ -3528,6 +3529,9 @@
   "labelsOutsideRooms": [],
   "unsupportedWallPx": 17407,
   "workScale": 1,
-  "skewDeg": 0.0
+  "skewDeg": 0.0,
+  "pageCrop": null,
+  "scaleBar": null,
+  "areaCheck": null
  }
 }

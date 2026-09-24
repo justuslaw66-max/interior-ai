@@ -151,6 +151,8 @@ export type FloorPlanSourceMeasurementV2 = {
   confirmedLengthMm: number;
   inputUnit: "mm" | "cm" | "in" | "ft-in";
   sourceQuality: "clean" | "scan";
+  /** Where the number came from: read off the plan (default), or an assumed door-leaf width the reviewer accepted. */
+  basis?: "printed" | "assumed_opening_width";
   confirmedAt: string;
   /** Historical reading only; never used as the current readiness result. */
   residualAtConfirmation?: { millimetres: number; pixels: number };
