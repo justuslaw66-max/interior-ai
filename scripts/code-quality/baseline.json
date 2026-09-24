@@ -161,7 +161,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 539,
+      "lines": 525,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -178,10 +178,6 @@
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
       "lines": 466,
-      "limit": 250
-    },
-    "components/editor/design-page/MyDesignsDialog.tsx": {
-      "lines": 329,
       "limit": 250
     },
     "components/editor/design-page/PresentExportDialog.tsx": {
@@ -677,7 +673,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1047,
+      "lines": 858,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -1721,7 +1717,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 505
+        "maximum": 491
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -1820,16 +1816,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 140
-      }
-    },
-    "components/editor/design-page/MyDesignsDialog.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 283
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 25
       }
     },
     "components/editor/design-page/PlacedCabinetAssetMarkers.tsx": {
@@ -3277,7 +3263,7 @@
     "lib/design-page-dialog-layer-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 132
+        "maximum": 127
       }
     },
     "lib/design-page-equivalent-variant.ts": {
@@ -4571,7 +4557,7 @@
     "lib/useDesignPageNewPlanController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 105
+        "maximum": 102
       }
     },
     "lib/useDesignPageOnboarding.ts": {
@@ -4600,8 +4586,8 @@
     },
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
-        "count": 4,
-        "maximum": 913
+        "count": 3,
+        "maximum": 738
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {

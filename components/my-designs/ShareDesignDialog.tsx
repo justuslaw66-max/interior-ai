@@ -29,6 +29,7 @@ export function ShareDesignDialog(props: ShareDesignDialogProps) {
       closeLabel="Close Share"
       testId="my-design-share-dialog"
       returnFocusIds={props.returnFocusIds}
+      manageBackground
       forceLight
       panelClassName="max-w-[480px]"
     >

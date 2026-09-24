@@ -22,9 +22,8 @@ export type UseDesignPageStartChooserInput = {
     requirePlanChoiceForNextTemplate: () => void;
     /** Plan's template list, which has the address search. */
     openTemplatePicker: () => void;
-    /** The same from New design: it closes My designs, and the next template asks before replacing. */
+    /** The same from New design: the next template asks before replacing. */
     openNewDesignTemplatePicker: () => void;
-    closeMyDesigns: () => void;
     /** Plan in 2D. */
     goPlan: () => void;
     /** Plan in 2D with the room tool on; records nothing itself. */
@@ -175,9 +174,6 @@ export function buildStartChooserProps(
 export function useDesignPageStartChooser(input: UseDesignPageStartChooserInput) {
   const [chooser, setChooser] = useState<StartChooserState>(CLOSED);
   useStartParam(input, setChooser);
-  const openAsNewDesign = () => {
-    input.actions.closeMyDesigns();
-    setChooser({ open: true, asNewDesign: true, signIn: false });
-  };
+  const openAsNewDesign = () => setChooser({ open: true, asNewDesign: true, signIn: false });
   return { chooserProps: buildStartChooserProps(chooser, setChooser, input), openAsNewDesign };
 }

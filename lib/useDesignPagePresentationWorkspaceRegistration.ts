@@ -315,9 +315,9 @@ export function useDesignPagePresentationWorkspaceRegistration({
             .deleteSelectedItem,
       },
       navigation: {
-        plan: viewportShell.actions.panels.goPlan,
-        furnish: viewportShell.actions.panels.goFurnish,
+        plan: viewportShell.actions.panels.goPlan, furnish: viewportShell.actions.panels.goFurnish,
         shop: viewportShell.actions.panels.goShop,
+        myDesigns: () => base.derived.navigation.router.push("/dashboard"),
       },
       dialogs: {
         setPlansOpen: base.actions.dialogs.setShowPlans, setPlansOpenerId: base.actions.dialogs.setPlansOpenerId,
@@ -326,7 +326,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
       },
       billing: { openPortal: deferredPaywall.actions.openBillingPortal },
       persistence: {
-        toggleMyDesigns: persistence.actions.persistence.toggleMyDesigns,
+        saveBeforeLeaving: persistence.actions.persistence.saveBeforeLeaving,
         saveDesignToCloud: persistence.actions.persistence.saveDesignToCloud,
         shareDesign: persistence.actions.persistence.shareDesign,
         retrySaveStatus: persistence.actions.persistence.retrySaveStatus,

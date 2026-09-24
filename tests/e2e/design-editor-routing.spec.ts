@@ -73,10 +73,11 @@ function fixtureStructure(snapshot: DesignSnapshot) {
   };
 }
 
+/** More → My designs leaves the editor for the My designs page (MD1). */
 async function openMyDesigns(page: Page) {
   await page.getByTestId("editor-command-overflow").click();
   await page.getByTestId("editor-command-overflow-load").click();
-  await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
 }
 
 /** My designs: Make a copy is in each card's More actions menu. */
@@ -322,7 +323,7 @@ test.describe("canonical saved-design routing", () => {
       expect(firstFingerprint).not.toBe(seededSecondFingerprint);
 
       await openMyDesigns(page);
-      await page.getByTestId(`load-design-${second.designId}`).click();
+      await page.getByTestId(`my-design-open-${second.designId}`).click();
       await page.waitForURL(
         (url) => url.searchParams.get("designId") === second.designId
       );
@@ -332,9 +333,14 @@ test.describe("canonical saved-design routing", () => {
       );
       expect(secondFingerprint).not.toBe(firstFingerprint);
 
+      // Back goes through My designs to the first design; forward goes the other way.
+      await page.goBack({ waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/\/dashboard$/);
       await page.goBack({ waitUntil: "domcontentloaded" });
       expectCanonicalUrl(page, first.designId);
       await expectLoadedDesign(page, first.designId);
+      await page.goForward({ waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/\/dashboard$/);
       await page.goForward({ waitUntil: "domcontentloaded" });
       expectCanonicalUrl(page, second.designId);
       await expectLoadedDesign(page, second.designId);

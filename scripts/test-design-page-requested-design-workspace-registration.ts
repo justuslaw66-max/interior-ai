@@ -193,10 +193,10 @@ assert.match(
   /return \(\) => \{[\s\S]*?active = false;[\s\S]*?cancelDesignLoad\(\)/,
   "Route cleanup should suppress late navigation and invalidate pending loads."
 );
-assert.match(
+assert.doesNotMatch(
   requestedDesignSource,
-  /closeMyDesigns\(\);[\s\S]*?router\.push\(buildDesignEditorUrl\(\{ designId, context: searchParams \}\)\)/,
-  "My Designs should close before canonical navigation uses the selected ID."
+  /closeMyDesigns|openSavedDesign/,
+  "My designs is its own page; opening a design there loads it through the canonical URL."
 );
 assert.doesNotMatch(requestedDesignSource, /useState\(/);
 assert.match(

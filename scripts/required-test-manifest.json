@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 295,
-      "expectedPathSha256": "c610bbd66580f47f1b03bef889df78cbb70ff403baaeb509c4ad12bdcf9c0e7f"
+      "expectedFileCount": 294,
+      "expectedPathSha256": "21f01d3fdeb0a7037bfc6aca4746c119f05762d772d412cd85a70562b3e9bfe1"
     },
     {
       "id": "browser-specs",
@@ -1142,63 +1142,63 @@
     },
     {
       "id": "ci.my-designs-overlay-accessibility",
-      "invariant": "My Designs owns one modal parent lifecycle while its nested single and bulk delete confirmation exclusively owns the topmost dialog, conceals the mounted parent, invokes each mutation once, and restores focus by current semantic identity across Consumer, Pro, responsive, replacement, failure, supersession, and unmount paths in Chromium and WebKit.",
+      "invariant": "My designs is one page: the editor's More → My designs saves the open cloud design first, stays in the editor when that save fails, and opens the page once saved; on the page each card's menu and its Rename, Share and Delete dialogs own focus while open, hide the page behind them, invoke each mutation once, and return focus to the card's More button (after a delete, to the next card's) across Consumer, Pro, guest, empty, at-limit, failure and phone paths in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:my-designs-overlay-accessibility-required",
       "packageScript": "test:my-designs-overlay-accessibility-required",
-      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "a0f941f3c13cf76f469164bc1f0562ec045124e0c2e4f0ccbf5b98f9d9d6159e" },
-      "packagePrerequisites": ["test:my-designs-overlay-static"],
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "54ab0cec35a922ae146a41a624b1387e23c826378aa398ae544190545c5ec00f" },
+      "packagePrerequisites": ["test:my-designs-page"],
       "requiredEnvironment": {
         "APP_ENV": "development",
         "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
       },
       "runner": "playwright",
       "requiredSources": [
-        "scripts/test-my-designs-overlay-static.tsx",
+        "scripts/test-my-designs-page.tsx",
         "tests/required/my-designs-overlay-accessibility.spec.ts",
         "playwright.my-designs-overlay.config.ts"
       ],
       "requiredTests": [
         {
-          "id": "my-designs.consumer-parent-lifecycle",
+          "id": "my-designs.editor-entry",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "consumer parent pointer lifecycle owns semantics, containment, dismissal, return, and lazy entry"
+          "title": "More → My designs saves first, stays in the editor when saving fails, and opens the page once saved"
         },
         {
-          "id": "my-designs.pro-keyboard-narrow",
+          "id": "my-designs.guest-prompt",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "pro keyboard and narrow lifecycle preserves backdrop return without overflow or clipped focus"
+          "title": "guests get a sign-in prompt, and the editor offers them no My designs"
         },
         {
           "id": "my-designs.content-states",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "loading, empty, and populated states retain one parent owner"
+          "title": "empty, populated, at-the-limit and Pro states"
+        },
+        {
+          "id": "my-designs.card-menu",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "a card's menu opens from the keyboard, Escape returns focus to its button, and one menu opens at a time"
         },
         {
           "id": "my-designs.single-delete",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "single delete cancel and success conceal the parent and restore a current semantic target"
+          "title": "delete asks first, Escape keeps the design, and confirming deletes once and focuses the next card"
         },
         {
           "id": "my-designs.single-delete-failure",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "failed single delete invokes once and restores the surviving delete action"
+          "title": "a failed delete calls once, keeps the card, says why, and returns focus to its button"
         },
         {
-          "id": "my-designs.bulk-delete",
+          "id": "my-designs.rename-share",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "bulk delete cancel, busy guard, and success invoke once per target and focus the surviving row"
+          "title": "Rename and Share hide the page, keep focus inside, and return it to the card's button"
         },
         {
-          "id": "my-designs.current-design-delete",
+          "id": "my-designs.narrow",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "deleting the loaded final design preserves detach semantics and focuses the empty parent hierarchy"
-        },
-        {
-          "id": "my-designs.supersession-unmount",
-          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "semantic replacement, newer owned dialog, reopen, and route unmount suppress stale restoration"
+          "title": "on a phone the page fits, and the card menu and Delete dialog stay on screen"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

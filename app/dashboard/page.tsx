@@ -4,7 +4,7 @@ import { MyDesignsSignedOut } from "@/components/my-designs/MyDesignsSignedOut";
 import { MyDesignsView } from "@/components/my-designs/MyDesignsView";
 import { auth } from "@/lib/auth";
 import { designLimitForPlan } from "@/lib/design-limits";
-import { buildMyDesignCard, designLimitSummary } from "@/lib/my-designs";
+import { buildMyDesignCard } from "@/lib/my-designs";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "My designs · Interior AI" };
@@ -49,8 +49,7 @@ export default async function DashboardPage() {
   return (
     <div className={PAGE}>
       <AppHeader current="designs" account={account} />
-      <MyDesignsView designs={designs.map((design) => buildMyDesignCard(design, now))}
-        limit={designLimitSummary(designs.length, limit)} />
+      <MyDesignsView designs={designs.map((design) => buildMyDesignCard(design, now))} limit={limit} />
     </div>
   );
 }

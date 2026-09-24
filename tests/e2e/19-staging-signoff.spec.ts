@@ -168,9 +168,11 @@ test.describe("19. Staging Signoff Evidence", () => {
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      // My designs is its own page (MD1): its card opens the design in the editor.
       await openMyDesigns(page);
-      await page.getByTestId(`load-design-${seed.designId}`).click();
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+      await page.getByTestId(`my-design-open-${seed.designId}`).click();
+      await expect(page).toHaveURL(new RegExp(`[?&]designId=${seed.designId}(?:&|$)`), { timeout: 30_000 });
       await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("3 rooms");
       await expect(page.getByTestId("save-status")).toHaveAttribute(
         "data-status",

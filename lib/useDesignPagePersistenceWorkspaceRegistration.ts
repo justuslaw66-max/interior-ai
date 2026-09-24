@@ -104,7 +104,6 @@ function buildStartChooserInput(
         goPlan();
       },
       openNewDesignTemplatePicker: persistence.actions.newPlan.openNewPlanPicker,
-      closeMyDesigns: persistence.actions.persistence.closeMyDesigns,
       goPlan,
       drawRoom: documentSelection.actions.betaStart.startDrawRoom,
       openPricing: () => base.actions.dialogs.setShowPlans(true),

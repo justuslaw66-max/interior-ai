@@ -50,7 +50,7 @@ type EditorCommandBarProps = {
   onManageBilling: () => void;
   onFeedback: () => void;
   showLoadDesign: boolean;
-  onToggleLoadDesign: () => void;
+  onOpenMyDesigns: () => void;
   onSave: () => void | Promise<void>;
   isSaving?: boolean;
   /** Share and Download show when given handlers. Share saves the design first if it isn't in the cloud. */
@@ -96,7 +96,7 @@ export default function EditorCommandBar({
   onManageBilling,
   onFeedback,
   showLoadDesign,
-  onToggleLoadDesign,
+  onOpenMyDesigns,
   onSave,
   isSaving = false, onShare, isSharing = false, onDownload, designTitle, onRenameDesign,
   saveStatus,
@@ -247,7 +247,7 @@ export default function EditorCommandBar({
           onExport={onExport}
           lightingAvailable={viewMode === "3d" && Boolean(lightingSettingsSlot)}
           overflowSlot={overflowSlot}
-          onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
+          onOpenMyDesigns={onOpenMyDesigns} onNewPlan={onNewPlan}
           onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
           onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback} onDownload={onDownload} onRenameDesign={onRenameDesign}
           onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}

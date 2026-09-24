@@ -3,7 +3,7 @@ import { buildDesignPlanThumbnail } from "@/lib/plan-thumbnail";
 import type { DesignPlanThumbnail } from "@/lib/plan-thumbnail-frame";
 import { legacyApiToSnapshot } from "@/lib/room-persistence";
 
-// My designs (audit findings MD1, MD3 and MD6): what each card shows, and the plan's limit.
+// My designs (audit findings MD1 and MD3): what each card shows.
 
 /** The saved-design columns My designs reads. */
 export type MyDesignRow = {
@@ -48,12 +48,6 @@ export function formatEditedLabel(updatedAt: Date, now: Date, timeZone = MY_DESI
   if (same(edited, yesterday)) return "Edited yesterday";
   const date = `${edited.day} ${MONTHS[edited.month - 1]}`;
   return edited.year === today.year ? `Edited ${date}` : `Edited ${date} ${edited.year}`;
-}
-
-/** The plan's limit, said up front: "7 of 20 designs on the Free plan." Pro has none. */
-export function designLimitSummary(count: number, limit: number | null) {
-  if (limit === null) return null;
-  return { text: `${count} of ${limit} designs on the Free plan.`, reached: count >= limit };
 }
 
 function designThumbnail(row: MyDesignRow) {

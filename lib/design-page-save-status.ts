@@ -122,3 +122,16 @@ export function getDesignPageSaveStatus({
     lastSuccessfulSaveAt,
   };
 }
+
+/**
+ * Leaving the editor for My designs saves a cloud design's latest edits first: changes autosave
+ * hasn't sent, a save still on its way, or one that failed. A design never saved to the cloud
+ * stays in this browser's backup, as it does whenever the editor closes.
+ */
+export function needsSaveBeforeLeaving(input: Pick<
+  DesignPageSaveStatusInput,
+  "designId" | "hasPendingCloudSnapshotChanges" | "isSaving" | "lastCloudSaveError"
+>) {
+  return Boolean(input.designId) &&
+    (input.hasPendingCloudSnapshotChanges || input.isSaving || Boolean(input.lastCloudSaveError));
+}

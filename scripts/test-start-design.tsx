@@ -174,7 +174,6 @@ function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}):
         requirePlanChoiceForNextTemplate: record("requireChoice"),
         openTemplatePicker: record("templatePicker"),
         openNewDesignTemplatePicker: record("newDesignTemplatePicker"),
-        closeMyDesigns: record("closeMyDesigns"),
         goPlan: record("goPlan"),
         drawRoom: record("drawRoom"),
         openPricing: record("pricing"),

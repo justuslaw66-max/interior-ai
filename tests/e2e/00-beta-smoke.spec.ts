@@ -95,36 +95,18 @@ async function openMyDesigns(page: Page) {
   await openEditorCommandOverflow(page);
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
   await clickVisibleControl(loadDesigns);
+  // My designs is its own page (MD1).
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+  await expect(page.getByTestId("my-designs-page")).toBeVisible({ timeout: 30_000 });
 }
 
 async function loadSavedDesign(page: Page, designId: string) {
-  const modal = page.getByTestId("load-designs-modal");
-  const savedDesign = page.getByTestId(`load-design-${designId}`);
-
   await openMyDesigns(page);
-  await expect(modal).toBeVisible();
-  const appearedOnFirstLoad = await savedDesign
-    .waitFor({ state: "visible", timeout: 15_000 })
-    .then(
-      () => true,
-      () => false,
-    );
-
-  if (!appearedOnFirstLoad) {
-    // A cold dev-server compilation can remount the editor after the first
-    // design-list response. Reopening repeats the real UI fetch after that
-    // remount instead of bypassing the My Designs workflow.
-    if (await modal.isVisible()) {
-      await clickVisibleControl(modal.getByRole("button", { name: "✕" }));
-      await expect(modal).toBeHidden();
-    }
-    await openMyDesigns(page);
-    await expect(modal).toBeVisible();
-    await expect(savedDesign).toBeVisible({ timeout: 30_000 });
-  }
-
+  const savedDesign = page.getByTestId(`my-design-open-${designId}`);
+  await expect(savedDesign).toBeVisible({ timeout: 30_000 });
   await clickVisibleControl(savedDesign);
-  await expect(modal).toBeHidden();
+  await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`), { timeout: 30_000 });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
 }
 
 async function getPublicApiDesignProjection(
@@ -337,19 +319,14 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      // My designs' New design opens Start a new design in the editor.
       await openMyDesigns(page);
-      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
-      await clickVisibleControl(page.getByTestId("load-designs-open-templates"));
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
-      await expect(page.getByTestId("start-design-chooser")).toBeVisible();
+      await clickVisibleControl(page.getByTestId("my-designs-new-design"));
+      await expect(page.getByTestId("start-design-chooser")).toBeVisible({ timeout: 30_000 });
       await expect(page.getByTestId("start-template-studio")).toBeVisible();
       await clickVisibleControl(page.getByTestId("start-design-close"));
       await expect(page.getByTestId("start-design-chooser")).toBeHidden();
-      await openMyDesigns(page);
-      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await clickVisibleControl(page.getByTestId(`load-design-${seed.designId}`));
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      await loadSavedDesign(page, seed.designId);
       const loadedEditorFingerprint = await getStableFingerprint(
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );

@@ -145,10 +145,10 @@ assert.match(
   /currentDesignId[\s\S]*?buildDesignEditorUrl\(\{[\s\S]*?designId: input\.currentDesignId,[\s\S]*?context: input\.context[\s\S]*?: "\/design"/,
   "A denied route load should restore the previous design with allowed editor context."
 );
-assert.match(
+assert.doesNotMatch(
   requestedDesignWorkspace,
-  /closeMyDesigns\(\);[\s\S]*?router\.push\(buildDesignEditorUrl\(\{ designId, context: searchParams \}\)\)/,
-  "The in-editor My Designs list should navigate with the canonical URL before loading."
+  /closeMyDesigns|openSavedDesign/,
+  "My designs is its own page now; its cards link to the canonical editor URL."
 );
 assert.match(
   floorPlanLifecycle,

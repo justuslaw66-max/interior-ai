@@ -1,33 +1,37 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 import { Plus } from "lucide-react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { DesignRenameDialog } from "@/components/editor/design-page/DesignRenameDialog";
-import { MyDesignCardView, myDesignActionsButtonId } from "@/components/my-designs/MyDesignCardView";
+import { MyDesignCardView } from "@/components/my-designs/MyDesignCardView";
 import { ShareDesignDialog } from "@/components/my-designs/ShareDesignDialog";
 import {
   confirmDelete,
   copyShareLink,
+  MY_DESIGNS_NEW_DESIGN_ID,
   saveRename,
   useMyDesignsPageState,
   type MyDesignsPageState,
 } from "@/components/my-designs/useMyDesignsPageState";
+import { designLimitSummary } from "@/lib/design-limits";
 import type { MyDesignCard } from "@/lib/my-designs";
 import { NEW_DESIGN_HREF, PRICING_HREF } from "@/lib/start-design-link";
 
 const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
+const NO_RETURN_FOCUS: readonly string[] = [];
+
 export type MyDesignsViewProps = {
   designs: MyDesignCard[];
-  /** Free plan only: "7 of 20 designs on the Free plan." */
-  limit: { text: string; reached: boolean } | null;
+  /** How many designs the plan keeps; null for Pro, which has no limit to show. */
+  limit: number | null;
 };
 
 /** My designs, as in the mockup (audit findings MD1, MD3 and MD6). */
-export function MyDesignsView({ designs, limit }: MyDesignsViewProps) {
-  const state = useMyDesignsPageState();
+export function MyDesignsView({ designs, limit: planLimit }: MyDesignsViewProps) {
+  const state = useMyDesignsPageState(designs);
+  const limit = designLimitSummary(state.visibleDesigns.length, planLimit);
   return (
     <main data-testid="my-designs-page" className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -41,7 +45,7 @@ export function MyDesignsView({ designs, limit }: MyDesignsViewProps) {
             </p>
           ) : null}
         </div>
-        <Link href={NEW_DESIGN_HREF} data-testid="my-designs-new-design"
+        <Link href={NEW_DESIGN_HREF} id={MY_DESIGNS_NEW_DESIGN_ID} data-testid="my-designs-new-design"
           className={`flex h-11 items-center gap-2 rounded-[10px] bg-neutral-900 pl-4 pr-5 text-[15px] font-bold text-white hover:bg-neutral-800 ${FOCUS_RING}`}>
           <Plus aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.8} />
           New design
@@ -53,7 +57,7 @@ export function MyDesignsView({ designs, limit }: MyDesignsViewProps) {
       {state.error ? (
         <p role="alert" data-testid="my-designs-error" className="mt-1 text-sm font-bold text-red-800">{state.error}</p>
       ) : null}
-      {designs.length > 0 ? <MyDesignsGrid designs={designs} state={state} /> : <MyDesignsEmpty />}
+      {state.visibleDesigns.length > 0 ? <MyDesignsGrid designs={state.visibleDesigns} state={state} /> : <MyDesignsEmpty />}
       <MyDesignsDialogs state={state} />
     </main>
   );
@@ -88,18 +92,16 @@ function MyDesignsEmpty() {
 
 function MyDesignsDialogs({ state }: { state: MyDesignsPageState }) {
   const { dialog } = state;
-  const designId = dialog?.card.id ?? null;
-  // One array per design: the dialogs restart their focus handling when this changes.
-  const returnFocusIds = useMemo(() => (designId ? [myDesignActionsButtonId(designId)] : []), [designId]);
+  const returnFocusIds = dialog?.returnFocusIds ?? NO_RETURN_FOCUS;
   return (
     <>
       <DesignRenameDialog open={dialog?.kind === "rename"} dark={false} busy={dialog?.kind === "rename" && dialog.busy}
-        value={dialog?.kind === "rename" ? dialog.value : ""} returnFocusIds={returnFocusIds}
+        value={dialog?.kind === "rename" ? dialog.value : ""} returnFocusIds={returnFocusIds} manageBackground
         onValueChange={(value) => state.setDialog((current) => (current?.kind === "rename" ? { ...current, value } : current))}
         onCancel={() => state.setDialog(null)} onSave={() => void saveRename(state)} />
       <ConfirmDialog open={dialog?.kind === "delete"} title={`Delete ${dialog?.card.title ?? "this design"}?`}
         description="It's removed from My designs for good, and its shared link stops working."
-        confirmLabel="Delete" destructive busy={dialog?.kind === "delete" && dialog.busy} returnFocusIds={returnFocusIds}
+        confirmLabel="Delete" destructive busy={dialog?.kind === "delete" && dialog.busy} returnFocusIds={returnFocusIds} manageBackground
         onCancel={() => state.setDialog(null)} onConfirm={() => void confirmDelete(state)} />
       <ShareDesignDialog open={dialog?.kind === "share"} designTitle={dialog?.card.title ?? ""}
         url={dialog?.kind === "share" ? dialog.url : null} errorMessage={dialog?.kind === "share" ? dialog.error : null}

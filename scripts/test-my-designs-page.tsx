@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -9,15 +9,20 @@ import { MyDesignCardView } from "../components/my-designs/MyDesignCardView";
 import { MyDesignsSignedOut } from "../components/my-designs/MyDesignsSignedOut";
 import { MyDesignsView } from "../components/my-designs/MyDesignsView";
 import { ShareDesignDialog } from "../components/my-designs/ShareDesignDialog";
-import { designLimitForPlan, FREE_PLAN_DESIGN_LIMIT, freePlanDesignLimitReachedMessage } from "../lib/design-limits";
+import { MY_DESIGNS_NEW_DESIGN_ID, myDesignsReturnFocusIds } from "../components/my-designs/useMyDesignsPageState";
+import {
+  designLimitForPlan, designLimitSummary, FREE_PLAN_DESIGN_LIMIT, freePlanDesignLimitReachedMessage,
+} from "../lib/design-limits";
+import { needsSaveBeforeLeaving } from "../lib/design-page-save-status";
 import { withStoredDesignRename } from "../lib/design-route-payload";
-import { buildMyDesignCard, designLimitSummary, formatEditedLabel, type MyDesignCard, type MyDesignRow } from "../lib/my-designs";
+import { buildMyDesignCard, formatEditedLabel, type MyDesignCard, type MyDesignRow } from "../lib/my-designs";
 import { buildDesignPlanThumbnail } from "../lib/plan-thumbnail";
 import { createRoom, migrateToV3, type DesignSnapshot } from "../lib/room-types";
 import { NEW_DESIGN_HREF, PRICING_HREF } from "../lib/start-design-link";
 
 // My designs as one page (audit findings MD1–MD4 and MD6): the plan's limit in one place, the
-// cards (edit dates, thumbnails, Shared), rename keeping the stored name in step, and the markup.
+// cards (edit dates, thumbnails, Shared), rename keeping the stored name in step, where focus goes,
+// the markup, and the editor's More → My designs, which saves first and opens the page.
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
@@ -129,13 +134,15 @@ const fakeRouter = { back: noop, forward: noop, refresh: noop, push: noop, repla
 // useRouter needs the app router's context, which only Next.js provides outside tests.
 const view = (props: Parameters<typeof MyDesignsView>[0]) =>
   render(createElement(AppRouterContext.Provider, { value: fakeRouter }, createElement(MyDesignsView, props)));
-const free = view({ designs: [card], limit: designLimitSummary(1, 20) });
+const free = view({ designs: [card], limit: 20 });
 assert.match(free, /<h1[^>]*>My designs<\/h1>/);
 assert.match(free, /data-testid="my-designs-limit"[^>]*>1 of 20 designs on the Free plan\. <a[^>]*href="\/design\?pricing=open"[^>]*>See pricing<\/a>/);
 assert.ok(tagWithTestId(free, "my-designs-new-design").includes(`href="${NEW_DESIGN_HREF}"`));
+assert.ok(tagWithTestId(free, "my-designs-new-design").includes(`id="${MY_DESIGNS_NEW_DESIGN_ID}"`));
 assert.match(free, /data-testid="my-designs-grid"/);
 assert.doesNotMatch(free, /my-designs-empty|design-rename-dialog|my-design-share-dialog/);
-assert.match(view({ designs: [card], limit: designLimitSummary(20, 20) }), /Delete a design or upgrade to save more\./);
+const twenty = Array.from({ length: 20 }, (_, index): MyDesignCard => ({ ...card, id: `design-${index + 1}` }));
+assert.match(view({ designs: twenty, limit: 20 }), /20 of 20 designs on the Free plan\. Delete a design or upgrade to save more\./);
 const pro = view({ designs: [], limit: null });
 assert.doesNotMatch(pro, /my-designs-limit/);
 assert.match(pro, /data-testid="my-designs-empty"/);
@@ -161,6 +168,56 @@ assert.ok(tagWithTestId(signedOut, "my-designs-continue-as-guest").includes('hre
 const page = read("app/dashboard/page.tsx");
 assert.doesNotMatch(page, /redirect\(/);
 assert.match(page, /if \(!userId\) \{[\s\S]*?<MyDesignsSignedOut \/>/);
-assert.match(page, /designLimitSummary\(designs\.length, limit\)/);
+assert.match(page, /<MyDesignsView designs=\{designs\.map\(\(design\) => buildMyDesignCard\(design, now\)\)\} limit=\{limit\} \/>/);
+assert.match(read("components/my-designs/MyDesignsView.tsx"),
+  /const limit = designLimitSummary\(state\.visibleDesigns\.length, planLimit\);/,
+  "The count follows a delete at once, before the server's list catches up.");
+
+// Where focus goes: back to the card's More button, or after a delete to the next card's, the
+// previous card's, then New design.
+const cards = ["a", "b", "c"].map((id): MyDesignCard => ({ ...card, id }));
+const [first, middle, last] = cards;
+assert.deepEqual(myDesignsReturnFocusIds(cards, middle, "rename"), ["my-design-actions-b"]);
+assert.deepEqual(myDesignsReturnFocusIds(cards, middle, "share"), ["my-design-actions-b"]);
+assert.deepEqual(myDesignsReturnFocusIds(cards, middle, "delete"),
+  ["my-design-actions-b", "my-design-actions-c", "my-design-actions-a", MY_DESIGNS_NEW_DESIGN_ID]);
+assert.deepEqual(myDesignsReturnFocusIds(cards, first, "delete"),
+  ["my-design-actions-a", "my-design-actions-b", MY_DESIGNS_NEW_DESIGN_ID]);
+assert.deepEqual(myDesignsReturnFocusIds(cards, last, "delete"),
+  ["my-design-actions-c", "my-design-actions-b", MY_DESIGNS_NEW_DESIGN_ID]);
+assert.deepEqual(myDesignsReturnFocusIds([first], first, "delete"), ["my-design-actions-a", MY_DESIGNS_NEW_DESIGN_ID]);
+const pageActions = read("components/my-designs/useMyDesignActions.ts");
+for (const call of [/designApi\.update\(card\.id, \{ title \}\)/, /designApi\.delete\(card\.id\)/,
+  /designApi\.duplicate\(card\.id\)/, /designApi\.share\(card\.id\)/]) {
+  assert.match(pageActions, call, "My designs calls the design routes through the editor's API client.");
+}
+assert.doesNotMatch(pageActions, /\bfetch\(/);
+const pageState = read("components/my-designs/useMyDesignsPageState.ts");
+assert.match(pageState, /await state\.actions\.remove\(dialog\.card\);\s*state\.markRemoved\(dialog\.card\.id\);\s*state\.setDialog\(null\);/,
+  "The deleted card leaves before its dialog closes, so focus skips its button.");
+
+// The editor's More → My designs opens this page (MD1). A cloud design's latest edits are saved
+// first; a failed save keeps the editor open. The editor's own My designs dialog is gone.
+const cloud = { designId: "d1", hasPendingCloudSnapshotChanges: false, isSaving: false, lastCloudSaveError: null };
+assert.equal(needsSaveBeforeLeaving(cloud), false, "Nothing to save.");
+assert.equal(needsSaveBeforeLeaving({ ...cloud, hasPendingCloudSnapshotChanges: true }), true);
+assert.equal(needsSaveBeforeLeaving({ ...cloud, isSaving: true }), true);
+assert.equal(needsSaveBeforeLeaving({ ...cloud, lastCloudSaveError: "Offline" }), true);
+assert.equal(needsSaveBeforeLeaving({ ...cloud, designId: null, hasPendingCloudSnapshotChanges: true }), false,
+  "A design never saved to the cloud stays in this browser's backup.");
+assert.match(read("lib/useDesignPagePersistence.ts"),
+  /const saveBeforeLeaving = useCallback\(async \(\) => \{\s*if \(!needsSaveBeforeLeaving\(\{ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError \}\)\) return true;\s*const savedFingerprint = currentStoredDesignFingerprint;\s*const saved = \(await saveDesignToCloud\(\)\) !== null;\s*return saved && latestFingerprintRef\.current === savedFingerprint;/,
+  "A failed save, or edits made while it saved, keep the editor open.");
+const chrome = read("lib/useDesignPageEditorChromeController.ts");
+assert.match(chrome, /async function openMyDesigns\([^)]*\) \{\s*if \(await actions\.persistence\.saveBeforeLeaving\(\)\) actions\.navigation\.myDesigns\(\);\s*\}/);
+assert.match(chrome, /onOpenMyDesigns: \(\) => void openMyDesigns\(actions\),/);
+assert.match(read("lib/useDesignPagePresentationWorkspaceRegistration.ts"),
+  /myDesigns: \(\) => base\.derived\.navigation\.router\.push\("\/dashboard"\),/);
+assert.match(read("components/editor/command-bar/CommandBarMoreMenu.tsx"),
+  /data-testid="editor-command-overflow-load"[\s\S]*?buttonRef\.current\?\.focus\(\);\s*onClose\(\);\s*onOpenMyDesigns\(\);[\s\S]*?My designs\s*<\/button>/);
+for (const gone of ["components/editor/design-page/MyDesignsDialog.tsx", "lib/my-designs-dialog-focus.ts", "lib/my-designs-command-focus.ts"]) {
+  assert.equal(existsSync(join(process.cwd(), gone)), false, `${gone} went with the editor's My designs dialog.`);
+}
+assert.doesNotMatch(read("components/editor/design-page/DesignPageDialogLayer.tsx"), /MyDesigns/);
 
 console.log("My designs page tests passed.");

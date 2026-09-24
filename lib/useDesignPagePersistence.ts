@@ -16,7 +16,7 @@ import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
-import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
+import { getDesignPageSaveStatus, needsSaveBeforeLeaving } from "@/lib/design-page-save-status";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
 import {
@@ -49,20 +49,6 @@ export type { DesignPageCloudSaveConflictState };
 
 type Budget = "$" | "$$" | "$$$";
 type DesignMode = "homeowner" | "designer";
-type SavedDesignDeleteMode = "single" | "selected" | "all";
-
-export type SavedDesignSummary = {
-  id: string;
-  title: string;
-  createdAt: string;
-};
-
-export type PendingSavedDesignDelete = {
-  ids: string[];
-  title?: string;
-  mode: SavedDesignDeleteMode;
-};
-
 export type { PreserveCurrentDesignResult } from "@/lib/useDesignPageExplicitCloudSaveController";
 
 type DesignPagePersistenceState = {
@@ -181,15 +167,6 @@ export function useDesignPagePersistence({
   const { state: shareLinkState, actions: shareLinkActions } =
     useDesignPageShareLink({ designId, setShareToken, setShareEnabled });
   const { resetShareLink } = shareLinkActions;
-  const [showMyDesigns, setShowMyDesigns] = useState(false);
-  const [myDesigns, setMyDesigns] = useState<SavedDesignSummary[]>([]);
-  const [loadingDesigns, setLoadingDesigns] = useState(false);
-  const [selectedSavedDesignIds, setSelectedSavedDesignIds] = useState<Set<string>>(
-    new Set()
-  );
-  const [deletingDesignIds, setDeletingDesignIds] = useState<Set<string>>(new Set());
-  const [pendingDeleteDesign, setPendingDeleteDesign] =
-    useState<PendingSavedDesignDelete | null>(null);
   const firstSaveRef = useRef(false);
   const conflictCopyCancelRef = useRef<() => void>(() => undefined);
   const documentEpochRef = useRef(0);
@@ -201,7 +178,6 @@ export function useDesignPagePersistence({
     })
   );
   const shareStatusAbortRef = useRef<AbortController | null>(null);
-  const designListAbortRef = useRef<AbortController | null>(null);
   const [designLoadRequest] = useState(createDesignPageLoadRequestCoordinator);
   const finishCloudBaselineSaving = useCallback(
     (writeRequest: Parameters<
@@ -409,168 +385,6 @@ export function useDesignPagePersistence({
     storageKey,
   ]);
 
-  const fetchMyDesigns = useCallback(async () => {
-    if (!isAuthenticated) return;
-    designListAbortRef.current?.abort();
-    const controller = new AbortController();
-    designListAbortRef.current = controller;
-    setLoadingDesigns(true);
-    try {
-      const data = await designApi.list(controller.signal);
-      const nextDesigns = data as SavedDesignSummary[];
-      setMyDesigns(nextDesigns);
-      setSelectedSavedDesignIds((previous) => {
-        if (!Array.isArray(data) || previous.size === 0) return previous;
-        const availableIds = new Set(
-          data.map((design: { id: string }) => design.id)
-        );
-        return new Set(Array.from(previous).filter((id) => availableIds.has(id)));
-      });
-    } catch (error) {
-      if (!(error instanceof DesignApiError && error.kind === "aborted")) {
-        showRuleToast(userFacingErrorMessage(error, "Failed to load designs."));
-      }
-    } finally {
-      if (designListAbortRef.current === controller) {
-        designListAbortRef.current = null;
-        setLoadingDesigns(false);
-      }
-    }
-  }, [isAuthenticated, showRuleToast]);
-
-  const toggleMyDesigns = useCallback(() => {
-    if (!showMyDesigns) {
-      void fetchMyDesigns();
-    }
-    setShowMyDesigns(!showMyDesigns);
-  }, [fetchMyDesigns, showMyDesigns]);
-
-  const closeMyDesigns = useCallback(() => {
-    setShowMyDesigns(false);
-  }, []);
-
-  const toggleSavedDesignSelection = useCallback((id: string) => {
-    setSelectedSavedDesignIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
-
-  const allSavedDesignIds = useMemo(
-    () => myDesigns.map((design) => design.id),
-    [myDesigns]
-  );
-  const selectedSavedDesignCount = selectedSavedDesignIds.size;
-  const allSavedDesignsSelected =
-    myDesigns.length > 0 &&
-    myDesigns.every((design) => selectedSavedDesignIds.has(design.id));
-
-  const toggleAllSavedDesignSelection = useCallback(() => {
-    setSelectedSavedDesignIds(
-      allSavedDesignsSelected ? new Set() : new Set(allSavedDesignIds)
-    );
-  }, [allSavedDesignIds, allSavedDesignsSelected]);
-
-  const requestDeleteSavedDesigns = useCallback(
-    (ids: string[], deleteMode: SavedDesignDeleteMode, title?: string) => {
-      const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
-      if (uniqueIds.length === 0) return;
-      setPendingDeleteDesign({ ids: uniqueIds, mode: deleteMode, title });
-    },
-    []
-  );
-
-  const cancelDeleteSavedDesigns = useCallback(() => {
-    if (deletingDesignIds.size === 0) {
-      setPendingDeleteDesign(null);
-    }
-  }, [deletingDesignIds.size]);
-
-  const handleDeleteSavedDesign = useCallback(async () => {
-    const target = pendingDeleteDesign;
-    if (!target || deletingDesignIds.size > 0) return;
-
-    const targetIds = Array.from(new Set(target.ids)).filter(Boolean);
-    if (targetIds.length === 0) {
-      setPendingDeleteDesign(null);
-      return;
-    }
-
-    setDeletingDesignIds(new Set(targetIds));
-    const deletedIds = new Set<string>();
-    const failedIds: string[] = [];
-    try {
-      for (const targetId of targetIds) {
-        try {
-          await designApi.delete(targetId);
-          deletedIds.add(targetId);
-        } catch {
-          failedIds.push(targetId);
-        }
-      }
-
-      if (deletedIds.size > 0) {
-        setMyDesigns((previous) =>
-          previous.filter((design) => !deletedIds.has(design.id))
-        );
-        setSelectedSavedDesignIds((previous) => {
-          const next = new Set(previous);
-          deletedIds.forEach((id) => next.delete(id));
-          return next;
-        });
-      }
-      if (designId && deletedIds.has(designId)) {
-        detachCloudBaseline();
-        cloudWriteQueue.invalidate({
-          designId: null,
-          revision: null,
-          documentEpoch: documentEpochRef.current,
-        });
-        setDesignId(null);
-        setShareToken(null);
-        setShareEnabled(false);
-        setLastCloudRevision(null);
-        setLastPersistedSnapshotFingerprint(null);
-      }
-      setPendingDeleteDesign(null);
-
-      if (deletedIds.size > 0 && failedIds.length === 0) {
-        showRuleToast(
-          deletedIds.size === 1 ? "Design deleted" : `${deletedIds.size} designs deleted`
-        );
-      } else if (deletedIds.size > 0) {
-        showRuleToast(`${deletedIds.size} deleted, ${failedIds.length} failed`);
-      } else {
-        showRuleToast("Delete failed");
-      }
-
-      track("load_design_modal_deleted", {
-        design_ids: Array.from(deletedIds),
-        count: deletedIds.size,
-        mode: target.mode,
-      });
-    } catch {
-      showRuleToast("Delete failed");
-    } finally {
-      setDeletingDesignIds(new Set());
-    }
-  }, [
-    cloudWriteQueue,
-    deletingDesignIds.size,
-    detachCloudBaseline,
-    designId,
-    pendingDeleteDesign,
-    setDesignId,
-    setShareEnabled,
-    setShareToken,
-    showRuleToast,
-  ]);
-
   const { loadDesign, cancelDesignLoad } = useDesignPageCloudLoadController({
     baseline: cloudBaselineController.actions,
     requestCoordinator: designLoadRequest,
@@ -718,7 +532,6 @@ export function useDesignPagePersistence({
   useEffect(() => {
     return () => {
       shareStatusAbortRef.current?.abort();
-      designListAbortRef.current?.abort();
       designLoadRequest.cancel();
     };
   }, [designLoadRequest]);
@@ -996,6 +809,19 @@ export function useDesignPagePersistence({
     writeLocalDesignBackup,
   ]);
 
+  // Leaving the editor for My designs. False keeps the editor open: when the save failed, or when
+  // the design changed while it saved, since those edits would be left behind.
+  const latestFingerprintRef = useRef(currentStoredDesignFingerprint);
+  useEffect(() => {
+    latestFingerprintRef.current = currentStoredDesignFingerprint;
+  }, [currentStoredDesignFingerprint]);
+  const saveBeforeLeaving = useCallback(async () => {
+    if (!needsSaveBeforeLeaving({ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError })) return true;
+    const savedFingerprint = currentStoredDesignFingerprint;
+    const saved = (await saveDesignToCloud()) !== null;
+    return saved && latestFingerprintRef.current === savedFingerprint;
+  }, [currentStoredDesignFingerprint, designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError, saveDesignToCloud]);
+
   return {
     state: {
       lastPersistedSnapshotFingerprint,
@@ -1004,15 +830,6 @@ export function useDesignPagePersistence({
       isSaving,
       saveStatus,
       ...shareLinkState,
-      showMyDesigns,
-      myDesigns,
-      loadingDesigns,
-      selectedSavedDesignIds,
-      deletingDesignIds,
-      pendingDeleteDesign,
-      allSavedDesignIds,
-      selectedSavedDesignCount,
-      allSavedDesignsSelected,
       guestPrompt: guestPromptController.snapshot.session,
       guestPromptPrimaryBusy: guestPromptController.snapshot.primaryBusy,
       guestPromptScopeKey,
@@ -1031,13 +848,7 @@ export function useDesignPagePersistence({
       closeShareLinkFallback: shareLinkActions.closeShareLinkFallback,
       copyFallbackShareLink: shareLinkActions.copyFallbackShareLink,
       openFallbackShareLink: shareLinkActions.openFallbackShareLink,
-      toggleMyDesigns,
-      closeMyDesigns,
-      toggleSavedDesignSelection,
-      toggleAllSavedDesignSelection,
-      requestDeleteSavedDesigns,
-      cancelDeleteSavedDesigns,
-      handleDeleteSavedDesign,
+      saveBeforeLeaving,
       openGuestPrompt: guestPromptController.open,
       cancelGuestPrompt: guestPromptController.cancel,
       handleGuestPromptNotNow: guestPromptController.continueWithoutSaving,
