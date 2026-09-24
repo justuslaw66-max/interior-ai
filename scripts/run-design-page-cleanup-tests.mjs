@@ -80,6 +80,7 @@ const typescriptGuardFiles = [
   "test-retailer-confirmation-static.tsx",
   "test-load-design-delete-modal.ts",
   "test-my-designs-overlay-static.tsx",
+  "test-my-designs-page.tsx",
   "test-manual-placement-scoring.ts",
   "test-placement-best-option.ts",
   "test-placement-best-room.ts",

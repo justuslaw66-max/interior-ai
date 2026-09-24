@@ -1,49 +1,56 @@
-import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
+import { AppHeader } from "@/components/app-header/AppHeader";
+import { MyDesignsSignedOut } from "@/components/my-designs/MyDesignsSignedOut";
+import { MyDesignsView } from "@/components/my-designs/MyDesignsView";
 import { auth } from "@/lib/auth";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import DeleteAllDesignsButton from "@/components/DeleteAllDesignsButton";
-import DesignsListWithSelection from "@/components/DesignsListWithSelection";
-import EmptyDesignsState from "@/components/EmptyDesignsState";
+import { designLimitForPlan } from "@/lib/design-limits";
+import { buildMyDesignCard, designLimitSummary } from "@/lib/my-designs";
+import { prisma } from "@/lib/prisma";
 
+export const metadata: Metadata = { title: "My designs · Interior AI" };
+
+const PAGE = "flex min-h-screen flex-col bg-[#fafaf9] text-neutral-950";
+
+/**
+ * My designs (audit findings MD1–MD4 and MD6), laid out as in the mockup. Guests get a sign-in
+ * prompt; the editor's My designs dialog stays until a later change points it here.
+ */
 export default async function DashboardPage() {
   const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/");
+  const userId = session?.user?.id;
+  if (!userId) {
+    return (
+      <div className={PAGE}>
+        <AppHeader current="designs" account={null} />
+        <MyDesignsSignedOut />
+      </div>
+    );
   }
 
-  const designs = await prisma.design.findMany({
-    where: { user: { id: session.user.id } },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  const designItems = designs.map((design: (typeof designs)[number]) => ({
-    id: design.id,
-    title: design.title,
-    updatedAt: design.updatedAt.toISOString(),
-  }));
+  const [designs, user] = await Promise.all([
+    prisma.design.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      select: {
+        id: true, title: true, updatedAt: true, shareEnabled: true,
+        roomWidth: true, roomDepth: true, items: true, snapshot: true,
+      },
+    }),
+    prisma.user.findUnique({ where: { id: userId }, select: { plan: true } }),
+  ]);
+  const now = new Date();
+  const limit = designLimitForPlan(user?.plan);
+  const account = {
+    name: session.user?.name ?? null,
+    email: session.user?.email ?? null,
+    planLabel: limit === null ? "Pro plan" : "Free plan",
+  };
 
   return (
-    <main className="min-h-screen bg-neutral-100 p-10">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My designs</h1>
-        <div className="flex items-center gap-2">
-          <DeleteAllDesignsButton disabled={designs.length === 0} />
-          <Link
-            href="/"
-            className="rounded-lg bg-white px-3 py-2 text-sm text-neutral-900 shadow hover:bg-neutral-50"
-          >
-            Back to editor
-          </Link>
-        </div>
-      </div>
-
-      {designItems.length === 0 ? (
-        <EmptyDesignsState />
-      ) : (
-        <DesignsListWithSelection designs={designItems} />
-      )}
-    </main>
+    <div className={PAGE}>
+      <AppHeader current="designs" account={account} />
+      <MyDesignsView designs={designs.map((design) => buildMyDesignCard(design, now))}
+        limit={designLimitSummary(designs.length, limit)} />
+    </div>
   );
 }

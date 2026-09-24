@@ -79,6 +79,12 @@ async function openMyDesigns(page: Page) {
   await expect(page.getByTestId("load-designs-modal")).toBeVisible();
 }
 
+/** My designs: Make a copy is in each card's More actions menu. */
+async function makeACopyFromMyDesigns(page: Page, designId: string) {
+  await page.getByTestId(`my-design-actions-${designId}`).click();
+  await page.getByRole("menuitem", { name: "Make a copy" }).click();
+}
+
 async function settleCloudConflictIfItAppears(page: Page, designId: string) {
   const dialog = page.getByTestId("cloud-save-conflict-dialog");
   await dialog.waitFor({ state: "visible", timeout: 12_000 }).catch(() => undefined);
@@ -163,7 +169,8 @@ test.describe("canonical saved-design routing", () => {
       });
       await addAuthCookies(page.context(), baseURL, seed.sessionToken);
       await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
-      await page.getByRole("link", { name: "Open", exact: true }).click();
+      // My designs: the card itself opens the design.
+      await page.getByTestId(`my-design-open-${seed.designId}`).click();
       await page.waitForURL((url) => url.pathname === "/design");
       expect([...expectCanonicalUrl(page, seed.designId).searchParams.entries()]).toEqual([
         ["designId", seed.designId],
@@ -372,13 +379,9 @@ test.describe("canonical saved-design routing", () => {
       const failedResponse = page.waitForResponse(
         (response) => new URL(response.url()).pathname === duplicatePath
       );
-      await page.getByRole("button", { name: "Make a copy", exact: true }).click();
+      await makeACopyFromMyDesigns(page, seed.designId);
       expect((await failedResponse).status()).toBe(503);
-      await expect(
-        page.locator('span[role="alert"]', {
-          hasText: "Temporary duplicate failure",
-        })
-      ).toHaveText("Temporary duplicate failure");
+      await expect(page.getByTestId("my-designs-error")).toHaveText("Temporary duplicate failure");
       await expect(page).toHaveURL(/\/dashboard$/);
       await page.unroute(`**${duplicatePath}`);
 
@@ -387,7 +390,7 @@ test.describe("canonical saved-design routing", () => {
           new URL(response.url()).pathname === duplicatePath &&
           response.request().method() === "POST"
       );
-      await page.getByRole("button", { name: "Make a copy", exact: true }).click();
+      await makeACopyFromMyDesigns(page, seed.designId);
       const response = await duplicateResponse;
       expect(response.status()).toBe(200);
       const body = (await response.json()) as { id?: unknown };

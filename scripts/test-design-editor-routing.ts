@@ -54,7 +54,7 @@ assert.throws(
 );
 
 const legacyRoute = read("app/design/[id]/page.tsx");
-const dashboardList = read("components/DesignsListWithSelection.tsx");
+const dashboardList = read("components/my-designs/MyDesignCardView.tsx");
 const duplicateButton = read("components/DuplicateDesignButton.tsx");
 const checkoutSuccess = read("app/checkout/success/page.tsx");
 const floorPlanAssistant = read("components/editor/FloorPlanImportAssistant.tsx");
@@ -89,7 +89,7 @@ for (const arbitraryParameter of ["next", "redirect", "returnTo", "utm_source"])
 }
 
 for (const [label, source, identity] of [
-  ["dashboard", dashboardList, "design.id"],
+  ["dashboard", dashboardList, "card.id"],
   ["duplicate", duplicateButton, "newDesignId"],
   ["checkout", checkoutSuccess, "designId"],
 ] as const) {

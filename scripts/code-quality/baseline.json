@@ -69,7 +69,7 @@
       "limit": 400
     },
     "app/api/designs/[id]/floor-plan-update/route.ts": {
-      "lines": 535,
+      "lines": 533,
       "limit": 400
     },
     "app/api/export/pdf/route.ts": {
@@ -1219,7 +1219,7 @@
     "app/api/designs/[id]/floor-plan-update/route.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 163
+        "maximum": 160
       },
       "complexFunctions": {
         "count": 3,
@@ -1570,12 +1570,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 92
-      }
-    },
-    "components/DesignsListWithSelection.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 129
       }
     },
     "components/DuplicateDesignButton.tsx": {

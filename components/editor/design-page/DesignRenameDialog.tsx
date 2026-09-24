@@ -15,6 +15,10 @@ export type DesignRenameDialogProps = {
   onValueChange: (value: string) => void;
   onCancel: () => void;
   onSave: () => void;
+  /** My designs hands focus back to the card's More actions button instead. */
+  returnFocusIds?: readonly string[];
+  /** Saving (My designs waits for the server): Save stays off. */
+  busy?: boolean;
 };
 
 /**
@@ -29,8 +33,9 @@ export function DesignRenameDialog({
   onValueChange,
   onCancel,
   onSave,
+  returnFocusIds = DESIGN_RENAME_RETURN_FOCUS_IDS, busy = false,
 }: DesignRenameDialogProps) {
-  const canSave = value.trim().length > 0;
+  const canSave = value.trim().length > 0 && !busy;
   return (
     <EditorDialog
       open={open}
@@ -38,7 +43,7 @@ export function DesignRenameDialog({
       onClose={onCancel}
       closeLabel="Close Rename design"
       testId="design-rename-dialog"
-      returnFocusIds={DESIGN_RENAME_RETURN_FOCUS_IDS}
+      returnFocusIds={returnFocusIds}
       dark={dark}
       forceLight={!dark}
       panelClassName={`${dark ? "designer-panel " : ""}max-w-[360px]`}

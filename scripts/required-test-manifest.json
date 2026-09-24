@@ -14,8 +14,8 @@
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 108,
-      "expectedPathSha256": "b8b06728f88af83464b7fb7348a967f8eaeb46c7835f64f3bd8eef5a6380ceb9"
+      "expectedFileCount": 109,
+      "expectedPathSha256": "a3672e4fe0d419ce7fea8e9c7b0a7e5c57ba1e829eece35e35a5322cd53ccdc2"
     },
     {
       "id": "cabinetry-browser-modules",
