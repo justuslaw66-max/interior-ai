@@ -27,6 +27,7 @@ import {
   DesignValidationFeedback,
   type DesignValidationFeedbackProps,
 } from "@/components/editor/design-page/DesignValidationFeedback";
+import { DesignRenameDialog, type DesignRenameDialogProps } from "@/components/editor/design-page/DesignRenameDialog";
 import {
   DownloadDialog,
   type DownloadDialogProps,
@@ -78,6 +79,7 @@ export type DesignPageDialogLayerDialogs = {
   presentExport: PresentExportDialogProps;
   download: DownloadDialogProps;
   myDesigns: MyDesignsDialogProps;
+  designRename: DesignRenameDialogProps;
   roomRename: RoomRenameDialogProps;
   planAnnotation: PlanAnnotationDialogProps;
   catalogPlacement: CatalogPlacementConfirmPanelProps;
@@ -120,10 +122,7 @@ function getShareFallbackLayerState(
 export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLayerProps) {
   const [myDesignsMounted, setMyDesignsMounted] = useState(false);
   const shareFallback = getShareFallbackLayerState(dialogs, overlays);
-  const closeMyDesigns = () => {
-    setMyDesignsMounted(true);
-    dialogs.myDesigns.onClose();
-  };
+  const closeMyDesigns = () => { setMyDesignsMounted(true); dialogs.myDesigns.onClose(); };
   const openMyDesignTemplates = () => {
     setMyDesignsMounted(false);
     dialogs.myDesigns.onOpenTemplates();
@@ -157,6 +156,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
           />
         </Suspense>
       ) : null}
+      <DesignRenameDialog {...dialogs.designRename} />
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />

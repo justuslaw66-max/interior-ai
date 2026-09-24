@@ -180,7 +180,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?min-\[1800px\]:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
   "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
 );
 // The room size waits for the saved display unit instead of flashing the default unit.

@@ -32,6 +32,8 @@ type CommandBarMoreMenuProps = {
   onFeedback: () => void;
   /** Phones have no room for Download in the bar, so More offers it there. */
   onDownload?: () => void;
+  /** Below `xl` the bar has no room for the design's name, so More offers Rename design. */
+  onRenameDesign?: () => void;
 };
 
 /** The command bar's More button and menu. */
@@ -76,14 +78,10 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
   );
 }
 
-// New design and My designs come first: both move to another design. Phones also get Download here.
+// New design and My designs come first: both move to another design. Rename design and, on
+// phones, Download follow.
 function MoreMenuDesignItems({
-  menuButtonClass,
-  buttonRef,
-  onClose,
-  showLoadDesign,
-  onNewPlan,
-  onToggleLoadDesign, onDownload,
+  menuButtonClass, buttonRef, onClose, showLoadDesign, onNewPlan, onToggleLoadDesign, onDownload, onRenameDesign,
 }: CommandBarMoreMenuProps) {
   return (
     <>
@@ -103,14 +101,24 @@ function MoreMenuDesignItems({
         <button
           type="button" role="menuitem" id={MY_DESIGNS_COMMAND_ACTION_ID} data-testid="editor-command-overflow-load"
           className={menuButtonClass}
-          onClick={() => {
-            onClose();
-            onToggleLoadDesign();
-          }}
+          onClick={() => { onClose(); onToggleLoadDesign(); }}
         >
           My designs
         </button>
       )}
+      {onRenameDesign ? (
+        <button type="button" role="menuitem" data-testid="editor-command-overflow-rename-design"
+          className={`${menuButtonClass} xl:hidden`}
+          onClick={() => {
+            // Rename design hands focus back to More when the bar has no design name.
+            buttonRef.current?.focus();
+            onClose();
+            onRenameDesign();
+          }}
+        >
+          Rename design
+        </button>
+      ) : null}
       {onDownload ? (
         <button type="button" role="menuitem" data-testid="editor-command-overflow-download"
           className={`${menuButtonClass} md:hidden`}
@@ -140,26 +148,15 @@ function MoreMenuModeItems({
   return (
     <>
       <button
-        type="button"
-        data-testid="editor-command-overflow-pro-tools"
-        className={menuButtonClass}
-        onClick={() => {
-          onClose();
-          onToggleDesignerMode();
-        }}
+        type="button" data-testid="editor-command-overflow-pro-tools" className={menuButtonClass}
+        onClick={() => { onClose(); onToggleDesignerMode(); }}
       >
         {isDesigner ? "Exit Pro tools" : "Pro tools"}
       </button>
       {isDesigner && (
         <button
-          type="button"
-          data-testid="editor-command-overflow-preview"
-          className={menuButtonClass}
-          onClick={() => {
-            onClose();
-            onCloseLightingSettings();
-            onToggleClientPreview();
-          }}
+          type="button" data-testid="editor-command-overflow-preview" className={menuButtonClass}
+          onClick={() => { onClose(); onCloseLightingSettings(); onToggleClientPreview(); }}
         >
           {isClientPreview ? "Exit preview" : "Preview"}
         </button>
@@ -194,13 +191,8 @@ function MoreMenuViewItems({
       </button>
       {presentModeActive && (
         <button
-          type="button"
-          data-testid="editor-command-overflow-present-export"
-          className={menuButtonClass}
-          onClick={() => {
-            onClose();
-            onOpenPresentExport();
-          }}
+          type="button" data-testid="editor-command-overflow-present-export" className={menuButtonClass}
+          onClick={() => { onClose(); onOpenPresentExport(); }}
         >
           Export & Camera
         </button>

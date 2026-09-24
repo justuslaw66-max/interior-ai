@@ -58,6 +58,8 @@ export type UseDesignPageEditorChromeControllerInput = {
       /** Pricing returns focus to this control when it closes; null means Account, then More. */
       setPlansOpenerId: (id: string | null) => void;
       openNewPlan: CommandBarActions["onNewPlan"];
+      /** Opens Rename design for the design's name in the bar, or for More below `xl`. */
+      openDesignRename: () => void;
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
       setDownloadOpen: Dispatch<SetStateAction<boolean>>;
       setPresentOpen: Dispatch<SetStateAction<boolean>>;
@@ -204,7 +206,7 @@ export function useDesignPageEditorChromeController({
           onToggleDesignerMode: toggleDesignerMode,
           onToggleClientPreview: toggleClientPreview,
           onViewPlans: openPlans, onGetPro: getPro,
-          onNewPlan: actions.dialogs.openNewPlan,
+          onNewPlan: actions.dialogs.openNewPlan, onRenameDesign: actions.dialogs.openDesignRename,
           onManageBilling: manageBilling,
           onFeedback: openFeedback,
           onToggleLoadDesign: actions.persistence.toggleMyDesigns,

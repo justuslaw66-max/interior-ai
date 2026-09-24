@@ -12,6 +12,7 @@ import {
 import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
+import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
@@ -97,7 +98,7 @@ type DesignPagePersistenceActions = ConflictCopyRouteActions & {
   setDesignId: Dispatch<SetStateAction<string | null>>;
   setShareToken: Dispatch<SetStateAction<string | null>>;
   setShareEnabled: Dispatch<SetStateAction<boolean>>;
-  setDesignSnapshot: (snapshot: DesignSnapshot) => void;
+  setDesignSnapshot: (next: DesignSnapshot | ((previous: DesignSnapshot) => DesignSnapshot)) => void;
   hydratePersistedFloorPlanState: (
     snapshot: DesignSnapshot,
     clearWhenMissing?: boolean
@@ -152,13 +153,10 @@ export function useDesignPagePersistence({
   },
   actions: {
     readDesignRoute, replaceDesignRoute, restoreDesignRoute, setDesignId,
-    setShareToken,
-    setShareEnabled,
-    setDesignSnapshot,
+    setShareToken, setShareEnabled, setDesignSnapshot,
     hydratePersistedFloorPlanState,
     clearHistory,
-    setMode,
-    setNotes,
+    setMode, setNotes,
     setSavedViews,
     setStyle,
     setBudget,
@@ -390,6 +388,8 @@ export function useDesignPagePersistence({
     resetShareLink();
     setSavedViews([]);
     setNotes("");
+    // The new draft doesn't keep the saved design's name; a template may give it its own.
+    setDesignSnapshot(withoutDesignTitle);
     firstSaveRef.current = false;
     try {
       window.localStorage.removeItem(storageKey);
@@ -401,7 +401,7 @@ export function useDesignPagePersistence({
     designLoadRequest,
     detachCloudBaseline,
     resetShareLink,
-    setDesignId,
+    setDesignId, setDesignSnapshot,
     setNotes,
     setSavedViews,
     setShareEnabled,
@@ -668,7 +668,7 @@ export function useDesignPagePersistence({
       roomType: "living_room",
       itemsCount: items.length,
       designSnapshot: {
-        title: "My Living Room",
+        title: resolveDesignTitle(designSnapshot.title),
         roomWidth,
         roomDepth,
         items,
@@ -686,7 +686,7 @@ export function useDesignPagePersistence({
       markGuestDesignClaimed("current", data.designId);
     }
   }, [
-    budget,
+    budget, designSnapshot.title,
     getStoredDesignForPersistence,
     isAuthenticated,
     items,
@@ -822,7 +822,7 @@ export function useDesignPagePersistence({
               savedViews,
               roomWidth,
               roomDepth,
-              snapshot,
+              snapshot, title: resolveDesignTitle(snapshot.title),
               expectedUpdatedAt: binding.revision,
             };
             return () => designApi.update(targetDesignId, payload);
@@ -905,7 +905,7 @@ export function useDesignPagePersistence({
         roomType: "living_room",
         itemsCount: items.length,
         snapshot: {
-          title: "My Living Room",
+          title: resolveDesignTitle(designSnapshot.title),
           roomWidth,
           roomDepth,
           items,
@@ -920,7 +920,7 @@ export function useDesignPagePersistence({
 
     return () => clearTimeout(timer);
   }, [
-    budget,
+    budget, designSnapshot.title,
     designId,
     getStoredDesignForPersistence,
     guestSaveDelayMs,

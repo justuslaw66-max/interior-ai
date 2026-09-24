@@ -71,6 +71,7 @@ const typescriptGuardFiles = [
   "test-design-page-viewport-selection-controls.ts",
   "test-design-page-wall-descriptors.ts",
   "test-design-page-zone-controller.ts",
+  "test-design-title.tsx",
   "test-designer-theme-contrast.ts",
   "test-editor-3d-floor-cutaway.ts",
   "test-editor-floating-overlay-layout.ts",

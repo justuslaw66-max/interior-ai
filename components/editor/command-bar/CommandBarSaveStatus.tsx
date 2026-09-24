@@ -29,7 +29,10 @@ type CommandBarSaveStatusProps = {
   onRetrySaveStatus: () => void | Promise<void>;
 };
 
-/** The command bar's save-status pill, with Retry when a save failed. */
+/**
+ * The command bar's save-status pill, with Retry when a save failed. Its label shows from `xl` and
+ * its detail from `2xl`, so the bar keeps room for the design's name.
+ */
 export function CommandBarSaveStatus({
   dark,
   saveStatus,
@@ -62,10 +65,10 @@ export function CommandBarSaveStatus({
         }`}
         aria-hidden="true"
       />
-      <span className="hidden min-w-0 max-w-28 truncate font-semibold lg:inline">
+      <span className="hidden min-w-0 max-w-28 truncate font-semibold xl:inline">
         {saveStatus.label}
       </span>
-      <span className="hidden min-w-0 max-w-36 truncate xl:inline">
+      <span className="hidden min-w-0 max-w-36 truncate 2xl:inline">
         {saveStatus.detail}
       </span>
       {saveStatus.canRetry ? (

@@ -4,6 +4,7 @@ import type { BetaFeedbackContext } from "@/components/BetaFeedbackWidget";
 import type { DesignPageEditorChromeProps } from "@/components/editor/design-page/DesignPageEditorChrome";
 import type { DesignPageHistoryQaSummary, DesignPageProjectQaMarkersProps, DesignPageRuntimeQaMarkersProps } from "@/components/editor/design-page/DesignPageQaMarkers";
 import type { DesignPagePresentationQaLayerProps } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
+import type { DesignRenameDialogProps } from "@/components/editor/design-page/DesignRenameDialog";
 import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } from "@/lib/design-page-beta-feedback";
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
 import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
@@ -11,6 +12,7 @@ import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import { areRuntimeQaHooksEnabled } from "@/lib/qa";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
+import { useDesignPageDesignRename } from "@/lib/useDesignPageDesignRename";
 import { useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
 import { useDesignPagePlanCanvasActionsController, type UseDesignPagePlanCanvasActionsControllerInput } from "@/lib/useDesignPagePlanCanvasActionsController";
 import { useDesignPagePresentExportController, type UseDesignPagePresentExportControllerInput } from "@/lib/useDesignPagePresentExportController";
@@ -190,6 +192,7 @@ export type DesignPagePresentationQaFacade = {
     presentExport: ReturnType<typeof useDesignPagePresentExportController>;
     editorChrome: DesignPageEditorChromeProps;
     presentationQaLayer: DesignPagePresentationQaLayerProps;
+    designRename: DesignRenameDialogProps;
   };
 };
 export function useDesignPagePresentationQaFacade({
@@ -198,6 +201,8 @@ export function useDesignPagePresentationQaFacade({
   actions,
 }: UseDesignPagePresentationQaFacadeInput): DesignPagePresentationQaFacade {
   const editorCapabilities = resolveEditorCapabilities(state.editor.plan);
+  const designRename = useDesignPageDesignRename({ snapshot: state.document.snapshot, dark: configuration.designerTheme,
+    runTransaction: actions.history.runTransaction, setDesignSnapshot: actions.shell.setDesignSnapshot, showToast: actions.feedback.showToast });
   const presentExport = useDesignPagePresentExportController({
     state: {
       dialog: {
@@ -373,7 +378,7 @@ export function useDesignPagePresentationQaFacade({
           millworkActive: state.chrome.millworkActive,
           showLoadDesign: state.editor.authenticated,
           isSaving: state.persistence.isSaving, isSharing: state.presentation.sharingDesign,
-          saveStatus: state.persistence.saveStatus,
+          saveStatus: state.persistence.saveStatus, designTitle: designRename.title,
         },
         room: state.document.activeRoom
           ? {
@@ -430,16 +435,11 @@ export function useDesignPagePresentationQaFacade({
         fitPlan: actions.plan.fitPlanView,
       },
       history: { undo: actions.history.undo, redo: actions.history.redo },
-      editor: {
-        setMode: actions.shell.setEditorMode,
-        setDesignPanelOpen: actions.shell.setDesignPanelOpen,
-        setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
-        setItemCartOpen: actions.shell.setItemCartOpen,
-        setClientPreview: actions.shell.setClientPreview,
-        setUrlMode: actions.shell.setUrlMode,
-      },
+      editor: { setMode: actions.shell.setEditorMode, setDesignPanelOpen: actions.shell.setDesignPanelOpen,
+        setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed, setItemCartOpen: actions.shell.setItemCartOpen,
+        setClientPreview: actions.shell.setClientPreview, setUrlMode: actions.shell.setUrlMode },
       dialogs: {
-        ...actions.dialogs,
+        ...actions.dialogs, openDesignRename: designRename.openRename,
         setPresentOpen: actions.shell.setPresentModalOpen,
         setUpgradeReason: actions.shell.setUpgradeReason,
         setUpgradeOpen: actions.shell.setUpgradeOpen,
@@ -496,6 +496,6 @@ export function useDesignPagePresentationQaFacade({
     state: { commandPalette: commandPalette.state },
     derived: { betaFeedbackContext, qa: qaReadModel.derived },
     actions: { commandPalette: commandPalette.actions, planCanvas },
-    regions: { presentExport, editorChrome, presentationQaLayer },
+    regions: { presentExport, editorChrome, presentationQaLayer, designRename: designRename.dialog },
   };
 }

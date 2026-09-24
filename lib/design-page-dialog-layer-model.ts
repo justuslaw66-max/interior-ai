@@ -119,6 +119,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
   presentation: { presentExport: PresentExportDialogProps; download: DownloadModel };
   editing: {
+    designRename: Dialogs["designRename"];
     roomRename: {
       pendingRoomId: string | null;
       value: Dialogs["roomRename"]["value"];
@@ -271,13 +272,9 @@ export function buildDesignPageDialogLayerModel({
         designerTheme: access.designerTheme,
         ...persistence.myDesigns.actions,
       },
-      roomRename: {
-        open: Boolean(editing.roomRename.pendingRoomId),
-        value: editing.roomRename.value,
-        onValueChange: editing.roomRename.onValueChange,
-        onCancel: editing.roomRename.onCancel,
-        onSave: editing.roomRename.onSave,
-      },
+      designRename: editing.designRename,
+      roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
+        onValueChange: editing.roomRename.onValueChange, onCancel: editing.roomRename.onCancel, onSave: editing.roomRename.onSave },
       planAnnotation: {
         kind: editing.annotation.kind,
         text: editing.annotation.text,

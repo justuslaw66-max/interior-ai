@@ -11,6 +11,7 @@ import {
 
 import { track } from "@/lib/analytics";
 import { designApi } from "@/lib/design-api-client";
+import { resolveDesignTitle } from "@/lib/design-title";
 import type { CloudBaselineTransitionSnapshot } from "@/lib/design-page-cloud-baseline";
 import {
   createConflictCopyOperationCoordinator,
@@ -164,8 +165,8 @@ function buildCopyPayload(
 ) {
   const legacyData = snapshotToLegacyApi(storedToSnapshot(snapshot.stored));
   return {
-    title: "Recovered design copy",
     ...legacyData,
+    title: resolveDesignTitle(legacyData.title),
     savedViews: input.state.savedViews,
     style: input.state.style,
     budget: input.state.budget,

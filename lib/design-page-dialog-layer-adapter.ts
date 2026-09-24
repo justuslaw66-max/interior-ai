@@ -62,6 +62,7 @@ export function buildDesignPageDialogLayerAdapter({
         },
       },
       myDesigns: dialogs.myDesigns,
+      designRename: dialogs.designRename,
       roomRename: dialogs.roomRename,
       planAnnotation: dialogs.planAnnotation,
       catalogPlacement: dialogs.catalogPlacement,

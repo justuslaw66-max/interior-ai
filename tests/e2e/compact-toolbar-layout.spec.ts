@@ -118,6 +118,8 @@ test.describe("compact top toolbar", () => {
     await page.keyboard.press("Escape");
     // Free guests get Get Pro beside Sign in, at the bar's 30px height.
     await expect(page.getByTestId("editor-command-get-pro")).toHaveCSS("height", "30px");
+    // Wide screens lead the bar with the design's name.
+    await expect(page.getByTestId("editor-design-title")).toHaveCSS("height", "30px");
 
     await page.setViewportSize({ width: 900, height: 800 });
     await expectCompactToolbarGeometry(page);

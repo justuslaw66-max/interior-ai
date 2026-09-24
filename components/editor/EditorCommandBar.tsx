@@ -3,6 +3,7 @@
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBarAccountMenu";
 import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
+import { CommandBarDesignTitle } from "@/components/editor/command-bar/CommandBarDesignTitle";
 import { CommandBarDownloadButton } from "@/components/editor/command-bar/CommandBarDownloadButton";
 import { CommandBarGetProButton } from "@/components/editor/command-bar/CommandBarGetProButton";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
@@ -54,6 +55,8 @@ type EditorCommandBarProps = {
   isSaving?: boolean;
   /** Share and Download show when given handlers. Share saves the design first if it isn't in the cloud. */
   onShare?: () => void; isSharing?: boolean; onDownload?: () => void;
+  /** The design's name, shown from `xl`, and Rename design, which More offers below that. */
+  designTitle?: string; onRenameDesign?: () => void;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
@@ -95,7 +98,7 @@ export default function EditorCommandBar({
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
-  isSaving = false, onShare, isSharing = false, onDownload,
+  isSaving = false, onShare, isSharing = false, onDownload, designTitle, onRenameDesign,
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
@@ -139,8 +142,7 @@ export default function EditorCommandBar({
     };
   }, [accountOpen, overflowOpen]);
 
-  // Built-ins and Suggest a layout open from inside the Furnish step, so Furnish stays current
-  // while either is open. Present & export lives in More.
+  // Built-ins and Suggest a layout open from inside Furnish, so Furnish stays current while either is open.
   const steps: CommandBarStep[] = [
     { id: "plan", number: 1, label: "Plan", testId: "editor-workflow-plan", onSelect: onPlan,
       active: !millworkActive && editorMode === "design" },
@@ -174,7 +176,8 @@ export default function EditorCommandBar({
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
-      <div className="flex min-w-0 flex-[1.25] items-center gap-1 md:gap-1.5">
+      <div className="flex min-w-0 items-center gap-1 md:gap-1.5">
+        <CommandBarDesignTitle dark={dark} title={designTitle} onRename={onRenameDesign} />
         <CommandBarCanvasControls
           dark={dark}
           isClientPreview={isClientPreview}
@@ -208,10 +211,9 @@ export default function EditorCommandBar({
             <span className="hidden lg:inline">Pro tools</span>
           </span>
         ) : null}
-
       </div>
 
-      <div className="pointer-events-none hidden min-w-0 flex-[0.95] items-center justify-center 2xl:flex">
+      <div className="pointer-events-none hidden min-w-0 flex-1 items-center justify-center min-[1800px]:flex">
         {contextSlot ? (
           <div
             data-testid="editor-command-context"
@@ -222,7 +224,7 @@ export default function EditorCommandBar({
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 md:gap-1.5">
         <CommandBarGetProButton dark={dark} accountReady={accountReady} canUpgrade={canUpgrade} onGetPro={onGetPro} />
         <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
         <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
@@ -247,7 +249,7 @@ export default function EditorCommandBar({
           overflowSlot={overflowSlot}
           onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
           onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
-          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback} onDownload={onDownload}
+          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback} onDownload={onDownload} onRenameDesign={onRenameDesign}
           onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
         />
 
@@ -255,10 +257,7 @@ export default function EditorCommandBar({
           dark={dark}
           containerRef={accountRef}
           open={accountOpen}
-          onToggle={() => {
-            setAccountOpen((value) => !value);
-            setOverflowOpen(false);
-          }}
+          onToggle={() => { setAccountOpen((value) => !value); setOverflowOpen(false); }}
           onClose={() => setAccountOpen(false)}
           menuButtonClass={menuButtonClass}
           menuPanelClass={menuPanelClass}
