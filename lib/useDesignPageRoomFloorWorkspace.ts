@@ -36,7 +36,6 @@ export type UseDesignPageRoomFloorWorkspaceInput = {
     | "cameraViewRef"
     | "designSnapshotRef"
     | "floorCameraViewsRef"
-    | "history"
   >;
   actions: {
     document: {
@@ -139,7 +138,7 @@ export function useDesignPageRoomFloorWorkspace({
     designSnapshot,
     designSnapshotRef: refs.designSnapshotRef,
     floorCameraViewsRef: refs.floorCameraViewsRef,
-    history: refs.history,
+    runHistoryTransaction: runTransaction,
     roomDepth: house.roomDepth,
     roomHeight: house.roomHeight,
     roomWidth: house.roomWidth,
