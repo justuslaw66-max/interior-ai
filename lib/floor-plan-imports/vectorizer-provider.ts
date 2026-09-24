@@ -30,6 +30,15 @@ export interface FloorPlanVectorizerProvider {
   ): Promise<FloorPlanVectorizerEvidence>;
 }
 
+// The Python programs are run from the repository, never bundled: the segments are joined at
+// runtime so Next's output file tracer does not read this as a directory to copy into the
+// standalone build (and next.config excludes services/ from tracing as well).
+const VECTORIZER_DIRECTORY_SEGMENTS = ["services", "floorplan-vectorizer"];
+
+function defaultVectorizerDirectory() {
+  return path.resolve(process.cwd(), VECTORIZER_DIRECTORY_SEGMENTS.join(path.sep));
+}
+
 export function floorPlanVectorizerRuntimeConfiguration(
   environment: Readonly<Record<string, string | undefined>> = process.env
 ) {
@@ -37,9 +46,7 @@ export function floorPlanVectorizerRuntimeConfiguration(
   return Object.freeze({
     enabled: environment.FLOOR_PLAN_VECTORIZER_ENABLED === "1",
     pythonPath: environment.FLOOR_PLAN_VECTORIZER_PYTHON || "python3",
-    directory:
-      environment.FLOOR_PLAN_VECTORIZER_DIR ||
-      path.join(process.cwd(), "services", "floorplan-vectorizer"),
+    directory: environment.FLOOR_PLAN_VECTORIZER_DIR || defaultVectorizerDirectory(),
     timeoutMs: Number.isFinite(timeout) ? Math.max(10_000, Math.min(timeout, 900_000)) : 420_000,
   });
 }
