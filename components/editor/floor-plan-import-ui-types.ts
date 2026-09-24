@@ -36,12 +36,7 @@ export type ConsumerFloorPlanImportJob = {
   leaseExpiresAt: string | null;
   heartbeatAt: string | null;
   progressEstimate?: ConsumerFloorPlanImportProgressEstimate;
-  renderedPagesJson: Array<{
-    pageNumber: number;
-    widthPx: number;
-    heightPx: number;
-    assetKey: string;
-  }>;
+  renderedPagesJson: import("@/lib/floor-plan-imports/types").FloorPlanRenderedPage[];
   candidateJson: unknown;
   reviewIssuesJson: unknown;
   candidateVersion: number;

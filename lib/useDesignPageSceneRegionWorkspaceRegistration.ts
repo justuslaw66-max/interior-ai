@@ -9,7 +9,7 @@ import {
   EDITOR_3D_MIN_POLAR_ANGLE,
 } from "@/lib/design-page-editor-configuration";
 import { resolveCameraViewForFloorWorldY, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
-import { useDesignPageSceneItemDrag } from "@/lib/useDesignPageSceneItemDrag";
+import { useDesignPageSceneItemDragRegistration } from "@/lib/useDesignPageSceneItemDragRegistration";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 export type UseDesignPageSceneRegionWorkspaceRegistrationInput = {
@@ -29,53 +29,14 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
   const { coreShell, documentSelection, planAuthoring, editorInteraction } =
     aiWorkspace.boundaries;
   const { base, viewportShell } = coreShell.boundaries;
-  const { documentRoom, sceneRoomRead, itemSelection, itemDocument } =
+  const { documentRoom, sceneRoomRead, itemSelection } =
     documentSelection.boundaries;
   const { selectionInspection, planWorkspace } = planAuthoring.boundaries;
   const { camera, zone } = editorInteraction.boundaries;
   const placement = selection.boundaries.placement;
   const placementSelection = selection.boundaries.selection;
 
-  const sceneDrag = useDesignPageSceneItemDrag({
-    state: {
-      hasWholeHousePlan: sceneRoomRead.derived.scene.hasWholeHousePlan,
-      designerMode: coreShell.derived.access.isDesigner,
-      activeRoom: documentRoom.derived.room.activeRoom,
-      roomWidth: documentRoom.derived.room.roomWidth,
-      roomDepth: documentRoom.derived.room.roomDepth,
-      wallThickness: documentRoom.derived.room.wallThickness,
-      roomSnapshotById: sceneRoomRead.derived.scene.roomSnapshotById,
-    },
-    refs: {
-      items: coreShell.refs.itemsRef,
-      selectedIds: itemSelection.refs.selectedIds,
-      dragCommit: camera.refs.canvas.itemDragCommit,
-    },
-    actions: {
-      findPlanRoomAtWorldPoint:
-        sceneRoomRead.queries.scene.findPlanRoomAtWorldPoint,
-      setCrossRoomDragTarget: coreShell.actions.placement.setCrossRoomDragTarget,
-      findPlacementBlocker:
-        placement.actions.catalog.findCatalogPlacementBlockerInRoom,
-      isPlacementContained:
-        placement.actions.catalog.isCatalogPlacementContainedInRoom,
-      clampToRoom: documentRoom.actions.room.clampToActiveRoom,
-      getItemBounds: selectionInspection.actions.geometry.getItemAABB,
-      getItemDisplayName: placement.actions.catalog.getItemDisplayName,
-      previewItems: itemDocument.actions.previewItemsPresent,
-      setItems: itemDocument.actions.setItemsPresent,
-      history: documentRoom.refs.documentHistory.history,
-      flushCoalescedHistoryTransaction:
-        documentRoom.actions.history.flushCoalescedHistoryTransaction,
-      trackFirstInteraction: coreShell.actions.paywall.trackFirstInteraction,
-      showToast: coreShell.actions.feedback.showRuleToast,
-      moveSelectionToRoom:
-        placementSelection.actions.interaction.moveSelectedItemToRoom,
-      transferItemToRoom: placement.actions.catalog.transferItemToRoom,
-      showConstraints: coreShell.actions.feedback.showConstraintsForMoment,
-      showConfidence: coreShell.actions.feedback.showConfidenceSummary,
-    },
-  });
+  const sceneDrag = useDesignPageSceneItemDragRegistration(presentation);
 
   const plan = documentRoom.derived.plan;
   const room = documentRoom.derived.room;
@@ -180,6 +141,8 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
           coreShell.state.document.designSnapshot.floorPlan?.canonicalDocument ?? null,
         canonicalGeometryHash:
           coreShell.state.document.designSnapshot.floorPlan?.canonicalGeometryHash ?? null,
+        wallEditing: { enabled: planAuthoring.boundaries.importedWallEditing.state.editingEnabled,
+          selectedWallId: planAuthoring.boundaries.importedWallEditing.state.selection.wallId },
         measurementUnit: viewportShell.state.plan.planMeasurementUnit,
         theme: planWorkspace.derived.effectivePlanTheme,
         layers: { ...planWorkspace.derived.effectivePlanLayers, dimensions: viewportShell.state.plan.planSettingsLoaded && planWorkspace.derived.effectivePlanLayers.dimensions },
@@ -312,6 +275,9 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         onOrbitChange: camera.actions.canvas.handleOrbitChange,
       },
       structure: {
+        walls: { select: planAuthoring.boundaries.importedWallEditing.actions.selectWall,
+          commit: planAuthoring.boundaries.importedWallEditing.actions.commitWallGesture,
+          setDragging: camera.actions.canvas.changeCatalogObjectDragging },
         underlay: {
           addCalibrationPoint: planAuthoring.boundaries.underlay.actions.addCalibrationPoint,
           addRoomTracePoint: editorInteraction.boundaries.tracing.actions.handleFloorPlanTraceRoomPoint,

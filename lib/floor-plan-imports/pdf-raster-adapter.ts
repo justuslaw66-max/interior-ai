@@ -1,3 +1,21 @@
+import { extractRasterEvidence,attachRasterSourceArtwork } from "./raster-page-evidence";
+import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
+import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
+import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
+import { registerRasterDimensionSpans } from "./raster-dimension-spans";
+import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
+import { mergeSemantics } from "./semantic-merge";
+import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
+import { applyVectorizerEvidence } from "./vectorizer-pass";
+import {
+  createDefaultFloorPlanVectorizerProvider,
+  mergeVectorizerDimensionSpans,
+  swingAgainstWall,
+  vectorizerRoomBoundaries,
+  vectorizerScaleEstimateAnnotations,
+  vectorizerScaleEstimateMessage,
+  type FloorPlanVectorizerProvider,
+} from "./vectorizer-evidence";
 import { z } from "zod";
 import type {
   FloorPlanAnnotationV2,
@@ -30,14 +48,11 @@ import {
   registerRoomBoundaries,
   segmentLengthPx,
   semanticEvidencePrior,
-  solveScaleFromRegisteredEvidence,
-  transformSourcePoint,
   type Matrix2D,
   type PageSemanticEvidence,
   type RegisteredPageEvidence,
   type SemanticBoundingBox,
   type SourcePointPx,
-  type SourceScaleSolution,
   type SourceTextEvidence,
   type SourceVectorPath,
   type SourceVectorSegment,
@@ -49,9 +64,7 @@ import {
 } from "./page-selection";
 import type { FloorPlanPageCandidate } from "./types";
 import {
-  extractRasterLinework,
   normalizeRasterForLinework,
-  type RasterLineworkDiagnostics,
 } from "./raster-linework";
 import {
   createDefaultFloorPlanLocalOcrProvider,
@@ -78,16 +91,17 @@ import {
   registerVisionGuidedRoomBoundaries,
   type VisionGuidedTopologyResult,
 } from "./vision-guided-topology";
+import { sourceDrawingAnnotations } from "./source-drawing-annotations";
+import { appendPdfRasterRegion, mergeMixedPdfEvidence, pageGeometryBasis, pageLineworkKind, positionedPdfTextBounds } from "./mixed-pdf-evidence";
 import { parsePdfDrawPathEvidence } from "./pdf-vector-evidence";
 import {
   buildSourceBoundCatalogDraft,
   catalogFloorPlanDraftMatchReference,
   matchPrivateUploadToCatalogDraft,
   resolveCatalogFloorPlanDraftMatch,
-  type CatalogFloorPlanDraftMatchReference,
 } from "./catalog-draft-match";
 
-const EXTRACTION_VERSION = "pdf-raster-hybrid-2.4.0";
+const EXTRACTION_VERSION = "pdf-raster-hybrid-2.6.0";
 const MAX_PDF_PAGES = 30;
 const MAX_SEMANTIC_PAGES = 8;
 const MAX_VECTOR_SEGMENTS_PER_PAGE = 20_000;
@@ -259,35 +273,6 @@ const semanticSchema = z.object({
   notes: z.array(z.string().max(240)).max(30),
 });
 
-type PageScaleSolution = {
-  pageNumber: number;
-  millimetresPerPixel: number;
-  dimensionCount: number;
-  rmsResidualMm: number;
-  confidence: number;
-  evidence?: SourceScaleSolution["evidence"];
-  diagnostics?: SourceScaleSolution["diagnostics"];
-};
-
-type ExtractionEnvelope = {
-  kind:
-    | "floor_plan_deterministic_evidence_v1"
-    | typeof ENHANCED_FLOOR_PLAN_EVIDENCE_KIND;
-  source: {
-    id: string;
-    fileName: string;
-    mimeType: string;
-    sha256: string;
-  };
-  pages: RegisteredPageEvidence[];
-  renderedPages?: FloorPlanRenderedPage[];
-  pageCandidates?: FloorPlanPageCandidate[];
-  selectedPageNumber?: number | null;
-  scale: PageScaleSolution | null;
-  /** Page-bound solutions prevent dimensions from one brochure page scaling another. */
-  scales?: PageScaleSolution[];
-  catalogDraftMatch?: CatalogFloorPlanDraftMatchReference | null;
-};
 
 type PdfOperatorList = {
   fnArray: number[];
@@ -312,126 +297,6 @@ function emptySemantics(): PageSemanticEvidence {
     fixtureSymbols: [],
     entrance: null,
     notes: [],
-  };
-}
-
-function mergeSemantics(
-  deterministic: PageSemanticEvidence,
-  semantic: PageSemanticEvidence | null,
-  preferSemantic = false
-): PageSemanticEvidence {
-  if (!semantic) return deterministic;
-  const distanceBetween = (
-    left: { centerXRatio: number; centerYRatio: number },
-    right: { centerXRatio: number; centerYRatio: number }
-  ) =>
-    Math.hypot(
-      left.centerXRatio - right.centerXRatio,
-      left.centerYRatio - right.centerYRatio
-    );
-  const preferred = preferSemantic ? semantic : deterministic;
-  const supplemental = preferSemantic ? deterministic : semantic;
-  const roomLabels = [...preferred.roomLabels];
-  for (const candidate of supplemental.roomLabels) {
-    const normalizedLabel = candidate.label.trim().toLocaleLowerCase();
-    if (
-      roomLabels.some(
-        (existing) =>
-          existing.label.trim().toLocaleLowerCase() === normalizedLabel &&
-          distanceBetween(existing, candidate) <= 0.04
-      )
-    ) {
-      continue;
-    }
-    roomLabels.push(candidate);
-  }
-  const roomBoundaries = [...(preferred.roomBoundaries ?? [])];
-  for (const candidate of supplemental.roomBoundaries ?? []) {
-    const centroid = candidate.points.reduce(
-      (total, point) => ({
-        centerXRatio: total.centerXRatio + point.xRatio / candidate.points.length,
-        centerYRatio: total.centerYRatio + point.yRatio / candidate.points.length,
-      }),
-      { centerXRatio: 0, centerYRatio: 0 }
-    );
-    const normalizedLabel = candidate.label.trim().toLocaleLowerCase();
-    if (
-      roomBoundaries.some((existing) => {
-        const existingCentroid = existing.points.reduce(
-          (total, point) => ({
-            centerXRatio:
-              total.centerXRatio + point.xRatio / existing.points.length,
-            centerYRatio:
-              total.centerYRatio + point.yRatio / existing.points.length,
-          }),
-          { centerXRatio: 0, centerYRatio: 0 }
-        );
-        return (
-          existing.label.trim().toLocaleLowerCase() === normalizedLabel &&
-          distanceBetween(existingCentroid, centroid) <= 0.04
-        );
-      })
-    ) {
-      continue;
-    }
-    roomBoundaries.push(candidate);
-  }
-  const dimensionLabels = [...preferred.dimensionLabels];
-  for (const candidate of supplemental.dimensionLabels) {
-    if (
-      dimensionLabels.some(
-        (existing) =>
-          Math.abs(existing.valueMm - candidate.valueMm) <=
-            Math.max(10, candidate.valueMm * 0.01) &&
-          (existing.orientation === candidate.orientation ||
-            existing.orientation === "unknown" ||
-            candidate.orientation === "unknown") &&
-          distanceBetween(existing, candidate) <= 0.04
-      )
-    ) {
-      continue;
-    }
-    dimensionLabels.push(candidate);
-  }
-  const openingSymbols = [...preferred.openingSymbols];
-  for (const candidate of supplemental.openingSymbols) {
-    if (
-      openingSymbols.some(
-        (existing) =>
-          existing.kind === candidate.kind &&
-          distanceBetween(existing, candidate) <= 0.04
-      )
-    ) {
-      continue;
-    }
-    openingSymbols.push(candidate);
-  }
-  const fixtureSymbols = [...(preferred.fixtureSymbols ?? [])];
-  for (const candidate of supplemental.fixtureSymbols ?? []) {
-    if (
-      fixtureSymbols.some(
-        (existing) =>
-          existing.kind === candidate.kind &&
-          distanceBetween(existing, candidate) <= 0.035
-      )
-    ) {
-      continue;
-    }
-    fixtureSymbols.push(candidate);
-  }
-  return {
-    planRegion: preferred.planRegion ?? supplemental.planRegion ?? null,
-    unitSystem:
-      preferred.unitSystem && preferred.unitSystem !== "unknown"
-        ? preferred.unitSystem
-        : supplemental.unitSystem ?? "unknown",
-    roomLabels,
-    roomBoundaries,
-    dimensionLabels,
-    openingSymbols,
-    fixtureSymbols,
-    entrance: preferred.entrance ?? supplemental.entrance,
-    notes: [...supplemental.notes, ...preferred.notes],
   };
 }
 
@@ -496,7 +361,7 @@ function semanticsFromPositionedText(
   heightPx: number
 ): PageSemanticEvidence {
   const result = emptySemantics();
-  for (const item of text) {
+  for (const item of text.filter((entry) => !entry.reviewRequired)) {
     const evidenceKind = item.evidenceKind ?? "positioned_text";
     const confidence = semanticEvidencePrior(evidenceKind);
     const roomType = roomTypeFromLabel(item.text);
@@ -526,24 +391,6 @@ function semanticsFromPositionedText(
     }
   }
   return result;
-}
-
-export function sourceTextEvidenceFromLocalOcr(
-  pageNumber: number,
-  result: FloorPlanLocalOcrResult
-): SourceTextEvidence[] {
-  return result.candidates.map((candidate, index) => ({
-    id: `p${pageNumber}-ocr${index + 1}`,
-    pageNumber,
-    text: candidate.text,
-    center: {
-      x: (candidate.bbox.left + candidate.bbox.right) / 2,
-      y: (candidate.bbox.top + candidate.bbox.bottom) / 2,
-    },
-    widthPx: candidate.bbox.right - candidate.bbox.left,
-    heightPx: candidate.bbox.bottom - candidate.bbox.top,
-    evidenceKind: "ocr",
-  }));
 }
 
 function boundedEnvironmentInteger(
@@ -726,66 +573,6 @@ async function renderRaster(
   ];
 }
 
-async function extractRasterEvidence(
-  source: StoredFloorPlanSource,
-  renderedPages: FloorPlanRenderedPage[],
-  context: FloorPlanAdapterContext
-): Promise<{
-  pages: RegisteredPageEvidence[];
-  diagnostics: Map<number, RasterLineworkDiagnostics>;
-}> {
-  const pages: RegisteredPageEvidence[] = [];
-  const diagnostics = new Map<number, RasterLineworkDiagnostics>();
-  for (const page of renderedPages) {
-    try {
-      const stored = context.store.readDerivative
-        ? await context.store.readDerivative(page.assetKey)
-        : null;
-      let bytes = stored?.bytes;
-      if (!bytes) {
-        const normalized = await normalizeRasterForLinework(source.bytes);
-        bytes = normalized.bytes;
-      }
-      const extracted = await extractRasterLinework(bytes, {
-        pageNumber: page.pageNumber,
-        expectedWidthPx: page.widthPx,
-        expectedHeightPx: page.heightPx,
-        normalization: page.normalization,
-      });
-      diagnostics.set(page.pageNumber, extracted.diagnostics);
-      const semantics = emptySemantics();
-      semantics.notes.push(
-        extracted.vectorPaths.length
-          ? `Deterministic raster linework found ${extracted.vectorSegments.length} axis-aligned segments and ${extracted.vectorPaths.length} conservative closed cycles. Room meaning, scale and openings still require independent evidence.`
-          : "Raster linework did not contain a conservative closed rectilinear cycle. Keep the source underlay and use guided calibration/tracing."
-      );
-      pages.push({
-        pageNumber: page.pageNumber,
-        widthPx: page.widthPx,
-        heightPx: page.heightPx,
-        vectorSegments: extracted.vectorSegments,
-        vectorPaths: extracted.vectorPaths,
-        text: [],
-        semantics,
-      });
-    } catch (cause) {
-      const semantics = emptySemantics();
-      semantics.notes.push(
-        `Raster linework extraction unavailable: ${cause instanceof Error ? cause.message : "unknown error"}. Keep the source underlay and use guided tracing.`
-      );
-      pages.push({
-        pageNumber: page.pageNumber,
-        widthPx: page.widthPx,
-        heightPx: page.heightPx,
-        vectorSegments: [],
-        vectorPaths: [],
-        text: [],
-        semantics,
-      });
-    }
-  }
-  return { pages, diagnostics };
-}
 
 async function extractPdfEvidence(
   source: StoredFloorPlanSource,
@@ -811,21 +598,19 @@ async function extractPdfEvidence(
           viewport.transform as Matrix2D,
           typed.transform.slice(0, 6) as Matrix2D
         );
-        const origin = transformSourcePoint(matrix, { x: 0, y: 0 });
         const widthPx = Math.abs(typed.width * viewport.scale);
         const heightPx = Math.max(1, Math.abs(typed.height * viewport.scale));
         text.push({
           id: `p${rendered.pageNumber}-text${text.length + 1}`,
           pageNumber: rendered.pageNumber,
           text: typed.str,
-          center: { x: origin.x + widthPx / 2, y: origin.y - heightPx / 2 },
-          widthPx,
-          heightPx,
+          ...positionedPdfTextBounds(matrix, widthPx, heightPx),
         });
       }
 
       const segments: SourceVectorSegment[] = [];
       const paths: SourceVectorPath[] = [];
+      const rasterRegions: SourcePointPx[][] = [];
       let transform = viewport.transform as Matrix2D;
       let lineWidthSource = 1;
       let drawPathIndex = 0;
@@ -853,6 +638,7 @@ async function extractPdfEvidence(
       for (let index = 0; index < operatorList.fnArray.length; index += 1) {
         const fn = operatorList.fnArray[index];
         const args = operatorList.argsArray[index] ?? [];
+        appendPdfRasterRegion(rasterRegions, fn, OPS, transform, rendered);
         if (fn === OPS.paintFormXObjectBegin) {
           const id = `p${rendered.pageNumber}-form${++formIndex}`;
           formStack.push({
@@ -935,6 +721,7 @@ async function extractPdfEvidence(
         vectorPaths: paths,
         text,
         semantics: deterministic,
+        rasterRegions,
       });
     }
     return pages;
@@ -948,6 +735,7 @@ async function classifyRenderedPage(
   detail: "low" | "original",
   planCrop?: SemanticBoundingBox | null
 ): Promise<PageSemanticEvidence | null> {
+  if(context.localOnly)return null;
   const vision = floorPlanVisionRuntimeConfiguration();
   if (
     !vision.externalVisionEnabled ||
@@ -1172,18 +960,6 @@ async function classifyRenderedPage(
   );
 }
 
-function asEnvelope(candidate: Record<string, unknown> | null): ExtractionEnvelope {
-  if (
-    !candidate ||
-    ![
-      "floor_plan_deterministic_evidence_v1",
-      ENHANCED_FLOOR_PLAN_EVIDENCE_KIND,
-    ].includes(String(candidate.kind))
-  ) {
-    throw new Error("Floor-plan extraction evidence is missing");
-  }
-  return candidate as unknown as ExtractionEnvelope;
-}
 
 function issue(
   id: string,
@@ -1352,10 +1128,11 @@ function applyVisionGuidedFallback(
 }
 
 export function registerSupportedPageTopology(
-  page: RegisteredPageEvidence,
+  sourcePage: RegisteredPageEvidence,
   scale: PageScaleSolution | null
 ): RegisteredPageTopology {
-  const directRooms = registerRoomBoundaries(page);
+  const page=architecturalLineworkPage(sourcePage);
+  const directRooms = registerRoomBoundaries(page).filter(room=>!hasSourceDivider(page,room.sourcePoints));
   const wallFootprintBands = detectRegisteredWallFootprintBands(page);
   const directCompleteness = directRooms.length
     ? assessRegisteredDirectPathCompleteness(
@@ -1391,13 +1168,24 @@ export function registerSupportedPageTopology(
       directBlockers
     );
   }
+  // Rooms measured by the local vectorizer (centre-lines, thickness, openings)
+  // rank below complete deterministic source topology and above approximate
+  // vision proposals snapped to linework.
+  const vectorizerRooms = vectorizerRoomBoundaries(sourcePage, scale.millimetresPerPixel);
+  const fallback = (
+    topology: RegisteredPageTopology,
+    guided: VisionGuidedTopologyResult
+  ): RegisteredPageTopology =>
+    vectorizerRooms.length
+      ? { ...topology, rooms: vectorizerRooms, promotionComplete: true, promotionBlockers: [] }
+      : applyVisionGuidedFallback(topology, guided);
   const centerlines = deriveRegisteredWallCenterlines(
     page,
     wallFootprintBands,
     scale.millimetresPerPixel
   );
   if (centerlines.diagnostics.status !== "complete") {
-    return applyVisionGuidedFallback(
+    return fallback(
       addPromotionBlockers({
         ...unavailableRegisteredPageTopology(
           wallFootprintBands.length,
@@ -1414,7 +1202,7 @@ export function registerSupportedPageTopology(
     scale.millimetresPerPixel
   );
   if (openingGaps.diagnostics.status !== "complete") {
-    return applyVisionGuidedFallback(
+    return fallback(
       addPromotionBlockers({
         ...unavailableRegisteredPageTopology(
           wallFootprintBands.length,
@@ -1432,7 +1220,7 @@ export function registerSupportedPageTopology(
     openingGaps.gaps
   );
   if (planarFaces.diagnostics.status !== "complete") {
-    return applyVisionGuidedFallback(
+    return fallback(
       addPromotionBlockers({
         ...unavailableRegisteredPageTopology(
           wallFootprintBands.length,
@@ -1527,18 +1315,10 @@ export function registerSupportedPageTopology(
   }, completeness.complete ? [] : directBlockers);
   return completeness.complete
     ? deterministicTopology
-    : applyVisionGuidedFallback(deterministicTopology, visionGuided);
+    : fallback(deterministicTopology, visionGuided);
 }
 
-function buildCanonicalCandidate(
-  envelope: ExtractionEnvelope,
-  jobId: string
-): {
-  document: FloorPlanDocumentV2;
-  issues: FloorPlanReviewIssue[];
-  topology: RegisteredPageTopology;
-} {
-  const issues: FloorPlanReviewIssue[] = [];
+function selectCanonicalPage(envelope: ExtractionEnvelope) {
   const eligiblePages = envelope.selectedPageNumber
     ? envelope.pages.filter(
         (candidate) => candidate.pageNumber === envelope.selectedPageNumber
@@ -1558,13 +1338,108 @@ function buildCanonicalCandidate(
     );
   const selected = ranked[0];
   const page = selected?.page ?? eligiblePages[0];
-  const rooms = selected?.topology.rooms ?? [];
   const topology =
     selected?.topology ?? unavailableRegisteredPageTopology(0, "page_unavailable");
   const scale = page
     ? (envelope.scales?.find((entry) => entry.pageNumber === page.pageNumber) ??
       (envelope.scale?.pageNumber === page.pageNumber ? envelope.scale : null))
     : null;
+  const rooms = scale ? selected?.topology.rooms ?? [] : [];
+  return { page, topology, scale, rooms };
+}
+
+type RegisteredEdgeOpening = NonNullable<
+  NonNullable<RegisteredRoomBoundary["sourceEdges"]>[number]["opening"]
+>;
+
+function openingProvenanceNote(opening: RegisteredEdgeOpening): string {
+  return opening.proof === "vectorizer_drawn_symbol"
+    ? "Opening measured jamb to jamb by the local vectorizer from the drawn symbol; confirm kind, width and swing"
+    : `Opening span registered from ${opening.proof} source vectors ${[
+        ...opening.supportSubpathIds,
+        ...opening.supportSegmentIds,
+        ...opening.supportCurveIds,
+      ].join(", ")}`;
+}
+
+/** The registered opening on a room edge that no wall carries yet, or null. */
+function pendingEdgeOpening(
+  edgeEvidence: NonNullable<RegisteredRoomBoundary["sourceEdges"]>[number] | undefined,
+  wallId: string,
+  openings: readonly FloorPlanOpeningV2[],
+  openingByEvidenceId: ReadonlyMap<string, FloorPlanOpeningV2>
+): RegisteredEdgeOpening | null {
+  const opening = edgeEvidence?.opening;
+  if (!opening || openingByEvidenceId.has(opening.id)) return null;
+  // The room on the other side may already have put this opening on the shared wall under its own evidence id.
+  return openings.some((entry) => entry.wallId === wallId) ? null : opening;
+}
+
+/** A registered opening spanning its whole (already split) wall, with swing read against the wall's source direction. */
+function registeredEdgeOpeningEntity(input: {
+  id: string;
+  wallId: string;
+  opening: RegisteredEdgeOpening;
+  start: { xMm: number; zMm: number };
+  end: { xMm: number; zMm: number };
+  sourceStart: SourcePointPx;
+  sourceEnd: SourcePointPx;
+  provenance: (confidence: number, note: string) => FloorPlanEntityProvenanceV2;
+}): FloorPlanOpeningV2 {
+  const { opening } = input;
+  return {
+    id: input.id,
+    wallId: input.wallId,
+    kind: opening.kind,
+    operation: opening.operation,
+    offsetMm: 0,
+    widthMm: Math.round(Math.hypot(input.end.xMm - input.start.xMm, input.end.zMm - input.start.zMm)),
+    ...swingAgainstWall(input.sourceStart, input.sourceEnd, opening),
+    provenance: input.provenance(opening.confidence, openingProvenanceNote(opening)),
+  };
+}
+
+function wallProvenanceNote(
+  detected: RegisteredRoomBoundary,
+  edgeEvidence: NonNullable<RegisteredRoomBoundary["sourceEdges"]>[number] | undefined
+): string {
+  if (detected.registrationKind === "vision_guided_source_snap") {
+    return "Proposed wall path snapped to source linework; wall thickness is assumed and requires review";
+  }
+  if (detected.registrationKind === "vectorizer_wall_topology" && edgeEvidence) {
+    return `Wall centre-line and ${edgeEvidence.thicknessMm} mm thickness measured by the local vectorizer from the drawn wall faces; confirm against the source overlay`;
+  }
+  return edgeEvidence
+    ? `Wall centerline and ${edgeEvidence.thicknessMm} mm thickness paired from source boundaries ${edgeEvidence.sourceSegmentIds.join(", ")}`
+    : "Wall path registered from the containing source path; thickness requires review";
+}
+
+function roomProvenanceNote(detected: RegisteredRoomBoundary, geometryEvidenceName: string): string {
+  if ((detected.sourceFixtures?.length ?? 0) > 0 && detected.roomType === "toilet") {
+    return "Unlabeled bathroom classified from a sanitary fixture cluster; its closed boundary was accepted only after every edge registered to deterministic source wall linework";
+  }
+  switch (detected.registrationKind) {
+    case "assembled_wall_topology":
+      return "Semantic label classified a mathematically closed face assembled only from paired source wall boundaries and supported opening spans";
+    case "vision_guided_source_snap":
+      return "Semantic boundary proposal accepted only after every edge snapped to deterministic source linework and the closed-room topology passed validation";
+    case "vectorizer_wall_topology":
+      return "Closed floor area found by the local vectorizer between drawn walls and openings; its sides follow measured wall centre-lines";
+    default:
+      return `Semantic label associated with a closed ${geometryEvidenceName} path`;
+  }
+}
+
+function buildCanonicalCandidate(
+  envelope: ExtractionEnvelope,
+  jobId: string
+): {
+  document: FloorPlanDocumentV2;
+  issues: FloorPlanReviewIssue[];
+  topology: RegisteredPageTopology;
+} {
+  const issues: FloorPlanReviewIssue[] = [];
+  const { page, topology, scale, rooms } = selectCanonicalPage(envelope);
   if (!scale || !page) {
     const solvedOtherPage =
       page &&
@@ -1577,7 +1452,7 @@ function buildCanonicalCandidate(
         "scale_unresolved",
         solvedOtherPage
           ? `Dimensions were solved on source page ${solvedOtherPage.pageNumber}, but the selected plan is on page ${page.pageNumber}. Confirm dimensions from this plan page before geometry can be trusted.`
-          : "Confirm one known distance. At least two printed dimensions must agree before automatic geometry can be trusted.",
+          : (vectorizerScaleEstimateMessage(page) ?? automaticScaleReviewMessage(page)),
         "critical"
       )
     );
@@ -1600,21 +1475,23 @@ function buildCanonicalCandidate(
   const sourceId = envelope.source.id;
   const pageNumber = page?.pageNumber ?? 1;
   const millimetresPerPixel = scale?.millimetresPerPixel ?? 1;
-  const geometryBasis =
-    envelope.source.mimeType === "application/pdf"
-      ? ("vector_traced" as const)
-      : ("raster_traced" as const);
+  const geometryBasis = pageGeometryBasis(page, envelope.source.mimeType);
   const geometryEvidenceName =
     geometryBasis === "vector_traced"
       ? "deterministic PDF vector linework"
       : "deterministic raster linework";
+  const edgeProvenance = (confidence: number, note: string) =>
+    makeProvenance(sourceId, pageNumber, confidence, geometryBasis, note);
   const vertices: FloorPlanVertexV2[] = [];
   const walls: FloorPlanWallV2[] = [];
   const canonicalRooms: FloorPlanRoomV2[] = [];
   const openings: FloorPlanOpeningV2[] = [];
   const openingByEvidenceId = new Map<string, FloorPlanOpeningV2>();
   const dimensions: FloorPlanDimensionV2[] = [];
-  const annotations: FloorPlanAnnotationV2[] = [];
+  const annotations: FloorPlanAnnotationV2[] = sourceDrawingAnnotations(page, sourceId, EXTRACTION_VERSION, issues);
+  // Where the plan prints no dimensions, the vectorizer's door openings give the reviewer something to confirm the
+  // scale against; they are reference marks, never geometry.
+  if (page && !scale) annotations.push(...vectorizerScaleEstimateAnnotations(page, sourceId, EXTRACTION_VERSION));
   const vertexByPoint = new Map<string, FloorPlanVertexV2>();
   const wallBySpan = new Map<
     string,
@@ -1793,33 +1670,14 @@ function buildCanonicalCandidate(
           wallId: existing.wall.id,
           direction: existing.wall.path.startVertexId === start.id ? "forward" : "reverse",
         });
-        if (edgeEvidence?.opening && !openingByEvidenceId.has(edgeEvidence.opening.id)) {
-          const wallLengthMm = Math.round(
-            Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm)
-          );
-          const opening: FloorPlanOpeningV2 = {
-            id: `opening-${openings.length + 1}`,
-            wallId: existing.wall.id,
-            kind: edgeEvidence.opening.kind,
-            operation: edgeEvidence.opening.operation,
-            offsetMm: 0,
-            widthMm: wallLengthMm,
-            hinge: "unknown",
-            handing: "unknown",
-            provenance: makeProvenance(
-              sourceId,
-              pageNumber,
-              edgeEvidence.opening.confidence,
-              geometryBasis,
-              `Opening span registered from ${edgeEvidence.opening.proof} source vectors ${[
-                ...edgeEvidence.opening.supportSubpathIds,
-                ...edgeEvidence.opening.supportSegmentIds,
-                ...edgeEvidence.opening.supportCurveIds,
-              ].join(", ")}`
-            ),
-          };
+        const shared = pendingEdgeOpening(edgeEvidence, existing.wall.id, openings, openingByEvidenceId);
+        if (shared) {
+          const opening = registeredEdgeOpeningEntity({
+            id: `opening-${openings.length + 1}`, wallId: existing.wall.id, opening: shared,
+            start, end, sourceStart: existing.start, sourceEnd: existing.end, provenance: edgeProvenance,
+          });
           openings.push(opening);
-          openingByEvidenceId.set(edgeEvidence.opening.id, opening);
+          openingByEvidenceId.set(shared.id, opening);
         }
         continue;
       }
@@ -1829,46 +1687,19 @@ function buildCanonicalCandidate(
         thicknessMm: edgeEvidence?.thicknessMm ?? 200,
         classification: "interior",
         adjacentRoomIds: [roomId],
-        provenance: makeProvenance(
-          sourceId,
-          pageNumber,
-          detected.confidence,
-          geometryBasis,
-          edgeEvidence
-            ? `Wall centerline and ${edgeEvidence.thicknessMm} mm thickness paired from source boundaries ${edgeEvidence.sourceSegmentIds.join(", ")}`
-            : "Wall path registered from the containing source path; thickness requires review"
-        ),
+        provenance: edgeProvenance(detected.confidence, wallProvenanceNote(detected, edgeEvidence)),
       };
       walls.push(wall);
       wallBySpan.set(forwardKey, { wall, start: sourceStart, end: sourceEnd });
       roomWalls.push({ wallId: wall.id, direction: "forward" });
-      if (edgeEvidence?.opening && !openingByEvidenceId.has(edgeEvidence.opening.id)) {
-        const wallLengthMm = Math.round(
-          Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm)
-        );
-        const opening: FloorPlanOpeningV2 = {
-          id: `opening-${openings.length + 1}`,
-          wallId: wall.id,
-          kind: edgeEvidence.opening.kind,
-          operation: edgeEvidence.opening.operation,
-          offsetMm: 0,
-          widthMm: wallLengthMm,
-          hinge: "unknown",
-          handing: "unknown",
-          provenance: makeProvenance(
-            sourceId,
-            pageNumber,
-            edgeEvidence.opening.confidence,
-            geometryBasis,
-            `Opening span registered from ${edgeEvidence.opening.proof} source vectors ${[
-              ...edgeEvidence.opening.supportSubpathIds,
-              ...edgeEvidence.opening.supportSegmentIds,
-              ...edgeEvidence.opening.supportCurveIds,
-            ].join(", ")}`
-          ),
-        };
+      const pending = pendingEdgeOpening(edgeEvidence, wall.id, openings, openingByEvidenceId);
+      if (pending) {
+        const opening = registeredEdgeOpeningEntity({
+          id: `opening-${openings.length + 1}`, wallId: wall.id, opening: pending,
+          start, end, sourceStart, sourceEnd, provenance: edgeProvenance,
+        });
         openings.push(opening);
-        openingByEvidenceId.set(edgeEvidence.opening.id, opening);
+        openingByEvidenceId.set(pending.id, opening);
       }
     }
     canonicalRooms.push({
@@ -1876,20 +1707,7 @@ function buildCanonicalCandidate(
       name: detected.label,
       roomType: detected.roomType,
       wallLoops: [{ kind: "outer", walls: roomWalls }],
-      provenance: makeProvenance(
-        sourceId,
-        pageNumber,
-        detected.confidence,
-        geometryBasis,
-        (detected.sourceFixtures?.length ?? 0) > 0 &&
-          detected.roomType === "toilet"
-          ? "Unlabeled bathroom classified from a sanitary fixture cluster; its closed boundary was accepted only after every edge registered to deterministic source wall linework"
-          : detected.registrationKind === "assembled_wall_topology"
-            ? "Semantic label classified a mathematically closed face assembled only from paired source wall boundaries and supported opening spans"
-            : detected.registrationKind === "vision_guided_source_snap"
-              ? "Semantic boundary proposal accepted only after every edge snapped to deterministic source linework and the closed-room topology passed validation"
-              : `Semantic label associated with a closed ${geometryEvidenceName} path`
-      ),
+      provenance: edgeProvenance(detected.confidence, roomProvenanceNote(detected, geometryEvidenceName)),
     });
     if ((detected.sourceLabels?.length ?? 0) > 1 && page) {
       for (const sourceLabel of detected.sourceLabels ?? []) {
@@ -1924,8 +1742,13 @@ function buildCanonicalCandidate(
   }
 
   if (page && walls.length > 0) {
-    for (const symbol of page.semantics.openingSymbols) {
+    const vectorizerTopology = rooms.some(
+      (room) => room.registrationKind === "vectorizer_wall_topology"
+    );
+    for (const [symbolIndex, symbol] of page.semantics.openingSymbols.entries()) {
       if (symbol.confidence < 0.5) continue;
+      // These openings already stand on their own room sides.
+      if (vectorizerTopology && symbol.evidenceKind === "vectorizer") continue;
       const sourcePoint = {
         x: symbol.centerXRatio * page.widthPx,
         y: symbol.centerYRatio * page.heightPx,
@@ -2000,19 +1823,7 @@ function buildCanonicalCandidate(
         )
       ) continue;
       const requestedWidth = symbol.kind === "window" ? 1200 : 900;
-      const sourceSpan =
-        symbol.spanStart && symbol.spanEnd
-          ? [
-              {
-                x: symbol.spanStart.xRatio * page.widthPx,
-                y: symbol.spanStart.yRatio * page.heightPx,
-              },
-              {
-                x: symbol.spanEnd.xRatio * page.widthPx,
-                y: symbol.spanEnd.yRatio * page.heightPx,
-              },
-            ] as const
-          : null;
+      const { points: sourceSpan, pixelSupported } = sourceOpeningSpan(page, symbol, symbolIndex);
       const snappedSpan = sourceSpan
         ? sourceSpan.map((point) =>
             pointToSegmentDistance(
@@ -2058,7 +1869,9 @@ function buildCanonicalCandidate(
             : symbol.operation === "unknown" || symbol.operation === "fixed" || symbol.operation === "open"
               ? "swing"
               : symbol.operation;
-      if (!spanSupported) {
+      // A wall measured by the vectorizer is solid where the vectorizer found no opening. A semantic
+      // guess without jamb or frame pixels behind it stays a suggestion and never cuts that wall.
+      if (!spanSupported || (vectorizerTopology && !pixelSupported)) {
         addOpeningSuggestion({
           wallId: nearest.entry.wall.id,
           offsetMm,
@@ -2093,9 +1906,9 @@ function buildCanonicalCandidate(
           pageNumber,
           Math.min(0.65, symbol.confidence),
           "inferred",
-          spanSupported
-            ? "Semantic opening span snapped to a deterministic host wall; handing needs review"
-            : "Symbol classified semantically and snapped to a deterministic wall; width and handing need review"
+          pixelSupported
+            ? "Opening endpoints located from raster jamb or frame evidence; classification and operation need review"
+            : "Opening proposal aligned to a source-supported host wall; endpoints, width and operation need review"
         ),
       });
     }
@@ -2163,8 +1976,6 @@ function buildCanonicalCandidate(
         "warning"
       )
     );
-  }
-  if (page) {
     const detectedCount = page.semantics.dimensionLabels.length;
     const guidance = detectedCount > dimensions.length
       ? "The remaining printed dimensions are suggested follow-up checks."
@@ -2175,7 +1986,7 @@ function buildCanonicalCandidate(
       issue(
         "dimension-reconciliation-review",
         "dimensions_confirmation",
-        `${dimensions.length} of ${detectedCount} detected printed dimensions were reconciled exactly. ${guidance}`,
+        `${dimensions.length} editable dimensions were created from ${detectedCount} source readings. Check their values and endpoints against the source. ${guidance}`,
         dimensions.length === 0 ? "critical" : "warning"
       )
     );
@@ -2316,12 +2127,22 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
   readonly id = "pdf-raster-hybrid";
   readonly extractionVersion = EXTRACTION_VERSION;
   private readonly localOcrProvider: FloorPlanLocalOcrProvider | null;
+  private readonly vectorizerProvider: FloorPlanVectorizerProvider | null;
 
-  constructor(options: { localOcrProvider?: FloorPlanLocalOcrProvider | null } = {}) {
+  constructor(
+    options: {
+      localOcrProvider?: FloorPlanLocalOcrProvider | null;
+      vectorizerProvider?: FloorPlanVectorizerProvider | null;
+    } = {}
+  ) {
     this.localOcrProvider =
       options.localOcrProvider === undefined
         ? createDefaultFloorPlanLocalOcrProvider()
         : options.localOcrProvider;
+    this.vectorizerProvider =
+      options.vectorizerProvider === undefined
+        ? createDefaultFloorPlanVectorizerProvider()
+        : options.vectorizerProvider;
   }
 
   supports(source: { mimeType: string }) {
@@ -2347,7 +2168,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       const pdfPages = await extractPdfEvidence(source, renderedPages);
       const weakPageNumbers = new Set(
         pdfPages
-          .filter((page) => page.vectorPaths.length === 0)
+          .filter((page) => page.vectorPaths.length === 0 || Boolean(page.rasterRegions?.length))
           .map((page) => page.pageNumber)
       );
       const rasterFallback = weakPageNumbers.size
@@ -2360,19 +2181,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       const rasterByPage = new Map(
         (rasterFallback?.pages ?? []).map((page) => [page.pageNumber, page])
       );
-      pages = pdfPages.map((page) => {
-        const fallback = rasterByPage.get(page.pageNumber);
-        if (!fallback || fallback.vectorPaths.length === 0) return page;
-        return {
-          ...page,
-          vectorSegments: fallback.vectorSegments,
-          vectorPaths: fallback.vectorPaths,
-          semantics: {
-            ...page.semantics,
-            notes: [...page.semantics.notes, ...fallback.semantics.notes],
-          },
-        };
-      });
+      pages = pdfPages.map((page) => mergeMixedPdfEvidence(page, rasterByPage.get(page.pageNumber)));
       rasterEvidence = rasterFallback
         ? {
             pages: pages.filter((page) => rasterByPage.has(page.pageNumber)),
@@ -2389,6 +2198,16 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       context,
       this.localOcrProvider
     );
+    const vectorizerDiagnostics = await applyVectorizerEvidence({
+      pages: rasterEvidence?.pages ?? [],
+      renderedPages,
+      context,
+      provider: this.vectorizerProvider,
+      pageLimit: boundedEnvironmentInteger("FLOOR_PLAN_VECTORIZER_MAX_PAGES", 1, 4),
+      rankPages: rankFloorPlanSemanticPages,
+      mergeSemantics: (deterministic, semantic) => mergeSemantics(deterministic, semantic, true),
+    });
+    if(rasterEvidence)await attachRasterSourceArtwork(rasterEvidence.pages,renderedPages,context);
     const semanticPages = rankFloorPlanSemanticPages(pages).slice(
       0,
       MAX_SEMANTIC_PAGES
@@ -2464,6 +2283,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         pages: pages.map((page) => {
           const raster = rasterEvidence?.diagnostics.get(page.pageNumber);
           return {
+            vectorizer: vectorizerDiagnostics.get(page.pageNumber) ?? null,
             pageNumber: page.pageNumber,
             widthPx: page.widthPx,
             heightPx: page.heightPx,
@@ -2482,7 +2302,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
             ).size,
             wallFootprintBandCount:
               detectRegisteredWallFootprintBands(page).length,
-            lineworkEvidenceKind: raster ? "raster_linework" : "pdf_vector",
+            lineworkEvidenceKind: pageLineworkKind(page),
             rasterLineworkConfidence: raster?.confidence ?? null,
             rasterLineworkWeakReason: raster?.weakReason ?? null,
             rasterCycleSearchCapped: raster?.cycleSearchCapped ?? false,
@@ -2520,9 +2340,9 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       metrics: {
         pageCount: pages.length,
         vectorPageCount: pages.filter((page) => page.vectorSegments.length > 0).length,
-        rasterLineworkPageCount: rasterEvidence
-          ? pages.filter((page) => page.vectorSegments.length > 0).length
-          : 0,
+        rasterLineworkPageCount: pages.filter((page) =>
+          page.vectorSegments.some((segment) => segment.evidenceKind === "raster_linework")
+        ).length,
         localOcrPageCount: [...localOcrDiagnostics.values()].filter(
           (entry) => entry.attempted
         ).length,
@@ -2545,6 +2365,10 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
           (page.semantics.fixtureSymbols ?? []).some(
             (entry) => entry.evidenceKind === "vision"
           )
+        ),
+        vectorizerAttempted: vectorizerDiagnostics.size > 0,
+        vectorizerSucceeded: [...vectorizerDiagnostics.values()].some(
+          (entry) => entry.status === "completed"
         ),
         candidatePlanPageCount: pageCandidates.length,
         labelObservationCount: pages.reduce(
@@ -2616,44 +2440,26 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         }
       }
     }
-    const solutions = selectedPages
-      .map((page) => ({ page, solution: solveScaleFromRegisteredEvidence(page) }))
+    for (const page of selectedPages) await registerRasterDimensionSpans(page,
+      envelope.renderedPages?.find((rendered) => rendered.pageNumber === page.pageNumber), context);
+    for (const page of selectedPages) mergeVectorizerDimensionSpans(page);
+    for (const page of selectedPages) await registerRasterOpeningSpans(page,
+      envelope.renderedPages?.find((rendered) => rendered.pageNumber === page.pageNumber), context);
+    const observations = selectedPages.map((page) => ({ page, diagnosis: diagnoseSourceScale(page) }));
+    const solutions = observations
+      .map(({ page, diagnosis }) => ({ page, solution: diagnosis.status === "accepted" ? diagnosis.candidate : null }))
       .filter((entry) => entry.solution !== null)
       .sort(
         (left, right) =>
           (right.solution?.dimensionCount ?? 0) - (left.solution?.dimensionCount ?? 0)
       );
-    const best = solutions[0];
     const scales: PageScaleSolution[] = solutions.flatMap(({ page, solution }) =>
-      solution
-        ? [
-            {
-              pageNumber: page.pageNumber,
-              millimetresPerPixel: solution.millimetresPerPixel,
-              dimensionCount: solution.dimensionCount,
-              rmsResidualMm: solution.rmsResidualMm,
-              confidence: solution.confidence,
-              evidence: solution.evidence,
-              diagnostics: solution.diagnostics,
-            },
-          ]
-        : []
+      solution ? [{ pageNumber: page.pageNumber, ...solution }] : []
     );
     const next: ExtractionEnvelope = {
       ...envelope,
       scales,
-      scale:
-        best?.solution
-          ? {
-              pageNumber: best.page.pageNumber,
-              millimetresPerPixel: best.solution.millimetresPerPixel,
-              dimensionCount: best.solution.dimensionCount,
-              rmsResidualMm: best.solution.rmsResidualMm,
-              confidence: best.solution.confidence,
-              evidence: best.solution.evidence,
-              diagnostics: best.solution.diagnostics,
-            }
-          : null,
+      scale: scales[0] ?? null,
     };
     return {
       ...result,
@@ -2661,6 +2467,8 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       sourceManifest: result.sourceManifest
         ? {
             ...result.sourceManifest,
+            rasterOpeningSpans: selectedPages.filter((page) => page.openingSpanEvidence).map((page) => ({ pageNumber: page.pageNumber, ...page.openingSpanEvidence })),
+            scaleDiagnostics: observations.map(({ page, diagnosis }) => ({ pageNumber: page.pageNumber, ...diagnosis })),
             selectedPageNumber: next.selectedPageNumber ?? next.scale?.pageNumber ?? null,
             scale: next.scale
               ? {
@@ -2690,14 +2498,16 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       metrics: {
         ...result.metrics,
         scaleSolved: Boolean(next.scale),
+        labelObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.roomLabels.length, 0),
+        roomBoundaryProposalCount: envelope.pages.reduce((sum, page) => sum + (page.semantics.roomBoundaries?.length ?? 0), 0),
+        dimensionObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.dimensionLabels.length, 0),
+        openingObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.openingSymbols.length, 0),
+        fixtureObservationCount: envelope.pages.reduce((sum, page) => sum + (page.semantics.fixtureSymbols?.length ?? 0), 0),
         scaleDimensionCount: next.scale?.dimensionCount ?? 0,
         scaleResidualMm: next.scale?.rmsResidualMm ?? null,
-        scaleSingleSegmentCandidateCount:
-          next.scale?.diagnostics?.singleSegmentCandidateCount ?? 0,
-        scaleCompoundSpanCandidateCount:
-          next.scale?.diagnostics?.compoundSpanCandidateCount ?? 0,
-        scaleUnsupportedSpanCount:
-          next.scale?.diagnostics?.rejectedUnsupportedSpan ?? 0,
+        scaleSingleSegmentCandidateCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.singleSegmentCandidateCount, 0),
+        scaleCompoundSpanCandidateCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.compoundSpanCandidateCount, 0),
+        scaleUnsupportedSpanCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.rejectedUnsupportedSpan, 0),
       },
     };
   }

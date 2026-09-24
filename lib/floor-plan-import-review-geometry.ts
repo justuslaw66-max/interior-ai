@@ -1,3 +1,4 @@
+import { reviewerSourceDimensionBaseId, reviewerSourceDimensionProvenance } from "./floor-plan-review-source-dimension";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type {
   FloorPlanDocumentV2,
@@ -10,7 +11,8 @@ import type {
 } from "@/lib/floor-plan-document-v2";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
-import { buildFloorPlanSourceProjection } from "@/lib/floor-plan-imports/source-overlay-residuals";
+import { projectReviewSourcePointToPlan } from "./floor-plan-source-point-projection";
+import { buildFloorPlanSourceProjection } from "./floor-plan-imports/source-overlay-residuals";
 import {
   applyFloorPlanTopologyMutationV2,
   type FloorPlanTopologyMutationV2,
@@ -72,28 +74,6 @@ export const REVIEW_ORIENTATIONS: ReadonlyArray<{
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-export function projectReviewSourcePointToPlan(
-  calibration: FloorPlanSourceCalibrationV2,
-  point: ReviewSourcePoint
-): FloorPlanPointMmV2 | null {
-  const projection = buildFloorPlanSourceProjection(calibration);
-  if (!projection) return null;
-  const origin = projection.project({ xMm: 0, zMm: 0 });
-  const xUnit = projection.project({ xMm: 1, zMm: 0 });
-  const zUnit = projection.project({ xMm: 0, zMm: 1 });
-  const a = xUnit.xPx - origin.xPx;
-  const b = zUnit.xPx - origin.xPx;
-  const c = xUnit.yPx - origin.yPx;
-  const d = zUnit.yPx - origin.yPx;
-  const determinant = a * d - b * c;
-  if (Math.abs(determinant) < 1e-12) return null;
-  const x = point.x - origin.xPx;
-  const y = point.y - origin.yPx;
-  return {
-    xMm: (d * x - b * y) / determinant,
-    zMm: (-c * x + a * y) / determinant,
-  };
-}
 
 /**
  * Finds the straight wall that best matches two source clicks and converts the
@@ -369,72 +349,10 @@ function upsertReviewerSourceDimension(input: {
   firstVertexId?: string;
   secondVertexId?: string;
 }) {
-  const safeCalibrationId = input.calibrationId.replace(
-    /[^A-Za-z0-9_.:-]/g,
-    "-"
-  );
-  const baseId = `consumer-source-dimension:${input.floor.id}:${safeCalibrationId}`;
+  const baseId = reviewerSourceDimensionBaseId(input.floor.id, input.calibrationId);
   const at = new Date().toISOString();
-  const provenance = (
-    role: "start" | "end" | "dimension"
-  ): FloorPlanEntityProvenanceV2 => ({
-    confidence: 1,
-    extractionVersion: "consumer-scale-calibration-v1",
-    evidence: [
-      {
-        sourceId: input.sourceId,
-        basis: "user_confirmed",
-        confidence: 1,
-        extractorVersion: "consumer-scale-calibration-v1",
-        pageNumber: input.pageNumber,
-        calibrationId: input.calibrationId,
-        cropPx: {
-          xPx: Math.max(
-            0,
-            Math.floor(Math.min(input.firstSource.x, input.secondSource.x))
-          ),
-          yPx: Math.max(
-            0,
-            Math.floor(Math.min(input.firstSource.y, input.secondSource.y))
-          ),
-          widthPx: Math.max(
-            1,
-            Math.ceil(
-              Math.abs(input.secondSource.x - input.firstSource.x)
-            )
-          ),
-          heightPx: Math.max(
-            1,
-            Math.ceil(
-              Math.abs(input.secondSource.y - input.firstSource.y)
-            )
-          ),
-        },
-        sourceAnchors:
-          role === "start"
-            ? [{ role: "start", sourcePx: input.firstSource }]
-            : role === "end"
-              ? [{ role: "end", sourcePx: input.secondSource }]
-              : [
-                  { role: "start", sourcePx: input.firstSource },
-                  { role: "end", sourcePx: input.secondSource },
-                ],
-        note:
-          role === "dimension"
-            ? "Printed source dimension entered and confirmed by the reviewer."
-            : `${role === "start" ? "First" : "Second"} endpoint of the reviewer-confirmed printed dimension.`,
-      },
-    ],
-    reviewHistory: [
-      {
-        id: `${baseId}:${role}:confirmation`,
-        action: "confirmed",
-        reviewerId: "consumer-import-review",
-        reviewedAt: at,
-        note: "Reviewer confirmed the printed source dimension and endpoints.",
-      },
-    ],
-  });
+  const provenance = (role: "start" | "end" | "dimension") =>
+    reviewerSourceDimensionProvenance({ ...input, baseId, at }, role);
   const vertex = (
     preferredId: string | undefined,
     suffix: "start" | "end",
@@ -543,10 +461,14 @@ export function applyPointScaleCalibration(input: {
     throw new Error("The requested scale is invalid.");
   }
   const existingCalibrationId = existing.id;
+  // Replace only this review-owned scale dimension; other exact dimensions
+  // still constrain the calibration preflight. The draft is committed below.
+  const primaryDimensionId = `${reviewerSourceDimensionBaseId(floor.id, existing.id)}:measurement`;
+  floor.dimensions = floor.dimensions.filter(({ id }) => id !== primaryDimensionId);
   next = applyFloorPlanHorizontalCalibrationV2({
     document: next,
     floorId: floor.id,
-    anchor: oldStart,
+    anchor: { xMm: Math.round(oldStart.xMm), zMm: Math.round(oldStart.zMm) },
     factor,
     actorId: input.actorId ?? "consumer-import-review",
     mutatedAt: input.mutatedAt ?? new Date().toISOString(),

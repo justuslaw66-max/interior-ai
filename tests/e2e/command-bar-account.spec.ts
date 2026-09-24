@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { waitForEditorHydration } from "./variant-test-utils";
 
 // The account corner (audit finding D): Sign in for guests, an Account menu with the member's
 // initial, and Get Pro for Free users, none of which show before they are known.
@@ -36,7 +37,11 @@ async function mockAccount(page: Page, options: { plan: Plan; signedIn: boolean;
 async function openEditor(page: Page) {
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await waitForEditorHydration(page);
 }
+
+// The corner shows nothing until the session has loaded.
+const SESSION_TIMEOUT = { timeout: 20_000 };
 
 async function closePricingWithEscape(page: Page) {
   const pricing = page.getByRole("dialog", { name: "Pricing" });
@@ -50,7 +55,7 @@ test.describe("command bar account corner", () => {
     await mockAccount(page, { plan: "free", signedIn: false });
     await openEditor(page);
     const signIn = page.getByTestId("editor-command-sign-in");
-    await expect(signIn).toBeVisible();
+    await expect(signIn).toBeVisible(SESSION_TIMEOUT);
     await expect(signIn).toHaveAccessibleName("Sign in");
     await expect(page.getByTestId("editor-command-account")).toHaveCount(0);
 
@@ -65,7 +70,7 @@ test.describe("command bar account corner", () => {
     await mockAccount(page, { plan: "free", signedIn: true });
     await openEditor(page);
     const account = page.getByTestId("editor-command-account");
-    await expect(account).toHaveText("A");
+    await expect(account).toHaveText("A", SESSION_TIMEOUT);
     await expect(account).toHaveAccessibleName("Account");
     await expect(page.getByTestId("editor-command-sign-in")).toHaveCount(0);
     await expect(page.getByTestId("editor-command-get-pro")).toBeVisible();
@@ -94,7 +99,7 @@ test.describe("command bar account corner", () => {
     await mockAccount(page, { plan: "free", signedIn: false });
     await openEditor(page);
     const signIn = page.getByTestId("editor-command-sign-in");
-    await expect(signIn).toBeVisible();
+    await expect(signIn).toBeVisible(SESSION_TIMEOUT);
     await expect(signIn).toHaveAccessibleName("Sign in");
     expect((await signIn.boundingBox())?.width).toBeLessThanOrEqual(31);
     await expect(page.getByTestId("editor-command-get-pro")).toBeHidden();

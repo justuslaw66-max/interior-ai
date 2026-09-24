@@ -6,6 +6,7 @@
 export type Snapshot = unknown;
 
 export interface HistoryEntry<TSnapshot = Snapshot> {
+  commandId?: string;
   name: string;
   before: TSnapshot;
   after: TSnapshot;
@@ -23,6 +24,12 @@ export type HistoryCommand<TInput, TResult = void> = {
   input: TInput;
   /** Apply the command through the document owner; throw to trigger rollback. */
   execute: (input: TInput) => TResult;
+};
+
+export type DerivedHistoryUpdate<TSnapshot> = {
+  commandIds: readonly string[];
+  matches: (before: TSnapshot, after: TSnapshot) => boolean;
+  update: () => void;
 };
 
 export type ContinuousHistoryCommandDescriptor = {
@@ -174,6 +181,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
     const after = this.structuredClone(this.get());
     const before = this.txn.before;
     const name = this.txn.name;
+    const commandId = this.txn.id;
 
     this.txn = null;
 
@@ -182,7 +190,7 @@ export class HistoryManager<TSnapshot = Snapshot> {
       return;
     }
 
-    this.past.push({ name, before, after, ts: Date.now() });
+    this.past.push({ name, before, after, ts: Date.now(), ...(commandId ? { commandId } : {}) });
     this.future = [];
 
     // Trim history if exceeded max
@@ -190,6 +198,27 @@ export class HistoryManager<TSnapshot = Snapshot> {
       this.past = this.past.slice(-this.maxEntries);
     }
     this.onChange?.();
+  }
+
+  /** Complete an immediate derived update only while its owning command is still current. */
+  completeLastCommand({ commandIds, matches, update }: DerivedHistoryUpdate<TSnapshot>): boolean {
+    const entry = this.past.at(-1);
+    if (this.txn || this.future.length || !entry?.commandId || !commandIds.includes(entry.commandId)) return false;
+    const current = this.structuredClone(this.get());
+    if (JSON.stringify(current) !== JSON.stringify(entry.after) ||
+      !matches(this.structuredClone(entry.before), this.structuredClone(entry.after))) return false;
+    this.txn = { id: entry.commandId, name: entry.name, before: current, continuous: false };
+    try {
+      update();
+      entry.after = this.structuredClone(this.get());
+    } catch (error) {
+      this.set(current);
+      throw error;
+    } finally {
+      this.txn = null;
+      this.onChange?.();
+    }
+    return true;
   }
 
   /**

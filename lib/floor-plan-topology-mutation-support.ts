@@ -12,6 +12,8 @@ import {
   type FloorPlanTopologyMutationContextV2,
   type FloorPlanTopologyMutationErrorCodeV2,
   type FloorPlanVertexDraftV2,
+  type FloorPlanWallSplitLineageV2,
+  type FloorPlanRoomSplitLineageV2,
 } from "@/lib/floor-plan-topology-mutation-types";
 
 const MUTATION_EXTRACTION_VERSION = "floor-plan-topology-editor-v1";
@@ -22,6 +24,8 @@ export type FloorPlanTopologyMutationStateV2 = {
   context: FloorPlanTopologyMutationContextV2;
   changedIds: Set<string>;
   operationIndex: number;
+  wallSplits?: FloorPlanWallSplitLineageV2[];
+  roomSplits?: FloorPlanRoomSplitLineageV2[];
 };
 
 type FloorEntityCollection =
@@ -231,7 +235,7 @@ function vertexHasReference(floor: FloorPlanFloorV2, vertexId: string): boolean 
       const geometry = annotation.geometry;
       return (
         (geometry.kind === "point" && geometry.vertexId === vertexId) ||
-        (geometry.kind === "polygon" && geometry.vertexIds.includes(vertexId))
+        ((geometry.kind === "polygon" || geometry.kind === "polyline") && geometry.vertexIds.includes(vertexId))
       );
     })
   ) {

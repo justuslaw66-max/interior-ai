@@ -1,0 +1,120 @@
+import path from "node:path";
+import os from "node:os";
+import fs from "node:fs/promises";
+import webpack from "webpack";
+import { test, expect, type Page } from "@playwright/test";
+
+let bundle: string;
+test.beforeAll(async () => {
+  const output = await fs.mkdtemp(path.join(os.tmpdir(), "scan-plan-artwork-component-"));
+  bundle = path.join(output, "review.js");
+  const compiler = webpack({ mode: "production", target: "web", devtool: false, cache: false,
+    entry: path.resolve("tests/scan-to-editable-plan/traced-artwork-entry.tsx"),
+    output: { path: output, filename: "review.js" },
+    resolve: { extensions: [".tsx", ".ts", ".js"], alias: { "@": process.cwd() } },
+    module: { rules: [{ test: /\.[jt]sx?$/, exclude: /node_modules/, use: path.resolve("scripts/guest-save-overlay-ts-loader.mjs") }] },
+    plugins: [new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("production") })],
+    optimization: { minimize: false }, performance: { hints: false },
+  });
+  await new Promise<void>((resolve, reject) => compiler.run((error, stats) => {
+    compiler.close(() => undefined);
+    if (error || stats?.hasErrors()) reject(error ?? new Error(stats?.toString({ all: false, errors: true })));
+    else resolve();
+  }));
+});
+test.afterAll(async () => { if (bundle) await fs.rm(path.dirname(bundle), { recursive: true, force: true }); });
+
+async function mountArtwork(page: Page) {
+  await page.route("**/scan-plan-component", (route) => route.fulfill({ contentType: "text/html", body:
+    '<!doctype html><html><head><title>Source artwork fixture</title><style>body{font-family:Arial}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}.h-full{height:100%}.w-full{width:100%}svg{display:block}output{display:none}.pointer-events-none{pointer-events:none}label,button{margin:4px}[data-testid="source-review-scroll"]{max-height:72vh;overflow:auto}</style></head><body></body></html>' }));
+  await page.route("**/api/floor-plan-imports/**/assets/**", (route) => route.fulfill({ contentType: "image/svg+xml", body:
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="white"/></svg>' }));
+  await page.goto("/scan-plan-component");
+  await page.addScriptTag({ path: bundle });
+}
+
+test("Review layers reduce clutter without deleting evidence or hiding a focused proposal", async ({ page }, info) => {
+  await mountArtwork(page);
+  const before = await page.getByTestId("fixture-document").innerText();
+  const layer = page.getByLabel("Review overlay", { exact: true });
+  const marks = page.locator('[data-review-entity-id][role="button"]');
+  await expect(layer).toHaveValue("selected"); await expect(marks).toHaveCount(0);
+  for (const [value, count] of [["boundary", 2], ["opening", 1], ["dimension", 1], ["text", 2], ["all", 9]] as const) {
+    await layer.selectOption(value); await expect(marks).toHaveCount(count);
+    if (value === "opening") await expect(page.locator('[data-review-entity-id="source-proposal:1:opening:1"]')).toHaveCount(0);
+  }
+  await expect(page.getByText(/Diagnostic view includes overlapping/)).toBeVisible();
+  await layer.selectOption("selected");
+  await page.getByRole("button", { name: "Show curve issue", exact: true }).click();
+  await expect(marks).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Source stroke curve", exact: true })).toHaveAttribute("aria-pressed", "true");
+  expect(await page.getByTestId("fixture-document").innerText()).toBe(before);
+  await fs.writeFile(info.outputPath("layer-retention.json"), JSON.stringify({ count: 9, defaultVisible: 0, focusedVisible: 1, documentUnchanged: true }));
+});
+
+test("Reference artwork selection, text correction, calibration and local component reload", async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await mountArtwork(page);
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("all");
+  const drawing = page.getByRole("group", { name: "Detected rooms and walls" });
+  await drawing.getByRole("button", { name: "Source text: Uncertain room text" }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByLabel("Correct source text").fill("Reviewed room text");
+  await page.getByRole("button", { name: "Save text correction" }).click();
+  await expect(drawing.getByRole("button", { name: "Source text: Reviewed room text" })).toBeVisible();
+  const before = JSON.parse(await page.getByTestId("fixture-document").innerText());
+  await page.getByRole("button", { name: "Apply fixture calibration" }).click();
+  const after = JSON.parse(await page.getByTestId("fixture-document").innerText());
+  expect(after.floors[0].annotations).toEqual(before.floors[0].annotations);
+  expect(after.floors[0].walls).toEqual([]);
+  expect(after.verification.tier).toBe("needs_review");
+  const curve = drawing.locator("path[data-source-artwork-shape][d^='M 100 200 C']");
+  const target = await curve.evaluate((element) => {
+    const path = element as SVGPathElement;
+    const point = path.getPointAtLength(path.getTotalLength() / 2).matrixTransform(path.getScreenCTM()!);
+    return { x: point.x, y: point.y };
+  });
+  await page.mouse.click(target.x, target.y);
+  await expect(drawing.getByRole("button", { name: "Source stroke curve", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(drawing.locator("path[data-source-artwork-shape][d^='M 100 200 C']")).toHaveCount(1);
+  await page.screenshot({ path: info.outputPath("source-artwork.png") });
+  await page.reload();
+  await page.addScriptTag({ path: bundle });
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("text");
+  await expect(page.getByRole("button", { name: "Source text: Reviewed room text" })).toBeVisible();
+  expect(JSON.parse(await page.getByTestId("fixture-document").innerText())).toEqual(after);
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("selected");
+  const focusButton = page.getByRole("button", { name: "Show source text issue", exact: true });
+  await focusButton.focus(); await page.keyboard.press("Enter");
+  const scroll = page.getByTestId("source-review-scroll");
+  const evidenceVisible = (id: string) => scroll.evaluate((element, id) => {
+    const box = element.getBoundingClientRect(), evidence = element.querySelector(`[data-review-entity-id="${id}"]`)!.getBoundingClientRect();
+    return evidence.left >= box.left && evidence.right <= box.right && evidence.top >= box.top && evidence.bottom <= box.bottom;
+  }, id);
+  await expect.poll(() => evidenceVisible("far-text")).toBe(true);
+  await expect(focusButton).toBeFocused();
+  await expect(page.getByText("400%", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Toggle measurement picking" }).click();
+  const pick = page.getByRole("group", { name: "Pick two scale points on your floor plan" });
+  const screenPoint = await pick.evaluate((svg) => {
+    svg.addEventListener("click", (event) => {
+      const input = event as MouseEvent, element = svg as SVGSVGElement;
+      const source = new DOMPoint(input.clientX, input.clientY).matrixTransform(element.getScreenCTM()!.inverse());
+      svg.setAttribute("data-observed-click", JSON.stringify({ clientX: input.clientX, clientY: input.clientY, x: Math.round(source.x * 10) / 10, y: Math.round(source.y * 10) / 10 }));
+    }, { capture: true, once: true });
+    const box = svg.getBoundingClientRect(); return { x: box.left + 700 / 800 * box.width, y: box.top + 535 / 600 * box.height };
+  });
+  await page.mouse.click(screenPoint.x, screenPoint.y);
+  const native = JSON.parse((await pick.getAttribute("data-observed-click"))!);
+  expect(Math.hypot(native.clientX - screenPoint.x, native.clientY - screenPoint.y)).toBeLessThanOrEqual(1.5);
+  await expect.poll(async () => JSON.parse(await page.getByTestId("fixture-picked-points").innerText())).toEqual([{ x: native.x, y: native.y }]);
+  await fs.writeFile(info.outputPath("zoom-click-evidence.json"), JSON.stringify({ requested: screenPoint, native, checks: ["native event mapped with SVG inverse screen CTM", "exact 0.1-source-pixel stored point", "original 1.5-CSS-pixel input tolerance"] }, null, 2));
+  await page.getByRole("button", { name: "Show curve issue", exact: true }).click();
+  await expect.poll(() => evidenceVisible("curve")).toBe(true);
+  expect(JSON.parse(await page.getByTestId("fixture-document").innerText())).toEqual(after);
+  await page.screenshot({ path: info.outputPath("focused-source-evidence.png") });
+  await page.getByRole("button", { name: "Fit", exact: true }).click();
+  await expect(page.getByText("100%", { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});

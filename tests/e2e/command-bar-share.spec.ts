@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { waitForEditorHydration } from "./variant-test-utils";
 
 // The command bar's Share button (audit finding SX1): guests are asked to sign in, and a
 // signed-in user's new design is saved before its link is created and copied.
@@ -36,6 +37,7 @@ async function openEditor(page: Page, signedIn: boolean) {
   });
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await waitForEditorHydration(page);
   const share = page.getByTestId("editor-command-share");
   await expect(share).toBeVisible();
   await expect(share).toHaveAccessibleName("Share");
@@ -110,6 +112,8 @@ const clipboardWrites = (page: Page) =>
 test.describe("command bar Share", () => {
   test("asks guests to sign in and returns focus to Share", async ({ page }) => {
     const share = await openEditor(page, false);
+    // Sign in shows once the session is known to be empty.
+    await expect(page.getByTestId("editor-command-sign-in")).toBeVisible({ timeout: 20_000 });
     await share.click();
 
     const prompt = page.getByRole("dialog", { name: "Sign in to share this design" });

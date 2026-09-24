@@ -4,7 +4,7 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 
 export type DesignPageViewportOpening = Pick<
   RoomOpening2D,
-  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "offsetMm" | "evidence"
+  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "offsetMm" | "evidence" | "canonicalHost"
 > & {
   wallSpanMeters: number;
 };
@@ -56,7 +56,7 @@ export function resolveDesignPageOpeningViewportState(
   return {
     toolbar: {
       kind: opening.kind,
-      wall: opening.wall,
+      wall: opening.canonicalHost ? "Selected wall" : opening.wall,
       widthMm: opening.widthMm,
       maxWidthMm,
     },
@@ -83,5 +83,14 @@ export function resolveDesignPageOpeningViewportState(
       maxOffsetMm: Math.max(0, (opening.wallSpanMeters * 1000 - opening.widthMm) / 2),
       ...openingEvidenceState(opening),
     },
+  };
+}
+
+export function projectDesignPageViewportOpening(opening: Omit<DesignPageViewportOpening, "wallSpanMeters"> | null, wallSpanMeters: number): DesignPageViewportOpening | null {
+  if (!opening) return null;
+  return { id: opening.id, kind: opening.kind, wall: opening.wall,
+    widthMm: opening.widthMm, heightMm: opening.heightMm, bottomMm: opening.bottomMm,
+    offsetMm: opening.offsetMm, evidence: opening.evidence, wallSpanMeters,
+    ...(opening.canonicalHost ? { canonicalHost: opening.canonicalHost } : {}),
   };
 }

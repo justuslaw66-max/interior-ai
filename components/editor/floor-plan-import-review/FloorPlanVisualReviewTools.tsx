@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanReviewIssue } from "@/lib/floor-plan-imports/types";
+import { expandFloorPlanReviewFocus, floorPlanReviewPage, resolveFloorPlanReviewTarget } from "@/lib/floor-plan-review-target";
+import { FloorPlanReviewIssueAction } from "./FloorPlanReviewIssueAction";
 import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
+import FloorPlanPhotoCorrectionPanel from "./FloorPlanPhotoCorrectionPanel";
+import FloorPlanPendingSpanReview from "./FloorPlanPendingSpanReview";
 import FloorPlanOpeningTracePanel from "./FloorPlanOpeningTracePanel";
 import FloorPlanOrientationReviewPanel from "./FloorPlanOrientationReviewPanel";
 import FloorPlanRoomTracePanel from "./FloorPlanRoomTracePanel";
@@ -18,6 +23,7 @@ type FloorPlanVisualReviewToolsProps = {
     "id" | "adapterId" | "renderedPagesJson"
   >;
   focusedIssueEntityIds: string[];
+  focusedIssue?: FloorPlanReviewIssue | null;
   onChange: (value: FloorPlanDocumentV2) => void;
   assetRoutePrefix?: string;
   guidedLayout?: boolean;
@@ -35,6 +41,7 @@ export default function FloorPlanVisualReviewTools({
   document,
   job,
   focusedIssueEntityIds,
+  focusedIssue,
   onChange,
   assetRoutePrefix,
   guidedLayout = false,
@@ -48,10 +55,9 @@ export default function FloorPlanVisualReviewTools({
   disabled = false,
 }: FloorPlanVisualReviewToolsProps) {
   const floor = document.floors[0];
-  const initialPage =
-    floor?.calibrations[0]?.pageNumber ??
-    job.renderedPagesJson[0]?.pageNumber ??
-    1;
+  const root = useRef<HTMLDivElement>(null);
+  const reviewTarget = resolveFloorPlanReviewTarget(document, job.renderedPagesJson, focusedIssue);
+  const initialPage = reviewTarget?.pageNumber ?? floor?.calibrations[0]?.pageNumber ?? job.renderedPagesJson[0]?.pageNumber ?? 1;
   const [pageNumber, setPageNumber] = useState(initialPage);
   const [pickingScale, setPickingScale] = useState(false);
   const [scalePoints, setScalePoints] = useState<ReviewSourcePoint[]>([]);
@@ -61,35 +67,27 @@ export default function FloorPlanVisualReviewTools({
   const [openingPoints, setOpeningPoints] = useState<ReviewSourcePoint[]>([]);
   const [focusedCorrectionIds, setFocusedCorrectionIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const page =
-    job.renderedPagesJson.find((entry) => entry.pageNumber === pageNumber) ??
-    job.renderedPagesJson[0] ??
-    null;
-  const fallbackSourceId =
-    floor?.calibrations[0]?.sourceId ?? document.sources[0]?.id ?? "";
-  const sourceId =
-    floor?.calibrations.find((entry) => entry.pageNumber === page?.pageNumber)
-      ?.sourceId ?? fallbackSourceId;
-  const calibration = floor?.calibrations.find(
-    (entry) =>
-      entry.sourceId === sourceId && entry.pageNumber === page?.pageNumber
-  );
+  const { page, sourceId, calibration } = floorPlanReviewPage(document, job.renderedPagesJson, pageNumber);
+  const focusKey = `${focusedIssue?.id ?? ""}:${reviewTarget?.pageNumber ?? ""}`;
+  const [previousFocus, setPreviousFocus] = useState(focusKey);
+  if (previousFocus !== focusKey) {
+    setPreviousFocus(focusKey);
+    setFocusedCorrectionIds([]);
+    if (reviewTarget?.pageNumber) setPageNumber(reviewTarget.pageNumber);
+    setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
+    setPickingScale(false); setPickingRoom(false); setPickingOpening(false);
+  }
   if (!floor) return null;
 
-  const expandedIssueFocus = new Set(focusedIssueEntityIds);
-  for (const room of floor.rooms) {
-    if (!expandedIssueFocus.has(room.id)) continue;
-    for (const loop of room.wallLoops) {
-      for (const wall of loop.walls) expandedIssueFocus.add(wall.wallId);
-    }
-  }
-  const focusedEntityIds = [
-    ...new Set([...expandedIssueFocus, ...focusedCorrectionIds]),
-  ];
+  const pick=(kind:"scale"|"room"|"opening",value=true)=> {
+    setPickingScale(kind==="scale"&&value);setPickingRoom(kind==="room"&&value);setPickingOpening(kind==="opening"&&value);
+  };
+  const focusedEntityIds = expandFloorPlanReviewFocus(floor, focusedIssueEntityIds, focusedCorrectionIds);
 
   const canvas = (
+    <>
       <FloorPlanSourceReviewCanvas
-        document={document}
+        document={document} onDocumentChange={onChange} disabled={disabled} previewOnly={previewOnly}
         floorId={floor.id}
         sourceId={sourceId}
         jobId={job.id}
@@ -98,20 +96,16 @@ export default function FloorPlanVisualReviewTools({
         pageNumber={page?.pageNumber ?? pageNumber}
         onPageNumberChange={(value) => {
           setPageNumber(value);
-          setScalePoints([]);
-          setRoomPoints([]);
-          setOpeningPoints([]);
+          setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
         }}
         focusedEntityIds={focusedEntityIds}
-        pickingScale={pickingScale}
-        scalePoints={scalePoints}
+        pickingScale={pickingScale} scalePoints={scalePoints} onUseScaleEndpoints={setScalePoints}
         onSourcePoint={(point) =>
           setScalePoints((current) =>
             current.length >= 2 ? [point] : [...current, point]
           )
         }
-        pickingRoom={pickingRoom}
-        roomPoints={roomPoints}
+        pickingRoom={pickingRoom} roomPoints={roomPoints}
         onRoomPoint={(point) => setRoomPoints((current) => [...current, point])}
         pickingOpening={pickingOpening}
         openingPoints={openingPoints}
@@ -123,10 +117,18 @@ export default function FloorPlanVisualReviewTools({
         assetRoutePrefix={assetRoutePrefix}
         dark={dark}
       />
+      {!previewOnly && <FloorPlanReviewIssueAction target={reviewTarget} root={root} disabled={disabled} />}
+    </>
   );
   const primaryControls = (
     <>
-      <FloorPlanScaleReviewPanel
+      <FloorPlanPhotoCorrectionPanel key={`photo:${sourceId}:${pageNumber}`} document={document} floorId={floor.id}
+        sourceId={sourceId} jobId={job.id} page={page} calibration={calibration} scalePoints={scalePoints}
+        onPicking={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} assetRoutePrefix={assetRoutePrefix} disabled={disabled}/>
+      <FloorPlanPendingSpanReview key={`spans:${sourceId}:${pageNumber}`} document={document} floorId={floor.id} sourceId={sourceId}
+        page={page} points={scalePoints} onPick={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} disabled={disabled}
+        onSelect={(id,points)=>{setFocusedCorrectionIds(id?[id]:[]);setScalePoints(points);pick("scale",false);}}/>
+      <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}`}
         document={document}
         floorId={floor.id}
         sourceId={sourceId}
@@ -134,13 +136,7 @@ export default function FloorPlanVisualReviewTools({
         calibration={calibration}
         pickingScale={pickingScale}
         scalePoints={scalePoints}
-        onPickingScaleChange={(value) => {
-          setPickingScale(value);
-          if (value) {
-            setPickingRoom(false);
-            setPickingOpening(false);
-          }
-        }}
+        onPickingScaleChange={(value)=>pick("scale",value)}
         onScalePointsChange={setScalePoints}
         onChange={onChange}
         onError={setError}
@@ -156,13 +152,7 @@ export default function FloorPlanVisualReviewTools({
         floorId={floor.id}
         onChange={onChange}
         onError={setError}
-        onPickingRoomChange={(value) => {
-          setPickingRoom(value);
-          if (value) {
-            setPickingScale(false);
-            setPickingOpening(false);
-          }
-        }}
+        onPickingRoomChange={(value)=>pick("room",value)}
         onRoomPointsChange={setRoomPoints}
         pageNumber={page?.pageNumber ?? null}
         pickingRoom={pickingRoom}
@@ -178,13 +168,7 @@ export default function FloorPlanVisualReviewTools({
         onChange={onChange}
         onError={setError}
         onOpeningPointsChange={setOpeningPoints}
-        onPickingOpeningChange={(value) => {
-          setPickingOpening(value);
-          if (value) {
-            setPickingScale(false);
-            setPickingRoom(false);
-          }
-        }}
+        onPickingOpeningChange={(value)=>pick("opening",value)}
         openingPoints={openingPoints}
         pageNumber={page?.pageNumber ?? null}
         pickingOpening={pickingOpening}
@@ -195,8 +179,7 @@ export default function FloorPlanVisualReviewTools({
           Advanced corrections (only if the outline is wrong)
         </summary>
         <p className="mt-2 text-[10px] leading-4 text-neutral-500">
-          Most uploads do not need these controls. Use them only to repair a
-          specific wall, opening, structural object, dimension, or orientation.
+          Most uploads do not need these controls. Use them only to repair a specific wall, opening, structural object, dimension, or orientation.
         </p>
         <FloorPlanTopologyCorrectionPanel
           document={document}
@@ -227,7 +210,7 @@ export default function FloorPlanVisualReviewTools({
 
   if (consumerMode) {
     return (
-      <>
+      <div ref={root}>
         {canvas}
         <details
           id="floor-plan-manual-tools"
@@ -258,21 +241,21 @@ export default function FloorPlanVisualReviewTools({
           </p>
           {primaryControls}
         </details>
-      </>
+      </div>
     );
   }
 
   if (!guidedLayout) {
     return (
-      <>
+      <div ref={root}>
         {canvas}
         {primaryControls}
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,0.7fr)]">
+    <div ref={root} className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,0.7fr)]">
       <div className="min-w-0 xl:sticky xl:top-4">{canvas}</div>
       <aside className="min-w-0 rounded-xl border bg-neutral-50 p-3 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
         <div className="rounded-lg bg-white p-3 text-xs leading-5 text-neutral-700">

@@ -2,6 +2,7 @@ import type {
   FloorPlanDocumentV2,
   FloorPlanEntityProvenanceV2,
   FloorPlanFloorV2,
+  FloorPlanAnnotationV2,
 } from "@/lib/floor-plan-document-v2";
 import { hashCanonicalJson } from "./json";
 import {
@@ -78,6 +79,24 @@ function sanitizeEntities<T extends ReviewableEntity>(input: {
   });
 }
 
+function sanitizeAnnotations(input: {
+  current: FloorPlanAnnotationV2[]; next: FloorPlanAnnotationV2[];
+  sourceId: string; userId: string; at: string; note: string; pageNumber?: number;
+}): FloorPlanAnnotationV2[] {
+  const currentById=new Map(input.current.map(a=>[a.id,a]));
+  return sanitizeEntities(input).map(annotation=>{
+    const current=currentById.get(annotation.id);
+    if(annotation.scope!=="reference"||annotation.geometry.kind!=="source_drawing"||isUnchanged(current,annotation))return annotation;
+    const note=`Source reference corrected only; geometry remains unconfirmed. ${annotation.text.slice(0,500)}`;
+    const recorded=userConfirmedProvenance({...input,pageNumber:annotation.geometry.pageNumber,note});
+    // Preserve server-held history, never accept client-supplied evidence or reviewer identity.
+    const prior=current?.scope==="reference"?current.provenance:undefined;
+    return {...annotation,provenance:{confidence:0,extractionVersion:"consumer-source-review-1",
+      evidence:[...(prior?.evidence??[]),{...recorded.evidence[0],confidence:0}],
+      reviewHistory:[...(prior?.reviewHistory??[]),{...recorded.reviewHistory[0],action:"corrected" as const}]}};
+  });
+}
+
 function sanitizeFloor(input: {
   current: FloorPlanFloorV2 | undefined;
   next: FloorPlanFloorV2;
@@ -126,7 +145,7 @@ function sanitizeFloor(input: {
     rooms: sanitizeEntities({ current: current?.rooms ?? [], next: input.next.rooms, ...entityInput }),
     openings: sanitizeEntities({ current: current?.openings ?? [], next: input.next.openings, ...entityInput }),
     structures: sanitizeEntities({ current: current?.structures ?? [], next: input.next.structures, ...entityInput }),
-    annotations: sanitizeEntities({ current: current?.annotations ?? [], next: input.next.annotations, ...entityInput }),
+    annotations: sanitizeAnnotations({ current: current?.annotations ?? [], next: input.next.annotations, ...entityInput }),
     dimensions: sanitizeEntities({ current: current?.dimensions ?? [], next: input.next.dimensions, ...entityInput }),
   };
 }
