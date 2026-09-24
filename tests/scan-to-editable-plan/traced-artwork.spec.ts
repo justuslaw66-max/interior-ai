@@ -9,7 +9,7 @@ test.beforeAll(async () => {
   const output = await fs.mkdtemp(path.join(os.tmpdir(), "scan-plan-artwork-component-"));
   bundle = path.join(output, "review.js");
   const compiler = webpack({ mode: "production", target: "web", devtool: false, cache: false,
-    entry: path.resolve("tests/scan-to-editable-plan/source-artwork-entry.tsx"),
+    entry: path.resolve("tests/scan-to-editable-plan/traced-artwork-entry.tsx"),
     output: { path: output, filename: "review.js" },
     resolve: { extensions: [".tsx", ".ts", ".js"], alias: { "@": process.cwd() } },
     module: { rules: [{ test: /\.[jt]sx?$/, exclude: /node_modules/, use: path.resolve("scripts/guest-save-overlay-ts-loader.mjs") }] },
