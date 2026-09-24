@@ -37,6 +37,8 @@ export type UseDesignPagePresentationQaFacadeInput = {
       isClientPreview: boolean;
       isDesigner: boolean;
       authenticated: boolean;
+      /** The session has loaded (Sign in or Account), and the plan has (Get Pro). */
+      accountReady: boolean; planLoaded: boolean; accountName: string | null;
       plan: DesignPageBetaFeedbackInput["editor"]["plan"];
       aiDesignEnabled: boolean;
       canUndo: ChromeCommandState["canUndo"];
@@ -158,7 +160,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       deleteItem: CommandActions["deleteItem"];
     };
     navigation: Omit<ChromeActions["navigation"], "changeViewMode" | "fitPlan">;
-    dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "openNewPlan" | "setFeedbackOpen" | "setDownloadOpen">;
+    dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "setPlansOpenerId" | "openNewPlan" | "setFeedbackOpen" | "setDownloadOpen">;
     billing: ChromeActions["billing"];
     persistence: ChromeActions["persistence"];
     room: ChromeActions["room"];
@@ -359,6 +361,7 @@ export function useDesignPagePresentationQaFacade({
           viewMode: state.editor.viewMode,
           isDesigner: state.editor.isDesigner,
           isAuthed: state.editor.authenticated,
+          accountReady: state.editor.accountReady, accountName: state.editor.accountName, canUpgrade: state.editor.planLoaded && !editorCapabilities.manageSubscription,
           planLabel: getEditorPlanLabel(state.editor.plan),
           canManageBilling: editorCapabilities.manageSubscription,
           isOpeningBillingPortal: state.chrome.openingBillingPortal,
@@ -391,10 +394,7 @@ export function useDesignPagePresentationQaFacade({
                 : null,
             }
           : null,
-        scenePerformance: {
-          mode: state.scene.mode,
-          liteEnabled: state.scene.liteEnabled,
-        },
+        scenePerformance: { mode: state.scene.mode, liteEnabled: state.scene.liteEnabled },
         sceneLighting: {
           settings: state.presentation.lightingSettings,
           liteEnabled: state.scene.liteEnabled,

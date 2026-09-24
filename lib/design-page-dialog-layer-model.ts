@@ -26,6 +26,7 @@ type UpgradeModel = {
 
 type PlansModel = {
   open: PlansState["open"];
+  openerId: PlansState["openerId"];
   layout: PlansState["layout"];
   openingBillingPortal: PlansState["openingBillingPortal"];
   monthlyLabel: PlansState["monthlyLabel"];
@@ -243,7 +244,7 @@ export function buildDesignPageDialogLayerModel({
       guestSave,
       plans: {
         state: {
-          open: billing.plans.open, openedFromUpgrade: billing.upgrade.open,
+          open: billing.plans.open, openedFromUpgrade: billing.upgrade.open, openerId: billing.plans.openerId,
           layout: billing.plans.layout,
           proActive: access.capabilities.manageSubscription,
           startingCheckout: billing.startingCheckout,

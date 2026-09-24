@@ -19,7 +19,7 @@ import type { DesignPageUpgradeReason } from "@/lib/useDesignPagePaywallTelemetr
 
 /** Owns route-bound inputs and local shell state before editor runtimes mount. */
 export function useDesignPageCoreShellBaseRegistration() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -41,12 +41,12 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [aiSeed, setAiSeed] = useState<number>(() => Date.now());
   const [plan, setPlan] = useState<Plan>("free");
   const [showPlans, setShowPlans] = useState(false);
+  const [plansOpenerId, setPlansOpenerId] = useState<string | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<DesignPageUpgradeReason>(null);
-  const [upgradeCtaVariant, setUpgradeCtaVariant] =
-    useState<UpgradeCtaVariant>("unlock_pro_exports");
+  const [upgradeCtaVariant, setUpgradeCtaVariant] = useState<UpgradeCtaVariant>("unlock_pro_exports");
   const [pricingLayoutVariant, setPricingLayoutVariant] =
     useState<PricingLayoutVariant>("default");
   const [showGrid, setShowGrid] = useState(false);
@@ -81,10 +81,10 @@ export function useDesignPageCoreShellBaseRegistration() {
   return {
     boundaries: { importedModels: importedModelsWorkspace },
     state: {
-      identity: { session, designId, shareToken, shareEnabled },
+      identity: { session, sessionStatus, designId, shareToken, shareEnabled },
       brief: { style, budget, mode, notes, aiSeed },
       access: { plan, clientPreview },
-      dialogs: { showPlans, feedbackOpen, downloadOpen, showUpgrade },
+      dialogs: { showPlans, plansOpenerId, feedbackOpen, downloadOpen, showUpgrade },
       paywall: {
         upgradeReason,
         upgradeCtaVariant,
@@ -123,7 +123,7 @@ export function useDesignPageCoreShellBaseRegistration() {
       identity: { setDesignId, setShareToken, setShareEnabled },
       brief: { setStyle, setBudget, setMode, setNotes, setAiSeed },
       access: { setPlan, setClientPreview },
-      dialogs: { setShowPlans, setFeedbackOpen, setDownloadOpen, setShowUpgrade },
+      dialogs: { setShowPlans, setPlansOpenerId, setFeedbackOpen, setDownloadOpen, setShowUpgrade },
       paywall: {
         setUpgradeReason,
         setUpgradeCtaVariant,

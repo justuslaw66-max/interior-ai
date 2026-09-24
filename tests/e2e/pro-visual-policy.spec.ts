@@ -1749,8 +1749,9 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("upgrade-dialog")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
-    await page.getByTestId("editor-command-account").click();
+    // Guests sign in from the bar; they have no Account menu.
     await expect(page.getByTestId("editor-command-sign-in")).toBeVisible();
+    await expect(page.getByTestId("editor-command-account")).toHaveCount(0);
     await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
   });
 

@@ -10,6 +10,7 @@ import type {
 } from "@/components/editor/design-page/DesignPageEditorChrome";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
+import { PLANS_GET_PRO_OPENER_ID } from "@/lib/plans-dialog-focus";
 
 type CommandBarActions = DesignPageEditorChromeActions["commandBar"]["commandBar"];
 type RoomActions = DesignPageEditorChromeActions["commandBar"]["room"];
@@ -54,6 +55,8 @@ export type UseDesignPageEditorChromeControllerInput = {
     };
     dialogs: {
       setPlansOpen: Dispatch<SetStateAction<boolean>>;
+      /** Pricing returns focus to this control when it closes; null means Account, then More. */
+      setPlansOpenerId: (id: string | null) => void;
       openNewPlan: CommandBarActions["onNewPlan"];
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
       setDownloadOpen: Dispatch<SetStateAction<boolean>>;
@@ -115,11 +118,10 @@ export function useDesignPageEditorChromeController({
     );
   };
 
-  const toggleClientPreview = () => {
-    actions.editor.setClientPreview((visible) => !visible);
-  };
+  const toggleClientPreview = () => { actions.editor.setClientPreview((visible) => !visible); };
 
-  const openPlans = () => { actions.dialogs.setPlansOpen(true); };
+  const openPlans = () => { actions.dialogs.setPlansOpenerId(null); actions.dialogs.setPlansOpen(true); };
+  const getPro = () => { actions.dialogs.setPlansOpenerId(PLANS_GET_PRO_OPENER_ID); actions.dialogs.setPlansOpen(true); };
 
   const manageBilling = () => { void actions.billing.openPortal(); };
 
@@ -201,7 +203,7 @@ export function useDesignPageEditorChromeController({
           onViewModeChange: actions.navigation.changeViewMode,
           onToggleDesignerMode: toggleDesignerMode,
           onToggleClientPreview: toggleClientPreview,
-          onViewPlans: openPlans,
+          onViewPlans: openPlans, onGetPro: getPro,
           onNewPlan: actions.dialogs.openNewPlan,
           onManageBilling: manageBilling,
           onFeedback: openFeedback,

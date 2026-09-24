@@ -4,6 +4,7 @@ import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBarAccountMenu";
 import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
 import { CommandBarDownloadButton } from "@/components/editor/command-bar/CommandBarDownloadButton";
+import { CommandBarGetProButton } from "@/components/editor/command-bar/CommandBarGetProButton";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
 import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBarSaveButton";
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
@@ -22,6 +23,8 @@ type EditorCommandBarProps = {
   viewMode: EditorViewMode;
   isDesigner: boolean;
   isAuthed: boolean;
+  /** The account corner waits for the session; Get Pro also waits for the plan, then shows unless it is Pro. */
+  accountReady: boolean; accountName: string | null; canUpgrade: boolean; onGetPro?: () => void;
   planLabel: string;
   canManageBilling: boolean;
   isOpeningBillingPortal: boolean;
@@ -65,7 +68,7 @@ export default function EditorCommandBar({
   editorMode,
   viewMode,
   isDesigner,
-  isAuthed,
+  isAuthed, accountReady, accountName, canUpgrade, onGetPro,
   planLabel,
   canManageBilling,
   isOpeningBillingPortal,
@@ -220,6 +223,7 @@ export default function EditorCommandBar({
       </div>
 
       <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
+        <CommandBarGetProButton dark={dark} accountReady={accountReady} canUpgrade={canUpgrade} onGetPro={onGetPro} />
         <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
         <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
         <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
@@ -229,10 +233,7 @@ export default function EditorCommandBar({
           containerRef={overflowRef}
           buttonRef={moreButtonRef}
           open={overflowOpen}
-          onToggle={() => {
-            setOverflowOpen((value) => !value);
-            setAccountOpen(false);
-          }}
+          onToggle={() => { setOverflowOpen((value) => !value); setAccountOpen(false); }}
           onClose={() => setOverflowOpen(false)}
           menuButtonClass={menuButtonClass}
           menuPanelClass={menuPanelClass}
@@ -261,12 +262,9 @@ export default function EditorCommandBar({
           onClose={() => setAccountOpen(false)}
           menuButtonClass={menuButtonClass}
           menuPanelClass={menuPanelClass}
-          isAuthed={isAuthed}
-          planLabel={planLabel}
-          canManageBilling={canManageBilling}
-          isOpeningBillingPortal={isOpeningBillingPortal}
-          onManageBilling={onManageBilling}
-          onViewPlans={onViewPlans}
+          isAuthed={isAuthed} accountReady={accountReady} accountName={accountName} planLabel={planLabel}
+          canManageBilling={canManageBilling} isOpeningBillingPortal={isOpeningBillingPortal}
+          onManageBilling={onManageBilling} onViewPlans={onViewPlans}
         />
       </div>
       {lightingSettingsSlot ? (

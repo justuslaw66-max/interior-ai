@@ -96,7 +96,8 @@ assert.match(
 const workspace = read("components/editor/design-page/DesignPageWorkspace.tsx");
 assert.match(workspace, /onDownloadImages: \(\) => presentationBackupRegistration\.actions\.exportImages\(\{ limitsShown: true \}\)/);
 assert.match(workspace, /onDownloadPdf: \(\) => presentationBackupRegistration\.actions\.exportPdf\(\{ limitsShown: true \}\)/);
-assert.match(workspace, /onSignIn: signInWithReturn, onSeePricing: \(\) => setShowPlans\(true\)/);
+assert.match(workspace, /onSeePricing: \(\) => \{ setPlansOpenerId\(EDITOR_DOWNLOAD_OPENER_ID\); setShowPlans\(true\); \}/,
+  "Pricing from the Download note returns focus to Download.");
 assert.match(read("lib/design-page-dialog-layer-model.ts"), /freeLimits: !access\.capabilities\.exportWithoutWatermark,/,
   "The Free note follows the export capability, not a plan check.");
 assert.match(read("lib/design-page-dialog-layer-adapter.ts"), /download: dialogs\.download,/,

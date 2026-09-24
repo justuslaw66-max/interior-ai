@@ -9,7 +9,8 @@ const CLOSED_CONTROL_TEST_IDS = [
   "save-status",
   "save-design",
   "editor-command-overflow",
-  "editor-command-account",
+  // Both tests run as guests, whose account corner is Sign in.
+  "editor-command-sign-in",
 ] as const;
 
 async function mockProPlan(page: Page) {
@@ -115,11 +116,8 @@ test.describe("compact top toolbar", () => {
       page.getByTestId("editor-command-overflow-menu"),
     );
     await page.keyboard.press("Escape");
-    await page.getByTestId("editor-command-account").click();
-    await expectMenuRowsStayComfortable(
-      page.getByTestId("editor-command-account-menu"),
-    );
-    await page.keyboard.press("Escape");
+    // Free guests get Get Pro beside Sign in, at the bar's 30px height.
+    await expect(page.getByTestId("editor-command-get-pro")).toHaveCSS("height", "30px");
 
     await page.setViewportSize({ width: 900, height: 800 });
     await expectCompactToolbarGeometry(page);
