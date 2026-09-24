@@ -25,6 +25,17 @@ function releasePointer(event: ThreeEvent<PointerEvent>) {
   target.releasePointerCapture?.(event.pointerId);
 }
 
+// A move clamps the opening centre to [halfWidth, wallLengthMm - halfWidth]. On a wall no
+// longer than the opening itself that range is a single point, so the drag would capture the
+// pointer and never emit a different centre -- the stuck door 8bd6a150 refused in
+// RoomRenderer2D. Emitted centres are rounded to whole millimetres, so travel below one
+// millimetre commits nothing either.
+const MINIMUM_MOVE_TRAVEL_MM = 1;
+
+function openingCanMoveOnWall(wallLengthMm: number, widthMm: number) {
+  return wallLengthMm - widthMm >= MINIMUM_MOVE_TRAVEL_MM;
+}
+
 export function useCanonicalOpeningDrag({
   opening,
   wallStart,
@@ -92,7 +103,7 @@ export function useCanonicalOpeningDrag({
 
   const beginMove = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
-      if (!enabled) return;
+      if (!enabled || !openingCanMoveOnWall(wallLengthMm, opening.widthMm)) return;
       const pointer = pointerOffsetMm(event);
       if (pointer === null) return;
       event.stopPropagation();
@@ -104,7 +115,7 @@ export function useCanonicalOpeningDrag({
       };
       onDragStateChange?.(true, "move");
     },
-    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm, pointerOffsetMm]
+    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm, pointerOffsetMm, wallLengthMm]
   );
 
   const beginResize = useCallback(
