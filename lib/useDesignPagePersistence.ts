@@ -13,8 +13,6 @@ import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
-import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
-import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
@@ -43,6 +41,7 @@ import {
   useDesignPagePreserveCloudSave,
 } from "@/lib/useDesignPageExplicitCloudSaveController";
 import { useGuestSavePromptController } from "@/lib/useGuestSavePromptController";
+import { useDesignPageShareLink } from "@/lib/useDesignPageShareLink";
 
 export { sanitizeDesignPageSavedViews };
 export type { DesignPageCloudSaveConflictState };
@@ -181,11 +180,9 @@ export function useDesignPagePersistence({
   const [cloudSaveConflict, setCloudSaveConflict] =
     useState<DesignPageCloudSaveConflictState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [sharingDesign, setSharingDesign] = useState(false);
-  const [shareSuccessToast, setShareSuccessToast] = useState(false);
-  const [shareErrorToast, setShareErrorToast] = useState<string | null>(null);
-  const [shareLinkFallback, setShareLinkFallback] =
-    useState<{ designId: string; url: string } | null>(null);
+  const { state: shareLinkState, actions: shareLinkActions } =
+    useDesignPageShareLink({ designId, setShareToken, setShareEnabled });
+  const { resetShareLink } = shareLinkActions;
   const [showMyDesigns, setShowMyDesigns] = useState(false);
   const [myDesigns, setMyDesigns] = useState<SavedDesignSummary[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
@@ -390,10 +387,7 @@ export function useDesignPagePersistence({
     setLastLocalAutosaveAt(null);
     setLastLocalSaveError(null);
     setIsSaving(false);
-    setSharingDesign(false);
-    setShareSuccessToast(false);
-    setShareErrorToast(null);
-    setShareLinkFallback(null);
+    resetShareLink();
     setSavedViews([]);
     setNotes("");
     firstSaveRef.current = false;
@@ -406,6 +400,7 @@ export function useDesignPagePersistence({
     cloudWriteQueue,
     designLoadRequest,
     detachCloudBaseline,
+    resetShareLink,
     setDesignId,
     setNotes,
     setSavedViews,
@@ -575,57 +570,6 @@ export function useDesignPagePersistence({
     setShareToken,
     showRuleToast,
   ]);
-
-  const createShareLinkAndCopy = useCallback(async () => {
-    if (!designId) return;
-    setSharingDesign(true);
-    try {
-      const data = await designApi.share(designId);
-
-      setShareToken(data.shareToken);
-      setShareEnabled(true);
-      const shareUrl = `${window.location.origin}/share/${data.shareToken}`;
-
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareSuccessToast(true);
-        setTimeout(() => setShareSuccessToast(false), EDITOR_FEEDBACK_DURATION_MS.success);
-        track("share_link_copied", {
-          design_id: designId,
-          shared_context: true,
-        });
-      } catch (clipboardError) {
-        console.warn("Clipboard access denied, showing fallback modal:", clipboardError);
-        setShareLinkFallback({ designId, url: shareUrl });
-        track("share_link_created_fallback", {
-          design_id: designId,
-          shared_context: true,
-          error:
-            clipboardError instanceof Error
-              ? clipboardError.name
-              : String(clipboardError),
-        });
-      }
-    } catch (error) {
-      const errorMessage = userFacingErrorMessage(error, "Try again.");
-      setShareErrorToast(`Failed to create share link: ${errorMessage}`);
-      setTimeout(() => setShareErrorToast(null), EDITOR_FEEDBACK_DURATION_MS.error);
-    } finally {
-      setSharingDesign(false);
-    }
-  }, [designId, setShareEnabled, setShareToken]);
-
-  const closeShareLinkFallback = useCallback(() => {
-    setShareLinkFallback(null);
-  }, []);
-
-  const copyFallbackShareLink = useCallback((url: string, signal: AbortSignal) =>
-    copyFallbackShareLinkWithFeedback(url, signal, setShareSuccessToast, setShareErrorToast), []);
-
-  const openFallbackShareLink = useCallback((url: string) => {
-    window.open(url, "_blank");
-    setShareLinkFallback(null);
-  }, []);
 
   const { loadDesign, cancelDesignLoad } = useDesignPageCloudLoadController({
     baseline: cloudBaselineController.actions,
@@ -803,7 +747,6 @@ export function useDesignPagePersistence({
   }, [designId, enableShare, isDesigner, shareEnabled]);
 
   useEffect(() => {
-    setShareLinkFallback((current) => current?.designId === designId ? current : null);
     if (!designId) setIsSaving(false);
   }, [designId]);
 
@@ -1060,10 +1003,7 @@ export function useDesignPagePersistence({
       cloudSaveConflict,
       isSaving,
       saveStatus,
-      sharingDesign,
-      shareSuccessToast,
-      shareErrorToast,
-      shareLinkFallback: shareLinkFallback?.designId === designId ? shareLinkFallback.url : null,
+      ...shareLinkState,
       showMyDesigns,
       myDesigns,
       loadingDesigns,
@@ -1087,10 +1027,10 @@ export function useDesignPagePersistence({
       loadDesign: loadDesignAfterCancellingConflictCopy,
       cancelDesignLoad: cancelDesignTransitions,
       clearPersistedSnapshotFingerprint,
-      createShareLinkAndCopy,
-      closeShareLinkFallback,
-      copyFallbackShareLink,
-      openFallbackShareLink,
+      createShareLinkAndCopy: shareLinkActions.createShareLinkAndCopy,
+      closeShareLinkFallback: shareLinkActions.closeShareLinkFallback,
+      copyFallbackShareLink: shareLinkActions.copyFallbackShareLink,
+      openFallbackShareLink: shareLinkActions.openFallbackShareLink,
       toggleMyDesigns,
       closeMyDesigns,
       toggleSavedDesignSelection,

@@ -291,14 +291,14 @@ assert.match(
   "the fixed dialog layer must coordinate one nested parent/child ownership state"
 );
 
-const persistence = read("lib/useDesignPagePersistence.ts");
+const shareLink = read("lib/useDesignPageShareLink.ts");
 assert.match(
-  persistence,
+  shareLink,
   /setShareLinkFallback\(\{ designId, url: shareUrl \}\)/,
   "clipboard-failure fallback state must remain bound to the design that created the share URL"
 );
 assert.match(
-  persistence,
+  shareLink,
   /current\?\.designId === designId \? current : null/,
   "a project identity change must retire stale fallback state"
 );
