@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import { chooseStartTemplate } from "./variant-test-utils";
 
 const VIEWPORTS = [
   { name: "phone", width: 390, height: 844 },
@@ -31,12 +32,10 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
   );
   await newPlan.click();
 
-  const starterPlanPicker = page.getByTestId("starter-floor-plan-picker");
-  if (await starterPlanPicker.isVisible({ timeout: 1500 }).catch(() => false)) {
-    await page.getByTestId("apply-plan-template-studio").click();
-    await expect(page.getByTestId("new-plan-choice-dialog")).toBeVisible();
-    await page.getByTestId("new-plan-replace-current").click();
-  }
+  // New design opens Start a new design, and asks before replacing the current design.
+  await chooseStartTemplate(page, "studio");
+  await expect(page.getByTestId("new-plan-choice-dialog")).toBeVisible();
+  await page.getByTestId("new-plan-replace-current").click();
   await expect(page.getByTestId("room-plan-status")).toHaveCount(1, { timeout: 20000 });
   await page.getByRole("button", { name: "2D", exact: true }).click();
   await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();

@@ -108,6 +108,7 @@ export type BuildDesignPageDialogLayerModelInput = {
       data: TemplateChoiceData;
       actions: TemplateChoiceActions;
     };
+    startChooser: Dialogs["startChooser"];
   };
   ai: {
     notes: {
@@ -284,10 +285,7 @@ export function buildDesignPageDialogLayerModel({
       },
       catalogPlacement: {
         state: { ...placement.identity, ...placement.assessment },
-        configuration: {
-          activeRoomName: placement.activeRoomName,
-          nudgeStepMeters: 0.25,
-        },
+        configuration: { activeRoomName: placement.activeRoomName, nudgeStepMeters: 0.25 },
         actions: placement.actions,
       },
       planTemplateChoice: {
@@ -295,6 +293,7 @@ export function buildDesignPageDialogLayerModel({
         isAuthenticated: access.isAuthenticated,
         ...persistence.templateChoice.actions,
       },
+      startChooser: persistence.startChooser,
     },
     overlays: {
       betaFeedback: {

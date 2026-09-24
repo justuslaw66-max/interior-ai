@@ -259,15 +259,16 @@ test.describe("00. Beta Smoke Gate", () => {
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
       await confirmPlanTemplateReplacementIfNeeded(page);
     } else {
+      // New design opens Start a new design; Furnished sketches each card's furniture.
       await openEditorCommandOverflow(page);
       await clickVisibleControl(page.getByTestId("editor-command-new-plan"));
-      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
-      await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
-      await expect(page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()).toBeVisible();
-      await expect(page.getByTestId("apply-furnished-template-studio")).toBeEnabled({
-        timeout: 30_000,
-      });
-      await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
+      await expect(page.getByTestId("start-design-chooser")).toBeVisible();
+      await clickVisibleControl(page.getByTestId("start-template-furnished"));
+      const furnishedStudio = page.getByTestId("start-template-studio");
+      await expect(furnishedStudio).toHaveAccessibleName(/, furnished$/);
+      await expect(page.getByTestId("start-template-preview-studio").locator("circle").first()).toBeAttached();
+      await expect(furnishedStudio).toBeEnabled({ timeout: 30_000 });
+      await clickVisibleControl(furnishedStudio);
       await confirmPlanTemplateReplacementIfNeeded(page);
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
@@ -341,8 +342,10 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
       await clickVisibleControl(page.getByTestId("load-designs-open-templates"));
       await expect(page.getByTestId("load-designs-modal")).toBeHidden();
-      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
-      await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
+      await expect(page.getByTestId("start-design-chooser")).toBeVisible();
+      await expect(page.getByTestId("start-template-studio")).toBeVisible();
+      await clickVisibleControl(page.getByTestId("start-design-close"));
+      await expect(page.getByTestId("start-design-chooser")).toBeHidden();
       await openMyDesigns(page);
       await expect(page.getByTestId("load-designs-modal")).toBeVisible();
       await clickVisibleControl(page.getByTestId(`load-design-${seed.designId}`));

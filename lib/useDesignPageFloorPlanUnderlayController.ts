@@ -387,11 +387,7 @@ export function useDesignPageFloorPlanUnderlayController({
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {
         showRuleToast("Some items couldn't be added");
       } else {
-        showRuleToast(
-          selectedFurnishingPack
-            ? `${template.label} added with furniture`
-            : `${template.label} added`
-        );
+        showRuleToast(selectedFurnishingPack ? `${template.label} added with furniture` : `${template.label} added`);
       }
       track("floor_plan_template_applied", {
         templateId: template.id,
@@ -401,6 +397,8 @@ export function useDesignPageFloorPlanUnderlayController({
         roomCount: rooms.length,
         openingCount: templateOpenings.length,
       });
+      // After the template's own toast, so a follow-up (Draw room) can show its hint.
+      options?.onApplied?.();
     },
     [
       clearAllSelection,

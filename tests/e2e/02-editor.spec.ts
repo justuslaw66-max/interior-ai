@@ -3,6 +3,7 @@ import { expect, test } from "./fixtures";
 import {
   addCatalogDrawerItemToRoom,
   chooseNewDesign,
+  chooseStartTemplate,
   getSelectedItemPanel,
   openCatalogPreview,
 } from "./variant-test-utils";
@@ -134,21 +135,13 @@ async function setupSelectedItem(page: Page) {
     timeout: 30_000,
   });
 
-  const starterPicker = page.getByTestId("starter-floor-plan-picker");
+  const startChooser = page.getByTestId("start-design-chooser");
   await expect(async () => {
-    if (await starterPicker.isVisible().catch(() => false)) return;
-
-    const replaceCurrent = page.getByTestId("new-plan-replace-current");
-    if (await replaceCurrent.isVisible().catch(() => false)) {
-      await replaceCurrent.click();
-    } else {
-      await chooseNewDesign(page);
-    }
-
-    await expect(starterPicker).toBeVisible({ timeout: 2_000 });
+    if (await startChooser.isVisible().catch(() => false)) return;
+    await chooseNewDesign(page);
+    await expect(startChooser).toBeVisible({ timeout: 2_000 });
   }).toPass({ timeout: 30_000 });
-  await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
-  await page.getByTestId("apply-plan-template-studio").click();
+  await chooseStartTemplate(page, "studio");
   const planChoice = page.getByTestId("new-plan-choice-dialog");
   if (await planChoice.isVisible({ timeout: 1_500 }).catch(() => false)) {
     await page.getByTestId("new-plan-replace-current").click();
@@ -201,7 +194,7 @@ test.describe("2. Editor Correctness", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
     await page.waitForLoadState("networkidle");
 
-    // New design sits in More; the start picker hands focus back to More.
+    // New design sits in More and opens Start a new design, which hands focus back to More.
     const more = page.getByTestId("editor-command-overflow");
     await more.focus();
     await page.keyboard.press("Enter");
@@ -210,6 +203,20 @@ test.describe("2. Editor Correctness", () => {
     await newPlan.focus();
     await page.keyboard.press("Enter");
 
+    const chooser = page.getByTestId("start-design-chooser");
+    await expect(chooser).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Start a new design", level: 1 })).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(page.getByTestId("start-design-close")).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(chooser).toBeHidden();
+    await expect(more).toBeFocused();
+
+    // Search by HDB address opens Plan's template list, which also hands focus back to More.
+    await chooseNewDesign(page);
+    await expect(chooser).toBeVisible();
+    await page.getByTestId("start-template-address-search").click();
+    await expect(chooser).toBeHidden();
     const picker = page.getByTestId("starter-floor-plan-picker");
     const pickerHeading = page.getByRole("heading", { name: "Choose a template" });
     await expect(picker).toBeVisible();
@@ -238,8 +245,7 @@ test.describe("2. Editor Correctness", () => {
     await page.waitForLoadState("networkidle");
 
     await chooseNewDesign(page);
-    await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
 
     const choice = page.getByTestId("new-plan-choice-dialog");
     await expect(choice).toBeVisible();

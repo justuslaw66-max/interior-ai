@@ -509,7 +509,7 @@
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
-      "lines": 2909,
+      "lines": 2907,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -665,7 +665,7 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
-      "lines": 774,
+      "lines": 772,
       "limit": 400
     },
     "lib/useDesignPageItemDocumentController.ts": {
@@ -3283,7 +3283,7 @@
     "lib/design-page-dialog-layer-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 134
+        "maximum": 132
       }
     },
     "lib/design-page-equivalent-variant.ts": {
@@ -4291,7 +4291,7 @@
     "lib/useDesignPageBetaStartController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 88
+        "maximum": 86
       }
     },
     "lib/useDesignPageBilling.ts": {
@@ -4477,7 +4477,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 679
+        "maximum": 677
       },
       "complexFunctions": {
         "count": 1,
