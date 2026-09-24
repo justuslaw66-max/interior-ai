@@ -27,12 +27,6 @@ import {
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 
-type DesignPageSelectionHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
-  rollback: () => void;
-};
-
 type CommitDesignPageItems = (
   updater: DesignItem[] | ((previous: DesignItem[]) => DesignItem[]),
   actionName?: string
@@ -63,8 +57,8 @@ export type DesignPageSelectionCoordinatorRefs = {
 export type DesignPageSelectionCoordinatorActionAdapters = {
   clearSelection: () => void;
   commitItems: CommitDesignPageItems;
-  history: DesignPageSelectionHistory;
   preserveCameraAfterPlanOverlaySelection: () => void;
+  runHistoryTransaction: <TResult>(name: string, action: () => TResult) => TResult;
   setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
   setEditorMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
   setPlanAnnotations: Dispatch<SetStateAction<EditorAnnotation2D[]>>;
@@ -120,8 +114,8 @@ export function useDesignPageSelectionCoordinator({
   actions: {
     clearSelection,
     commitItems,
-    history,
     preserveCameraAfterPlanOverlaySelection,
+    runHistoryTransaction,
     setDesignSnapshot,
     setEditorMode,
     setPlanAnnotations,
@@ -193,48 +187,43 @@ export function useDesignPageSelectionCoordinator({
         planAnnotationsRef.current.some((entry) => entry.id === overlayId);
       if (!overlayExists) return false;
 
-      history.begin(deletedOpening ? `Delete ${deletedOpening.kind}` : "Delete plan item");
-      const canonicalDelete = deletedOpening
-        ? canonicalTopology.actions.removeOpening(overlayId)
-        : "not_canonical";
-      if (canonicalDelete === "blocked") {
-        history.rollback();
-        return false;
-      }
-      if (canonicalDelete === "committed") {
-        suppressDoorwaySuggestionKeys(
-          getDeletedDoorwaySuggestionKeys(deletedOpening!, housePlanRooms)
-        );
-        history.commit();
-        setSelectedPlanOverlayId(null);
-        return true;
-      }
-      setPlanOpenings((previous) => {
-        const next = previous.filter((entry) => entry.id !== overlayId);
-        if (next.length !== previous.length && deletedOpening) {
-          suppressDoorwaySuggestionKeys(
-            getDeletedDoorwaySuggestionKeys(deletedOpening, housePlanRooms)
-          );
+      const deleted = runHistoryTransaction(
+        deletedOpening ? `Delete ${deletedOpening.kind}` : "Delete plan item",
+        () => {
+          const canonicalDelete = deletedOpening
+            ? canonicalTopology.actions.removeOpening(overlayId)
+            : "not_canonical";
+          if (canonicalDelete === "blocked") return false;
+          if (canonicalDelete === "committed") {
+            suppressDoorwaySuggestionKeys(
+              getDeletedDoorwaySuggestionKeys(deletedOpening!, housePlanRooms)
+            );
+            return true;
+          }
+          setPlanOpenings((previous) => {
+            const next = previous.filter((entry) => entry.id !== overlayId);
+            if (next.length !== previous.length && deletedOpening) {
+              suppressDoorwaySuggestionKeys(
+                getDeletedDoorwaySuggestionKeys(deletedOpening, housePlanRooms)
+              );
+            }
+            return next;
+          });
+          setPlanFixedElements((previous) => previous.filter((entry) => entry.id !== overlayId));
+          setPlanAnnotations((previous) => previous.filter((entry) => entry.id !== overlayId));
+          return true;
         }
-        return next;
-      });
-      setPlanFixedElements((previous) =>
-        previous.filter((entry) => entry.id !== overlayId)
       );
-      setPlanAnnotations((previous) =>
-        previous.filter((entry) => entry.id !== overlayId)
-      );
-      history.commit();
-      setSelectedPlanOverlayId(null);
-      return true;
+      if (deleted) setSelectedPlanOverlayId(null);
+      return deleted;
     },
     [
-      history,
       housePlanRooms,
       canonicalTopology.actions,
       planAnnotationsRef,
       planFixedElementsRef,
       planOpeningsRef,
+      runHistoryTransaction,
       setPlanAnnotations,
       setPlanFixedElements,
       setPlanOpenings,

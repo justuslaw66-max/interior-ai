@@ -64,7 +64,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
   const setDesignSnapshot = snapshotDocument.actions.setDesignSnapshot;
   const { setPlanOpenings, setPlanFixedElements } =
     viewportShell.boundaries.planDocument.actions;
-  const history = documentRoom.refs.documentHistory.history;
+  const { runHistoryTransaction } = documentRoom.actions.history;
   const { preserveCurrentDesign, loadDesign } =
     persistence.actions.persistence;
 
@@ -156,18 +156,18 @@ export function useDesignPageFloorPlanLifecycleRegistration({
           snapshotDocument.refs.designSnapshotRef.current,
           transform
         );
-        history.begin("Change floor-plan orientation");
-        setDesignSnapshot(reoriented.snapshot);
-        setPlanOpenings(reoriented.openings);
-        setPlanFixedElements(reoriented.fixedElements);
-        history.commit();
+        runHistoryTransaction("Change floor-plan orientation", () => {
+          setDesignSnapshot(reoriented.snapshot);
+          setPlanOpenings(reoriented.openings);
+          setPlanFixedElements(reoriented.fixedElements);
+        });
         showRuleToast("Floor-plan orientation updated and confirmed");
       } catch (cause) {
         showRuleToast(userFacingErrorMessage(cause, "Floor-plan orientation could not be changed"));
       }
     },
     [
-      history,
+      runHistoryTransaction,
       setDesignSnapshot,
       setPlanFixedElements,
       setPlanOpenings,

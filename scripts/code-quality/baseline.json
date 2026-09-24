@@ -657,11 +657,11 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
-      "lines": 556,
+      "lines": 551,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
-      "lines": 781,
+      "lines": 774,
       "limit": 400
     },
     "lib/useDesignPageItemDocumentController.ts": {
@@ -697,7 +697,7 @@
       "limit": 400
     },
     "lib/useDesignPageRoomGeometry.ts": {
-      "lines": 469,
+      "lines": 462,
       "limit": 400
     },
     "lib/useDesignPageRoomPlanController.ts": {
@@ -4453,7 +4453,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 680
+        "maximum": 679
       },
       "complexFunctions": {
         "count": 1,
@@ -4681,13 +4681,13 @@
     "lib/useDesignPagePlanWorkspaceFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 215
+        "maximum": 214
       }
     },
     "lib/useDesignPagePlanWorkspaceRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 179
+        "maximum": 178
       }
     },
     "lib/useDesignPagePresentationBackupRegistrationFacade.ts": {
@@ -4765,7 +4765,7 @@
     "lib/useDesignPageRoomGeometry.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 437
+        "maximum": 435
       }
     },
     "lib/useDesignPageRoomPlanController.ts": {
@@ -4831,13 +4831,13 @@
     "lib/useDesignPageSelectionCoordinator.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 195
+        "maximum": 190
       }
     },
     "lib/useDesignPageSelectionInspectionRuntime.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 154
+        "maximum": 153
       }
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
@@ -4913,7 +4913,7 @@
     "lib/useDesignPageZoneController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 295
+        "maximum": 293
       }
     },
     "lib/useFloorManager.ts": {

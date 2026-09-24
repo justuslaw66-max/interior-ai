@@ -31,6 +31,7 @@ const typescriptGuardFiles = [
   "test-design-page-feature-registration.ts",
   "test-design-page-floor-plan-lifecycle-registration.ts",
   "test-design-page-history-controller.ts",
+  "test-design-page-history-callers.ts",
   "test-design-page-house-plan.ts",
   "test-design-page-layout-versions-and-views-controller.ts",
   "test-design-page-live-catalog.ts",
