@@ -477,7 +477,7 @@
       "limit": 400
     },
     "lib/catalog/imported-model-assembly.ts": {
-      "lines": 1303,
+      "lines": 1299,
       "limit": 400
     },
     "lib/catalog/imported-variant-normalization.ts": {
@@ -3129,7 +3129,7 @@
       },
       "complexFunctions": {
         "count": 4,
-        "maximum": 46
+        "maximum": 45
       }
     },
     "lib/catalog/imported-variant-normalization.ts": {
