@@ -10,6 +10,7 @@ import {
   buildSelectedCabinetDocumentation,
 } from "../features/cabinetry/useDesignPageCabinetry";
 import { createRoom } from "../lib/room-types";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -24,10 +25,7 @@ const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
-const commandBarSource = readFileSync(
-  join(root, "components/editor/EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource(root);
 const workspaceMenuKeyboardSource = readFileSync(
   join(root, "components/editor/workspaceMenuKeyboard.ts"),
   "utf8"

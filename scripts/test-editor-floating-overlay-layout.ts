@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const designPagePath = path.join(
   process.cwd(),
@@ -577,10 +578,7 @@ const itemCartDrawerSource = fs.readFileSync(itemCartDrawerPath, "utf8");
 
 const designControlsPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPanel.tsx");
 const designControlsPanelSource = fs.readFileSync(designControlsPanelPath, "utf8");
-const editorCommandBarSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const editorCommandBarSource = readEditorCommandBarSource();
 const editorViewToggleSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "EditorViewToggle.tsx"),
   "utf8"
@@ -650,10 +648,21 @@ assert.match(
   "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
 );
 
+assert.match(
+  editorCommandBarSource,
+  /const commandHistoryButtonClass = `[^`]*\bmd:h-\[30px\] md:w-\[30px\]/,
+  "Undo and redo should share the 30px closed-control size on desktop."
+);
+for (const historyTestId of ["command-undo", "command-redo"] as const) {
+  assert.match(
+    editorCommandBarSource,
+    new RegExp(`data-testid="${historyTestId}"[^>]*?className=\\{commandHistoryButtonClass\\}`),
+    `${historyTestId} should use the shared history-control size.`
+  );
+}
+
 for (const controlTestId of [
   "editor-design-sidebar-toggle",
-  "command-undo",
-  "command-redo",
   "editor-command-workspace",
   "editor-command-new-plan",
   "save-status",

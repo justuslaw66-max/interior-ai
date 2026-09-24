@@ -7,6 +7,7 @@ import {
   type CommandPaletteSession,
 } from "@/lib/command-palette-session";
 import { resolveEditorDialogStackZIndexes } from "@/components/editor/design-system/editorDialogRegistry";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const workspaceSource = fs.readFileSync(
@@ -33,10 +34,7 @@ const commandBarSource = fs.readFileSync(
   ),
   "utf8"
 );
-const commandBarLeafSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarLeafSource = readEditorCommandBarSource(root);
 const panelRegionSource = fs.readFileSync(
   path.join(
     root,

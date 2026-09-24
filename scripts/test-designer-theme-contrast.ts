@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const cssPath = path.join(root, "app", "globals.css");
@@ -249,10 +250,7 @@ for (const [relativePath, semanticClass] of [
   );
 }
 
-const commandBarSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource(root);
 assert.match(commandBarSource, /designer-command-bar/, "The Pro command bar should use the shell token.");
 assert.match(commandBarSource, /designer-control/, "The Pro command bar should use strong control boundaries.");
 assert.match(
@@ -319,10 +317,7 @@ const coreShellSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageCoreShellRegistration.ts"),
   "utf8"
 );
-const editorCommandBarSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const editorCommandBarSource = readEditorCommandBarSource(root);
 const designPageCommandBarSource = fs.readFileSync(
   path.join(
     root,

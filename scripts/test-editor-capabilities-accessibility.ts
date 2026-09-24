@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
@@ -58,6 +58,9 @@ assert.equal(
 
 for (const relativePath of [
   "components/editor/EditorCommandBar.tsx",
+  ...readdirSync(join(process.cwd(), "components/editor/command-bar"))
+    .filter((name) => name.endsWith(".tsx"))
+    .map((name) => `components/editor/command-bar/${name}`),
   "components/editor/design-page/DesignPageWorkspace.tsx",
   "lib/design-page-dialog-layer-model.ts",
   "lib/useDesignPageExport.ts",

@@ -37,6 +37,7 @@ import {
   selectFixtureLightBudget,
   selectWindowLightBudget,
 } from "@/components/editor/design-page/lighting";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const makeSnapshot = (
   extra: Partial<DesignSnapshot> = {}
@@ -744,7 +745,7 @@ assert.ok(
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
-const commandBarSource = read("components/editor/EditorCommandBar.tsx");
+const commandBarSource = readEditorCommandBarSource(root);
 const drawerSource = read(
   "components/editor/design-page/LightingSettingsDrawer.tsx"
 );

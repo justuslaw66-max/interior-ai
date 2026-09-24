@@ -6,15 +6,13 @@ import { buildDesignPageBetaFeedbackContext } from "../lib/design-page-beta-feed
 import { buildDesignPageDialogLayerAdapter } from "../lib/design-page-dialog-layer-adapter";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const widgetSource = readFileSync(
   join(process.cwd(), "components/BetaFeedbackWidget.tsx"),
   "utf8"
 );
-const commandBarSource = readFileSync(
-  join(process.cwd(), "components/editor/EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource();
 const designPageCommandBarSource = readFileSync(
   join(
     process.cwd(),
@@ -84,7 +82,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="beta-feedback-open"[\s\S]*setOverflowOpen\(false\);[\s\S]*onFeedback\(\);/,
+  /data-testid="beta-feedback-open"[\s\S]*?onClick=\{\(\) => \{\s*onClose\(\);\s*onFeedback\(\);/,
   "opening feedback should close the More menu first."
 );
 assert.match(

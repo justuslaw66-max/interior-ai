@@ -1,5 +1,15 @@
-import type { EditorSaveStatus } from "@/components/editor/EditorCommandBar";
 import { formatTimeAgo } from "@/lib/design-page-utils";
+
+/** What the editor command bar shows about saving: one status, its tone, and whether Retry applies. */
+export type EditorSaveStatus = {
+  kind: "pending" | "saving" | "saved" | "failed" | "conflict";
+  source: string;
+  label: string;
+  detail: string;
+  tone: "error" | "saving" | "saved" | "pending";
+  canRetry: boolean;
+  lastSuccessfulSaveAt: number | null;
+};
 
 export type DesignPageSaveStatusInput = {
   designId: string | null;

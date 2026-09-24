@@ -12,6 +12,7 @@ import {
 } from "../lib/guest-save-prompt";
 import { GuestSavePromptController } from "../lib/useGuestSavePromptController";
 import { createGuestPromptScopeKey } from "../lib/useDesignPagePersistenceWorkspaceRegistration";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(`${root}/${path}`, "utf8");
@@ -24,7 +25,7 @@ const controllerSource = read("lib/useGuestSavePromptController.ts");
 const workspaceSource = read(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
-const commandBarSource = read("components/editor/EditorCommandBar.tsx");
+const commandBarSource = readEditorCommandBarSource();
 const aiPanelSource = read("components/editor/DesignControlsAiPanel.tsx");
 const cartSource = read("components/CartSidebar.tsx");
 

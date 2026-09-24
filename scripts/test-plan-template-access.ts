@@ -10,6 +10,7 @@ import {
 import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
@@ -189,13 +190,7 @@ const dialogLayerSource = fs.readFileSync(
   ),
   "utf8"
 );
-const commandBarPath = path.join(
-  process.cwd(),
-  "components",
-  "editor",
-  "EditorCommandBar.tsx"
-);
-const commandBarSource = fs.readFileSync(commandBarPath, "utf8");
+const commandBarSource = readEditorCommandBarSource();
 const designPageCommandBarPath = path.join(
   process.cwd(),
   "components",
