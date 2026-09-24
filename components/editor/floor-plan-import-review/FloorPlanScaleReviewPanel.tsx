@@ -9,6 +9,7 @@ import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanMeasurementInput from "./FloorPlanMeasurementInput";
 import FloorPlanIndependentScaleReview from "./FloorPlanIndependentScaleReview";
 import { useFloorPlanScaleReview } from "./useFloorPlanScaleReview";
+import { FloorPlanScaleAssumedNotice, FloorPlanScaleEstimateOffer, scaleReviewStatus } from "./FloorPlanScaleEstimateOffer";
 
 type RenderedPage = ConsumerFloorPlanImportJob["renderedPagesJson"][number];
 
@@ -37,7 +38,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
   } = props;
   const { input, printedMm, hasConflict, mode, setMode, floor, canMapExistingVertices, scale, apply, canApply,
     firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId, estimateMarks, applyEstimateMark, assumedMm } = useFloorPlanScaleReview(props);
-  const assumedScale = calibration?.primaryMeasurement?.basis === "assumed_opening_width";
+  const status = scaleReviewStatus(hasConflict, calibration);
   const control = dark
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
     : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
@@ -48,22 +49,9 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
         Set and check scale
-        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${
-          hasConflict ? "bg-red-100 text-red-800" : assumedScale
-            ? "bg-amber-100 text-amber-900"
-            : calibration
-              ? "bg-emerald-100 text-emerald-800"
-              : "bg-blue-100 text-blue-800"
-        }`}>
-          {hasConflict ? "Scale conflict" : assumedScale ? "Set from an assumed width" : calibration ? "Set" : "Start here"}
-        </span>
+        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${status.className}`}>{status.label}</span>
       </summary>
-      {assumedScale ? (
-        <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-900" data-testid="floor-plan-scale-assumed-notice">
-          This scale rests on a door width that was assumed, not read off the plan; every length is approximate (about ±10 %).
-          When you find a printed measurement, cross-check or set the scale from it.
-        </p>
-      ) : null}
+      {status.assumed ? <FloorPlanScaleAssumedNotice /> : null}
       {calibration && <div className="mt-2 flex gap-2">
         {(["set", "check"] as const).map((value) => <button key={value} type="button" className={control}
           aria-pressed={mode === value} disabled={disabled} onClick={() => {
@@ -79,30 +67,8 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
           measurement on the plan, then enter the number exactly as printed.
         </p>
         {!calibration && estimateMarks.length > 0 ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-900" data-testid="floor-plan-scale-estimate">
-            <p className="font-semibold">No printed dimensions were found on this plan.</p>
-            <p className="mt-1">
-              The door openings below were measured on the plan; the width shown is what each would be if standard
-              {" "}door leaves are assumed. Pick one: its two jambs become the endpoints and the assumed width is filled in.
-              If you know the real width, change the number before applying.
-            </p>
-            <ul className="mt-1 grid gap-1">
-              {estimateMarks.map((mark, index) => {
-                const mm = /about (\d+) mm/.exec(mark.text ?? "")?.[1];
-                return (
-                  <li key={mark.id}>
-                    <button type="button" className={`${control} w-full text-left`} disabled={disabled || !page}
-                      onClick={() => applyEstimateMark(mark)}>
-                      Door opening {index + 1}{mm ? ` · about ${mm} mm (assumed)` : ""}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            {assumedMm !== null ? (
-              <p className="mt-1">Applying with {assumedMm} mm records the scale as assumed; the plan will say so until a printed measurement confirms it.</p>
-            ) : null}
-          </div>
+          <FloorPlanScaleEstimateOffer marks={estimateMarks} assumedMm={assumedMm} control={control}
+            disabled={disabled || !page} onPick={applyEstimateMark} />
         ) : null}
         <button
           type="button"

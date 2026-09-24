@@ -80,6 +80,8 @@ export type SourceTextEvidence = {
   evidenceKind?: "positioned_text" | "ocr";
 };
 
+export type SemanticEvidenceKind = "positioned_text" | "ocr" | "vision" | "vectorizer";
+
 export type SemanticRoomLabel = {
   label: string;
   rawText?: string;
@@ -97,7 +99,7 @@ export type SemanticRoomLabel = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticDimensionLabel = {
@@ -109,9 +111,9 @@ export type SemanticDimensionLabel = {
   bbox?: SemanticBoundingBox;
   extensionStart?: SemanticRatioPoint;
   extensionEnd?: SemanticRatioPoint;
-  extensionEvidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  extensionEvidenceKind?: SemanticEvidenceKind;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticOpeningSymbol = {
@@ -123,7 +125,7 @@ export type SemanticOpeningSymbol = {
   spanStart?: SemanticRatioPoint;
   spanEnd?: SemanticRatioPoint;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 /** Source fixture observations may suggest room meaning, never building geometry. */
@@ -142,7 +144,7 @@ export type SemanticFixtureSymbol = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 /** Approximate proposals require independent source-edge registration and complete topology validation. */
@@ -151,7 +153,7 @@ export type SemanticRoomBoundary = {
   roomType: SemanticRoomLabel["roomType"];
   points: SemanticRatioPoint[];
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticRatioPoint = {
@@ -159,32 +161,17 @@ export type SemanticRatioPoint = {
   yRatio: number;
 };
 
-export type SemanticBoundingBox = {
-  leftRatio: number;
-  topRatio: number;
-  rightRatio: number;
-  bottomRatio: number;
-};
+export type SemanticBoundingBox = { leftRatio: number; topRatio: number; rightRatio: number; bottomRatio: number };
 
 export type PageSemanticEvidence = {
-  planRegion?: {
-    bbox: SemanticBoundingBox;
-    rotationDegrees: number;
-    confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
-  } | null;
+  planRegion?: { bbox: SemanticBoundingBox; rotationDegrees: number; confidence: number; evidenceKind?: SemanticEvidenceKind } | null;
   unitSystem?: "metric_mm" | "metric_cm" | "imperial" | "unknown";
   roomLabels: SemanticRoomLabel[];
   roomBoundaries?: SemanticRoomBoundary[];
   dimensionLabels: SemanticDimensionLabel[];
   openingSymbols: SemanticOpeningSymbol[];
   fixtureSymbols?: SemanticFixtureSymbol[];
-  entrance?: {
-    centerXRatio: number;
-    centerYRatio: number;
-    confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
-  } | null;
+  entrance?: { centerXRatio: number; centerYRatio: number; confidence: number; evidenceKind?: SemanticEvidenceKind } | null;
   notes: string[];
 };
 
@@ -205,6 +192,12 @@ export type RegisteredPageEvidence = {
 };
 export type { SourceScaleSolution } from "./scale-diagnostics";
 
+export type RoomBoundaryRegistrationKind =
+  | "closed_source_path" | "assembled_wall_topology" | "vision_guided_source_snap" | "vectorizer_wall_topology";
+export type RegisteredOpeningProof =
+  | "swing_arc_and_leaf" | "sliding_staggered_panels" | "folding_connected_leaves"
+  | "paired_fixed_frame_lines" | "vectorizer_drawn_symbol";
+
 export type RegisteredRoomBoundary = {
   key: string;
   label: string;
@@ -218,11 +211,7 @@ export type RegisteredRoomBoundary = {
   sourceLabels?: SemanticRoomLabel[];
   /** Non-architectural symbols used only to infer room meaning. */
   sourceFixtures?: SemanticFixtureSymbol[];
-  registrationKind?:
-    | "closed_source_path"
-    | "assembled_wall_topology"
-    | "vision_guided_source_snap"
-    | "vectorizer_wall_topology";
+  registrationKind?: RoomBoundaryRegistrationKind;
   sourceEdges?: Array<{
     evidenceId: string;
     kind: "wall_centerline" | "supported_opening_span";
@@ -233,19 +222,14 @@ export type RegisteredRoomBoundary = {
       id: string;
       kind: "door" | "window" | "open_passage";
       operation: "swing" | "sliding" | "folding" | "fixed" | "open";
-      proof:
-        | "swing_arc_and_leaf"
-        | "sliding_staggered_panels"
-        | "folding_connected_leaves"
-        | "paired_fixed_frame_lines"
-        | "vectorizer_drawn_symbol";
+      proof: RegisteredOpeningProof;
       widthMm: number;
       confidence: number;
       supportPathIds: string[];
       supportSubpathIds: string[];
       supportSegmentIds: string[];
       supportCurveIds: string[];
-      /** Swing doors measured on the drawing: where the hinge is and a point on the side the leaf swings to. */
+      /** Swing doors measured on the drawing: the hinge, and a point on the side the leaf swings to. */
       hingeSourcePx?: SourcePointPx;
       swingTowardSourcePx?: SourcePointPx;
       double?: boolean;
@@ -258,9 +242,8 @@ export type RegisteredRoomRect = RegisteredRoomBoundary;
 
 const SEMANTIC_EVIDENCE_PRIOR = {
   positioned_text: 0.98,
-  // Local vectorizer: numbers cross-checked against their dimension chains and
-  // symbols measured on the drawing. A ceiling, not a replacement: its own
-  // lower per-item confidence is kept (see registerVectorizerEvidence).
+  // Local vectorizer: numbers cross-checked against their dimension chains, symbols measured on the
+  // drawing. A ceiling, not a replacement: an item's own lower confidence is kept (registerVectorizerEvidence).
   vectorizer: 0.85,
   ocr: 0.72,
   vision: 0.55,
