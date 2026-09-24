@@ -2204,6 +2204,11 @@ test.describe("Pro visual policy", () => {
     await expect(renderer).toHaveAttribute("data-render-color-space", "srgb");
     await expect(renderer).toHaveAttribute("data-tone-mapping", "aces-filmic");
     await expect(renderer).toHaveAttribute("data-frameloop", "demand");
+    // The data-* attributes above are static props on the R3F <Canvas> wrapper and
+    // appear before R3F creates its WebGL renderer. Reading getContext() on a canvas
+    // nothing has claimed yet creates a default context (preserveDrawingBuffer false)
+    // that three.js then inherits, so wait until the preview has drawn frames first.
+    await expect(renderer).toHaveAttribute("data-preview-ready", "true");
     // WebKit screenshots paint the canvas from its drawing buffer; a settled
     // on-demand canvas must keep its last frame there.
     expect(await renderer.locator("canvas").evaluate((canvas: HTMLCanvasElement) =>
