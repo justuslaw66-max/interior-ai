@@ -114,17 +114,42 @@ function swingLeafLines(opening: CompiledFloorPlanOpeningV2) {
   return leaves;
 }
 
+function fixedPanelLines(opening: CompiledFloorPlanOpeningV2, normal: FloorPlanPointMmV2, offset: number) {
+  const fixedLines: CanonicalOpeningSymbolLineV2[] = [
+    {
+      role: "fixed_panel",
+      points: [opening.start, opening.end].map((point) => offsetPoint(point, normal, offset)),
+    },
+    {
+      role: "fixed_panel",
+      points: [opening.start, opening.end].map((point) => offsetPoint(point, normal, -offset)),
+    },
+  ];
+  if (opening.kind === "vent" || opening.kind === "louvre") {
+    for (let index = 1; index <= 5; index += 1) {
+      const point = interpolate(opening.start, opening.end, index / 6);
+      fixedLines.push({
+        role: "vent_slat",
+        points: [offsetPoint(point, normal, -offset), offsetPoint(point, normal, offset)],
+      });
+    }
+  }
+  return fixedLines;
+}
+
 /**
  * Deterministic 2D symbols derived only from a compiled opening record. The
  * first primitive is always the exact host-wall span, shared with the 3D
  * descriptor and selection hit target.
  */
 export function buildCanonicalOpeningSymbolLinesV2(
-  opening: CompiledFloorPlanOpeningV2
+  opening: CompiledFloorPlanOpeningV2,
+  wallThicknessMm?: number
 ): CanonicalOpeningSymbolLineV2[] {
   const span = { role: "host_span" as const, points: [opening.start, opening.end] };
   const normal = handedNormal(opening);
-  const offset = 70;
+  // A known host depth places window rails on its faces instead of a fixed inset.
+  const offset = opening.kind === "window" && wallThicknessMm !== undefined ? wallThicknessMm / 2 : 70;
 
   if (opening.operation === "open" || opening.kind === "open_passage") {
     return [
@@ -165,27 +190,7 @@ export function buildCanonicalOpeningSymbolLinesV2(
     return [span, { role: "folding_leaf", points }];
   }
 
-  const fixedLines: CanonicalOpeningSymbolLineV2[] = [
-    span,
-    {
-      role: "fixed_panel",
-      points: [opening.start, opening.end].map((point) => offsetPoint(point, normal, offset)),
-    },
-    {
-      role: "fixed_panel",
-      points: [opening.start, opening.end].map((point) => offsetPoint(point, normal, -offset)),
-    },
-  ];
-  if (opening.kind === "vent" || opening.kind === "louvre") {
-    for (let index = 1; index <= 5; index += 1) {
-      const point = interpolate(opening.start, opening.end, index / 6);
-      fixedLines.push({
-        role: "vent_slat",
-        points: [offsetPoint(point, normal, -offset), offsetPoint(point, normal, offset)],
-      });
-    }
-  }
-  return fixedLines;
+  return [span, ...fixedPanelLines(opening, normal, offset)];
 }
 
 export function getCanonicalOpeningRenderIdentityV2(

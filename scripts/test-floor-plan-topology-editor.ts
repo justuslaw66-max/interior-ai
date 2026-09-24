@@ -552,11 +552,14 @@ assert.deepEqual(
   consumerWallCommit.snapshot.rooms.map(({ id }) => id),
   baseSnapshot.rooms.map(({ id }) => id)
 );
-assert.deepEqual(
-  consumerWallCommit.snapshot.rooms[0].items,
-  baseSnapshot.rooms[0].items,
-  "Furniture local coordinates must survive wall edits."
-);
+const beforeRoom = baseSnapshot.rooms[0];
+const afterRoom = consumerWallCommit.snapshot.rooms[0];
+assert.deepEqual(afterRoom.items.map(({ position: _position, ...item }) => item), beforeRoom.items.map(({ position: _position, ...item }) => item));
+for (const [index, item] of beforeRoom.items.entries()) {
+  const current = afterRoom.items[index];
+  assert(Math.abs(current.position[0] + (afterRoom.planPosition?.x ?? 0) - item.position[0] - (beforeRoom.planPosition?.x ?? 0)) < 1e-9, "Furniture world X survives boundary recentering.");
+  assert(Math.abs(current.position[2] + (afterRoom.planPosition?.z ?? 0) - item.position[2] - (beforeRoom.planPosition?.z ?? 0)) < 1e-9, "Furniture world Z survives boundary recentering.");
+}
 assert.deepEqual(
   consumerWallCommit.snapshot.rooms[0].savedViews,
   baseSnapshot.rooms[0].savedViews
@@ -590,7 +593,7 @@ assert.equal(
 );
 assert.deepEqual(
   persistedConsumerWallEdit.rooms[0].items,
-  baseSnapshot.rooms[0].items
+  consumerWallCommit.snapshot.rooms[0].items
 );
 assert.deepEqual(
   persistedConsumerWallEdit.rooms[0].savedViews,

@@ -16,7 +16,7 @@ export function openingHostRoomId(
   rooms: readonly HousePlanRoom2D[]
 ): string | null {
   const resolution = resolveDesignPageOpeningHost(opening, rooms);
-  return resolution.status === "resolved" ? resolution.host.roomId : null;
+  return resolution.status === "resolved" ? resolution.host.roomId ?? null : null;
 }
 
 export function buildOpeningHostQualityIssues(

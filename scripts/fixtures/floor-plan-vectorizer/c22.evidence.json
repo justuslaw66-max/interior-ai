@@ -1,0 +1,4756 @@
+{
+ "kind": "floorplan_vectorizer_evidence_v1",
+ "exporterVersion": "app-evidence-0.5.0",
+ "page": {
+  "widthPx": 958,
+  "heightPx": 1464,
+  "coordinateSpace": "source_image_px"
+ },
+ "scale": {
+  "millimetresPerPixel": 11.29568,
+  "basis": "estimated_door_leaf",
+  "dimensionCount": 0,
+  "needsReview": true,
+  "chainsChecked": [],
+  "estimate": {
+   "method": "traced swings",
+   "assumedLeafMm": 850.0,
+   "swingsMeasured": 4,
+   "doorOpenings": [
+    {
+     "openingId": "e20",
+     "sourcePx": [
+      [
+       534.625,
+       861.0
+      ],
+      [
+       534.625,
+       775.0
+      ]
+     ],
+     "widthPx": 86.0,
+     "widthMmAtEstimate": 970
+    },
+    {
+     "openingId": "e17",
+     "sourcePx": [
+      [
+       442.0,
+       871.25
+      ],
+      [
+       523.5,
+       871.25
+      ]
+     ],
+     "widthPx": 81.5,
+     "widthMmAtEstimate": 920
+    },
+    {
+     "openingId": "e26",
+     "sourcePx": [
+      [
+       437.14598834760636,
+       532.0
+      ],
+      [
+       437.14598834760636,
+       450.5
+      ]
+     ],
+     "widthPx": 81.5,
+     "widthMmAtEstimate": 920
+    },
+    {
+     "openingId": "e8",
+     "sourcePx": [
+      [
+       203.0,
+       1320.5
+      ],
+      [
+       284.0,
+       1320.5
+      ]
+     ],
+     "widthPx": 81.0,
+     "widthMmAtEstimate": 910
+    },
+    {
+     "openingId": "e23",
+     "sourcePx": [
+      [
+       526.5,
+       763.3387023593467
+      ],
+      [
+       448.5,
+       763.3387023593467
+      ]
+     ],
+     "widthPx": 78.0,
+     "widthMmAtEstimate": 880
+    }
+   ]
+  }
+ },
+ "semantics": {
+  "planRegion": {
+   "bbox": {
+    "leftRatio": 0.140397,
+    "topRatio": 0.05584,
+    "rightRatio": 0.871086,
+    "bottomRatio": 0.952365
+   },
+   "rotationDegrees": 0.0,
+   "confidence": 0.9,
+   "evidenceKind": "vectorizer"
+  },
+  "unitSystem": "unknown",
+  "roomLabels": [
+   {
+    "label": "FOYER",
+    "rawText": "FOYER",
+    "roomType": "other",
+    "centerXRatio": 0.264875,
+    "centerYRatio": 0.82377,
+    "bbox": {
+     "leftRatio": 0.257829,
+     "topRatio": 0.806011,
+     "rightRatio": 0.271921,
+     "bottomRatio": 0.84153
+    },
+    "confidence": 0.96,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "LIVING",
+    "rawText": "LIVING",
+    "roomType": "living",
+    "centerXRatio": 0.323852,
+    "centerYRatio": 0.414447,
+    "bbox": {
+     "leftRatio": 0.316806,
+     "topRatio": 0.395492,
+     "rightRatio": 0.330898,
+     "bottomRatio": 0.433402
+    },
+    "confidence": 0.96,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "BALCONY",
+    "rawText": "BALCONY",
+    "roomType": "other",
+    "centerXRatio": 0.326461,
+    "centerYRatio": 0.199795,
+    "bbox": {
+     "leftRatio": 0.319415,
+     "topRatio": 0.171448,
+     "rightRatio": 0.333507,
+     "bottomRatio": 0.228142
+    },
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "DINING",
+    "rawText": "DINING",
+    "roomType": "dining",
+    "centerXRatio": 0.357516,
+    "centerYRatio": 0.601947,
+    "bbox": {
+     "leftRatio": 0.350731,
+     "topRatio": 0.581284,
+     "rightRatio": 0.364301,
+     "bottomRatio": 0.622609
+    },
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "MASTER BEDROOM",
+    "rawText": "MASTER BEDROOM",
+    "roomType": "bedroom",
+    "centerXRatio": 0.504175,
+    "centerYRatio": 0.183402,
+    "bbox": {
+     "leftRatio": 0.487996,
+     "topRatio": 0.153347,
+     "rightRatio": 0.520355,
+     "bottomRatio": 0.213456
+    },
+    "confidence": 0.955,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "KITCHEN",
+    "rawText": "KITCHEN",
+    "roomType": "kitchen",
+    "centerXRatio": 0.511743,
+    "centerYRatio": 0.86168,
+    "bbox": {
+     "leftRatio": 0.504697,
+     "topRatio": 0.838456,
+     "rightRatio": 0.518789,
+     "bottomRatio": 0.884904
+    },
+    "confidence": 0.96,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "BEDROOM 3",
+    "rawText": "BEDROOM 3",
+    "roomType": "bedroom",
+    "centerXRatio": 0.555324,
+    "centerYRatio": 0.695355,
+    "bbox": {
+     "leftRatio": 0.549061,
+     "topRatio": 0.660519,
+     "rightRatio": 0.561587,
+     "bottomRatio": 0.730191
+    },
+    "confidence": 0.93,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "BEDROOM 2",
+    "rawText": "BEDROOM 2",
+    "roomType": "bedroom",
+    "centerXRatio": 0.556367,
+    "centerYRatio": 0.442964,
+    "bbox": {
+     "leftRatio": 0.549582,
+     "topRatio": 0.408128,
+     "rightRatio": 0.563152,
+     "bottomRatio": 0.477801
+    },
+    "confidence": 0.955,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "WC",
+    "rawText": "WC",
+    "roomType": "toilet",
+    "centerXRatio": 0.66858,
+    "centerYRatio": 0.813695,
+    "bbox": {
+     "leftRatio": 0.661795,
+     "topRatio": 0.803962,
+     "rightRatio": 0.675365,
+     "bottomRatio": 0.823429
+    },
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "MASTER BATH",
+    "rawText": "MASTER BATH",
+    "roomType": "toilet",
+    "centerXRatio": 0.732777,
+    "centerYRatio": 0.298497,
+    "bbox": {
+     "leftRatio": 0.716597,
+     "topRatio": 0.276639,
+     "rightRatio": 0.748956,
+     "bottomRatio": 0.320355
+    },
+    "confidence": 0.96,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "AC LEDGE",
+    "rawText": "AC LEDGE",
+    "roomType": "other",
+    "centerXRatio": 0.761743,
+    "centerYRatio": 0.157275,
+    "bbox": {
+     "leftRatio": 0.754697,
+     "topRatio": 0.127732,
+     "rightRatio": 0.768789,
+     "bottomRatio": 0.186817
+    },
+    "confidence": 0.93,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "AC LEDGE",
+    "rawText": "AC LEDGE",
+    "roomType": "other",
+    "centerXRatio": 0.791493,
+    "centerYRatio": 0.85946,
+    "bbox": {
+     "leftRatio": 0.784447,
+     "topRatio": 0.829918,
+     "rightRatio": 0.798539,
+     "bottomRatio": 0.889003
+    },
+    "confidence": 0.945,
+    "evidenceKind": "vectorizer"
+   }
+  ],
+  "roomBoundaries": [
+   {
+    "label": "FOYER / LIVING / DINING",
+    "roomType": "living",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.1738,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.1738,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.196503,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.196503,
+      "yRatio": 0.466872
+     },
+     {
+      "xRatio": 0.196503,
+      "yRatio": 0.473361
+     },
+     {
+      "xRatio": 0.196503,
+      "yRatio": 0.588115
+     },
+     {
+      "xRatio": 0.196503,
+      "yRatio": 0.901981
+     },
+     {
+      "xRatio": 0.2119,
+      "yRatio": 0.901981
+     },
+     {
+      "xRatio": 0.296451,
+      "yRatio": 0.901981
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.901981
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.813183
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.313283,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.313283,
+      "yRatio": 0.670423
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.670423
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.461378,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.546451,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.588115
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.529372
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.549582,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.468163,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.363388
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.307719
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.443111,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.180063,
+      "yRatio": 0.300803
+     }
+    ]
+   },
+   {
+    "label": "MASTER BEDROOM",
+    "roomType": "bedroom",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.096013
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.307719
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.363388
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.362022
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.268784
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.26349
+     },
+     {
+      "xRatio": 0.715684,
+      "yRatio": 0.26349
+     },
+     {
+      "xRatio": 0.715684,
+      "yRatio": 0.096013
+     },
+     {
+      "xRatio": 0.703027,
+      "yRatio": 0.096013
+     },
+     {
+      "xRatio": 0.463987,
+      "yRatio": 0.096013
+     }
+    ]
+   },
+   {
+    "label": "BEDROOM 3",
+    "roomType": "bedroom",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.782104
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.635075
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.630123
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.630123
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.546451,
+      "yRatio": 0.595116
+     },
+     {
+      "xRatio": 0.461378,
+      "yRatio": 0.595116
+     }
+    ]
+   },
+   {
+    "label": "BEDROOM 2",
+    "roomType": "bedroom",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.468163,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.549582,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.51127
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.372609
+     },
+     {
+      "xRatio": 0.778827,
+      "yRatio": 0.368217
+     }
+    ]
+   },
+   {
+    "label": "KITCHEN",
+    "roomType": "kitchen",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.692589,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.621608,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.612865,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.612865,
+      "yRatio": 0.822234
+     },
+     {
+      "xRatio": 0.574113,
+      "yRatio": 0.822234
+     },
+     {
+      "xRatio": 0.574113,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.43215,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.363779,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.813183
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.906079
+     },
+     {
+      "xRatio": 0.343032,
+      "yRatio": 0.930507
+     },
+     {
+      "xRatio": 0.781233,
+      "yRatio": 0.930507
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.920972
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.847336
+     }
+    ]
+   },
+   {
+    "label": "BALCONY",
+    "roomType": "other",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.277923,
+      "yRatio": 0.096013
+     },
+     {
+      "xRatio": 0.277923,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.443111,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.300803
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.096013
+     }
+    ]
+   },
+   {
+    "label": "Room",
+    "roomType": "other",
+    "confidence": 0.5,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.521406
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.529372
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.588115
+     },
+     {
+      "xRatio": 0.558064,
+      "yRatio": 0.630123
+     },
+     {
+      "xRatio": 0.723121,
+      "yRatio": 0.630123
+     },
+     {
+      "xRatio": 0.723121,
+      "yRatio": 0.612363
+     },
+     {
+      "xRatio": 0.797756,
+      "yRatio": 0.612363
+     },
+     {
+      "xRatio": 0.797756,
+      "yRatio": 0.571038
+     },
+     {
+      "xRatio": 0.797756,
+      "yRatio": 0.526639
+     },
+     {
+      "xRatio": 0.797756,
+      "yRatio": 0.521406
+     }
+    ]
+   },
+   {
+    "label": "Room",
+    "roomType": "other",
+    "confidence": 0.5,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.313283,
+      "yRatio": 0.670423
+     },
+     {
+      "xRatio": 0.313283,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.363779,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.43215,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.804249
+     },
+     {
+      "xRatio": 0.456311,
+      "yRatio": 0.670423
+     }
+    ]
+   },
+   {
+    "label": "AC LEDGE",
+    "roomType": "other",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.804303
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.83709
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.847336
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.923839
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.930507
+     },
+     {
+      "xRatio": 0.837683,
+      "yRatio": 0.930507
+     },
+     {
+      "xRatio": 0.837683,
+      "yRatio": 0.923839
+     },
+     {
+      "xRatio": 0.837683,
+      "yRatio": 0.79679
+     },
+     {
+      "xRatio": 0.837683,
+      "yRatio": 0.787345
+     }
+    ]
+   },
+   {
+    "label": "MASTER BATH",
+    "roomType": "toilet",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.26349
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.268784
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.362022
+     },
+     {
+      "xRatio": 0.682933,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.787578,
+      "yRatio": 0.368217
+     },
+     {
+      "xRatio": 0.787578,
+      "yRatio": 0.26349
+     },
+     {
+      "xRatio": 0.724426,
+      "yRatio": 0.26349
+     }
+    ]
+   },
+   {
+    "label": "AC LEDGE",
+    "roomType": "other",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.715684,
+      "yRatio": 0.077698
+     },
+     {
+      "xRatio": 0.715684,
+      "yRatio": 0.217725
+     },
+     {
+      "xRatio": 0.728079,
+      "yRatio": 0.217725
+     },
+     {
+      "xRatio": 0.787578,
+      "yRatio": 0.217725
+     },
+     {
+      "xRatio": 0.787578,
+      "yRatio": 0.077698
+     }
+    ]
+   },
+   {
+    "label": "WC",
+    "roomType": "toilet",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "points": [
+     {
+      "xRatio": 0.612865,
+      "yRatio": 0.787345
+     },
+     {
+      "xRatio": 0.612865,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.621608,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.692589,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.842042
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.83709
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.804303
+     },
+     {
+      "xRatio": 0.747232,
+      "yRatio": 0.787345
+     }
+    ]
+   }
+  ],
+  "dimensionLabels": [],
+  "openingSymbols": [
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.254175,
+    "centerYRatio": 0.902322,
+    "spanStart": {
+     "xRatio": 0.2119,
+     "yRatio": 0.902322
+    },
+    "spanEnd": {
+     "xRatio": 0.296451,
+     "yRatio": 0.902322
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      203.0,
+      1321.0
+     ],
+     [
+      284.0,
+      1321.0
+     ]
+    ],
+    "widthMm": 915,
+    "hinge": "start",
+    "swingSide": -1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     203.0,
+     1321.0
+    ],
+    "swingTowardSourcePx": [
+     203.0,
+     1280.5
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.503914,
+    "centerYRatio": 0.595287,
+    "spanStart": {
+     "xRatio": 0.461378,
+     "yRatio": 0.595287
+    },
+    "spanEnd": {
+     "xRatio": 0.546451,
+     "yRatio": 0.595287
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      442.0,
+      871.5
+     ],
+     [
+      523.5,
+      871.5
+     ]
+    ],
+    "widthMm": 921,
+    "hinge": "start",
+    "swingSide": 1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     442.0,
+     871.5
+    ],
+    "swingTowardSourcePx": [
+     442.0,
+     912.25
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.508873,
+    "centerYRatio": 0.521516,
+    "spanStart": {
+     "xRatio": 0.468163,
+     "yRatio": 0.521516
+    },
+    "spanEnd": {
+     "xRatio": 0.549582,
+     "yRatio": 0.521516
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      448.5,
+      763.5
+     ],
+     [
+      526.5,
+      763.5
+     ]
+    ],
+    "widthMm": 881,
+    "hinge": "start",
+    "swingSide": -1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     448.5,
+     763.5
+    ],
+    "swingTowardSourcePx": [
+     448.5,
+     724.5
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.459551,
+    "centerYRatio": 0.335553,
+    "spanStart": {
+     "xRatio": 0.459551,
+     "yRatio": 0.307719
+    },
+    "spanEnd": {
+     "xRatio": 0.459551,
+     "yRatio": 0.363388
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      440.25,
+      450.5
+     ],
+     [
+      440.25,
+      532.0
+     ]
+    ],
+    "widthMm": 921,
+    "hinge": "end",
+    "swingSide": 1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     440.25,
+     532.0
+    ],
+    "swingTowardSourcePx": [
+     481.0,
+     532.0
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.558194,
+    "centerYRatio": 0.558743,
+    "spanStart": {
+     "xRatio": 0.558194,
+     "yRatio": 0.529372
+    },
+    "spanEnd": {
+     "xRatio": 0.558194,
+     "yRatio": 0.588115
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      534.75,
+      775.0
+     ],
+     [
+      534.75,
+      861.0
+     ]
+    ],
+    "widthMm": 971,
+    "hinge": "start",
+    "swingSide": 1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     534.75,
+     775.0
+    ],
+    "swingTowardSourcePx": [
+     577.75,
+     775.0
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "folding",
+    "centerXRatio": 0.657098,
+    "centerYRatio": 0.842213,
+    "spanStart": {
+     "xRatio": 0.621608,
+     "yRatio": 0.842213
+    },
+    "spanEnd": {
+     "xRatio": 0.692589,
+     "yRatio": 0.842213
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      595.5,
+      1233.0
+     ],
+     [
+      663.5,
+      1233.0
+     ]
+    ],
+    "widthMm": 768,
+    "hinge": "unknown",
+    "swingSide": -1,
+    "handing": "unknown",
+    "note": "dashed V from the two jambs",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "sliding",
+    "centerXRatio": 0.7881,
+    "centerYRatio": 0.206626,
+    "spanStart": {
+     "xRatio": 0.7881,
+     "yRatio": 0.082992
+    },
+    "spanEnd": {
+     "xRatio": 0.7881,
+     "yRatio": 0.33026
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      755.0,
+      121.5
+     ],
+     [
+      755.0,
+      483.5
+     ]
+    ],
+    "widthMm": 4089,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "three or more staggered panel strokes",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "sliding",
+    "centerXRatio": 0.343424,
+    "centerYRatio": 0.859631,
+    "spanStart": {
+     "xRatio": 0.343424,
+     "yRatio": 0.813183
+    },
+    "spanEnd": {
+     "xRatio": 0.343424,
+     "yRatio": 0.906079
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      329.0,
+      1190.5
+     ],
+     [
+      329.0,
+      1326.5
+     ]
+    ],
+    "widthMm": 1536,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "three or more staggered panel strokes",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "sliding",
+    "centerXRatio": 0.776618,
+    "centerYRatio": 0.263661,
+    "spanStart": {
+     "xRatio": 0.724426,
+     "yRatio": 0.263661
+    },
+    "spanEnd": {
+     "xRatio": 0.82881,
+     "yRatio": 0.263661
+    },
+    "confidence": 0.55,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      694.0,
+      386.0
+     ],
+     [
+      794.0,
+      386.0
+     ]
+    ],
+    "widthMm": 1130,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "staggered strokes between two wall ends",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "sliding",
+    "centerXRatio": 0.683194,
+    "centerYRatio": 0.315403,
+    "spanStart": {
+     "xRatio": 0.683194,
+     "yRatio": 0.268784
+    },
+    "spanEnd": {
+     "xRatio": 0.683194,
+     "yRatio": 0.362022
+    },
+    "confidence": 0.55,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      654.5,
+      393.5
+     ],
+     [
+      654.5,
+      530.0
+     ]
+    ],
+    "widthMm": 1542,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "staggered strokes between two wall ends",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "sliding",
+    "centerXRatio": 0.311587,
+    "centerYRatio": 0.301059,
+    "spanStart": {
+     "xRatio": 0.180063,
+     "yRatio": 0.301059
+    },
+    "spanEnd": {
+     "xRatio": 0.443111,
+     "yRatio": 0.301059
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      172.5,
+      440.75
+     ],
+     [
+      424.5,
+      440.75
+     ]
+    ],
+    "widthMm": 2847,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "a wide window onto a balcony from a living space",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.397965,
+    "centerYRatio": 0.804816,
+    "spanStart": {
+     "xRatio": 0.363779,
+     "yRatio": 0.804816
+    },
+    "spanEnd": {
+     "xRatio": 0.43215,
+     "yRatio": 0.804816
+    },
+    "confidence": 0.85,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      348.5,
+      1178.25
+     ],
+     [
+      414.0,
+      1178.25
+     ]
+    ],
+    "widthMm": 740,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.779228,
+    "centerYRatio": 0.44194,
+    "spanStart": {
+     "xRatio": 0.779228,
+     "yRatio": 0.372609
+    },
+    "spanEnd": {
+     "xRatio": 0.779228,
+     "yRatio": 0.51127
+    },
+    "confidence": 0.85,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      746.5,
+      545.5
+     ],
+     [
+      746.5,
+      748.5
+     ]
+    ],
+    "widthMm": 2293,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.749217,
+    "centerYRatio": 0.820697,
+    "spanStart": {
+     "xRatio": 0.749217,
+     "yRatio": 0.804303
+    },
+    "spanEnd": {
+     "xRatio": 0.749217,
+     "yRatio": 0.83709
+    },
+    "confidence": 0.85,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      717.75,
+      1177.5
+     ],
+     [
+      717.75,
+      1225.5
+     ]
+    ],
+    "widthMm": 542,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.746347,
+    "centerYRatio": 0.885587,
+    "spanStart": {
+     "xRatio": 0.746347,
+     "yRatio": 0.847336
+    },
+    "spanEnd": {
+     "xRatio": 0.746347,
+     "yRatio": 0.923839
+    },
+    "confidence": 0.85,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      715.0,
+      1240.5
+     ],
+     [
+      715.0,
+      1352.5
+     ]
+    ],
+    "widthMm": 1265,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.583507,
+    "centerYRatio": 0.094945,
+    "spanStart": {
+     "xRatio": 0.463987,
+     "yRatio": 0.094945
+    },
+    "spanEnd": {
+     "xRatio": 0.703027,
+     "yRatio": 0.094945
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      444.5,
+      139.0
+     ],
+     [
+      673.5,
+      139.0
+     ]
+    ],
+    "widthMm": 2587,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.188413,
+    "centerYRatio": 0.530738,
+    "spanStart": {
+     "xRatio": 0.188413,
+     "yRatio": 0.473361
+    },
+    "spanEnd": {
+     "xRatio": 0.188413,
+     "yRatio": 0.588115
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      180.5,
+      693.0
+     ],
+     [
+      180.5,
+      861.0
+     ]
+    ],
+    "widthMm": 1898,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.838205,
+    "centerYRatio": 0.860314,
+    "spanStart": {
+     "xRatio": 0.838205,
+     "yRatio": 0.79679
+    },
+    "spanEnd": {
+     "xRatio": 0.838205,
+     "yRatio": 0.923839
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      803.0,
+      1166.5
+     ],
+     [
+      803.0,
+      1352.5
+     ]
+    ],
+    "widthMm": 2101,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "open_passage",
+    "operation": "open",
+    "centerXRatio": 0.761221,
+    "centerYRatio": 0.218067,
+    "spanStart": {
+     "xRatio": 0.728079,
+     "yRatio": 0.218067
+    },
+    "spanEnd": {
+     "xRatio": 0.794363,
+     "yRatio": 0.218067
+    },
+    "confidence": 0.55,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      697.5,
+      319.25
+     ],
+     [
+      761.0,
+      319.25
+     ]
+    ],
+    "widthMm": 717,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "one stroke from jamb to jamb",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "open_passage",
+    "operation": "open",
+    "centerXRatio": 0.798278,
+    "centerYRatio": 0.548839,
+    "spanStart": {
+     "xRatio": 0.798278,
+     "yRatio": 0.526639
+    },
+    "spanEnd": {
+     "xRatio": 0.798278,
+     "yRatio": 0.571038
+    },
+    "confidence": 0.55,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      764.75,
+      771.0
+     ],
+     [
+      764.75,
+      836.0
+     ]
+    ],
+    "widthMm": 734,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "one stroke from jamb to jamb",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.193111,
+    "centerYRatio": 0.415471,
+    "spanStart": {
+     "xRatio": 0.193111,
+     "yRatio": 0.364071
+    },
+    "spanEnd": {
+     "xRatio": 0.193111,
+     "yRatio": 0.466872
+    },
+    "confidence": 0.8,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      185.0,
+      533.0
+     ],
+     [
+      185.0,
+      683.5
+     ]
+    ],
+    "widthMm": 1700,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "a band of parallel strokes",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.77714,
+    "centerYRatio": 0.708589,
+    "spanStart": {
+     "xRatio": 0.77714,
+     "yRatio": 0.635075
+    },
+    "spanEnd": {
+     "xRatio": 0.77714,
+     "yRatio": 0.782104
+    },
+    "confidence": 0.8,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      744.5,
+      929.75
+     ],
+     [
+      744.5,
+      1145.0
+     ]
+    ],
+    "widthMm": 2431,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "a band of parallel strokes",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
+    "centerXRatio": 0.687109,
+    "centerYRatio": 0.777664,
+    "confidence": 0.45,
+    "evidenceKind": "vectorizer",
+    "hinge": "unknown",
+    "swingSide": 0,
+    "handing": "unknown",
+    "leafMm": 147,
+    "note": "door swing found, but no gap in a wall to put it in"
+   }
+  ],
+  "fixtureSymbols": [
+   {
+    "kind": "basin",
+    "centerXRatio": 0.397704,
+    "centerYRatio": 0.201673,
+    "bbox": {
+     "leftRatio": 0.377871,
+     "topRatio": 0.188525,
+     "rightRatio": 0.417537,
+     "bottomRatio": 0.214822
+    },
+    "confidence": 0.5,
+    "evidenceKind": "vectorizer"
+   }
+  ],
+  "entrance": null,
+  "notes": [
+   "No written dimensions: the scale is an estimate from door leaves taken as 850 mm and must be confirmed."
+  ]
+ },
+ "wallEdges": [
+  {
+   "id": "e1",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     166.5,
+     440.375
+    ],
+    [
+     166.5,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 12.0,
+   "thicknessMm": 136,
+   "opening": null
+  },
+  {
+   "id": "e2",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     166.5,
+     539.0701983298538
+    ],
+    [
+     188.25,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 28.64,
+   "thicknessMm": 324,
+   "opening": null
+  },
+  {
+   "id": "e3",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     188.25,
+     539.0701983298538
+    ],
+    [
+     188.25,
+     683.5
+    ]
+   ],
+   "thicknessPx": 26.0,
+   "thicknessMm": 294,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.8,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "a band of parallel strokes",
+    "widthMm": 1700,
+    "between": [
+     "outside",
+     "room-1"
+    ]
+   }
+  },
+  {
+   "id": "e4",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     188.25,
+     683.5
+    ],
+    [
+     188.25,
+     693.0
+    ]
+   ],
+   "thicknessPx": 21.0,
+   "thicknessMm": 237,
+   "opening": null
+  },
+  {
+   "id": "e5",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     188.25,
+     693.0
+    ],
+    [
+     188.25,
+     861.0
+    ]
+   ],
+   "thicknessPx": 36.0,
+   "thicknessMm": 407,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.7,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 1898,
+    "between": [
+     "outside",
+     "room-1"
+    ]
+   }
+  },
+  {
+   "id": "e6",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     188.25,
+     861.0
+    ],
+    [
+     188.25,
+     1320.5
+    ]
+   ],
+   "thicknessPx": 21.0,
+   "thicknessMm": 237,
+   "opening": null
+  },
+  {
+   "id": "e7",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     188.25,
+     1320.5
+    ],
+    [
+     203.0,
+     1320.5
+    ]
+   ],
+   "thicknessPx": 15.0,
+   "thicknessMm": 169,
+   "opening": null
+  },
+  {
+   "id": "e8",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     203.0,
+     1320.5
+    ],
+    [
+     284.0,
+     1320.5
+    ]
+   ],
+   "thicknessPx": 15.0,
+   "thicknessMm": 169,
+   "opening": {
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "start",
+    "swingSide": -1,
+    "handing": "unknown",
+    "confidence": 0.9,
+    "hingeSourcePx": [
+     203.0,
+     1321.0
+    ],
+    "swingTowardSourcePx": [
+     203.0,
+     1280.5
+    ],
+    "note": null,
+    "widthMm": 915,
+    "between": [
+     "room-1",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e9",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     284.0,
+     1320.5
+    ],
+    [
+     328.625,
+     1320.5
+    ]
+   ],
+   "thicknessPx": 15.0,
+   "thicknessMm": 169,
+   "opening": null
+  },
+  {
+   "id": "e10",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     328.625,
+     1320.5
+    ],
+    [
+     328.625,
+     1190.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "three or more staggered panel strokes",
+    "widthMm": 1536,
+    "between": [
+     "room-1",
+     "room-5"
+    ]
+   }
+  },
+  {
+   "id": "e11",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     328.625,
+     1190.5
+    ],
+    [
+     328.625,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 16.25,
+   "thicknessMm": 184,
+   "opening": null
+  },
+  {
+   "id": "e12",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     328.625,
+     1177.420218037661
+    ],
+    [
+     300.125,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 24.66,
+   "thicknessMm": 279,
+   "opening": null
+  },
+  {
+   "id": "e13",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     300.125,
+     1177.420218037661
+    ],
+    [
+     300.125,
+     981.5
+    ]
+   ],
+   "thicknessPx": 24.25,
+   "thicknessMm": 274,
+   "opening": null
+  },
+  {
+   "id": "e14",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     300.125,
+     981.5
+    ],
+    [
+     437.14598834760636,
+     981.5
+    ]
+   ],
+   "thicknessPx": 23.0,
+   "thicknessMm": 260,
+   "opening": null
+  },
+  {
+   "id": "e15",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     981.5
+    ],
+    [
+     437.14598834760636,
+     871.25
+    ]
+   ],
+   "thicknessPx": 21.29,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e16",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     871.25
+    ],
+    [
+     442.0,
+     871.25
+    ]
+   ],
+   "thicknessPx": 12.5,
+   "thicknessMm": 141,
+   "opening": null
+  },
+  {
+   "id": "e17",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     442.0,
+     871.25
+    ],
+    [
+     523.5,
+     871.25
+    ]
+   ],
+   "thicknessPx": 12.0,
+   "thicknessMm": 136,
+   "opening": {
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "start",
+    "swingSide": 1,
+    "handing": "unknown",
+    "confidence": 0.9,
+    "hingeSourcePx": [
+     442.0,
+     871.5
+    ],
+    "swingTowardSourcePx": [
+     442.0,
+     912.25
+    ],
+    "note": null,
+    "widthMm": 921,
+    "between": [
+     "room-1",
+     "room-3"
+    ]
+   }
+  },
+  {
+   "id": "e18",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     523.5,
+     871.25
+    ],
+    [
+     534.625,
+     871.25
+    ]
+   ],
+   "thicknessPx": 12.5,
+   "thicknessMm": 141,
+   "opening": null
+  },
+  {
+   "id": "e19",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     871.25
+    ],
+    [
+     534.625,
+     861.0
+    ]
+   ],
+   "thicknessPx": 15.75,
+   "thicknessMm": 178,
+   "opening": null
+  },
+  {
+   "id": "e20",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     534.625,
+     861.0
+    ],
+    [
+     534.625,
+     775.0
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": {
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "start",
+    "swingSide": 1,
+    "handing": "unknown",
+    "confidence": 0.9,
+    "hingeSourcePx": [
+     534.75,
+     775.0
+    ],
+    "swingTowardSourcePx": [
+     577.75,
+     775.0
+    ],
+    "note": null,
+    "widthMm": 971,
+    "between": [
+     "room-1",
+     "room-7"
+    ]
+   }
+  },
+  {
+   "id": "e21",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     775.0
+    ],
+    [
+     534.625,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.75,
+   "thicknessMm": 178,
+   "opening": null
+  },
+  {
+   "id": "e22",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     763.3387023593467
+    ],
+    [
+     526.5,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.32,
+   "thicknessMm": 173,
+   "opening": null
+  },
+  {
+   "id": "e23",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     526.5,
+     763.3387023593467
+    ],
+    [
+     448.5,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.0,
+   "thicknessMm": 169,
+   "opening": {
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "start",
+    "swingSide": -1,
+    "handing": "unknown",
+    "confidence": 0.9,
+    "hingeSourcePx": [
+     448.5,
+     763.5
+    ],
+    "swingTowardSourcePx": [
+     448.5,
+     724.5
+    ],
+    "note": null,
+    "widthMm": 881,
+    "between": [
+     "room-4",
+     "room-1"
+    ]
+   }
+  },
+  {
+   "id": "e24",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     448.5,
+     763.3387023593467
+    ],
+    [
+     437.14598834760636,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.32,
+   "thicknessMm": 173,
+   "opening": null
+  },
+  {
+   "id": "e25",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     763.3387023593467
+    ],
+    [
+     437.14598834760636,
+     532.0
+    ]
+   ],
+   "thicknessPx": 21.29,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e26",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     532.0
+    ],
+    [
+     437.14598834760636,
+     450.5
+    ]
+   ],
+   "thicknessPx": 20.5,
+   "thicknessMm": 232,
+   "opening": {
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "end",
+    "swingSide": 1,
+    "handing": "unknown",
+    "confidence": 0.9,
+    "hingeSourcePx": [
+     440.25,
+     532.0
+    ],
+    "swingTowardSourcePx": [
+     481.0,
+     532.0
+    ],
+    "note": null,
+    "widthMm": 921,
+    "between": [
+     "room-1",
+     "room-2"
+    ]
+   }
+  },
+  {
+   "id": "e27",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     450.5
+    ],
+    [
+     437.14598834760636,
+     440.375
+    ]
+   ],
+   "thicknessPx": 21.29,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e28",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     440.375
+    ],
+    [
+     424.5,
+     440.375
+    ]
+   ],
+   "thicknessPx": 15.25,
+   "thicknessMm": 172,
+   "opening": null
+  },
+  {
+   "id": "e29",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     424.5,
+     440.375
+    ],
+    [
+     172.5,
+     440.375
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 164,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "a wide window onto a balcony from a living space",
+    "widthMm": 2847,
+    "between": [
+     "room-6",
+     "room-1"
+    ]
+   }
+  },
+  {
+   "id": "e30",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     172.5,
+     440.375
+    ],
+    [
+     166.5,
+     440.375
+    ]
+   ],
+   "thicknessPx": 15.25,
+   "thicknessMm": 172,
+   "opening": null
+  },
+  {
+   "id": "e31",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     140.56270096463027
+    ],
+    [
+     437.14598834760636,
+     450.5
+    ]
+   ],
+   "thicknessPx": 27.21,
+   "thicknessMm": 307,
+   "opening": null
+  },
+  {
+   "id": "e32",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     532.0
+    ],
+    [
+     437.14598834760636,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 27.21,
+   "thicknessMm": 307,
+   "opening": null
+  },
+  {
+   "id": "e33",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     539.0701983298538
+    ],
+    [
+     654.25,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 13.14,
+   "thicknessMm": 148,
+   "opening": null
+  },
+  {
+   "id": "e34",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     654.25,
+     539.0701983298538
+    ],
+    [
+     654.25,
+     530.0
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 164,
+   "opening": null
+  },
+  {
+   "id": "e35",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     654.25,
+     530.0
+    ],
+    [
+     654.25,
+     393.5
+    ]
+   ],
+   "thicknessPx": 14.0,
+   "thicknessMm": 158,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.55,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "staggered strokes between two wall ends",
+    "widthMm": 1542,
+    "between": [
+     "room-2",
+     "room-10"
+    ]
+   }
+  },
+  {
+   "id": "e36",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     654.25,
+     393.5
+    ],
+    [
+     654.25,
+     385.75
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 164,
+   "opening": null
+  },
+  {
+   "id": "e37",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     654.25,
+     385.75
+    ],
+    [
+     685.625,
+     385.75
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e38",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     685.625,
+     385.75
+    ],
+    [
+     685.625,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 16.25,
+   "thicknessMm": 184,
+   "opening": null
+  },
+  {
+   "id": "e39",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     685.625,
+     140.56270096463027
+    ],
+    [
+     673.5,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 12.87,
+   "thicknessMm": 145,
+   "opening": null
+  },
+  {
+   "id": "e40",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     673.5,
+     140.56270096463027
+    ],
+    [
+     444.5,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.7,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 2587,
+    "between": [
+     "outside",
+     "room-2"
+    ]
+   }
+  },
+  {
+   "id": "e41",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     444.5,
+     140.56270096463027
+    ],
+    [
+     437.14598834760636,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 12.87,
+   "thicknessMm": 145,
+   "opening": null
+  },
+  {
+   "id": "e42",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     871.25
+    ],
+    [
+     437.14598834760636,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 19.21,
+   "thicknessMm": 217,
+   "opening": null
+  },
+  {
+   "id": "e43",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     1152.6723574821854
+    ],
+    [
+     746.1162241887905,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 16.34,
+   "thicknessMm": 185,
+   "opening": null
+  },
+  {
+   "id": "e44",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     1152.6723574821854
+    ],
+    [
+     746.1162241887905,
+     1145.0
+    ]
+   ],
+   "thicknessPx": 34.23,
+   "thicknessMm": 387,
+   "opening": null
+  },
+  {
+   "id": "e45",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     1145.0
+    ],
+    [
+     746.1162241887905,
+     929.75
+    ]
+   ],
+   "thicknessPx": 30.0,
+   "thicknessMm": 339,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.8,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "a band of parallel strokes",
+    "widthMm": 2431,
+    "between": [
+     "room-3",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e46",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     929.75
+    ],
+    [
+     746.1162241887905,
+     922.5
+    ]
+   ],
+   "thicknessPx": 34.23,
+   "thicknessMm": 387,
+   "opening": null
+  },
+  {
+   "id": "e47",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     922.5
+    ],
+    [
+     534.625,
+     922.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e48",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     922.5
+    ],
+    [
+     534.625,
+     871.25
+    ]
+   ],
+   "thicknessPx": 15.75,
+   "thicknessMm": 178,
+   "opening": null
+  },
+  {
+   "id": "e49",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     539.0701983298538
+    ],
+    [
+     437.14598834760636,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 19.21,
+   "thicknessMm": 217,
+   "opening": null
+  },
+  {
+   "id": "e50",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     526.5,
+     763.3387023593467
+    ],
+    [
+     746.1162241887905,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.68,
+   "thicknessMm": 177,
+   "opening": null
+  },
+  {
+   "id": "e51",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     763.3387023593467
+    ],
+    [
+     746.1162241887905,
+     748.5
+    ]
+   ],
+   "thicknessPx": 16.23,
+   "thicknessMm": 183,
+   "opening": null
+  },
+  {
+   "id": "e52",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     748.5
+    ],
+    [
+     746.1162241887905,
+     545.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.85,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 2293,
+    "between": [
+     "room-4",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e53",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     545.5
+    ],
+    [
+     746.1162241887905,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 16.23,
+   "thicknessMm": 183,
+   "opening": null
+  },
+  {
+   "id": "e54",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     746.1162241887905,
+     539.0701983298538
+    ],
+    [
+     437.14598834760636,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 13.36,
+   "thicknessMm": 151,
+   "opening": null
+  },
+  {
+   "id": "e55",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1232.75
+    ],
+    [
+     663.5,
+     1232.75
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e56",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     663.5,
+     1232.75
+    ],
+    [
+     595.5,
+     1232.75
+    ]
+   ],
+   "thicknessPx": 15.0,
+   "thicknessMm": 169,
+   "opening": {
+    "kind": "door",
+    "operation": "folding",
+    "hinge": "unknown",
+    "swingSide": -1,
+    "handing": "unknown",
+    "confidence": 0.7,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "dashed V from the two jambs",
+    "widthMm": 768,
+    "between": [
+     "room-12",
+     "room-5"
+    ]
+   }
+  },
+  {
+   "id": "e57",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     595.5,
+     1232.75
+    ],
+    [
+     587.125,
+     1232.75
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e58",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     587.125,
+     1232.75
+    ],
+    [
+     587.125,
+     1203.75
+    ]
+   ],
+   "thicknessPx": 16.75,
+   "thicknessMm": 189,
+   "opening": null
+  },
+  {
+   "id": "e59",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     587.125,
+     1203.75
+    ],
+    [
+     550.0,
+     1203.75
+    ]
+   ],
+   "thicknessPx": 13.5,
+   "thicknessMm": 152,
+   "opening": null
+  },
+  {
+   "id": "e60",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     550.0,
+     1203.75
+    ],
+    [
+     550.0,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 13.0,
+   "thicknessMm": 147,
+   "opening": null
+  },
+  {
+   "id": "e61",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     550.0,
+     1152.6723574821854
+    ],
+    [
+     437.14598834760636,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 17.16,
+   "thicknessMm": 194,
+   "opening": null
+  },
+  {
+   "id": "e62",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     1152.6723574821854
+    ],
+    [
+     437.14598834760636,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 18.21,
+   "thicknessMm": 206,
+   "opening": null
+  },
+  {
+   "id": "e63",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     1177.420218037661
+    ],
+    [
+     414.0,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 26.16,
+   "thicknessMm": 295,
+   "opening": null
+  },
+  {
+   "id": "e64",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     414.0,
+     1177.420218037661
+    ],
+    [
+     348.5,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 24.5,
+   "thicknessMm": 277,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.85,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 740,
+    "between": [
+     "room-8",
+     "room-5"
+    ]
+   }
+  },
+  {
+   "id": "e65",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     348.5,
+     1177.420218037661
+    ],
+    [
+     328.625,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 26.16,
+   "thicknessMm": 295,
+   "opening": null
+  },
+  {
+   "id": "e66",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     328.625,
+     1190.5
+    ],
+    [
+     328.625,
+     1326.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "three or more staggered panel strokes",
+    "widthMm": 1536,
+    "between": [
+     "room-1",
+     "room-5"
+    ]
+   }
+  },
+  {
+   "id": "e67",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     328.625,
+     1326.5
+    ],
+    [
+     328.625,
+     1362.2624013528748
+    ]
+   ],
+   "thicknessPx": 16.25,
+   "thicknessMm": 184,
+   "opening": null
+  },
+  {
+   "id": "e68",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     328.625,
+     1362.2624013528748
+    ],
+    [
+     748.4209981056783,
+     1362.2624013528748
+    ]
+   ],
+   "thicknessPx": 15.52,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e69",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     748.4209981056783,
+     1362.2624013528748
+    ],
+    [
+     715.8481617647059,
+     1348.3026143496008
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e70",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1348.3026143496008
+    ],
+    [
+     715.8481617647059,
+     1240.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.85,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 1265,
+    "between": [
+     "room-5",
+     "room-9"
+    ]
+   }
+  },
+  {
+   "id": "e71",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1240.5
+    ],
+    [
+     715.8481617647059,
+     1232.75
+    ]
+   ],
+   "thicknessPx": 18.7,
+   "thicknessMm": 211,
+   "opening": null
+  },
+  {
+   "id": "e72",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     266.25,
+     140.56270096463027
+    ],
+    [
+     266.25,
+     440.375
+    ]
+   ],
+   "thicknessPx": 2.5,
+   "thicknessMm": 28,
+   "opening": null
+  },
+  {
+   "id": "e73",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     266.25,
+     440.375
+    ],
+    [
+     424.5,
+     440.375
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 164,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "a wide window onto a balcony from a living space",
+    "widthMm": 2847,
+    "between": [
+     "room-6",
+     "room-1"
+    ]
+   }
+  },
+  {
+   "id": "e74",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     440.375
+    ],
+    [
+     437.14598834760636,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 15.29,
+   "thicknessMm": 173,
+   "opening": null
+  },
+  {
+   "id": "e75",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     140.56270096463027
+    ],
+    [
+     266.25,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 6.87,
+   "thicknessMm": 78,
+   "opening": null
+  },
+  {
+   "id": "e76",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     861.0
+    ],
+    [
+     534.625,
+     922.5
+    ]
+   ],
+   "thicknessPx": 15.75,
+   "thicknessMm": 178,
+   "opening": null
+  },
+  {
+   "id": "e77",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     534.625,
+     922.5
+    ],
+    [
+     692.75,
+     922.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e78",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     692.75,
+     922.5
+    ],
+    [
+     692.75,
+     896.5
+    ]
+   ],
+   "thicknessPx": 14.0,
+   "thicknessMm": 158,
+   "opening": null
+  },
+  {
+   "id": "e79",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     692.75,
+     896.5
+    ],
+    [
+     764.25,
+     896.5
+    ]
+   ],
+   "thicknessPx": 64.0,
+   "thicknessMm": 723,
+   "opening": null
+  },
+  {
+   "id": "e80",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     764.25,
+     896.5
+    ],
+    [
+     764.25,
+     836.0
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e81",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     764.25,
+     836.0
+    ],
+    [
+     764.25,
+     771.0
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": {
+    "kind": "open_passage",
+    "operation": "open",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.55,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "one stroke from jamb to jamb",
+    "widthMm": 734,
+    "between": [
+     "room-7",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e82",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     764.25,
+     771.0
+    ],
+    [
+     764.25,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e83",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     764.25,
+     763.3387023593467
+    ],
+    [
+     534.625,
+     763.3387023593467
+    ]
+   ],
+   "thicknessPx": 15.82,
+   "thicknessMm": 179,
+   "opening": null
+  },
+  {
+   "id": "e84",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     300.125,
+     1177.420218037661
+    ],
+    [
+     348.5,
+     1177.420218037661
+    ]
+   ],
+   "thicknessPx": 23.84,
+   "thicknessMm": 269,
+   "opening": null
+  },
+  {
+   "id": "e85",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.14598834760636,
+     1177.420218037661
+    ],
+    [
+     437.14598834760636,
+     981.5
+    ]
+   ],
+   "thicknessPx": 29.29,
+   "thicknessMm": 331,
+   "opening": null
+  },
+  {
+   "id": "e86",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1152.6723574821854
+    ],
+    [
+     715.8481617647059,
+     1177.5
+    ]
+   ],
+   "thicknessPx": 16.8,
+   "thicknessMm": 190,
+   "opening": null
+  },
+  {
+   "id": "e87",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1177.5
+    ],
+    [
+     715.8481617647059,
+     1225.5
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.85,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 542,
+    "between": [
+     "room-12",
+     "room-9"
+    ]
+   }
+  },
+  {
+   "id": "e88",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1225.5
+    ],
+    [
+     715.8481617647059,
+     1240.5
+    ]
+   ],
+   "thicknessPx": 16.8,
+   "thicknessMm": 190,
+   "opening": null
+  },
+  {
+   "id": "e89",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1240.5
+    ],
+    [
+     715.8481617647059,
+     1352.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.85,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 1265,
+    "between": [
+     "room-5",
+     "room-9"
+    ]
+   }
+  },
+  {
+   "id": "e90",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1352.5
+    ],
+    [
+     715.8481617647059,
+     1362.2624013528748
+    ]
+   ],
+   "thicknessPx": 16.8,
+   "thicknessMm": 190,
+   "opening": null
+  },
+  {
+   "id": "e91",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1362.2624013528748
+    ],
+    [
+     802.5,
+     1362.2624013528748
+    ]
+   ],
+   "thicknessPx": 20.52,
+   "thicknessMm": 232,
+   "opening": null
+  },
+  {
+   "id": "e92",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     802.5,
+     1362.2624013528748
+    ],
+    [
+     802.5,
+     1352.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e93",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     802.5,
+     1352.5
+    ],
+    [
+     802.5,
+     1166.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.7,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": null,
+    "widthMm": 2101,
+    "between": [
+     "room-9",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e94",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     802.5,
+     1166.5
+    ],
+    [
+     802.5,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e95",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     802.5,
+     1152.6723574821854
+    ],
+    [
+     715.8481617647059,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 16.34,
+   "thicknessMm": 185,
+   "opening": null
+  },
+  {
+   "id": "e96",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     654.25,
+     539.0701983298538
+    ],
+    [
+     754.5,
+     539.0701983298538
+    ]
+   ],
+   "thicknessPx": 13.14,
+   "thicknessMm": 148,
+   "opening": null
+  },
+  {
+   "id": "e97",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     754.5,
+     539.0701983298538
+    ],
+    [
+     754.5,
+     385.75
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e98",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     754.5,
+     385.75
+    ],
+    [
+     694.0,
+     385.75
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.55,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "staggered strokes between two wall ends",
+    "widthMm": 1130,
+    "between": [
+     "outside",
+     "room-10"
+    ]
+   }
+  },
+  {
+   "id": "e99",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     694.0,
+     385.75
+    ],
+    [
+     654.25,
+     385.75
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e100",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     685.625,
+     113.75
+    ],
+    [
+     685.625,
+     318.75
+    ]
+   ],
+   "thicknessPx": 16.25,
+   "thicknessMm": 184,
+   "opening": null
+  },
+  {
+   "id": "e101",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     685.625,
+     318.75
+    ],
+    [
+     697.5,
+     318.75
+    ]
+   ],
+   "thicknessPx": 33.0,
+   "thicknessMm": 373,
+   "opening": null
+  },
+  {
+   "id": "e102",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     697.5,
+     318.75
+    ],
+    [
+     754.5,
+     318.75
+    ]
+   ],
+   "thicknessPx": 32.5,
+   "thicknessMm": 367,
+   "opening": {
+    "kind": "open_passage",
+    "operation": "open",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.55,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "one stroke from jamb to jamb",
+    "widthMm": 717,
+    "between": [
+     "room-11",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e103",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     754.5,
+     318.75
+    ],
+    [
+     754.5,
+     113.75
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 181,
+   "opening": null
+  },
+  {
+   "id": "e104",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     754.5,
+     113.75
+    ],
+    [
+     685.625,
+     113.75
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e105",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     587.125,
+     1152.6723574821854
+    ],
+    [
+     587.125,
+     1232.75
+    ]
+   ],
+   "thicknessPx": 16.75,
+   "thicknessMm": 189,
+   "opening": null
+  },
+  {
+   "id": "e106",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1232.75
+    ],
+    [
+     715.8481617647059,
+     1225.5
+    ]
+   ],
+   "thicknessPx": 13.2,
+   "thicknessMm": 149,
+   "opening": null
+  },
+  {
+   "id": "e107",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     715.8481617647059,
+     1152.6723574821854
+    ],
+    [
+     587.125,
+     1152.6723574821854
+    ]
+   ],
+   "thicknessPx": 15.66,
+   "thicknessMm": 177,
+   "opening": null
+  }
+ ],
+ "rooms": [
+  {
+   "key": "room-1",
+   "label": "FOYER / LIVING / DINING",
+   "roomType": "living",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 166.5,
+     "y": 440.375
+    },
+    {
+     "x": 166.5,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 188.25,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 188.25,
+     "y": 683.5
+    },
+    {
+     "x": 188.25,
+     "y": 693.0
+    },
+    {
+     "x": 188.25,
+     "y": 861.0
+    },
+    {
+     "x": 188.25,
+     "y": 1320.5
+    },
+    {
+     "x": 203.0,
+     "y": 1320.5
+    },
+    {
+     "x": 284.0,
+     "y": 1320.5
+    },
+    {
+     "x": 328.625,
+     "y": 1320.5
+    },
+    {
+     "x": 328.625,
+     "y": 1190.5
+    },
+    {
+     "x": 328.625,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 300.125,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 300.125,
+     "y": 981.5
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 981.5
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 871.25
+    },
+    {
+     "x": 442.0,
+     "y": 871.25
+    },
+    {
+     "x": 523.5,
+     "y": 871.25
+    },
+    {
+     "x": 534.625,
+     "y": 871.25
+    },
+    {
+     "x": 534.625,
+     "y": 861.0
+    },
+    {
+     "x": 534.625,
+     "y": 775.0
+    },
+    {
+     "x": 534.625,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 526.5,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 448.5,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 532.0
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 450.5
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 440.375
+    },
+    {
+     "x": 424.5,
+     "y": 440.375
+    },
+    {
+     "x": 172.5,
+     "y": 440.375
+    }
+   ],
+   "edgeIds": [
+    "e1",
+    "e2",
+    "e3",
+    "e4",
+    "e5",
+    "e6",
+    "e7",
+    "e8",
+    "e9",
+    "e10",
+    "e11",
+    "e12",
+    "e13",
+    "e14",
+    "e15",
+    "e16",
+    "e17",
+    "e18",
+    "e19",
+    "e20",
+    "e21",
+    "e22",
+    "e23",
+    "e24",
+    "e25",
+    "e26",
+    "e27",
+    "e28",
+    "e29",
+    "e30"
+   ],
+   "areaM2": 24.16,
+   "sourceLabels": [
+    "FOYER",
+    "LIVING",
+    "DINING"
+   ]
+  },
+  {
+   "key": "room-2",
+   "label": "MASTER BEDROOM",
+   "roomType": "bedroom",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 437.14598834760636,
+     "y": 140.56270096463027
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 450.5
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 532.0
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 654.25,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 654.25,
+     "y": 530.0
+    },
+    {
+     "x": 654.25,
+     "y": 393.5
+    },
+    {
+     "x": 654.25,
+     "y": 385.75
+    },
+    {
+     "x": 685.625,
+     "y": 385.75
+    },
+    {
+     "x": 685.625,
+     "y": 140.56270096463027
+    },
+    {
+     "x": 673.5,
+     "y": 140.56270096463027
+    },
+    {
+     "x": 444.5,
+     "y": 140.56270096463027
+    }
+   ],
+   "edgeIds": [
+    "e31",
+    "e26",
+    "e32",
+    "e33",
+    "e34",
+    "e35",
+    "e36",
+    "e37",
+    "e38",
+    "e39",
+    "e40",
+    "e41"
+   ],
+   "areaM2": 12.02,
+   "sourceLabels": [
+    "MASTER BEDROOM"
+   ]
+  },
+  {
+   "key": "room-3",
+   "label": "BEDROOM 3",
+   "roomType": "bedroom",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 437.14598834760636,
+     "y": 871.25
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 1145.0
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 929.75
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 922.5
+    },
+    {
+     "x": 534.625,
+     "y": 922.5
+    },
+    {
+     "x": 534.625,
+     "y": 871.25
+    },
+    {
+     "x": 523.5,
+     "y": 871.25
+    },
+    {
+     "x": 442.0,
+     "y": 871.25
+    }
+   ],
+   "edgeIds": [
+    "e42",
+    "e43",
+    "e44",
+    "e45",
+    "e46",
+    "e47",
+    "e48",
+    "e18",
+    "e17",
+    "e16"
+   ],
+   "areaM2": 9.71,
+   "sourceLabels": [
+    "BEDROOM 3"
+   ]
+  },
+  {
+   "key": "room-4",
+   "label": "BEDROOM 2",
+   "roomType": "bedroom",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 437.14598834760636,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 448.5,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 526.5,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 748.5
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 545.5
+    },
+    {
+     "x": 746.1162241887905,
+     "y": 539.0701983298538
+    }
+   ],
+   "edgeIds": [
+    "e49",
+    "e24",
+    "e23",
+    "e50",
+    "e51",
+    "e52",
+    "e53",
+    "e54"
+   ],
+   "areaM2": 8.84,
+   "sourceLabels": [
+    "BEDROOM 2"
+   ]
+  },
+  {
+   "key": "room-5",
+   "label": "KITCHEN",
+   "roomType": "kitchen",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 715.8481617647059,
+     "y": 1232.75
+    },
+    {
+     "x": 663.5,
+     "y": 1232.75
+    },
+    {
+     "x": 595.5,
+     "y": 1232.75
+    },
+    {
+     "x": 587.125,
+     "y": 1232.75
+    },
+    {
+     "x": 587.125,
+     "y": 1203.75
+    },
+    {
+     "x": 550.0,
+     "y": 1203.75
+    },
+    {
+     "x": 550.0,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 414.0,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 348.5,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 328.625,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 328.625,
+     "y": 1190.5
+    },
+    {
+     "x": 328.625,
+     "y": 1326.5
+    },
+    {
+     "x": 328.625,
+     "y": 1362.2624013528748
+    },
+    {
+     "x": 748.4209981056783,
+     "y": 1362.2624013528748
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1348.3026143496008
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1240.5
+    }
+   ],
+   "edgeIds": [
+    "e55",
+    "e56",
+    "e57",
+    "e58",
+    "e59",
+    "e60",
+    "e61",
+    "e62",
+    "e63",
+    "e64",
+    "e65",
+    "e11",
+    "e66",
+    "e67",
+    "e68",
+    "e69",
+    "e70",
+    "e71"
+   ],
+   "areaM2": 8.48,
+   "sourceLabels": [
+    "KITCHEN"
+   ]
+  },
+  {
+   "key": "room-6",
+   "label": "BALCONY",
+   "roomType": "other",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 266.25,
+     "y": 140.56270096463027
+    },
+    {
+     "x": 266.25,
+     "y": 440.375
+    },
+    {
+     "x": 424.5,
+     "y": 440.375
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 440.375
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 140.56270096463027
+    }
+   ],
+   "edgeIds": [
+    "e72",
+    "e73",
+    "e28",
+    "e74",
+    "e75"
+   ],
+   "areaM2": 6.54,
+   "sourceLabels": [
+    "BALCONY"
+   ]
+  },
+  {
+   "key": "room-7",
+   "label": "",
+   "roomType": "other",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.5,
+   "sourcePoints": [
+    {
+     "x": 534.625,
+     "y": 763.3387023593467
+    },
+    {
+     "x": 534.625,
+     "y": 775.0
+    },
+    {
+     "x": 534.625,
+     "y": 861.0
+    },
+    {
+     "x": 534.625,
+     "y": 922.5
+    },
+    {
+     "x": 692.75,
+     "y": 922.5
+    },
+    {
+     "x": 692.75,
+     "y": 896.5
+    },
+    {
+     "x": 764.25,
+     "y": 896.5
+    },
+    {
+     "x": 764.25,
+     "y": 836.0
+    },
+    {
+     "x": 764.25,
+     "y": 771.0
+    },
+    {
+     "x": 764.25,
+     "y": 763.3387023593467
+    }
+   ],
+   "edgeIds": [
+    "e21",
+    "e20",
+    "e76",
+    "e77",
+    "e78",
+    "e79",
+    "e80",
+    "e81",
+    "e82",
+    "e83"
+   ],
+   "areaM2": 4.43,
+   "sourceLabels": []
+  },
+  {
+   "key": "room-8",
+   "label": "",
+   "roomType": "other",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.5,
+   "sourcePoints": [
+    {
+     "x": 300.125,
+     "y": 981.5
+    },
+    {
+     "x": 300.125,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 348.5,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 414.0,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 1177.420218037661
+    },
+    {
+     "x": 437.14598834760636,
+     "y": 981.5
+    }
+   ],
+   "edgeIds": [
+    "e13",
+    "e84",
+    "e64",
+    "e63",
+    "e85",
+    "e14"
+   ],
+   "areaM2": 3.43,
+   "sourceLabels": []
+  },
+  {
+   "key": "room-9",
+   "label": "AC LEDGE",
+   "roomType": "other",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 715.8481617647059,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1177.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1225.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1240.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1352.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1362.2624013528748
+    },
+    {
+     "x": 802.5,
+     "y": 1362.2624013528748
+    },
+    {
+     "x": 802.5,
+     "y": 1352.5
+    },
+    {
+     "x": 802.5,
+     "y": 1166.5
+    },
+    {
+     "x": 802.5,
+     "y": 1152.6723574821854
+    }
+   ],
+   "edgeIds": [
+    "e86",
+    "e87",
+    "e88",
+    "e89",
+    "e90",
+    "e91",
+    "e92",
+    "e93",
+    "e94",
+    "e95"
+   ],
+   "areaM2": 2.32,
+   "sourceLabels": [
+    "AC LEDGE"
+   ]
+  },
+  {
+   "key": "room-10",
+   "label": "MASTER BATH",
+   "roomType": "toilet",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 654.25,
+     "y": 385.75
+    },
+    {
+     "x": 654.25,
+     "y": 393.5
+    },
+    {
+     "x": 654.25,
+     "y": 530.0
+    },
+    {
+     "x": 654.25,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 754.5,
+     "y": 539.0701983298538
+    },
+    {
+     "x": 754.5,
+     "y": 385.75
+    },
+    {
+     "x": 694.0,
+     "y": 385.75
+    }
+   ],
+   "edgeIds": [
+    "e36",
+    "e35",
+    "e34",
+    "e96",
+    "e97",
+    "e98",
+    "e99"
+   ],
+   "areaM2": 1.96,
+   "sourceLabels": [
+    "MASTER BATH"
+   ]
+  },
+  {
+   "key": "room-11",
+   "label": "AC LEDGE",
+   "roomType": "other",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 685.625,
+     "y": 113.75
+    },
+    {
+     "x": 685.625,
+     "y": 318.75
+    },
+    {
+     "x": 697.5,
+     "y": 318.75
+    },
+    {
+     "x": 754.5,
+     "y": 318.75
+    },
+    {
+     "x": 754.5,
+     "y": 113.75
+    }
+   ],
+   "edgeIds": [
+    "e100",
+    "e101",
+    "e102",
+    "e103",
+    "e104"
+   ],
+   "areaM2": 1.8,
+   "sourceLabels": [
+    "AC LEDGE"
+   ]
+  },
+  {
+   "key": "room-12",
+   "label": "WC",
+   "roomType": "toilet",
+   "registrationKind": "assembled_wall_topology",
+   "confidence": 0.9,
+   "sourcePoints": [
+    {
+     "x": 587.125,
+     "y": 1152.6723574821854
+    },
+    {
+     "x": 587.125,
+     "y": 1232.75
+    },
+    {
+     "x": 595.5,
+     "y": 1232.75
+    },
+    {
+     "x": 663.5,
+     "y": 1232.75
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1232.75
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1225.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1177.5
+    },
+    {
+     "x": 715.8481617647059,
+     "y": 1152.6723574821854
+    }
+   ],
+   "edgeIds": [
+    "e105",
+    "e57",
+    "e56",
+    "e55",
+    "e106",
+    "e87",
+    "e86",
+    "e107"
+   ],
+   "areaM2": 1.32,
+   "sourceLabels": [
+    "WC"
+   ]
+  }
+ ],
+ "diagnostics": {
+  "bars": 63,
+  "gapsSeen": 115,
+  "openings": {
+   "door": 11,
+   "window": 9,
+   "open_passage": 2,
+   "wall": 4
+  },
+  "doorSwingsWithoutGap": 1,
+  "rooms": 12,
+  "roomsWithheldAsIllegalGeometry": 0,
+  "openingsRejectedAsNotLeadingAnywhere": 4,
+  "labelsOutsideRooms": [],
+  "unsupportedWallPx": 1193,
+  "workScale": 2,
+  "skewDeg": 0.0,
+  "pageCrop": null,
+  "scaleBar": null,
+  "areaCheck": null
+ }
+}

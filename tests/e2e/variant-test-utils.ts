@@ -96,13 +96,26 @@ export async function ensureCommandMenuOpen(
   }
 }
 
+// The editor is rendered on the server first, and a click before it hydrates does nothing.
+export async function waitForEditorHydration(page: Page, timeout = 30_000): Promise<void> {
+  await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute("data-client-hydrated", "true", { timeout });
+}
+
+// Opens More until `item` shows. The dev server can reload the editor while a test runs, and
+// the open menu goes with it, so this waits for the editor to hydrate again and reopens it.
+async function openMoreMenuFor(page: Page, item: Locator): Promise<void> {
+  const more = page.getByTestId("editor-command-overflow");
+  await expect(async () => {
+    await waitForEditorHydration(page, 10_000);
+    await ensureCommandMenuOpen(more);
+    await expect(item).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 45_000 });
+}
+
 // New design lives in the More menu.
 export async function chooseNewDesign(page: Page): Promise<void> {
-  const more = page.getByTestId("editor-command-overflow");
-  await expect(more).toBeVisible({ timeout: 20_000 });
-  await ensureCommandMenuOpen(more);
   const newDesign = page.getByTestId("editor-command-new-plan");
-  await expect(newDesign).toBeVisible();
+  await openMoreMenuFor(page, newDesign);
   await newDesign.click();
 }
 
@@ -139,9 +152,7 @@ export async function selectEditorWorkspace(
     if (FURNISH_STEP_ENTRIES.has(itemTestId)) {
       await selectEditorWorkspace(page, "editor-workflow-furnish");
     } else if (MORE_MENU_ENTRIES.has(itemTestId)) {
-      const trigger = page.getByTestId("editor-command-overflow");
-      await expect(trigger).toBeVisible({ timeout: 20_000 });
-      await ensureCommandMenuOpen(trigger);
+      await openMoreMenuFor(page, item);
     }
   }
   await expect(item).toBeVisible({ timeout: 20_000 });

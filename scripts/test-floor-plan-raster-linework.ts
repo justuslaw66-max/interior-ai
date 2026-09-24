@@ -1,6 +1,16 @@
+import { testRasterOpeningSpans } from "./test-raster-opening-spans";
+import { diagnoseSourceScale, solveCrossCheckedScale } from "@/lib/floor-plan-imports/source-scale-cross-check";
+import { testRasterDimensionAssociations } from "./test-raster-dimension-associations";
 import assert from "node:assert/strict";
+import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { registerEmptyPlanScaleCalibration } from "@/lib/floor-plan-import-review-geometry";
+import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { PDFDocument, degrees } from "pdf-lib";
+import { mergeMixedPdfEvidence } from "@/lib/floor-plan-imports/mixed-pdf-evidence";
 import {
   registerRoomRectangles,
+  solveScaleFromRegisteredEvidence,
   type RegisteredPageEvidence,
 } from "@/lib/floor-plan-imports/deterministic-evidence";
 import {
@@ -333,17 +343,32 @@ async function testDenseGridCycleSearchIsBounded() {
   assert.equal(result.diagnostics.weakReason, "cycle_search_limit_exceeded");
 }
 
-async function testRasterAdapterIntegration() {
+async function testRasterAdapterIntegration(mode: "raster" | "pdf" | "mixed" = "raster") {
   const image = fixture();
   horizontal(image, 120, 520, 90);
   horizontal(image, 120, 520, 390);
   vertical(image, 120, 90, 390);
   vertical(image, 520, 90, 390);
-  const bytes = await png(image);
+  if (mode !== "raster") {
+    image.pixels.fill(255);
+    horizontal(image, 100, 540, 240, 3); // Deliberately open linework: never a room.
+  }
+  let bytes: Uint8Array = await png(image);
+  if (mode !== "raster") {
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([640, 480]);
+    page.drawImage(await pdf.embedPng(bytes), { x: 0, y: 0, width: 640, height: 480 });
+    if (mode === "mixed") {
+      page.drawRectangle({ x: 30, y: 30, width: 60, height: 30, borderWidth: 1 });
+      page.drawText("Native reference", { x: 100, y: 400, size: 12 });
+      page.drawText("Vertical reference", { x: 120, y: 300, size: 12, rotate: degrees(90) });
+    }
+    bytes = await pdf.save();
+  }
   const source: StoredFloorPlanSource = {
     id: "raster-source-1",
-    fileName: "home.png",
-    mimeType: "image/png",
+    fileName: mode === "raster" ? "home.png" : "home.pdf",
+    mimeType: mode === "raster" ? "image/png" : "application/pdf",
     byteLength: bytes.byteLength,
     sha256: "a".repeat(64),
     bytes,
@@ -402,27 +427,59 @@ async function testRasterAdapterIntegration() {
     const extracted = await adapter.extract(source, rendered, context);
     const envelope = extracted.candidate as {
       renderedPages?: Array<{ pageNumber: number; assetKey: string }>;
-      pages: Array<{
-        vectorSegments: Array<{ evidenceKind?: string }>;
-        vectorPaths: Array<{ evidenceKind?: string }>;
-      }>;
+      pages: RegisteredPageEvidence[];
     };
     assert.equal(
       envelope.renderedPages?.length,
       1,
       "The confirmed-page stage must retain its derivative reference for the original-detail second vision pass."
     );
-    assert.equal(envelope.pages[0].vectorPaths.length, 1);
-    assert.equal(
-      envelope.pages[0].vectorSegments[0].evidenceKind,
-      "raster_linework"
-    );
+    const page = envelope.pages[0];
+    if (mode === "raster") assert.equal(page.vectorPaths.length, 1);
+    else assert.equal(page.vectorPaths.filter((path) => path.evidenceKind === "raster_linework").length, 0);
+    assert.ok(page.vectorSegments.some((segment) => segment.evidenceKind === "raster_linework"), "Open raster strokes must survive PDF extraction even without a room cycle");
+    if (mode === "mixed") {
+      assert.ok(page.vectorSegments.some((segment) => segment.evidenceKind === "pdf_vector"));
+      assert.ok(page.text.some((entry) => entry.text === "Native reference"));
+      const verticalText = page.text.find((entry) => entry.text === "Vertical reference")!;
+      assert.ok(verticalText.widthPx < verticalText.heightPx, "Native rotated text keeps its source orientation");
+      assert.ok(verticalText.center.x >= 228 && verticalText.center.x <= 240 && verticalText.center.y < 360,
+        "Native text centre must follow the actual rotated baseline, not a horizontal bounding box");
+      const original = JSON.stringify(page);
+      const native = page.vectorSegments.find((segment) => segment.evidenceKind === "pdf_vector")!;
+      const duplicate = { ...page, vectorSegments: [{ ...native, id: "raster-copy", evidenceKind: "raster_linework" as const }], vectorPaths: [] };
+      const merged = mergeMixedPdfEvidence(page, duplicate);
+      assert.equal(merged.vectorSegments.length, page.vectorSegments.length, "Raster copies of native vectors must be deduplicated");
+      assert.equal(JSON.stringify(page), original, "Evidence merging does not mutate native paths or text");
+    }
     const manifest = extracted.sourceManifest as {
       privacy: { trainingOptIn: boolean };
       pages: Array<{ lineworkEvidenceKind: string }>;
     };
     assert.equal(manifest.privacy.trainingOptIn, false);
-    assert.equal(manifest.pages[0].lineworkEvidenceKind, "raster_linework");
+    assert.equal(manifest.pages[0].lineworkEvidenceKind, mode === "mixed" ? "mixed" : "raster_linework");
+    const built = await adapter.buildTopology(await adapter.solveScale(extracted, context), context);
+    const candidate = built.candidate as unknown as FloorPlanDocumentV2;
+    const scene = compileFloorPlanDocumentV2(candidate);
+    assert.equal(scene.floors[0].walls.length, 0, "Uncalibrated strokes must not become walls");
+    assert.ok(scene.floors[0].annotations.length > 0, "Unclassified source drawing must survive failed topology");
+    const sourceGeometry = candidate.floors[0].annotations.map((annotation) => annotation.geometry);
+    const calibrated = registerEmptyPlanScaleCalibration({ document: candidate, floorId: "floor-1", sourceId: source.id,
+      pageNumber: 1, pageWidthPx: page.widthPx, pageHeightPx: page.heightPx,
+      first: { x: 100, y: 100 }, second: { x: 400, y: 100 }, printedMm: 3000 });
+    assert.deepEqual(calibrated.floors[0].annotations.map((annotation) => annotation.geometry), sourceGeometry,
+      "Calibration must preserve exact source pixels; it cannot rescale the stored artwork");
+    assert.equal(calibrated.verification.tier, "needs_review");
+    if (mode === "mixed") {
+      const text = candidate.floors[0].annotations.find((annotation) => annotation.text === "Native reference")!;
+      const changed = applyFloorPlanTopologyMutationV2(calibrated,
+        { kind: "update_annotation_text", floorId: "floor-1", annotationId: text.id, text: "Corrected reference" },
+        { mutationId: "artwork-test", nextRevisionId: "artwork-corrected", actorId: "test-reviewer", mutatedAt: "2026-09-15T00:00:00Z" });
+      assert.equal(changed.document.floors[0].annotations.find((annotation) => annotation.id === text.id)?.text, "Corrected reference");
+      assert.equal(text.text, "Native reference");
+      assert.deepEqual(changed.document.floors[0].walls, calibrated.floors[0].walls);
+      assert.deepEqual(changed.document.floors[0].annotations.map((annotation) => annotation.geometry), sourceGeometry);
+    }
   } finally {
     if (previousVisionFlag === undefined) {
       delete process.env.FLOOR_PLAN_VISION_DISABLED;
@@ -566,9 +623,9 @@ async function testPageScaleIsolation() {
     "A scale solved on one brochure page must not register a plan from another page."
   );
   assert.equal(
-    candidate.floors[0].vertices[0].xMm,
-    120,
-    "Geometry must not be multiplied by a scale sourced from a different page."
+    candidate.floors[0].vertices.length,
+    0,
+    "An uncalibrated page retains source artwork without inventing model millimetres from another page's scale."
   );
   assert.ok(
     built.reviewIssues.some(
@@ -581,8 +638,84 @@ async function testPageScaleIsolation() {
   );
 }
 
+async function testIndependentScaleConflict() {
+  const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: 1000, heightPx: 800,
+    vectorPaths: [], text: [],
+    vectorSegments: [
+      { id: "dimension-a", pageNumber: 1, start: { x: 100, y: 100 }, end: { x: 500, y: 100 }, strokeWidthPx: 1 },
+      { id: "dimension-b", pageNumber: 1, start: { x: 800, y: 100 }, end: { x: 800, y: 500 }, strokeWidthPx: 1 },
+      { id: "dimension-c", pageNumber: 1, start: { x: 100, y: 600 }, end: { x: 500, y: 600 }, strokeWidthPx: 1 },
+    ],
+    semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: [
+      { valueMm: 4000, centerXRatio: 0.3, centerYRatio: 90 / 800, orientation: "horizontal", confidence: 0.9 },
+      { valueMm: 4000, centerXRatio: 0.81, centerYRatio: 300 / 800, orientation: "vertical", confidence: 0.9 },
+      { valueMm: 4000, centerXRatio: 0.3, centerYRatio: 590 / 800, orientation: "horizontal", confidence: 0.9 },
+    ] },
+  };
+  assert.equal(solveCrossCheckedScale(page)?.millimetresPerPixel, 10);
+  page.semantics.dimensionLabels[2].valueMm = 4400;
+  assert.equal(solveCrossCheckedScale(page), null, "A two-dimension cluster cannot silence a clear independent contradiction");
+  assert.ok(page.semantics.notes.some((note) => note.includes("4400 mm differs by 40.0 source pixels")));
+  const diagnosis = diagnoseSourceScale(page);
+  assert.equal(diagnosis.status, "rejected_associations");
+  assert.equal(diagnosis.tolerancePx, 3);
+  assert.deepEqual(diagnosis.conflicts[0], { valueMm: 4400, residualPx: 40, segmentId: "dimension-c",
+    start: { x: 100, y: 600 }, end: { x: 500, y: 600 }, observedLengthPx: 400,
+    orientation: "horizontal", rawText: null, endpointStatus: "unverified" });
+  const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
+  const scaled = await adapter.solveScale({ candidate: { kind: "floor_plan_deterministic_evidence_v1",
+    source: { id: "diagnostic-source", fileName: "authored.png", mimeType: "image/png", sha256: "a".repeat(64) },
+    pages: [page], scale: null, scales: [] }, sourceManifest: { pages: [{ pageNumber: 1 }] }, reviewIssues: [], metrics: {} });
+  assert.equal(scaled.candidate?.scale, null, "Retaining rejected associations must not promote a metric scale.");
+  assert.deepEqual(scaled.sourceManifest?.scaleDiagnostics, [{ pageNumber: 1, ...diagnosis }]);
+  assert.equal(scaled.metrics?.scaleSolved, false);
+  assert.equal(scaled.metrics?.scaleSingleSegmentCandidateCount, diagnosis.candidate?.diagnostics?.singleSegmentCandidateCount);
+  assert.ok(Number(scaled.metrics?.scaleSingleSegmentCandidateCount) > 0, "A rejected cluster cannot erase detected-candidate counts.");
+}
+
+async function testRejectedClusterDiagnostics() {
+  const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: 1000, heightPx: 800,
+    vectorPaths: [], text: [],
+    vectorSegments: [100, 200, 500, 600].map((y, index) => ({ id: `span-${index}`, pageNumber: 1,
+      start: { x: 100, y }, end: { x: 500, y }, strokeWidthPx: 1 })),
+    semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: [100, 200, 500, 600].map((y, index) => ({
+      valueMm: index < 2 ? 4000 : 8000, centerXRatio: 0.3, centerYRatio: (y - 10) / 800,
+      orientation: "horizontal", confidence: 0.72 })) },
+  };
+  const diagnosis = diagnoseSourceScale(page);
+  assert.equal(diagnosis.reason, "competing_clusters");
+  assert.equal(diagnosis.candidate, null);
+  assert.equal(solveScaleFromRegisteredEvidence(page), null, "Diagnostic retention must not pick one competing scale.");
+  assert.equal(diagnosis.clusters.length, 2);
+  assert.deepEqual(diagnosis.clusters.map((cluster) => cluster.millimetresPerPixel).sort((a, b) => a - b), [10, 20]);
+  assert.ok(diagnosis.candidates.length > 0);
+  assert.equal(diagnosis.diagnostics.singleSegmentCandidateCount, diagnosis.candidates.filter((candidate) => candidate.kind === "single_segment").length);
+  assert.ok(page.semantics.notes.some((note) => note.includes("Several locally supported scale candidates disagree")));
+  const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
+  const scaled = await adapter.solveScale({ candidate: { kind: "floor_plan_deterministic_evidence_v1",
+    source: { id: "ambiguous-source", fileName: "synthetic.png", mimeType: "image/png", sha256: "b".repeat(64) },
+    pages: [page], scale: null, scales: [] }, sourceManifest: { pages: [{ pageNumber: 1 }] }, reviewIssues: [], metrics: {} });
+  assert.equal(scaled.candidate?.scale, null);
+  assert.equal(scaled.metrics?.scaleSolved, false);
+  assert.equal(scaled.metrics?.scaleSingleSegmentCandidateCount, diagnosis.diagnostics.singleSegmentCandidateCount);
+  assert.deepEqual(scaled.sourceManifest?.scaleDiagnostics, [{ pageNumber: 1, ...diagnosis }]);
+  page.semantics.dimensionLabels = [page.semantics.dimensionLabels[0], page.semantics.dimensionLabels[2]];
+  const unsupported = diagnoseSourceScale(page);
+  assert.equal(unsupported.reason, "no_supported_cluster");
+  assert.ok(unsupported.diagnostics.singleSegmentCandidateCount > 0);
+  assert.equal(unsupported.candidate, null);
+  page.semantics.dimensionLabels = [];
+  const empty = diagnoseSourceScale(page);
+  assert.equal(empty.reason, "insufficient_evidence");
+  assert.equal(empty.diagnostics.singleSegmentCandidateCount, 0);
+}
+
 async function main() {
+  await testRasterDimensionAssociations();
+  await testRasterOpeningSpans();
   testRelevantPageRanking();
+  await testRejectedClusterDiagnostics();
+  await testIndependentScaleConflict();
   await testCleanRasterAndDeterminism();
   await testSkewAndNoiseRejection();
   await testIncompleteLineworkDoesNotCloseRoom();
@@ -590,6 +723,8 @@ async function main() {
   await testAmbiguousPerspectiveIsNotDeskewed();
   await testDenseGridCycleSearchIsBounded();
   await testRasterAdapterIntegration();
+  await testRasterAdapterIntegration("pdf");
+  await testRasterAdapterIntegration("mixed");
   await testPageScaleIsolation();
   console.log("Floor-plan raster linework tests passed");
 }

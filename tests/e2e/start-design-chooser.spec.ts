@@ -68,7 +68,9 @@ test.describe("Start a new design", () => {
       .toContain("template_studio_");
     await page.goto("/design?start=choose", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
-    await expect(page).toHaveURL(/\/design$/);
+    // The link leaves the address once products have loaded and the saved design is back,
+    // which takes a while with a furnished design.
+    await expect(page).toHaveURL(/\/design$/, { timeout: 30_000 });
     await expect(chooser(page)).toHaveCount(0);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
   });

@@ -156,7 +156,7 @@ export type SceneItemCanonicalTransform = {
 };
 
 export function resolveSceneItemCanonicalTransform(
-  entry: SceneRoomItemEntry,
+  entry: Pick<SceneRoomItemEntry, "item" | "roomOffset" | "roomFloorElevationMeters">,
   localPosition: [number, number, number] = entry.item.position
 ): SceneItemCanonicalTransform {
   return {

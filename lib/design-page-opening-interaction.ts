@@ -5,7 +5,7 @@ export const OPENING_INTERACTION_TOLERANCE_METERS = 0.001;
 
 type OpeningInteractionHost = Pick<
   DesignPagePhysicalWallHost,
-  "segment" | "roomSegment" | "tangent" | "spanMeters"
+  "segment" | "roomSegment" | "tangent" | "spanMeters" | "offsetOriginMeters"
 >;
 
 export function projectWorldPointToOpeningHost(
@@ -34,7 +34,7 @@ export function worldPointAtOpeningHostAlong(
 }
 
 export function legacyOpeningOffsetAtWorldPoint(
-  host: Pick<OpeningInteractionHost, "roomSegment">,
+  host: Pick<OpeningInteractionHost, "roomSegment" | "offsetOriginMeters">,
   point: PlanPoint2D
 ) {
   const line = getCanonicalPlanLine(host.roomSegment);
@@ -42,16 +42,16 @@ export function legacyOpeningOffsetAtWorldPoint(
   const perpendicular = point.x * line.normal.x + point.z * line.normal.z - line.lineOffset;
   if (Math.abs(perpendicular) > OPENING_INTERACTION_TOLERANCE_METERS) return null;
   const along = point.x * line.tangent.x + point.z * line.tangent.z;
-  return along - (line.low + line.high) / 2;
+  return along - (line.low + line.high) / 2 - (host.offsetOriginMeters ?? 0);
 }
 
 export function worldPointAtLegacyOpeningOffset(
-  host: Pick<OpeningInteractionHost, "roomSegment">,
+  host: Pick<OpeningInteractionHost, "roomSegment" | "offsetOriginMeters">,
   offsetMeters: number
 ): PlanPoint2D | null {
   const line = getCanonicalPlanLine(host.roomSegment);
   if (!line) return null;
-  const along = (line.low + line.high) / 2 + offsetMeters;
+  const along = (line.low + line.high) / 2 + offsetMeters + (host.offsetOriginMeters ?? 0);
   return {
     x: line.tangent.x * along + line.normal.x * line.lineOffset,
     z: line.tangent.z * along + line.normal.z * line.lineOffset,

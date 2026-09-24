@@ -1,6 +1,5 @@
 import type {
   FloorPlanDocumentV2,
-  FloorPlanPropertyEvidenceV2,
 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
 import type {
@@ -170,53 +169,10 @@ export interface PersistedFloorPlanCalibration {
   ];
 }
 
-export interface PersistedFloorPlanUnderlay {
-  id: string;
-  floorId: string;
-  name: string;
-  assetUrl: string;
-  mimeType: string;
-  sourceMimeType?: string;
-  /**
-   * SHA-256 of the original private upload (not the rendered PDF preview).
-   * Retention cleanup uses this owner-scoped link to remove persisted data-URL
-   * copies without touching the rest of the saved design.
-   */
-  sourceAssetSha256?: string;
-  /** Import-job link when the underlay was attached by an import workflow. */
-  sourceJobId?: string;
-  renderedPage?: number;
-  pageCount?: number;
-  widthPx?: number;
-  heightPx?: number;
-  position: { x: number; z: number };
-  widthMeters: number;
-  depthMeters: number;
-  opacity: number;
-  /** Legacy underlays omit this and remain visible. */
-  visible?: boolean;
-  rotationDeg: number;
-  locked: boolean;
-  calibration?: PersistedFloorPlanCalibration;
-}
+/** Persisted and rendered underlays share one placement contract, including private source linkage. */
+export type PersistedFloorPlanUnderlay = import("./floor-plan-types").FloorPlanUnderlay;
 
-export interface PersistedPlanOpening {
-  id: string;
-  roomId?: string;
-  wall: "north" | "south" | "east" | "west";
-  offsetMm: number;
-  widthMm: number;
-  heightMm?: number;
-  bottomMm?: number;
-  kind: "door" | "window";
-  doorStyle?: "swing" | "sliding" | "folding" | "open";
-  canonicalWallId?: string;
-  /** Last trustworthy imported/requested position, used only while host resolution fails. */ requestedWorldCenterMm?: { x: number; z: number };
-  operation?: "swing" | "sliding" | "folding" | "fixed" | "open"; evidence?: {
-    width?: FloorPlanPropertyEvidenceV2; height?: FloorPlanPropertyEvidenceV2;
-    sillHeight?: FloorPlanPropertyEvidenceV2;
-  };
-}
+export type PersistedPlanOpening = import("@/lib/editorScene").RoomOpening2D;
 
 export interface PersistedPlanFixedElement {
   id: string;
@@ -276,6 +232,7 @@ export interface PersistedFloorPlanState {
   fixedElements?: PersistedPlanFixedElement[];
   annotations?: PersistedPlanAnnotation[];
   canonicalDocument?: FloorPlanDocumentV2;
+  proposal?: import("@/lib/floor-plan-proposal-types").FloorPlanProposalState;
   canonicalGeometryHash?: string;
   revisionId?: string;
   /** Geometry hash of the immutable, untransformed published revision. */
