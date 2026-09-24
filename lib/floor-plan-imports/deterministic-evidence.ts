@@ -97,7 +97,7 @@ export type SemanticRoomLabel = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
 };
 
 export type SemanticDimensionLabel = {
@@ -109,9 +109,9 @@ export type SemanticDimensionLabel = {
   bbox?: SemanticBoundingBox;
   extensionStart?: SemanticRatioPoint;
   extensionEnd?: SemanticRatioPoint;
-  extensionEvidenceKind?: "positioned_text" | "ocr" | "vision";
+  extensionEvidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
 };
 
 export type SemanticOpeningSymbol = {
@@ -123,7 +123,7 @@ export type SemanticOpeningSymbol = {
   spanStart?: SemanticRatioPoint;
   spanEnd?: SemanticRatioPoint;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
 };
 
 /** Source fixture observations may suggest room meaning, never building geometry. */
@@ -142,7 +142,7 @@ export type SemanticFixtureSymbol = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
 };
 
 /** Approximate proposals require independent source-edge registration and complete topology validation. */
@@ -151,7 +151,7 @@ export type SemanticRoomBoundary = {
   roomType: SemanticRoomLabel["roomType"];
   points: SemanticRatioPoint[];
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
 };
 
 export type SemanticRatioPoint = {
@@ -171,7 +171,7 @@ export type PageSemanticEvidence = {
     bbox: SemanticBoundingBox;
     rotationDegrees: number;
     confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision";
+    evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
   } | null;
   unitSystem?: "metric_mm" | "metric_cm" | "imperial" | "unknown";
   roomLabels: SemanticRoomLabel[];
@@ -183,7 +183,7 @@ export type PageSemanticEvidence = {
     centerXRatio: number;
     centerYRatio: number;
     confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision";
+    evidenceKind?: "positioned_text" | "ocr" | "vision" | "vectorizer";
   } | null;
   notes: string[];
 };
@@ -198,6 +198,8 @@ export type RegisteredPageEvidence = {
   vectorPaths: SourceVectorPath[];
   text: SourceTextEvidence[];
   semantics: PageSemanticEvidence;
+  /** Spans, wall edges and rooms reported by the local vectorizer; evidence, not accepted geometry. */
+  vectorizer?: import("./vectorizer-evidence").RegisteredVectorizerEvidence;
   dimensionSpanEvidence?: RasterDimensionSpanEvidence;
   openingSpanEvidence?: RasterOpeningSpanEvidence;
 };
@@ -219,7 +221,8 @@ export type RegisteredRoomBoundary = {
   registrationKind?:
     | "closed_source_path"
     | "assembled_wall_topology"
-    | "vision_guided_source_snap";
+    | "vision_guided_source_snap"
+    | "vectorizer_wall_topology";
   sourceEdges?: Array<{
     evidenceId: string;
     kind: "wall_centerline" | "supported_opening_span";
@@ -228,19 +231,24 @@ export type RegisteredRoomBoundary = {
     sourceSegmentIds: string[];
     opening?: {
       id: string;
-      kind: "door" | "window";
-      operation: "swing" | "sliding" | "folding" | "fixed";
+      kind: "door" | "window" | "open_passage";
+      operation: "swing" | "sliding" | "folding" | "fixed" | "open";
       proof:
         | "swing_arc_and_leaf"
         | "sliding_staggered_panels"
         | "folding_connected_leaves"
-        | "paired_fixed_frame_lines";
+        | "paired_fixed_frame_lines"
+        | "vectorizer_drawn_symbol";
       widthMm: number;
       confidence: number;
       supportPathIds: string[];
       supportSubpathIds: string[];
       supportSegmentIds: string[];
       supportCurveIds: string[];
+      /** Swing doors measured on the drawing: where the hinge is and a point on the side the leaf swings to. */
+      hingeSourcePx?: SourcePointPx;
+      swingTowardSourcePx?: SourcePointPx;
+      double?: boolean;
     };
   }>;
 };
@@ -250,6 +258,10 @@ export type RegisteredRoomRect = RegisteredRoomBoundary;
 
 const SEMANTIC_EVIDENCE_PRIOR = {
   positioned_text: 0.98,
+  // Local vectorizer: numbers cross-checked against their dimension chains and
+  // symbols measured on the drawing. A ceiling, not a replacement: its own
+  // lower per-item confidence is kept (see registerVectorizerEvidence).
+  vectorizer: 0.85,
   ocr: 0.72,
   vision: 0.55,
 } as const;
