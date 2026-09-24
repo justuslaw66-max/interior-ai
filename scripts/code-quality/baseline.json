@@ -4913,7 +4913,7 @@
     "lib/useDesignPageZoneController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 293
+        "maximum": 287
       }
     },
     "lib/useFloorManager.ts": {
