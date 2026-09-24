@@ -169,7 +169,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 416,
+      "lines": 410,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -237,7 +237,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 770,
+      "lines": 736,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -253,7 +253,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 769,
+      "lines": 683,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -1747,7 +1747,7 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 244
+        "maximum": 232
       },
       "complexFunctions": {
         "count": 1,
@@ -2093,7 +2093,7 @@
     "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 214
+        "maximum": 128
       },
       "complexFunctions": {
         "count": 1,
@@ -2166,8 +2166,8 @@
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 730
+        "count": 1,
+        "maximum": 623
       },
       "complexFunctions": {
         "count": 1,
@@ -4491,11 +4491,7 @@
     "lib/useDesignPageImportedWallEditingController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 170
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 17
+        "maximum": 110
       }
     },
     "lib/useDesignPageItemDocumentController.ts": {
