@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
 import { track } from "@/lib/analytics";
 import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
 import { designApi } from "@/lib/design-api-client";
@@ -70,10 +70,12 @@ function useShareLinkState(designId: string | null) {
   const [shareSuccessToast, setShareSuccessToast] = useState(false);
   const [shareErrorToast, setShareErrorToast] = useState<string | null>(null);
   const [shareLinkFallback, setShareLinkFallback] = useState<ShareLinkFallback | null>(null);
-  // Another design's fallback link retires when the design changes.
-  useEffect(() => {
+  // Another design's fallback link retires when the design changes (adjusted while rendering).
+  const [fallbackDesignId, setFallbackDesignId] = useState(designId);
+  if (fallbackDesignId !== designId) {
+    setFallbackDesignId(designId);
     setShareLinkFallback((current) => current?.designId === designId ? current : null);
-  }, [designId]);
+  }
   const fallback = shareLinkFallback?.designId === designId ? shareLinkFallback : null;
   return {
     state: {
