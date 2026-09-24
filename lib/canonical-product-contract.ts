@@ -110,7 +110,7 @@ function resolveBrand(item: CatalogItemSchema) {
 
 function resolveLiveCommerce(item: CatalogItemSchema): LiveProductCommerceData {
   const defaultResolved = resolveCatalogVariant(item, item.defaultVariantId);
-  const currency = item.metadata?.currencyCode?.trim().toUpperCase() || "USD";
+  const currency = item.metadata?.currencyCode?.trim().toUpperCase() || "SGD";
   const currentPrice =
     defaultResolved.commerce.type === "affiliate"
       ? defaultResolved.commerce.priceHint ?? item.metadata?.priceSgd ?? null

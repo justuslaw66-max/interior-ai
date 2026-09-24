@@ -86,7 +86,7 @@ const currentPrice = 887;
 const changedLiveProduct = {
   ...product,
   title: "Current live Hugg listing",
-  metadata: { ...product.metadata, priceSgd: currentPrice, currencyCode: "USD" },
+  metadata: { ...product.metadata, priceSgd: currentPrice, currencyCode: "SGD" },
   commerce: {
     type: "affiliate" as const,
     data: {

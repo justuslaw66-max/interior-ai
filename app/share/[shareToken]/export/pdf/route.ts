@@ -46,7 +46,7 @@ function formatMaterialCurrency(currency: string | null, value: number | null) {
   if (value === null) return "Quote";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: currency ?? "USD",
+    currency: currency ?? "SGD",
     maximumFractionDigits: 2,
   }).format(value);
 }

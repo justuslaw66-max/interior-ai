@@ -30,9 +30,9 @@ function buildCsv(rows: ShoppingCsvRow[]) {
     "Source",
     "Retailer URL",
     "Include in checkout",
-    "Unit price USD",
-    "Line total USD",
-    "Room subtotal USD",
+    "Unit price SGD",
+    "Line total SGD",
+    "Room subtotal SGD",
     "Review note",
   ];
   const body = rows.map((row) => [
