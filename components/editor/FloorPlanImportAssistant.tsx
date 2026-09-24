@@ -1,29 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   floorPlanImportResponseJson,
-  loadConsumerFloorPlanImportJob,
   parseFloorPlanImportDocument,
   parseFloorPlanImportIssues,
   useConsumerFloorPlanImportSession,
 } from "./useConsumerFloorPlanImportSession";
-import {
-  isPausedFloorPlanImportStatus,
-  startAndPollFloorPlanImport,
-} from "@/lib/floor-plan-import-client";
+import { useConsumerFloorPlanImportProgress } from "./useConsumerFloorPlanImportProgress";
 import {
   isFloorPlanMvpBlockingIssue,
   type FloorPlanReviewIssue,
 } from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImportReviewPanel";
+import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
+import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
+import { SourceTraceAction,type SourceTraceRequest } from "./floor-plan-import-review/source-trace-action";
+import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,canRequestDetectionReview,type PhotoReviewRequest } from "./floor-plan-import-review/photo-review-action";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
 import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
+import { useConsumerFloorPlanImportActionScope } from "./useConsumerFloorPlanImportActionScope";
+import { useConsumerFloorPlanImportCreation } from "./useConsumerFloorPlanImportCreation";
+import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
@@ -37,6 +39,25 @@ type FloorPlanImportAssistantProps = {
   onJobUpdate?: (job: ConsumerFloorPlanImportJob) => void;
 };
 
+
+/** Where the uploaded file stands: queued for deletion, deleted, or kept until a date. */
+function uploadRetentionNote(input: {
+  sourceDeletionPending: boolean;
+  sourceContentDeleted: boolean;
+  savedUnderlaysScrubbed: number;
+  retentionDate: Date | null;
+}) {
+  if (input.sourceDeletionPending) return "Your uploaded file is queued for deletion.";
+  if (input.sourceContentDeleted) {
+    return input.savedUnderlaysScrubbed > 0
+      ? "Your upload and its floor plan image in your designs were deleted."
+      : "The private upload was deleted.";
+  }
+  return input.retentionDate && !Number.isNaN(input.retentionDate.getTime())
+    ? `Your uploaded file will be deleted by ${input.retentionDate.toLocaleDateString()}.`
+    : "Your uploaded file is kept for a limited time.";
+}
+
 export default function FloorPlanImportAssistant({
   file,
   trainingBenchmarkOptIn = false,
@@ -46,7 +67,7 @@ export default function FloorPlanImportAssistant({
   onActiveJobIdChange,
   onJobUpdate,
 }: FloorPlanImportAssistantProps) {
-  const router = useRouter();
+  const beginAction = useConsumerFloorPlanImportActionScope(file, resumeJobId, trainingBenchmarkOptIn);
   const {
     state,
     setState,
@@ -72,24 +93,27 @@ export default function FloorPlanImportAssistant({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [savedDraftVersion, setSavedDraftVersion] = useState<number | null>(null);
   const [retryingDetection, setRetryingDetection] = useState(false);
   const [selectedPageNumber, setSelectedPageNumber] = useState<number | null>(
     null
   );
 
   useEffect(() => {
+    setSubmitting(false); setDeletingSource(false);
     setEntranceOpeningId("");
     setSourceDeleted(false);
     setSourceDeletionQueued(false);
     setSavedUnderlaysScrubbed(0);
     setDeleteError(null);
     setCreateError(null);
-    setReviewError(null);
+    setReviewError(null); setSavedDraftVersion(null);
     setRetryingDetection(false);
     setSelectedPageNumber(null);
-  }, [file, resumeJobId]);
+  }, [file, resumeJobId, trainingBenchmarkOptIn]);
 
   const activeJob = state.kind === "job" ? state.job : null;
+  const createDesign = useConsumerFloorPlanImportCreation({ activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange });
   const pageSelection = useMemo(
     () => readFloorPlanPageSelection(activeJob?.candidateJson),
     [activeJob?.candidateJson]
@@ -107,53 +131,7 @@ export default function FloorPlanImportAssistant({
     );
   }, [activeJob?.status, pageSelection]);
 
-  const showWorkingJob = useCallback(
-    (job: ConsumerFloorPlanImportJob, fallbackMessage: string) => {
-      onJobUpdate?.(job);
-      const estimate = job.progressEstimate;
-      const nextProgress = estimate?.estimatedPercent ?? job.progress;
-      setState((current) => ({
-        kind: "working",
-        message: estimate?.stageLabel ?? fallbackMessage,
-        progress:
-          current.kind === "working" && current.status === job.status
-            ? Math.max(current.progress, nextProgress)
-            : nextProgress,
-        status: job.status,
-        estimate,
-      }));
-    },
-    [onJobUpdate, setState]
-  );
-
-  const processAndPoll = useCallback(
-    async (
-      jobId: string,
-      fallbackMessage: string,
-      options: { continueSelectedPage?: boolean } = {}
-    ) => {
-      const statusUrl = `/api/floor-plan-imports/${encodeURIComponent(jobId)}`;
-      const loadJob = () => loadConsumerFloorPlanImportJob(statusUrl);
-      const initialJob = await loadJob();
-      showWorkingJob(initialJob, fallbackMessage);
-      return startAndPollFloorPlanImport({
-        initialJob,
-        startProcessing: async () =>
-          floorPlanImportResponseJson(
-            await fetch(`${statusUrl}/process`, { method: "POST" })
-          ),
-        loadJob,
-        isPaused: options.continueSelectedPage
-          ? (job) =>
-              job.status === "selecting_page"
-                ? false
-                : isPausedFloorPlanImportStatus(job.status)
-          : undefined,
-        onProgress: (job) => showWorkingJob(job, fallbackMessage),
-      });
-    },
-    [showWorkingJob]
-  );
+  const processAndPoll = useConsumerFloorPlanImportProgress({ setState, onJobUpdate });
   const sourceContentDeleted = Boolean(
     sourceDeleted || activeJob?.sourceAsset?.contentDeletedAt
   );
@@ -189,46 +167,21 @@ export default function FloorPlanImportAssistant({
   }, [cadPreview, candidate, floor]);
 
   const submitReview = async (
-    reviewIssues: FloorPlanReviewIssue[] = issues
+    reviewIssues: FloorPlanReviewIssue[] = issues,
+    draft = false
   ) => {
     if (
       !activeJob ||
       !candidate ||
-      reviewIssues.some(isFloorPlanMvpBlockingIssue)
+      (!draft && reviewIssues.some(isFloorPlanMvpBlockingIssue))
     ) {
       return;
     }
+    const signal = beginAction();
     setSubmitting(true);
     setReviewError(null);
     try {
-      const nextCandidate = structuredClone(candidate);
-      const nextFloor = nextCandidate.floors[0];
-      if (entranceOpeningId && nextFloor) {
-        const entrance = nextFloor.openings.find((opening) => opening.id === entranceOpeningId);
-        if (entrance && !nextFloor.annotations.some((annotation) => annotation.configurationId === "main-entrance")) {
-          let annotationIndex = nextFloor.annotations.length + 1;
-          while (
-            nextFloor.annotations.some(
-              (annotation) => annotation.id === `annotation-${annotationIndex}`
-            )
-          ) {
-            annotationIndex += 1;
-          }
-          nextFloor.annotations.push({
-            id: `annotation-${annotationIndex}`,
-            kind: "label",
-            text: "Main entrance",
-            geometry: {
-              kind: "wall_span",
-              wallId: entrance.wallId,
-              offsetMm: entrance.offsetMm,
-              widthMm: entrance.widthMm,
-            },
-            configurationId: "main-entrance",
-            provenance: structuredClone(entrance.provenance),
-          });
-        }
-      }
+      const nextCandidate = prepareFloorPlanReviewSubmission(candidate, entranceOpeningId);
       await floorPlanImportResponseJson(
         await fetch(`/api/floor-plan-imports/${activeJob.id}/candidate`, {
           method: "PATCH",
@@ -237,53 +190,29 @@ export default function FloorPlanImportAssistant({
             candidate: nextCandidate,
             reviewIssues,
             candidateVersion: activeJob.candidateVersion,
-            correctionNote:
-              "Consumer confirmed the AI-generated floor plan against the uploaded source.",
+            correctionNote: draft
+              ? "Consumer saved an incomplete review draft; unresolved evidence remains unconfirmed."
+              : "Consumer confirmed the AI-generated floor plan against the uploaded source.",
           }),
         })
       );
+      signal.throwIfAborted();
       const job = await processAndPoll(
         activeJob.id,
-        "Validating your corrections"
+        draft ? "Validating review draft" : "Validating your corrections", { signal }
       );
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
+      if (draft) setSavedDraftVersion(job.candidateVersion);
     } catch (cause) {
+      if (signal.aborted) return;
       setReviewError(userFacingErrorMessage(cause, "Unable to save floor-plan review"));
     } finally {
-      setSubmitting(false);
+      if (!signal.aborted) setSubmitting(false);
     }
   };
-
-  const createDesign = useCallback(async () => {
-    if (!activeJob || activeJob.status !== "ready") return;
-    setSubmitting(true);
-    setCreateError(null);
-    try {
-      const payload = await floorPlanImportResponseJson(
-        await fetch(`/api/floor-plan-imports/${activeJob.id}/confirm`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, candidateVersion: activeJob.candidateVersion }),
-        })
-      );
-      const id = typeof payload.id === "string" ? payload.id : null;
-      if (!id) throw new Error("The new design ID is missing");
-      onActiveJobIdChange?.(null);
-      router.push(
-        `/design?designId=${encodeURIComponent(
-          id
-        )}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(
-          activeJob.id
-        )}`
-      );
-    } catch (cause) {
-      setCreateError(userFacingErrorMessage(cause, "Unable to create the new design"));
-    } finally {
-      setSubmitting(false);
-    }
-  }, [activeJob, onActiveJobIdChange, router, title]);
 
   const optionalConfigurationCount = useMemo(
     () => candidate ? inspectFloorPlanOptionalConfigurations(candidate).length : 0,
@@ -298,6 +227,7 @@ export default function FloorPlanImportAssistant({
     ) {
       return;
     }
+    const signal = beginAction();
     setSubmitting(true);
     try {
       await floorPlanImportResponseJson(
@@ -313,64 +243,53 @@ export default function FloorPlanImportAssistant({
           }
         )
       );
+      signal.throwIfAborted();
       const job = await processAndPoll(
         activeJob.id,
         "Analysing the selected floor plan",
-        { continueSelectedPage: true }
+        { continueSelectedPage: true, signal }
       );
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
+      if (signal.aborted) return;
       setState({
         kind: "error",
         message: userFacingErrorMessage(cause, "Unable to analyze the selected page"),
       });
     } finally {
-      setSubmitting(false);
+      if (!signal.aborted) setSubmitting(false);
     }
   };
 
-  const retryDetection = async () => {
-    if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) {
-      return;
-    }
+  const retryDetection = async (photo?:PhotoReviewRequest,trace?:SourceTraceRequest) => {
+    if (!activeJob || !canRequestDetectionReview(activeJob.status,Boolean(trace))) return;
+    const signal = beginAction();
     setRetryingDetection(true);
     setReviewError(null);
     try {
-      const retryPayload = await floorPlanImportResponseJson(
-        await fetch(
-          `/api/floor-plan-imports/${activeJob.id}/retry-detection`,
-          { method: "POST" }
-        )
-      );
-      const retryJobId =
-        retryPayload.job &&
-        typeof retryPayload.job === "object" &&
-        typeof (retryPayload.job as { id?: unknown }).id === "string"
-          ? (retryPayload.job as { id: string }).id
-          : null;
-      if (!retryJobId) throw new Error("The retry job ID is missing");
-      onActiveJobIdChange?.(retryJobId);
-      const job = await processAndPoll(
-        retryJobId,
-        "Retrying with improved wall and dimension detection"
-      );
+      const job=await requestDetectionReview({activeJob,photo,trace,candidate,signal,onActiveJobIdChange,processAndPoll});
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
+      if (signal.aborted) return;
+      if(photo||trace){setReviewError(userFacingErrorMessage(cause, "Unable to recompute this review"));return;}
       setState({
         kind: "error",
         message: userFacingErrorMessage(cause, "Unable to retry floor-plan detection"),
       });
     } finally {
-      setRetryingDetection(false);
+      if (!signal.aborted) setRetryingDetection(false);
     }
   };
 
   const deletePrivateSource = async () => {
     if (!activeJob || sourceContentDeleted || sourceDeletionPending) return;
+    const signal = beginAction();
     setDeletingSource(true);
     setDeleteError(null);
     try {
@@ -379,6 +298,7 @@ export default function FloorPlanImportAssistant({
           method: "DELETE",
         })
       );
+      signal.throwIfAborted();
       const deletionQueued = payload.deletionState === "queued";
       const deletionCompleted = payload.deletionState === "deleted";
       if (!deletionQueued && !deletionCompleted) {
@@ -413,9 +333,10 @@ export default function FloorPlanImportAssistant({
           : current
       );
     } catch (cause) {
+      if (signal.aborted) return;
       setDeleteError(userFacingErrorMessage(cause, "Unable to delete your uploaded file"));
     } finally {
-      setDeletingSource(false);
+      if (!signal.aborted) setDeletingSource(false);
     }
   };
 
@@ -541,7 +462,7 @@ export default function FloorPlanImportAssistant({
           <button
             type="button" data-floor-plan-workspace-focus="primary"
             className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
-            disabled={disabled || retryingDetection}
+            disabled={disabled || retryingDetection || deletingSource}
             onClick={() => void retryDetection()}
           >
             {retryingDetection
@@ -553,7 +474,7 @@ export default function FloorPlanImportAssistant({
           <button
             type="button"
             className={dark ? "designer-control mt-2 rounded-md border px-2 py-1.5 text-xs" : "mt-2 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs"}
-            disabled={disabled || deletingSource}
+            disabled={disabled || deletingSource || retryingDetection}
             onClick={() => void deletePrivateSource()}
           >
             {deletingSource ? "Deleting upload…" : "Delete private upload now"}
@@ -582,12 +503,10 @@ export default function FloorPlanImportAssistant({
         </div>
         <h3 className="mt-1 text-2xl font-semibold">Your floor plan is ready</h3>
         <p className={`mt-2 max-w-3xl text-sm leading-6 ${subtle}`}>
-          AI found {canonicalRoomCount} room
+          This candidate contains {canonicalRoomCount} room
           {canonicalRoomCount === 1 ? "" : "s"} and{" "}
-          {canonicalDimensionCount} exact printed measurement
-          {canonicalDimensionCount === 1 ? "" : "s"}. Create a separate design
-          with editable walls, rooms, doors, and windows. It starts with no
-          furniture.
+          {canonicalDimensionCount} recorded measurement
+          {canonicalDimensionCount === 1 ? "" : "s"}. Check the drawing and scale. Confirming records your review for planning and creates a separate editable design without furniture.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
@@ -617,7 +536,7 @@ export default function FloorPlanImportAssistant({
         <button
           type="button" data-floor-plan-workspace-focus="primary"
           className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-          disabled={disabled || submitting}
+          disabled={disabled || submitting || deletingSource}
           onClick={() => void createDesign()}
         >
           {submitting
@@ -627,7 +546,7 @@ export default function FloorPlanImportAssistant({
               : "Create design"}
         </button>
         <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
-          Opens in 2D Furnish. Switch to 3D at any time.
+          Opens in 2D Furnish. Your planning review does not grant source verification or construction approval.
         </p>
         {createError ? (
           <p className="mt-2 text-[10px] leading-4 text-red-600">
@@ -658,7 +577,7 @@ export default function FloorPlanImportAssistant({
             <FloorPlanOptionalConfigurationPanel
               document={candidate}
               dark={dark}
-              disabled={disabled || submitting}
+              disabled={disabled || submitting || deletingSource}
               compact
             />
           ) : null}
@@ -666,23 +585,16 @@ export default function FloorPlanImportAssistant({
             className={`mt-3 text-xs leading-5 ${subtle}`}
             data-testid="floor-plan-import-accuracy-baseline"
           >
-            Accuracy check passed: {canonicalRoomCount} room
+            Checks passed: {canonicalRoomCount} room
             {canonicalRoomCount === 1 ? "" : "s"} and{" "}
-            {canonicalDimensionCount} exact printed dimension
-            {canonicalDimensionCount === 1 ? "" : "s"}. The scale and all
-            required checks passed.
+            {canonicalDimensionCount} recorded dimension
+            {canonicalDimensionCount === 1 ? "" : "s"}. The scale and all required checks passed; whole-plan accuracy still depends on the source and your review.
           </p>
           <p className={`mt-2 text-xs leading-5 ${subtle}`}>
-            {sourceDeletionPending
-              ? "Your uploaded file is queued for deletion."
-              : sourceContentDeleted
-                ? savedUnderlaysScrubbed > 0
-                  ? "Your upload and its floor plan image in your designs were deleted."
-                  : "The private upload was deleted."
-                : retentionDate && !Number.isNaN(retentionDate.getTime())
-                  ? `Your uploaded file will be deleted by ${retentionDate.toLocaleDateString()}.`
-                  : "Your uploaded file is kept for a limited time."}
+            {uploadRetentionNote({ sourceDeletionPending, sourceContentDeleted, savedUnderlaysScrubbed, retentionDate })}
           </p>
+          <FloorPlanImportRetentionNotice sourceDeletionPending={sourceDeletionPending} sourceContentDeleted={sourceContentDeleted}
+            savedUnderlaysScrubbed={savedUnderlaysScrubbed} retentionDate={retentionDate} subtle={subtle} />
           {!sourceContentDeleted && !sourceDeletionPending ? (
             <button
               type="button"
@@ -705,7 +617,7 @@ export default function FloorPlanImportAssistant({
                   ? "designer-control ml-2 mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
                   : "ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
               }
-              disabled={disabled || submitting}
+              disabled={disabled || submitting || deletingSource}
               onClick={onChooseFile}
             >
               Use a different file
@@ -740,7 +652,6 @@ export default function FloorPlanImportAssistant({
   }
 
   if (!activeJob || !candidate || !floor) return null;
-
   return (
     <div className={surface} data-testid="floor-plan-import-review" data-floor-plan-workspace-state="review">
       {reviewError ? (
@@ -748,7 +659,10 @@ export default function FloorPlanImportAssistant({
           {reviewError}
         </p>
       ) : null}
-      <FloorPlanImportReviewPanel
+      <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
+        savedVersion={savedDraftVersion} control={control} subtle={subtle} onSave={() => void submitReview(issues, true)} />
+      <SourceTraceAction.Provider value={{candidateVersion:activeJob.candidateVersion,saved:parseFloorPlanImportDocument(activeJob.candidateJson),onAccept:request=>void retryDetection(undefined,request)}}>
+      <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel
         candidate={candidate}
         job={activeJob}
         issues={issues}
@@ -762,8 +676,8 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={disabled} proMode={proMode} dark={dark}
-      />
+        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} dark={dark}
+      /></PhotoReviewAction.Provider></SourceTraceAction.Provider>
     </div>
   );
 }

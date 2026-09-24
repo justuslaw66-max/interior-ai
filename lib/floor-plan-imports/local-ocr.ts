@@ -1,8 +1,11 @@
+import { recognizeLocalOcrOrientations } from "./local-ocr-rotation";
 import { createRequire } from "node:module";
 
 export type FloorPlanLocalOcrCandidate = {
   text: string;
   confidence: number;
+  rotationDegrees?: 0 | 90 | 270;
+  reviewRequired?: boolean;
   bbox: { left: number; top: number; right: number; bottom: number };
 };
 
@@ -142,8 +145,8 @@ export class TesseractFloorPlanLocalOcrProvider
     const timeoutMs = boundedInteger(options.timeoutMs, 12_000, 1_000, 30_000);
     const maximum = boundedInteger(options.maxCandidates, 600, 1, 2_000);
     const minimumConfidence = Math.max(0, Math.min(100, options.minSourceConfidence));
-    const require = createRequire(`${process.cwd()}/package.json`);
-    const language = require("@tesseract.js-data/eng") as {
+    const ocrRequire = createRequire(`${process.cwd()}/package.json`);
+    const language = ocrRequire("@tesseract.js-data/eng") as {
       code: string;
       gzip: boolean;
       langPath: string;
@@ -174,22 +177,17 @@ export class TesseractFloorPlanLocalOcrProvider
         }),
         deadline,
       ]);
-      const recognized = await Promise.race([
-        worker.recognize(
-          Buffer.from(page.bytes),
-          {},
-          { text: true, blocks: true },
-          `floor-plan-ocr-page-${page.pageNumber}`
-        ),
-        deadline,
+      const extracted = await Promise.race([
+        recognizeLocalOcrOrientations(page, maximum, async (oriented) => {
+          if (options.signal?.aborted) throw new Error("LOCAL_OCR_ABORTED");
+          if (Date.now() - startedAt >= timeoutMs) throw new Error("LOCAL_OCR_TIMEOUT");
+          const recognized = await worker!.recognize(Buffer.from(oriented.bytes), {},
+            { text: true, blocks: true }, `floor-plan-ocr-page-${page.pageNumber}`);
+          return candidatesFromBlocks(recognized.data.blocks as TesseractBlock[] | null,
+            oriented, minimumConfidence, maximum);
+        }), deadline,
       ]);
       if (options.signal?.aborted) throw new Error("LOCAL_OCR_ABORTED");
-      const extracted = candidatesFromBlocks(
-        recognized.data.blocks as TesseractBlock[] | null,
-        page,
-        minimumConfidence,
-        maximum
-      );
       return {
         providerId: this.id,
         candidates: extracted.candidates,

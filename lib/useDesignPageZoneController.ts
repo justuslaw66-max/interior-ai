@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { track } from "@/lib/analytics";
+import { joinSeatingZoneToPlacement, type SeatingZoneHistory } from "@/lib/design-page-seating-zone-history";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import { aabbIntersects } from "@/lib/design-page-geometry";
 import {
@@ -88,6 +89,7 @@ export type DesignPageZoneControllerActions = {
   setSelectedZoneId: Dispatch<SetStateAction<string | null>>;
   clearSelection: () => void;
   commitItems: CommitItems;
+  history: SeatingZoneHistory;
   runHistoryTransaction: (name: string, mutation: () => void) => void;
   clampToRoom: ClampToRoom;
   getSelectionBounds: GetSelectionBounds;
@@ -128,6 +130,7 @@ export function useDesignPageZoneController({
     setSelectedZoneId,
     clearSelection,
     commitItems,
+    history,
     runHistoryTransaction,
     clampToRoom,
     getSelectionBounds,
@@ -234,9 +237,11 @@ export function useDesignPageZoneController({
         catalogItems,
       });
 
-      runHistoryTransaction("Create seating area", () =>
-        setDesignSnapshot((previous) => updateActiveRoomZones(previous, nextZones))
-      );
+      // The onboarding zone joins the sofa placement's undo step when it can; otherwise it is its own edit.
+      if (!joinSeatingZoneToPlacement({ source: request.source, sofaId: sofaItem.instanceId, zones: nextZones, history, setSnapshot: setDesignSnapshot }))
+        runHistoryTransaction("Create seating area", () =>
+          setDesignSnapshot((previous) => updateActiveRoomZones(previous, nextZones))
+        );
       setSelectedZoneId(next.zoneId);
       track("seating_zone_auto_created", {
         zoneId: next.zoneId,
@@ -244,17 +249,8 @@ export function useDesignPageZoneController({
       });
       return true;
     },
-    [
-      catalogItems,
-      editorMode,
-      isClientPreview,
-      itemsRef,
-      runHistoryTransaction,
-      seatingZoneAutoDisabledRef,
-      setDesignSnapshot,
-      setSelectedZoneId,
-      zonesRef,
-    ]
+    [catalogItems, editorMode, history, isClientPreview, itemsRef, runHistoryTransaction,
+      seatingZoneAutoDisabledRef, setDesignSnapshot, setSelectedZoneId, zonesRef]
   );
 
   const autoLayoutZone = useCallback(

@@ -1,4 +1,4 @@
-import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanPropertyEvidenceV2, FloorPlanWallPathV2 } from "@/lib/floor-plan-document-v2";
 
 export type EditorViewMode = "3d" | "2d";
 
@@ -47,6 +47,17 @@ export type RoomOpening2D = {
   /** A wall-free passage behaves like a door for circulation but has no door leaf. */
   doorStyle?: "swing" | "sliding" | "folding" | "open";
   canonicalWallId?: string;
+  /** Regenerated from the compiled document; never an independently editable wall. */
+  canonicalHost?: {
+    floorId: string;
+    floorLevel: number;
+    pathKind: FloorPlanWallPathV2["kind"];
+    startMm: Vec2Mm;
+    endMm: Vec2Mm;
+    thicknessMm: number;
+    /** Along-line origin of legacy offset zero, relative to the host midpoint. */
+    offsetOriginMm: number;
+  };
   /** Last trustworthy imported/requested position, used only while host resolution fails. */
   requestedWorldCenterMm?: Vec2Mm;
   operation?: "swing" | "sliding" | "folding" | "fixed" | "open";

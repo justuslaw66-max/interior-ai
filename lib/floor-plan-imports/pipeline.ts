@@ -19,6 +19,7 @@ import type {
   FloorPlanImportTelemetryObserver,
 } from "./telemetry";
 import { readFloorPlanPageSelection } from "./page-selection";
+import { retainReviewExtraction,stageResultFromJob } from "./review-extraction";
 
 export type FloorPlanImportJobPatch = Partial<
   Omit<FloorPlanImportJobRecord, "id" | "userId" | "sourceAssetId" | "status">
@@ -152,17 +153,6 @@ async function stopForReviewIfNeeded(
   });
 }
 
-function stageResultFromJob(job: FloorPlanImportJobRecord): FloorPlanStageResult {
-  if (!job.candidate) {
-    throw new Error(`Floor-plan import ${job.id} has no persisted candidate at ${job.status}`);
-  }
-  return {
-    candidate: job.candidate,
-    sourceManifest: job.sourceManifest,
-    reviewIssues: job.reviewIssues,
-  };
-}
-
 function throwIfAborted(signal?: AbortSignal) {
   if (!signal?.aborted) return;
   if (signal.reason instanceof Error) throw signal.reason;
@@ -228,7 +218,7 @@ export async function runFloorPlanImportPipeline(input: {
       }
       case "rendered": {
         const startedAt = Date.now();
-        const result = await adapter.extract(source, job.renderedPages, context);
+        const result = await retainReviewExtraction(await adapter.extract(source, job.renderedPages, context),context);
         const issues = mergeIssues(job.reviewIssues, result.reviewIssues);
         job = await move(
           input.repository,

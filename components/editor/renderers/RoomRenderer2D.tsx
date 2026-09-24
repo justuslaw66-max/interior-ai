@@ -41,7 +41,10 @@ import {
 import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
-import { CanonicalFloorPlanWalls2D, type CanonicalOpeningDragMetricsV2 } from "./CanonicalFloorPlanStructure";
+import {
+  CanonicalFloorPlanWalls2D,
+} from "./CanonicalFloorPlanStructure";
+import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 import { ROOM_PLAN_CLICK_DISTANCE_PX, selectRoomSurfaceFromClick } from "./room-renderer-2d-surface-selection";
@@ -51,13 +54,13 @@ import { formatRoomDrawPreviewLabel } from "@/lib/plan-room-summary";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { buildOpeningRenderSegments, type Opening2D,
-  type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
+  resolveCanonicalOpeningEditMetrics, type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
 import { formatWallDrawLengthInput, MAX_WALL_DRAW_SEGMENT_LENGTH_METERS,
   parseWallDrawLengthMm, wallDrawLengthUnitIndicator,
   wallDrawSegmentEditorIsStale } from "./room-renderer-2d-wall-length-editor";
 import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
-import { legacyOpeningOffsetAtWorldPoint, moveOpeningCenterFromWorldPoint,
+import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
 type RectZone = {
   id: string;
@@ -501,6 +504,7 @@ type RoomRenderer2DProps = {
   cameraNavigation?: CameraNavigation2D;
   onPlanDebugMetricsChange?: (metrics: { zoom: number; visibleLabelCount: number }) => void;
   canonicalPlan?: CanonicalFloorPlanRenderModel | null;
+  canonicalWallEditing?: CanonicalWallGestureControls;
   canonicalStructureExpected?: boolean;
 };
 
@@ -1413,6 +1417,7 @@ export default function RoomRenderer2D({
   cameraNavigation,
   onPlanDebugMetricsChange,
   canonicalPlan = null,
+  canonicalWallEditing,
   canonicalStructureExpected = false,
 }: RoomRenderer2DProps) {
   const htmlZIndexRange: [number, number] = [5, 0];
@@ -3970,6 +3975,7 @@ export default function RoomRenderer2D({
       {canonicalPlan && (
         <CanonicalFloorPlanWalls2D
           model={canonicalPlan}
+          wallEditing={canonicalWallEditing}
           activeFloorId={activeFloorId}
           activeFloorLevel={activeFloorLevel}
           activeRoomId={activeRoomId}
@@ -3987,27 +3993,11 @@ export default function RoomRenderer2D({
             }
           }}
           onSelectOpening={onSelectOverlay}
-          onEditOpening={(
-            openingId: string,
-            metrics: CanonicalOpeningDragMetricsV2,
-            mode
-          ) => {
-            const sourceOpening = openings.find((opening) => opening.id === openingId);
-            const host = sourceOpening && getResolvedOpeningHost(sourceOpening);
-            if (!sourceOpening || !host) return;
-            const centerOffsetMeters = legacyOpeningOffsetAtWorldPoint(host, {
-              x: metrics.centerMm.xMm / 1000,
-              z: metrics.centerMm.zMm / 1000,
-            });
-            if (centerOffsetMeters === null) return;
-            if (mode === "resize") {
-              onResizeOpening?.(openingId, {
-                widthMeters: metrics.widthMm / 1000,
-                offsetMeters: centerOffsetMeters,
-              });
-            } else {
-              onMoveOpening?.(openingId, centerOffsetMeters);
-            }
+          onEditOpening={(openingId, metrics, mode) => {
+            const edit = resolveCanonicalOpeningEditMetrics(openings.find(({ id }) => id === openingId), metrics);
+            if (!edit) return;
+            if (mode === "resize") onResizeOpening?.(openingId, edit);
+            else onMoveOpening?.(openingId, edit.offsetMeters);
           }}
           onOpeningDragStateChange={(dragging, mode) =>
             onOverlayDragStateChange?.(

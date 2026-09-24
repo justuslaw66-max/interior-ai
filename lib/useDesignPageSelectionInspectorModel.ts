@@ -3,6 +3,7 @@ import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits"
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import { buildDesignSelectionContext, type DesignSelectionContext } from "@/lib/design-page-selection-context";
+import { buildOpeningSelectionSummary } from "@/lib/design-page-opening-summary";
 import { formatMoney, getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
@@ -159,16 +160,7 @@ export function buildDesignPageSelectionInspectorSummary({
   }
 
   if (visiblePlanOpening) {
-    const kindLabel = visiblePlanOpening.kind === "door" ? "Door" : "Window";
-    return {
-      kind: kindLabel,
-      title: `${kindLabel} on ${visiblePlanOpening.wall}`,
-      detail: visiblePlanOpeningRoomName,
-      metrics: [
-        `${formatCabinetMeasurement(visiblePlanOpening.widthMm, planMeasurementUnit)} wide`,
-        `${formatCabinetMeasurement(visiblePlanOpening.offsetMm, planMeasurementUnit)} from center`,
-      ],
-    };
+    return buildOpeningSelectionSummary(visiblePlanOpening, visiblePlanOpeningRoomName, planMeasurementUnit);
   }
 
   if (selectedPlanFixedElement) {
@@ -216,14 +208,12 @@ export function buildDesignPageSelectionInspectorSummary({
     };
   }
 
-  if (selectedPlanRoom) {
-    return {
+  if (selectedPlanRoom) return {
       kind: "Room",
       title: selectedPlanRoom.name,
       detail: `${selectedPlanRoom.roomType} room · ${formatDisplayArea(getPlanRoomFloorAreaSqm(selectedPlanRoom), planMeasurementUnit)}`,
       metrics: [],
     };
-  }
 
   return null;
 }

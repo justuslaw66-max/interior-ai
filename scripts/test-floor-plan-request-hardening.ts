@@ -129,9 +129,12 @@ async function main() {
   );
   assert.ok(
     consumerRoute.indexOf("readBoundedJsonObject(") <
-      consumerRoute.indexOf("parseCandidate(body.candidate)"),
+      consumerRoute.indexOf("checkedConsumerCandidateCorrection({body,current,userId,note:correctionNote})"),
     "bounded JSON parsing must precede the independent candidate-size contract"
   );
+  assert.match(source("lib/floor-plan-imports/consumer-candidate-correction.ts"),
+    /parseCandidate\(input\.body\.candidate\)[\s\S]*?applyConsumerFloorPlanCorrection\(/,
+    "The extracted correction boundary retains the independent candidate cap before applying edits.");
 
   for (const routePath of [
     "app/api/admin/floor-plan-imports/[id]/route.ts",

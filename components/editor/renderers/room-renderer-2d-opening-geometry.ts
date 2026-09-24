@@ -1,3 +1,5 @@
+import { legacyOpeningOffsetAtWorldPoint } from "@/lib/design-page-opening-interaction";
+import type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 import type { DesignPageOpeningHostResolution } from "@/lib/design-page-opening-host";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 
@@ -159,4 +161,13 @@ export function buildOpeningRenderSegments({
       defaultWidth, defaultDepth, minimumHitLength, hitDepth
     )];
   });
+}
+
+/** Convert canonical world metrics once at the compatibility renderer boundary. */
+export function resolveCanonicalOpeningEditMetrics(opening: Opening2D | undefined, metrics: CanonicalOpeningDragMetricsV2) {
+  if (opening?.hostResolution?.status !== "resolved") return null;
+  const offsetMeters = legacyOpeningOffsetAtWorldPoint(opening.hostResolution.host, {
+    x: metrics.centerMm.xMm / 1000, z: metrics.centerMm.zMm / 1000,
+  });
+  return offsetMeters === null ? null : { widthMeters: metrics.widthMm / 1000, offsetMeters };
 }

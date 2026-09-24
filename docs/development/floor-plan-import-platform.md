@@ -204,6 +204,19 @@ Authenticated consumers can call `DELETE /api/floor-plan-imports/:id/source` onc
 
 Enhanced detection is controlled by `FLOOR_PLAN_IMPORT_ENHANCED_DETECTION`; set it to `0` for rollback. Semantic classification is separately optional and configured with `OPENAI_API_KEY` plus an optional `FLOOR_PLAN_VISION_MODEL`. It remains off unless `FLOOR_PLAN_VISION_ENABLED=1`. Ranked page previews use a low-detail semantic pass, while the confirmed plan crop uses original detail with structured output and `store: false`. Model labels, boxes and span endpoints remain proposals: deterministic source linework supplies scale and geometry, and unsupported observations return to review. Without a configured classifier, outlined text or weak scans correctly remain in review/guided-tracing fallback instead of being guessed.
 
+### Local vectorizer evidence (raster pages)
+
+`lib/floor-plan-imports/vectorizer-evidence.ts` adds a third, server-local evidence source for image uploads and raster PDF pages, next to local OCR and the optional vision classifier. `PythonFloorPlanVectorizerProvider` runs `services/floorplan-vectorizer/floorplan_vectorize.py` and `app_evidence.py` on the rendered page in a private temporary folder (removed afterwards; page bytes never leave the worker) and validates the JSON with zod before anything is used. It is off unless `FLOOR_PLAN_VECTORIZER_ENABLED=1`; `FLOOR_PLAN_VECTORIZER_DIR`, `FLOOR_PLAN_VECTORIZER_PYTHON`, `FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000) and `FLOOR_PLAN_VECTORIZER_MAX_PAGES` (default 1) tune it. A failure or timeout leaves the page exactly as the other sources made it.
+
+What it contributes, and how far it is trusted:
+
+- Room labels, printed dimensions (with the two points each one measures), opening spans and sanitary fixtures are merged through the ordinary `mergeSemantics` with `evidenceKind: "vectorizer"`. The platform prior for that kind (0.85) is a ceiling; the vectorizer's own lower per-item confidence is kept.
+- Scale is still solved and cross-checked by the adapter. `mergeVectorizerDimensionSpans` only stands in where the adapter's own tick search found no support, and only with spans that agree with their printed number to two pixels. A scale the vectorizer merely estimated (plans without printed dimensions) is never accepted: `scale_unresolved` stays critical and no geometry is promoted.
+- Rooms arrive as `RegisteredRoomBoundary` with `registrationKind: "vectorizer_wall_topology"`: wall centre-line polygons whose sides carry measured thickness and, where one stands, a door, window or doorway (`proof: "vectorizer_drawn_symbol"`) with hinge point and swing side, from which `swingAgainstWall` derives hinge end and handing against the hosting wall. They rank below complete deterministic source topology and above vision-guided proposals. The exporter withholds any room that would break the canonical loop rules, so accepted documents pass `validateFloorPlanDocumentV2`.
+- Everything stays `needs_review` with the usual confirmation issues.
+
+`npm run test:floor-plan-vectorizer-evidence` drives real exporter output for four drawing styles through `solveScale`, `buildTopology`, `validate`, the canonical validator and the compiler, and exercises the process boundary with stand-in programs.
+
 `floorPlanVisionRuntimeConfiguration` reads the enable flag, API-key presence,
 safety override, and model for every invocation; none is captured or cached at
 module import. `externalVisionEnabled` is exactly
@@ -234,6 +247,10 @@ raw application values; the historical flag value is provably exact `1` from
 the observed metric, while the model and secret values remain unknown.
 
 Share-token and public-catalog boundaries never return raw source manifests or private import lineage. Shared canonical documents receive a geometry-derived share ID, lose source job/address/underlay/reviewer metadata, and retain only sanitized room and structure display names. Catalog room summaries are derived from an allowlisted semantic room type with server-generated IDs; a malformed or uploader-defined type fails closed instead of exposing the manifest label.
+
+When the rooms come from the vectorizer, its walls are measured and are solid wherever it found no opening. An opening symbol from another source (OCR, vision) is promoted onto such a wall only when raster jamb or frame pixels support its span; otherwise it is kept as an editable `source-opening-suggestion` annotation on that wall.
+
+A page that prints no dimensions gets no accepted scale from the vectorizer either: its `estimated_door_leaf` figure is never used for geometry. It is surfaced instead: the `scale_unresolved` message says what the estimate rests on, the door openings it was made from become `source-scale-estimate` reference marks, and the scale review panel lists them. Picking one loads its jambs as the two endpoints and pre-fills the width the opening would have at the estimate; applying that number unchanged records the primary measurement with `basis: "assumed_opening_width"`, which the panel shows as an amber, approximate scale until a printed measurement confirms or replaces it.
 
 ## Canonical rendering and compatibility
 

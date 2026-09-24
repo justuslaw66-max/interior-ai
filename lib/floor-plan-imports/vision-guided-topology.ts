@@ -1,8 +1,8 @@
+import { sourceSegmentsForWalls,roomSourceConflict,sourcePixelDistance } from "./source-wall-linework";
 import {
   pointInPolygon,
   type RegisteredPageEvidence,
   type RegisteredRoomBoundary,
-  type SemanticBoundingBox,
   type SemanticFixtureSymbol,
   type SemanticRoomBoundary,
   type SourcePointPx,
@@ -35,6 +35,7 @@ export type VisionGuidedTopologyResult = {
       unsnappableCorner: number;
       invalidPolygon: number;
       ambiguousLabel: number;
+      internalDivider: number;
       incompatibleFixtureCluster: number;
       excessiveResidual: number;
     };
@@ -44,7 +45,6 @@ export type VisionGuidedTopologyResult = {
 };
 
 const MIN_PROPOSAL_CONFIDENCE = 0.5;
-const MIN_SEGMENT_LENGTH_PX = 8;
 const MIN_EDGE_LENGTH_PX = 14;
 const MAX_POLYGON_POINTS = 24;
 const OPEN_PLAN_ROOM_TYPES = new Set(["living", "dining", "kitchen"]);
@@ -82,16 +82,6 @@ export function inferRoomIdentityFromFixtures(
   };
 }
 
-function pointInBox(point: SourcePointPx, box: SemanticBoundingBox, page: RegisteredPageEvidence) {
-  const padding = Math.max(2, Math.hypot(page.widthPx, page.heightPx) * 0.001);
-  return (
-    point.x >= box.leftRatio * page.widthPx - padding &&
-    point.x <= box.rightRatio * page.widthPx + padding &&
-    point.y >= box.topRatio * page.heightPx - padding &&
-    point.y <= box.bottomRatio * page.heightPx + padding
-  );
-}
-
 function segmentMidpoint(segment: SourceVectorSegment): SourcePointPx {
   return {
     x: (segment.start.x + segment.end.x) / 2,
@@ -99,29 +89,6 @@ function segmentMidpoint(segment: SourceVectorSegment): SourcePointPx {
   };
 }
 
-function sourceSegmentsForWalls(page: RegisteredPageEvidence) {
-  const semanticTextBoxes = [
-    ...page.semantics.roomLabels.flatMap((label) => (label.bbox ? [label.bbox] : [])),
-    ...page.semantics.dimensionLabels.flatMap((label) =>
-      label.bbox ? [label.bbox] : []
-    ),
-  ];
-  return page.vectorSegments.filter((segment) => {
-    if (pointDistance(segment.start, segment.end) < MIN_SEGMENT_LENGTH_PX) return false;
-    if ((segment.confidence ?? 1) < 0.55) return false;
-    const midpoint = segmentMidpoint(segment);
-    if (semanticTextBoxes.some((box) => pointInBox(midpoint, box, page))) return false;
-    return !page.text.some((text) => {
-      const box = {
-        leftRatio: (text.center.x - text.widthPx / 2) / page.widthPx,
-        topRatio: (text.center.y - text.heightPx / 2) / page.heightPx,
-        rightRatio: (text.center.x + text.widthPx / 2) / page.widthPx,
-        bottomRatio: (text.center.y + text.heightPx / 2) / page.heightPx,
-      };
-      return pointInBox(midpoint, box, page);
-    });
-  });
-}
 
 function median(values: readonly number[]) {
   const sorted = [...values].sort((left, right) => left - right);
@@ -543,19 +510,15 @@ function supportEdge(
     return null;
   }
   const snappedOffset = median(best.members.map((member) => member.offset));
-  const residuals = best.members.map((member) =>
-    Math.abs(member.offset - snappedOffset)
-  );
+  // Midpoints alone conceal angular drift; keep the same original-pixel gates.
+  const residuals = best.members.flatMap(({segment}) => [segment.start,segmentMidpoint(segment),segment.end].map(point => {
+    const drift=(point.x-start.x)*nx+(point.y-start.y)*ny-snappedOffset;
+    return sourcePixelDistance(page,point,{x:point.x-nx*drift,y:point.y-ny*drift});
+  }));
   const sourceSegmentIds = [...new Set(best.members.map((member) => member.segment.id))];
   return {
-    shiftedStart: {
-      x: start.x + nx * snappedOffset,
-      y: start.y + ny * snappedOffset,
-    },
-    shiftedEnd: {
-      x: end.x + nx * snappedOffset,
-      y: end.y + ny * snappedOffset,
-    },
+    shiftedStart: { x: start.x + nx * snappedOffset, y: start.y + ny * snappedOffset },
+    shiftedEnd: { x: end.x + nx * snappedOffset, y: end.y + ny * snappedOffset },
     sourceSegmentIds,
     sourcePathIds: [
       ...new Set(sourceSegmentIds.flatMap((segmentId) => sourcePathIds.get(segmentId) ?? [])),
@@ -862,6 +825,7 @@ export function registerVisionGuidedRoomBoundaries(
     unsnappableCorner: 0,
     invalidPolygon: 0,
     ambiguousLabel: 0,
+    internalDivider: 0,
     incompatibleFixtureCluster: 0,
     excessiveResidual: 0,
   };
@@ -960,13 +924,12 @@ export function registerVisionGuidedRoomBoundaries(
         )
     );
     const fixtureIdentity = inferRoomIdentityFromFixtures(sourceFixtures);
-    const openPlan =
-      labels.length > 1 &&
+    const openPlan = labels.length > 1 &&
       labels.every((entry) => OPEN_PLAN_ROOM_TYPES.has(entry.roomType)) &&
       new Set(labels.map((entry) => entry.roomType)).size > 1;
-    if (labels.length > 1 && !openPlan) {
-      rejectionCounts.ambiguousLabel += 1;
-      continue;
+    const sourceConflict=roomSourceConflict(page,completePoints,labels.length > 1 && !openPlan);
+    if (sourceConflict) {
+      rejectionCounts[sourceConflict] += 1; continue;
     }
     if (
       fixtureIdentity &&

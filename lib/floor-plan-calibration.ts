@@ -1,5 +1,6 @@
 import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
 import type { FloorPlanPoint, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import { underlayPlanToLocal } from "./floor-plan-underlay-geometry";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 const MIN_REFERENCE_DISTANCE_METERS = 0.05;
@@ -34,11 +35,7 @@ export function mapUnderlayWorldPointToPixels(
 
   const dx = point.x - underlay.position.x;
   const dz = point.z - underlay.position.z;
-  const rotationRadians = (underlay.rotationDeg * Math.PI) / 180;
-  const cos = Math.cos(rotationRadians);
-  const sin = Math.sin(rotationRadians);
-  const localX = dx * cos - dz * sin;
-  const localZ = dx * sin + dz * cos;
+  const { x: localX, z: localZ } = underlayPlanToLocal(underlay, dx, dz);
 
   return {
     x: roundPixels((localX / underlay.widthMeters + 0.5) * underlay.widthPx),
@@ -79,8 +76,8 @@ export function applyFloorPlanScaleCalibration(params: {
 
   return {
     ...underlay,
-    widthMeters: roundMeters(underlay.widthPx / pixelsPerMeter),
-    depthMeters: roundMeters(underlay.heightPx / pixelsPerMeter),
+    widthMeters: roundMeters(underlay.widthMeters * referenceLengthMeters / measuredDistanceMeters),
+    depthMeters: roundMeters(underlay.depthMeters * referenceLengthMeters / measuredDistanceMeters),
     calibration: {
       pixelsPerMeter: roundPixels(pixelsPerMeter),
       referenceLengthMeters: roundMeters(referenceLengthMeters),

@@ -83,7 +83,7 @@ function demoteInvalidGeometry(
     floor.annotations.flatMap((annotation) =>
       annotation.geometry.kind === "point"
         ? [annotation.geometry.vertexId]
-        : annotation.geometry.kind === "polygon"
+        : annotation.geometry.kind === "polygon" || annotation.geometry.kind === "polyline"
           ? annotation.geometry.vertexIds
           : []
     )

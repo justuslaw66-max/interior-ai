@@ -162,10 +162,10 @@ export function useDesignPageEditorInteractionRegistration({
       setSelectedZoneId: documentSelection.actions.setSelectedZoneId,
       clearSelection: itemSelection.actions.clearSelection,
       commitItems: itemDocument.actions.commitItems,
+      history,
       runHistoryTransaction,
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
-      getSelectionBounds:
-        selectionInspection.actions.geometry.getSelectionBounds,
+      getSelectionBounds: selectionInspection.actions.geometry.getSelectionBounds,
       getItemAABB: selectionInspection.actions.geometry.getItemAABB,
     },
   });

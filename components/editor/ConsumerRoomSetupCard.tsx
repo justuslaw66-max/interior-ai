@@ -1,6 +1,6 @@
 "use client";
 
-import { ConsumerMeasurementPreferenceRegion } from "@/components/editor/ConsumerMeasurementPreferenceRegion";
+import { ConsumerMeasurementPreferenceRegion, consumerRoomMeasurementDimensions } from "@/components/editor/ConsumerMeasurementPreferenceRegion";
 import {
   HOUSE_ROOM_TYPES,
   ROOM_SIZE_PRESETS,
@@ -44,11 +44,6 @@ export type ConsumerRoomSetupCardProps = {
   };
 };
 
-function validDraftMetres(value: string, fallback: number) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 export function ConsumerRoomSetupCard({
   dark,
   canEdit,
@@ -68,8 +63,7 @@ export function ConsumerRoomSetupCard({
   hasConnectionBlockers,
   actions,
 }: ConsumerRoomSetupCardProps) {
-  const widthMm = (hasRooms ? roomWidth : validDraftMetres(roomWidthInput, roomWidth)) * 1000;
-  const depthMm = (hasRooms ? roomDepth : validDraftMetres(roomDepthInput, roomDepth)) * 1000;
+  const dimensions = consumerRoomMeasurementDimensions({ hasRooms, roomWidth, roomDepth, roomWidthInput, roomDepthInput });
   const roomTypeLabel = HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ?? "Room";
   const shellClass = dark
     ? "designer-recessed border-b border-white/10 p-3"
@@ -184,8 +178,7 @@ export function ConsumerRoomSetupCard({
         canEditPlanGeometry={canEditPlanGeometry}
         hasRooms={hasRooms}
         ready={measurementUnitReady}
-        widthMm={widthMm}
-        depthMm={depthMm}
+        {...dimensions}
         roomFloorAreaSqm={activeRoomFloorAreaSqm}
         measurementUnit={measurementUnit}
         onChangeUnit={actions.changeMeasurementUnit}

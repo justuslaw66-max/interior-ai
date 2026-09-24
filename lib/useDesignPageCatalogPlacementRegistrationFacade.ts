@@ -10,7 +10,7 @@ import {
 import { isParametricCabinetItem } from "@/features/cabinetry/designItemAdapters";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogPlacementPreviewTarget } from "@/lib/catalog-placement-policy";
-import type { DesignItem } from "@/lib/room-types";
+import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import {
   useDesignPageCatalogPlacement,
   type DesignPageCatalogPlacementAdapters,
@@ -44,7 +44,7 @@ export type UseDesignPageCatalogPlacementRegistrationFacadeInput = {
   state: {
     crossRoomDragTarget: DesignPageCatalogPlacementTarget | null;
   };
-  configuration: DesignPageCatalogPlacementConfiguration;
+  configuration: DesignPageCatalogPlacementConfiguration & { canonicalDocument?: NonNullable<DesignSnapshot["floorPlan"]>["canonicalDocument"] };
   refs: CrossRoomTransferInput["refs"];
   actions: Omit<
     DesignPageCatalogPlacementAdapters,
@@ -102,7 +102,7 @@ export function useDesignPageCatalogPlacementRegistrationFacade({
   const { houseRoomById, roomSnapshotById } = configuration;
 
   const placementRoomQueries = useDesignPagePlacementRoomQueries({
-    configuration: { houseRoomById },
+    configuration: { houseRoomById, canonicalDocument: configuration.canonicalDocument },
     actions: { getItemAABB },
   });
   const {
