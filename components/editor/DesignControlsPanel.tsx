@@ -547,7 +547,7 @@ export default function DesignControlsPanel({
 
   const effectivePanelMode = panelMode === "ai" && !aiDesignEnabled ? "plan" : panelMode;
   const panelTitle =
-    effectivePanelMode === "plan" ? "Plan" : effectivePanelMode === "furnish" ? "Furnish" : "AI Design";
+    effectivePanelMode === "plan" ? "Plan" : effectivePanelMode === "furnish" ? "Furnish" : "Suggest a layout";
   const panelSubtitle =
     effectivePanelMode === "plan"
       ? planRoomCount > 0
@@ -555,7 +555,7 @@ export default function DesignControlsPanel({
         : "Start with a room size, then add doors and windows."
       : effectivePanelMode === "furnish"
         ? "Add real purchasable furniture and arrange it in the active room."
-        : "Generate a starter layout, review it, then apply when it looks right.";
+        : "Get a suggested layout, review it, then apply when it looks right.";
   if (isClientPreview) return null;
 
   const planPanelSurfaceTarget = activeSurfaceTarget;

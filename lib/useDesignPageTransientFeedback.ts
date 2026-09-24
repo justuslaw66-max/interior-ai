@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ConstraintResult } from "@/lib/constraints/evaluate";
+import { EDITOR_FEEDBACK_DURATION_MS, editorFeedbackTone } from "@/lib/editor-feedback-tone";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
 export function useDesignPageTransientFeedback({
@@ -28,7 +29,7 @@ export function useDesignPageTransientFeedback({
       toastTimerRef.current = window.setTimeout(() => {
         setToast(null);
         toastTimerRef.current = null;
-      }, 1500);
+      }, EDITOR_FEEDBACK_DURATION_MS[editorFeedbackTone(message)]);
     },
     [isClientPreview]
   );
@@ -41,7 +42,7 @@ export function useDesignPageTransientFeedback({
       constraintTimerRef.current = window.setTimeout(() => {
         setConstraintResults([]);
         constraintTimerRef.current = null;
-      }, 1800);
+      }, results.some((item) => item.level === "error") ? EDITOR_FEEDBACK_DURATION_MS.error : 1800);
     },
     [editorMode, isClientPreview]
   );

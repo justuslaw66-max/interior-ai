@@ -697,9 +697,9 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         roomType: "kitchen",
         shape: "rectangle",
         width: 2.2,
-        depth: 3,
+        depth: 2.6,
         x: 4.5,
-        z: 1.5,
+        z: 1.3,
       },
       {
         id: "entry",
@@ -707,9 +707,9 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
         roomType: "custom",
         shape: "rectangle",
         width: 2.2,
-        depth: 2.2,
+        depth: 2.6,
         x: 4.5,
-        z: 4.1,
+        z: 3.9,
       },
       {
         id: "bedroom",
@@ -733,7 +733,7 @@ const HOUSE_PLAN_TEMPLATE_BASES: Array<Omit<HousePlanTemplate, "furnishingPacks"
       },
     ],
     doorways: [
-      { fromRoomId: "entry", toRoomId: "living", wall: "west", offsetMeters: -0.4 },
+      { fromRoomId: "entry", toRoomId: "living", wall: "west", offsetMeters: -0.5 },
       { fromRoomId: "entry", toRoomId: "kitchen", wall: "north", offsetMeters: 0 },
       { fromRoomId: "entry", toRoomId: "bathroom", wall: "south", offsetMeters: 0 },
       { fromRoomId: "living", toRoomId: "bedroom", wall: "south", offsetMeters: -0.6 },
@@ -2789,7 +2789,7 @@ export function buildHouseRoomDoorwaySuggestions(
         widthMeters: doorwayWidth,
         points: guide.points,
         labelPosition: guide.labelPosition,
-        label: "Add doorway",
+        label: "Add door here",
       });
     }
   }

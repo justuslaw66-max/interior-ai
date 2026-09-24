@@ -150,7 +150,7 @@ function SavedViewNavigation({
       className="rounded-xl bg-white p-4 shadow"
       data-testid="share-saved-view-navigation"
     >
-      <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved Views</h3>
+      <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved views</h3>
       <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
         {savedViews.map((view) => (
           <button

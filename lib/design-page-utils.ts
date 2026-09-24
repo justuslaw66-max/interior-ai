@@ -1,4 +1,5 @@
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { formatSgd } from "@/lib/money-format";
 
 export function getItemPrice(item: CatalogItemSchema | undefined | null): number {
   if (!item) return 0;
@@ -23,11 +24,7 @@ export function parseVariantLabel(label: string): { colourLabel: string; materia
 }
 
 export function formatMoney(n: number) {
-  return new Intl.NumberFormat("en-SG", {
-    style: "currency",
-    currency: "SGD",
-    maximumFractionDigits: 0,
-  }).format(n);
+  return formatSgd(n);
 }
 
 export function formatTimeAgo(ts: number) {

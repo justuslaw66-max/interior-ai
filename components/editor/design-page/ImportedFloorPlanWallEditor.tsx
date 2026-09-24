@@ -195,9 +195,9 @@ export function ImportedFloorPlanWallEditor({
               setDeltaXMm(0);
               setDeltaZMm(0);
             }}>
-              {floor.walls.map((candidate) => (
+              {floor.walls.map((candidate, index) => (
                 <option key={candidate.id} value={candidate.id}>
-                  {candidate.id} · {candidate.classification} · {candidate.path.kind}
+                  Wall {index + 1} · {candidate.classification} · {candidate.path.kind === "arc" ? "curved" : "straight"}
                 </option>
               ))}
             </select>

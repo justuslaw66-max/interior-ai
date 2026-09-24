@@ -37,7 +37,7 @@ async function mockPlan(page: Page, plan: "free" | "pro") {
 async function dismissBlockingPrompt(page: Page) {
   const overlay = page
     .locator(".fixed.inset-0.z-50")
-    .filter({ hasText: /Upgrade to Pro|Save and sync this design/i })
+    .filter({ hasText: /Upgrade to Pro|Sign in to save this design/i })
     .last();
   if (!(await overlay.isVisible().catch(() => false))) return;
 
@@ -82,7 +82,7 @@ async function openCustomMillworkStudioFromWorkspace(
   await expect(workspace).toHaveAttribute("aria-expanded", "true");
   await expect(menu).toBeVisible();
   await expect(workflow).toBeVisible();
-  await expect(workflow).toHaveAccessibleName("Custom Millwork Studio");
+  await expect(workflow).toHaveAccessibleName("Built-ins");
   await expect(legacyLabel).toBeVisible();
 
   if (options.activation === "keyboard") {
@@ -95,7 +95,7 @@ async function openCustomMillworkStudioFromWorkspace(
   }
 
   const studio = page.getByTestId("custom-millwork-studio");
-  const dialog = page.getByRole("dialog", { name: "Custom Millwork Studio" });
+  const dialog = page.getByRole("dialog", { name: "Built-ins", exact: true });
   await expect(studio).toBeVisible({ timeout: 15_000 });
   await expect(studio).toHaveCount(1);
   await expect(studio).toHaveAttribute("data-access-level", options.accessLevel);
@@ -780,7 +780,7 @@ async function openPlansFromUpgrade(
 
 async function expectPlansDialog(page: Page) {
   const dialog = page.getByTestId("plans-dialog");
-  const namedDialog = page.getByRole("dialog", { name: "Plans", exact: true });
+  const namedDialog = page.getByRole("dialog", { name: "Pricing", exact: true });
   const close = page.getByTestId("plans-dialog-close");
   await expect(dialog).toHaveCount(1);
   await expect(namedDialog).toHaveCount(1);
@@ -813,7 +813,7 @@ async function expectFocusInside(dialog: Locator) {
 
 async function expectPlansClosed(page: Page) {
   await expect(page.getByTestId("plans-dialog")).toHaveCount(0);
-  await expect(page.getByRole("dialog", { name: "Plans", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Pricing", exact: true })).toHaveCount(0);
 }
 
 async function waitForTwoFrames(page: Page) {
@@ -1164,7 +1164,7 @@ test.describe("Pro visual policy", () => {
     await prepareCommandPaletteEditor(page, "free");
     const save = page.getByTestId("save-design");
     await save.click();
-    const guest = page.getByRole("dialog", { name: "Save and sync this design?" });
+    const guest = page.getByRole("dialog", { name: "Sign in to save this design" });
     await expect(guest).toBeVisible();
     await page.keyboard.press("Meta+K");
     await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
@@ -1458,10 +1458,10 @@ test.describe("Pro visual policy", () => {
     let plans = await expectPlansDialog(page);
     await expect(page.getByTestId("plans-layout-default")).toBeVisible();
     await expect(page.getByTestId("checkout-monthly")).toContainText(
-      "Start monthly — SGD 29.90/month"
+      "Start monthly — S$29.90/month"
     );
     await expect(page.getByTestId("checkout-yearly")).toContainText(
-      "Start yearly — SGD 249.90/year"
+      "Start yearly — S$249.90/year"
     );
     await expect(page.getByTestId("plans-pro-active")).toHaveCount(0);
     expect(
@@ -2119,7 +2119,7 @@ test.describe("Pro visual policy", () => {
 
     await expect(page.locator('[data-theme="default"]')).toBeVisible();
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
-    await expect(page.getByTestId("pro-mode-indicator")).toHaveAccessibleName("Pro mode active");
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveAccessibleName("Pro tools on");
     const proTokens = await readThemeTokens(page);
     expect(proTokens.canvas).toBe("#ffffff");
     expect(proTokens.panel).toBe("#ffffff");
@@ -2154,7 +2154,7 @@ test.describe("Pro visual policy", () => {
 
     await page
       .getByTestId("editor-command-bar")
-      .getByRole("button", { name: "2D Plan", exact: true })
+      .getByRole("button", { name: "2D", exact: true })
       .click();
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
 
@@ -2204,6 +2204,11 @@ test.describe("Pro visual policy", () => {
     await expect(renderer).toHaveAttribute("data-render-color-space", "srgb");
     await expect(renderer).toHaveAttribute("data-tone-mapping", "aces-filmic");
     await expect(renderer).toHaveAttribute("data-frameloop", "demand");
+    // The data-* attributes above are static props on the R3F <Canvas> wrapper and
+    // appear before R3F creates its WebGL renderer. Reading getContext() on a canvas
+    // nothing has claimed yet creates a default context (preserveDrawingBuffer false)
+    // that three.js then inherits, so wait until the preview has drawn frames first.
+    await expect(renderer).toHaveAttribute("data-preview-ready", "true");
     // WebKit screenshots paint the canvas from its drawing buffer; a settled
     // on-demand canvas must keep its last frame there.
     expect(await renderer.locator("canvas").evaluate((canvas: HTMLCanvasElement) =>

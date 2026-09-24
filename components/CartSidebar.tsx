@@ -19,6 +19,7 @@ import {
   type RetailerConfirmationSession,
 } from "@/lib/retailer-confirmation";
 import { useShopifyCheckoutLock } from "@/lib/useShopifyCheckoutLock";
+import { formatSgd } from "@/lib/money-format";
 
 export type CartSidebarPlacedItem = {
   instanceId: string;
@@ -142,7 +143,7 @@ export default function CartSidebar({
     noticeTimerRef.current = window.setTimeout(() => {
       setNotice(null);
       noticeTimerRef.current = null;
-    }, tone === "error" ? 5000 : 3200);
+    }, tone === "error" ? 8000 : 3200);
   };
 
   useEffect(() => {
@@ -538,7 +539,7 @@ export default function CartSidebar({
                   `- ${u.title ?? "Item"} (${u.variant ?? "Variant"})`
                 )
                 .join("\n")}`
-            : data?.error ?? "Checkout failed";
+            : "Checkout failed";
         showCartNotice(msg, "error");
         return;
       }
@@ -607,7 +608,7 @@ export default function CartSidebar({
                 Total
               </div>
               <div className={`mt-1 text-lg font-semibold ${textClass}`}>
-                ${totals.total.toFixed(0)}
+                {formatSgd(totals.total)}
               </div>
             </div>
             <div className={softCardClass}>
@@ -744,7 +745,7 @@ export default function CartSidebar({
                 onBulkSwap("cheaper");
               }}
             >
-              Make room cheaper
+              Swap for cheaper
             </button>
 
             <button
@@ -755,7 +756,7 @@ export default function CartSidebar({
                 onBulkSwap("premium");
               }}
             >
-              Upgrade room
+              Swap for pricier
             </button>
           </div>
 
@@ -796,9 +797,8 @@ export default function CartSidebar({
                       <div>
                         <div className={`text-sm font-semibold ${textClass}`}>Checkout here</div>
                         <div className={`text-xs ${mutedTextClass}`}>
-                          {shopifyItems.length} included • Subtotal ${shopifyItems
-                            .reduce((sum, x) => sum + x.linePrice, 0)
-                            .toFixed(0)}
+                          {shopifyItems.length} included • Subtotal {formatSgd(shopifyItems
+                            .reduce((sum, x) => sum + x.linePrice, 0))}
                         </div>
                       </div>
                     </div>
@@ -851,17 +851,17 @@ export default function CartSidebar({
                             </div>
 
                             <div className="text-right">
-                              <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                              <div className={`text-sm font-semibold ${textClass}`}>{formatSgd(x.linePrice)}</div>
                               <div className={`text-[11px] ${mutedTextClass}`}>
                                 {x.isBundleLine ? (
                                   <>
                                     Set price
                                     {x.compareAtPrice ? (
-                                      <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                      <span className="ml-1 line-through">{formatSgd(x.compareAtPrice)}</span>
                                     ) : null}
                                   </>
                                 ) : (
-                                  <>${x.unitPrice} ea</>
+                                  <>{formatSgd(x.unitPrice)} each</>
                                 )}
                               </div>
                             </div>
@@ -917,7 +917,7 @@ export default function CartSidebar({
                         <div>
                           <div className={`text-sm font-semibold ${textClass}`}>{g.retailer}</div>
                           <div className={`text-xs ${mutedTextClass}`}>
-                            {g.lines.length} items • {g.buyableCount} included • Subtotal ${g.subtotal.toFixed(0)}
+                            {g.lines.length} items • {g.buyableCount} included • Subtotal {formatSgd(g.subtotal)}
                           </div>
                         </div>
 
@@ -1000,17 +1000,17 @@ export default function CartSidebar({
                               </div>
 
                               <div className="text-right">
-                                <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
+                                <div className={`text-sm font-semibold ${textClass}`}>{formatSgd(x.linePrice)}</div>
                                 <div className={`text-[11px] ${mutedTextClass}`}>
                                   {x.isBundleLine ? (
                                     <>
                                       Set price
                                       {x.compareAtPrice ? (
-                                        <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                        <span className="ml-1 line-through">{formatSgd(x.compareAtPrice)}</span>
                                       ) : null}
                                     </>
                                   ) : (
-                                    <>${x.unitPrice} ea</>
+                                    <>{formatSgd(x.unitPrice)} each</>
                                   )}
                                 </div>
                               </div>

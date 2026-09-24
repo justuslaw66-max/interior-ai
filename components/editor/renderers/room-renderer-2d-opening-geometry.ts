@@ -14,6 +14,8 @@ export type Opening2D = {
   hostTangent?: { x: number; z: number };
   hostInwardNormal?: { x: number; z: number };
   hostResolution?: DesignPageOpeningHostResolution;
+  /** Resolved openings: the placement rules leave another valid centre on the host to drag to. */
+  movableOnHost?: boolean;
   widthEvidence?: FloorPlanPropertyEvidenceV2;
 };
 

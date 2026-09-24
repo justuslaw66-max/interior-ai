@@ -32,10 +32,9 @@ export default function ShareShoppingCheckout({
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const error =
-          typeof payload?.error === "string"
-            ? payload.error
-            : "Checkout is temporarily unavailable.";
+        const error = Array.isArray(payload?.unavailable) && payload.unavailable.length > 0
+          ? "Some items are out of stock."
+          : "Checkout is temporarily unavailable.";
         track("share_shopify_checkout_failed", {
           shared_context: true,
           status: response.status,
@@ -66,7 +65,7 @@ export default function ShareShoppingCheckout({
         className="rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {busy
-          ? "Checking availability..."
+          ? "Checking availability…"
           : lines.length > 0
             ? `Checkout ${totalQuantity} item${totalQuantity === 1 ? "" : "s"}`
             : "No direct-checkout items"}

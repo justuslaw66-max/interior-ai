@@ -449,7 +449,7 @@ async function main() {
       fs.readFileSync(path.join(process.cwd(), relative), "utf8")
     )
     .join("\n");
-  assert.match(assistant, /Deterministic CAD linework preview/);
+  assert.match(assistant, /CAD drawing preview/);
   assert.match(
     assistant,
     /\/api\/floor-plan-imports\/\$\{encodeURIComponent\(jobId\)\}\/assets/

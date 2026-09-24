@@ -166,9 +166,9 @@ export default function DesignControlsAiPanel({
             : "rounded-xl border border-neutral-200 bg-neutral-50 p-4"
         }
       >
-        <div className={titleClass}>AI Design Brief</div>
+        <div className={titleClass}>Layout brief</div>
         <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-          Generate a starter layout for the current room, then review and adjust it.
+          Set the goal, style, budget, and must-haves for the current room.
         </div>
 
         <div className={`mt-4 ${cardClass}`}>
@@ -355,14 +355,14 @@ export default function DesignControlsAiPanel({
           disabled={!briefReady}
           onClick={() => onRunAiLayout(requestedRoles)}
         >
-          {aiLayoutProposal ? "Generate another" : "Generate layout"}
+          {aiLayoutProposal ? "Suggest another" : "Suggest a layout"}
         </button>
         <div className={dark ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
           {briefReady
             ? "Review the result before saving, exporting, or shopping."
             : roomSupported
               ? "Add room dimensions and at least one must-have before generating."
-              : "Switch to a living room to generate an AI starter layout."}
+              : "Switch to a living room to get a suggested layout."}
         </div>
       </div>
       {aiLayoutProposal && (

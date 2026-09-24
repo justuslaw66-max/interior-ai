@@ -19,7 +19,7 @@ export function registerDetailedTests() {
       const workflow = commandBar.getByTestId("editor-command-workspace-menu");
       const openStudio = commandBar.getByTestId("open-custom-millwork-studio");
       await expect(openStudio).toBeVisible();
-      await expect(openStudio).toContainText("Millwork");
+      await expect(openStudio).toContainText("Built-ins");
       await expect(page.getByTestId("open-custom-millwork-studio")).toHaveCount(1);
       await expect(page.getByTestId("design-controls-panel").getByTestId("open-custom-millwork-studio")).toHaveCount(0);
       await expect(workflow.locator("button")).toHaveCount(6);
@@ -31,7 +31,7 @@ export function registerDetailedTests() {
       await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
       await expect(page.getByTestId("editor-workflow-millwork")).toHaveAttribute("data-active", "true");
       await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
-      await expect(page.getByRole("heading", { name: "Custom Millwork Studio" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Built-ins", exact: true })).toBeVisible();
       await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-experience", "guided");
       await expect(page.getByTestId("cabinet-template-search")).toBeVisible();
       await page.getByTestId("cabinet-template-search").fill("wardrobe");

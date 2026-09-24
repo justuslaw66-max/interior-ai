@@ -241,7 +241,7 @@ export class PrismaFloorPlanImportLeaseService {
             nextAttemptAt: null,
             lastErrorAt: now,
             ...(recoveredExpiredLease ? { lastRecoveredAt: now } : {}),
-            errorMessage: `Floor-plan import exhausted ${row.maxAttempts} processing attempts`,
+            errorMessage: `Floor plan upload stopped after ${row.maxAttempts} processing attempts`,
           },
         });
         if (exhausted.count !== 1) return { outcome: "race_lost" };
@@ -484,7 +484,7 @@ export class PrismaFloorPlanImportLeaseService {
                   progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
                   nextAttemptAt: null,
                   lastErrorAt: now,
-                  errorMessage: `Floor-plan import exhausted ${candidate.maxAttempts} processing attempts after an expired worker lease`,
+                  errorMessage: `Floor plan upload stopped after ${candidate.maxAttempts} attempts; processing timed out`,
                 }
               : {
                   retryCount: { increment: 1 },

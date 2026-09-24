@@ -33,6 +33,7 @@ import {
   PublicShareRoomSchedule,
   type PublicShareRoomScheduleItem,
 } from "@/components/public-share/PublicShareRoomSchedule";
+import { formatSgd } from "@/lib/money-format";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -58,13 +59,6 @@ function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 export default async function SharePage({
   params,
 }: {
@@ -186,14 +180,14 @@ export default async function SharePage({
       tone: measuredRoomCount === designSnapshot.rooms.length ? "ready" : "review",
     },
     {
-      label: "Openings",
+      label: "Doors & windows",
       value:
         totalOpenings > 0
-          ? `${totalOpenings} opening${totalOpenings === 1 ? "" : "s"} included`
-          : "No openings traced",
+          ? `${totalOpenings} ${totalOpenings === 1 ? "door or window" : "doors and windows"} included`
+          : "No doors or windows traced",
       detail:
         totalOpenings > 0
-          ? "Doors and windows are included in the saved plan."
+          ? "Doors and windows are included in the saved design."
           : "Trace doors or windows for stronger install notes.",
       tone: totalOpenings > 0 ? "ready" : "review",
     },
@@ -212,7 +206,7 @@ export default async function SharePage({
       detail:
         presentationViewItems.length > 0
           ? "Curated camera angles are ready for walkthrough."
-          : "Save a camera view in the editor for cleaner handoff.",
+          : "Save a view in the editor to show it here.",
       tone: presentationViewItems.length > 0 ? "ready" : "info",
     },
   ];
@@ -223,14 +217,14 @@ export default async function SharePage({
     handoffFidelitySummary.missingCommerceCount === 0 &&
     handoffFidelitySummary.itemCount === shoppingSummary.itemCount;
   const clientHandoffStatus = handoffReady
-    ? "Review-ready preview"
+    ? "Ready to review"
     : "Needs shopping review";
   const clientHandoffDetail = handoffReady
-    ? "Saved rooms, shopping, share, and export data are aligned."
-    : `${handoffFidelitySummary.missingCommerceCount} item${handoffFidelitySummary.missingCommerceCount === 1 ? "" : "s"} need commerce review before ordering.`;
+    ? "Every item has a place to buy it."
+    : `${handoffFidelitySummary.missingCommerceCount} item${handoffFidelitySummary.missingCommerceCount === 1 ? "" : "s"} need checking before ordering.`;
   const clientHandoffStats = [
     {
-      label: "Home",
+      label: "Rooms",
       value: `${designSnapshot.rooms.length} room${designSnapshot.rooms.length === 1 ? "" : "s"}`,
       detail: `${formatMeters(totalAreaSqm)} sq m measured`,
     },
@@ -240,8 +234,8 @@ export default async function SharePage({
       detail: `${reviewShoppingCount} item${reviewShoppingCount === 1 ? "" : "s"} to review`,
     },
     {
-      label: "Budget",
-      value: formatCurrency(shoppingSummary.subtotal),
+      label: "Estimated total",
+      value: formatSgd(shoppingSummary.subtotal),
       detail: `${shoppingSummary.itemCount} planned item${shoppingSummary.itemCount === 1 ? "" : "s"}`,
     },
   ];
@@ -272,16 +266,16 @@ export default async function SharePage({
           <div className="min-w-0">
             <h1 className="text-xl font-semibold">{publicDesign.title}</h1>
             <div className="text-sm text-neutral-600">
-              Read-only • {publicDesign.style ?? "Style"} • {publicDesign.budget ?? "Budget"}
+              View only{publicDesign.style ? ` • ${publicDesign.style}` : ""}{publicDesign.budget ? ` • ${publicDesign.budget}` : ""}
             </div>
             <div className="mt-2 text-xs text-neutral-500">
-              Responsive preview • Orbit to look around • No editing in share view
+              Drag to look around • Make a copy to edit
             </div>
             <div
               data-testid="share-handoff-id"
               className="mt-1 text-xs font-medium text-neutral-500"
             >
-              Handoff ID {handoffFidelitySummary.fingerprint}
+              Reference {handoffFidelitySummary.fingerprint}
             </div>
           </div>
 
@@ -293,7 +287,7 @@ export default async function SharePage({
         <div className="grid gap-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm lg:grid-cols-[1.25fr_1fr]">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-              Client Handoff
+              Summary
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <h2 className="text-2xl font-semibold text-neutral-950">{clientHandoffStatus}</h2>
@@ -371,10 +365,10 @@ export default async function SharePage({
           </div>
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Estimated total</div>
-            <div className="mt-1 text-lg font-semibold text-neutral-950">{formatCurrency(shoppingSummary.subtotal)}</div>
+            <div className="mt-1 text-lg font-semibold text-neutral-950">{formatSgd(shoppingSummary.subtotal)}</div>
           </div>
           <div data-testid="share-handoff-integrity">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Handoff</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Status</div>
             <div className={handoffReady ? "mt-1 text-lg font-semibold text-emerald-700" : "mt-1 text-lg font-semibold text-amber-700"}>
               {handoffReady ? "Ready" : "Review"}
             </div>
@@ -389,7 +383,7 @@ export default async function SharePage({
               <div key={room.roomId} className="min-w-[190px] rounded-lg border bg-white px-3 py-2 text-xs shadow-sm">
                 <div className="font-semibold text-neutral-900">{room.roomName}</div>
                 <div className="mt-1 text-neutral-500">
-                  {room.itemCount} items • {formatCurrency(room.subtotal)}
+                  {room.itemCount} items • {formatSgd(room.subtotal)}
                 </div>
                 {room.previewNames.length > 0 ? (
                   <div className="mt-1 truncate text-neutral-500">{room.previewNames.join(", ")}</div>
@@ -422,7 +416,7 @@ export default async function SharePage({
           <div className="mx-auto max-w-6xl px-6 py-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-950">Presentation Views</h2>
+                <h2 className="text-lg font-semibold text-neutral-950">Saved views</h2>
                 <div className="mt-1 text-sm text-neutral-600">
                   Curated camera angles saved with this design.
                 </div>
@@ -455,7 +449,7 @@ export default async function SharePage({
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-950">Room List</h2>
+              <h2 className="text-lg font-semibold text-neutral-950">Room list</h2>
               <div className="mt-1 text-sm text-neutral-600">
                 Dimensions, room types, and shopping totals from the saved design.
               </div>
@@ -475,7 +469,7 @@ export default async function SharePage({
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-950">Checkout Readiness</h2>
+              <h2 className="text-lg font-semibold text-neutral-950">Checkout readiness</h2>
               <div className="mt-1 text-sm text-neutral-600">
                 Clear buying paths for cart-ready products, retailer links, and items that need review.
               </div>
@@ -502,7 +496,7 @@ export default async function SharePage({
                 {checkoutReadyRows.length}
               </div>
               <div className="text-xs text-neutral-600">
-                {formatCurrency(checkoutReadyTotal)}
+                {formatSgd(checkoutReadyTotal)}
               </div>
             </div>
             <div className="rounded-xl border border-sky-100 bg-sky-50 p-3">
@@ -513,7 +507,7 @@ export default async function SharePage({
                 {retailerLinkRows.length}
               </div>
               <div className="text-xs text-neutral-600">
-                {formatCurrency(retailerLinkTotal)}
+                {formatSgd(retailerLinkTotal)}
               </div>
             </div>
             <div className="rounded-xl border border-amber-100 bg-amber-50 p-3">
@@ -556,9 +550,9 @@ export default async function SharePage({
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-950">Practical Checks</h2>
+              <h2 className="text-lg font-semibold text-neutral-950">Practical checks</h2>
               <div className="mt-1 text-sm text-neutral-600">
-                Quick handoff status for measurements, openings, shopping, and presentation review.
+                A quick status for measurements, doors and windows, shopping, and saved views.
               </div>
             </div>
             <a
@@ -607,7 +601,7 @@ export default async function SharePage({
         <div className="mx-auto max-w-6xl px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-neutral-950">Shopping Preview</h2>
+              <h2 className="text-lg font-semibold text-neutral-950">Shopping preview</h2>
               <div className="mt-1 text-sm text-neutral-600">
                 {shoppingSummary.itemCount > 0
                   ? `${shoppingSummary.shoppableCount} shoppable of ${shoppingSummary.itemCount} planned item${shoppingSummary.itemCount === 1 ? "" : "s"}`
@@ -615,7 +609,7 @@ export default async function SharePage({
               </div>
             </div>
             <div className="text-right text-sm">
-              <div className="font-semibold text-neutral-950">{formatCurrency(shoppingSummary.subtotal)}</div>
+              <div className="font-semibold text-neutral-950">{formatSgd(shoppingSummary.subtotal)}</div>
               <div className="text-xs text-neutral-500">Estimated total</div>
             </div>
           </div>
@@ -652,7 +646,7 @@ export default async function SharePage({
                           </div>
                         </div>
                         <div className="shrink-0 text-right text-sm font-semibold text-neutral-950">
-                          {formatCurrency(item.linePrice)}
+                          {formatSgd(item.linePrice)}
                         </div>
                       </div>
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -713,7 +707,7 @@ export default async function SharePage({
             </>
           ) : (
             <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-4 text-sm text-neutral-600">
-              Add catalog products in the editor to turn this shared design into a shopping-ready preview.
+              Add catalogue products in the editor to turn this shared design into a shopping-ready preview.
             </div>
           )}
         </div>

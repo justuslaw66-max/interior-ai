@@ -53,7 +53,7 @@ test.describe("4. Share Link Read-Only", () => {
     const openingId = "window-export-review";
     const materialId = "goodrich-geff-novaclick-gnv-002-silver-oak";
     const materialName = "GEFF NovaClick GNV-002 Silver Oak";
-    const warning = "The original room and wall are unavailable. Choose a new wall before this opening can cut the plan. Wall quantities were left uncut for this opening.";
+    const warning = "The original room and wall are unavailable. Choose a new wall before this door or window can cut the plan. Wall quantities were left uncut for this door or window.";
     const unresolved: DesignSnapshot = {
       version: 3, title: "Window Export Review", activeRoomId: "window-export-room",
       rooms: [{
@@ -106,7 +106,7 @@ test.describe("4. Share Link Read-Only", () => {
         const warningElement = page.getByTestId("surface-material-bom-opening-warning");
         if (state.blocked) {
           await expect(warningElement).toBeVisible();
-          await expect(warningElement).toContainText(`Opening ${openingId}: ${warning}`);
+          await expect(warningElement).toContainText(`Door or window 1: ${warning}`);
         } else {
           await expect(warningElement).toHaveCount(0);
         }
@@ -142,7 +142,7 @@ test.describe("4. Share Link Read-Only", () => {
         expect(pdfText).toContain(`Surface area ${state.surface} m2`);
         expect(pdfText).toContain(`Order ${state.order} m2 incl. 10% waste`);
         if (state.blocked) {
-          expect(pdfText).toContain(`Warning — wall quantities remain uncut for opening: ${openingId}.`);
+          expect(pdfText).toContain("Warning — wall quantities remain uncut for 1 door or window.");
         } else {
           expect(pdfText).not.toContain("wall quantities remain uncut");
         }
@@ -221,7 +221,7 @@ test.describe("4. Share Link Read-Only", () => {
       await expect(viewer).toHaveAttribute("data-ready", "true", {
         timeout: 30_000,
       });
-      await expect(page.getByText(/No editing in share view/i)).toBeVisible();
+      await expect(page.getByText(/Make a copy to edit/i)).toBeVisible();
       await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         expectedFingerprint,
@@ -236,7 +236,7 @@ test.describe("4. Share Link Read-Only", () => {
         "Deterministic beta smoke fixture.",
       );
       await expect(page.locator("h1").first()).toHaveText(seed.snapshot.title ?? "");
-      await expect(page.getByText("Read-only • modern • mid", { exact: true })).toBeVisible();
+      await expect(page.getByText("View only • modern • mid", { exact: true })).toBeVisible();
       expect(await page.title()).toBe("Interior AI");
       const publicPageSource = await page.content();
       const publicPageMetadata = await page.locator("head").innerHTML();

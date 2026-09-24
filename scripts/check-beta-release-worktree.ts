@@ -55,7 +55,6 @@ const EDITOR_PREFIXES = [
   "lib/layout-versions.ts",
   "lib/manual-placement-scoring.ts",
   "lib/room-",
-  "components/DesignerCanvas.tsx",
   "components/ReadOnlyViewer.tsx",
   "components/ShareViewer.tsx",
   "components/SnapGuides.tsx",

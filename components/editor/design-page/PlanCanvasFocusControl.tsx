@@ -24,7 +24,7 @@ type PlanCanvasFocusControlProps = {
 };
 
 function getFocusModeLabel(mode: PlanCanvasFocusMode) {
-  if (mode === "scale") return "Scaling plan";
+  if (mode === "scale") return "Setting scale";
   if (mode === "window") return "Placing window";
   if (mode === "door") return "Placing door";
   return "Drawing room";

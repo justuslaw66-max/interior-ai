@@ -366,7 +366,7 @@ assert.deepEqual(
     kind: "Furniture",
     title: "Reading Chair",
     detail: "Current room",
-    metrics: ["2,100 mm x 950 mm", "90°", "$2499"],
+    metrics: ["2,100 mm x 950 mm", "90°", "S$2,499"],
   },
   "A furniture summary should prefer configured dimensions and retain rotation and price formatting."
 );
@@ -397,7 +397,7 @@ assert.deepEqual(
   {
     kind: "Built-in",
     title: "Kitchen island",
-    detail: "Plan fixture",
+    detail: "Drawn in 2D",
     metrics: ["1,800 mm x 800 mm", "90°"],
   },
   "A selected built-in should take precedence over annotations and rooms."

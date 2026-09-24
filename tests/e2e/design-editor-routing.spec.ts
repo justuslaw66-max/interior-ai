@@ -372,7 +372,7 @@ test.describe("canonical saved-design routing", () => {
       const failedResponse = page.waitForResponse(
         (response) => new URL(response.url()).pathname === duplicatePath
       );
-      await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+      await page.getByRole("button", { name: "Make a copy", exact: true }).click();
       expect((await failedResponse).status()).toBe(503);
       await expect(
         page.locator('span[role="alert"]', {
@@ -387,7 +387,7 @@ test.describe("canonical saved-design routing", () => {
           new URL(response.url()).pathname === duplicatePath &&
           response.request().method() === "POST"
       );
-      await page.getByRole("button", { name: "Duplicate", exact: true }).click();
+      await page.getByRole("button", { name: "Make a copy", exact: true }).click();
       const response = await duplicateResponse;
       expect(response.status()).toBe(200);
       const body = (await response.json()) as { id?: unknown };

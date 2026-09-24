@@ -58,7 +58,7 @@ export function CabinetOutputTabs({
   return (
     <div
       role="tablist"
-      aria-label="Millwork outputs"
+      aria-label="Built-in outputs"
       data-testid="cabinet-output-tabs"
       className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-sm backdrop-blur"
     >

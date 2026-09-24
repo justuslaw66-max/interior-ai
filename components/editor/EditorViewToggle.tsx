@@ -32,14 +32,13 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
     >
       <button
         type="button"
-        aria-label="2D Plan"
+        aria-label="2D"
         aria-pressed={value === "2d"}
         data-testid="editor-view-2d"
         className={value === "2d" ? active : inactive}
         onClick={() => onChange("2d")}
       >
-        <span className="sm:hidden">2D</span>
-        <span className="hidden sm:inline">2D Plan</span>
+        2D
       </button>
       <button
         type="button"

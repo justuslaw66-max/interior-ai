@@ -19,7 +19,7 @@ function HostWarning({
 }) {
   return (
     <div data-testid="plan-opening-host-warning" className={warningClass(dark)}>
-      <div className="font-semibold">Opening needs wall repair</div>
+      <div className="font-semibold">{opening.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">
         It is saved, but it will not cut the plan or reduce wall-material quantities until it resolves to one physical wall.
       </div>

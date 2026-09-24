@@ -4,6 +4,22 @@ import LazyImage from "@/components/common/LazyImage";
 import PlaceholderImage from "@/components/common/PlaceholderImage";
 import CatalogCardSwatches from "./CatalogCardSwatches";
 import { getCatalogDrawerFocusAttributes } from "./useCatalogDrawerFocusRestoration";
+import { formatSgd } from "@/lib/money-format";
+
+function CatalogCardHeading({ item }: { item: CatalogCardView }) {
+  return (
+    <>
+      <div className="mt-1.5 break-words text-[13px] font-semibold leading-snug text-neutral-900" title={item.title}>
+        {item.title}
+      </div>
+      {item.priceAmount != null ? (
+        <div className="mt-0.5 text-[13px] font-medium text-neutral-700" data-testid={`catalog-card-price-${item.id}`}>
+          {formatSgd(item.priceAmount)}
+        </div>
+      ) : null}
+    </>
+  );
+}
 
 type Props = {
   item: CatalogCardView;
@@ -68,9 +84,7 @@ export default function CatalogCard({
         )}
       </div>
 
-      <div className="mt-1.5 break-words text-[13px] font-semibold leading-snug text-neutral-900" title={item.title}>
-        {item.title}
-      </div>
+      <CatalogCardHeading item={item} />
       {item.configurationCount && item.configurationCount > 1 ? (
         <div className="mt-1 text-[11px] font-medium text-neutral-500" data-testid={`catalog-family-count-${item.id}`}>
           {item.configurationCount} configurations
@@ -98,7 +112,7 @@ export default function CatalogCard({
             data-testid={`catalog-favorite-toggle-${item.id}`}
             aria-pressed={isFavorite}
           >
-            {isFavorite ? "Saved" : "Save"}
+            {isFavorite ? "Favourited" : "Favourite"}
           </button>
         </div>
         <div className="grid grid-cols-3 gap-1.5">

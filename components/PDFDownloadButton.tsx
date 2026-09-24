@@ -106,7 +106,7 @@ export function PDFDownloadButton({
       if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        setUpgradeError(data.error || "Unable to open checkout. Please try again.");
+        setUpgradeError("Unable to open checkout. Please try again.");
       }
     } catch (error) {
       console.warn("Upgrade checkout failed:", error);

@@ -58,7 +58,7 @@ test.describe("6. Catalog Compare", () => {
     await selectCatalogCategory(page, "seating", "sofa");
 
     const productId = "sofa-real-castlery-hamilton-2-seater";
-    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
+    const searchInput = page.getByRole("textbox", { name: "Search catalogue products" });
     await searchInput.fill(productId);
     const compareToggle = page.getByTestId(`catalog-compare-toggle-${productId}`);
     await expect(compareToggle).toBeVisible({ timeout: 20_000 });
@@ -105,7 +105,7 @@ test.describe("6. Catalog Compare", () => {
     const filtersButton = page.getByRole("button", { name: "Filters" });
     await expect(filtersButton).toBeVisible({ timeout: 20000 });
 
-    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
+    const searchInput = page.getByRole("textbox", { name: "Search catalogue products" });
     await searchInput.fill("sofa");
     await searchInput.clear();
 
@@ -171,7 +171,7 @@ test.describe("6. Catalog Compare", () => {
     await expect(page.getByRole("button", { name: "Seats: 4+ x" })).toBeVisible();
     await page.getByRole("button", { name: "Close" }).click();
 
-    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
+    const searchInput = page.getByRole("textbox", { name: "Search catalogue products" });
     await searchInput.fill("Dawson Pit");
     await expect(
       page.getByTestId("catalog-preview-sofa-real-castlery-dawson-pit-sectional")

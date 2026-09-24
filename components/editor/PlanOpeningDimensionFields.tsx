@@ -12,7 +12,7 @@ import MeasurementField from "./MeasurementField";
 const evidence = (value?: FloorPlanPropertyEvidenceV2) => value ?? "assumed";
 const openingEvidenceHelp = {
   assumedLabel: "Estimated",
-  assumedHelpText: "This opening dimension was not read from a source drawing.",
+  assumedHelpText: "This measurement was not read from your floor plan.",
 } as const;
 
 type FieldProps = {

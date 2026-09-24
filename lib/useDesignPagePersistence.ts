@@ -12,7 +12,9 @@ import {
 import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
+import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
@@ -247,7 +249,7 @@ export function useDesignPagePersistence({
 
   const recordCloudSaveFailure = useCallback(
     (error: unknown, targetDesignId: string | null, fallback: string) => {
-      const message = error instanceof Error ? error.message : fallback;
+      const message = userFacingErrorMessage(error, fallback);
       setLastCloudSaveError(message);
       if (
         targetDesignId &&
@@ -431,7 +433,7 @@ export function useDesignPagePersistence({
       });
     } catch (error) {
       if (!(error instanceof DesignApiError && error.kind === "aborted")) {
-        showRuleToast(error instanceof Error ? error.message : "Failed to load designs.");
+        showRuleToast(userFacingErrorMessage(error, "Failed to load designs."));
       }
     } finally {
       if (designListAbortRef.current === controller) {
@@ -587,7 +589,7 @@ export function useDesignPagePersistence({
       try {
         await navigator.clipboard.writeText(shareUrl);
         setShareSuccessToast(true);
-        setTimeout(() => setShareSuccessToast(false), 3000);
+        setTimeout(() => setShareSuccessToast(false), EDITOR_FEEDBACK_DURATION_MS.success);
         track("share_link_copied", {
           design_id: designId,
           shared_context: true,
@@ -605,9 +607,9 @@ export function useDesignPagePersistence({
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unable to create share link.";
+      const errorMessage = userFacingErrorMessage(error, "Try again.");
       setShareErrorToast(`Failed to create share link: ${errorMessage}`);
-      setTimeout(() => setShareErrorToast(null), 3000);
+      setTimeout(() => setShareErrorToast(null), EDITOR_FEEDBACK_DURATION_MS.error);
     } finally {
       setSharingDesign(false);
     }
@@ -722,7 +724,7 @@ export function useDesignPagePersistence({
       roomType: "living_room",
       itemsCount: items.length,
       designSnapshot: {
-        title: "Guest Design",
+        title: "My Living Room",
         roomWidth,
         roomDepth,
         items,
@@ -817,9 +819,7 @@ export function useDesignPagePersistence({
       setLastLocalSaveError(null);
       return true;
     } catch (error) {
-      setLastLocalSaveError(
-        error instanceof Error ? error.message : "Local backup failed"
-      );
+      setLastLocalSaveError(userFacingErrorMessage(error, "Local backup failed"));
       return false;
     }
   }, [
@@ -962,7 +962,7 @@ export function useDesignPagePersistence({
         roomType: "living_room",
         itemsCount: items.length,
         snapshot: {
-          title: "Guest Design",
+          title: "My Living Room",
           roomWidth,
           roomDepth,
           items,

@@ -204,7 +204,7 @@ test.describe("24. Consumer object placement", () => {
 
     await expect(panel.getByTestId("selected-item-dimensions")).toBeVisible();
     await expect(panel.getByTestId("selected-item-size-guidance")).toContainText(
-      "Catalog size is preserved"
+      "Catalogue size is preserved"
     );
     for (const [locator, label] of [
       [panel.getByTestId("selected-item-advanced-controls-toggle"), "controls"],

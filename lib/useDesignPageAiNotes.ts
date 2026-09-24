@@ -8,6 +8,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { AINotesResponse } from "@/lib/design-page-types";
 import { getItemPrice } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type UseDesignPageAiNotesOptions = {
   state: {
@@ -99,7 +100,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error?.error || `API error: ${response.statusText}`);
+        throw new UserFacingError(error?.error || "AI notes aren't available right now. Try again.");
       }
 
       const nextData = (await response.json()) as AINotesResponse & { error?: string };
@@ -121,10 +122,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
     } catch (error) {
       window.clearTimeout(timeoutId);
       if (controller.signal.aborted) return;
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to generate AI notes. See console for details.";
+      const message = userFacingErrorMessage(error, "AI notes aren't available right now. Try again.");
       if (message.includes("Too many AI requests")) {
         track("ai_rate_limited", { keyType: authenticated ? "user" : "anon" });
       }
@@ -158,7 +156,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
                 (item) => item.category === "floor_lamp"
               );
               if (!lamp) {
-                showToast("No floor lamp is available in the catalog yet");
+                showToast("No floor lamp is available in the catalogue yet");
                 return;
               }
               addItem(lamp.id, getItems().length > 0 ? [2, 0, 2] : [1.5, 0, 1.5]);
@@ -167,7 +165,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
               if (!snapshot.items) return;
               commitItems(
                 snapshot.items as DesignItem[],
-                suggestion.type ? `AI: ${suggestion.type}` : "AI suggestion"
+                "Apply AI suggestion"
               );
             },
             getDesignSnapshot: () => ({ items: getItems() }),
@@ -175,7 +173,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
         });
         track("ai_suggestion_applied", { action_type: suggestion.type });
       } catch (error) {
-        showToast(error instanceof Error ? error.message : "Could not apply suggestion");
+        showToast(userFacingErrorMessage(error, "Could not apply suggestion"));
       }
     },
     [addItem, commitItems, getItems, makeRoomCheaper, resizeRugToSofa, showToast]

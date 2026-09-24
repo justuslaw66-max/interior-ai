@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { floorPlanPublicDisplayMetadataSchema } from "@/lib/floor-plan-imports/public-display-metadata";
+import { UserFacingError } from "@/lib/user-facing-error";
 
 const identifier = z.string().regex(/^[a-z0-9][a-z0-9:_-]{0,190}$/i);
 const text = z.string().min(1).max(500);
@@ -68,7 +69,7 @@ const responseSchema = z.object({
 export function parseFloorPlanDirectoryResponse(value: unknown, expectedMode?: "browse" | "search") {
   const parsed = responseSchema.safeParse(value);
   if (!parsed.success || (expectedMode && parsed.data.mode !== expectedMode)) {
-    throw new Error("The floor-plan service returned invalid data. Please try again later.");
+    throw new UserFacingError("The floor-plan service returned invalid data. Please try again later.");
   }
   return parsed.data;
 }

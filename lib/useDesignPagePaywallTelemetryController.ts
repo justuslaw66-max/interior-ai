@@ -84,8 +84,8 @@ export function buildDesignPageUpgradeDialogCopy({
       : reason === "export_pdf"
         ? "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, room summaries, and client-ready export packs."
         : reason === "designer"
-          ? "Designer mode, presentation tools, and polished export workflows are available on the Pro plan."
-          : "Unlock clean exports, designer tools, and a faster client presentation workflow.";
+          ? "Pro tools, presentation features, and polished export workflows are included with Pro."
+          : "Unlock clean exports, Pro tools, and a faster client presentation workflow.";
 
   return {
     description,
@@ -96,7 +96,7 @@ export function buildDesignPageUpgradeDialogCopy({
     pricingGuidance:
       experimentSlot === "value_stack_v2"
         ? "Teams with weekly client reviews usually recover yearly pricing within the first month."
-        : "Use yearly if you expect to export for more than 2 active projects this quarter.",
+        : "Use yearly if you expect to export more than 2 designs this quarter.",
   };
 }
 

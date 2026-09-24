@@ -18,7 +18,7 @@ export function registerDrawingTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toHaveCount(0);
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await expect(page.getByTestId("plan-tool-section-drawRoom")).toBeVisible();
 
@@ -133,7 +133,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
 
@@ -159,15 +159,19 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("wall-draw-segment-length-1")).toBeVisible();
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
-    await page.getByTestId("wall-draw-segment-length-editor").fill("1800");
+    await page.getByTestId("wall-draw-segment-length-editor").fill("180");
     await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
-    // The in-canvas editor takes millimetres; the committed label follows the default cm display unit.
+    // The in-canvas editor reads and writes the plan's display unit, cm by default, so the label it
+    // commits to says back what was typed. It used to take millimetres while the label beside it
+    // followed the display unit, which is what made a length change tenfold when it round-tripped.
     await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("180 cm");
 
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
+    // Still past the 20 m maximum when read as centimetres, so the editor tears down.
     await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
-    await expect(page.getByText("⚠️ Enter a valid wall length.", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("collision-toast")).toHaveText("Enter a valid wall length.");
+    await expect(page.getByTestId("collision-toast")).toHaveAttribute("data-tone", "error");
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
   });
 
@@ -176,7 +180,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByText("More drawing options").click();
     await page.getByTestId("floor-plan-draw-mode-arc_wall").click();
@@ -222,7 +226,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
@@ -320,7 +324,7 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const guidedActionsToggle = page.getByTestId("plan-guided-actions-toggle");
     if ((await guidedActionsToggle.getAttribute("data-enabled")) === "true") {
       await guidedActionsToggle.click();
@@ -394,7 +398,7 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
     const livingLabel = page

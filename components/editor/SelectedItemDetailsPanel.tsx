@@ -355,9 +355,9 @@ export default function SelectedItemDetailsPanel({
               disabled={itemActionsDisabled}
               onClick={onCenterInRoom}
               data-testid="selected-item-center"
-              title="Center selected item in room"
+              title="Centre selected item in room"
             >
-              Center
+              Centre
             </button>
             <button
               type="button"
@@ -409,7 +409,7 @@ export default function SelectedItemDetailsPanel({
               className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}
               data-testid="selected-item-size-guidance"
             >
-              Catalog size is preserved. Choose an available model or size option below to resize accurately.
+              Catalogue size is preserved. Choose an available model or size option below to resize accurately.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <MeasurementField
@@ -445,7 +445,7 @@ export default function SelectedItemDetailsPanel({
                 data-testid="selected-item-nudge-left"
                 className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
-                aria-label="Nudge selected item left by 5 centimeters"
+                aria-label="Nudge selected item left by 5 centimetres"
                 onClick={() => onNudge(-0.05, 0)}
               >
                 Left
@@ -455,7 +455,7 @@ export default function SelectedItemDetailsPanel({
                 data-testid="selected-item-nudge-back"
                 className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
-                aria-label="Nudge selected item back by 5 centimeters"
+                aria-label="Nudge selected item back by 5 centimetres"
                 onClick={() => onNudge(0, -0.05)}
               >
                 Back
@@ -465,7 +465,7 @@ export default function SelectedItemDetailsPanel({
                 data-testid="selected-item-nudge-front"
                 className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
-                aria-label="Nudge selected item forward by 5 centimeters"
+                aria-label="Nudge selected item forward by 5 centimetres"
                 onClick={() => onNudge(0, 0.05)}
               >
                 Front
@@ -475,7 +475,7 @@ export default function SelectedItemDetailsPanel({
                 data-testid="selected-item-nudge-right"
                 className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
-                aria-label="Nudge selected item right by 5 centimeters"
+                aria-label="Nudge selected item right by 5 centimetres"
                 onClick={() => onNudge(0.05, 0)}
               >
                 Right

@@ -5,7 +5,13 @@ import { DesignPageWorkspace } from "@/components/editor/design-page/DesignPageW
 
 export default function Page() {
   return (
-    <Suspense fallback={<div className="min-h-screen" />}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white" data-testid="design-page-loading">
+          <p className="text-sm text-neutral-500" role="status">Opening your design…</p>
+        </div>
+      }
+    >
       <DesignPageWorkspace />
     </Suspense>
   );

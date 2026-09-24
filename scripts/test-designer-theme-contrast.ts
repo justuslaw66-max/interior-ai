@@ -432,7 +432,7 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro mode active"[\s\S]{0,300}?>Pro mode</,
+  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro tools on"[\s\S]{0,300}?>Pro tools</,
   "The shared command bar should clearly label Pro mode without changing its theme."
 );
 assert.match(
@@ -553,6 +553,17 @@ assert.match(
   selectedItemPanelSource,
   /data-testid="selected-item-panel"[\s\S]{0,500}?designer-panel/,
   "The Pro selected-item panel should preserve its semantic panel surface."
+);
+
+assert.match(
+  css,
+  /@custom-variant dark \(&:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\)\);/,
+  "Tailwind dark: utilities must be opt-in; following the OS setting half-themes the light-first dialogs."
+);
+assert.doesNotMatch(
+  css,
+  /@media\s*\(prefers-color-scheme:\s*dark\)/,
+  "No stylesheet rule may follow the OS dark setting until the app has a designed dark theme."
 );
 
 console.log("Designer theme contrast checks passed.");

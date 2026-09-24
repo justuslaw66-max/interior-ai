@@ -9,6 +9,7 @@ import {
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
+import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
@@ -154,7 +155,7 @@ export function ConsumerRoomSetupCard({
               </select>
             </label>
             <label className={`grid gap-1 ${labelClass}`}>
-              Starting size
+              Size
               <select
                 data-testid="room-setup-size-preset"
                 value={activeRoomPresetId}
@@ -215,7 +216,7 @@ export function ConsumerRoomSetupCard({
           }
         >
           Room geometry is read-only in this view. Return to the editable plan
-          to change dimensions or openings.
+          to change dimensions, doors or windows.
         </div>
       ) : null}
 
@@ -245,13 +246,9 @@ export function ConsumerRoomSetupCard({
                   : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
             }
           >
-            {hasConnectionBlockers
-              ? "A connected room still needs a doorway. Add one before furnishing."
-              : openingCount > 0
-                ? `${openingCount} door/window opening${openingCount === 1 ? "" : "s"} placed.`
-                : "No doors or windows placed yet. Add only the openings that affect fit."}
+            {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
           </div>
-          <div className="grid grid-cols-2 gap-2" aria-label="Add room openings">
+          <div className="grid grid-cols-2 gap-2" aria-label="Doors & windows">
             <button
               type="button"
               data-testid="plan-tool-door"
@@ -292,7 +289,7 @@ export function ConsumerRoomSetupCard({
           disabled={!canEdit}
           onClick={actions.chooseTemplate}
         >
-          Starter layouts
+          Choose a template
         </button>
         <button
           type="button"

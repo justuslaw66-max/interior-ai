@@ -107,6 +107,7 @@ import type {
   DesignControlsPlanPanelProps,
   PlanStartMode,
 } from "./design-controls-plan/DesignControlsPlanPanel.types";
+import { planPaletteOpeningSummary } from "@/lib/consumer-room-setup-copy";
 
 export default function DesignControlsPlanPanel({
   floorPlanLifecycleIdentity,
@@ -595,14 +596,14 @@ export default function DesignControlsPlanPanel({
         }
       : hasConnectionBlockers
         ? {
-            label: "Add doorway",
-            body: "One connected room still needs a doorway before this plan feels complete.",
+            label: "Add door",
+            body: "One connected room still needs a door before this plan feels complete.",
             action: () => onAddFloorPlanOpeningFromTool("door"),
           }
         : !hasStartedFurniture
           ? {
               label: "Furnish room",
-              body: "The room outline is ready. Add furniture or ask AI for a starter layout.",
+              body: "The room outline is ready. Add furniture or let AI suggest a layout.",
               action: onGoFurnish,
             }
           : viewMode === "2d" && onGoView3D
@@ -618,18 +619,16 @@ export default function DesignControlsPlanPanel({
               };
   const openingStatusLabel = hasConnectionBlockers
     ? missingDoorwayCount > 0
-      ? "Needs doorway"
-      : "Review links"
+      ? "Needs a door"
+      : "Review connections"
     : hasOpenings
       ? `${planOpeningCount} placed`
       : "Optional";
-  const consumerPlanOpeningSummary = hasOpenings
-    ? `${planOpeningCount} openings placed.`
-    : "Openings optional.";
+  const consumerPlanOpeningSummary = planPaletteOpeningSummary(measurementUnitReady, planOpeningCount);
   const consumerPlanConnectionSummary =
     connectionBlockerCount > 0
       ? missingDoorwayCount === connectionBlockerCount
-        ? `Add ${connectionBlockerCount} doorway${connectionBlockerCount === 1 ? "" : "s"}.`
+        ? `Add ${connectionBlockerCount} door${connectionBlockerCount === 1 ? "" : "s"}.`
         : `Review ${connectionBlockerCount} room connection${connectionBlockerCount === 1 ? "" : "s"}.`
       : "";
   const consumerPlanNextSteps = [
@@ -1328,7 +1327,7 @@ export default function DesignControlsPlanPanel({
     },
     {
       label: "Scale",
-      value: floorPlanUnderlay ? (floorPlanUnderlay.calibration ? "Calibrated" : "Review") : "Native",
+      value: floorPlanUnderlay ? (floorPlanUnderlay.calibration ? "Set" : "Not set") : "Not needed",
       ready: !floorPlanUnderlay || Boolean(floorPlanUnderlay.calibration),
     },
     {
@@ -1337,7 +1336,7 @@ export default function DesignControlsPlanPanel({
       ready: snapEnabled,
     },
     {
-      label: "Doors/windows",
+      label: "Doors & windows",
       value: hasOpenings ? `${planOpeningCount} placed` : "Optional",
       ready: true,
     },
@@ -1578,7 +1577,7 @@ export default function DesignControlsPlanPanel({
               }
               onClick={toggleFavoriteSurfaceFilter}
             >
-              Favorites
+              Favourites
             </button>
             <button
               type="button"
@@ -1693,7 +1692,7 @@ export default function DesignControlsPlanPanel({
                         className={progressSecondaryActionClass}
                         onClick={() => toggleFavoriteSurfaceMaterialGroup(group)}
                       >
-                        {favorite ? "Saved" : "Save"}
+                        {favorite ? "Favourited" : "Favourite"}
                       </button>
                       <button
                         type="button"
@@ -1961,7 +1960,7 @@ export default function DesignControlsPlanPanel({
   };
   const getPlanQualityActionLabel = (action: FloorPlanQualityAction) => {
     if (action === "add_window") return "Add window";
-    if (action === "add_doorway") return "Add doorway";
+    if (action === "add_doorway") return "Add door";
     if (action === "add_storage") return "Add storage";
     if (action === "review_plan_layout") return "Review plan";
     return "Review furniture fit";
@@ -2095,7 +2094,7 @@ export default function DesignControlsPlanPanel({
                 <div className={progressMetaClass}>
                   {hasRooms
                     ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${activeRoomName}`
-                    : "Choose a starter layout, enter dimensions, or draw."}
+                    : "Choose a template, enter dimensions, or draw."}
                 </div>
                 {hasRooms && (
                   <div data-testid="consumer-plan-next-steps" className={progressMetaClass}>
@@ -2167,14 +2166,14 @@ export default function DesignControlsPlanPanel({
 
               {renderPlanToolSection({
                 section: "importFloorPlan",
-                title: "Import floor plan",
+                title: "Upload floor plan",
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
                       id: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
                       testId: "plan-tool-import-2d",
                       icon: "upload",
-                      label: "Import 2D drawing",
+                      label: "Choose a file",
                       active: planStartMode === "upload",
                       disabled: !canEdit,
                       onClick: () => openFloorPlanUploadPicker(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID),
@@ -2196,7 +2195,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-straight-wall",
                       icon: "straightWall",
-                      label: "Straight wall",
+                      label: "Custom shape",
                       shortcut: "B",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "straight_wall",
                       disabled: !canEdit,
@@ -2205,7 +2204,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-rectangle-wall",
                       icon: "rectangleWall",
-                      label: "Rectangle wall",
+                      label: "Rectangle room",
                       shortcut: "F",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "rectangle_wall",
                       disabled: !canEdit,
@@ -2214,7 +2213,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-arc-wall",
                       icon: "arcWall",
-                      label: "Arc wall",
+                      label: "Curved wall",
                       shortcut: "H",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "arc_wall",
                       disabled: !canEdit,
@@ -2233,7 +2232,7 @@ export default function DesignControlsPlanPanel({
 
               {renderPlanToolSection({
                 section: "openings",
-                title: "Place doors and windows",
+                title: "Doors & windows",
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
@@ -2279,7 +2278,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-template-library",
                       icon: "template",
-                      label: "Starter layouts",
+                      label: "Choose a template",
                       active: planStartMode === "template",
                       disabled: !canEdit,
                       onClick: openTemplatePicker,
@@ -2287,18 +2286,6 @@ export default function DesignControlsPlanPanel({
                   </div>
                 ),
               })}
-
-              {hasRooms && (
-                <button
-                  type="button"
-                  data-testid="plan-palette-furnish"
-                  className={`${progressActionClass} m-2 min-h-9 w-[calc(100%-1rem)]`}
-                  disabled={!canEdit}
-                  onClick={onGoFurnish}
-                >
-                  Continue to Furnish
-                </button>
-              )}
             </>
           )}
         </div>
@@ -2316,7 +2303,7 @@ export default function DesignControlsPlanPanel({
               <div className={titleClass}>{hasRooms ? "Add to plan" : "Start your room"}</div>
               <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
                 {hasRooms
-                  ? "Add another room, upload a plan, or draw by hand."
+                  ? "Add another room, upload a floor plan, or draw by hand."
                   : "Choose a room and size. You can adjust it anytime."}
               </div>
             </div>
@@ -2462,7 +2449,7 @@ export default function DesignControlsPlanPanel({
                 disabled={!canEdit}
                 onClick={openTemplatePicker}
               >
-                Use template
+                Choose a template
               </button>
             </div>
           </details>
@@ -2475,7 +2462,7 @@ export default function DesignControlsPlanPanel({
                   : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
               }
             >
-              Upload a drawing, then trace rooms, doors, and windows over it.
+              Upload your floor plan, then trace rooms, doors, and windows over it.
             </div>
           )}
           {planStartMode === "template" && !isDesigner && (
@@ -2486,7 +2473,7 @@ export default function DesignControlsPlanPanel({
                   : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
               }
             >
-              Pick a starter plan below. Resize rooms and add doors when ready.
+              Choose a template below. Resize rooms and add doors when ready.
             </div>
           )}
         </div>
@@ -2502,7 +2489,7 @@ export default function DesignControlsPlanPanel({
             <span
               className={progressViewClass}
             >
-              {viewMode === "2d" ? "2D active" : "3D view"}
+              {viewMode === "2d" ? "2D view" : "3D view"}
             </span>
           </div>
           <div className="mt-3 grid gap-2">
@@ -2568,7 +2555,7 @@ export default function DesignControlsPlanPanel({
                 <div className="min-w-0">
                   <div className={progressLabelClass}>Doors & windows</div>
                   <div className={progressMetaClass}>
-                    {hasConnectionBlockers ? "A room link needs a doorway." : "Add only if you need them before furnishing."}
+                    {hasConnectionBlockers ? "A connected room needs a door." : "Add only if you need them before furnishing."}
                   </div>
                 </div>
                 <span className={hasConnectionBlockers ? progressTodoClass : progressReadyClass}>
@@ -2774,7 +2761,7 @@ export default function DesignControlsPlanPanel({
               onClick={onGoAiDesign}
               disabled={!canEdit}
             >
-              Ask AI for a starter layout
+              Suggest a layout
             </button>
           )}
         </div>
@@ -2784,9 +2771,9 @@ export default function DesignControlsPlanPanel({
           <div className={progressCardClass}>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className={titleClass}>Plan view</div>
+                <div className={titleClass}>2D view</div>
                 <div className={progressMetaClass}>
-                  {simplePlanControls ? "Simple planning view." : "Pro drafting view."}
+                  {simplePlanControls ? "Simple planning view." : "Detailed drafting view."}
                 </div>
               </div>
               <div
@@ -2810,7 +2797,7 @@ export default function DesignControlsPlanPanel({
                 <button
                   type="button"
                   disabled={!isDesigner}
-                  title={!isDesigner ? "Open Pro tools to use Pro drafting controls" : undefined}
+                  title={!isDesigner ? "Open Pro tools to use the detailed drafting view" : undefined}
                   className={
                     !simplePlanControls
                       ? progressActionClass
@@ -2820,7 +2807,7 @@ export default function DesignControlsPlanPanel({
                     if (isDesigner) onSimplePlanControlsChange(false);
                   }}
                 >
-                  Pro
+                  Detailed
                 </button>
               </div>
             </div>
@@ -3058,7 +3045,7 @@ export default function DesignControlsPlanPanel({
                 <span className={floorFieldLabelClass}>Visible in 3D</span>
               </label>
               <label className="flex items-center gap-2">
-                <span className={floorFieldLabelClass}>Color</span>
+                <span className={floorFieldLabelClass}>Colour</span>
                 <input
                   type="color"
                   value={activeRoomCeilingColor}
@@ -3309,11 +3296,11 @@ export default function DesignControlsPlanPanel({
               tabIndex={-1}
               className={`${titleClass} rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
             >
-              Choose a floor plan
+              Choose a template
             </h2>
             <div className="flex items-center gap-2">
               <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
-                {filteredPlanTemplates.length} starter layouts
+                {filteredPlanTemplates.length} templates
               </div>
               <button
                 type="button"
@@ -3325,7 +3312,7 @@ export default function DesignControlsPlanPanel({
                 }
                 onClick={() => firstTemplateActionRef.current?.focus()}
               >
-                Skip to starter layouts
+                Skip to templates
               </button>
             </div>
           </div>
@@ -3337,7 +3324,7 @@ export default function DesignControlsPlanPanel({
             />
           </div>
           <div className={dark ? "mt-4 text-xs font-semibold text-neutral-300" : "mt-4 text-xs font-semibold text-neutral-600"}>
-            Or browse starter layouts
+            Or browse templates
           </div>
           <div
             data-testid="template-filter-panel"
@@ -3362,7 +3349,7 @@ export default function DesignControlsPlanPanel({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <select
-                aria-label="Plan size"
+                aria-label="Template size"
                 data-testid="template-footprint-filter"
                 value={templateFootprintFilter}
                 onChange={(event) =>
@@ -3376,7 +3363,7 @@ export default function DesignControlsPlanPanel({
                 <option value="wide">Spacious</option>
               </select>
               <select
-                aria-label="Plan style"
+                aria-label="Template style"
                 data-testid="template-style-filter"
                 value={templateStyleFilter}
                 onChange={(event) =>
@@ -3569,7 +3556,7 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md border border-neutral-200 px-2 py-1.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        Empty layout
+                        Empty
                       </button>
                       <button
                         type="button"
@@ -3586,7 +3573,7 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        <span className="block">Furnished starter</span>
+                        <span className="block">Furnished</span>
                         <span className={dark ? "block text-[10px] text-emerald-950/80" : "block text-[10px] text-white/90"}>
                           {furnishedItemCount} items
                         </span>

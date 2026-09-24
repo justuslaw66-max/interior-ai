@@ -3,11 +3,12 @@ import type { PrivateFloorPlanExactSelection } from "@/lib/floor-plan-catalog-cl
 import type { FloorPlanExactSearchRequest } from "@/lib/floor-plan-directory-contract";
 
 import { parseFloorPlanDirectoryResponse } from "@/lib/floor-plan-directory-response";
+import { UserFacingError } from "@/lib/user-facing-error";
 
 export async function readFloorPlanDirectoryResponse(
   response: Response, expectedMode?: "browse" | "search"
 ) {
-  if (!response.ok) throw new Error(response.status === 429
+  if (!response.ok) throw new UserFacingError(response.status === 429
     ? "Too many floor-plan searches. Please wait and try again."
     : "Floor-plan search is unavailable. Please try again later.");
   return parseFloorPlanDirectoryResponse(await response.json().catch(() => null), expectedMode);
@@ -48,7 +49,7 @@ export async function fetchPublicFloorPlanRevision(
   });
   const payload: unknown = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error("The verified floor plan could not be loaded.");
+    throw new UserFacingError("The verified floor plan could not be loaded.");
   }
   return payload;
 }
@@ -88,7 +89,7 @@ export async function resolveExactFloorPlanAuthoredVariant(
   );
   const selected = payload.results[0];
   if (payload.results.length !== 1 || !selected || selected.revisionId !== revisionId) {
-    throw new Error("The selected reviewed layout is unavailable for this unit.");
+    throw new UserFacingError("The selected reviewed layout is unavailable for this unit.");
   }
   return selected;
 }

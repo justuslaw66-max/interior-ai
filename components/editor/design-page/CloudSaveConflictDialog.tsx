@@ -143,7 +143,7 @@ export function CloudSaveConflictDialog({
             disabled={state.isWorking}
             onClick={() => void onSaveAsNewCopy()}
           >
-            {state.isWorking ? "Resolving..." : "Save local as new copy"}
+            {state.isWorking ? "Resolving…" : "Save local as new copy"}
           </button>
         </div>
       </div>

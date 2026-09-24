@@ -20,7 +20,7 @@ export default function CatalogActiveFilterChips({ filters, onClearKey, onClearA
           : `Width: ≤ ${filters.widthMaxCm} cm`;
     chips.push({ key: "widthMinCm", label });
   }
-  if (filters.colorFamilies?.length) chips.push({ key: "colorFamilies", label: `Color (${filters.colorFamilies.length})` });
+  if (filters.colorFamilies?.length) chips.push({ key: "colorFamilies", label: `Colour (${filters.colorFamilies.length})` });
   if (filters.materialFamilies?.length) chips.push({ key: "materialFamilies", label: `Material (${filters.materialFamilies.length})` });
   if (filters.styleTags?.length) chips.push({ key: "styleTags", label: `Style (${filters.styleTags.length})` });
   if (filters.sofaSeatCapacityBuckets?.length) {

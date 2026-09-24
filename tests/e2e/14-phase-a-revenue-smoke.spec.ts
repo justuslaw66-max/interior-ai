@@ -407,15 +407,15 @@ test.describe("14. Phase A Revenue Smoke", () => {
     await setPaywallVariantOverride(page, "unlock_pro_exports");
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&paywall_open=1`);
 
-    const variantLabel = page.getByTestId("upgrade-variant-label");
-    const variantLabelVisible = await expect(variantLabel)
-      .toContainText("unlock_pro_exports", { timeout: 15000 })
+    const variantContent = page.getByTestId("upgrade-variant-content");
+    const variantContentRendered = await expect(variantContent)
+      .toHaveAttribute("data-upgrade-variant", "unlock_pro_exports", { timeout: 15000 })
       .then(() => true)
       .catch(() => false);
-    if (!variantLabelVisible) {
+    if (!variantContentRendered) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping unlock_pro_exports paywall assertions because variant label was not rendered in this runtime",
+        description: "Skipping unlock_pro_exports paywall assertions because the variant content was not rendered in this runtime",
       });
       return;
     }
@@ -433,8 +433,8 @@ test.describe("14. Phase A Revenue Smoke", () => {
 
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&plans_open=1`);
     await expect(page.getByTestId("plans-layout-default")).toBeVisible();
-    await expect(page.getByTestId("checkout-monthly")).toContainText("Start monthly — SGD 29.90/month");
-    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly — SGD 249.90/year");
+    await expect(page.getByTestId("checkout-monthly")).toContainText("Start monthly — S$29.90/month");
+    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly — S$249.90/year");
   });
 
   test("free paywall renders the see_pricing annual-highlight layout", async ({ page }) => {
@@ -445,15 +445,15 @@ test.describe("14. Phase A Revenue Smoke", () => {
       waitUntil: "domcontentloaded",
     });
 
-    const variantLabel = page.getByTestId("upgrade-variant-label");
-    const variantLabelVisible = await expect(variantLabel)
-      .toContainText("see_pricing", { timeout: 15000 })
+    const variantContent = page.getByTestId("upgrade-variant-content");
+    const variantContentRendered = await expect(variantContent)
+      .toHaveAttribute("data-upgrade-variant", "see_pricing", { timeout: 15000 })
       .then(() => true)
       .catch(() => false);
-    if (!variantLabelVisible) {
+    if (!variantContentRendered) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping see_pricing paywall assertions because variant label was not rendered in this runtime",
+        description: "Skipping see_pricing paywall assertions because the variant content was not rendered in this runtime",
       });
       return;
     }
@@ -478,7 +478,7 @@ test.describe("14. Phase A Revenue Smoke", () => {
     const monthlyCta = page.getByTestId("checkout-monthly");
     await expect(yearlyCta).toBeVisible({ timeout: 15000 });
     await expect(monthlyCta).toBeVisible({ timeout: 15000 });
-    await expect(yearlyCta).toContainText("Start yearly — SGD 249.90/year", { timeout: 15000 });
-    await expect(monthlyCta).toContainText("Start monthly — SGD 29.90/month", { timeout: 15000 });
+    await expect(yearlyCta).toContainText("Start yearly — S$249.90/year", { timeout: 15000 });
+    await expect(monthlyCta).toContainText("Start monthly — S$29.90/month", { timeout: 15000 });
   });
 });

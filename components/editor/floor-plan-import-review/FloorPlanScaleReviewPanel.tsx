@@ -12,6 +12,7 @@ import {
   registerPointScaleCalibration,
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 
 type RenderedPage = ConsumerFloorPlanImportJob["renderedPagesJson"][number];
@@ -77,7 +78,7 @@ export default function FloorPlanScaleReviewPanel({
     <details className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || !calibration}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
-        Set one real measurement
+        Set scale
         <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${
           calibration
             ? "bg-emerald-100 text-emerald-800"
@@ -127,9 +128,9 @@ export default function FloorPlanScaleReviewPanel({
                 onChange={(event) => setFirstVertexId(event.target.value)}
               >
                 <option value="">Matching wall corner…</option>
-                {floor.vertices.map((vertex) => (
+                {floor.vertices.map((vertex, index) => (
                   <option key={vertex.id} value={vertex.id}>
-                    {vertex.id} ({vertex.xMm}, {vertex.zMm})
+                    Corner {index + 1} ({vertex.xMm}, {vertex.zMm})
                   </option>
                 ))}
               </select>
@@ -142,9 +143,9 @@ export default function FloorPlanScaleReviewPanel({
                 onChange={(event) => setSecondVertexId(event.target.value)}
               >
                 <option value="">Matching wall corner…</option>
-                {floor.vertices.map((vertex) => (
+                {floor.vertices.map((vertex, index) => (
                   <option key={vertex.id} value={vertex.id}>
-                    {vertex.id} ({vertex.xMm}, {vertex.zMm})
+                    Corner {index + 1} ({vertex.xMm}, {vertex.zMm})
                   </option>
                 ))}
               </select>
@@ -233,32 +234,7 @@ export default function FloorPlanScaleReviewPanel({
               );
               onPickingScaleChange(false);
             } catch (cause) {
-              const validationIssues =
-                cause &&
-                typeof cause === "object" &&
-                Array.isArray(
-                  (cause as { issues?: unknown }).issues
-                )
-                  ? (
-                      cause as {
-                        issues: Array<{ code?: unknown; message?: unknown }>;
-                      }
-                    ).issues
-                      .slice(0, 4)
-                      .map((issue) =>
-                        [issue.code, issue.message]
-                          .filter((value) => typeof value === "string")
-                          .join(": ")
-                      )
-                      .filter(Boolean)
-                  : [];
-              onError(
-                validationIssues.length
-                  ? validationIssues.join(" · ")
-                  : cause instanceof Error
-                    ? cause.message
-                  : "Scale could not be applied."
-              );
+              onError(userFacingErrorMessage(cause, "Scale could not be applied."));
             }
           }}
         >

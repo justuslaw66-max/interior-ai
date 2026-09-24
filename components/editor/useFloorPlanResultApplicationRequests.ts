@@ -20,6 +20,7 @@ import {
   type FloorPlanExactSearchRequestToken,
 } from "@/lib/floor-plan-exact-search-request-authority";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 export type PendingFloorPlanApplication = {
   result: FloorPlanCatalogSearchResult;
@@ -55,10 +56,6 @@ type ApplicationOwner = {
   selectionRef: React.MutableRefObject<PrivateFloorPlanExactSelection | null>;
   onApplyPlanTemplate: ApplyPlanTemplate;
 };
-
-function requestError(cause: unknown, fallback: string) {
-  return cause instanceof Error ? cause.message : fallback;
-}
 
 function useApplicationState(): ApplicationState {
   const [applyingResultId, setApplyingResultId] = useState<string | null>(null);
@@ -183,7 +180,7 @@ async function runCatalogApplication(input: ApplicationOwner & ApplicationState 
     if (!isCurrent()) return;
     input.setApplyError({
       id: input.result.id,
-      message: requestError(cause, "The verified floor plan could not be opened."),
+      message: userFacingErrorMessage(cause, "The verified floor plan could not be opened."),
     });
   } finally {
     if (isCurrent()) {
@@ -206,7 +203,7 @@ async function resolveAuthoredVariant(input: {
 }) {
   let matchedResult: FloorPlanCatalogSearchResult;
   if (input.pending.result.matchLevel === "unit") {
-    if (!input.pending.privateSelection) throw new Error("Search again before changing layout.");
+    if (!input.pending.privateSelection) throw new UserFacingError("Search again before changing layout.");
     matchedResult = await resolveExactFloorPlanAuthoredVariant(
       input.pending.privateSelection,
       input.option.revisionId,
@@ -304,7 +301,7 @@ async function runAuthoredVariant(input: ApplicationOwner & ApplicationState & {
     input.setApplyingResultId(null);
     input.setApplyError({
       id: pending.result.id,
-      message: requestError(cause, "The selected reviewed layout could not be loaded."),
+      message: userFacingErrorMessage(cause, "The selected reviewed layout could not be loaded."),
     });
   } finally {
     if (token) input.authority.finish(token);

@@ -28,10 +28,10 @@ export function AiNotesDialog({
   return (
     <EditorDialog
       open
-      title="AI Design Notes"
+      title="AI notes"
       description="Review the generated rationale and suggested design actions."
       onClose={onClose}
-      closeLabel="Close AI design notes"
+      closeLabel="Close AI notes"
       panelClassName="max-w-2xl"
       footer={
         <EditorDialogActions>
@@ -90,9 +90,9 @@ export function AiNotesDialog({
                           type="button"
                           disabled
                           className="min-h-11 rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white"
-                          title="Upgrade to pro to apply suggestions"
+                          title="Upgrade to Pro to apply suggestions"
                         >
-                          Pro Only
+                          Pro only
                         </button>
                       )}
                     </div>

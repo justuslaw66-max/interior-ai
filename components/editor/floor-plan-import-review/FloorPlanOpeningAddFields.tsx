@@ -77,8 +77,8 @@ export default function FloorPlanOpeningAddFields({
           }}
         >
           <option value="">Choose its wall…</option>
-          {floor.walls.map((wall) => (
-            <option key={wall.id} value={wall.id}>{wall.id}</option>
+          {floor.walls.map((wall, index) => (
+            <option key={wall.id} value={wall.id}>Wall {index + 1}</option>
           ))}
         </select>
       </label>

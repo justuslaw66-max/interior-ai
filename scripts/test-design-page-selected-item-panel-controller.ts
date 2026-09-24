@@ -248,7 +248,7 @@ for (const expected of [
   "findSwapOptions({",
   'direction === "cheaper"',
   '"No cheaper alternatives found"',
-  '"No premium alternatives found"',
+  '"No pricier alternatives found"',
   "productId: best.id",
   "variantId: best.defaultVariantId",
 ] as const) {

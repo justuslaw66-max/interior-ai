@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
+
 type Me = {
   id?: string;
   email?: string | null;
@@ -34,7 +36,7 @@ export function useMe(): UseMeResult {
       } catch (err) {
         if (!alive) return;
         setMe(null);
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(userFacingErrorMessage(err));
       } finally {
         if (alive) setIsLoading(false);
       }

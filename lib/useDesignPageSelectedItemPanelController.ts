@@ -231,7 +231,7 @@ export function useDesignPageSelectedItemPanelController({
         showToast(
           direction === "cheaper"
             ? "No cheaper alternatives found"
-            : "No premium alternatives found"
+            : "No pricier alternatives found"
         );
         return;
       }

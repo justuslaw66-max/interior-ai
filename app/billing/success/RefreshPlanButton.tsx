@@ -78,7 +78,7 @@ export default function RefreshPlanButton() {
         ? "Confirming your Pro access…"
         : state === "delayed"
           ? "Payment completed, but Pro access is still syncing."
-          : "We could not confirm your plan yet.";
+          : "We could not confirm your Pro access yet.";
 
   return (
     <div
@@ -109,7 +109,7 @@ export default function RefreshPlanButton() {
             href="/dashboard"
             className="rounded-xl border px-4 py-2 text-center text-sm"
           >
-            Go to dashboard
+            My designs
           </Link>
         </div>
       ) : state === "delayed" || state === "error" ? (

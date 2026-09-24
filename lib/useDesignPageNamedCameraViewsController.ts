@@ -122,7 +122,7 @@ export function useDesignPageNamedCameraViewsController({
   const saveCurrentNamedView = useCallback(() => {
     const room = getActiveRoom(designSnapshotRef.current);
     if (!room) {
-      showToast("Add a room before saving camera views");
+      showToast("Add a room before saving views");
       return;
     }
 
@@ -189,7 +189,7 @@ export function useDesignPageNamedCameraViewsController({
         });
       });
       setLegacySavedViews(nextLegacyViews);
-      showToast("Camera view removed");
+      showToast("Saved view removed");
     },
     [
       cameraView.fov,

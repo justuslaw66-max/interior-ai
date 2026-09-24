@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import {
   buildNewFloorRooms,
   clonePlanOpeningsForRoomMap,
@@ -175,5 +176,29 @@ assert.deepEqual(clonePlanOpeningsForRoomMap(openings, duplicated.roomIdMap, "co
 assert.deepEqual(Array.from(getDeletedFloorRoomIds(rooms, 1)), ["room_1"]);
 assert.equal(resolveNextActiveRoomAfterFloorDelete(rooms, 1)?.id, "room_2");
 assert.equal(resolveNextActiveRoomAfterFloorDelete([firstFloor], 1), null);
+
+// The four floor actions used to drive the history manager directly and drop begin()'s boolean.
+// begin() refuses to nest, so a floor action starting inside a still-open coalesced transaction
+// (a slider drag holds one for its 420 ms idle window) committed that transaction instead of its
+// own: the floor change joined the slider's undo entry, one undo reverted both, and the slider's
+// own commit later warned "No active transaction to commit". testNestedBeginStealsTheOpenTransaction
+// in test-editor-command-history.ts proves that mechanism; this pins the callers.
+const floorManagerSource = fs.readFileSync("lib/useFloorManager.ts", "utf8");
+assert.equal(floorManagerSource.includes("history.begin("), false,
+  "useFloorManager must not call history.begin: dropping its boolean is what lets a floor action "
+  + "steal an open coalesced transaction.");
+assert.equal(floorManagerSource.includes("history.commit()"), false,
+  "useFloorManager must not call history.commit: paired with a nested begin it commits somebody "
+  + "else's transaction.");
+for (const label of [
+  'direction === "upper" ? "Add upper floor" : "Add lower floor"',
+  '"Rename floor"',
+  '"Duplicate floor"',
+  '"Delete floor"',
+]) {
+  assert.ok(floorManagerSource.includes(`runHistoryTransaction(${label}, () => {`),
+    `The floor action labelled ${label} must run through runHistoryTransaction, which flushes any `
+    + "open transaction before starting its own, as 39ae93ac did for room deletion.");
+}
 
 console.log("Floor manager logic tests passed");

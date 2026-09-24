@@ -472,7 +472,7 @@ export function CabinetryStudioGuidedView({
                       <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                       <input
                         data-testid="cabinet-template-search"
-                        aria-label="Search millwork templates"
+                        aria-label="Search built-in templates"
                         className="h-12 w-full rounded-2xl border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10"
                         type="search"
                         value={templateQuery}
@@ -575,7 +575,7 @@ export function CabinetryStudioGuidedView({
                         <div>
                           <h3 className="text-sm font-semibold text-neutral-950">My reusable templates</h3>
                           <p className="mt-1 text-xs text-neutral-500">
-                            Designs saved in this browser. Placement and room host data are excluded.
+                            Templates saved in this browser. Placement and room host data are excluded.
                           </p>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -914,7 +914,7 @@ export function CabinetryStudioGuidedView({
                             Use this measured area
                           </button>
                           <p className="text-[11px] leading-5 text-blue-700 sm:col-span-2">
-                            Custom areas coordinate dimensions and clearances. Without a modeled wall face, final plan position remains manual.
+                            Custom areas coordinate dimensions and clearances. Without a modelled wall face, final plan position remains manual.
                           </p>
                         </div>
                       ) : null}
@@ -1069,7 +1069,7 @@ export function CabinetryStudioGuidedView({
                               <ul className="mt-2 grid gap-1.5 text-neutral-700">
                                 {fitFeedback.moduleAdjustments.map((adjustment) => (
                                   <li key={adjustment.moduleId}>
-                                    {adjustment.moduleId}: {formatProjectMeasurement(adjustment.previousWidthMm)} → {formatProjectMeasurement(adjustment.nextWidthMm)} ({formatCabinetLabel(adjustment.source)})
+                                    Module {definition.modules.findIndex((module) => module.id === adjustment.moduleId) + 1}: {formatProjectMeasurement(adjustment.previousWidthMm)} → {formatProjectMeasurement(adjustment.nextWidthMm)} ({formatCabinetLabel(adjustment.source)})
                                   </li>
                                 ))}
                               </ul>
@@ -1626,7 +1626,7 @@ export function CabinetryStudioGuidedView({
                       </>
                     ) : (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                        <h3 className="text-base font-semibold text-amber-950">Specialized layout included</h3>
+                        <h3 className="text-base font-semibold text-amber-950">Specialised layout included</h3>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-900/75">
                           {activePreset?.label ?? "This template"} already includes a professionally configured {formatCabinetLabel(activeModule.millworkComponentType ?? "component")} layout. {isProWorkspace
                             ? "Use the detailed editor only if you need to change its construction-specific settings."

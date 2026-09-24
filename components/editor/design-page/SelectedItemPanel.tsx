@@ -251,7 +251,7 @@ export function SelectedItemPanel({
               disabled={!canEdit}
               onClick={actions.onSwapToCheaper}
             >
-              Swap to cheaper
+              Swap for cheaper
             </button>
 
             <button
@@ -263,7 +263,7 @@ export function SelectedItemPanel({
               disabled={!canEdit}
               onClick={actions.onUpgradeItem}
             >
-              Upgrade this item
+              Swap for pricier
             </button>
 
             <div className="flex gap-2 pt-2">

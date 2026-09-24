@@ -95,7 +95,7 @@ function OpeningMeasuredField({
         evidence={evidence} dark={dark} disabled={disabled}
         testId={evidenceTestId ?? `${testId}-evidence`}
         assumedLabel="Estimated"
-        assumedHelpText="This opening dimension was not read from a source drawing."
+        assumedHelpText="This measurement was not read from your floor plan."
         onConfirm={(nextEvidence, note) => onCommit(valueMm, nextEvidence, note)}
       />
     </div>
@@ -139,7 +139,7 @@ function OpeningHostRepair({
         ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-[10px] text-amber-100"
         : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] text-amber-900"}
     >
-      <div className="font-semibold">Opening needs wall repair</div>
+      <div className="font-semibold">{state.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">Choose a wall that contains the requested position.</div>
       <select
         data-testid="selection-inspector-opening-wall-repair"

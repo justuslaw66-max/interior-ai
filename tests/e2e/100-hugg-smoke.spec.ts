@@ -81,8 +81,8 @@ test.describe("100. Hugg Catalog Smoke", () => {
     await expect(shoppingBom.getByText(/Hugg Nesting Square Coffee Table/i)).toBeVisible();
     await expect(shoppingBom.getByText(/Black/i)).toBeVisible();
 
-    await expect(page.getByRole("button", { name: "2D Plan" }).first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole("button", { name: "2D Plan" }).first().click({ force: true });
-    await page.getByRole("button", { name: "3D" }).first().click({ force: true });
+    await expect(page.getByRole("button", { name: "2D", exact: true }).first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole("button", { name: "2D", exact: true }).first().click({ force: true });
+    await page.getByRole("button", { name: "3D", exact: true }).first().click({ force: true });
   });
 });

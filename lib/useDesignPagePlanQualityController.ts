@@ -222,8 +222,8 @@ export function useDesignPagePlanQualityController({
               ? `Add a window on the ${target.wall} wall`
               : "Add a window to the highlighted room"
             : target?.wall
-              ? `Add a doorway on the ${target.wall} wall`
-              : "Add a doorway for the highlighted rooms"
+              ? `Add a door on the ${target.wall} wall`
+              : "Add a door between the highlighted rooms"
         );
         return;
       }

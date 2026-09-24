@@ -12,6 +12,7 @@ import type {
   GoogleAddressSuggestion,
   GoogleResolvedAddress,
 } from "@/lib/google-address-types";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type GoogleAddressAutocompleteProps = {
   id: string;
@@ -111,7 +112,7 @@ export default function GoogleAddressAutocomplete({
           }),
         });
         const payload = await readJson<GoogleAddressAutocompleteResponse>(response);
-        if (!response.ok) throw new Error(payload.error || "Address suggestions are unavailable.");
+        if (!response.ok) throw new UserFacingError(payload.error || "Address suggestions are unavailable.");
         setSuggestions(payload.suggestions ?? []);
         setActiveIndex(-1);
         setOpen(true);
@@ -120,7 +121,7 @@ export default function GoogleAddressAutocomplete({
         if (controller.signal.aborted) return;
         setSuggestions([]);
         setStatus("error");
-        setMessage(cause instanceof Error ? cause.message : "Address suggestions are unavailable.");
+        setMessage(userFacingErrorMessage(cause, "Address suggestions are unavailable."));
       }
     }, 300);
     return () => {
@@ -147,9 +148,7 @@ export default function GoogleAddressAutocomplete({
         }),
       });
       const payload = await readJson<GoogleAddressResolveResponse>(response);
-      if (!response.ok || !payload.address) {
-        throw new Error(payload.error || "That address could not be confirmed.");
-      }
+      if (!response.ok || !payload.address) throw new UserFacingError(payload.error || "That address could not be confirmed.");
       selectedValueRef.current = payload.address.addressNormalized;
       onValueChange(payload.address.addressNormalized);
       onSelect?.(payload.address);
@@ -159,7 +158,7 @@ export default function GoogleAddressAutocomplete({
       sessionTokenRef.current = newSessionToken();
     } catch (cause) {
       setStatus("error");
-      setMessage(cause instanceof Error ? cause.message : "That address could not be confirmed.");
+      setMessage(userFacingErrorMessage(cause, "That address could not be confirmed."));
       selectedValueRef.current = suggestion.text;
     }
   };

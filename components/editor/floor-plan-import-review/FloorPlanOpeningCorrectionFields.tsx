@@ -74,9 +74,9 @@ export default function FloorPlanOpeningCorrectionFields({
             onChange={(event) => correction.selectOpening(event.target.value)}
           >
             <option value="">Choose an opening…</option>
-            {floor.openings.map((opening) => (
+            {floor.openings.map((opening, index) => (
               <option key={opening.id} value={opening.id}>
-                {opening.id} · {opening.kind}
+                #{index + 1} · {opening.kind.replace("_", " ")}
               </option>
             ))}
           </select>

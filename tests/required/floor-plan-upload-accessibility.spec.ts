@@ -351,7 +351,7 @@ async function openWorkspace(page: Page, mode: Mode, entry: Entry) {
   if ((await action.count()) === 0 || !(await action.isVisible())) {
     const disclosure =
       mode === "consumer"
-        ? page.getByRole("button", { name: "Import floor plan", exact: true })
+        ? page.getByRole("button", { name: "Upload floor plan", exact: true })
         : page.locator("summary").getByText("Other ways to start", { exact: true });
     await expect(disclosure).toHaveCount(1);
     await disclosure.click();
@@ -360,7 +360,7 @@ async function openWorkspace(page: Page, mode: Mode, entry: Entry) {
   await expect(action).toBeVisible();
   await expect(action).toBeEnabled();
   await activate(action, page, entry);
-  const dialog = page.getByRole("dialog", { name: "Import a floor plan" });
+  const dialog = page.getByRole("dialog", { name: "Upload floor plan" });
   await expect(dialog).toHaveCount(1);
   await expect(dialog).toBeVisible();
   return { action, dialog };
@@ -370,7 +370,7 @@ async function expectParentContract(
   page: Page,
   backgroundTestId = "save-design"
 ) {
-  const dialog = page.getByRole("dialog", { name: "Import a floor plan" });
+  const dialog = page.getByRole("dialog", { name: "Upload floor plan" });
   await expect(dialog).toHaveAttribute("aria-modal", "true");
   await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
   await expect(dialog).toHaveAttribute("data-editor-dialog-stack-index", "0");
@@ -430,8 +430,8 @@ for (const entry of ["pointer", "keyboard"] as const) {
     await openEditor(page, "consumer");
     const { action, dialog } = await openWorkspace(page, "consumer", entry);
     await expectParentContract(page);
-    await expect(page.getByRole("button", { name: "Choose floor-plan file" })).toBeFocused();
-    const historySummary = dialog.getByText("Previous imports & privacy", {
+    await expect(page.getByRole("button", { name: "Choose a file" })).toBeFocused();
+    const historySummary = dialog.getByText("Previous uploads & privacy", {
       exact: true,
     });
     await historySummary.focus();
@@ -440,7 +440,7 @@ for (const entry of ["pointer", "keyboard"] as const) {
     await page.keyboard.press("Shift+Tab");
     await expectFocusInside(page);
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(0);
     await expectFocusId(page, await action.getAttribute("id") ?? "missing-opener-id");
     expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
   });
@@ -457,7 +457,7 @@ for (const entry of ["pointer", "keyboard"] as const) {
     if (entry === "pointer") {
       await dialog.click({ position: { x: 2, y: 2 } });
     } else {
-      await page.getByRole("button", { name: "Close floor-plan import" }).click();
+      await page.getByRole("button", { name: "Close floor plan upload" }).click();
     }
     await expect(dialog).toHaveCount(0);
     await expect(action).toBeFocused();
@@ -539,7 +539,7 @@ test("state transitions focus ready, failure, and image upload", async ({ page }
   await expect(retry).toBeFocused();
   state.job = importJob("ready", minimalDocument(true));
   await retry.click();
-  await expect(page.getByRole("button", { name: "Create editable plan" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Create design" })).toBeFocused();
 
   await page.keyboard.press("Escape");
   state.job = null;
@@ -622,37 +622,37 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   await openEditor(page, "consumer");
   const { action, dialog } = await openWorkspace(page, "consumer", "pointer");
   await page.getByTestId("floor-plan-import-secondary-options").getByText(
-    "Previous imports & privacy",
+    "Previous uploads & privacy",
     { exact: true }
   ).click();
-  await page.getByText("My floor-plan imports", { exact: true }).click();
+  await page.getByText("Your uploads", { exact: true }).click();
   await page.getByTestId("floor-plan-import-history-ch0015i-job").getByRole(
     "button",
     { name: "Delete", exact: true }
   ).click();
   const confirmation = page.getByRole("alertdialog", {
-    name: "Delete this import from your history?",
+    name: "Delete this upload from your history?",
   });
-  const close = dialog.getByRole("button", { name: "Close floor-plan import" });
+  const close = dialog.getByRole("button", { name: "Close floor plan upload" });
   await expect(confirmation).toHaveCount(1);
   await expect(confirmation).not.toHaveAttribute("aria-modal", "true");
   await expect(close).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(1);
   await expect(confirmation).toHaveCount(1);
-  await confirmation.getByRole("button", { name: "Keep import" }).click();
+  await confirmation.getByRole("button", { name: "Keep upload" }).click();
   await expect(confirmation).toHaveCount(0);
   await page.getByRole("checkbox", { name: "Select Synthetic plan.pdf" }).check();
   await page.getByRole("button", { name: "Delete selected", exact: true }).click();
   const bulkConfirmation = page.getByRole("alertdialog", {
-    name: "Delete 1 selected import?",
+    name: "Delete 1 selected upload?",
   });
   await expect(bulkConfirmation).toHaveCount(1);
   await expect(bulkConfirmation).not.toHaveAttribute("aria-modal", "true");
   await expect(close).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(1);
-  await page.getByText("My floor-plan imports", { exact: true }).click();
+  await page.getByText("Your uploads", { exact: true }).click();
   await expect(bulkConfirmation).not.toBeVisible();
   // Native details visibility changes before its queued toggle updates the
   // existing confirmation guard. Await that guard before the single Escape.
@@ -661,7 +661,7 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   await expect(dialog).toHaveCount(0);
   await expect(action).toBeFocused();
   await activate(action, page, "pointer");
-  await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(1);
+  await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(1);
   // A later route cleanup can also leave an empty body style. Observe the
   // release in this document and replacement scope before accepting that value.
   const scopeRestoration = await page.evaluateHandle(() => {
@@ -689,7 +689,7 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
     );
   });
   await expect(page).toHaveURL(/designId=ch0015i-replacement/);
-  await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(0);
   await expect(action).not.toBeFocused();
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe("");
   expect(await scopeRestoration.evaluate((read) => read())).toBe(true);
@@ -736,7 +736,7 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
     page.getByRole("button", { name: "Choose file", exact: true }).click(),
   ]);
   await fileChooser.setFiles([]);
-  await page.getByRole("button", { name: "Close floor-plan import" }).click();
+  await page.getByRole("button", { name: "Close floor plan upload" }).click();
   await expect(action).toBeFocused();
 
   const importAction = page.locator("#floor-plan-import-action");
@@ -751,7 +751,7 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   await page.keyboard.press("Escape");
   await expect(launcher).toBeFocused();
 
-  await page.getByRole("button", { name: "Starter layouts", exact: true }).click();
+  await page.getByRole("button", { name: "Choose a template", exact: true }).click();
   const sentinel = {
     address: "867A C1 Exact Privacy Sentinel Street",
     floor: "73",
@@ -833,7 +833,7 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   await expectFocusId(page, "floor-plan-workspace-launch-action");
 
   await launcher.click();
-  const reopened = page.getByRole("dialog", { name: "Import a floor plan" });
+  const reopened = page.getByRole("dialog", { name: "Upload floor plan" });
   await expect(reopened).toHaveCount(1);
   await launcher.evaluate((element) => element.remove());
   await page.keyboard.press("Escape");
@@ -876,7 +876,7 @@ test("directory cancellation, malformed responses and exact canonical selection 
   });
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
-  await page.getByRole("button", { name: "Starter layouts", exact: true }).click();
+  await page.getByRole("button", { name: "Choose a template", exact: true }).click();
   await page.getByRole("button", { name: /Browse.*plan/i }).click();
   await expect(page.getByTestId("floor-plan-orientation")).toContainText("not established");
   const fingerprint = await page.getByTestId("qa-editor-snapshot-fingerprint").getAttribute("data-fingerprint");
@@ -890,13 +890,13 @@ test("directory cancellation, malformed responses and exact canonical selection 
   await page.getByTestId("floor-plan-address-stack").fill("509");
   await expect(page.getByTestId("floor-plan-address-library")).toContainText("invalid data");
   await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", fingerprint!);
-  await expect(page.getByRole("dialog", { name: "Start a new plan?" })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Start a new design?" })).toHaveCount(0);
   malformed = false;
   await page.getByTestId("floor-plan-address-stack").fill("510");
   await expect(page.getByTestId("floor-plan-unit-match-badge")).toBeVisible();
   await expect(page.getByTestId("floor-plan-orientation")).toContainText("Mirrored left to right");
-  await page.getByRole("button", { name: "Replace current plan…", exact: true }).click();
-  const confirmation = page.getByRole("dialog", { name: "Start a new plan?" });
+  await page.getByRole("button", { name: "Replace current design…", exact: true }).click();
+  const confirmation = page.getByRole("dialog", { name: "Start a new design?" });
   await expect(confirmation).toBeVisible();
   await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", fingerprint!);
   await page.getByTestId("new-plan-replace-current").click();

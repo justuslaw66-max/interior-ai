@@ -27,14 +27,14 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-neutral-100 p-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My Designs</h1>
+        <h1 className="text-2xl font-semibold">My designs</h1>
         <div className="flex items-center gap-2">
           <DeleteAllDesignsButton disabled={designs.length === 0} />
           <Link
             href="/"
             className="rounded-lg bg-white px-3 py-2 text-sm text-neutral-900 shadow hover:bg-neutral-50"
           >
-            Main Menu
+            Back to editor
           </Link>
         </div>
       </div>

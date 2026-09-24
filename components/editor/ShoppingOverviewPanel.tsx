@@ -19,6 +19,7 @@ import {
   type ShoppingReadinessBadge,
   type ShoppingReadinessFilter,
 } from "@/lib/shopping-readiness";
+import { formatSgd } from "@/lib/money-format";
 
 export type ShoppingOverviewPanelProps = {
   dark?: boolean;
@@ -43,10 +44,6 @@ export type ShoppingOverviewPanelProps = {
   ) => void;
   onFilterChange?: (filter: ShoppingReadinessFilter) => void;
 };
-
-function formatMoney(value: number) {
-  return `$${Math.round(value)}`;
-}
 
 function sumLinePrices(items: ActiveRoomShoppingItem[]) {
   return items.reduce((sum, item) => sum + item.linePrice, 0);
@@ -192,7 +189,7 @@ export default function ShoppingOverviewPanel({
         </div>
         <div className={dark ? "shrink-0 text-right text-xs text-neutral-300" : "shrink-0 text-right text-xs text-neutral-600"}>
           <div>{room.itemCount} item{room.itemCount === 1 ? "" : "s"}</div>
-          <div>{formatMoney(room.subtotal)}</div>
+          <div>{formatSgd(room.subtotal)}</div>
         </div>
       </div>
     </button>
@@ -228,19 +225,19 @@ export default function ShoppingOverviewPanel({
       <div className="mt-3 grid grid-cols-3 gap-2 text-center">
         <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-            {formatMoney(checkoutReadySpend)}
+            {formatSgd(checkoutReadySpend)}
           </div>
           <div className={`text-[10px] ${mutedClass}`}>Cart-ready spend</div>
         </div>
         <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-            {formatMoney(retailerLinkSpend)}
+            {formatSgd(retailerLinkSpend)}
           </div>
           <div className={`text-[10px] ${mutedClass}`}>Retailer-link spend</div>
         </div>
         <div className={dark ? "designer-recessed rounded-lg p-2" : "rounded-lg bg-white p-2"}>
           <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-            {formatMoney(needsReviewSpend)}
+            {formatSgd(needsReviewSpend)}
           </div>
           <div className={`text-[10px] ${mutedClass}`}>Needs review</div>
         </div>
@@ -261,7 +258,7 @@ export default function ShoppingOverviewPanel({
         </div>
         {wholeHome.itemCount > 0 && (
           <div className={dark ? "text-right text-sm font-semibold text-neutral-100" : "text-right text-sm font-semibold text-neutral-900"}>
-            {formatMoney(wholeHome.subtotal)}
+            {formatSgd(wholeHome.subtotal)}
           </div>
         )}
       </div>
@@ -273,7 +270,7 @@ export default function ShoppingOverviewPanel({
             No furniture in the shopping list yet
           </div>
           <div className={`mt-1 text-xs ${mutedClass}`}>
-            Add real catalog items to a room first, then this panel becomes your bill of materials.
+            Add real catalogue items to a room first, then this panel becomes your bill of materials.
           </div>
           <button type="button" className={`mt-3 ${primaryButtonClass}`} onClick={onGoFurnish}>
             Add furniture
@@ -303,7 +300,7 @@ export default function ShoppingOverviewPanel({
               </div>
               <div className={metricClass}>
                 <div className={dark ? "text-sm font-semibold text-neutral-100" : "text-sm font-semibold text-neutral-900"}>
-                  {formatMoney(activeRoom?.subtotal ?? 0)}
+                  {formatSgd(activeRoom?.subtotal ?? 0)}
                 </div>
                 <div className={`text-[11px] ${mutedClass}`}>Room total</div>
               </div>
@@ -543,16 +540,16 @@ export default function ShoppingOverviewPanel({
                             </div>
                             <div className="shrink-0 text-right">
                               <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-                                {item.linePrice > 0 ? formatMoney(item.linePrice) : item.priceLabel}
+                                {item.linePrice > 0 ? formatSgd(item.linePrice) : item.priceLabel}
                               </div>
                               {item.compareAtPrice ? (
                                 <div className={dark ? "text-[10px] text-neutral-500 line-through" : "text-[10px] text-neutral-400 line-through"}>
-                                  {formatMoney(item.compareAtPrice)}
+                                  {formatSgd(item.compareAtPrice)}
                                 </div>
                               ) : null}
                               {item.savings ? (
                                 <div className={dark ? "text-[10px] font-semibold text-emerald-200" : "text-[10px] font-semibold text-emerald-700"}>
-                                  Save {formatMoney(item.savings)}
+                                  Save {formatSgd(item.savings)}
                                 </div>
                               ) : null}
                               {item.retailerUrl ? (
@@ -600,7 +597,7 @@ export default function ShoppingOverviewPanel({
                 </div>
               </div>
               <div className={dark ? "text-right text-sm font-semibold text-neutral-100" : "text-right text-sm font-semibold text-neutral-900"}>
-                {formatMoney(wholeHome.subtotal)}
+                {formatSgd(wholeHome.subtotal)}
               </div>
             </div>
             {wholeHome.needsReviewCount > 0 && (

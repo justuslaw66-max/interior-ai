@@ -94,10 +94,10 @@ export function PlanTemplateChoiceDialog({
         className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-5 shadow-2xl"
       >
         <div id={titleId} className="text-lg font-semibold text-neutral-950">
-          Start a new plan?
+          Start a new design?
         </div>
         <div id={descriptionId} className="mt-2 text-sm leading-6 text-neutral-600">
-          Use {templateLabel} as a separate plan and keep your current design, or replace the
+          Use {templateLabel} as a new design and keep your current one, or replace the
           current rooms, doors, and furniture.
         </div>
         {!isAuthenticated ? (
@@ -132,7 +132,7 @@ export function PlanTemplateChoiceDialog({
             disabled={busy}
             onClick={onReplaceCurrent}
           >
-            Replace current
+            Replace current design
           </button>
           <button
             ref={primaryActionRef}
@@ -143,7 +143,7 @@ export function PlanTemplateChoiceDialog({
             onClick={isAuthenticated ? onSaveCurrentAndStartNew : onSignIn}
           >
             {busy
-              ? "Saving current..."
+              ? "Saving current design…"
               : isAuthenticated
                 ? "Save current & start new"
                 : "Sign in to save & start new"}

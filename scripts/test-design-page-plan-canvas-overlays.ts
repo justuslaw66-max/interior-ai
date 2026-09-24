@@ -205,7 +205,7 @@ assert.match(
 
 for (const expected of [
   'label: "Set scale"',
-  'ariaLabel: "Start plan scale calibration"',
+  'ariaLabel: "Set scale for your floor plan"',
   'label: "Add door"',
   'ariaLabel: "Add a door to the floor plan"',
   'label: "Furnish"',

@@ -250,12 +250,12 @@ export function normalizeDesignPageOpeningMetrics({
 
 export function getDesignPageOpeningMetricsHistoryLabel(
   metrics: DesignPageOpeningMetricsPatch
-): "Resize opening" | "Edit opening" {
+): "Resize door or window" | "Edit door or window" {
   const hasDimensionEdit =
     metrics.widthMeters !== undefined ||
     metrics.heightMeters !== undefined ||
     metrics.bottomMeters !== undefined;
   return hasDimensionEdit && metrics.kind === undefined
-    ? "Resize opening"
-    : "Edit opening";
+    ? "Resize door or window"
+    : "Edit door or window";
 }
