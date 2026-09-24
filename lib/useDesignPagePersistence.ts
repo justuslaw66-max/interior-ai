@@ -1027,7 +1027,7 @@ export function useDesignPagePersistence({
       loadDesign: loadDesignAfterCancellingConflictCopy,
       cancelDesignLoad: cancelDesignTransitions,
       clearPersistedSnapshotFingerprint,
-      createShareLinkAndCopy: shareLinkActions.createShareLinkAndCopy,
+      createShareLinkAndCopy: shareLinkActions.createShareLinkAndCopy, shareDesign: () => shareLinkActions.shareFromCommandBar(saveDesignToCloud),
       closeShareLinkFallback: shareLinkActions.closeShareLinkFallback,
       copyFallbackShareLink: shareLinkActions.copyFallbackShareLink,
       openFallbackShareLink: shareLinkActions.openFallbackShareLink,

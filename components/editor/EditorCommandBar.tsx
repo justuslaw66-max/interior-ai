@@ -5,6 +5,7 @@ import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBa
 import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
+import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
 import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
@@ -47,6 +48,9 @@ type EditorCommandBarProps = {
   onToggleLoadDesign: () => void;
   onSave: () => void | Promise<void>;
   isSaving?: boolean;
+  /** Share shows when a handler is given; it saves the design first if it isn't in the cloud. */
+  onShare?: () => void;
+  isSharing?: boolean;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
@@ -89,6 +93,8 @@ export default function EditorCommandBar({
   onToggleLoadDesign,
   onSave,
   isSaving = false,
+  onShare,
+  isSharing = false,
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
@@ -234,6 +240,7 @@ export default function EditorCommandBar({
         >
           {isSaving ? "Saving…" : "Save"}
         </button>
+        {onShare ? <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} /> : null}
         <CommandBarMoreMenu
           dark={dark}
           containerRef={overflowRef}
@@ -254,13 +261,10 @@ export default function EditorCommandBar({
           onExport={onExport}
           lightingAvailable={viewMode === "3d" && Boolean(lightingSettingsSlot)}
           overflowSlot={overflowSlot}
-          onToggleLoadDesign={onToggleLoadDesign}
-          onNewPlan={onNewPlan}
-          onToggleDesignerMode={onToggleDesignerMode}
-          onToggleClientPreview={onToggleClientPreview}
+          onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
+          onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
           onOpenPresentExport={onOpenPresentExport}
-          onOpenLightingSettings={() => setLightingSettingsOpen(true)}
-          onCloseLightingSettings={closeLightingSettings}
+          onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
           onFeedback={onFeedback}
         />
 

@@ -1,6 +1,6 @@
 import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 
-export type GuestPromptReason = "save" | "ai-layout" | "checkout";
+export type GuestPromptReason = "save" | "ai-layout" | "checkout" | "share";
 
 export type GuestPromptSession = {
   reason: GuestPromptReason;
@@ -18,6 +18,7 @@ export type GuestPromptSessionIdentity = Pick<
 export const GUEST_SAVE_OPENER_ID = "guest-save-action";
 export const GUEST_AI_LAYOUT_OPENER_ID = "guest-ai-layout-action";
 export const GUEST_CHECKOUT_OPENER_ID = "guest-checkout-action";
+export const GUEST_SHARE_OPENER_ID = "guest-share-action";
 export const GUEST_PROMPT_WORKFLOW_FALLBACK_ID =
   "editor-command-workspace-action";
 export const GUEST_PROMPT_DIALOG_ID = "editor-guest-save-prompt";
@@ -37,6 +38,7 @@ const RETURN_FOCUS_IDS: Record<GuestPromptReason, readonly string[]> = {
     GUEST_CHECKOUT_OPENER_ID,
     GUEST_PROMPT_WORKFLOW_FALLBACK_ID,
   ],
+  share: [GUEST_SHARE_OPENER_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID],
 };
 
 export function getGuestPromptReturnFocusIds(reason: GuestPromptReason) {

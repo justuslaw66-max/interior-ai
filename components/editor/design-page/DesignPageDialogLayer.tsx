@@ -84,6 +84,8 @@ export type DesignPageDialogLayerOverlays = {
   toasts: DesignPageToastsProps;
   shareFallback: Omit<ShareLinkFallbackDialogProps, "copied" | "errorMessage"> & {
     lifecycleMode: "consumer" | "designer";
+    /** From the Share button: it opens without Present & export behind it. */
+    standalone: boolean;
   };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
@@ -100,7 +102,7 @@ function getShareFallbackLayerState(
   overlays: DesignPageDialogLayerOverlays
 ) {
   const parentOpen = dialogs.presentExport.configuration.open;
-  const open = parentOpen && Boolean(overlays.shareFallback.url);
+  const open = (parentOpen || overlays.shareFallback.standalone) && Boolean(overlays.shareFallback.url);
   return {
     open,
     toasts: open ? { ...overlays.toasts, shareCopied: false, shareErrorMessage: null } : overlays.toasts,

@@ -369,7 +369,7 @@ export function useDesignPagePresentationQaFacade({
           designSidebarCollapsed: state.chrome.designPanelCollapsed || !state.chrome.designPanelOpen,
           millworkActive: state.chrome.millworkActive,
           showLoadDesign: state.editor.authenticated,
-          isSaving: state.persistence.isSaving,
+          isSaving: state.persistence.isSaving, isSharing: state.presentation.sharingDesign,
           saveStatus: state.persistence.saveStatus,
         },
         room: state.document.activeRoom

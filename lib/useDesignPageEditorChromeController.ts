@@ -66,6 +66,8 @@ export type UseDesignPageEditorChromeControllerInput = {
     persistence: {
       toggleMyDesigns: CommandBarActions["onToggleLoadDesign"];
       saveDesignToCloud: () => Promise<string | null | undefined>;
+      /** Saves a design that isn't in the cloud yet, then creates and copies its share link. */
+      shareDesign: () => Promise<void>;
       retrySaveStatus: CommandBarActions["onRetrySaveStatus"];
       openGuestPrompt: (
         reason: GuestPromptReason,
@@ -140,6 +142,12 @@ export function useDesignPageEditorChromeController({
     }
   };
 
+  // Share links need an account, so guests get the sign-in prompt first.
+  const share = () => {
+    if (!commandState.isAuthed) return actions.persistence.openGuestPrompt("share", () => {});
+    void actions.persistence.shareDesign();
+  };
+
   const openPresentExport = () => {
     actions.dialogs.setPresentOpen(true);
   };
@@ -173,16 +181,10 @@ export function useDesignPageEditorChromeController({
     state: {
       commandBar: state.commandBar,
       betaStart: {
-        visible:
-          !commandState.isClientPreview &&
-          state.betaStart.visible &&
-          !state.designPanelOpen,
+        visible: !commandState.isClientPreview && state.betaStart.visible && !state.designPanelOpen,
         panel: state.betaStart.panel,
       },
-      toolRail: {
-        visible: !commandState.isClientPreview && commandState.isDesigner,
-        mode: commandState.editorMode,
-      },
+      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner, mode: commandState.editorMode },
     },
     configuration: {
       commandBar: configuration.commandBar,
@@ -207,6 +209,7 @@ export function useDesignPageEditorChromeController({
           onFeedback: openFeedback,
           onToggleLoadDesign: actions.persistence.toggleMyDesigns,
           onSave: save,
+          onShare: share,
           onRetrySaveStatus: actions.persistence.retrySaveStatus,
           onOpenPresentExport: openPresentExport,
         },

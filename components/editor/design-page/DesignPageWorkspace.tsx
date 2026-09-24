@@ -476,7 +476,7 @@ export function DesignPageWorkspace() {
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
     },
-    sharing: { url: persistenceState.shareLinkFallback, onClose: persistenceActions.closeShareLinkFallback,
+    sharing: { url: persistenceState.shareLinkFallback, standalone: persistenceState.shareLinkFallbackStandalone, onClose: persistenceActions.closeShareLinkFallback,
       onCopy: persistenceActions.copyFallbackShareLink, onOpen: persistenceActions.openFallbackShareLink },
     cabinetry: {
       state: cabinetryStudioState, access: { enabled: canUseCabinetryStudio, accessLevel: cabinetryAccessLevel },

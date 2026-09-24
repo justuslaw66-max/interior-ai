@@ -3,7 +3,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { designApi } from "../lib/design-api-client";
-import { createAndCopyShareLink, type ShareLinkUpdates } from "../lib/useDesignPageShareLink";
+import {
+  createAndCopyShareLink,
+  shareDesignSavingFirst,
+  type ShareLinkUpdates,
+} from "../lib/useDesignPageShareLink";
 
 type Event = [string, unknown];
 
@@ -90,6 +94,51 @@ async function main() {
   assert.deepEqual(events[2], ["sharing", false]);
   timers.splice(0).forEach((run) => run());
   assert.deepEqual(events.at(-1), ["errorToast", null], "The error should clear itself.");
+
+  // The Share button saves a design that isn't in the cloud yet, then shares the saved copy.
+  const calls: string[] = [];
+  const share = async (id: string) => {
+    calls.push(`share:${id}`);
+  };
+  await shareDesignSavingFirst("design-4", async () => {
+    calls.push("save");
+    return "unused";
+  }, share);
+  assert.deepEqual(calls, ["share:design-4"], "A design already in the cloud should not be saved again.");
+  calls.length = 0;
+  await shareDesignSavingFirst(null, async () => {
+    calls.push("save");
+    return "design-5";
+  }, share);
+  assert.deepEqual(calls, ["save", "share:design-5"], "A new design should be saved, then shared.");
+  calls.length = 0;
+  await shareDesignSavingFirst(null, async () => {
+    calls.push("save");
+    return null;
+  }, share);
+  assert.deepEqual(calls, ["save"], "A failed save should not create a link.");
+
+  const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
+  assert.match(
+    read("lib/useDesignPageEditorChromeController.ts"),
+    /const share = \(\) => \{\s*if \(!commandState\.isAuthed\) return actions\.persistence\.openGuestPrompt\("share", \(\) => \{\}\);\s*void actions\.persistence\.shareDesign\(\);[\s\S]*?onShare: share,/,
+    "Guests should get the sign-in prompt; signed-in users share.",
+  );
+  assert.match(
+    read("lib/useDesignPageShareLink.ts"),
+    /setShareLinkFallback\(fallback && \{ \.\.\.fallback, standalone: true \}\)/,
+    "A link from the Share button should open its fallback dialog on its own.",
+  );
+  assert.match(
+    read("components/editor/design-page/DesignPageDialogLayer.tsx"),
+    /const open = \(parentOpen \|\| overlays\.shareFallback\.standalone\) && Boolean\(overlays\.shareFallback\.url\);/,
+    "The fallback dialog should open for the Share button without Present & export.",
+  );
+  assert.match(
+    read("lib/share-link-fallback-dialog-focus.ts"),
+    /PRESENT_EXPORT_CLOSE_ACTION_ID,\s*GUEST_SHARE_OPENER_ID,/,
+    "Closing a Share button fallback should return focus to Share.",
+  );
 
   const persistenceSource = readFileSync(
     join(process.cwd(), "lib/useDesignPagePersistence.ts"),

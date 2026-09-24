@@ -149,6 +149,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
   sharing: {
     url: Overlays["shareFallback"]["url"];
+    standalone: Overlays["shareFallback"]["standalone"];
     onClose: Overlays["shareFallback"]["onClose"];
     onCopy: Overlays["shareFallback"]["onCopy"];
     onOpen: Overlays["shareFallback"]["onOpen"];
@@ -281,7 +282,7 @@ export function buildDesignPageDialogLayerModel({
       },
       toasts: feedback.toasts,
       shareFallback: {
-        url: sharing.url, dark: access.designerTheme,
+        url: sharing.url, standalone: sharing.standalone, dark: access.designerTheme,
         lifecycleMode: access.isDesigner ? "designer" : "consumer",
         onClose: sharing.onClose,
         onCopy: sharing.onCopy,

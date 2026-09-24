@@ -321,10 +321,9 @@ export function useDesignPagePresentationWorkspaceRegistration({
       },
       billing: { openPortal: deferredPaywall.actions.openBillingPortal },
       persistence: {
-        toggleMyDesigns:
-          persistence.actions.persistence.toggleMyDesigns,
-        saveDesignToCloud:
-          persistence.actions.persistence.saveDesignToCloud,
+        toggleMyDesigns: persistence.actions.persistence.toggleMyDesigns,
+        saveDesignToCloud: persistence.actions.persistence.saveDesignToCloud,
+        shareDesign: persistence.actions.persistence.shareDesign,
         retrySaveStatus: persistence.actions.persistence.retrySaveStatus,
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
       },

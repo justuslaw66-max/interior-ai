@@ -7,7 +7,8 @@ import { designApi } from "@/lib/design-api-client";
 import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
-type ShareLinkFallback = { designId: string; url: string };
+/** A link the clipboard refused. Standalone ones came from the Share button, not Present & export. */
+type ShareLinkFallback = { designId: string; url: string; standalone?: boolean };
 
 export type ShareLinkUpdates = {
   setShareToken: Dispatch<SetStateAction<string | null>>;
@@ -54,6 +55,16 @@ export async function createAndCopyShareLink(designId: string, updates: ShareLin
   }
 }
 
+/** The Share button shares the cloud copy, so a design that has none is saved first. */
+export async function shareDesignSavingFirst(
+  designId: string | null,
+  saveFirst: () => Promise<string | null | undefined>,
+  share: (id: string) => Promise<void>,
+) {
+  const targetId = designId ?? (await saveFirst());
+  if (targetId) await share(targetId);
+}
+
 function useShareLinkState(designId: string | null) {
   const [sharingDesign, setSharingDesign] = useState(false);
   const [shareSuccessToast, setShareSuccessToast] = useState(false);
@@ -70,6 +81,7 @@ function useShareLinkState(designId: string | null) {
       shareSuccessToast,
       shareErrorToast,
       shareLinkFallback: fallback?.url ?? null,
+      shareLinkFallbackStandalone: fallback?.standalone === true,
     },
     setters: { setSharingDesign, setShareSuccessToast, setShareErrorToast, setShareLinkFallback },
   };
@@ -87,6 +99,7 @@ export function useDesignPageShareLink({
 }) {
   const { state, setters } = useShareLinkState(designId);
   const { setSharingDesign, setShareSuccessToast, setShareErrorToast, setShareLinkFallback } = setters;
+  const updates: ShareLinkUpdates = { setShareToken, setShareEnabled, ...setters };
 
   const createShareLinkAndCopy = useCallback(async () => {
     if (!designId) return;
@@ -95,8 +108,20 @@ export function useDesignPageShareLink({
       setShareLinkFallback,
     });
   }, [designId, setShareEnabled, setShareErrorToast, setShareLinkFallback, setShareSuccessToast, setShareToken, setSharingDesign]);
+  // The Share button: busy from the first save to the copied link, with its own fallback dialog.
+  const shareFromCommandBar = async (saveFirst: () => Promise<string | null | undefined>) => {
+    setSharingDesign(true);
+    try {
+      await shareDesignSavingFirst(designId, saveFirst, (id) => createAndCopyShareLink(id, {
+        ...updates,
+        setShareLinkFallback: (fallback) => setShareLinkFallback(fallback && { ...fallback, standalone: true }),
+      }));
+    } finally {
+      setSharingDesign(false);
+    }
+  };
   const fallbackActions = useShareLinkFallbackActions(setters);
-  return { state, actions: { createShareLinkAndCopy, ...fallbackActions } };
+  return { state, actions: { createShareLinkAndCopy, shareFromCommandBar, ...fallbackActions } };
 }
 
 function useShareLinkFallbackActions({
