@@ -21,7 +21,7 @@ const resolved = async () => undefined;
 const base: DownloadDialogProps = {
   open: true, dark: false, signedIn: true, freeLimits: true, sceneReady: true, hasItems: true,
   exportingImages: false, exportingPdf: false,
-  onClose: noop, onDownloadImages: resolved, onDownloadPdf: resolved, onSignIn: noop, onGetPro: noop,
+  onClose: noop, onDownloadImages: resolved, onDownloadPdf: resolved, onSignIn: noop, onSeePricing: noop,
 };
 const render = (props: Partial<DownloadDialogProps>) =>
   renderToStaticMarkup(createElement(DownloadDialog, { ...base, ...props }));
@@ -36,8 +36,8 @@ assert.match(free, />Download</, "The dialog should be called Download.");
 assert.match(button(free, "download-images"), /aria-disabled="false"/);
 assert.doesNotMatch(button(free, "download-images"), /disabled=""/);
 assert.doesNotMatch(button(free, "download-pdf"), /disabled=""/, "A signed-in user with products can download a PDF.");
-assert.match(free, /data-testid="download-free-note"[\s\S]*?one view with an Interior AI watermark[\s\S]*?data-testid="download-get-pro"/,
-  "Free users should read the limits and find Get Pro before they download.");
+assert.match(free, /data-testid="download-free-note"[\s\S]*?one view with a small watermark[\s\S]*?data-testid="download-see-pricing"[^>]*>See pricing</,
+  "Free users should read the limits and find Pricing before they download.");
 assert.doesNotMatch(free, /download-pdf-sign-in|download-pdf-needs-items/);
 
 const guest = render({ signedIn: false });
@@ -46,7 +46,7 @@ assert.doesNotMatch(guest, /data-testid="download-pdf"/);
 assert.match(button(guest, "download-images"), /aria-disabled="false"/, "Guests can still download pictures.");
 
 const pro = render({ freeLimits: false, dark: true });
-assert.doesNotMatch(pro, /download-free-note|download-get-pro/, "Pro downloads have no Free note.");
+assert.doesNotMatch(pro, /download-free-note|download-see-pricing/, "Pro downloads have no Free note.");
 assert.match(pro, /designer-panel/, "The Pro theme styles the dialog like its other dialogs.");
 assert.match(button(pro, "download-images"), /designer-primary-action/);
 
@@ -96,7 +96,7 @@ assert.match(
 const workspace = read("components/editor/design-page/DesignPageWorkspace.tsx");
 assert.match(workspace, /onDownloadImages: \(\) => presentationBackupRegistration\.actions\.exportImages\(\{ limitsShown: true \}\)/);
 assert.match(workspace, /onDownloadPdf: \(\) => presentationBackupRegistration\.actions\.exportPdf\(\{ limitsShown: true \}\)/);
-assert.match(workspace, /onSignIn: signInWithReturn, onGetPro: \(\) => setShowPlans\(true\)/);
+assert.match(workspace, /onSignIn: signInWithReturn, onSeePricing: \(\) => setShowPlans\(true\)/);
 assert.match(read("lib/design-page-dialog-layer-model.ts"), /freeLimits: !access\.capabilities\.exportWithoutWatermark,/,
   "The Free note follows the export capability, not a plan check.");
 assert.match(read("lib/design-page-dialog-layer-adapter.ts"), /download: dialogs\.download,/,

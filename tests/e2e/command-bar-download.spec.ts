@@ -72,7 +72,7 @@ test.describe("command bar Download", () => {
   test("guests read the Free limits, download pictures, and get focus back on Download", async ({ page }) => {
     await openEditor(page, false);
     const { download, dialog } = await openDownload(page);
-    await expect(dialog.getByTestId("download-free-note")).toContainText("one view with an Interior AI watermark");
+    await expect(dialog.getByTestId("download-free-note")).toContainText("one view with a small watermark");
     await expect(dialog.getByTestId("download-pdf-sign-in")).toHaveText("Sign in to download a PDF");
 
     const pictures = dialog.getByTestId("download-images");

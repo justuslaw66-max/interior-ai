@@ -73,7 +73,7 @@ type TemplateChoiceActions = Pick<
 
 type DownloadModel = Pick<
   DownloadDialogProps,
-  "open" | "onClose" | "onDownloadImages" | "onDownloadPdf" | "onSignIn" | "onGetPro"
+  "open" | "onClose" | "onDownloadImages" | "onDownloadPdf" | "onSignIn" | "onSeePricing"
 >;
 
 type PlacementIdentity = Pick<Placement["state"], "scene" | "roomName">;

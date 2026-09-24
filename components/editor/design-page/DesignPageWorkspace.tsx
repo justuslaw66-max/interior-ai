@@ -443,7 +443,7 @@ export function DesignPageWorkspace() {
     presentation: { presentExport: presentExportDialog, download: { open: downloadOpen, onClose: () => setDownloadOpen(false),
       onDownloadImages: () => presentationBackupRegistration.actions.exportImages({ limitsShown: true }),
       onDownloadPdf: () => presentationBackupRegistration.actions.exportPdf({ limitsShown: true }),
-      onSignIn: signInWithReturn, onGetPro: () => setShowPlans(true) } },
+      onSignIn: signInWithReturn, onSeePricing: () => setShowPlans(true) } },
     editing: {
       roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
         onValueChange: setPendingRoomRenameValue, onCancel: cancelRoomRename, onSave: commitRoomRename },

@@ -20,7 +20,7 @@ export type DownloadDialogProps = {
   onDownloadImages: () => Promise<void>;
   onDownloadPdf: () => Promise<void>;
   onSignIn: () => void;
-  onGetPro: () => void;
+  onSeePricing: () => void;
 };
 
 /**
@@ -100,7 +100,7 @@ function DownloadChoices({
   );
 }
 
-function FreeLimitsNote({ dark, onClose, onGetPro }: DownloadDialogProps) {
+function FreeLimitsNote({ dark, onClose, onSeePricing }: DownloadDialogProps) {
   return (
     <div
       data-testid="download-free-note"
@@ -110,17 +110,17 @@ function FreeLimitsNote({ dark, onClose, onGetPro }: DownloadDialogProps) {
           : "flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
       }
     >
-      <span>Free downloads are one view with an Interior AI watermark.</span>
+      <span>Free downloads are one view with a small watermark. Pro gives clean files and more views.</span>
       <button
         type="button"
-        data-testid="download-get-pro"
+        data-testid="download-see-pricing"
         className="min-h-11 shrink-0 font-semibold underline underline-offset-2"
         onClick={() => {
           onClose();
-          onGetPro();
+          onSeePricing();
         }}
       >
-        Get Pro
+        See pricing
       </button>
     </div>
   );
