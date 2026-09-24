@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Pit-Sectional Sofa"
 variant: "Standard"
 
-price_usd: 4894
+price_sgd: 4894
 price_band: "luxury"
 brand_tier: "premium_mid"
 
@@ -240,7 +240,7 @@ variants:
     upholstery_code: "navagio_seagull"
     upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -254,7 +254,7 @@ variants:
     upholstery_code: "performance_creamy_white"
     upholstery_label: "Performance Creamy White"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -268,7 +268,7 @@ variants:
     upholstery_code: "marcel_brilliant_white"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -282,7 +282,7 @@ variants:
     upholstery_code: "peyton_ivory"
     upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -296,7 +296,7 @@ variants:
     upholstery_code: "peyton_dove_grey"
     upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -310,7 +310,7 @@ variants:
     upholstery_code: "marcel_smoke_grey"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -324,7 +324,7 @@ variants:
     upholstery_code: "peyton_moss"
     upholstery_label: "Performance Fleece (Peyton), Moss"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -338,7 +338,7 @@ variants:
     upholstery_code: "peyton_cumin"
     upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -352,7 +352,7 @@ variants:
     upholstery_code: "infinity_boucle_ginger"
     upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -366,7 +366,7 @@ variants:
     upholstery_code: "infinity_boucle_white_quartz"
     upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -393,7 +393,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Side-1715669132.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715669132/crusader/variants/AS-000533-LE4020/Dawson-Pit-Sectional-Sofa-Cocoa-Back-1715669132.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -413,7 +413,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -433,7 +433,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773801435/crusader/variants/AS-000533C-LE4017/Dawson-Pit-Sectional-Sofa-Warm-Taupe-Front-1773801433.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -453,7 +453,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -474,7 +474,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -494,7 +494,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -509,7 +509,7 @@ variants:
     upholstery_code: "performance_boucle_cream"
     upholstery_label: "Performance Infinity Boucle, Cream"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -524,7 +524,7 @@ variants:
     upholstery_code: "performance_infinity_boucle_moss"
     upholstery_label: "Performance Infinity Boucle, Moss"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -539,7 +539,7 @@ variants:
     upholstery_code: "performance_twill_pearl_beige"
     upholstery_label: "Performance Twill, Pearl Beige"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -554,7 +554,7 @@ variants:
     upholstery_code: "performance_twill_slate"
     upholstery_label: "Performance Twill, Slate"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -569,7 +569,7 @@ variants:
     upholstery_code: "performance_twill_moss"
     upholstery_label: "Performance Twill, Moss"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -584,7 +584,7 @@ variants:
     upholstery_code: "performance_twill_dove_grey"
     upholstery_label: "Performance Twill, Medium Grey"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -599,7 +599,7 @@ variants:
     upholstery_code: "performance_genova_oat"
     upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -614,7 +614,7 @@ variants:
     upholstery_code: "performance_linen_weave_cream"
     upholstery_label: "Performance Linen Weave (Genova), Cream"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -629,7 +629,7 @@ variants:
     upholstery_code: "performance_linen_weave_light_grey"
     upholstery_label: "Performance Linen Weave (Genova), Light Grey"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -644,7 +644,7 @@ variants:
     upholstery_code: "greta_ivory"
     upholstery_label: "Washed Chenille, Cream"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -659,7 +659,7 @@ variants:
     upholstery_code: "washed_chenille_sand"
     upholstery_label: "Washed Chenille, Sand"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -674,7 +674,7 @@ variants:
     upholstery_code: "greta_mustard_brown"
     upholstery_label: "Washed Chenille, Caramel"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -689,7 +689,7 @@ variants:
     upholstery_code: "greta_moss"
     upholstery_label: "Washed Chenille, Moss"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }
@@ -704,7 +704,7 @@ variants:
     upholstery_code: "beach_linen"
     upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
     swatch_group: "upholstery_option"
-    price_usd: 4894
+    price_sgd: 4894
     price_band: "luxury"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 207, height_cm: 81 }

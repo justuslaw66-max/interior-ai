@@ -17,7 +17,7 @@ function mapCatalogYaml(yaml: CatalogYamlRecord) {
     productFamily: yaml.product_family,
     productName: yaml.product_name,
     variant: yaml.variant,
-    priceUsd: yaml.price_usd,
+    priceSgd: yaml.price_sgd,
     priceBand: yaml.price_band,
     brandTier: yaml.brand_tier,
     designZone: yaml.design_zone,

@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Recliner Sofa"
 variant: "Extended 3-Seater Wide Arm"
 
-price_usd: 3399
+price_sgd: 3399
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -220,7 +220,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936740/crusader/variants/AS-000670-LE4023/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Cocoa_Cover-1741936738.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741343696/crusader/variants/AS-000670-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-With-Wide-Arm-Recliner-Armchair-Marche-Cocoa_-Square-Set_4_2-1741343694.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3399
+    price_sgd: 3399
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
@@ -240,7 +240,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa_-Marche-Ivory-Angle_-1760151125.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151125/crusader/variants/AS-000674-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Marche-Ivory-Side_-1760151124.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3399
+    price_sgd: 3399
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }
@@ -264,7 +264,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741850743/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Living-Room-Campaign-Square-Set_2-1741850740.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741850742/crusader/variants/AS-000670-AR4001/Jaron-Extended-3-Seater-Recliner-Wide-Arm-Sofa-Living-Room-Campaign-Square-Set_1-1741850740.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3299
+    price_sgd: 3299
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 316, depth_cm: 115, height_cm: 77 }

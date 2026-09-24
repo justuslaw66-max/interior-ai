@@ -6,8 +6,8 @@ product_family: "Claude"
 product_name: "Claude Performance Fabric Bed"
 variant: "Extended Headboard Queen - Performance Dune"
 
-price_usd: 1699
-compare_at_price_usd: 1699
+price_sgd: 1699
+compare_at_price_sgd: 1699
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -105,8 +105,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-claude-extended-headboard-queen-performance-dune.glb"
     affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=with_extended_headboard&bed_frame_size=queen"
     available: true
-    price_usd: 1699
-    compare_at_price_usd: 1699
+    price_sgd: 1699
+    compare_at_price_sgd: 1699
     dimensions: &extended_queen_dims
       width_cm: 292
       depth_cm: 214
@@ -144,8 +144,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-claude-extended-headboard-king-performance-dune.glb"
     affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=with_extended_headboard&bed_frame_size=king"
     available: true
-    price_usd: 1799
-    compare_at_price_usd: 1799
+    price_sgd: 1799
+    compare_at_price_sgd: 1799
     dimensions: &extended_king_dims
       width_cm: 322
       depth_cm: 214
@@ -171,8 +171,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-claude-standard-queen-performance-dune.glb"
     affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=standard_bed&bed_frame_size=queen"
     available: true
-    price_usd: 1199
-    compare_at_price_usd: 1199
+    price_sgd: 1199
+    compare_at_price_sgd: 1199
     dimensions: &standard_queen_dims
       width_cm: 169
       depth_cm: 214
@@ -198,8 +198,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-claude-standard-king-performance-dune.glb"
     affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=standard_bed&bed_frame_size=king"
     available: true
-    price_usd: 1299
-    compare_at_price_usd: 1299
+    price_sgd: 1299
+    compare_at_price_sgd: 1299
     dimensions: &standard_king_dims
       width_cm: 199
       depth_cm: 214

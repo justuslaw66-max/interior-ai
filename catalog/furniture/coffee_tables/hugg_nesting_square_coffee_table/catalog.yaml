@@ -7,7 +7,7 @@ product_name: "Hugg Nesting Square Coffee Table"
 slug: "castlery-hugg-nesting-square-coffee-table"
 variant: "Standard"
 
-price_usd: 1099
+price_sgd: 1099
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -420,7 +420,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1765850661/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-In-Dune-Natural-Square-Set_2-1765850658.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -456,7 +456,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1765850661/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-In-Dune-Natural-Square-Set_2-1765850658.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -492,7 +492,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1765850661/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-In-Dune-Natural-Square-Set_2-1765850658.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

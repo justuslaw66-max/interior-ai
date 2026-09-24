@@ -8,7 +8,7 @@ product_name: "Avery Performance Boucle Armchair"
 slug: "castlery-avery-performance-boucle-armchair"
 variant: "Armchair / Performance Infinity Boucle, Light Grey (White Quartz)"
 
-price_usd: 549
+price_sgd: 549
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -253,7 +253,7 @@ variants:
     collection_type: "stocked"
     color_family: "grey"
     tone: "cool"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -286,7 +286,7 @@ variants:
     collection_type: "stocked"
     color_family: "rust"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -318,7 +318,7 @@ variants:
     collection_type: "custom"
     color_family: "cream"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -350,7 +350,7 @@ variants:
     collection_type: "custom"
     color_family: "green"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -382,7 +382,7 @@ variants:
     collection_type: "custom"
     color_family: "cream"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -414,7 +414,7 @@ variants:
     collection_type: "custom"
     color_family: "grey"
     tone: "cool"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -446,7 +446,7 @@ variants:
     collection_type: "custom"
     color_family: "green"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -478,7 +478,7 @@ variants:
     collection_type: "custom"
     color_family: "rust"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -510,7 +510,7 @@ variants:
     collection_type: "custom"
     color_family: "beige"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -542,7 +542,7 @@ variants:
     collection_type: "custom"
     color_family: "cream"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -574,7 +574,7 @@ variants:
     collection_type: "custom"
     color_family: "grey"
     tone: "cool"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -606,7 +606,7 @@ variants:
     collection_type: "custom"
     color_family: "cream"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -638,7 +638,7 @@ variants:
     collection_type: "custom"
     color_family: "beige"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -670,7 +670,7 @@ variants:
     collection_type: "custom"
     color_family: "grey"
     tone: "cool"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -702,7 +702,7 @@ variants:
     collection_type: "custom"
     color_family: "grey"
     tone: "cool"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -734,7 +734,7 @@ variants:
     collection_type: "custom"
     color_family: "green"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -766,7 +766,7 @@ variants:
     collection_type: "custom"
     color_family: "cream"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -798,7 +798,7 @@ variants:
     collection_type: "custom"
     color_family: "sand"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -830,7 +830,7 @@ variants:
     collection_type: "custom"
     color_family: "brown"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }
@@ -862,7 +862,7 @@ variants:
     collection_type: "custom"
     color_family: "green"
     tone: "warm"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 80, height_cm: 75 }

@@ -4,7 +4,7 @@ category: dining_table
 product_family: Brighton
 product_name: Brighton Oval Dining Table
 variant: Oval 180
-price_usd: 899
+price_sgd: 899
 price_band: mid_premium
 brand_tier: premium_mid
 design_zone: dining_zone
@@ -133,7 +133,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481211/knight/USP/Refresh%202025/Brighton-Dining-Table-Square-Set_1.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481277/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_3.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755481212/knight/USP/Refresh%202025/Brighton-Dining-Table-Usp-Square-Det_1.jpg"
-    price_usd: 899
+    price_sgd: 899
     price_band: mid_premium
     brand_tier: premium_mid
     dimensions:

@@ -8,7 +8,7 @@ product_name: "Jaron Recliner Armchair"
 slug: "castlery-jaron-recliner-armchair-slim-arm"
 variant: "Slim Arm / Marche Ivory Leather"
 
-price_usd: 2499
+price_sgd: 2499
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -399,7 +399,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "white"
     tone: "neutral"
-    price_usd: 2499
+    price_sgd: 2499
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }
@@ -436,7 +436,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "brown"
     tone: "warm"
-    price_usd: 2499
+    price_sgd: 2499
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }
@@ -474,7 +474,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "beige"
     tone: "neutral"
-    price_usd: 1799
+    price_sgd: 1799
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 134, depth_cm: 115, height_cm: 77 }

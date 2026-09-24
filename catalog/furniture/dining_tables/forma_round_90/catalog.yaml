@@ -6,7 +6,7 @@ product_family: "Forma"
 product_name: "Forma Round Dining Table"
 variant: "Round 90"
 
-price_usd: 749
+price_sgd: 749
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -148,7 +148,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050029/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050027.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769049964/crusader/variants/AS-001037-WA/Forma-Round-Dining-Table-90cm-Walnut-Angle-1769049962.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770690389/crusader/variants/TAS-001037/Forma-Round-Dining-Table-90cm-Walnut-Dim-1770690387.jpg"
-    price_usd: 749
+    price_sgd: 749
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

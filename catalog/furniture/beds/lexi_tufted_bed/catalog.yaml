@@ -6,8 +6,8 @@ product_family: "Lexi"
 product_name: "Lexi Tufted Bed"
 variant: "Queen - Nickel Grey"
 
-price_usd: 949
-compare_at_price_usd: 999
+price_sgd: 949
+compare_at_price_sgd: 999
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -129,8 +129,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-nickel-grey.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=nickel_grey"
     available: true
-    price_usd: 949
-    compare_at_price_usd: 999
+    price_sgd: 949
+    compare_at_price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -173,8 +173,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-frost-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=frost_white"
     available: true
-    price_usd: 949
-    compare_at_price_usd: 999
+    price_sgd: 949
+    compare_at_price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -208,8 +208,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-light-blush.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=light_blush"
     available: true
-    price_usd: 949
-    compare_at_price_usd: 999
+    price_sgd: 949
+    compare_at_price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -243,8 +243,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-nickel-grey.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=nickel_grey"
     available: true
-    price_usd: 1039
-    compare_at_price_usd: 1099
+    price_sgd: 1039
+    compare_at_price_sgd: 1099
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -278,8 +278,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-frost-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=frost_white"
     available: true
-    price_usd: 1039
-    compare_at_price_usd: 1099
+    price_sgd: 1039
+    compare_at_price_sgd: 1099
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -313,8 +313,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-light-blush.glb"
     affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=light_blush"
     available: true
-    price_usd: 1039
-    compare_at_price_usd: 1099
+    price_sgd: 1039
+    compare_at_price_sgd: 1099
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

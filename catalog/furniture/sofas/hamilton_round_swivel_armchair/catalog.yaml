@@ -9,7 +9,7 @@ product_name: "Hamilton Round Swivel Armchair"
 slug: "castlery-hamilton-round-swivel-armchair"
 variant: "Round Swivel Armchair / Performance Marcel, Brilliant White / Removable Cover"
 
-price_usd: 999
+price_sgd: 999
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -381,7 +381,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1690863521/crusader/variants/50440829-PM4002/Hamilton-Swivel-Armchair-Brilliant-White-Square-Det_2-1690863518.jpg"
     media_presentation: "studio"
     swatch_group: "upholstery_option"
-    price_usd: 999
+    price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     available: true
@@ -391,7 +391,7 @@ variants:
         label: "Single"
         quantity: 1
         affiliate_url: "https://www.castlery.com/sg/products/hamilton-round-performance-fabric-swivel-armchair"
-        price_usd: 999
+        price_sgd: 999
         available: true
       - id: "set_of_2"
         label: "Set of 2"

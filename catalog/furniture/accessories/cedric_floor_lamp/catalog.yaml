@@ -7,7 +7,7 @@ product_family: "Cedric"
 product_name: "Cedric Floor Lamp"
 variant: "Curved"
 
-price_usd: 149
+price_sgd: 149
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -161,7 +161,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-cedric-floor-lamp.glb"
     affiliate_url: "https://www.castlery.com/sg/products/cedric-floor-lamp"
     available: true
-    price_usd: 149
+    price_sgd: 149
     dimensions:
       width_cm: 25.4
       depth_cm: 25.4

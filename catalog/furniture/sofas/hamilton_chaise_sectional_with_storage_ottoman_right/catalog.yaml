@@ -9,7 +9,7 @@ product_name: "Hamilton Chaise Sectional Sofa with Storage Ottoman"
 slug: "castlery-hamilton-chaise-sectional-with-storage-ottoman-right"
 variant: "Chaise Sectional with Storage Ottoman / Right Facing"
 
-price_usd: 2939
+price_sgd: 2939
 price_band: "premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -114,7 +114,7 @@ variants:
     model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1756695191/crusader/variants/PB-001797-PM4002/Hamilton-Chaise-Sectional-Sofa-Right-Facing-With-Storage-Ottoman-Performance-Marcel-Brilliant-White-Front-1756695189.png"
     swatch_group: "upholstery_option"
-    price_usd: 2939
+    price_sgd: 2939
     dimensions: { width_cm: 278, depth_cm: 171, height_cm: 82 }
     affiliate_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-with-storage-ottoman?orientation=right_facing"
     available: true

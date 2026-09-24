@@ -9,7 +9,7 @@ product_name: "Owen Armchair"
 slug: "castlery-owen-armchair"
 variant: ""
 
-price_usd: 849
+price_sgd: 849
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -332,7 +332,7 @@ variants:
     color_family: "beige"
     tone: "neutral"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
@@ -342,7 +342,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-pearl-beige-natural"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=natural"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"
@@ -380,7 +380,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=natural"
@@ -390,7 +390,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-opal-beige-natural"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=natural"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"
@@ -428,7 +428,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=natural"
@@ -438,7 +438,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-haze-natural"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=natural"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"
@@ -476,7 +476,7 @@ variants:
     color_family: "beige"
     tone: "neutral"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=walnut"
@@ -486,7 +486,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-pearl-beige-walnut"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=pearl_beige&wood=walnut"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"
@@ -524,7 +524,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=walnut"
@@ -534,7 +534,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-opal-beige-walnut"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=opal_beige&wood=walnut"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"
@@ -572,7 +572,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "stocked_fabric"
-    price_usd: 849
+    price_sgd: 849
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=walnut"
@@ -582,7 +582,7 @@ variants:
         quantity: 1
         sku: "owen-armchair-haze-walnut"
         affiliate_url: "https://www.castlery.com/sg/products/owen-armchair?material=haze&wood=walnut"
-        price_usd: 849
+        price_sgd: 849
     dimensions: { width_cm: 110, depth_cm: 100, height_cm: 79 }
     seat_capacity: 1
     size_class: "large"

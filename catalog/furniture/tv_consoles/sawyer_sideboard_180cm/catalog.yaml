@@ -8,7 +8,7 @@ product_name: "Sawyer Sideboard"
 slug: "sawyer-sideboard-180cm"
 variant: "180cm / Natural"
 
-price_usd: 969
+price_sgd: 969
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -193,7 +193,7 @@ variants:
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"
-    price_usd: 969
+    price_sgd: 969
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

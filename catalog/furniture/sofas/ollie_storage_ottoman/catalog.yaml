@@ -6,7 +6,7 @@ product_family: "Ollie"
 product_name: "Ollie Storage Ottoman"
 variant: "Standard"
 
-price_usd: 499
+price_sgd: 499
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -207,7 +207,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1768892905/crusader/variants/AS-001017-GR4001/Ollie-Storage-Ottoman-Iovry-Set-1768892902.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 77, height_cm: 44 }

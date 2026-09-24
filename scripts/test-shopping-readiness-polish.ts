@@ -319,7 +319,7 @@ const invalidReplacementCandidate: CatalogItemSchema = {
   id: "qa-invalid-armchair-replacement",
   title: "QA Invalid Armchair Replacement",
   commerce: { type: "affiliate", data: { retailer: "QA", url: "", priceHint: 0 } },
-  metadata: { ...(sourceProduct.metadata ?? {}), priceUsd: 0 },
+  metadata: { ...(sourceProduct.metadata ?? {}), priceSgd: 0 },
   variants: sourceProduct.variants.map((variant) => ({
     ...variant,
     id: `${variant.id}-qa-invalid`,

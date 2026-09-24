@@ -9,7 +9,7 @@ product_name: "Hamilton Chaise Sectional Sofa Bed"
 slug: "castlery-hamilton-chaise-sectional-sofa-bed-right"
 variant: "Chaise Sectional Sofa Bed / Right Facing"
 
-price_usd: 3199
+price_sgd: 3199
 price_band: "premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -183,7 +183,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1770609384/crusader/variants/50441103-PM4002/Hamilton-Chaise-Sectional-Sleeper-Sofa-Right-Facing-Performance-Brilliant-White-Angle-1770609382.jpg"
     swatch_group: "upholstery_option"
     collection_type: "stocked_fabric"
-    price_usd: 3199
+    price_sgd: 3199
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 296, depth_cm: 171, height_cm: 86 }

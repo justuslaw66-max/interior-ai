@@ -7,7 +7,7 @@ product_family: "Faro"
 product_name: "Faro Sculptural Floor Lamp"
 variant: "Single"
 
-price_usd: 269
+price_sgd: 269
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -160,7 +160,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-faro-sculptural-floor-lamp.glb"
     affiliate_url: "https://www.castlery.com/sg/products/faro-sculptural-floor-lamp"
     available: true
-    price_usd: 269
+    price_sgd: 269
     dimensions:
       width_cm: 48.5
       depth_cm: 48.5

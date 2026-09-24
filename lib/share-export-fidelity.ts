@@ -17,9 +17,9 @@ export type ShareExportFidelitySummary = {
 
 function getLinePrice(item: CatalogItemSchema, resolved: ReturnType<typeof resolveCatalogVariant>) {
   if (resolved.commerce.type === "affiliate") {
-    return resolved.commerce.priceHint ?? item.metadata?.priceUsd ?? 0;
+    return resolved.commerce.priceHint ?? item.metadata?.priceSgd ?? 0;
   }
-  return item.metadata?.priceUsd ?? resolved.variant.priceHint ?? 0;
+  return item.metadata?.priceSgd ?? resolved.variant.priceHint ?? 0;
 }
 
 function classifyShoppingItem(

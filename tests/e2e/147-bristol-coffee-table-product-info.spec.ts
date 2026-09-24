@@ -20,7 +20,7 @@ type ImportedModel = {
   catalog?: {
     source_url?: string;
     productName?: string;
-    priceUsd?: number;
+    priceSgd?: number;
     assets?: {
       thumbnail_url?: string;
       gallery_images?: string[];
@@ -57,7 +57,7 @@ test.describe("147. Bristol Coffee Table Product Info", () => {
       "https://www.castlery.com/sg/products/bristol-coffee-table-set-walnut?wood=walnut",
     );
     expect(model?.catalog?.productName).toBe("Bristol Coffee Table Set, Walnut");
-    expect(model?.catalog?.priceUsd).toBe(499);
+    expect(model?.catalog?.priceSgd).toBe(499);
     expect(model?.catalog?.assets?.thumbnail_url).toContain("Bristol-Coffee-Table-Set-Front");
     expect(model?.catalog?.assets?.gallery_images?.length).toBeGreaterThanOrEqual(10);
 

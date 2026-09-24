@@ -37,7 +37,7 @@ type ProductInfoSection = {
 type ImportedModel = {
   id: string;
   catalog?: {
-    variants?: Array<{ finish_code?: string; price_usd?: number }>;
+    variants?: Array<{ finish_code?: string; price_sgd?: number }>;
     product_details?: ProductInfoSection;
   } | null;
 };
@@ -82,7 +82,7 @@ test.describe("148. Sloane Sideboard Product Info", () => {
       expect(model).toBeDefined();
       expect(model?.catalog?.variants?.[0]).toMatchObject({
         finish_code: finishCode,
-        price_usd: expected.price,
+        price_sgd: expected.price,
       });
 
       const details = model?.catalog?.product_details;

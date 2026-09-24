@@ -70,7 +70,7 @@ for (const item of expected) {
   assert.equal(entry.status, "published");
   assert.equal(entry.product_family, "Hamilton");
   assert.equal(entry.product_name, item.title);
-  assert.equal(entry.price_usd, item.price);
+  assert.equal(entry.price_sgd, item.price);
   assert.equal(entry.shape, "rectangular");
   assert.deepEqual(entry.room_compatibility, [
     "living_room",

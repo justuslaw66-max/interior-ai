@@ -113,8 +113,8 @@ function resolveLiveCommerce(item: CatalogItemSchema): LiveProductCommerceData {
   const currency = item.metadata?.currencyCode?.trim().toUpperCase() || "USD";
   const currentPrice =
     defaultResolved.commerce.type === "affiliate"
-      ? defaultResolved.commerce.priceHint ?? item.metadata?.priceUsd ?? null
-      : item.metadata?.priceUsd ?? defaultResolved.variant.priceHint ?? null;
+      ? defaultResolved.commerce.priceHint ?? item.metadata?.priceSgd ?? null
+      : item.metadata?.priceSgd ?? defaultResolved.variant.priceHint ?? null;
   const purchaseDestination =
     defaultResolved.commerce.type === "affiliate" && defaultResolved.commerce.url
       ? { type: "affiliate" as const, url: defaultResolved.commerce.url }

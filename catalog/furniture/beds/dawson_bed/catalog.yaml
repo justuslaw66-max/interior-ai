@@ -6,8 +6,8 @@ product_family: "Dawson"
 product_name: "Dawson Bed"
 variant: "Standard Queen - Beach Linen"
 
-price_usd: 1099
-compare_at_price_usd: 1199
+price_sgd: 1099
+compare_at_price_sgd: 1199
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -111,8 +111,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dawson-standard-queen-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dawson-bed?cover_type=fully_removable&bed_frame_size=queen&material=beach_linen"
     available: true
-    price_usd: 1099
-    compare_at_price_usd: 1199
+    price_sgd: 1099
+    compare_at_price_sgd: 1199
     dimensions: &queen_dims
       width_cm: 194
       depth_cm: 237
@@ -150,8 +150,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dawson-standard-king-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dawson-bed?cover_type=fully_removable&bed_frame_size=king&material=beach_linen"
     available: true
-    price_usd: 1289
-    compare_at_price_usd: 1399
+    price_sgd: 1289
+    compare_at_price_sgd: 1399
     dimensions: &king_dims
       width_cm: 224
       depth_cm: 237

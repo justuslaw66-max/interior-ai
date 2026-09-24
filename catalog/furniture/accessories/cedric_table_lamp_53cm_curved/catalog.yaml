@@ -7,7 +7,7 @@ product_family: "Cedric"
 product_name: "Cedric Table Lamp 53cm"
 variant: "Curved"
 
-price_usd: 119
+price_sgd: 119
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -166,7 +166,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-cedric-table-lamp-53cm-curved.glb"
     affiliate_url: "https://www.castlery.com/sg/products/cedric-table-lamp?quantity=single&design=curved&height=53cm"
     available: true
-    price_usd: 119
+    price_sgd: 119
     dimensions:
       width_cm: 23.1
       depth_cm: 23.1

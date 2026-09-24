@@ -6,7 +6,7 @@ product_family: "Sloane"
 product_name: "Sloane Travertine Dining Table"
 variant: "225 Grey Oak"
 
-price_usd: 2599
+price_sgd: 2599
 price_band: "luxury"
 brand_tier: "premium_high"
 
@@ -150,7 +150,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725529605/crusader/variants/AS-000565/Sloane-Travertine-Dining-Table-Square-Det_9-1725529602.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723776871/crusader/variants/AS-000564/Sloane-Travertine-Dining-Table-Det_2-1723776868.jpg"
 
-    price_usd: 2599
+    price_sgd: 2599
     price_band: "luxury"
     brand_tier: "premium_high"
 
