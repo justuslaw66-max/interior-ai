@@ -64,3 +64,7 @@ next-env.d.ts
 
 /app/generated/prisma
 .env.local
+
+# floor-plan vectorizer service: local Python environment and its outputs
+services/floorplan-vectorizer/.venv/
+services/floorplan-vectorizer/__pycache__/

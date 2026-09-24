@@ -1,0 +1,55 @@
+import { expect, type Page, type TestInfo } from "@playwright/test";
+import { readFile, writeFile } from "node:fs/promises";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
+import { storedToSnapshot, type StoredDesign } from "../../lib/room-persistence";
+import { buildFloorPlanVectorDrawing } from "../../lib/floor-plan-vector-drawing";
+import { exportFloorPlanVectorSvg } from "../../lib/floor-plan-vector-export";
+import { physicalDimensionLineMm } from "../../scripts/fixtures/scan-to-editable-plan/pdf-physical-scale";
+import { vectorExportFontBytes, vectorPdfEmbeddedFonts, vectorPdfPageContent } from "../../scripts/fixtures/scan-to-editable-plan/pdf-vector-inspection";
+
+export async function exerciseFurnishedVectorExport(page: Page, saved: () => Promise<StoredDesign>, testInfo: TestInfo) {
+  const before = await saved(), snapshot = storedToSnapshot(before), document = snapshot.floorPlan!.canonicalDocument!;
+  await page.getByTestId("editor-view-2d").click();
+  await page.getByTestId("editor-command-workspace").click();
+  await page.getByTestId("editor-workflow-plan").click();
+  const panel = page.getByTestId("imported-wall-editor");
+  await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
+  await expect(panel.getByLabel("Fixtures and furniture", { exact: true })).toBeChecked();
+  const pdfDownload = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  const pdfPath = testInfo.outputPath("furnished-proposed.pdf"); await (await pdfDownload).saveAs(pdfPath);
+  const pdf = await PDFDocument.load(await readFile(pdfPath));
+  expect(pdf.getPageCount()).toBe(1);
+  expect(pdf.getPage(0).getWidth() / (72 / 25.4)).toBeCloseTo(297, 8);
+  const streams = pdf.context.enumerateIndirectObjects().flatMap(([, object]) => object instanceof PDFRawStream ? [object] : []);
+  expect(streams.some((stream) => stream.dict.get(PDFName.of("Subtype"))?.toString() === "/Image")).toBe(false);
+  const fontBytes = await vectorExportFontBytes();
+  expect(vectorPdfEmbeddedFonts(pdf)).toEqual([fontBytes]);
+  const content = vectorPdfPageContent(pdf);
+  expect(physicalDimensionLineMm(content, 9260)).toBeCloseTo(92.6, 2);
+  const svgDownload = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "SVG", exact: true }).click();
+  const svgPath = testInfo.outputPath("furnished-proposed.svg"); await (await svgDownload).saveAs(svgPath);
+  const drawing = buildFloorPlanVectorDrawing(document, { floorId: "apartment", dimensions: true, labels: true, fixtures: true }, { rooms: snapshot.rooms });
+  const furniture = drawing.primitives.filter(({ role }) => role === "furniture");
+  expect(furniture).toHaveLength(1);
+  const outline = furniture[0]; if (outline.kind !== "path") throw new Error("Expected an independently editable outline");
+  expect(Math.hypot(outline.points[1].xMm - outline.points[0].xMm, outline.points[1].zMm - outline.points[0].zMm)).toBeCloseTo(1730, 8);
+  expect(Math.hypot(outline.points[2].xMm - outline.points[1].xMm, outline.points[2].zMm - outline.points[1].zMm)).toBeCloseTo(970, 8);
+  expect(drawing.primitives.filter(({ role }) => role === "swing_leaf")).toHaveLength(1);
+  expect(drawing.primitives.filter(({ role }) => role === "swing_arc")).toHaveLength(1);
+  expect((content.match(/\bm\b/g) ?? []).length).toBe(drawing.primitives.filter(({ kind }) => kind === "path").length);
+  expect((content.match(/\bc\b/g) ?? []).length).toBe(1);
+  expect(await readFile(svgPath, "utf8")).toBe(await exportFloorPlanVectorSvg(drawing, { paper: "A4", orientation: "landscape", scale: 100 }, { fontBytes }));
+  await panel.getByRole("button", { name: "View original", exact: true }).click();
+  const comparison = panel.locator('object[aria-label="Plan comparison drawing"]');
+  await expect(comparison).toBeVisible();
+  expect(decodeURIComponent(await comparison.getAttribute("data") ?? "")).not.toContain("furniture:");
+  await panel.getByLabel("Fixtures and furniture", { exact: true }).uncheck();
+  await panel.getByRole("button", { name: "View proposed", exact: true }).click();
+  await expect.poll(async () => decodeURIComponent(await comparison.getAttribute("data") ?? "")).not.toContain("furniture:");
+  expect((await saved()).floorPlan).toEqual(before.floorPlan);
+  expect((await saved()).rooms).toEqual(before.rooms);
+  await writeFile(testInfo.outputPath("furnished-export-evidence.json"), JSON.stringify({ drawing, pdfPaths: (content.match(/\bm\b/g) ?? []).length,
+    checks: ["actual Consumer PDF/SVG downloads", "separate sofa, window, door leaf and cubic swing", "1730 by970mm sofa footprint", "92.6mm physical paper dimension", "no raster", "original comparison excludes proposed furniture", "furniture toggle", "saved design unchanged"] }, null, 2));
+}

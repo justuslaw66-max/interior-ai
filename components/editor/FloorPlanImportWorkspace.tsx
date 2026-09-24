@@ -27,6 +27,8 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
   return { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen };
 }
 
+const initialStoredJobId = () => typeof window === "undefined" ? null : readActiveFloorPlanImportId(window.localStorage);
+
 export default function FloorPlanImportWorkspace({
   request,
   trainingBenchmarkOptIn,
@@ -34,22 +36,22 @@ export default function FloorPlanImportWorkspace({
   onChooseFile, onHistoryConfirmationOpenChange,
   onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
-  const initialStoredJobId = () => typeof window === "undefined" ? null : readActiveFloorPlanImportId(window.localStorage);
   const [resumeJobId, setResumeJobId] = useState<string | null>(initialStoredJobId);
   const [activeImportJobId, setActiveImportJobId] = useState<string | null>(initialStoredJobId);
   const [ignoredRequest, setIgnoredRequest] = useState<typeof request>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [activeJobSnapshot, setActiveJobSnapshot] = useState<ConsumerFloorPlanImportJob | null>(null);
+  const [reviewSession, setReviewSession] = useState(0);
   const { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen } = useHistoryConfirmationGuard(onHistoryConfirmationOpenChange);
 
   const selectImportJob = useCallback((jobId: string | null) => {
+    if(jobId!==activeImportJobId){setReviewSession(value=>value+1);setActiveJobSnapshot(null);}
     writeActiveFloorPlanImportId(window.localStorage, jobId);
     setResumeJobId(jobId);
     setIgnoredRequest(request);
     setActiveImportJobId(jobId);
-    if (!jobId) setActiveJobSnapshot(null);
     setHistoryRefreshKey((value) => value + 1);
-  }, [request]);
+  }, [request,activeImportJobId]);
 
   const recordActiveImportJob = useCallback((jobId: string | null) => {
     writeActiveFloorPlanImportId(window.localStorage, jobId);
@@ -64,9 +66,8 @@ export default function FloorPlanImportWorkspace({
   }, []);
 
   const subtle = dark ? "text-neutral-400" : "text-neutral-500";
-  const hasActiveImport = Boolean(
-    (request && request !== ignoredRequest) || resumeJobId
-  );
+  const activeRequest=request!==ignoredRequest?request:null;
+  const hasActiveImport=Boolean(activeRequest||resumeJobId);
   return (
     <div
       className="mx-auto min-w-0 max-w-[1320px]"
@@ -75,8 +76,9 @@ export default function FloorPlanImportWorkspace({
       <main className="min-w-0">
         {hasActiveImport ? (
           <FloorPlanImportAssistant
-            file={request && request !== ignoredRequest ? request.file : null}
-            resumeJobId={request && request !== ignoredRequest ? null : resumeJobId}
+            key={reviewSession}
+            file={activeRequest?.file ?? null}
+            resumeJobId={activeRequest ? null : resumeJobId}
             trainingBenchmarkOptIn={request?.trainingBenchmarkOptIn ?? false}
             dark={dark} disabled={disabled} proMode={proMode}
             onChooseFile={onChooseFile}

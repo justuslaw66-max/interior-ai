@@ -1,5 +1,7 @@
+import type { FloorPlanWallSplitLineageV2 } from "@/lib/floor-plan-topology-mutation-types";
 import type {
   FloorPlanWallClassificationV2,
+  FloorPlanDocumentV2,
 } from "@/lib/floor-plan-document-v2";
 import {
   commitCanonicalTopologyMutationToSnapshotV2,
@@ -11,14 +13,28 @@ import {
   type FloorPlanTopologyMutationV2,
 } from "@/lib/floor-plan-topology-mutations";
 import type { DesignSnapshot, RoomSurfaceAssignments } from "@/lib/room-types";
+import { reconcileProposedRoomContent } from "@/lib/floor-plan-proposal-content";
+import { forkOpeningEvidenceForProposal } from "@/lib/floor-plan-proposal-opening";
+import { buildCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { reviewProposedPlacements } from "@/lib/floor-plan-placement-review";
 
 export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
   "This creates a local editable copy for this design. The imported source plan remains unchanged. Accepted wall changes are marked Needs review and may affect connected rooms and openings.";
 
+export function selectConsumerWallGeometry(document: FloorPlanDocumentV2 | null, floorId: string, wallId: string) {
+  const floor = document?.floors.find((candidate) => candidate.id === floorId) ?? document?.floors[0] ?? null;
+  const wall = floor?.walls.find((candidate) => candidate.id === wallId) ?? floor?.walls[0] ?? null;
+  const start = floor?.vertices.find(({ id }) => id === wall?.path.startVertexId);
+  const end = floor?.vertices.find(({ id }) => id === wall?.path.endVertexId);
+  const wallLengthMm = start && end && wall?.path.kind === "line"
+    ? Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm) : null;
+  return { floor, wall, wallLengthMm };
+}
+
 export type ConsumerWallTopologyMutationV2 = Extract<
   FloorPlanTopologyMutationV2,
   {
-    kind: "move_vertex" | "move_wall" | "update_wall" | "split_wall";
+    kind: "join_wall_endpoint" | "move_vertex" | "move_wall" | "update_wall" | "split_wall" | "add_wall" | "remove_wall" | "add_opening" | "update_opening" | "remove_opening";
   }
 >;
 
@@ -88,47 +104,18 @@ function copySplitFinish(
 }
 
 function preserveSplitWallFinishes(
-  commit: CanonicalTopologySnapshotCommitV2,
-  operation: ConsumerWallTopologyMutationV2
-): CanonicalTopologySnapshotCommitV2 {
-  if (operation.kind !== "split_wall") return commit;
-  const rooms = commit.snapshot.rooms.map((room) => ({
-    ...room,
-    surfaces: copySplitFinish(room.surfaces, operation.wallId, operation.newWallId),
-    surfaceFinishes: copySplitFinish(
-      room.surfaceFinishes,
-      operation.wallId,
-      operation.newWallId
-    ),
-  }));
-  return {
-    ...commit,
-    snapshot: { ...commit.snapshot, rooms },
-  };
-}
-
-function assertConsumerContentPreserved(
-  before: DesignSnapshot,
-  after: DesignSnapshot
-): void {
-  const afterById = new Map(after.rooms.map((room) => [room.id, room]));
-  for (const room of before.rooms) {
-    const next = afterById.get(room.id);
-    if (!next) {
-      throw new Error(`Wall editing unexpectedly removed room ${room.id}.`);
-    }
-    const preserved = [
-      ["items", room.items, next.items],
-      ["zones", room.zones, next.zones],
-      ["saved views", room.savedViews, next.savedViews],
-      ["layout versions", room.layoutVersions, next.layoutVersions],
-    ] as const;
-    for (const [label, previousValue, nextValue] of preserved) {
-      if (JSON.stringify(previousValue) !== JSON.stringify(nextValue)) {
-        throw new Error(`Wall editing unexpectedly changed ${label} in room ${room.id}.`);
-      }
-    }
+  snapshot: DesignSnapshot, splits: readonly FloorPlanWallSplitLineageV2[] = []
+): DesignSnapshot {
+  let rooms = snapshot.rooms;
+  for (const split of splits) {
+    const wall = snapshot.floorPlan?.canonicalDocument?.floors.find(({ id }) => id === split.floorId)?.walls.find(({ id }) => id === split.newWallId);
+    rooms = rooms.map((room) => wall?.adjacentRoomIds.includes(room.id) ? {
+      ...room,
+      surfaces: copySplitFinish(room.surfaces, split.sourceWallId, split.newWallId),
+      surfaceFinishes: copySplitFinish(room.surfaceFinishes, split.sourceWallId, split.newWallId),
+    } : room);
   }
+  return rooms === snapshot.rooms ? snapshot : { ...snapshot, rooms };
 }
 
 export function isConsumerWallEditLocalForkV2(snapshot: DesignSnapshot): boolean {
@@ -176,11 +163,8 @@ export function applyConfirmedConsumerWallEditV2({
   }
 
   const anchoredSnapshot = withSourceRevisionAnchor(snapshot, sourceRevision);
-  const result = applyFloorPlanTopologyMutationV2(document, operation, context);
-  const committed = preserveSplitWallFinishes(
-    commitCanonicalTopologyMutationToSnapshotV2(anchoredSnapshot, result),
-    operation
-  );
+  const result = applyFloorPlanTopologyMutationV2(forkOpeningEvidenceForProposal(document, operation, context), operation, context);
+  const committed = commitCanonicalTopologyMutationToSnapshotV2(anchoredSnapshot, result);
   const committedDocument = committed.snapshot.floorPlan?.canonicalDocument;
   if (
     !committedDocument ||
@@ -192,6 +176,8 @@ export function applyConfirmedConsumerWallEditV2({
       "The local floor-plan edit did not preserve its immutable source revision."
     );
   }
-  assertConsumerContentPreserved(snapshot, committed.snapshot);
-  return committed;
+  const reconciled = preserveSplitWallFinishes(reconcileProposedRoomContent(snapshot, committed.snapshot, operation, result.roomSplits), result.wallSplits);
+  const issues = reviewProposedPlacements(reconciled, buildCanonicalFloorPlanRenderModel(result.scene));
+  reconciled.floorPlan!.proposal!.reviewIssues = [...new Set([...reconciled.floorPlan!.proposal!.reviewIssues, ...issues])];
+  return { ...committed, snapshot: reconciled };
 }

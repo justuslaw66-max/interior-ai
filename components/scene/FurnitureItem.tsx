@@ -43,6 +43,7 @@ import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline
 import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
 import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
 import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
+import { useFurnitureDrag } from "./furniture/useFurnitureDrag";
 
 export { CameraCapture } from "./furniture/CameraCapture";
 export type { FurnitureProps } from "./furniture/FurnitureProps";
@@ -506,54 +507,32 @@ export function Furniture({
     return [snappedX, snappedZ, snapType];
   };
 
+  const drag = useFurnitureDrag({
+    identity: `${instanceId}:${viewMode}`, interactive, locked,
+    onStart: () => { setDragging(true); onDraggingChange?.(true); },
+    onFinish: (cancelled, finalPosition) => {
+      const wasSnapped = snapTypeRef.current !== "none";
+      setDragging(false); setSnapType("none"); snapTypeRef.current = "none";
+      setInvalidPlacement(false); setSnapGuides([]); setMeasurements([]);
+      setPosition(finalPosition);
+      if (!cancelled && wasSnapped && interactive) { startSnapBump(); onSnapPulse?.(); onSnapSuccess?.(); }
+      // Without onDragEnd, the existing dragging=false path rolls back the continuous command.
+      try { if (!cancelled && interactive) onDragEnd?.(instanceId, finalPosition); }
+      finally { onDraggingChange?.(false); }
+    },
+  });
   const onPointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    if (!interactive || locked) {
-      if (locked) {
-        startLockedShake();
-      }
-      return;
-    }
-    // Capture pointer so dragging continues even if cursor leaves the mesh
-    (e.target as unknown as HTMLElement).setPointerCapture(e.pointerId);
-    setDragging(true);
-    onDraggingChange?.(true); // notify parent
-  };
-
-  const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    const wasSnapped = snapTypeRef.current !== "none";
-    try {
-      (e.target as unknown as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
-    setDragging(false);
-    setSnapType("none");
-    snapTypeRef.current = "none";
-    setInvalidPlacement(false);
-    if (wasSnapped && interactive) {
-      startSnapBump();
-      onSnapPulse?.();
-      onSnapSuccess?.();
-    }
-    
-    // Trigger constraint check on drag end
-    if (interactive && onDragEnd) {
-      onDragEnd(instanceId, position);
-    }
-    onDraggingChange?.(false); // notify parent after the document command finishes
+    if (locked) startLockedShake();
+    drag.begin(e, position);
   };
 
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!interactive || locked) return;
-    if (rotateDragging) return;
-    if (!dragging) return;
+    const projected = drag.project(e);
+    if (!projected || rotateDragging) return;
     e.stopPropagation(); // prevent OrbitControls from responding
     onDragPointerMove?.(e);
-
-    raycaster.setFromCamera(e.pointer, e.camera);
-    raycaster.ray.intersectPlane(plane, intersection);
-
-    const [x, z] = clampWorldToRoomShape(intersection.x, intersection.z);
+    const [x, z] = clampWorldToRoomShape(projected.x, projected.z);
 
     // Try to snap to wall if enabled
     let snappedX = x;
@@ -683,6 +662,7 @@ export function Furniture({
     setInvalidPlacement(false);
     setSnapType(snap);
     snapTypeRef.current = snap;
+    drag.accept(nextPos);
     setPosition(nextPos);
   };
   const isSnapped = snapType !== "none";
@@ -731,8 +711,7 @@ export function Furniture({
         onSelect?.(instanceId, Boolean(e.shiftKey));
       }}
       onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
+      onPointerUp={drag.onPointerUp}
       onPointerMove={onPointerMove}
       onPointerOver={(e) => {
         e.stopPropagation();

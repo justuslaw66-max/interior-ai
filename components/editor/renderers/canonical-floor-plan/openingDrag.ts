@@ -1,28 +1,20 @@
-import { useCallback, useMemo, useRef } from "react";
-import type { ThreeEvent } from "@react-three/fiber";
-import { Plane, Vector3 } from "three";
-
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
+import { useThree, type ThreeEvent } from "@react-three/fiber";
+import { useOpeningReleaseClick } from "./useOpeningReleaseClick";
+import { Mesh, Plane, Vector3 } from "three";
 import type { CompiledFloorPlanOpeningV2 } from "@/lib/floor-plan-compiler-v2";
-
-export type CanonicalOpeningDragMetricsV2 = {
-  centerMm: { xMm: number; zMm: number };
-  widthMm: number;
+import { buildOpeningGestureDraft, type CanonicalOpeningDragMetricsV2, type CanonicalOpeningDragMode, type OpeningGestureAnchor } from "@/lib/floor-plan-opening-gesture";
+export type { CanonicalOpeningDragMetricsV2, CanonicalOpeningDragMode } from "@/lib/floor-plan-opening-gesture";
+export type CanonicalOpeningEditHandler = (openingId: string, metrics: CanonicalOpeningDragMetricsV2, mode: CanonicalOpeningDragMode) => void;
+type CaptureTarget = EventTarget & { setPointerCapture?: (id: number) => void; releasePointerCapture?: (id: number) => void };
+type Input = {
+  opening: CompiledFloorPlanOpeningV2; revisionId: string;
+  wallStart: { xMm: number; zMm: number }; wallEnd: { xMm: number; zMm: number };
+  projection?: "plan" | "wall"; floorY: number; enabled: boolean; onEdit?: CanonicalOpeningEditHandler;
+  onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 };
-
-export type CanonicalOpeningDragMode = "move" | "resize";
-
-function capturePointer(event: ThreeEvent<PointerEvent>) {
-  const target = event.target as EventTarget & {
-    setPointerCapture?: (pointerId: number) => void;
-  };
-  target.setPointerCapture?.(event.pointerId);
-}
-
-function releasePointer(event: ThreeEvent<PointerEvent>) {
-  const target = event.target as EventTarget & {
-    releasePointerCapture?: (pointerId: number) => void;
-  };
-  target.releasePointerCapture?.(event.pointerId);
+function stopPointer(event: ThreeEvent<PointerEvent>) {
+  event.stopPropagation(); event.nativeEvent.stopImmediatePropagation();
 }
 
 // A move clamps the opening centre to [halfWidth, wallLengthMm - halfWidth]. On a wall no
@@ -36,151 +28,137 @@ function openingCanMoveOnWall(wallLengthMm: number, widthMm: number) {
   return wallLengthMm - widthMm >= MINIMUM_MOVE_TRAVEL_MM;
 }
 
-export function useCanonicalOpeningDrag({
-  opening,
-  wallStart,
-  wallEnd,
-  floorY,
-  enabled,
-  onEdit,
-  onDragStateChange,
-}: {
-  opening: CompiledFloorPlanOpeningV2;
-  wallStart: { xMm: number; zMm: number };
-  wallEnd: { xMm: number; zMm: number };
-  floorY: number;
-  enabled: boolean;
-  onEdit?: (
-    openingId: string,
-    metrics: CanonicalOpeningDragMetricsV2,
-    mode: CanonicalOpeningDragMode
-  ) => void;
-  onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
-}) {
-  const plane = useMemo(() => new Plane(new Vector3(0, 1, 0), -floorY), [floorY]);
+function wallLengthMmOf(input: Pick<Input, "wallStart" | "wallEnd">) {
+  return Math.hypot(input.wallEnd.xMm - input.wallStart.xMm, input.wallEnd.zMm - input.wallStart.zMm);
+}
+
+type Session = { pointerId: number; target: CaptureTarget; nativeTarget: Element; revisionId: string; anchor: OpeningGestureAnchor; draft: CanonicalOpeningDragMetricsV2 | null };
+
+function useOpeningPointerOffset(input: Input) {
+  const plane = useMemo(() => new Plane(new Vector3(0, 1, 0), -input.floorY), [input.floorY]);
   const pointRef = useRef(new Vector3());
-  const dragRef = useRef<
-    | { pointerId: number; mode: "move"; grabDeltaMm: number }
-    | { pointerId: number; mode: "resize"; fixedOffsetMm: number }
-    | null
-  >(null);
-  const dx = wallEnd.xMm - wallStart.xMm;
-  const dz = wallEnd.zMm - wallStart.zMm;
-  const wallLengthMm = Math.hypot(dx, dz);
+  const { wallStart, wallEnd, projection } = input;
+  const wallPlane = useMemo(() => new Plane().setFromNormalAndCoplanarPoint(
+    new Vector3(wallEnd.zMm - wallStart.zMm, 0, wallStart.xMm - wallEnd.xMm).normalize(),
+    new Vector3(wallStart.xMm / 1000, input.floorY, wallStart.zMm / 1000)), [wallStart, wallEnd, input.floorY]);
+  return useCallback((event: ThreeEvent<PointerEvent>) => {
+    const targetPlane = projection === "wall" && Math.abs(event.ray.direction.dot(wallPlane.normal)) > 0.00001 ? wallPlane : plane;
+    const point = event.ray.intersectPlane(targetPlane, pointRef.current);
+    const dx = wallEnd.xMm - wallStart.xMm, dz = wallEnd.zMm - wallStart.zMm;
+    const length = Math.hypot(dx, dz);
+    return point && length > 0 ? ((point.x * 1000 - wallStart.xMm) * dx + (point.z * 1000 - wallStart.zMm) * dz) / length : null;
+  }, [plane, wallPlane, projection, wallStart, wallEnd]);
+}
 
-  const pointerOffsetMm = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const point = event.ray.intersectPlane(plane, pointRef.current);
-      if (!point || wallLengthMm <= 0) return null;
-      const xMm = point.x * 1000;
-      const zMm = point.z * 1000;
-      return (
-        ((xMm - wallStart.xMm) * dx + (zMm - wallStart.zMm) * dz) /
-        wallLengthMm
-      );
-    },
-    [dx, dz, plane, wallLengthMm, wallStart.xMm, wallStart.zMm]
-  );
+function useOpeningCancellation(sessionRef: RefObject<Session | null>, previewRef: RefObject<Mesh | null>, latestRef: RefObject<Input>) {
+  const invalidate = useThree((state) => state.invalidate);
+  return useCallback(() => {
+    const drag = sessionRef.current; sessionRef.current = null;
+    if (previewRef.current) previewRef.current.visible = false;
+    invalidate();
+    if (!drag) return;
+    latestRef.current.onDragStateChange?.(false, drag.anchor.mode);
+    try { drag.target.releasePointerCapture?.(drag.pointerId); }
+    catch (cause) { if (!(cause instanceof DOMException && cause.name === "NotFoundError")) throw cause; }
+  }, [invalidate, latestRef, previewRef, sessionRef]);
+}
 
-  const emit = useCallback(
-    (offsetMm: number, widthMm: number, mode: CanonicalOpeningDragMode) => {
-      if (!onEdit || wallLengthMm <= 0) return;
-      const centerOffsetMm = offsetMm + widthMm / 2;
-      onEdit(
-        opening.id,
-        {
-          centerMm: {
-            xMm: Math.round(wallStart.xMm + (dx * centerOffsetMm) / wallLengthMm),
-            zMm: Math.round(wallStart.zMm + (dz * centerOffsetMm) / wallLengthMm),
-          },
-          widthMm: Math.round(widthMm),
-        },
-        mode
-      );
-    },
-    [dx, dz, onEdit, opening.id, wallLengthMm, wallStart.xMm, wallStart.zMm]
-  );
-
-  const beginMove = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      if (!enabled || !openingCanMoveOnWall(wallLengthMm, opening.widthMm)) return;
-      const pointer = pointerOffsetMm(event);
-      if (pointer === null) return;
-      event.stopPropagation();
-      capturePointer(event);
-      dragRef.current = {
-        pointerId: event.pointerId,
-        mode: "move",
-        grabDeltaMm: opening.offsetMm + opening.widthMm / 2 - pointer,
-      };
-      onDragStateChange?.(true, "move");
-    },
-    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm, pointerOffsetMm, wallLengthMm]
-  );
-
-  const beginResize = useCallback(
-    (edge: "start" | "end", event: ThreeEvent<PointerEvent>) => {
-      if (!enabled) return;
-      event.stopPropagation();
-      capturePointer(event);
-      dragRef.current = {
-        pointerId: event.pointerId,
-        mode: "resize",
-        fixedOffsetMm:
-          edge === "start" ? opening.offsetMm + opening.widthMm : opening.offsetMm,
-      };
-      onDragStateChange?.(true, "resize");
-    },
-    [enabled, onDragStateChange, opening.offsetMm, opening.widthMm]
-  );
-
-  const move = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const drag = dragRef.current;
+function useOpeningCancellationEvents(cancel: () => void, sessionRef: RefObject<Session | null>, input: Input) {
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !sessionRef.current) return;
+      event.preventDefault(); event.stopImmediatePropagation(); cancel();
+    };
+    // R3F clears hover on pointercancel but does not dispatch the object's cancellation handler.
+    const pointerCancel = (event: PointerEvent) => { if (sessionRef.current?.pointerId === event.pointerId) cancel(); };
+    const lostCapture = (event: PointerEvent) => {
+      const drag = sessionRef.current;
       if (!drag || drag.pointerId !== event.pointerId) return;
-      const pointer = pointerOffsetMm(event);
-      if (pointer === null) return;
-      event.stopPropagation();
-      if (drag.mode === "move") {
-        const halfWidth = opening.widthMm / 2;
-        const center = Math.min(
-          wallLengthMm - halfWidth,
-          Math.max(halfWidth, pointer + drag.grabDeltaMm)
-        );
-        emit(center - halfWidth, opening.widthMm, "move");
-        return;
-      }
-      const minimumWidthMm = 400;
-      let moving = Math.min(wallLengthMm, Math.max(0, pointer));
-      if (Math.abs(moving - drag.fixedOffsetMm) < minimumWidthMm) {
-        moving = Math.min(
-          wallLengthMm,
-          Math.max(
-            0,
-            drag.fixedOffsetMm + (moving >= drag.fixedOffsetMm ? minimumWidthMm : -minimumWidthMm)
-          )
-        );
-      }
-      emit(
-        Math.min(moving, drag.fixedOffsetMm),
-        Math.abs(moving - drag.fixedOffsetMm),
-        "resize"
-      );
-    },
-    [emit, opening.widthMm, pointerOffsetMm, wallLengthMm]
-  );
+      if (event.buttons) { cancel(); return; }
+      // Native lostcapture can precede R3F's pointerup delivery; let that finish first.
+      requestAnimationFrame(() => { if (sessionRef.current === drag) cancel(); });
+    };
+    window.addEventListener("keydown", escape, true); window.addEventListener("blur", cancel);
+    window.addEventListener("pointercancel", pointerCancel, true); window.addEventListener("lostpointercapture", lostCapture, true);
+    return () => {
+      window.removeEventListener("keydown", escape, true); window.removeEventListener("blur", cancel);
+      window.removeEventListener("pointercancel", pointerCancel, true); window.removeEventListener("lostpointercapture", lostCapture, true); cancel();
+    };
+  }, [cancel, sessionRef, input.revisionId, input.opening.id, input.enabled, input.floorY]);
+}
 
-  const finish = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== event.pointerId) return;
-      event.stopPropagation();
-      releasePointer(event);
-      dragRef.current = null;
-      onDragStateChange?.(false, drag.mode);
-    },
-    [onDragStateChange]
-  );
+function updateOpeningPreview(mesh: Mesh | null, draft: CanonicalOpeningDragMetricsV2 | null, input: Input) {
+  if (!mesh) return;
+  mesh.visible = Boolean(draft);
+  if (!draft) return;
+  mesh.position.x = draft.centerMm.xMm / 1000; mesh.position.z = draft.centerMm.zMm / 1000;
+  mesh.rotation.y = -Math.atan2(input.wallEnd.zMm - input.wallStart.zMm, input.wallEnd.xMm - input.wallStart.xMm);
+  mesh.scale.x = draft.widthMm / 1000;
+}
 
-  return { beginMove, beginResize, move, finish };
+export function useCanonicalOpeningDrag(input: Input) {
+  const latestRef = useRef(input), sessionRef = useRef<Session | null>(null), previewRef = useRef<Mesh>(null);
+  useLayoutEffect(() => { latestRef.current = input; }, [input]);
+  const offsetAt = useOpeningPointerOffset(input), invalidate = useThree((state) => state.invalidate);
+  const cancel = useOpeningCancellation(sessionRef, previewRef, latestRef), markRelease = useOpeningReleaseClick();
+  useOpeningCancellationEvents(cancel, sessionRef, input);
+  const begin = useCallback((edge: "start" | "end" | null, event: ThreeEvent<PointerEvent>) => {
+    const current = latestRef.current, pointer = offsetAt(event);
+    if (sessionRef.current || !current.enabled || !current.onEdit || event.button !== 0 || pointer === null) return;
+    const drag = captureOpeningGesture(current, event, edge, pointer);
+    if (!drag) return;
+    sessionRef.current = drag;
+    current.onDragStateChange?.(true, drag.anchor.mode);
+  }, [offsetAt]);
+  // The refusal sits ahead of the capture (and its stopPropagation), so a pinned opening still
+  // propagates: the camera keeps the gesture and onSelectTarget still opens the inspector.
+  const beginMove = useCallback((event: ThreeEvent<PointerEvent>) => {
+    const { enabled, opening } = latestRef.current, wallLengthMm = wallLengthMmOf(latestRef.current);
+    if (!enabled || !openingCanMoveOnWall(wallLengthMm, opening.widthMm)) return;
+    begin(null, event);
+  }, [begin]);
+  // Resize is deliberately not gated on room to move: an opening that fills its wall can still be
+  // made narrower, and that is how a user gives it room to move.
+  const beginResize = useCallback((edge: "start" | "end", event: ThreeEvent<PointerEvent>) => {
+    const { enabled } = latestRef.current;
+    if (!enabled) return;
+    begin(edge, event);
+  }, [begin]);
+  const move = useCallback((event: ThreeEvent<PointerEvent>) => {
+    const drag = sessionRef.current, current = latestRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    stopPointer(event);
+    const pointerOffsetMm = offsetAt(event);
+    if (pointerOffsetMm === null) return;
+    const draft = buildOpeningGestureDraft({ anchor: drag.anchor, pointerOffsetMm, widthMm: current.opening.widthMm,
+      wallStart: current.wallStart, wallEnd: current.wallEnd, revisionId: drag.revisionId });
+    drag.draft = draft?.offsetMm === current.opening.offsetMm && draft.widthMm === current.opening.widthMm ? null : draft;
+    updateOpeningPreview(previewRef.current, drag.draft, current); invalidate();
+  }, [offsetAt, invalidate]);
+  const finish = useCallback((event: ThreeEvent<PointerEvent>) => {
+    const drag = sessionRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.nativeTarget.hasPointerCapture(event.pointerId)) { stopPointer(event); cancel(); return; }
+    move(event);
+    if (drag.draft) markRelease(drag.nativeTarget);
+    const current = latestRef.current;
+    // The legacy path owns its continuous transaction; the private proposal path commits its own.
+    try {
+      if (current.enabled && drag.revisionId === current.revisionId && drag.draft) current.onEdit?.(current.opening.id, drag.draft, drag.anchor.mode);
+    } finally { cancel(); }
+  }, [move, cancel, markRelease]);
+  return { previewRef, beginMove, beginResize, move, finish, cancel: (event: ThreeEvent<PointerEvent>) => { stopPointer(event); cancel(); } };
+}
+
+function captureOpeningGesture(current: Input, event: ThreeEvent<PointerEvent>, edge: "start" | "end" | null, pointer: number): Session | null {
+  const nativeTarget = event.nativeEvent.target;
+  if (!(nativeTarget instanceof Element)) return null;
+  stopPointer(event);
+  const target = event.target as CaptureTarget;
+  target.setPointerCapture?.(event.pointerId);
+  const { offsetMm, widthMm } = current.opening;
+  const anchor: OpeningGestureAnchor = edge
+    ? { mode: "resize", edge, fixedOffsetMm: edge === "start" ? offsetMm + widthMm : offsetMm }
+    : { mode: "move", grabDeltaMm: offsetMm + widthMm / 2 - pointer };
+  return { target, nativeTarget, pointerId: event.pointerId, revisionId: current.revisionId, anchor, draft: null };
 }

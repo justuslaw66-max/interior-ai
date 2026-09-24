@@ -51,6 +51,8 @@ export type FloorPlanAdapterContext = {
   store: FloorPlanSourceStore;
   privacy: import("./privacy").FloorPlanImportPrivacy;
   signal?: AbortSignal;
+  /** Recomputing a consumer correction may use retained observations, never a new paid recognition request. */
+  localOnly?: boolean;
 };
 
 export type FloorPlanStageResult = FloorPlanExtractionResult & {

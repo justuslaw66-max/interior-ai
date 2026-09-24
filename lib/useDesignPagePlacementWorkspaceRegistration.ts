@@ -52,7 +52,7 @@ export function useDesignPagePlacementWorkspaceRegistration({
     configuration: {
       activeRoom,
       activeRoomId: designSnapshot.activeRoomId,
-      rooms: designSnapshot.rooms,
+      rooms: designSnapshot.rooms, canonicalDocument: designSnapshot.floorPlan?.canonicalDocument,
       roomSnapshotById: scene.roomSnapshotById,
       houseRoomById: scene.houseRoomById,
       planOpenings: viewportShell.state.plan.planOpenings,

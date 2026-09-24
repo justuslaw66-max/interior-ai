@@ -1,9 +1,11 @@
+import { projectDesignPageViewportOpening } from "@/lib/design-page-opening-viewport";
 import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
 import { getActiveSurfaceRoomFloorAreaSqm } from "@/components/editor/design-controls-plan/surfaceSummaryRows";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
 import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
+import { resolveVectorFurnitureDimensions } from "@/lib/floor-plan-vector-export-source";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 type ViewportState = BuildDesignPageViewportRegionAdapterInput["state"];
@@ -56,7 +58,7 @@ export type BuildDesignPageViewportWorkspaceReadModelInput = {
     selection: Pick<SelectionWorkspace, "derived">;
     selectionInspection: Pick<
       PlanAuthoring["boundaries"]["selectionInspection"],
-      "derived"
+      "derived" | "resolvers"
     >;
     viewportShell: Pick<CoreShell["boundaries"]["viewportShell"], "state">;
     zone: Pick<EditorInteraction["boundaries"]["zone"], "state">;
@@ -153,19 +155,7 @@ function buildViewportPanelState(
     },
     opening: {
       selectedId: sources.viewportShell.state.planSelection.selectedPlanOverlayId,
-      value: inspector.visiblePlanOpening
-        ? {
-            id: inspector.visiblePlanOpening.id,
-            kind: inspector.visiblePlanOpening.kind,
-            wall: inspector.visiblePlanOpening.wall,
-            widthMm: inspector.visiblePlanOpening.widthMm,
-            heightMm: inspector.visiblePlanOpening.heightMm,
-            bottomMm: inspector.visiblePlanOpening.bottomMm,
-            offsetMm: inspector.visiblePlanOpening.offsetMm,
-            evidence: inspector.visiblePlanOpening.evidence,
-            wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
-          }
-        : null,
+      value: projectDesignPageViewportOpening(inspector.visiblePlanOpening, inspector.visiblePlanOpeningWallSpanMeters),
     },
     planQuality: {
       report: quality.report,
@@ -286,7 +276,10 @@ function buildViewportConfiguration(
     selectionInspectorWidthPx: planWorkspace.derived.selectionInspectorWidthPx,
     planQualityReviewTopPx: quality.reviewPanelTopPx,
     editorMode: viewportShell.state.editor.editorMode,
-    importedWallEditor: { dark },
+    importedWallEditor: { dark, vectorExport: { underlay: viewportShell.state.floorPlan.floorPlanUnderlay,
+      sourceJobId: coreShell.state.document.designSnapshot.floorPlan?.sourceJobId,
+      furniture: { rooms: coreShell.state.document.designSnapshot.rooms,
+        resolveDimensions: (item, product) => resolveVectorFurnitureDimensions(item, product, sources.selectionInspection.resolvers) } } },
   };
 }
 

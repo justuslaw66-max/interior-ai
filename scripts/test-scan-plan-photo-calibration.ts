@@ -1,0 +1,81 @@
+import assert from "node:assert/strict";
+import { proposePhotoCalibration, photoCalibrationResiduals } from "../lib/floor-plan-photo-calibration";
+import { mapPhotoPoint, inversePhotoMatrix, type PhotoMatrix } from "../lib/floor-plan-photo-math";
+import { applyPhotoCalibration,updatePhotoReviewDraft,assertExistingPhotoRegistration } from "../lib/floor-plan-photo-review";
+import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
+import { compileFloorPlanDocumentV2 } from "../lib/floor-plan-compiler-v2";
+import { projectReviewSourcePointToPlan } from "../lib/floor-plan-source-point-projection";
+import { buildFloorPlanSourceProjection } from "../lib/floor-plan-imports/source-projection";
+import { evaluateSourceMeasurement } from "../lib/floor-plan-scale-measurements";
+import { assertPhotoSourceFrames } from "../lib/floor-plan-photo-frame";
+
+import { camera,photoConstraintsFixture as input } from "./fixtures/scan-to-editable-plan/photo-calibration";
+const before=JSON.stringify(input), proposal=proposePhotoCalibration(input);
+assert.equal(proposal.kind,"supported"); assert(proposal.correction);
+assert(proposal.affineChecks.some((c)=>!c.passes));
+assert(proposal.checks.every((c)=>c.passes&&c.residualPx<0.001));
+assert.equal(JSON.stringify(input),before);
+const inverse=inversePhotoMatrix(proposal.correction.originalToCorrected);
+for(const point of input.measurements.flatMap((m)=>[m.first,m.second])) {
+  const roundTrip=mapPhotoPoint(inverse,mapPhotoPoint(proposal.correction.originalToCorrected,point));
+  assert(Math.hypot(point.x-roundTrip.x,point.y-roundTrip.y)<1e-8);
+}
+const conflict=structuredClone(input); conflict.measurements[8].lengthMm+=500;
+const rejected=proposePhotoCalibration(conflict);
+assert.equal(rejected.kind,"conflicting"); assert.equal(rejected.correction,null);
+assert(!rejected.checks[8].passes);
+assert.deepEqual(rejected.metricMatrix,proposal.metricMatrix,"Held-out values cannot influence the fitted matrix.");
+const wrongEndpoint=structuredClone(input); wrongEndpoint.measurements[8].first.y+=15;
+assert.equal(proposePhotoCalibration(wrongEndpoint).kind,"conflicting","Endpoint mistakes must remain visible, not be stretched into agreement.");
+const duplicate=structuredClone(input); duplicate.measurements[8]={...duplicate.measurements[0],id:"duplicate",use:"check"};
+assert.throws(()=>proposePhotoCalibration(duplicate),/Repeated endpoints/);
+assert.throws(()=>proposePhotoCalibration({...input,squareCorner:{...input.squareCorner,confirmed:false}}));
+const affineCamera:PhotoMatrix=[0.05,0.003,40,-0.001,0.048,50,0,0,1];
+const originalToAffine=(p:{x:number;y:number})=>mapPhotoPoint(affineCamera,mapPhotoPoint(inversePhotoMatrix(camera),p));
+const flat=structuredClone(input);
+flat.measurements=flat.measurements.map((m)=>({...m,first:originalToAffine(m.first),second:originalToAffine(m.second)}));
+flat.squareCorner.first=[originalToAffine(flat.squareCorner.first[0]),originalToAffine(flat.squareCorner.first[1])];
+flat.squareCorner.second=[originalToAffine(flat.squareCorner.second[0]),originalToAffine(flat.squareCorner.second[1])];
+assert.equal(proposePhotoCalibration(flat).kind,"affine_sufficient","Do not add perspective when affine correction is adequate.");
+const exact=photoCalibrationResiduals(inversePhotoMatrix(camera),input);
+assert(exact.every((c)=>c.residualPx<1e-8&&c.tolerancePx===3));
+const empty=authoredApartment(),floor=empty.floors[0],sourceId=empty.sources[0].id;
+floor.vertices=[];floor.walls=[];floor.openings=[];floor.rooms=[];floor.structures=[];floor.dimensions=[];floor.annotations=[];floor.calibrations=[];
+const emptyJson=JSON.stringify(empty);
+const draft=updatePhotoReviewDraft(empty,floor.id,{sourceId,pageNumber:1,widthPx:1000,heightPx:1000,
+  measurements:input.measurements,first:input.squareCorner.first,second:input.squareCorner.second,confirmed:true});
+compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(draft)));
+assert.deepEqual(draft.floors[0].photoReviewDrafts?.[0].measurements,input.measurements);
+assert.equal(draft.floors[0].calibrations.length,0,"An unaccepted draft cannot establish scale.");
+const application={document:draft,floorId:floor.id,sourceId,pageNumber:1,constraints:input,expectedRevisionId:draft.revisionId,at:"2026-09-16T00:00:00Z"};
+const accepted=applyPhotoCalibration(application);compileFloorPlanDocumentV2(accepted);
+assert.equal(JSON.stringify(empty),emptyJson);
+assert.equal(accepted.floors[0].walls.length,0,"Photo correction cannot invent any wall geometry.");
+assert.throws(()=>applyPhotoCalibration({...application,expectedRevisionId:"stale"}),/review changed/);
+assert.throws(()=>applyPhotoCalibration({...application,document:authoredApartment(),expectedRevisionId:authoredApartment().revisionId}),/existing geometry/);
+const calibration=accepted.floors[0].calibrations[0],projection=buildFloorPlanSourceProjection(calibration);assert(projection);
+for(const m of input.measurements) {
+  const p=projectReviewSourcePointToPlan(calibration,m.first);assert(p);
+  const q=projection.project(p);assert(Math.hypot(q.xPx-m.first.x,q.yPx-m.first.y)<1e-6);
+}
+assert(calibration.independentMeasurements?.every((m)=>evaluateSourceMeasurement(calibration,m).agrees));
+const withGeometry=structuredClone(accepted);withGeometry.floors[0].vertices=[{...authoredApartment().floors[0].vertices[0]}];
+const reRegistered=structuredClone(withGeometry);reRegistered.floors[0].calibrations[0].controlPoints[0].planMm.xMm+=10;
+assert.throws(()=>assertExistingPhotoRegistration(withGeometry,reRegistered),/separate corrected review/);
+assertExistingPhotoRegistration(withGeometry,structuredClone(withGeometry));
+assertExistingPhotoRegistration(accepted,reRegistered);
+assertPhotoSourceFrames(accepted,[{pageNumber:1,widthPx:1000,heightPx:1000,assetKey:"original"}]);
+const tampered=structuredClone(accepted);assert(tampered.floors[0].calibrations[0].photoCorrection);
+tampered.floors[0].calibrations[0].photoCorrection.originalToCorrected[0]+=0.01;
+assert.throws(()=>compileFloorPlanDocumentV2(tampered),/validation/i);
+const half=structuredClone(conflict);
+half.widthPx=500;half.heightPx=500;half.originalFrame={widthPx:1000,heightPx:1000,renderedToOriginal:[2,0,0,0,2,0,0,0,1]};
+const shrink=(p:{x:number;y:number})=>({x:p.x/2,y:p.y/2});
+half.measurements=half.measurements.map((m)=>({...m,first:shrink(m.first),second:shrink(m.second)}));
+half.squareCorner={...half.squareCorner,first:[shrink(half.squareCorner.first[0]),shrink(half.squareCorner.first[1])],
+  second:[shrink(half.squareCorner.second[0]),shrink(half.squareCorner.second[1])]};
+const halfResult=proposePhotoCalibration(half);
+assert.equal(halfResult.kind,"conflicting");
+halfResult.checks.forEach((c,i)=>assert(Math.abs(c.residualPx-rejected.checks[i].residualPx)<0.001,"Downsampling cannot improve original-pixel accuracy."));
+console.log("PASS: independently distorted photo, confirmed single corner, held-out original-pixel residuals, endpoint conflicts, no unnecessary perspective, invertible mapping and immutable input");
+console.log("PASS: pre-topology draft persistence, explicit acceptance, current-frame projection, stale review rejection, authored geometry protection and downsampling-invariant tolerance");

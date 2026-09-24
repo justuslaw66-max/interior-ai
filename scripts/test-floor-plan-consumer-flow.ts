@@ -28,7 +28,10 @@ const read = (relativePath: string) =>
 
 const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
+  "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
+  "components/editor/floor-plan-import-review/import-review-summary.ts",
+  "components/editor/floor-plan-import-review/photo-review-action.ts",
   "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx",
   "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx",
   "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx",
@@ -545,9 +548,10 @@ assert.match(
 );
 assert.match(
   assistant,
-  /const processAndPoll[\s\S]*?startAndPollFloorPlanImport[\s\S]*?submitReview[\s\S]*?processAndPoll/,
+  /const processAndPoll = useConsumerFloorPlanImportProgress[\s\S]*?submitReview[\s\S]*?processAndPoll/,
   "Review, selection, and retry flows should share the same concurrent processing helper."
 );
+assert.match(read("components/editor/useConsumerFloorPlanImportProgress.ts"), /startAndPollFloorPlanImport\(\{[\s\S]*?signal: options\.signal/);
 assert.match(
   importSession,
   /error\.status === 401[\s\S]*?privately detect, review, and save this plan/,
@@ -630,9 +634,10 @@ assert.match(
 );
 assert.match(
   assistant,
-  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/retry-detection[\s\S]*?Retry with improved detection/,
+  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/\$\{trace\?"source-trace":photo\?"photo-review":"retry-detection"\}/,
   "Consumers should be able to rerun the current extractor without uploading again."
 );
+assert.match(assistant,/Retry with improved detection/,"The consumer retry action stays available alongside photo recomputation.");
 assert.match(addressFields, /floor-plan-address-floor[\s\S]*?floor-plan-address-stack/);
 assert.doesNotMatch(addressSearch, /floorPlanRequest|floor-plan-address-requested|CustomEvent/);
 assert.match(addressSearch, /floor-plan-upload-requested/);
@@ -673,7 +678,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /data-testid="floor-plan-import-simple-recovery"[\s\S]*?Upload a clearer file[\s\S]*?Help AI finish this one/,
+  /data-testid="floor-plan-import-simple-recovery"[\s\S]*?Choose another file[\s\S]*?Review scale and wall outlines/,
   "When detection is unsafe, the consumer should get one simple recovery choice before manual tools."
 );
 assert.match(
@@ -713,7 +718,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /const createDesign = useCallback\(async \(\) => \{[\s\S]*?\}, \[activeJob, onActiveJobIdChange, router, title\]\);/,
+  /useConsumerFloorPlanImportCreation\([\s\S]*?return useCallback\(async \(\) => \{[\s\S]*?signal\.throwIfAborted\(\)[\s\S]*?\[activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange, router\]/,
   "Design creation should refresh for current job, title, navigation, and active-job ownership without depending on an unused session setter."
 );
 assert.match(
@@ -733,8 +738,8 @@ assert.match(
 );
 assert.match(
   assistant,
-  /Accuracy check passed:[\s\S]*?room[\s\S]*?exact[\s\S]*?printed dimension/,
-  "The ready state should report the room and exact-dimension baseline that passed."
+  /Checks passed:[\s\S]*?room[\s\S]*?recorded dimension[\s\S]*?whole-plan accuracy still depends on the source and your review/,
+  "Software checks must not be presented as independent whole-plan accuracy certification."
 );
 assert.match(
   assistant,
@@ -768,6 +773,11 @@ assert.match(
 );
 assert.match(
   confirmRoute,
+  /underlay: registeredImportUnderlay\(\{ document: compiled\.document, jobId: id,/,
+  "Confirmation should derive source placement from the same compiled canonical document."
+);
+assert.match(
+  read("lib/floor-plan-imports/registered-underlay.ts"),
   /assetUrl: `\/api\/floor-plan-imports\/[\s\S]*?visible: false,[\s\S]*?locked: true/,
   "Confirmation should attach a locked, initially hidden owner-scoped source reference."
 );

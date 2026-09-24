@@ -246,6 +246,15 @@ assert.equal(
   "Published revision projection must retain its stable public lineage"
 );
 
+const privateArtwork = structuredClone(document);
+privateArtwork.floors[0].annotations.push({ id: "annotation-99", kind: "optional_partition", text: "Private source mark",
+  scope: "reference", provenance: privateArtwork.floors[0].walls[0].provenance,
+  geometry: { kind: "source_drawing", sourceId: privateArtwork.sources[0].id, pageNumber: 1, widthPx: 800, heightPx: 600,
+    command: "line", points: [{ x: 30, y: 40 }, { x: 70, y: 90 }] },
+});
+assert.ok(!projectPublicFloorPlanDocumentV2(privateArtwork).floors[0].annotations.some((annotation) => annotation.id === "annotation-99"),
+  "Private source artwork cannot cross the public projection even when its semantic kind is changed");
+
 const serialized = JSON.stringify(first);
 for (const sentinel of [
   PRIVATE_EMAIL,
