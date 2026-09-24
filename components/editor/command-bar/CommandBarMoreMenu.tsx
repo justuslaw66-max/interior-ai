@@ -30,6 +30,8 @@ type CommandBarMoreMenuProps = {
   onOpenLightingSettings: () => void;
   onCloseLightingSettings: () => void;
   onFeedback: () => void;
+  /** Phones have no room for Download in the bar, so More offers it there. */
+  onDownload?: () => void;
 };
 
 /** The command bar's More button and menu. */
@@ -74,14 +76,14 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
   );
 }
 
-// New design and My designs come first: both move to another design.
+// New design and My designs come first: both move to another design. Phones also get Download here.
 function MoreMenuDesignItems({
   menuButtonClass,
   buttonRef,
   onClose,
   showLoadDesign,
   onNewPlan,
-  onToggleLoadDesign,
+  onToggleLoadDesign, onDownload,
 }: CommandBarMoreMenuProps) {
   return (
     <>
@@ -109,6 +111,19 @@ function MoreMenuDesignItems({
           My designs
         </button>
       )}
+      {onDownload ? (
+        <button type="button" role="menuitem" data-testid="editor-command-overflow-download"
+          className={`${menuButtonClass} md:hidden`}
+          onClick={() => {
+            // The Download dialog hands focus back to More when there is no Download button.
+            buttonRef.current?.focus();
+            onClose();
+            onDownload();
+          }}
+        >
+          Download
+        </button>
+      ) : null}
     </>
   );
 }

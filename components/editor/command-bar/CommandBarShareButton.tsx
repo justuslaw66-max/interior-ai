@@ -12,8 +12,8 @@ type CommandBarShareButtonProps = {
 
 /**
  * Share: copies a link to the design, saving it to the cloud first if it isn't there yet (audit
- * finding SX1). Guests are asked to sign in. Phones show only the icon. While a link is on its way
- * the button ignores clicks but stays focusable, so keyboard users keep their place.
+ * finding SX1). Guests are asked to sign in. Below `lg` it shows only the icon. While a link is on
+ * its way the button ignores clicks but stays focusable, so keyboard users keep their place.
  */
 export function CommandBarShareButton({ dark, isSharing, onShare }: CommandBarShareButtonProps) {
   if (!onShare) return null;
@@ -28,13 +28,13 @@ export function CommandBarShareButton({ dark, isSharing, onShare }: CommandBarSh
       aria-disabled={isSharing}
       className={
         dark
-          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold leading-none aria-disabled:cursor-wait aria-disabled:opacity-70 md:w-auto md:px-3"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 aria-disabled:cursor-wait aria-disabled:opacity-70 md:w-auto md:px-3"
+          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold leading-none aria-disabled:cursor-wait aria-disabled:opacity-70 lg:w-auto lg:px-3"
+          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 aria-disabled:cursor-wait aria-disabled:opacity-70 lg:w-auto lg:px-3"
       }
       onClick={isSharing ? undefined : onShare}
     >
       <Share2 className="h-4 w-4" aria-hidden="true" />
-      <span className="hidden md:inline">{isSharing ? "Sharing…" : "Share"}</span>
+      <span className="hidden lg:inline">{isSharing ? "Sharing…" : "Share"}</span>
     </button>
   );
 }

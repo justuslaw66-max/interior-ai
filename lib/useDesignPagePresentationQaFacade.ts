@@ -158,7 +158,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       deleteItem: CommandActions["deleteItem"];
     };
     navigation: Omit<ChromeActions["navigation"], "changeViewMode" | "fitPlan">;
-    dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "openNewPlan" | "setFeedbackOpen">;
+    dialogs: Pick<ChromeActions["dialogs"], "setPlansOpen" | "openNewPlan" | "setFeedbackOpen" | "setDownloadOpen">;
     billing: ChromeActions["billing"];
     persistence: ChromeActions["persistence"];
     room: ChromeActions["room"];

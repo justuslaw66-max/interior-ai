@@ -181,7 +181,7 @@ const plansModel = buildDesignPageDialogLayerModel({
     templateChoice: { data: {}, actions: {} },
   },
   ai: { notes: {} },
-  presentation: { presentExport: {} },
+  presentation: { presentExport: { state: {} }, download: {} },
   editing: { roomRename: {}, annotation: {} },
   placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
   feedback: { beta: {}, toasts: {}, validation: {} },

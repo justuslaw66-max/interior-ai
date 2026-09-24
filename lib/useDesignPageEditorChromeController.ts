@@ -56,6 +56,7 @@ export type UseDesignPageEditorChromeControllerInput = {
       setPlansOpen: Dispatch<SetStateAction<boolean>>;
       openNewPlan: CommandBarActions["onNewPlan"];
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
+      setDownloadOpen: Dispatch<SetStateAction<boolean>>;
       setPresentOpen: Dispatch<SetStateAction<boolean>>;
       setUpgradeReason: (reason: "designer") => void;
       setUpgradeOpen: Dispatch<SetStateAction<boolean>>;
@@ -118,17 +119,11 @@ export function useDesignPageEditorChromeController({
     actions.editor.setClientPreview((visible) => !visible);
   };
 
-  const openPlans = () => {
-    actions.dialogs.setPlansOpen(true);
-  };
+  const openPlans = () => { actions.dialogs.setPlansOpen(true); };
 
-  const manageBilling = () => {
-    void actions.billing.openPortal();
-  };
+  const manageBilling = () => { void actions.billing.openPortal(); };
 
-  const openFeedback = () => {
-    actions.dialogs.setFeedbackOpen(true);
-  };
+  const openFeedback = () => { actions.dialogs.setFeedbackOpen(true); };
 
   const save = async () => {
     if (!commandState.isAuthed) {
@@ -147,8 +142,12 @@ export function useDesignPageEditorChromeController({
     if (!commandState.isAuthed) return actions.persistence.openGuestPrompt("share", () => {});
     void actions.persistence.shareDesign();
   };
-  const openPresentExport = () => {
-    actions.dialogs.setPresentOpen(true);
+  const openPresentExport = () => { actions.dialogs.setPresentOpen(true); };
+
+  // Downloads capture the 3D view, so the 3D view shows behind the Download dialog.
+  const openDownload = () => {
+    actions.navigation.changeViewMode("3d");
+    actions.dialogs.setDownloadOpen(true);
   };
 
   // The Pro tool rail's steps show their panel even when the sidebar was collapsed (ST13).
@@ -209,6 +208,7 @@ export function useDesignPageEditorChromeController({
           onToggleLoadDesign: actions.persistence.toggleMyDesigns,
           onSave: save,
           onShare: share,
+          onDownload: openDownload,
           onRetrySaveStatus: actions.persistence.retrySaveStatus,
           onOpenPresentExport: openPresentExport,
         },

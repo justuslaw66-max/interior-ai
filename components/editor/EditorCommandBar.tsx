@@ -3,6 +3,7 @@
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBarAccountMenu";
 import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
+import { CommandBarDownloadButton } from "@/components/editor/command-bar/CommandBarDownloadButton";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
 import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBarSaveButton";
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
@@ -48,8 +49,8 @@ type EditorCommandBarProps = {
   onToggleLoadDesign: () => void;
   onSave: () => void | Promise<void>;
   isSaving?: boolean;
-  /** Share shows when a handler is given; it saves the design first if it isn't in the cloud. */
-  onShare?: () => void; isSharing?: boolean;
+  /** Share and Download show when given handlers. Share saves the design first if it isn't in the cloud. */
+  onShare?: () => void; isSharing?: boolean; onDownload?: () => void;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
@@ -91,7 +92,7 @@ export default function EditorCommandBar({
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
-  isSaving = false, onShare, isSharing = false,
+  isSaving = false, onShare, isSharing = false, onDownload,
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
@@ -219,13 +220,10 @@ export default function EditorCommandBar({
       </div>
 
       <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
-        <CommandBarSaveStatus
-          dark={dark}
-          saveStatus={saveStatus}
-          onRetrySaveStatus={onRetrySaveStatus}
-        />
+        <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
         <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
         <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
+        <CommandBarDownloadButton dark={dark} onDownload={onDownload} />
         <CommandBarMoreMenu
           dark={dark}
           containerRef={overflowRef}
@@ -248,7 +246,7 @@ export default function EditorCommandBar({
           overflowSlot={overflowSlot}
           onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
           onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
-          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback}
+          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback} onDownload={onDownload}
           onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
         />
 

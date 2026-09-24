@@ -1,3 +1,4 @@
+import type { DownloadDialogProps } from "@/components/editor/design-page/DownloadDialog";
 import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
 import type { EditorCapabilities } from "@/lib/editor-capabilities";
 import type { BuildDesignPageDialogLayerAdapterInput } from "@/lib/design-page-dialog-layer-adapter";
@@ -70,6 +71,11 @@ type TemplateChoiceActions = Pick<
   | "onSignIn"
 >;
 
+type DownloadModel = Pick<
+  DownloadDialogProps,
+  "open" | "onClose" | "onDownloadImages" | "onDownloadPdf" | "onSignIn" | "onGetPro"
+>;
+
 type PlacementIdentity = Pick<Placement["state"], "scene" | "roomName">;
 type PlacementAssessment = Omit<
   Placement["state"],
@@ -110,7 +116,7 @@ export type BuildDesignPageDialogLayerModelInput = {
       onClose: Dialogs["aiNotes"]["onClose"];
     };
   };
-  presentation: { presentExport: PresentExportDialogProps };
+  presentation: { presentExport: PresentExportDialogProps; download: DownloadModel };
   editing: {
     roomRename: {
       pendingRoomId: string | null;
@@ -176,6 +182,24 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
 };
 
+/** Download reads the scene and export state that Present & export already carries. */
+function buildDownloadDialog(
+  access: BuildDesignPageDialogLayerModelInput["access"],
+  presentation: BuildDesignPageDialogLayerModelInput["presentation"]
+): DownloadDialogProps {
+  const exportState = presentation.presentExport.state;
+  return {
+    ...presentation.download,
+    dark: access.designerTheme,
+    signedIn: access.isAuthenticated,
+    freeLimits: !access.capabilities.exportWithoutWatermark,
+    sceneReady: exportState.sceneReady,
+    hasItems: exportState.hasItems,
+    exportingImages: exportState.isExporting,
+    exportingPdf: exportState.isPdfExporting,
+  };
+}
+
 /** Builds the fixed dialog layer from domain data, policy, and callbacks. */
 export function buildDesignPageDialogLayerModel({
   access,
@@ -240,6 +264,7 @@ export function buildDesignPageDialogLayerModel({
         onClose: ai.notes.onClose,
       },
       presentExport: presentation.presentExport,
+      download: buildDownloadDialog(access, presentation),
       myDesigns: {
         ...persistence.myDesigns.data,
         designerTheme: access.designerTheme,
@@ -284,9 +309,7 @@ export function buildDesignPageDialogLayerModel({
       shareFallback: {
         url: sharing.url, standalone: sharing.standalone, dark: access.designerTheme,
         lifecycleMode: access.isDesigner ? "designer" : "consumer",
-        onClose: sharing.onClose,
-        onCopy: sharing.onCopy,
-        onOpen: sharing.onOpen,
+        onClose: sharing.onClose, onCopy: sharing.onCopy, onOpen: sharing.onOpen,
       },
       validation: {
         hidden: false,

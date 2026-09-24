@@ -317,7 +317,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
       dialogs: {
         setPlansOpen: base.actions.dialogs.setShowPlans,
         openNewPlan: persistence.actions.newPlan.openNewPlanPicker,
-        setFeedbackOpen: base.actions.dialogs.setFeedbackOpen,
+        setFeedbackOpen: base.actions.dialogs.setFeedbackOpen, setDownloadOpen: base.actions.dialogs.setDownloadOpen,
       },
       billing: { openPortal: deferredPaywall.actions.openBillingPortal },
       persistence: {

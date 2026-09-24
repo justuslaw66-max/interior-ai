@@ -28,6 +28,10 @@ import {
   type DesignValidationFeedbackProps,
 } from "@/components/editor/design-page/DesignValidationFeedback";
 import {
+  DownloadDialog,
+  type DownloadDialogProps,
+} from "@/components/editor/design-page/DownloadDialog";
+import {
   GuestSavePromptDialog,
   type GuestSavePromptDialogProps,
 } from "@/components/editor/design-page/GuestSavePromptDialog";
@@ -72,6 +76,7 @@ export type DesignPageDialogLayerDialogs = {
   plans: PlansDialogProps;
   aiNotes: AiNotesDialogProps;
   presentExport: PresentExportDialogProps;
+  download: DownloadDialogProps;
   myDesigns: MyDesignsDialogProps;
   roomRename: RoomRenameDialogProps;
   planAnnotation: PlanAnnotationDialogProps;
@@ -134,6 +139,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <GuestSavePromptDialog key={dialogs.guestSave.lifecycleScopeKey} {...dialogs.guestSave} />
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
+      <DownloadDialog {...dialogs.download} />
       <PresentExportDialog
         {...dialogs.presentExport}
         configuration={{
@@ -155,7 +161,6 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />
       <PlanTemplateChoiceDialog {...dialogs.planTemplateChoice} />
-
       {overlays.betaFeedback ? (
         <BetaFeedbackWidget {...overlays.betaFeedback} />
       ) : null}

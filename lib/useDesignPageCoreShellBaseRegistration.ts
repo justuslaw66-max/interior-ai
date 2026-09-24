@@ -42,9 +42,9 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [plan, setPlan] = useState<Plan>("free");
   const [showPlans, setShowPlans] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [upgradeReason, setUpgradeReason] =
-    useState<DesignPageUpgradeReason>(null);
+  const [upgradeReason, setUpgradeReason] = useState<DesignPageUpgradeReason>(null);
   const [upgradeCtaVariant, setUpgradeCtaVariant] =
     useState<UpgradeCtaVariant>("unlock_pro_exports");
   const [pricingLayoutVariant, setPricingLayoutVariant] =
@@ -84,7 +84,7 @@ export function useDesignPageCoreShellBaseRegistration() {
       identity: { session, designId, shareToken, shareEnabled },
       brief: { style, budget, mode, notes, aiSeed },
       access: { plan, clientPreview },
-      dialogs: { showPlans, feedbackOpen, showUpgrade },
+      dialogs: { showPlans, feedbackOpen, downloadOpen, showUpgrade },
       paywall: {
         upgradeReason,
         upgradeCtaVariant,
@@ -123,7 +123,7 @@ export function useDesignPageCoreShellBaseRegistration() {
       identity: { setDesignId, setShareToken, setShareEnabled },
       brief: { setStyle, setBudget, setMode, setNotes, setAiSeed },
       access: { setPlan, setClientPreview },
-      dialogs: { setShowPlans, setFeedbackOpen, setShowUpgrade },
+      dialogs: { setShowPlans, setFeedbackOpen, setDownloadOpen, setShowUpgrade },
       paywall: {
         setUpgradeReason,
         setUpgradeCtaVariant,

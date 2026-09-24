@@ -80,12 +80,8 @@ export function DesignPageWorkspace() {
     state: {
       identity: { session, designId },
       brief: { mode },
-      dialogs: { showPlans, feedbackOpen, showUpgrade },
-      paywall: {
-        upgradeReason,
-        upgradeCtaVariant,
-        pricingLayoutVariant,
-      },
+      dialogs: { showPlans, feedbackOpen, downloadOpen, showUpgrade },
+      paywall: { upgradeReason, upgradeCtaVariant, pricingLayoutVariant },
       panels: {
         itemCartOpen,
         itemCart,
@@ -96,7 +92,7 @@ export function DesignPageWorkspace() {
     actions: {
       brief: { setMode },
       access: { setPlan },
-      dialogs: { setShowPlans, setFeedbackOpen, setShowUpgrade },
+      dialogs: { setShowPlans, setFeedbackOpen, setDownloadOpen, setShowUpgrade },
       paywall: {
         setUpgradeReason,
         setUpgradeCtaVariant,
@@ -444,7 +440,10 @@ export function DesignPageWorkspace() {
       },
     },
     ai: { notes: { open: showAINotes, data: aiNotesData, onApplySuggestion: applySuggestion, onClose: closeAiNotes } },
-    presentation: { presentExport: presentExportDialog },
+    presentation: { presentExport: presentExportDialog, download: { open: downloadOpen, onClose: () => setDownloadOpen(false),
+      onDownloadImages: () => presentationBackupRegistration.actions.exportImages({ limitsShown: true }),
+      onDownloadPdf: () => presentationBackupRegistration.actions.exportPdf({ limitsShown: true }),
+      onSignIn: signInWithReturn, onGetPro: () => setShowPlans(true) } },
     editing: {
       roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
         onValueChange: setPendingRoomRenameValue, onCancel: cancelRoomRename, onSave: commitRoomRename },
