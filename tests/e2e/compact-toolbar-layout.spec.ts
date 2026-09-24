@@ -6,7 +6,6 @@ const CLOSED_CONTROL_TEST_IDS = [
   "command-redo",
   "editor-view-toggle",
   "editor-design-steps",
-  "editor-command-new-plan",
   "save-status",
   "save-design",
   "editor-command-overflow",

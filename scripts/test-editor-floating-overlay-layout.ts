@@ -663,7 +663,6 @@ for (const historyTestId of ["command-undo", "command-redo"] as const) {
 
 for (const controlTestId of [
   "editor-design-sidebar-toggle",
-  "editor-command-new-plan",
   "save-status",
   "save-design",
   "editor-command-overflow",

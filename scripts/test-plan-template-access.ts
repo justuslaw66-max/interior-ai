@@ -772,7 +772,7 @@ assert.doesNotMatch(
 
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new design"[\s\S]*?onClick=\{onNewPlan\}[\s\S]*?New design/,
+  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new design"[\s\S]*?onNewPlan\(\);[\s\S]*?New design/,
   "The command bar should expose a visible one-click New plan action."
 );
 

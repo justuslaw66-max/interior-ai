@@ -2,6 +2,7 @@ import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   addCatalogDrawerItemToRoom,
+  chooseNewDesign,
   getSelectedItemPanel,
   openCatalogPreview,
 } from "./variant-test-utils";
@@ -133,8 +134,6 @@ async function setupSelectedItem(page: Page) {
     timeout: 30_000,
   });
 
-  const newPlan = page.getByTestId("editor-command-new-plan");
-  await expect(newPlan).toBeVisible();
   const starterPicker = page.getByTestId("starter-floor-plan-picker");
   await expect(async () => {
     if (await starterPicker.isVisible().catch(() => false)) return;
@@ -143,7 +142,7 @@ async function setupSelectedItem(page: Page) {
     if (await replaceCurrent.isVisible().catch(() => false)) {
       await replaceCurrent.click();
     } else {
-      await newPlan.click();
+      await chooseNewDesign(page);
     }
 
     await expect(starterPicker).toBeVisible({ timeout: 2_000 });
@@ -202,6 +201,10 @@ test.describe("2. Editor Correctness", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
     await page.waitForLoadState("networkidle");
 
+    // New design sits in More; the start picker hands focus back to More.
+    const more = page.getByTestId("editor-command-overflow");
+    await more.focus();
+    await page.keyboard.press("Enter");
     const newPlan = page.getByTestId("editor-command-new-plan");
     await expect(newPlan).toBeEnabled();
     await newPlan.focus();
@@ -220,7 +223,7 @@ test.describe("2. Editor Correctness", () => {
 
     await page.keyboard.press("Escape");
     await expect(picker).toBeHidden();
-    await expect(newPlan).toBeFocused();
+    await expect(more).toBeFocused();
   });
 
   test("New plan asks before replacing even when the saved room still has starter geometry", async ({
@@ -234,9 +237,7 @@ test.describe("2. Editor Correctness", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
     await page.waitForLoadState("networkidle");
 
-    const newPlan = page.getByTestId("editor-command-new-plan");
-    await expect(newPlan).toBeEnabled();
-    await newPlan.click();
+    await chooseNewDesign(page);
     await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
     await page.getByTestId("apply-plan-template-studio").click();
 

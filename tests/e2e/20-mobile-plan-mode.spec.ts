@@ -17,6 +17,8 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
   await page.waitForLoadState("networkidle");
 
+  // New design sits in the More menu.
+  await page.getByTestId("editor-command-overflow").click();
   const newPlan = page.getByTestId("editor-command-new-plan");
   await expect(newPlan).toBeVisible();
   await expect(newPlan).toHaveAccessibleName("Start a new design");

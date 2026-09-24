@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import {
   addCatalogDrawerItemToRoom,
+  chooseNewDesign,
   openCatalogPreview,
   openShopPanel,
 } from "./variant-test-utils";
@@ -34,8 +35,6 @@ test.describe("26. Phase 14 Product Lifecycle", () => {
     expect(response?.status()).toBe(200);
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
 
-    const newPlan = page.getByTestId("editor-command-new-plan");
-    await expect(newPlan).toBeVisible();
     const starterPicker = page.getByTestId("starter-floor-plan-picker");
     await expect(async () => {
       if (await starterPicker.isVisible().catch(() => false)) return;
@@ -44,7 +43,7 @@ test.describe("26. Phase 14 Product Lifecycle", () => {
       if (await replaceCurrent.isVisible().catch(() => false)) {
         await replaceCurrent.click();
       } else {
-        await newPlan.click();
+        await chooseNewDesign(page);
       }
 
       await expect(starterPicker).toBeVisible({ timeout: 2_000 });

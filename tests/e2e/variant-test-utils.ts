@@ -96,6 +96,16 @@ export async function ensureCommandMenuOpen(
   }
 }
 
+// New design lives in the More menu.
+export async function chooseNewDesign(page: Page): Promise<void> {
+  const more = page.getByTestId("editor-command-overflow");
+  await expect(more).toBeVisible({ timeout: 20_000 });
+  await ensureCommandMenuOpen(more);
+  const newDesign = page.getByTestId("editor-command-new-plan");
+  await expect(newDesign).toBeVisible();
+  await newDesign.click();
+}
+
 // Plan, Furnish and Shop are always-visible steps in the command bar. Suggest a layout and
 // Built-ins open from inside the Furnish step, and Present & export sits in the More menu.
 const FURNISH_STEP_ENTRIES = new Set(["editor-workflow-ai", "editor-workflow-millwork"]);

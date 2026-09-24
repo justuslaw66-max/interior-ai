@@ -22,6 +22,7 @@ type CommandBarMoreMenuProps = {
   lightingAvailable: boolean;
   overflowSlot?: ReactNode;
   onToggleLoadDesign: () => void;
+  onNewPlan: () => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
   onOpenPresentExport: () => void;
@@ -63,6 +64,7 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
           role="menu"
           className={props.menuPanelClass}
         >
+          <MoreMenuDesignItems {...props} />
           <MoreMenuModeItems {...props} />
           <MoreMenuViewItems {...props} />
           <MoreMenuFooter {...props} />
@@ -72,19 +74,29 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
   );
 }
 
-function MoreMenuModeItems({
+// New design and My designs come first: both move to another design.
+function MoreMenuDesignItems({
   menuButtonClass,
+  buttonRef,
   onClose,
   showLoadDesign,
-  isDesigner,
-  isClientPreview,
+  onNewPlan,
   onToggleLoadDesign,
-  onToggleDesignerMode,
-  onToggleClientPreview,
-  onCloseLightingSettings,
 }: CommandBarMoreMenuProps) {
   return (
     <>
+      <button
+        type="button" role="menuitem" data-testid="editor-command-new-plan" aria-label="Start a new design"
+        className={menuButtonClass}
+        onClick={() => {
+          // The start picker hands focus back to whatever held it, and this item is about to go.
+          buttonRef.current?.focus();
+          onClose();
+          onNewPlan();
+        }}
+      >
+        New design
+      </button>
       {showLoadDesign && (
         <button
           type="button" role="menuitem" id={MY_DESIGNS_COMMAND_ACTION_ID} data-testid="editor-command-overflow-load"
@@ -97,6 +109,21 @@ function MoreMenuModeItems({
           My designs
         </button>
       )}
+    </>
+  );
+}
+
+function MoreMenuModeItems({
+  menuButtonClass,
+  onClose,
+  isDesigner,
+  isClientPreview,
+  onToggleDesignerMode,
+  onToggleClientPreview,
+  onCloseLightingSettings,
+}: CommandBarMoreMenuProps) {
+  return (
+    <>
       <button
         type="button"
         data-testid="editor-command-overflow-pro-tools"

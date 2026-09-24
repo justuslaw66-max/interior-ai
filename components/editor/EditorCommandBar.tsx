@@ -7,7 +7,6 @@ import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMo
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
 import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
-import { Plus } from "lucide-react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
@@ -217,22 +216,6 @@ export default function EditorCommandBar({
       </div>
 
       <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
-        <button
-          type="button"
-          data-testid="editor-command-new-plan"
-          aria-label="Start a new design"
-          title="Start a new design"
-          className={
-            dark
-              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold leading-none text-emerald-100 hover:bg-emerald-300/20 lg:w-auto lg:px-3"
-              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold leading-none text-emerald-800 shadow-sm hover:bg-emerald-100 lg:w-auto lg:px-3"
-          }
-          onClick={onNewPlan}
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-          <span className="hidden lg:inline">New design</span>
-        </button>
-
         <CommandBarSaveStatus
           dark={dark}
           saveStatus={saveStatus}
@@ -272,6 +255,7 @@ export default function EditorCommandBar({
           lightingAvailable={viewMode === "3d" && Boolean(lightingSettingsSlot)}
           overflowSlot={overflowSlot}
           onToggleLoadDesign={onToggleLoadDesign}
+          onNewPlan={onNewPlan}
           onToggleDesignerMode={onToggleDesignerMode}
           onToggleClientPreview={onToggleClientPreview}
           onOpenPresentExport={onOpenPresentExport}

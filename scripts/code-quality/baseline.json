@@ -233,7 +233,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 318,
+      "lines": 302,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -2031,11 +2031,11 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 260
+        "maximum": 245
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 23
+        "maximum": 22
       }
     },
     "components/editor/EditorToolRail.tsx": {
