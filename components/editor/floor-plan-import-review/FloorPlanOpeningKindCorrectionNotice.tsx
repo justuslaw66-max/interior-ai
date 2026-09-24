@@ -24,7 +24,7 @@ export function FloorPlanOpeningKindCorrectionNotice({
             {approved ? "Override approved" : "Approve reviewed override"}
           </button>
         ) : (
-          <div className="mt-1">This source measurement is locked. Open Pro mode to review an override.</div>
+          <div className="mt-1">This source measurement is locked. Open Pro tools to review an override.</div>
         )}
       </div>
     );

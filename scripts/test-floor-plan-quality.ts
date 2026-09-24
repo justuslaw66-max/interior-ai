@@ -408,7 +408,7 @@ assert.match(
 );
 assert.match(
   qualitySource,
-  /"Add window"[\s\S]*?"Add doorway"[\s\S]*?"Review furniture fit"[\s\S]*?"Add storage"/,
+  /"Add window"[\s\S]*?"Add door"[\s\S]*?"Review furniture fit"[\s\S]*?"Add storage"/,
   "Quality report CTAs should use friendly labels."
 );
 assert.match(

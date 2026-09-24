@@ -38,7 +38,7 @@ export default function DeleteDesignButton({ designId }: { designId: string }) {
           setConfirmOpen(true);
         }}
       >
-        {busy ? "Deleting..." : "Delete"}
+        {busy ? "Deleting…" : "Delete"}
       </button>
       {message && (
         <span className="text-xs text-red-600" role="alert">
@@ -48,7 +48,7 @@ export default function DeleteDesignButton({ designId }: { designId: string }) {
       <ConfirmDialog
         open={confirmOpen}
         title="Delete design?"
-        description="This design will be permanently removed from your dashboard."
+        description="This design will be permanently removed from My designs."
         confirmLabel="Delete"
         busy={busy}
         destructive

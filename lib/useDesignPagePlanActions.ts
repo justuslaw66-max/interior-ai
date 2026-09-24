@@ -20,6 +20,7 @@ import {
   updatePlanOpeningMetrics,
 } from "@/lib/design-page-plan-overlays";
 import type { PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import {
   DesignPageOpeningMutationError,
   type DesignPageOpeningMetricsPatch,
@@ -223,7 +224,7 @@ export function useDesignPagePlanActions({
         );
       } catch (cause) {
         if (cause instanceof DesignPageOpeningMutationError) {
-          showRuleToast(cause.message);
+          showRuleToast(userFacingErrorMessage(cause));
           return;
         }
         throw cause;
@@ -269,7 +270,7 @@ export function useDesignPagePlanActions({
       );
 
       if (alreadyExists) {
-        showRuleToast("Doorway already exists");
+        showRuleToast("There is already a door here");
         return;
       }
 
@@ -298,7 +299,7 @@ export function useDesignPagePlanActions({
       });
 
       onSelectPlanOverlay(id);
-      showRuleToast("Doorway added");
+      showRuleToast("Door added");
       track("floor_plan_suggested_doorway_added", {
         roomId: suggestion.roomId,
         adjacentRoomId: suggestion.adjacentRoomId,

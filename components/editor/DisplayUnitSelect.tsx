@@ -37,7 +37,7 @@ export function DisplayUnitSelect({
         dark ? "text-neutral-200" : "text-neutral-700"
       } ${className}`.trim()}
     >
-      <span>Display units</span>
+      <span>Units</span>
       <span className="relative block">
         <select
           id={selectId}

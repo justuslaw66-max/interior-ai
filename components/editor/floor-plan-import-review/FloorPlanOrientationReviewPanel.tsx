@@ -9,6 +9,7 @@ import {
   REVIEW_ORIENTATIONS,
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanOrientationReviewPanelProps = {
   document: FloorPlanDocumentV2;
@@ -61,11 +62,7 @@ export default function FloorPlanOrientationReviewPanel({
                 onError(null);
                 onChange(applyConsumerOrientation(document, choice.id));
               } catch (cause) {
-                onError(
-                  cause instanceof Error
-                    ? cause.message
-                    : "Orientation could not be applied."
-                );
+                onError(userFacingErrorMessage(cause, "Orientation could not be applied."));
               }
             }}
           >

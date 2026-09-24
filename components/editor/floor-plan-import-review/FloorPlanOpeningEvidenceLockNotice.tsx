@@ -36,7 +36,7 @@ export function FloorPlanOpeningEvidenceLockNotice({
           {approved ? "Reviewed override approved" : "Review and unlock"}
         </button>
       ) : (
-        <div>Open Pro mode to review an override.</div>
+        <div>Open Pro tools to review an override.</div>
       )}
     </div>
   );

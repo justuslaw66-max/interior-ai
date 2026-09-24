@@ -92,7 +92,7 @@ export type FloorPlanQualityReport = {
   issues: FloorPlanQualityIssue[];
   suggestedFixes: string[];
   primaryAction: {
-    label: "Add window" | "Add doorway" | "Review plan" | "Review furniture fit" | "Add storage";
+    label: "Add window" | "Add door" | "Review plan" | "Review furniture fit" | "Add storage";
     action: FloorPlanQualityAction;
   };
   aiPlanningContext: FloorPlanAiPlanningContext;
@@ -269,7 +269,7 @@ function primaryActionForIssues(issues: FloorPlanQualityIssue[]): FloorPlanQuali
   const action = preferred?.action ?? "review_furniture_fit";
   const labels: Record<FloorPlanQualityAction, FloorPlanQualityReport["primaryAction"]["label"]> = {
     add_window: "Add window",
-    add_doorway: "Add doorway",
+    add_doorway: "Add door",
     review_plan_layout: "Review plan",
     review_furniture_fit: "Review furniture fit",
     add_storage: "Add storage",
@@ -342,9 +342,9 @@ export function buildFloorPlanQualityReport({
         wall: connection.doorwaySuggestion?.wall,
         openingKind: "door",
       },
-      title: `${connection.roomNames[0]} and ${connection.roomNames[1]} need a doorway`,
-      detail: "Adjacent rooms should have a clear opening so the plan feels walkable.",
-      suggestedFix: `Add a doorway between ${connection.roomNames[0]} and ${connection.roomNames[1]}.`,
+      title: `${connection.roomNames[0]} and ${connection.roomNames[1]} need a door`,
+      detail: "Adjacent rooms should have a door between them so the plan feels walkable.",
+      suggestedFix: `Add a door between ${connection.roomNames[0]} and ${connection.roomNames[1]}.`,
       action: "add_doorway",
     });
   }

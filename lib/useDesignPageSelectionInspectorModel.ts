@@ -167,7 +167,7 @@ export function buildDesignPageSelectionInspectorSummary({
     return {
       kind: "Built-in",
       title: selectedPlanFixedElement.label ?? selectedPlanFixedElement.kind,
-      detail: "Plan fixture",
+      detail: "Drawn in 2D",
       metrics: [
         `${formatCabinetMeasurement(selectedPlanFixedElement.widthMm, planMeasurementUnit)} x ${formatCabinetMeasurement(selectedPlanFixedElement.depthMm, planMeasurementUnit)}`,
         `${selectedPlanFixedElement.rotationDeg ?? 0}°`,

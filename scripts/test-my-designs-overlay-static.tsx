@@ -49,13 +49,13 @@ function render(props: Partial<MyDesignsDialogProps>) {
 }
 
 const closed = render({});
-assert.doesNotMatch(closed, /role="dialog"|load-designs-modal|My Designs/);
+assert.doesNotMatch(closed, /role="dialog"|load-designs-modal|My designs/);
 
 const empty = render({ open: true, designs: [], allDesignIds: [] });
 assert.equal((empty.match(/role="dialog"/g) ?? []).length, 1);
 assert.match(empty, /aria-modal="true"/);
-assert.match(empty, /My Designs/);
-assert.match(empty, /aria-label="Close My Designs"/);
+assert.match(empty, /My designs/);
+assert.match(empty, /aria-label="Close My designs"/);
 assert.match(empty, new RegExp(`id="${MY_DESIGNS_CLOSE_ACTION_ID}"`));
 assert.match(empty, /No saved designs yet/);
 

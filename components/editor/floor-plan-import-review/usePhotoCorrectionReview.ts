@@ -5,6 +5,7 @@ import { applyPhotoCalibration, updatePhotoReviewDraft } from "@/lib/floor-plan-
 import type { PhotoConstraints } from "@/lib/floor-plan-photo-constraints";
 import type { PhotoPoint } from "@/lib/floor-plan-photo-math";
 import { originalPhotoFrame } from "@/lib/floor-plan-photo-frame";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 export type PhotoReviewProps={document:FloorPlanDocumentV2;floorId:string;sourceId:string;jobId:string;
   page:import("@/lib/floor-plan-imports/types").FloorPlanRenderedPage;calibration?:FloorPlanSourceCalibrationV2|null;
@@ -25,7 +26,7 @@ export function usePhotoCorrectionReview(props:PhotoReviewProps) {
     if(props.scalePoints.length!==2) throw new Error("Select both endpoints on the source image first.");
     return [{...props.scalePoints[0]},{...props.scalePoints[1]}];
   };
-  const safely=(action:()=>void)=> {try{setError(null);action();}catch(cause){setError(cause instanceof Error?cause.message:"Unable to review this correction.");}};
+  const safely=(action:()=>void)=> {try{setError(null);action();}catch(cause){setError(userFacingErrorMessage(cause, "Unable to review this correction."));}};
   const add=()=>safely(()=> {
     const [a,b]=pair(), lengthMm=Number(length);
     if(!Number.isSafeInteger(lengthMm)||lengthMm<100) throw new Error("Enter the printed length in whole millimetres.");

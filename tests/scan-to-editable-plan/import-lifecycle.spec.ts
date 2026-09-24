@@ -125,7 +125,7 @@ for (const change of ["close", "replace"] as const) {
     await page.route("**/original-job/confirm", async (route) => {
       started(); await pending; await route.fulfill({ status: 201, json: { id: "completed-old-design" } });
     });
-    await page.getByRole("button", { name: "Confirm review & create editable plan", exact: true }).click();
+    await page.getByRole("button", { name: "Create design", exact: true }).click();
     await received;
     await page.getByRole("button", { name: change === "close" ? "Close workspace" : "Replace upload", exact: true }).click();
     if (change === "replace") {
@@ -139,7 +139,7 @@ for (const change of ["close", "replace"] as const) {
     expect(new URL(page.url()).pathname).toBe("/scan-plan-lifecycle-component");
     const active = await page.evaluate((key) => localStorage.getItem(key), ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY);
     expect(active).toBe(change === "replace" ? "replacement-job" : "original-job");
-    if (change === "replace") await expect(page.getByRole("button", { name: "Confirm review & create editable plan", exact: true })).toBeEnabled();
+    if (change === "replace") await expect(page.getByRole("button", { name: "Create design", exact: true })).toBeEnabled();
     await fs.writeFile(info.outputPath("late-confirmation.json"), JSON.stringify({ change, url: page.url(), active, errors }, null, 2));
     expect(errors).toEqual([]);
   });
@@ -172,7 +172,7 @@ for (const action of ["candidate", "retry-detection", "source", "select-page"] a
     release(); await completed;
     await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
     await expect(page.getByTestId("floor-plan-import-ready")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Confirm review & create editable plan", exact: true })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Create design", exact: true })).toBeEnabled();
     expect(await page.evaluate((key) => localStorage.getItem(key), ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe("replacement-job");
     expect(oldFollowups).toBe(0);
     await page.getByText("Rename, plan options & privacy", { exact: true }).click();
@@ -209,7 +209,7 @@ test("Version conflict requires reopening the latest candidate before confirmati
     const version = route.request().postDataJSON().candidateVersion;
     return route.fulfill(version !== server.candidateVersion ? { status: 409, json: { error: "Another tab saved a newer candidate. Reopen this import." } } : { status: 201, json: { id: "new-private-design" } });
   });
-  await page.getByRole("button", { name: "Confirm review & create editable plan", exact: true }).click();
+  await page.getByRole("button", { name: "Create design", exact: true }).click();
   await expect(page.getByText(/Creation paused: Another tab/)).toBeVisible();
   expect(new URL(page.url()).pathname).toBe("/scan-plan-lifecycle-component");
   expect(await page.evaluate((key) => localStorage.getItem(key), ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe("original-job");
@@ -217,7 +217,7 @@ test("Version conflict requires reopening the latest candidate before confirmati
   await expect(page.getByText(/Creation paused: Another tab/)).toBeVisible();
   expect(attempts).toBe(2);
   await page.reload(); await page.addScriptTag({ path: bundle });
-  await page.getByRole("button", { name: "Confirm review & create editable plan", exact: true }).click();
+  await page.getByRole("button", { name: "Create design", exact: true }).click();
   await expect(page).toHaveURL(/\/design\?designId=new-private-design/);
   expect(attempts).toBe(3);
   expect(await page.evaluate((key) => localStorage.getItem(key), ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBeNull();

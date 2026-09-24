@@ -341,7 +341,7 @@ export async function GET(
         `Type: ${formatRoomType(room.roomType)}`,
         `Dimensions: ${formatMeasurement(room.geometry.width, "m")} x ${formatMeasurement(room.geometry.depth, "m")}`,
         `Area: ${formatMeasurement(metric.areaSqm, "m2")}   Perimeter: ${formatMeasurement(metric.perimeterM, "m")}`,
-        `Openings: ${metric.openingCount} (${metric.doorCount} doors / ${metric.windowCount} windows)`,
+        `Doors and windows: ${metric.openingCount} (${metric.doorCount} doors / ${metric.windowCount} windows)`,
         `Furniture fit: ${metric.densityLabel}`,
       ];
       for (const line of roomLines) {
@@ -366,7 +366,7 @@ export async function GET(
       const views = normalizeSavedViews(room);
       if (views.length) {
         y -= 4;
-        drawTextLine(page, "Saved Views", MARGIN, y, fonts.bold, 11);
+        drawTextLine(page, "Saved views", MARGIN, y, fonts.bold, 11);
         y -= 16;
         for (const view of views) {
           ({ page, y } = ensureSpace(pdfDoc, page, y, 24, watermarked, room.name, fonts));
@@ -474,8 +474,8 @@ export async function GET(
         ? `Measurements captured across ${rooms.length} room${rooms.length === 1 ? "" : "s"}.`
         : "Add room dimensions before final export.",
       totalOpenings > 0
-        ? `${totalOpenings} door/window opening${totalOpenings === 1 ? "" : "s"} included.`
-        : "Trace openings for stronger installation and shopping notes.",
+        ? `${totalOpenings} ${totalOpenings === 1 ? "door or window" : "doors and windows"} included.`
+        : "Trace doors and windows for stronger installation and shopping notes.",
       "Review rug sizing and circulation in the shared 3D view before purchase.",
     ];
     for (const check of checks) {

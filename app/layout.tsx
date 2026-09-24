@@ -8,7 +8,7 @@ import { config, validateEnvOrThrow } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Interior AI",
-  description: "AI-powered furniture design and room visualization",
+  description: "AI-powered furniture design and room visualisation",
 };
 
 export default function RootLayout({

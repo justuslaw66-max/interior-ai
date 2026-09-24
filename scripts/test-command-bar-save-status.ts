@@ -63,7 +63,7 @@ assert.equal(
 );
 assert.match(
   saveStatusClassName,
-  /\$\{\s*saveStatus\.canRetry\s*\?\s*"shrink-0"\s*:\s*""\s*\}\s*\$\{\s*getSaveStatusClassName\(\s*saveStatus\.tone,\s*dark\s*\)\s*\}/,
+  /\$\{\s*saveStatus\.canRetry\s*\?\s*""\s*:\s*"lg:shrink"\s*\}\s*\$\{\s*getSaveStatusClassName\(\s*saveStatus\.tone,\s*dark\s*\)\s*\}/,
   "Save status dynamic classes should stay limited to shrink behavior and tone styling."
 );
 const saveStatusToneHelperStart = commandBarSource.indexOf(
@@ -143,6 +143,10 @@ for (const override of ["max-md:flex", "md:h-7", "min-h-9"] as const) {
   );
 }
 
+assert.ok(
+  saveStatusClassTokens.has("shrink-0"),
+  "Below lg the save status shows only its dot, so it must not shrink or the compact toolbar clips it."
+);
 assert.deepEqual(
   saveStatusDisplayTokens,
   ["hidden", "md:flex"].sort(),

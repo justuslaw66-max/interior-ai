@@ -137,7 +137,7 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
             !state.canScale
           )}
           disabled={!state.canScale}
-          aria-label="Set plan scale"
+          aria-label="Set scale"
           aria-pressed={state.calibrationActive}
           title={state.canScale ? "Set scale" : "Scale is unavailable for this upload"}
           onClick={actions.scale}
@@ -222,18 +222,18 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         type="button"
         data-testid="manual-plan-action-fit"
         className={manualPlanQuickActionButtonClass(false)}
-        aria-label="Fit plan to screen"
-        title="Fit plan"
+        aria-label="Fit to screen"
+        title="Fit to screen"
         onClick={actions.fit}
       >
         <ManualPlanActionIcon name="fit" />
-        <span className="sr-only">Fit plan</span>
+        <span className="sr-only">Fit to screen</span>
         <span
           data-testid="manual-plan-action-fit-tooltip"
           className={manualPlanQuickActionTooltipClass}
           aria-hidden="true"
         >
-          Fit plan
+          Fit to screen
         </span>
       </button>
     </div>

@@ -47,7 +47,7 @@ test("Registered source origin, skew and reflection match the actual Consumer im
   await page.screenshot({ path: info.outputPath("registered-underlay-editor.png") });
   const panel = page.getByTestId("imported-wall-editor");
   await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
-  await panel.getByRole("checkbox", { name: "Reference underlay", exact: true }).check();
+  await panel.getByRole("checkbox", { name: "Floor plan image", exact: true }).check();
   const pdfDownload = page.waitForEvent("download"); await panel.getByRole("button", { name: "PDF", exact: true }).click();
   const pdfPath = info.outputPath("registered-underlay.pdf"); await (await pdfDownload).saveAs(pdfPath);
   const content = vectorPdfPageContent(await PDFDocument.load(await readFile(pdfPath)));

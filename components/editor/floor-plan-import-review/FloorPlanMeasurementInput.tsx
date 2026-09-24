@@ -32,7 +32,7 @@ export default function FloorPlanMeasurementInput({ input, disabled, control }: 
 }) {
   const unitLabelId = useId(), qualityLabelId = useId();
   return <div className="grid gap-2">
-    <label className="text-xs"><span id={unitLabelId}>Measurement unit</span>
+    <label className="text-xs"><span id={unitLabelId}>Units</span>
       <select className={`${control} ml-2`} value={input.unit} disabled={disabled} aria-labelledby={unitLabelId}
         onChange={(event) => input.changeUnit(event.target.value as DisplayUnit)}>
         {Object.values(DISPLAY_UNIT_METADATA).map(({ unit, label }) => <option key={unit} value={unit}>{label}</option>)}
@@ -43,7 +43,7 @@ export default function FloorPlanMeasurementInput({ input, disabled, control }: 
         onChange={(event) => input.changeText(event.target.value)} />
     </label>
     <p className="text-xs" aria-live="polite">{Number.isFinite(input.confirmedMm)
-      ? `Will store ${input.confirmedMm} mm${input.confirmedMm !== input.valueMm ? " (rounded to the nearest millimetre)" : ""}. Changing display units keeps the measurement unchanged.`
+      ? `Will store ${input.confirmedMm} mm${input.confirmedMm !== input.valueMm ? " (rounded to the nearest millimetre)" : ""}. Changing units keeps the measurement unchanged.`
       : "Enter a valid length in the selected unit."}</p>
     <label className="text-xs"><span id={qualityLabelId}>Source quality</span>
       <select className={`${control} ml-2`} value={input.sourceQuality} disabled={disabled} aria-labelledby={qualityLabelId}

@@ -43,7 +43,7 @@ export function CabinetContextualOnboarding({
   return (
     <aside
       data-testid={testIdFor(step, "hint")}
-      aria-label="First-use millwork help"
+      aria-label="First-use built-ins help"
       className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950"
     >
       <div className="flex items-start justify-between gap-4">
@@ -65,7 +65,7 @@ export function CabinetContextualOnboarding({
         <button
           type="button"
           data-testid={testIdFor(step, "dismiss")}
-          aria-label="Dismiss first-use millwork help"
+          aria-label="Dismiss first-use built-ins help"
           className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
           onClick={onDismiss}
         >

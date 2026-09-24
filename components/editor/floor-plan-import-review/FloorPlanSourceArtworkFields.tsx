@@ -5,6 +5,7 @@ import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import FloorPlanTracePathFields from "./FloorPlanTracePathFields";
 import { SOURCE_REVIEW_LAYERS, type SourceReviewLayer } from "./useSourceReviewLayers";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange, onError, onClose, disabled, onUseScaleEndpoints }: {
   annotation: FloorPlanAnnotationV2; document: FloorPlanDocumentV2; floorId: string;
@@ -24,7 +25,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
           mutationId: `artwork:${Date.now()}`,
         }));
         onError(null);
-      } catch (error) { onError(error instanceof Error ? error.message : "Drawing correction failed."); }
+      } catch (error) { onError(userFacingErrorMessage(error, "Drawing correction failed.")); }
     }}>
     <div className="flex justify-between gap-3"><strong>Source {textMark ? "text" : "stroke"}</strong>
       <button type="button" onClick={onClose}>Close selection</button></div>

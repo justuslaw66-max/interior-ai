@@ -509,7 +509,7 @@ assert.deepEqual(buildHouseRoomDoorwaySuggestions(plan.rooms, "bedroom"), [
       [2.5, 1.5],
     ],
     labelPosition: { x: 2.5, z: 0 },
-    label: "Add doorway",
+    label: "Add door here",
   },
 ]);
 assert.deepEqual(buildHouseRoomDoorwaySuggestions(plan.rooms, "living")[0], {
@@ -525,7 +525,7 @@ assert.deepEqual(buildHouseRoomDoorwaySuggestions(plan.rooms, "living")[0], {
     [2.5, 1.5],
   ],
   labelPosition: { x: 2.5, z: 0 },
-  label: "Add doorway",
+  label: "Add door here",
 });
 assert.deepEqual(buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"), [
   {
@@ -547,7 +547,7 @@ assert.deepEqual(buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"), [
         [2.5, 1.5],
       ],
       labelPosition: { x: 2.5, z: 0 },
-      label: "Add doorway",
+      label: "Add door here",
     },
   },
 ]);

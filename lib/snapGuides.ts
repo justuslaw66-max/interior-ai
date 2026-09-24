@@ -97,7 +97,7 @@ export function computeSnapCandidates(
         type: "CENTER_X",
         from: [selectedAABB.centerX, 0, selectedAABB.centerZ],
         to: [neighbor.aabb.centerX, 0, selectedAABB.centerZ],
-        label: `${neighbor.label} (center)`,
+        label: `${neighbor.label} (centre)`,
         distance: centerXDist,
       });
     }
@@ -109,7 +109,7 @@ export function computeSnapCandidates(
         type: "CENTER_Z",
         from: [selectedAABB.centerX, 0, selectedAABB.centerZ],
         to: [selectedAABB.centerX, 0, neighbor.aabb.centerZ],
-        label: `${neighbor.label} (center)`,
+        label: `${neighbor.label} (centre)`,
         distance: centerZDist,
       });
     }

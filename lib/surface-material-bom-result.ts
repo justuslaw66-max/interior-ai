@@ -22,8 +22,8 @@ export type SurfaceMaterialBomResult = {
 export function formatSurfaceMaterialBomWarning(
   warnings: readonly Pick<SurfaceMaterialBomWarning, "openingId">[]
 ) {
-  const noun = warnings.length === 1 ? "opening" : "openings";
-  return `Warning — wall quantities remain uncut for ${noun}: ${warnings.map(({ openingId }) => openingId).join(", ")}.`;
+  const noun = warnings.length === 1 ? "door or window" : "doors or windows";
+  return `Warning — wall quantities remain uncut for ${warnings.length} ${noun}.`;
 }
 
 export function buildRoomSurfaceMaterialBomResult(
@@ -42,7 +42,7 @@ export function buildRoomSurfaceMaterialBomResult(
       code: "UNRESOLVED_OPENING_HOST",
       openingId: opening.id,
       status: resolution.status,
-      message: `${resolution.consumerMessage} Wall quantities were left uncut for this opening.`,
+      message: `${resolution.consumerMessage} Wall quantities were left uncut for this door or window.`,
     }];
   });
   return {

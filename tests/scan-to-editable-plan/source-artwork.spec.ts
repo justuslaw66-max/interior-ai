@@ -57,7 +57,7 @@ test("Reference artwork selection, text correction, calibration and local compon
   page.on("pageerror", (error) => errors.push(error.message));
   await mountArtwork(page);
   await page.getByLabel("Review overlay", { exact: true }).selectOption("all");
-  const drawing = page.getByRole("group", { name: "Canonical candidate overlay" });
+  const drawing = page.getByRole("group", { name: "Detected rooms and walls" });
   await drawing.getByRole("button", { name: "Source text: Uncertain room text" }).focus();
   await page.keyboard.press("Enter");
   await page.getByLabel("Correct source text").fill("Reviewed room text");
@@ -96,7 +96,7 @@ test("Reference artwork selection, text correction, calibration and local compon
   await expect(focusButton).toBeFocused();
   await expect(page.getByText("400%", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Toggle measurement picking" }).click();
-  const pick = page.getByRole("group", { name: "Pick scale points on the source drawing" });
+  const pick = page.getByRole("group", { name: "Pick two scale points on your floor plan" });
   const screenPoint = await pick.evaluate((svg) => {
     svg.addEventListener("click", (event) => {
       const input = event as MouseEvent, element = svg as SVGSVGElement;

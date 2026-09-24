@@ -34,7 +34,7 @@ test("Scale setting, independent conflicts, correction, unit rounding and compon
   const saved = async () => JSON.parse(await page.getByTestId("fixture-document").innerText());
   const initial = await saved();
   const selectSpan = async (first: { x: number; y: number }, second: { x: number; y: number }) => {
-    const picker = page.getByRole("group", { name: "Pick scale points on the source drawing" });
+    const picker = page.getByRole("group", { name: "Pick two scale points on your floor plan" });
     await page.getByTestId("source-review-scroll").scrollIntoViewIfNeeded();
     await page.getByTestId("source-review-scroll").evaluate((element) => { element.scrollTop = 0; element.scrollLeft = 0; });
     for (const source of [first, second]) {
@@ -72,10 +72,10 @@ test("Scale setting, independent conflicts, correction, unit rounding and compon
   expect(await saved()).toEqual(conflict);
   await expect(page.getByRole("list", { name: "Saved scale checks" })).toContainText("conflict");
   await page.getByRole("button", { name: "Edit check 1", exact: true }).click();
-  await page.getByLabel("Measurement unit", { exact: true }).selectOption("ft-in");
+  await page.getByLabel("Units", { exact: true }).selectOption("ft-in");
   await page.getByLabel("Printed measurement", { exact: true }).fill("9' 10\"");
   await expect(page.getByText(/Will store 2997 mm \(rounded/)).toBeVisible();
-  for (const unit of ["mm", "in", "cm", "ft-in"]) await page.getByLabel("Measurement unit", { exact: true }).selectOption(unit);
+  for (const unit of ["mm", "in", "cm", "ft-in"]) await page.getByLabel("Units", { exact: true }).selectOption(unit);
   await expect(page.getByText(/Will store 2997 mm \(rounded/)).toBeVisible();
   expect(await saved()).toEqual(conflict);
   await page.getByRole("button", { name: "Save check correction", exact: true }).click();

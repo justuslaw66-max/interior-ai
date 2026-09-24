@@ -18,7 +18,7 @@ export function registerStartAndFloorTests() {
       await chooseTemplateStart(page);
     }
 
-    await expect(page.getByRole("button", { name: "2D Plan" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "2D", exact: true })).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-compact_two_bed")).toBeVisible();
 
@@ -41,12 +41,12 @@ export function registerStartAndFloorTests() {
     }
 
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("AI Design Brief")).toBeVisible();
+    await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByText("Step 1 · Room goal")).toBeVisible();
     await expect(page.getByText("Step 2 · Style")).toBeVisible();
     await expect(page.getByText("Step 3 · Budget")).toBeVisible();
     await expect(page.getByText("Step 4 · Must-have items")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Generate layout" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Suggest a layout", exact: true })).toBeEnabled();
     await expect(page.getByText("Review the result before saving, exporting, or shopping.")).toBeVisible();
   });
 
@@ -94,7 +94,7 @@ export function registerStartAndFloorTests() {
 
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByTestId("room-pan-navigator")).toHaveCount(0);
     await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
@@ -112,7 +112,7 @@ export function registerStartAndFloorTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await clickWithFallback(page.getByTestId("editor-workflow-shop"));
 
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");

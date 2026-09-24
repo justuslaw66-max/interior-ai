@@ -56,11 +56,11 @@ for (const contract of ["state", "configuration", "refs", "actions"]) {
 }
 
 for (const historyLabel of [
-  "Align X center",
-  "Align Z center",
+  "Align X centre",
+  "Align Z centre",
   "Rotate item",
   "Rotate group",
-  "Center item",
+  "Centre item",
   "Snap item to wall",
   "Nudge item",
   "Change quantity",

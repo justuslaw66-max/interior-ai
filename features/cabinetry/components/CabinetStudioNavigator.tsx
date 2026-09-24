@@ -316,7 +316,7 @@ export function CabinetStudioNavigator({
       <div className="grid gap-2" data-testid="cabinet-property-search">
         {sectionTitle("Find a property")}
         <label className="relative block">
-          <span className="sr-only">Search millwork properties</span>
+          <span className="sr-only">Search built-in properties</span>
           <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
           <input
             data-testid="cabinet-property-search-input"

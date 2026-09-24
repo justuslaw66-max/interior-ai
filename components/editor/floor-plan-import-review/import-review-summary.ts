@@ -17,8 +17,8 @@ export function createImportReviewMutationMetadata(
 
 export const photoReviewRequired=(issues:FloorPlanReviewIssue[])=>issues.some(i=>i.code==="photo_recomputed_boundaries_review"&&!i.resolved);
 export function importReviewSummary(input:{needsRoomRecovery:boolean;needsScaleRecovery:boolean;unresolvedCritical:FloorPlanReviewIssue[];photo:boolean}) {
-  if(input.photo)return {title:"Review corrected-source proposals",description:"The photo correction uses your confirmed source measurements. Recovered outlines can be incomplete: check missing boundaries, connections and separate doorways before accepting an editable plan."};
-  if(input.needsRoomRecovery)return {title:"Wall detection needs review",description:"The drawing is visible, but the AI could not safely close the room walls. Nothing has been created or added to your current design."};
-  if(input.needsScaleRecovery)return {title:"Confirm one real measurement",description:"The rooms are visible, but the AI needs one printed measurement to make the editable plan the correct real-world size."};
-  return {title:input.unresolvedCritical.length?"Check the detected plan":"Your plan is ready for a final check",description:"AI detected the architectural plan. Check the preview once, then continue to create a separate editable 2D and 3D design."};
+  if(input.photo)return {title:"Check the corrected outline",description:"The photo correction uses your confirmed measurements. Recovered outlines can be incomplete: check missing walls, connections and separate doors and windows before creating a design."};
+  if(input.needsRoomRecovery)return {title:"AI needs a clearer wall outline",description:"The drawing is visible, but the AI could not safely close the room walls. Nothing has been created or added to your current design."};
+  if(input.needsScaleRecovery)return {title:"Set scale",description:"The rooms are visible, but the AI needs one printed measurement to make your floor plan the right size."};
+  return {title:input.unresolvedCritical.length?"Check your floor plan":"Your floor plan is ready for a final check",description:"AI read your floor plan. Check the preview once, then continue to create a separate editable 2D and 3D design."};
 }

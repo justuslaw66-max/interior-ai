@@ -148,7 +148,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Finish color</div>
+          <div className="text-neutral-500">Finish colour</div>
           <select
             className="w-full rounded border p-1"
             value={filters.colorFamilies?.[0] ?? ""}

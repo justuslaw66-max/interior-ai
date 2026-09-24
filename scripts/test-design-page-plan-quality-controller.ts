@@ -135,7 +135,7 @@ assert.match(
 );
 for (const toast of [
   "Add a window to the highlighted room",
-  "Add a doorway for the highlighted rooms",
+  "Add a door between the highlighted rooms",
   "Review the highlighted plan issue",
   "Review the highlighted furniture fit",
   "Add a storage piece or support space",

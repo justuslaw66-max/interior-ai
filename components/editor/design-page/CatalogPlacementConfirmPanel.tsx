@@ -99,7 +99,7 @@ export function CatalogPlacementConfirmPanel({
       data-testid="catalog-placement-confirm-panel"
       role="dialog"
       aria-modal="false"
-      aria-label="Preview catalog placement"
+      aria-label="Preview catalogue placement"
       className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl md:inset-x-auto md:bottom-5 md:right-5 md:max-h-[min(48vh,420px)] md:w-[min(460px,calc(100vw-2rem))] md:rounded-xl md:p-3 md:pb-3 ${
         pendingCatalogPlacementHardInvalid ? "border-red-200" : "border-emerald-200"
       }`}
@@ -349,7 +349,7 @@ export function CatalogPlacementConfirmPanel({
               className="min-h-11 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
               onClick={actions.onCenter}
             >
-              Center
+              Centre
             </button>
             <button
               type="button"

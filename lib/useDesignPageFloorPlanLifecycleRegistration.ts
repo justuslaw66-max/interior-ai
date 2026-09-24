@@ -9,6 +9,7 @@ import { reorientConsumerFloorPlanDesign } from "@/lib/floor-plan-consumer-orien
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
 import type { DesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanOrientationValidation = NonNullable<
   DesignValidationFeedbackProps["floorPlanOrientation"]
@@ -162,11 +163,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
         history.commit();
         showRuleToast("Floor-plan orientation updated and confirmed");
       } catch (cause) {
-        showRuleToast(
-          cause instanceof Error
-            ? cause.message
-            : "Floor-plan orientation could not be changed"
-        );
+        showRuleToast(userFacingErrorMessage(cause, "Floor-plan orientation could not be changed"));
       }
     },
     [
@@ -187,7 +184,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
     try {
       const preserved = await preserveCurrentDesign();
       assertCurrentRevisionCopy(revisionCopyOperationRef, operationId);
-      if (!preserved.ok) throw new Error(preserved.error);
+      if (!preserved.ok) throw new UserFacingError(preserved.error);
 
       const response = await fetch(`/api/designs/${designId}/floor-plan-update`, {
         method: "POST",
@@ -204,7 +201,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
       assertCurrentRevisionCopy(revisionCopyOperationRef, operationId);
       if (!response.ok || typeof payload?.id !== "string") {
         if (response.status === 403) base.actions.dialogs.setShowUpgrade(true);
-        throw new Error(
+        throw new UserFacingError(
           typeof payload?.error === "string"
             ? payload.error
             : "The updated design copy could not be created."
@@ -228,9 +225,7 @@ export function useDesignPageFloorPlanLifecycleRegistration({
       });
     } catch (cause) {
       if (cause !== revisionCopySuperseded && operationId === revisionCopyOperationRef.current) setRevisionCopyError(
-        cause instanceof Error
-          ? cause.message
-          : "The updated design copy could not be created."
+        userFacingErrorMessage(cause, "The updated design copy could not be created.")
       );
     } finally {
       if (operationId === revisionCopyOperationRef.current) setCreatingRevisionCopy(false);

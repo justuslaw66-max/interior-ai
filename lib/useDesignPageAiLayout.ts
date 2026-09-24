@@ -113,7 +113,7 @@ export function useDesignPageAiLayout({
     (plan: LayoutPlan, sourceLabel: string) => {
       const { items: proposedItems, appliedRugRule } = buildItemsFromPlan(plan);
       if (proposedItems.length === 0) {
-        showRuleToast("Starter layout unavailable. Please add items manually.");
+        showRuleToast("Couldn't suggest a layout. Please add items manually.");
         return;
       }
 
@@ -172,7 +172,7 @@ export function useDesignPageAiLayout({
   const applyPendingProposal = useCallback(() => {
     if (!pendingProposal) return;
 
-    commitItems(pendingProposal.items, "Apply AI layout proposal");
+    commitItems(pendingProposal.items, "Apply suggested layout");
     clearAllSelection();
     if (pendingProposal.appliedRugRule) {
       showRuleToast("Rug sized to sofa width");
@@ -237,7 +237,7 @@ export function useDesignPageAiLayout({
           fallback.picks?.sofa && fallback.picks?.coffee_table
         );
         if (!hasCoreStarter) {
-          showRuleToast(reason || "Starter layout unavailable. Please add items manually.");
+          showRuleToast("Couldn't suggest a layout. Please add items manually.");
           return;
         }
         queueProposal(fallback, "Local starter");
@@ -331,7 +331,7 @@ export function useDesignPageAiLayout({
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
-        applyFallbackLayout(error instanceof Error ? error.message : "AI failed");
+        applyFallbackLayout(error instanceof Error ? error.name : "AI failed");
       }
     },
     [
@@ -362,7 +362,7 @@ export function useDesignPageAiLayout({
   const bulkSwap = useCallback(
     (direction: "cheaper" | "premium") => {
       const historyLabel =
-        direction === "cheaper" ? "Make room cheaper" : "Make room premium";
+        direction === "cheaper" ? "Swap all for cheaper" : "Swap all for pricier";
       commitItems(
         (currentItems) => bulkSwapItems({ items: currentItems, style, direction }),
         historyLabel

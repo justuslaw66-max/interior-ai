@@ -2,6 +2,7 @@ import { useEffect,useRef,useState } from "react";
 import type { PhotoCorrection } from "@/lib/floor-plan-photo-constraints";
 import { rectifyPhotoPixels } from "@/lib/floor-plan-photo-raster";
 import { mapPhotoPoint,type PhotoPoint } from "@/lib/floor-plan-photo-math";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 function drawAnchors(canvas:HTMLCanvasElement,correction:PhotoCorrection,corrected:boolean) {
   const context=canvas.getContext("2d");if(!context)return;
@@ -34,7 +35,7 @@ export default function FloorPlanPhotoComparison({url,correction}:{url:string;co
         target.putImageData(new ImageData(pixels,b.width,b.height),0,0);
         drawAnchors(a,correction,false);drawAnchors(b,correction,true);
         setError(null);
-      } catch(cause) {setError(cause instanceof Error?cause.message:"Unable to show the corrected photo.");}
+      } catch(cause) {setError(userFacingErrorMessage(cause, "Unable to show the corrected photo."));}
     };
     image.onerror=()=>{if(!cancelled)setError("The private source preview could not be loaded.");};image.src=url;
     return ()=>{cancelled=true;image.onload=null;image.onerror=null;};

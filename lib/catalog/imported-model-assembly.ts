@@ -636,7 +636,7 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
             open_storage: "Open",
           },
           helper_text:
-            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+            "Open state is for visualisation only. Cart and checkout still use the selected purchasable size variant.",
         },
         configuration_behavior: {
           affects_visual_footprint: false,
@@ -779,7 +779,7 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
             open_storage: "Open",
           },
           helper_text:
-            "Open state is for visualization only. Cart and checkout still use the selected purchasable size variant.",
+            "Open state is for visualisation only. Cart and checkout still use the selected purchasable size variant.",
         },
         configuration_behavior: {
           affects_visual_footprint: false,

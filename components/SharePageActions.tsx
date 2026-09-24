@@ -127,12 +127,12 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
           </Link>
           <DuplicateDesignButton
             shareToken={shareToken}
-            unauthenticatedChildren="Sign in to copy"
+            unauthenticatedChildren="Sign in to make a copy"
             data-testid="share-copy-to-edit"
             data-share-touch-target="true"
             className="inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow outline-offset-2 hover:bg-emerald-700 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Copy to edit
+            Make a copy
           </DuplicateDesignButton>
         </div>
         <ShareActionMessage message={message} />

@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 export async function confirmPlanTemplateReplacementIfNeeded(page: Page) {
-  const replaceDialog = page.getByRole("dialog", { name: "Start a new plan?" });
+  const replaceDialog = page.getByRole("dialog", { name: "Start a new design?" });
   const appeared = await replaceDialog
     .waitFor({ state: "visible", timeout: 3_000 })
     .then(

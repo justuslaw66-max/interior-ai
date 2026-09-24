@@ -25,6 +25,10 @@ Production code must not introduce explicit `any`, `@ts-ignore`, `@ts-expect-err
 
 Validate input at every system boundary: HTTP payloads, environment variables, database records crossing version boundaries, catalog authoring data, generated inputs, browser storage, worker messages, and external-service responses. Use stable typed error codes and a consistent public envelope. Do not leak internal paths, vendor payloads, secrets, or raw database failures.
 
+The UI never shows an `Error`'s own message or an internal id. Pass a caught error through `userFacingErrorMessage(cause, fallback)` from `lib/user-facing-error.ts`, which maps known codes and browser failures to plain sentences; throw `UserFacingError` only with final copy (for example an API `error` string written for people). `scripts/test-user-facing-errors.ts` enforces this for components, hooks and client modules.
+
+Words people read use one name per concept, UK spelling, sentence case and one ellipsis character (…). The names and the retired terms live in `lib/ui-glossary.ts`; `scripts/test-ui-glossary.ts` reads user-facing text with the TypeScript parser and fails on a retired term. Terms a later UX phase restructures are listed there but not enforced until that phase lands. Renaming visible text also renames Playwright selectors that use it; test titles stay as they are.
+
 Secrets, Prisma, filesystem access, privileged roles, and vendor credentials remain server-side. Client-safe code receives minimal typed DTOs. Minimise `use client`: put it at the narrowest interactive boundary and keep pure domain modules importable without React, browser globals, or Three.js.
 
 ## React and Three.js

@@ -46,13 +46,13 @@ function issuePrerequisite(
   const floor = document.floors[0];
   if (!floor) return "No editable floor was detected.";
   if (issue.code === "scale_unresolved" && floor.calibrations.length === 0) {
-    return "Register origin, orientation and scale with the tracing tools first.";
+    return "Set scale with the tracing tools first.";
   }
   if (
     issue.code === "source_registration_incomplete" &&
     document.floors.some((entry) => entry.calibrations.length === 0)
   ) {
-    return "Register every imported floor to its source and millimetre scale first.";
+    return "Set scale for every floor first.";
   }
   if (
     [
@@ -76,8 +76,8 @@ function issuePrerequisite(
     );
     if (!floor.walls.length || (expected && roomCount < Number(expected))) {
       return expected
-        ? `Map all ${expected} indicated rooms before confirming this item.`
-        : "Trace every indicated room before confirming this item.";
+        ? `Trace all ${expected} rooms shown before confirming this item.`
+        : "Trace every room shown before confirming this item.";
     }
   }
   if (issue.code === "entrance_confirmation" && !entranceId) {
@@ -102,7 +102,7 @@ function issuePrerequisite(
       0
     );
     if (expected && dimensionCount < Number(expected)) {
-      return `Map all ${expected} detected printed dimensions before confirming this item.`;
+      return `Add all ${expected} printed dimensions found before confirming this item.`;
     }
   }
   return null;
@@ -383,8 +383,8 @@ export default function FloorPlanImportReviewPanel({
         >
           <div className="text-sm font-semibold">
             {needsRoomRecovery
-              ? "Continue reviewing this drawing"
-              : "Review the remaining corrections"}
+              ? "For the fastest result, upload the original floor plan"
+              : "One small correction is needed"}
           </div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             {needsRoomRecovery
@@ -490,7 +490,7 @@ export default function FloorPlanImportReviewPanel({
           Optional plan details
         </summary>
         <p className={`mt-2 text-xs leading-5 ${subtle}`}>
-          These settings are not needed to generate the editable plan. The
+          These settings are not needed to create your design. The
           editor starts with sensible 3D defaults that can be changed later.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -575,8 +575,8 @@ export default function FloorPlanImportReviewPanel({
           Confirm all displayed defaults
         </button>
         <p className={`mt-1 text-[10px] ${subtle}`}>
-          This records your confirmation only; it does not make the heights
-          source-verified or site-measured.
+          This only records that you checked them; it does not mean the heights
+          were read from your floor plan or measured on site.
         </p>
         {floor.openings.length > 0 ? (
           <label className={`mt-3 block text-[11px] ${subtle}`}>
@@ -616,10 +616,10 @@ export default function FloorPlanImportReviewPanel({
         data-testid="floor-plan-import-technical-details"
       >
         <summary className="cursor-pointer text-xs font-semibold">
-          Technical validation details
+          Advanced checks
         </summary>
         <p className={`mt-2 text-xs leading-5 ${subtle}`}>
-          These checks protect wall geometry and scale. Most consumers do not
+          These checks protect the walls and scale. Most people do not
           need to edit them directly.
         </p>
         <div className="mt-3 grid gap-2">
@@ -685,7 +685,7 @@ export default function FloorPlanImportReviewPanel({
                   ) : null}
                   {level === "blocking" ? (
                     <label className={`mt-1 block text-[10px] ${subtle}`}>
-                      What did you verify or correct?
+                      What did you check or fix? (at least 12 characters)
                       <textarea
                         className={`${control} mt-1 min-h-14 w-full resize-y`}
                         maxLength={2000}
@@ -696,7 +696,7 @@ export default function FloorPlanImportReviewPanel({
                             [issue.id]: event.target.value,
                           }))
                         }
-                        placeholder="Example: Checked the corrected wall against the source."
+                        placeholder="Example: Checked this wall against my floor plan."
                       />
                     </label>
                   ) : null}
@@ -716,9 +716,9 @@ export default function FloorPlanImportReviewPanel({
               : "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
           }
         >
-          <div className="text-sm font-semibold">Looks like your plan?</div>
+          <div className="text-sm font-semibold">Looks like your floor plan?</div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
-            Continue to run the final geometry check. Your current design will
+            Continue to run the final check. Your current design will
             not be changed.
           </p>
           <button
@@ -727,7 +727,7 @@ export default function FloorPlanImportReviewPanel({
             disabled={disabled || submitting}
             onClick={confirmDetectedPlan}
           >
-            {submitting ? "Checking the plan…" : "Yes, continue"}
+            {submitting ? "Checking your floor plan…" : "Yes, continue"}
           </button>
         </div>
       ) : null}

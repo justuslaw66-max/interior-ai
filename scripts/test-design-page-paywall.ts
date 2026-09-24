@@ -129,9 +129,9 @@ runFixture("upgrade copy preserves every reason and experiment branch", () => {
     export_pdf:
       "Free includes a watermarked one-page preview. Pro unlocks clean PDFs, room summaries, and client-ready export packs.",
     designer:
-      "Designer mode, presentation tools, and polished export workflows are available on the Pro plan.",
+      "Pro tools, presentation features, and polished export workflows are included with Pro.",
     default:
-      "Unlock clean exports, designer tools, and a faster client presentation workflow.",
+      "Unlock clean exports, Pro tools, and a faster client presentation workflow.",
   } as const;
 
   for (const reason of ["export_images", "export_pdf", "designer", null] as const) {
@@ -157,7 +157,7 @@ runFixture("upgrade copy preserves every reason and experiment branch", () => {
     );
     assert.equal(
       control.pricingGuidance,
-      "Use yearly if you expect to export for more than 2 active projects this quarter."
+      "Use yearly if you expect to export more than 2 designs this quarter."
     );
     assert.equal(
       valueStack.pricingGuidance,

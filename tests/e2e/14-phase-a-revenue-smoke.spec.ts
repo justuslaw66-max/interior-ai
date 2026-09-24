@@ -433,8 +433,8 @@ test.describe("14. Phase A Revenue Smoke", () => {
 
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&plans_open=1`);
     await expect(page.getByTestId("plans-layout-default")).toBeVisible();
-    await expect(page.getByTestId("checkout-monthly")).toContainText("Start monthly — SGD 29.90/month");
-    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly — SGD 249.90/year");
+    await expect(page.getByTestId("checkout-monthly")).toContainText("Start monthly — S$29.90/month");
+    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly — S$249.90/year");
   });
 
   test("free paywall renders the see_pricing annual-highlight layout", async ({ page }) => {
@@ -478,7 +478,7 @@ test.describe("14. Phase A Revenue Smoke", () => {
     const monthlyCta = page.getByTestId("checkout-monthly");
     await expect(yearlyCta).toBeVisible({ timeout: 15000 });
     await expect(monthlyCta).toBeVisible({ timeout: 15000 });
-    await expect(yearlyCta).toContainText("Start yearly — SGD 249.90/year", { timeout: 15000 });
-    await expect(monthlyCta).toContainText("Start monthly — SGD 29.90/month", { timeout: 15000 });
+    await expect(yearlyCta).toContainText("Start yearly — S$249.90/year", { timeout: 15000 });
+    await expect(monthlyCta).toContainText("Start monthly — S$29.90/month", { timeout: 15000 });
   });
 });

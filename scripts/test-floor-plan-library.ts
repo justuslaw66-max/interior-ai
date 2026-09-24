@@ -1210,7 +1210,7 @@ assert.match(
 );
 assert.match(
   resultListSource,
-  /data-testid=\{testId\}[\s\S]*?Start a new design[\s\S]*?Replace current plan/,
+  /data-testid=\{testId\}[\s\S]*?Start a new design[\s\S]*?Replace current design/,
   "Extracted result cards should keep non-destructive start-new as the primary action."
 );
 
@@ -1233,7 +1233,7 @@ const planPanelSource = fs.readFileSync(
 );
 assert.match(
   planPanelSource,
-  /\{filteredPlanTemplates\.length\} starter layouts[\s\S]*?Or browse starter layouts/,
+  /\{filteredPlanTemplates\.length\} templates[\s\S]*?Or browse templates/,
   "The picker should distinguish starter-layout counts from imported floor plans."
 );
 

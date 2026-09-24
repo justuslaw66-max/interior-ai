@@ -213,7 +213,7 @@ export function computeCirculationAnalysis({
   const pathValid = hasPath(cells, starts, destinations);
   const warnings: string[] = [];
   const hasObstacles = obstacles.length > 0;
-  if (!pathValid) warnings.push("No clear walking path from the doorway to the room zones.");
+  if (!pathValid) warnings.push("No clear walking path from the door to the room zones.");
   if (hasObstacles && Number.isFinite(minClearanceM) && minClearanceM < 0.32) {
     warnings.push("Walking clearance falls below 32 cm in parts of the room.");
   } else if (hasObstacles && Number.isFinite(minClearanceM) && minClearanceM < 0.6) {

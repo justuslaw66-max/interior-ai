@@ -324,7 +324,7 @@ export function analyzePointScale(input: {
       valid: false,
       measurementValid: true,
       message:
-        "Scale measured. Map both source endpoints to two plan vertices to register origin and orientation.",
+        "Scale measured. Now match both points to two wall corners to line up your floor plan.",
     };
   }
   return {
@@ -751,7 +751,7 @@ export function traceRoomFromSourcePolygon(input: {
       item.sourceId === input.sourceId && item.pageNumber === input.pageNumber
   );
   if (!calibration) {
-    throw new Error("Set the drawing scale before tracing rooms.");
+    throw new Error("Set scale before tracing rooms.");
   }
   const planPoints = input.points.map((point) => {
     const projected = projectReviewSourcePointToPlan(calibration, point);

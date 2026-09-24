@@ -64,7 +64,7 @@ test.describe("21. Selected Item Actions", () => {
     await selectEditorWorkspace(page, "editor-workflow-furnish");
     await expect(shoppingPreview).toBeVisible();
     await expect(shoppingPreview).toContainText(
-      "Add real catalog items to build this room list."
+      "Add real catalogue items to build this room list."
     );
   });
 });

@@ -4,7 +4,7 @@ import { useProgress } from "@react-three/drei/core/Progress";
 import { Html } from "@react-three/drei/web/Html";
 
 export function LoadingOverlay() {
-  const { active, progress, item, loaded, total } = useProgress();
+  const { active, progress, loaded, total } = useProgress();
 
   if (!active) return null;
 
@@ -23,7 +23,7 @@ export function LoadingOverlay() {
       >
         <div className="panel" style={{ width: 360, padding: 16 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>
-            Preparing your editor...
+            Preparing your editor…
           </div>
           <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 10 }}>
             Loading assets {loaded}/{total}
@@ -45,10 +45,6 @@ export function LoadingOverlay() {
                 transition: "width 180ms ease",
               }}
             />
-          </div>
-
-          <div style={{ fontSize: 12, opacity: 0.65, marginTop: 10 }}>
-            {item ? `Loading: ${item}` : "Loading..."}
           </div>
         </div>
       </div>

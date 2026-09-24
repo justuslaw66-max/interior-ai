@@ -18,6 +18,7 @@ import FloorPlanCatalogResultList from "./FloorPlanCatalogResultList";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { useFloorPlanExactSearchRequests } from "./useFloorPlanExactSearchRequests";
 import { useFloorPlanResultApplicationRequests } from "./useFloorPlanResultApplicationRequests";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanAddressSearchProps = {
   dark?: boolean;
@@ -79,7 +80,7 @@ export default function FloorPlanAddressSearch({
       setBrowseStatus("ready");
     } catch (cause) {
       setBrowseStatus("error");
-      setBrowseErrorMessage(cause instanceof Error ? cause.message : "Floor-plan library failed to load.");
+      setBrowseErrorMessage(userFacingErrorMessage(cause, "Floor-plan library failed to load."));
     }
   }, []);
 
@@ -166,10 +167,10 @@ export default function FloorPlanAddressSearch({
         <div className={dark ? "mt-2 rounded-lg border border-white/10 p-3" : "mt-2 rounded-lg border border-blue-200 bg-white p-3"}>
           <div className="text-xs font-semibold">No directory match yet</div>
           <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
-            Directory requests are not available yet. You can still open your own plan now.
+            Directory requests are not available yet. You can still upload your own floor plan now.
           </p>
           <button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} type="button" className={`${control} mt-2`} onClick={requestUpload}>
-            Upload your floor plan
+            Upload floor plan
           </button>
         </div>
       ) : null}

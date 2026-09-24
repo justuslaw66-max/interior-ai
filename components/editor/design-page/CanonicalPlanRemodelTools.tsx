@@ -42,7 +42,7 @@ function AddPartition({ floor, commit }: Omit<Props, "wall">) {
       thicknessMm: values.thickness, heightMm: values.height, newRoomId: `room-${suffix}`, newRoomName: values.roomName });
   };
   return <details><summary className="cursor-pointer font-semibold">Add a wall</summary>
-    <p className="my-2">Enter centreline endpoints. A point exactly on a straight wall creates a junction automatically. A boundary-to-boundary partition or closed interior loop creates a room; partial partitions keep it open.</p>
+    <p className="my-2">Enter centreline endpoints. A point exactly on a wall creates a junction automatically. A boundary-to-boundary partition or closed interior loop creates a room; partial partitions keep it open.</p>
     <div className="grid grid-cols-2 gap-2">
       <Millimetres label="Start X" value={values.x1} change={(v) => set("x1", v)} /><Millimetres label="Start Z" value={values.z1} change={(v) => set("z1", v)} />
       <Millimetres label="End X" value={values.x2} change={(v) => set("x2", v)} /><Millimetres label="End Z" value={values.z2} change={(v) => set("z2", v)} />
@@ -73,7 +73,7 @@ function OpeningProperties({ floor, wall, commit }: Props) {
   const [selected, setSelected] = useState(openings[0]?.id ?? "");
   const opening = openings.find(({ id }) => id === selected);
   return <details><summary className="cursor-pointer font-semibold">Doors and windows</summary>
-    <select aria-label="Opening to edit" className={inputStyle} value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">New opening</option>{openings.map((entry) => <option key={entry.id} value={entry.id}>{entry.kind} {entry.id}</option>)}</select>
+    <select aria-label="Opening to edit" className={inputStyle} value={selected} onChange={(event) => setSelected(event.target.value)}><option value="">New opening</option>{openings.map((entry, index) => <option key={entry.id} value={entry.id}>{entry.kind} {index + 1}</option>)}</select>
     <OpeningForm key={selected} floor={floor} wall={wall} opening={opening} commit={commit} />
   </details>;
 }

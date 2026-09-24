@@ -6,6 +6,7 @@ import { SourceTraceAction } from "./source-trace-action";
 import { floorPlanImportResponseJson } from "../useConsumerFloorPlanImportSession";
 import { sourceTraceAnnotations } from "@/lib/floor-plan-source-trace";
 import { sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type Preview={assetId:string;trace:SourceArtworkTrace};
 function SourceTracePanelSession({document,jobId,pageNumber,sourceId,assetUrl,disabled}:{
@@ -23,7 +24,7 @@ function SourceTracePanelSession({document,jobId,pageNumber,sourceId,assetUrl,di
         headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"preview",pageNumber,candidateVersion:action.candidateVersion})}));
       current.signal.throwIfAborted();if(typeof result.assetId!=="string"||!result.trace||typeof result.trace!=="object")throw new Error("Invalid trace preview.");
       setPreview({assetId:result.assetId,trace:result.trace as SourceArtworkTrace});
-    }catch(cause){if(!current.signal.aborted)setError(cause instanceof Error?cause.message:"Unable to trace this image.");}
+    }catch(cause){if(!current.signal.aborted)setError(userFacingErrorMessage(cause, "Unable to trace this image."));}
     finally{if(!current.signal.aborted)setBusy(false);}
   };
   const cancel=()=>{controller.current?.abort();setBusy(false);setPreview(null);};

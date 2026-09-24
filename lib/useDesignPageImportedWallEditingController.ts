@@ -95,12 +95,12 @@ export type UseDesignPageImportedWallEditingControllerInput = {
 };
 
 const ACTION_LABELS: Record<ConsumerWallTopologyMutationV2["kind"], string> = {
-  add_wall: "Add proposed wall", remove_wall: "Remove proposed wall",
-  add_opening: "Add proposed opening", update_opening: "Edit proposed opening", remove_opening: "Remove proposed opening",
-  move_vertex: "Move imported wall endpoint",
-  move_wall: "Move imported wall",
-  update_wall: "Update imported wall",
-  split_wall: "Split imported wall", join_wall_endpoint: "Join proposed wall endpoint",
+  add_wall: "Add wall", remove_wall: "Remove wall",
+  add_opening: "Add opening", update_opening: "Edit opening", remove_opening: "Remove opening",
+  move_vertex: "Move wall corner",
+  move_wall: "Move wall",
+  update_wall: "Edit wall",
+  split_wall: "Split wall", join_wall_endpoint: "Join wall corner",
 };
 
 function stableIdPart(value: string): string {
@@ -151,7 +151,7 @@ export function useDesignPageImportedWallEditingController({
         );
         return true;
       } catch (cause) {
-        actions.showToast(`Wall change blocked: ${proposedWallEditFailureMessage(cause)}`);
+        actions.showToast(proposedWallEditFailureMessage(cause));
         return false;
       }
     },

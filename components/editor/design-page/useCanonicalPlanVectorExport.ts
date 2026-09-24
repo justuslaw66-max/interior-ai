@@ -3,6 +3,7 @@ import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { PlanVectorExportOptions } from "@/lib/floor-plan-vector-export";
 import type { PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 export type CanonicalPlanVectorExportSource = { furniture?: PlanFurnitureDrawingSource; underlay?: FloorPlanUnderlay | null; sourceJobId?: string };
 export type CanonicalPlanVectorExportProps = CanonicalPlanVectorExportSource & { document: FloorPlanDocumentV2; floorId: string; original?: FloorPlanDocumentV2 };
@@ -48,7 +49,7 @@ export function useCanonicalPlanVectorExport(props: CanonicalPlanVectorExportPro
         setMessage(warnings || "Vector drawing exported. Print at 100% for the declared scale.");
       }
     } catch (error) {
-      if (!controller.signal.aborted) setMessage(error instanceof Error ? error.message : "Vector export failed.");
+      if (!controller.signal.aborted) setMessage(userFacingErrorMessage(error, "Vector export failed."));
     } finally { if (pending.current === controller) setBusy(false); }
   };
   return { run, busy, message, preview: preview?.document === document && preview.floorId === floorId && preview.underlay === underlay ? preview.url : null };

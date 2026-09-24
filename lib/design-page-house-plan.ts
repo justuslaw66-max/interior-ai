@@ -2789,7 +2789,7 @@ export function buildHouseRoomDoorwaySuggestions(
         widthMeters: doorwayWidth,
         points: guide.points,
         labelPosition: guide.labelPosition,
-        label: "Add doorway",
+        label: "Add door here",
       });
     }
   }

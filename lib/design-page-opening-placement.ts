@@ -66,13 +66,13 @@ function hostFailure(
     return {
       valid: false,
       reason: "ambiguous_wall_host",
-      label: "Opening wall is ambiguous",
+      label: "Touches more than one wall",
     };
   }
   return {
     valid: false,
     reason: "unresolved_wall_host",
-    label: "Opening has no physical wall",
+    label: "Not on a wall",
   };
 }
 
@@ -112,7 +112,7 @@ export function validateDesignPageOpeningPlacement(
     return {
       valid: false,
       reason: "opening_too_wide",
-      label: "Opening is too wide for this wall",
+      label: "Too wide for this wall",
     };
   }
   const halfWidth = widthMeters / 2;
@@ -135,7 +135,7 @@ export function validateDesignPageOpeningPlacement(
     ? {
         valid: false,
         reason: "too_close_to_opening",
-        label: "Too close to another opening",
+        label: "Too close to another door or window",
       }
     : { valid: true };
 }

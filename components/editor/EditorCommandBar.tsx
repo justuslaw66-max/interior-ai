@@ -3,7 +3,7 @@
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKeyboard";
-import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
+import { ChevronDown, Ellipsis, PanelLeft, Plus, Redo2, Undo2, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
@@ -198,14 +198,14 @@ export default function EditorCommandBar({
     ...(onMillwork
       ? [{
           id: "millwork",
-          label: "Millwork",
+          label: "Built-ins",
           testId: "editor-workflow-millwork",
           onClick: onMillwork,
           active: millworkActive,
-          ariaLabel: "Custom Millwork Studio",
-          title: "Custom Millwork Studio",
+          ariaLabel: "Built-ins",
+          title: "Built-ins",
           legacyTestId: "open-custom-millwork-studio",
-          screenReaderLabel: "Custom Millwork Studio",
+          screenReaderLabel: "Built-ins",
         }]
       : []),
     {
@@ -218,7 +218,7 @@ export default function EditorCommandBar({
     ...(aiDesignEnabled
       ? [{
           id: "ai",
-          label: "AI Design",
+          label: "Suggest a layout",
           testId: "editor-workflow-ai",
           onClick: onAiDesign,
           active: !millworkActive && editorMode === "ai",
@@ -304,7 +304,7 @@ export default function EditorCommandBar({
           disabled={isClientPreview || !canUndo}
           title={undoName ? `Undo "${undoName}" (Cmd/Ctrl+Z)` : "Undo (Cmd/Ctrl+Z)"}
         >
-          ↶
+          <Undo2 className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -315,7 +315,7 @@ export default function EditorCommandBar({
           disabled={isClientPreview || !canRedo}
           title={redoName ? `Redo "${redoName}" (Cmd/Ctrl+Shift+Z)` : "Redo (Cmd/Ctrl+Shift+Z)"}
         >
-          ↷
+          <Redo2 className="h-4 w-4" aria-hidden="true" />
         </button>
 
         <div className="shrink-0">
@@ -406,11 +406,11 @@ export default function EditorCommandBar({
           <span
             data-testid="pro-mode-indicator"
             role="status"
-            aria-label="Pro mode active"
+            aria-label="Pro tools on"
             className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
           >
             <span className="sm:hidden">Pro</span>
-            <span className="hidden sm:inline">Pro mode</span>
+            <span className="hidden sm:inline">Pro tools</span>
           </span>
         ) : null}
 
@@ -431,8 +431,8 @@ export default function EditorCommandBar({
         <button
           type="button"
           data-testid="editor-command-new-plan"
-          aria-label="Start a new floor plan"
-          title="Start a new floor plan"
+          aria-label="Start a new design"
+          title="Start a new design"
           className={
             dark
               ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold leading-none text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
@@ -441,7 +441,7 @@ export default function EditorCommandBar({
           onClick={onNewPlan}
         >
           <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-          <span className="hidden sm:inline">New plan</span>
+          <span className="hidden sm:inline">New design</span>
         </button>
 
         <div
@@ -457,8 +457,8 @@ export default function EditorCommandBar({
           aria-live="polite"
           aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden h-[30px] min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
-            saveStatus.canRetry ? "shrink-0" : ""
+          className={`hidden h-[30px] min-w-0 shrink-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
+            saveStatus.canRetry ? "" : "lg:shrink"
           } ${getSaveStatusClassName(
             saveStatus.tone,
             dark
@@ -502,7 +502,7 @@ export default function EditorCommandBar({
           onClick={onSave}
           disabled={isSaving}
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? "Saving…" : "Save"}
         </button>
         <div ref={overflowRef} className="relative shrink-0">
           <button
@@ -682,7 +682,7 @@ export default function EditorCommandBar({
                     onViewPlans();
                   }}
                 >
-                  View Pro plans
+                  Pricing
                 </button>
               ))}
               {isAuthed ? (

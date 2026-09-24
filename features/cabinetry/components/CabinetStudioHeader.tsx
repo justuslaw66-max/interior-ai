@@ -38,7 +38,7 @@ export function CabinetStudioHeader({
             <Box className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold">Custom Millwork Studio</h2>
+            <h2 className="truncate text-sm font-semibold">Built-ins</h2>
             <p className="truncate text-xs text-neutral-500">Simple to start, powerful when needed.</p>
           </div>
         </div>
@@ -69,7 +69,7 @@ export function CabinetStudioHeader({
             <button
               type="button"
               data-testid="cabinet-undo"
-              aria-label="Undo last millwork change"
+              aria-label="Undo last change"
               title="Undo"
               className="grid h-8 w-8 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30"
               disabled={!canUndo}
@@ -80,7 +80,7 @@ export function CabinetStudioHeader({
             <button
               type="button"
               data-testid="cabinet-redo"
-              aria-label="Redo last millwork change"
+              aria-label="Redo last change"
               title="Redo"
               className="grid h-8 w-8 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30"
               disabled={!canRedo}
@@ -102,7 +102,7 @@ export function CabinetStudioHeader({
           <button
             type="button"
             data-testid="cabinetry-studio-close"
-            aria-label="Close cabinetry studio"
+            aria-label="Close built-ins"
             className="grid h-9 w-9 place-items-center rounded-xl text-neutral-600 hover:bg-neutral-100"
             onClick={onClose}
           >
@@ -120,8 +120,8 @@ export function CabinetStudioHeader({
           <Box className="h-4 w-4" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold">Custom Millwork Studio</h2>
-          <p className="text-xs text-neutral-500">{mode === "edit" ? "Edit custom cabinetry" : "Create custom cabinetry"}</p>
+          <h2 className="text-sm font-semibold">Built-ins</h2>
+          <p className="text-xs text-neutral-500">{mode === "edit" ? "Edit a built-in" : "Create a built-in"}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export function CabinetStudioHeader({
           <button
             type="button"
             data-testid="cabinet-undo"
-            aria-label="Undo last millwork change"
+            aria-label="Undo last change"
             title="Undo"
             className="grid h-7 w-7 place-items-center rounded-md text-neutral-600 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30"
             disabled={!canUndo}
@@ -159,7 +159,7 @@ export function CabinetStudioHeader({
           <button
             type="button"
             data-testid="cabinet-redo"
-            aria-label="Redo last millwork change"
+            aria-label="Redo last change"
             title="Redo"
             className="grid h-7 w-7 place-items-center rounded-md text-neutral-600 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-30"
             disabled={!canRedo}
@@ -181,7 +181,7 @@ export function CabinetStudioHeader({
         <button
           type="button"
           data-testid="cabinetry-studio-close"
-          aria-label="Close cabinetry studio"
+          aria-label="Close built-ins"
           className="grid h-8 w-8 place-items-center rounded-lg text-neutral-600 hover:bg-neutral-100"
           onClick={onClose}
         >

@@ -31,7 +31,7 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
             Start with the path that matches your room
           </h2>
           <p className="mt-1 max-w-2xl text-sm text-neutral-600">
-            Pick a template, draw in measured 2D, upload a floor plan, or let AI propose the first furniture layout.
+            Choose a template, draw in measured 2D, upload a floor plan, or let AI suggest a furniture layout.
           </p>
         </div>
         <button
@@ -71,7 +71,7 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
       <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <StartPathButton
           testId="beta-start-template"
-          title="Choose template"
+          title="Choose a template"
           description="Living room now; bedroom, dining, office, and whole-home beta paths are visible in Plan."
           onClick={actions.chooseTemplate}
         />
@@ -84,13 +84,13 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
         <StartPathButton
           testId="beta-start-upload-plan"
           title="Upload floor plan"
-          description="Import an image or PDF, calibrate scale, then trace rooms and openings."
+          description="Upload an image or PDF, set scale, then trace rooms and openings."
           onClick={actions.uploadPlan}
         />
         <StartPathButton
           testId="beta-start-ai-layout"
-          title="Generate AI layout"
-          description="Review an AI starter proposal before anything is applied."
+          title="Suggest a layout"
+          description="Review the suggested layout before anything is applied."
           accent
           onClick={actions.generateAiLayout}
         />

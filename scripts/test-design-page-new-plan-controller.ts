@@ -150,7 +150,7 @@ async function testSuccessfulCallbackOrder() {
     "confirm",
     "clear-history",
     "clear-annotations",
-    "toast:Current design saved. New plan started.",
+    "toast:Current design saved. New design started.",
     "starting:false",
   ]);
   assert.equal(fixture.pendingReplacement, false);

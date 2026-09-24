@@ -125,9 +125,9 @@ export default function FloorPlanDimensionCorrectionFields({
           onChange={(event) => selectDimension(event.target.value)}
         >
           <option value="">New dimension…</option>
-          {floor.dimensions.map((dimension) => (
+          {floor.dimensions.map((dimension, index) => (
             <option key={dimension.id} value={dimension.id}>
-              {dimension.label || dimension.id} · {dimension.measuredMm} mm
+              {dimension.label || `Dimension ${index + 1}`} · {dimension.measuredMm} mm
             </option>
           ))}
         </select>
@@ -158,9 +158,9 @@ export default function FloorPlanDimensionCorrectionFields({
               }}
             >
               <option value="">Choose…</option>
-              {floor.vertices.map((vertex) => (
+              {floor.vertices.map((vertex, index) => (
                 <option key={vertex.id} value={vertex.id}>
-                  {vertex.id} · ({vertex.xMm}, {vertex.zMm})
+                  Corner {index + 1} · ({vertex.xMm}, {vertex.zMm})
                 </option>
               ))}
             </select>

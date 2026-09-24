@@ -11,6 +11,7 @@ import {
   traceOpeningFromSourceSpan,
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanOpeningTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -34,7 +35,7 @@ const OPENING_TYPES: ReadonlyArray<{
 }> = [
   { value: "door", label: "Door" },
   { value: "window", label: "Window" },
-  { value: "open_passage", label: "Open passage" },
+  { value: "open_passage", label: "Opening (no door)" },
 ];
 
 export default function FloorPlanOpeningTracePanel({
@@ -115,7 +116,7 @@ export default function FloorPlanOpeningTracePanel({
         </label>
         {!calibration || !floor.walls.length ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-900">
-            Finish the scale and room outlines first.
+            Set scale and outline the rooms first.
           </div>
         ) : null}
         <button
@@ -193,11 +194,7 @@ export default function FloorPlanOpeningTracePanel({
               onOpeningPointsChange([]);
               onPickingOpeningChange(false);
             } catch (cause) {
-              onError(
-                cause instanceof Error
-                  ? cause.message
-                  : "The opening could not be added."
-              );
+              onError(userFacingErrorMessage(cause, "The door or window could not be added."));
             }
           }}
           type="button"

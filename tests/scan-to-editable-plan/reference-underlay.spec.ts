@@ -44,13 +44,13 @@ test("Consumer optional reference underlay stays separate and respects private-s
   const panel = page.getByTestId("imported-wall-editor");
   await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
   const before = await page.evaluate((key) => localStorage.getItem(key), key);
-  await expect(panel.getByRole("checkbox", { name: "Reference underlay", exact: true })).not.toBeChecked();
+  await expect(panel.getByRole("checkbox", { name: "Floor plan image", exact: true })).not.toBeChecked();
   const cleanDownload = page.waitForEvent("download"); await panel.getByRole("button", { name: "PDF", exact: true }).click();
   const cleanPath = info.outputPath("clean.pdf"); await (await cleanDownload).saveAs(cleanPath);
   const clean = await PDFDocument.load(await readFile(cleanPath));
   expect(vectorPdfPageContent(clean)).not.toMatch(/\bDo\b/);
   expect({ sourceRequests, assetRequests }).toEqual({ sourceRequests: 0, assetRequests: 0 });
-  await panel.getByRole("checkbox", { name: "Reference underlay", exact: true }).check();
+  await panel.getByRole("checkbox", { name: "Floor plan image", exact: true }).check();
   const download = page.waitForEvent("download"); await panel.getByRole("button", { name: "PDF", exact: true }).click();
   const pdfPath = info.outputPath("with-reference.pdf"); await (await download).saveAs(pdfPath);
   const pdf = await PDFDocument.load(await readFile(pdfPath)), content = vectorPdfPageContent(pdf);
@@ -87,7 +87,7 @@ test("Consumer optional reference underlay stays separate and respects private-s
   await page.getByTestId("editor-view-2d").click();
   await expect(panel).toBeVisible();
   await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
-  await expect(panel.getByRole("checkbox", { name: "Reference underlay", exact: true })).not.toBeChecked();
+  await expect(panel.getByRole("checkbox", { name: "Floor plan image", exact: true })).not.toBeChecked();
   expect(downloads).toHaveLength(acceptedDownloads);
   await writeFile(info.outputPath("source-access-evidence.json"), JSON.stringify({ sourceRequests, assetRequests, downloads, checks: ["default no source read", "separate image and paths", "9260 mm becomes 92.6 mm", "metadata stripped", "owner denial", "source deletion before/during read and after PDF generation", "saved state unchanged", "leaving export cancels pending download"] }, null, 2));
   expect(errors).toEqual([]);

@@ -45,7 +45,7 @@ test("Closing an import with a pending confirmation preserves the actual Consume
   await page.route("**/original-job/confirm", async (route) => {
     started(); await pending; await route.fulfill({ status: 201, json: { id: "old-completed-design" } });
   });
-  await page.getByRole("button", { name: "Confirm review & create editable plan", exact: true }).click(); await received;
+  await page.getByRole("button", { name: "Create design", exact: true }).click(); await received;
   await page.getByRole("button", { name: "Close floor-plan import", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Import a floor plan" })).toHaveCount(0);
   const completed = page.waitForEvent("requestfinished", (request) => request.url().endsWith("/original-job/confirm"));

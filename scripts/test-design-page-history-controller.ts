@@ -143,7 +143,7 @@ assert.match(
 );
 assert.doesNotMatch(
   documentHistoryControllerSource,
-  /history\.begin\("Apply plan template"\)/,
+  /history\.begin\("Apply template"\)/,
   "Persistence hydration must not leave an uncommitted user-history transaction."
 );
 const floorPlanUnderlayControllerSource = readFileSync(
@@ -161,7 +161,7 @@ const applyPlanTemplateSource = floorPlanUnderlayControllerSource.slice(
 );
 assert.match(
   applyPlanTemplateSource,
-  /const replacePlanDocument = \([\s\S]*?runHistoryTransaction\("Apply plan template", \(\) => \{[\s\S]*?setDesignSnapshot\(snapshot\);\s*\}\);/,
+  /const replacePlanDocument = \([\s\S]*?runHistoryTransaction\("Apply template", \(\) => \{[\s\S]*?setDesignSnapshot\(snapshot\);\s*\}\);/,
   "Applying a template must replace the plan inside one undoable history transaction."
 );
 assert.equal(

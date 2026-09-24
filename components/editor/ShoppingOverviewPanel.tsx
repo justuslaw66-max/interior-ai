@@ -270,7 +270,7 @@ export default function ShoppingOverviewPanel({
             No furniture in the shopping list yet
           </div>
           <div className={`mt-1 text-xs ${mutedClass}`}>
-            Add real catalog items to a room first, then this panel becomes your bill of materials.
+            Add real catalogue items to a room first, then this panel becomes your bill of materials.
           </div>
           <button type="button" className={`mt-3 ${primaryButtonClass}`} onClick={onGoFurnish}>
             Add furniture

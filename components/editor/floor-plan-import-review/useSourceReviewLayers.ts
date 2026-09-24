@@ -60,9 +60,9 @@ export function sourceReviewPresentation(layer:SourceReviewLayer,sourceOpacity:n
 export const sourceReviewOverlay = <T,>(layer:SourceReviewLayer,overlay:T) => sourceTraceView(layer)||layer==="raw" ? null : overlay;
 
 export function sourceReviewLabels(artwork:boolean,isCad:boolean,registered:boolean) {
-  if(artwork)return {title:"Source artwork review",description:"Compare visible strokes with the source. Select a path to edit its image coordinates.",
-    overlay:"Source artwork overlay",caption:"Dark paths: traced source artwork. Red: selected path. No building meaning or physical scale is inferred."};
-  return {title:"2D plan preview",overlay:"Canonical candidate overlay",
-    description:registered?"Source registration is available. Review any recovered outlines against the uploaded plan.":"Your selected measurements and room corners will appear here.",
-    caption:isCad?"CAD lines remain a reference until you confirm them.":"Green: proposed walls. Blue: proposed openings and selected measurements. Orange: opening being marked. Purple: source evidence needing review."};
+  if(artwork)return {title:"Traced drawing",description:"Compare the visible strokes with your floor plan. Select a path to edit its image coordinates.",
+    overlay:"Traced drawing overlay",caption:"Dark paths: traced from your floor plan. Red: selected path. No building meaning or physical scale is inferred."};
+  return {title:"2D preview",overlay:"Detected rooms and walls",
+    description:registered?"Saved room and wall outlines are shown over your floor plan.":"Your selected measurements and room corners will appear here.",
+    caption:isCad?"CAD lines remain a reference until you confirm them.":"Green: proposed walls. Blue: proposed doors, windows and selected measurements. Orange: opening being marked. Purple: evidence from your floor plan that needs review."};
 }

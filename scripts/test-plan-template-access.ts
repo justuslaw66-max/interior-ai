@@ -229,9 +229,9 @@ assert.match(
 );
 
 const planToolSectionContracts = [
-  { section: "importFloorPlan", title: "Import floor plan" },
+  { section: "importFloorPlan", title: "Upload floor plan" },
   { section: "drawRoom", title: "Draw room" },
-  { section: "openings", title: "Place doors and windows" },
+  { section: "openings", title: "Doors & windows" },
   { section: "templates", title: "Templates" },
 ] as const satisfies ReadonlyArray<{
   section: CollapsiblePlanSection;
@@ -282,7 +282,7 @@ for (const { section, title, markup } of renderedPlanToolSections) {
     `${testId} should retain native keyboard activation and collapsed state.`
   );
   assert.ok(
-    markup.includes(`>${title}</span>`),
+    markup.includes(`>${title.replace("&", "&amp;")}</span>`),
     `${testId} should keep its accessible visible section name independent from its test ID.`
   );
 }
@@ -299,7 +299,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Import floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
   "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 
@@ -311,7 +311,7 @@ assert.match(
 
 assert.match(
   consumerRoomSetupSource,
-  /data-testid="plan-start-template"[\s\S]*?onClick=\{actions\.chooseTemplate\}[\s\S]*?Starter layouts/,
+  /data-testid="plan-start-template"[\s\S]*?onClick=\{actions\.chooseTemplate\}[\s\S]*?Choose a template/,
   "The primary consumer setup should visibly expose starter layouts."
 );
 
@@ -403,13 +403,13 @@ assert.match(
 
 assert.match(
   source,
-  /testId: "plan-tool-import-2d"[\s\S]*?label: "Import 2D drawing"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
+  /testId: "plan-tool-import-2d"[\s\S]*?label: "Choose a file"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
   "The import tile should invoke the working file-picker flow."
 );
 
 assert.match(
   source,
-  /testId: "plan-tool-rectangle-wall"[\s\S]*?label: "Rectangle wall"[\s\S]*?startDrawRoomMode\("rectangle_wall"\)/,
+  /testId: "plan-tool-rectangle-wall"[\s\S]*?label: "Rectangle room"[\s\S]*?startDrawRoomMode\("rectangle_wall"\)/,
   "The rectangle wall tile should keep the existing draw-from-scratch flow."
 );
 
@@ -450,9 +450,9 @@ assert.match(
 );
 
 const wallToolMappings = [
-  ["plan-tool-straight-wall", "Straight wall", "B", "straight_wall"],
-  ["plan-tool-rectangle-wall", "Rectangle wall", "F", "rectangle_wall"],
-  ["plan-tool-arc-wall", "Arc wall", "H", "arc_wall"],
+  ["plan-tool-straight-wall", "Custom shape", "B", "straight_wall"],
+  ["plan-tool-rectangle-wall", "Rectangle room", "F", "rectangle_wall"],
+  ["plan-tool-arc-wall", "Curved wall", "H", "arc_wall"],
 ] as const;
 
 for (const [testId, label, shortcut, mode] of wallToolMappings) {
@@ -503,7 +503,7 @@ assert.match(
 
 assert.match(
   source,
-  /Choose a floor plan[\s\S]*?\{filteredPlanTemplates\.length\} starter layouts/,
+  /Choose a template[\s\S]*?\{filteredPlanTemplates\.length\} templates/,
   "Template picker heading should be concise and show the filtered option count."
 );
 
@@ -551,7 +551,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid=\{`apply-plan-template-\$\{template\.id\}`\}[\s\S]*?Empty layout/,
+  /data-testid=\{`apply-plan-template-\$\{template\.id\}`\}[\s\S]*?Empty\s*<\/button>/,
   "Template cards should keep a clear empty-layout action."
 );
 
@@ -765,7 +765,7 @@ assert.match(
 
 assert.match(
   newPlanControllerSource,
-  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a floor plan template"\);\s*\},/,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a template"\);\s*\},/,
   "The controller-owned New plan action should retain explicit choice intent before opening the template workflow."
 );
 
@@ -777,7 +777,7 @@ assert.doesNotMatch(
 
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new floor plan"[\s\S]*?onClick=\{onNewPlan\}[\s\S]*?New plan/,
+  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new design"[\s\S]*?onClick=\{onNewPlan\}[\s\S]*?New design/,
   "The command bar should expose a visible one-click New plan action."
 );
 
@@ -858,7 +858,7 @@ assert.match(
 
 assert.match(
   executeNewPlanSource,
-  /if \(!result\.ok\) \{[\s\S]*?return;\s*\}\s*detachCurrentDesignForNewDraft\(\);\s*confirmPendingReplacement\(\);\s*clearHistory\(\);\s*clearPlanAnnotations\(\);\s*showToast\("Current design saved\. New plan started\."\);/,
+  /if \(!result\.ok\) \{[\s\S]*?return;\s*\}\s*detachCurrentDesignForNewDraft\(\);\s*confirmPendingReplacement\(\);\s*clearHistory\(\);\s*clearPlanAnnotations\(\);\s*showToast\("Current design saved\. New design started\."\);/,
   "Successful preservation should detach identity, apply the template, clear history and annotations, then confirm success in order."
 );
 

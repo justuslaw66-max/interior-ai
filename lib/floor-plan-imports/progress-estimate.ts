@@ -100,7 +100,7 @@ export const FLOOR_PLAN_IMPORT_STAGE_LABELS: Record<
   ready: "Editable plan ready",
   applied: "Editable plan created",
   published: "Floor plan published",
-  failed: "Floor-plan import stopped",
+  failed: "Floor plan upload stopped",
 };
 
 function percentile(values: readonly number[], ratio: number) {

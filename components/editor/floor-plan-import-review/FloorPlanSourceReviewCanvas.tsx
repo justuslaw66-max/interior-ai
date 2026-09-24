@@ -95,7 +95,7 @@ export default function FloorPlanSourceReviewCanvas({
   const presentation = sourceReviewPresentation(sourceReview.layer, sourceOpacity, overlayOpacity);
   const visibleOverlay = sourceReviewOverlay(sourceReview.layer, overlay);
   if (!page) return <p className={dark ? "mt-2 text-xs text-neutral-300" : "mt-2 text-xs text-neutral-600"}>
-    No durable source preview is available. Keep the underlay and use guided tracing.
+    A preview of your floor plan is not available. Use guided tracing.
   </p>;
 
   const assetUrl = `${
@@ -161,7 +161,7 @@ export default function FloorPlanSourceReviewCanvas({
     : 0;
 
   return (
-    <section className="mt-3" aria-label="Interactive 2D plan preview">
+    <section className="mt-3" aria-label="Interactive 2D preview">
       <FloorPlanSourceReviewToolbar sourceReview={sourceReview} document={document} floorId={floorId} onChange={onDocumentChange}
         onUseScaleEndpoints={onUseScaleEndpoints} disabled={disabled} previewOnly={previewOnly}
         sourceId={sourceId} jobId={jobId} pageNumber={page.pageNumber} assetUrl={assetUrl}/>
@@ -198,8 +198,8 @@ export default function FloorPlanSourceReviewCanvas({
           <img
             alt={
               isCad
-                ? "Deterministic CAD linework preview"
-                : "Uploaded floor plan source"
+                ? "CAD drawing preview"
+                : "Your floor plan"
             }
             className="absolute inset-0 h-full w-full select-none"
             draggable={false}
@@ -210,11 +210,11 @@ export default function FloorPlanSourceReviewCanvas({
             ref={svgRef}
             aria-label={
               pickingScale
-                ? "Pick scale points on the source drawing"
+                ? "Pick two scale points on your floor plan"
                 : pickingRoom
-                  ? "Trace room corners on the source drawing"
+                  ? "Trace room corners on your floor plan"
                   : pickingOpening
-                    ? "Pick both ends of an opening on the source drawing"
+                    ? "Pick both ends of an opening on your floor plan"
                   : labels.overlay
             }
             className={
@@ -433,9 +433,9 @@ export default function FloorPlanSourceReviewCanvas({
             Snap to saved corners and straight lines
           </label>
           <label>
-            Uploaded plan {sourceOpacity}%
+            Floor plan image {sourceOpacity}%
             <input
-              aria-label="Uploaded plan opacity"
+              aria-label="Floor plan image opacity"
               className="block w-full accent-emerald-600"
               type="range"
               min={10}

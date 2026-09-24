@@ -114,7 +114,7 @@ async function inspectFixtureSetupBoundary(page: Page, harness: Locator) {
   const cart = page.getByTestId("cart-panel");
   if (await cart.count()) {
     // This action is disabled only while Cart is busy, including the final tab delay.
-    await expect(cart.getByRole("button", { name: "Make room cheaper", exact: true })).toBeEnabled();
+    await expect(cart.getByRole("button", { name: "Swap for cheaper", exact: true })).toBeEnabled();
   }
   return true;
 }
@@ -226,7 +226,7 @@ test("Global pointer lifecycle owns modal cancellation and exact-once continuati
   await expect(close).toBeFocused();
   const ariaSnapshot = await page.locator("body").ariaSnapshot();
   expect(ariaSnapshot).toContain('dialog "Buy external items"');
-  expect(ariaSnapshot).not.toContain("Make room cheaper");
+  expect(ariaSnapshot).not.toContain("Swap for cheaper");
 
   await page.getByTestId("retailer-confirmation-cancel").click();
   await expect(dialog).toHaveCount(0);

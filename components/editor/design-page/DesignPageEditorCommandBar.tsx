@@ -213,7 +213,7 @@ export function DesignPageEditorCommandBar({
               }
               onClick={actions.room.onFitPlan}
             >
-              Fit view
+              Fit to screen
             </button>
             <button
               type="button"
@@ -230,7 +230,7 @@ export function DesignPageEditorCommandBar({
                 )
               }
             >
-              {room.viewMode === "2d" ? "Room view" : "2D plan"}
+              {room.viewMode === "2d" ? "Switch to 3D" : "Switch to 2D"}
             </button>
           </div>
         </div>

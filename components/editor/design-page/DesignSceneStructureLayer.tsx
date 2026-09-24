@@ -216,7 +216,7 @@ export function DesignSceneStructureLayer({
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
-          title="Use the imported plan wall tools in 2D Plan to create an editable proposed copy."
+          title="Use the wall tools in 2D to create an editable copy of the uploaded plan."
           style={{
             border: "1px solid rgba(37,99,235,0.22)",
             borderRadius: 999,
@@ -229,7 +229,7 @@ export function DesignSceneStructureLayer({
             whiteSpace: "nowrap",
           }}
         >
-          Edit proposed walls in 2D Plan · openings editable on-wall
+          Walls editable in 2D · doors and windows editable on the wall
         </div>
       </Html>
     ) : null;

@@ -1,15 +1,9 @@
 "use client";
 
 import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
-import {
-  DesignPageOpeningMutationError,
-  type DesignPageOpeningMetricsPatch,
-} from "@/lib/design-page-opening-metrics";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
-import {
-  FloorPlanMeasuredPropertyMutationErrorV2,
-  floorPlanPropertyEvidenceIsEditable,
-} from "@/lib/floor-plan-measured-property-mutations";
+import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import {
   applyCanonicalOpeningCompositeMeasurements,
   hasDesignPageOpeningMeasurement,
@@ -27,6 +21,7 @@ import {
   type FloorPlanTopologyMutationContextV2,
 } from "@/lib/floor-plan-topology-mutations";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
@@ -114,10 +109,10 @@ export function useDesignPageCanonicalTopologyController({
       ) {
         return;
       }
-      const message = cause instanceof Error ? cause.message : "The opening edit is not valid.";
+      const message = userFacingErrorMessage(cause, "That door or window change couldn't be made.");
       if (lastErrorRef.current === message) return;
       lastErrorRef.current = message;
-      actions.showToast(`Opening change blocked: ${message}`);
+      actions.showToast(message);
     },
     [actions]
   );
@@ -230,12 +225,10 @@ export function useDesignPageCanonicalTopologyController({
       try {
         plan = planCanonicalOpeningMetrics({ canonical, metrics, opening });
       } catch (cause) {
-        const message = cause instanceof DesignPageOpeningMutationError
-          ? cause.message
-          : "The opening kind change is not valid.";
+        const message = userFacingErrorMessage(cause, "That door or window change couldn't be made.");
         if (lastErrorRef.current !== message) {
           lastErrorRef.current = message;
-          actions.showToast(`Opening change blocked: ${message}`);
+          actions.showToast(message);
         }
         return true;
       }
@@ -255,15 +248,10 @@ export function useDesignPageCanonicalTopologyController({
           actions.setPlanFixedElements(committed.fixedElements);
           lastErrorRef.current = null;
         } catch (cause) {
-          const message =
-            cause instanceof FloorPlanMeasuredPropertyMutationErrorV2
-              ? cause.message
-              : cause instanceof Error
-                ? cause.message
-                : "The measurement is not valid.";
+          const message = userFacingErrorMessage(cause, "That measurement couldn't be saved.");
           if (lastErrorRef.current !== message) {
             lastErrorRef.current = message;
-            actions.showToast(`Measurement change blocked: ${message}`);
+            actions.showToast(message);
           }
         }
         return true;

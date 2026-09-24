@@ -514,7 +514,7 @@ assert.match(
 );
 assert.match(
   importWorkspace,
-  /data-testid="floor-plan-import-secondary-options"[\s\S]*?<summary[\s\S]*?Previous imports & privacy/,
+  /data-testid="floor-plan-import-secondary-options"[\s\S]*?<summary[\s\S]*?Previous uploads & privacy/,
   "History and privacy should be collapsed outside the primary consumer journey."
 );
 assert.doesNotMatch(
@@ -567,7 +567,7 @@ assert.match(importHistory, /action: "cancel" \| "retry" \| "delete"/);
 assert.match(importHistory, /\/\$\{action\}`/);
 assert.match(
   importHistory,
-  /Delete this import from your history\?[\s\S]*?Any design already[\s\S]*?created from it will stay[\s\S]*?runAction\(job, "delete"\)/,
+  /Delete this upload from your history\?[\s\S]*?Any design already[\s\S]*?created from it will stay[\s\S]*?runAction\(job, "delete"\)/,
   "Completed imports should expose a confirmation before disappearing from owner history."
 );
 assert.match(
@@ -646,7 +646,7 @@ assert.match(addressSearch, /ph-no-capture/);
 assert.match(addressFields, /ph-no-capture/);
 assert.match(catalogResults, /Exact unit match/);
 assert.match(addressSearch, /floorPlanSearchFacets[\s\S]*?groupFloorPlanSearchResults/);
-assert.match(catalogResults, /Start a new design[\s\S]*?Replace current plan/);
+assert.match(catalogResults, /Start a new design[\s\S]*?Replace current design/);
 assert.match(addressSearch, /startAsNewDesign/);
 assert.match(
   newPlanController,
@@ -657,7 +657,7 @@ assert.match(orientationFeedback, /floor-plan-orientation-choice[\s\S]*?onTransf
 assert.match(orientationFeedback, /floor-plan-revision-compare-preview/);
 
 for (const prerequisite of [
-  "Register origin, orientation and scale with the tracing tools first.",
+  "Set scale with the tracing tools first.",
   "Trace at least one closed room before confirming this item.",
   "Choose the main entrance below.",
 ] as const) {
@@ -673,7 +673,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /AI detected the architectural plan[\s\S]*?editable 2D and 3D design/,
+  /AI read your floor plan[\s\S]*?editable 2D and 3D design/,
   "The primary review should explain the consumer outcome rather than internal validation mechanics."
 );
 assert.match(
@@ -683,13 +683,13 @@ assert.match(
 );
 assert.match(
   assistant,
-  /data-testid="floor-plan-import-technical-details"[\s\S]*?Technical validation details/,
+  /data-testid="floor-plan-import-technical-details"[\s\S]*?Advanced checks/,
   "Detailed validation issues should remain available but collapsed outside the main path."
 );
 assert.match(assistant, /isFloorPlanMvpBlockingIssue/);
 assert.match(
   assistant,
-  /2D plan preview[\s\S]*?Uploaded plan \{sourceOpacity\}%[\s\S]*?Saved outlines \{overlayOpacity\}%/
+  /2D preview[\s\S]*?Floor plan image \{sourceOpacity\}%[\s\S]*?Saved outlines \{overlayOpacity\}%/
 );
 assert.match(
   assistant,
@@ -723,7 +723,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /Current design unchanged[\s\S]*?Confirm review & create editable plan/,
+  /Current design unchanged[\s\S]*?Create design/,
   "The ready state should make the editable outcome and non-destructive creation clear."
 );
 assert.doesNotMatch(
@@ -738,7 +738,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /Import checks passed:[\s\S]*?canonical room[\s\S]*?recorded dimension[\s\S]*?whole-plan accuracy still depends on the source and your review/,
+  /Checks passed:[\s\S]*?room[\s\S]*?recorded dimension[\s\S]*?whole-plan accuracy still depends on the source and your review/,
   "Software checks must not be presented as independent whole-plan accuracy certification."
 );
 assert.match(
@@ -758,7 +758,7 @@ assert.match(
 );
 assert.match(
   designWorkspace,
-  /Source reference[\s\S]*?floor-plan-source-reference-toggle[\s\S]*?changeUnderlayOpacity[\s\S]*?visible === false/,
+  /Floor plan image[\s\S]*?floor-plan-source-reference-toggle[\s\S]*?changeUnderlayOpacity[\s\S]*?visible === false/,
   "The 2D furnish workspace should expose the imported source-reference toggle."
 );
 assert.match(

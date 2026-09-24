@@ -13,7 +13,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
@@ -79,7 +79,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("plan-template-dimensions-studio")).toContainText(
@@ -144,7 +144,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
@@ -213,7 +213,7 @@ export function registerTemplateTests() {
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-one_bedroom").click();
 
-    const replaceDialog = page.getByRole("dialog", { name: "Start a new plan?" });
+    const replaceDialog = page.getByRole("dialog", { name: "Start a new design?" });
     await expect(replaceDialog).toBeVisible();
     await expect(replaceDialog).toContainText("Compact 1-bed");
     await expect(page.getByTestId("new-plan-save-current")).toBeVisible();
@@ -247,7 +247,7 @@ export function registerTemplateTests() {
 
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByRole("button", { name: "Focus Living Room" })).toBeVisible({
       timeout: 10000,
@@ -272,7 +272,7 @@ export function registerTemplateTests() {
     await expect(depthInput).toHaveAttribute("data-model-value-mm", "3600");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
-      "Add 1 doorway."
+      "Add 1 door."
     );
 
     await expect(page.getByTestId("selection-inspector-fit-room")).toBeVisible();
@@ -286,7 +286,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("coohom-floor-panel")).toBeVisible();
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeVisible();
 
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toHaveAttribute("data-plan-2d-orientation", /^(normal|rotated)$/);
     const planOrientationBeforeFit = await sceneCanvas.getAttribute("data-plan-2d-orientation");
@@ -295,7 +295,7 @@ export function registerTemplateTests() {
       "data-plan-2d-orientation",
       planOrientationBeforeFit ?? "normal"
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await page.getByTestId("room-pan-navigator").scrollIntoViewIfNeeded();
 
@@ -359,7 +359,7 @@ export function registerTemplateTests() {
     await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
     await page.getByTestId("editor-workflow-ai").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("AI Design Brief")).toBeVisible();
+    await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goals")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goal-balanced")).toHaveAttribute("data-active", "true");
     await page.getByTestId("ai-layout-goal-media").click();
@@ -371,7 +371,7 @@ export function registerTemplateTests() {
     await page.getByTestId("editor-workflow-plan").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await expect(sceneCanvas).toHaveAttribute("data-plan-2d-camera-valid", "true");
     await expect(page.getByTestId("plan-tool-palette")).toBeVisible();
     await expect(page.getByTestId("plan-start-draw")).toBeVisible();
@@ -392,12 +392,13 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("room-adjacency-guide")).toHaveText("Shared wall");
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
-    await expect(page.getByTestId("room-connection-checklist")).toContainText("Needs doorway");
+    await expect(page.getByTestId("room-connection-checklist")).toContainText("Needs a door");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
-    await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add doorway");
+    await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add connecting door");
     await page.getByTestId("room-connection-add-doorway").click();
-    await expect(page.getByText("⚠️ Doorway added", { exact: true })).toBeVisible();
-    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("openings placed");
+    await expect(page.getByTestId("collision-toast")).toHaveText("Door added");
+    await expect(page.getByTestId("collision-toast")).toHaveAttribute("data-tone", "notice");
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(/(door or window|doors and windows) placed/);
     const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
     if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) === "false") {
       await selectedRoomSectionToggle.click();

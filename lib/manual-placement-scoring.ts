@@ -255,7 +255,7 @@ export function scoreManualPlacement({
   );
   if (nearestDoorDistance < 0.85) {
     score -= 24;
-    warnings.push("Too close to a door swing or doorway.");
+    warnings.push("Too close to a door or its swing.");
     suggestions.push("Move it at least 85 cm away from the door opening.");
   }
 

@@ -48,7 +48,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
     <details data-review-controls="scale" className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || !calibration || hasConflict}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
-        Set and check scale
+        Set scale
         <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${status.className}`}>{status.label}</span>
       </summary>
       {status.assumed ? <FloorPlanScaleAssumedNotice /> : null}
@@ -96,9 +96,9 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
                 onChange={(event) => setFirstVertexId(event.target.value)}
               >
                 <option value="">Matching wall corner…</option>
-                {floor.vertices.map((vertex) => (
+                {floor.vertices.map((vertex, index) => (
                   <option key={vertex.id} value={vertex.id}>
-                    {vertex.id} ({vertex.xMm}, {vertex.zMm})
+                    Corner {index + 1} ({vertex.xMm}, {vertex.zMm})
                   </option>
                 ))}
               </select>
@@ -111,9 +111,9 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
                 onChange={(event) => setSecondVertexId(event.target.value)}
               >
                 <option value="">Matching wall corner…</option>
-                {floor.vertices.map((vertex) => (
+                {floor.vertices.map((vertex, index) => (
                   <option key={vertex.id} value={vertex.id}>
-                    {vertex.id} ({vertex.xMm}, {vertex.zMm})
+                    Corner {index + 1} ({vertex.xMm}, {vertex.zMm})
                   </option>
                 ))}
               </select>

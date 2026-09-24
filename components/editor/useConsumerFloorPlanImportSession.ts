@@ -14,6 +14,7 @@ import type {
   ConsumerFloorPlanImportJob,
   ConsumerFloorPlanImportProgressEstimate,
 } from "./floor-plan-import-ui-types";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 export type ConsumerFloorPlanImportState =
   | { kind: "idle" }
@@ -53,9 +54,9 @@ export function parseFloorPlanImportIssues(value: unknown): FloorPlanReviewIssue
 export async function floorPlanImportResponseJson(response: Response) {
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {
-    throw Object.assign(
-      new Error(typeof payload.error === "string" ? payload.error : "Floor-plan import failed"),
-      { status: response.status }
+    throw new UserFacingError(
+      typeof payload.error === "string" ? payload.error : "Floor plan upload failed",
+      response.status
     );
   }
   return payload;
@@ -81,8 +82,8 @@ function progressMessage(status: FloorPlanImportStatus) {
   const messages: Partial<Record<FloorPlanImportStatus, string>> = {
     received: "Upload received",
     rendered: "Pages rendered",
-    extracted: "Reading labels and source linework",
-    selecting_page: "Waiting for source-page selection",
+    extracted: "Reading labels and drawing lines",
+    selecting_page: "Waiting for you to choose a page",
     scale_solved: "Scale checked against printed dimensions",
     topology_built: "Building rooms, walls and openings",
     validating: "Checking geometry",
@@ -108,7 +109,7 @@ export function useConsumerFloorPlanImportSession(input: {
   const [state, setState] = useState<ConsumerFloorPlanImportState>({ kind: "idle" });
   const [candidate, setCandidate] = useState<FloorPlanDocumentV2 | null>(null);
   const [issues, setIssues] = useState<FloorPlanReviewIssue[]>([]);
-  const [title, setTitle] = useState("Imported floor plan");
+  const [title, setTitle] = useState("Uploaded floor plan");
 
   useEffect(() => {
     if (!file && !resumeJobId) {
@@ -120,7 +121,7 @@ export function useConsumerFloorPlanImportSession(input: {
     const isCurrent = () => !controller.signal.aborted && runIdRef.current === runId;
     setCandidate(null);
     setIssues([]);
-    if (file) setTitle(file.name.replace(/\.[^.]+$/, "") || "Imported floor plan");
+    if (file) setTitle(file.name.replace(/\.[^.]+$/, "") || "Uploaded floor plan");
 
     const loadJob = async (statusUrl: string) => {
       const job = await loadConsumerFloorPlanImportJob(
@@ -155,7 +156,7 @@ export function useConsumerFloorPlanImportSession(input: {
             onActiveJobIdChange?.(createdJob.id);
           }
         } else {
-          setState({ kind: "working", message: "Resuming private import", progress: 5 });
+          setState({ kind: "working", message: "Resuming your upload", progress: 5 });
           next = {
             processUrl: `/api/floor-plan-imports/${encodeURIComponent(resumeJobId!)}/process`,
             statusUrl: `/api/floor-plan-imports/${encodeURIComponent(resumeJobId!)}`,
@@ -166,7 +167,7 @@ export function useConsumerFloorPlanImportSession(input: {
 
         let job = await loadJob(next.statusUrl);
         const sourceName = job.sourceAsset?.fileName;
-        if (!file && sourceName) setTitle(sourceName.replace(/\.[^.]+$/, "") || "Imported floor plan");
+        if (!file && sourceName) setTitle(sourceName.replace(/\.[^.]+$/, "") || "Uploaded floor plan");
         if (!isPausedFloorPlanImportStatus(job.status)) {
           setState({
             kind: "working",
@@ -220,7 +221,7 @@ export function useConsumerFloorPlanImportSession(input: {
             ? isCad
               ? "Sign in to privately extract and review this CAD plan."
               : "Sign in to privately detect, review, and save this plan."
-            : error.message,
+            : userFacingErrorMessage(cause, "Floor plan upload failed"),
           authenticationRequired: error.status === 401,
           ...(recoveryJobId ? { resumableJobId: recoveryJobId } : {}),
         });

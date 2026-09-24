@@ -111,7 +111,7 @@ for (const expected of [
   "navigator: state.navigator.enabled ?",
   "floorProperties: state.visibility.floorProperties ?",
   "selectionControls: resolveDesignPageViewportSelectionControlsState(",
-  "actions.showToast(\"Opening deleted\")",
+  "actions.showToast(\"Door or window deleted\")",
   "planCanvas: actions.planCanvas",
   "navigator: actions.navigator",
   'actions.floorProperties.addFloor("upper", mode)',

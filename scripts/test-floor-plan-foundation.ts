@@ -1274,7 +1274,7 @@ assert.deepEqual(
   ),
   {
     status: "invalid",
-    label: "Too close to another opening",
+    label: "Too close to another door or window",
     segment: [
       { x: -0.25, z: -2 },
       { x: 0.95, z: -2 },
@@ -1402,7 +1402,7 @@ assert.deepEqual(
   {
     valid: false,
     reason: "too_close_to_opening",
-    label: "Too close to another opening",
+    label: "Too close to another door or window",
   }
 );
 assert.deepEqual(
@@ -1420,7 +1420,7 @@ assert.deepEqual(
   {
     valid: false,
     reason: "unresolved_wall_host",
-    label: "Opening has no physical wall",
+    label: "Not on a wall",
   },
   "Roomless openings must fail closed when no physical wall topology exists."
 );
@@ -1446,7 +1446,7 @@ assert.deepEqual(
   {
     valid: false,
     reason: "unresolved_wall_host",
-    label: "Opening has no physical wall",
+    label: "Not on a wall",
   },
   "A synthetic plan rectangle must not become collision authority."
 );

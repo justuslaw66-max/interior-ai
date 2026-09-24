@@ -24,6 +24,7 @@ import {
   type DesignPageOpeningMetricsPatch,
 } from "@/lib/design-page-opening-metrics";
 import { buildEditorScene2D } from "@/lib/design-page-plan-scene";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { useDesignPageOpeningMoveAction } from "@/lib/useDesignPageOpeningMoveAction";
 import type { PlanLayerPresetId } from "@/lib/design-page-types";
 import type {
@@ -64,7 +65,7 @@ function planOpeningMetrics(
     return opening ? applyOpeningKindPlanToMetrics(opening, normalized) : normalized;
   } catch (cause) {
     if (!(cause instanceof DesignPageOpeningMutationError)) throw cause;
-    onBlocked(cause.message);
+    onBlocked(userFacingErrorMessage(cause));
     return null;
   }
 }
@@ -292,7 +293,7 @@ export function useDesignPagePlanOverlayController({
   const runPlanOverlayCommand = useCallback(
     (commandId: PlanOverlayCommandId) => {
       if (commandId.startsWith("preset:")) {
-        runHistoryTransaction("Change plan preset", () =>
+        runHistoryTransaction("Change layer preset", () =>
           runPlanOverlayCommandFromPlanAction(commandId)
         );
         return;
@@ -326,7 +327,7 @@ export function useDesignPagePlanOverlayController({
       ) {
         return;
       }
-      runHistoryTransaction("Add doorway", () =>
+      runHistoryTransaction("Add door", () =>
         handleAddSuggestedDoorwayFromPlanAction(suggestion)
       );
     },

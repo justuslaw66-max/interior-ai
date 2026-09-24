@@ -45,7 +45,7 @@ function BlockedKindPlan({
         >
           Approve reviewed override
         </button>
-      ) : <div className="mt-1">Open Pro mode to review an evidence override.</div>}
+      ) : <div className="mt-1">Open Pro tools to review an evidence override.</div>}
     </div>
   );
 }

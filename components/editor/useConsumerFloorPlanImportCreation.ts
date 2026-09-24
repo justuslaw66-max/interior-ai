@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import { floorPlanImportResponseJson } from "./useConsumerFloorPlanImportSession";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type CreationInput = {
   activeJob: ConsumerFloorPlanImportJob | null;
@@ -32,7 +33,7 @@ export function useConsumerFloorPlanImportCreation({ activeJob, title, beginActi
       router.push(`/design?designId=${encodeURIComponent(id)}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(activeJob.id)}`);
     } catch (cause) {
       if (signal.aborted) return;
-      setCreateError(cause instanceof Error ? cause.message : "Unable to create the new design");
+      setCreateError(userFacingErrorMessage(cause, "Unable to create the new design"));
     } finally {
       if (!signal.aborted) setSubmitting(false);
     }

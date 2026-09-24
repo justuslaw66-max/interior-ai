@@ -47,10 +47,10 @@ export function MultiSelectionToolbar({
           Group ({state.count})
         </div>
         <button className={buttonClass} onClick={actions.alignX}>
-          Align X center
+          Align X centre
         </button>
         <button className={buttonClass} onClick={actions.alignZ}>
-          Align Z center
+          Align Z centre
         </button>
         <select
           className={
