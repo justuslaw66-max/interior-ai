@@ -199,11 +199,11 @@ export function registerWorkspaceTests() {
     await expect(page.getByText("Saved views appear on share links and export packs.")).toBeVisible();
     await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
 
-    // Presenting outlasts the panel, so More now offers the way back.
+    // Closing the panel ends presenting, so More offers Present & export again.
     await page.getByTestId("editor-command-overflow").click();
     const presentToggle = page.getByTestId("editor-workflow-export");
-    await expect(presentToggle).toHaveAttribute("data-active", "true");
-    await expect(presentToggle).toHaveText("Back to editing");
+    await expect(presentToggle).toHaveAttribute("data-active", "false");
+    await expect(presentToggle).toHaveText("Present & export");
     await page.keyboard.press("Escape");
     await expect(presentToggle).toHaveCount(0);
 
