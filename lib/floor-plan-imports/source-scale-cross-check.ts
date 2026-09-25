@@ -1,4 +1,5 @@
 import { OUTVOTE_MIN_SUPPORT } from "./dimension-span-candidates";
+import { resolveRivalDimensionLabels } from "./rival-dimension-labels";
 import { inspectScaleFromRegisteredEvidence, type RegisteredPageEvidence, type SemanticDimensionLabel, type SourceScaleSolution, type SourceVectorSegment } from "./deterministic-evidence";
 
 const REVIEW_PREFIX = "Dimension association conflict:";
@@ -62,23 +63,29 @@ function inspectWithoutVetoes(page: RegisteredPageEvidence) {
   const everything = unpaired.size ? inspectScaleFromRegisteredEvidence(page) : pairedOnly;
   const seed = pairedOnly.solution ? pairedOnly : everything;
   const candidate = seed.solution;
-  if (!candidate) return { setAside: new Set<number>(), inspection: everything };
-  const setAside = new Set([...visionOnlyLabelsSetAside(page, candidate), ...unpairedLabelsOffScale(page, candidate)]);
+  if (!candidate) return { setAside: new Set<number>(), inspection: everything, rivals: new Map<number, number>() };
+  const rivals = resolveRivalDimensionLabels(page, candidate);
+  const setAside = new Set([...rivals.keys(), ...visionOnlyLabelsSetAside(page, candidate), ...unpairedLabelsOffScale(page, candidate)]);
   const widened = setAside.size || seed === pairedOnly ? inspectScaleFromRegisteredEvidence(page, setAside) : everything;
   // The widened answer stands only if it is the same answer with more behind it: a nudge of the median that tips a
   // paired label over the conflict tolerance would turn added support into a veto, so the seed is kept instead.
   const kept = widened.solution && Math.abs(widened.solution.millimetresPerPixel / candidate.millimetresPerPixel - 1) <= 0.01 &&
     widened.solution.dimensionCount >= candidate.dimensionCount &&
     scaleDimensionConflicts(page, widened.solution, setAside).length <= scaleDimensionConflicts(page, candidate, setAside).length;
-  return { setAside, inspection: kept ? widened : seed };
+  return { setAside, inspection: kept ? widened : seed, rivals };
 }
 
-function noteLabelsSetAside(page: RegisteredPageEvidence, candidate: SourceScaleSolution | null, setAside: Set<number>) {
+function noteLabelsSetAside(page: RegisteredPageEvidence, candidate: SourceScaleSolution | null, setAside: Set<number>, rivals: Map<number, number>) {
   if (!setAside.size || !candidate) return;
   const labels = page.semantics.dimensionLabels;
   const values = (indexes: number[]) => indexes.map((index) => `${labels[index].valueMm} mm`).join(", ");
-  const unpaired = [...setAside].filter((index) => labels[index].unpaired), outvoted = [...setAside].filter((index) => !labels[index].unpaired);
+  const rest = [...setAside].filter((index) => !rivals.has(index));
+  const unpaired = rest.filter((index) => labels[index].unpaired), outvoted = rest.filter((index) => !labels[index].unpaired);
+  for (const [loser, winner] of rivals) labels[loser].setAside = `read at the same place as ${labels[winner].valueMm} mm, which the ticks support`;
+  for (const index of outvoted) labels[index].setAside = `disagrees with ${candidate.evidence.length} locally confirmed spans`;
+  for (const index of unpaired) labels[index].setAside = `not matched to two stops and off the confirmed scale`;
   const notes = [
+    ...[...rivals].map(([loser, winner]) => `${SET_ASIDE_PREFIX} ${labels[loser].valueMm} mm read at the same place as ${labels[winner].valueMm} mm; the ticks on the plan support ${labels[winner].valueMm} mm, which is used instead.`),
     ...(outvoted.length ? [`${SET_ASIDE_PREFIX} ${values(outvoted)} disagreeing with ${candidate.evidence.length} locally confirmed spans (a misread digit, or the tick of the dimension next to it). Not used for the scale; check the printed number in the review.`] : []),
     ...(unpaired.length ? [`${SET_ASIDE_PREFIX} ${values(unpaired)} read on the plan but not matched to two stops, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`] : []),
   ];
@@ -126,10 +133,10 @@ function sourceSupportedScaleInterval(page: RegisteredPageEvidence, setAside: Se
 }
 
 export function diagnoseSourceScale(page: RegisteredPageEvidence) {
-  const { setAside, inspection: { solution: candidate, ...inspection } } = inspectWithoutVetoes(page);
+  const { setAside, rivals, inspection: { solution: candidate, ...inspection } } = inspectWithoutVetoes(page);
   const conflicts = candidate ? scaleDimensionConflicts(page, candidate, setAside) : [];
   const sourceSpanScaleInterval = sourceSupportedScaleInterval(page, setAside);
-  noteLabelsSetAside(page, candidate, setAside);
+  noteLabelsSetAside(page, candidate, setAside, rivals);
   if (sourceSpanScaleInterval && !sourceSpanScaleInterval.feasible) {
     const note = `${REVIEW_PREFIX} Raster-supported tick-to-tick dimensions do not share a common scale within ${TOLERANCE_PX} source pixels. Review the highlighted printed spans before selecting a calibration. Scale remains unconfirmed.`;
     if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);

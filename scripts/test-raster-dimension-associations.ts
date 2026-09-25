@@ -82,6 +82,7 @@ export async function testRasterDimensionAssociations() {
   console.log("Raster dimension associations: full ticks, adjacent spans, missing/ambiguous support, coordinates, contradictions and provenance PASS");
   testVisionOnlyLabelSetAside();
   testUnpairedLabelsSupportOnly();
+  testRivalLabelsResolvedByTicks();
 }
 
 /** Seven printed dimensions with raster tick support agree on 10 mm/px; one more label, read by the external vision
@@ -198,4 +199,39 @@ function testUnpairedLabelsSupportOnly() {
   const rescued = diagnoseSourceScale(build([[900, [100, 100], [190, 100]]], [[3030, [700, 100], [1003, 100]], [1520, [1100, 100], [1252, 100]]]));
   assert.equal(rescued.status, "accepted"); assert.equal(rescued.candidate!.dimensionCount, 3);
   console.log("Unpaired vectorizer numbers add support to the paired scale, never change or veto it, and find one only where the paired labels found none PASS");
+}
+
+/** d11 at 10 mm/px: the vectorizer read 3730 (its stop on the neighbouring tick, span 391 px) and the AI reader 3700
+ *  (its own hint found the right ticks, 373 px) for one printed 3730. The ticks decide: 3730 over 373 px sits on the
+ *  scale, so 3730 wins and takes that span; 3700 is set aside. */
+function testRivalLabelsResolvedByTicks() {
+  const W = 2000, H = 1500;
+  type Span = [number, [number, number], [number, number], "vectorizer" | "vision"];
+  const spans: Span[] = [[900, [100, 100], [190, 100], "vectorizer"], [2920, [300, 100], [592, 100], "vectorizer"], [4490, [50, 200], [50, 649], "vectorizer"],
+    [1340, [50, 700], [50, 834], "vectorizer"], [2040, [600, 100], [804, 100], "vectorizer"], [1285, [50, 900], [50, 1028.5], "vectorizer"],
+    [3730, [1200, 300], [1200, 673], "vectorizer"], [3700, [1200, 300], [1200, 670], "vision"]];
+  const labels: SemanticDimensionLabel[] = spans.map(([mm, a, b, kind]) => ({ valueMm: mm, centerXRatio: (a[0] + b[0]) / 2 / W, centerYRatio: (a[1] + b[1]) / 2 / H,
+    orientation: a[0] === b[0] ? "vertical" : "horizontal", confidence: kind === "vision" ? 0.55 : 0.85, evidenceKind: kind, extensionEvidenceKind: kind, rawText: String(mm),
+    extensionStart: { xRatio: a[0] / W, yRatio: a[1] / H }, extensionEnd: { xRatio: b[0] / W, yRatio: b[1] / H } }));
+  const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: W, heightPx: H, vectorPaths: [], text: [],
+    vectorSegments: spans.map(([, a, b], index) => ({ id: `seg-${index}`, pageNumber: 1, start: { x: a[0], y: a[1] }, end: { x: b[0], y: b[1] }, strokeWidthPx: 1, evidenceKind: "raster_linework" as const })),
+    semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: labels } };
+  // Found spans: the vectorizer's 3730 hint locked onto the neighbour's tick (391 px); the AI reader's found 373 px.
+  const found = new Map<number, [number, number]>([[6, [300, 691]], [7, [300, 673]]]);
+  page.dimensionSpanEvidence = { coordinateSpace: "rendered_px", imageSha256: "d".repeat(64), observations: labels.map((label, labelIndex) => {
+    const hintStart = { x: label.extensionStart!.xRatio * W, y: label.extensionStart!.yRatio * H }, hintEnd = { x: label.extensionEnd!.xRatio * W, y: label.extensionEnd!.yRatio * H };
+    const ends = found.get(labelIndex);
+    const start = ends ? { x: hintStart.x, y: ends[0] } : hintStart, end = ends ? { x: hintEnd.x, y: ends[1] } : hintEnd;
+    return { labelIndex, valueMm: label.valueMm, status: "source_supported" as const, hintStart, hintEnd, start, end, lineCoverage: 1, reason: null };
+  }) };
+  const diagnosis = diagnoseSourceScale(page);
+  assert.equal(diagnosis.status, "accepted");
+  assert.deepEqual(diagnosis.setAsideLabelIndexes, [7], "the AI reader's 3700 is set aside");
+  assert.ok(diagnosis.candidate!.evidence.some((entry) => entry.valueMm === 3730 && Math.abs(entry.observedLengthPx - 373) < 1), "3730 joins the scale over the span the AI reader's hint found");
+  assert.ok(page.semantics.notes.some((note) => note.startsWith("Printed dimension set aside: 3700 mm read at the same place as 3730 mm")));
+  assert.equal(diagnosis.conflicts.length, 0);
+  assert.match(page.semantics.dimensionLabels[7].setAside ?? "", /same place as 3730 mm/, "the loser carries why it was set aside");
+  assert.ok(sourceProposalAnnotations(page, "s", "t").some((entry) => /3700.*Set aside by the scale check: read at the same place as 3730 mm/.test(entry.text)),
+    "the printed-dimension proposal the reviewer sees says so too");
+  console.log("Rival readings of one printed number resolved by the ticks: the value on the scale wins and keeps the better span PASS");
 }
