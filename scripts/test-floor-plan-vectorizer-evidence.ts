@@ -63,7 +63,7 @@ async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbo
     vectorSegments: [
       ...evidence.wallEdges.map((edge) => edge.sourcePx),
       ...(linework === "walls+bar"
-        ? evidence.semantics.dimensionLabels.filter((label) => /m$/.test(label.rawText ?? "")).map((label) => label.spanSourcePx)
+        ? evidence.semantics.dimensionLabels.flatMap((label) => /m$/.test(label.rawText ?? "") && label.spanSourcePx ? [label.spanSourcePx] : [])
         : []),
     ].map((span, index) => ({
       id: `raster-${index + 1}`,
@@ -119,6 +119,12 @@ async function main() {
       page.dimensionSpanEvidence?.observations.every((entry) => entry.status === "source_supported"),
       true
     );
+    // Numbers the vectorizer read but could not pair with two stops arrive as unpaired labels with a search hint at
+    // the printed length; without the raster tick finder (not run here) they neither support nor veto the scale.
+    const unpaired = page.semantics.dimensionLabels.filter((label) => label.unpaired);
+    assert.equal(unpaired.length, evidence.semantics.dimensionLabels.filter((label) => !label.spanSourcePx).length);
+    assert.ok(unpaired.every((label) => label.extensionStart && label.extensionEnd && label.confidence < 0.85));
+    assert.ok(scale.dimensionCount <= evidence.semantics.dimensionLabels.length - unpaired.length, `${name}: the paired spans alone carry the scale`);
     const floor = document.floors[0];
     assert.equal(floor.rooms.length, evidence.rooms.length, `${name}: every vectorizer room becomes a canonical room`);
     const validation = validateFloorPlanDocumentV2(document);

@@ -254,6 +254,8 @@ A page that prints no dimensions gets no accepted scale: the vectorizer's `estim
 
 A printed dimension read only by the AI reader that conflicts with the locally confirmed spans does not veto the scale on its own: when at least six locally confirmed spans agree, that label is set aside, the diagnosis notes it ("Printed dimension set aside: ..."), and the review lists it for a look. A conflict backed by local OCR still rejects the cluster.
 
+The vectorizer also passes on the numbers it read but could not pair with two stops (`dimensionLabels` without `spanSourcePx`, marked `unpaired` on registration), each with a search hint of the printed length on its dimension line for the tick finder. Such labels may add support to the scale but never change or veto it: the paired labels (measured spans, or hints from another reader) find the scale first, exactly as before; unpaired spans that sit on it are let in; off-scale ones are set aside as review items ("Printed dimension set aside: ... not matched to two stops"); a widened answer that would tip a paired label over the conflict tolerance is discarded for the paired one; and only where the paired labels reach no answer may the unpaired ones find a scale.
+
 ## Canonical rendering and compatibility
 
 `compileFloorPlanDocumentV2` produces the shared render model. The 2D and 3D renderers use that same object; a geometry-hash mismatch blocks canonical rendering instead of silently falling back to approximate legacy walls. Canonical wall IDs, opening spans and polygonal structures are rendered directly in both modes. Room outer loops and hole loops compile once and are reused for 2D fill, 3D floors/ceilings and placement containment, so shafts, cores and internal voids cannot become usable floor area.

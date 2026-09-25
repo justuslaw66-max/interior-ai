@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.6.0",
+ "exporterVersion": "app-evidence-0.7.0",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -9,7 +9,7 @@
  "scale": {
   "millimetresPerPixel": 6.4758,
   "basis": "explicit_dimension",
-  "dimensionCount": 13,
+  "dimensionCount": 20,
   "needsReview": false,
   "chainsChecked": [],
   "estimate": null
@@ -967,6 +967,139 @@
      ]
     ],
     "readingClean": true
+   },
+   {
+    "valueMm": 900,
+    "rawText": "900",
+    "centerXRatio": 0.447549,
+    "centerYRatio": 0.433371,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.422498,
+     "yRatio": 0.440929
+    },
+    "extensionEnd": {
+     "xRatio": 0.472599,
+     "yRatio": 0.440929
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 3620,
+    "rawText": "3620",
+    "centerXRatio": 0.775234,
+    "centerYRatio": 0.051232,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.674477,
+     "yRatio": 0.058791
+    },
+    "extensionEnd": {
+     "xRatio": 0.875992,
+     "yRatio": 0.058791
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 1520,
+    "rawText": "1520",
+    "centerXRatio": 0.44106,
+    "centerYRatio": 0.965286,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.398753,
+     "yRatio": 0.973124
+    },
+    "extensionEnd": {
+     "xRatio": 0.483367,
+     "yRatio": 0.973124
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 900,
+    "rawText": "900",
+    "centerXRatio": 0.517484,
+    "centerYRatio": 0.43449,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.492433,
+     "yRatio": 0.442329
+    },
+    "extensionEnd": {
+     "xRatio": 0.542534,
+     "yRatio": 0.442329
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 3035,
+    "rawText": "3035",
+    "centerXRatio": 0.217556,
+    "centerYRatio": 0.051232,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.133081,
+     "yRatio": 0.058791
+    },
+    "extensionEnd": {
+     "xRatio": 0.302031,
+     "yRatio": 0.058791
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 3035,
+    "rawText": "3035",
+    "centerXRatio": 0.394196,
+    "centerYRatio": 0.051232,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.309721,
+     "yRatio": 0.058791
+    },
+    "extensionEnd": {
+     "xRatio": 0.478671,
+     "yRatio": 0.058791
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 3035,
+    "rawText": "3035",
+    "centerXRatio": 0.570836,
+    "centerYRatio": 0.051232,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.486361,
+     "yRatio": 0.058791
+    },
+    "extensionEnd": {
+     "xRatio": 0.655311,
+     "yRatio": 0.058791
+    },
+    "extensionEvidenceKind": "vectorizer"
    }
   ],
   "openingSymbols": [

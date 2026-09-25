@@ -112,6 +112,7 @@ export type SemanticDimensionLabel = {
   extensionStart?: SemanticRatioPoint;
   extensionEnd?: SemanticRatioPoint;
   extensionEvidenceKind?: SemanticEvidenceKind;
+  unpaired?: boolean; // read but not paired with two stops: the extension is a search hint; may support a scale, never veto one
   confidence: number;
   evidenceKind?: SemanticEvidenceKind;
 };
@@ -671,16 +672,14 @@ function textGapDimensionCandidates(
  * Semantic positions select nearby vector dimension lines; final scale comes
  * from the vector length and printed integer value, never a model coordinate.
  */
-export function solveScaleFromRegisteredEvidence(
-  page: RegisteredPageEvidence
-): SourceScaleSolution | null {
+export function solveScaleFromRegisteredEvidence(page: RegisteredPageEvidence): SourceScaleSolution | null {
   return inspectScaleFromRegisteredEvidence(page).solution;
 }
 
-export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence): SourceScaleInspection {
+export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence, setAside: ReadonlySet<number> = new Set()): SourceScaleInspection {
   const dimensions = page.semantics.dimensionLabels.filter(
-    (dimension) =>
-      Number.isSafeInteger(dimension.valueMm) &&
+    (dimension, labelIndex) =>
+      !setAside.has(labelIndex) && Number.isSafeInteger(dimension.valueMm) &&
       dimension.valueMm >= 100 &&
       dimension.valueMm <= 100_000 &&
       dimension.confidence >= 0.45

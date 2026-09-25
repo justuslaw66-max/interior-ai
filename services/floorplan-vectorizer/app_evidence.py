@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.6.0"
+VERSION = "app-evidence-0.7.0"
 INNER_SIGN = 1
 ROOM_TYPES = (
     ("shelter", ("SHELTER", "HS", "H.S", "BOMB")),
@@ -1960,6 +1960,33 @@ def build(m, gray=None):
                          "orientation": "horizontal" if d["axis"] == "x" else "vertical", "extensionStart": S.ratio(*p0), "extensionEnd": S.ratio(*p1),
                          "extensionEvidenceKind": "vectorizer", "confidence": conf, "evidenceKind": "vectorizer",
                          "spanSourcePx": [S(*p0), S(*p1)], "readingClean": bool(d.get("clean"))})
+    # Numbers stage 1 tied to a dimension line but could not pair with two stops are still printed dimensions: the app
+    # gets them as labels without a measured span, with a search hint of the printed length about the number on the
+    # dimension line beside it (when stage 1 solved a scale) so that its own tick finder can confirm them.
+    spanned = [d.get("tc") or [0, 0] for d in m.get("dim_spans", [])]
+    mm_px = m.get("mm_per_px")
+    for t in m.get("texts", []):
+        s_ = str(t.get("s", "")).strip()
+        if not s_.isdigit() or not (100 <= int(s_) <= 100000) or not t.get("dim_by"):
+            continue
+        x0, y0, w, h = t["box"]
+        cx, cy = x0 + w / 2, y0 + h / 2
+        if any(abs(tc[0] - cx) < 6 and abs(tc[1] - cy) < 6 for tc in spanned):
+            continue
+        vertical = bool(t.get("vertical"))
+        r = S.ratio(cx, cy)
+        lab = {"valueMm": int(s_), "rawText": s_, "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"],
+               "orientation": "vertical" if vertical else "horizontal", "confidence": 0.7 if t.get("vote_strong") else 0.55,
+               "evidenceKind": "vectorizer", "readingClean": False}
+        if mm_px:
+            L = int(s_) / mm_px
+            along, perp = (cy, cx) if vertical else (cx, cy)
+            near = [l for l in m.get("lines", []) if l["o"] == ("v" if vertical else "h") and abs(l["c"] - perp) <= 1.2 * m.get("text_h", h)
+                    and l["a"] - m.get("text_h", h) <= along <= l["b"] + m.get("text_h", h)]
+            lc = min(near, key=lambda l: abs(l["c"] - perp))["c"] if near else perp
+            p0, p1 = ((lc, along - L / 2), (lc, along + L / 2)) if vertical else ((along - L / 2, lc), (along + L / 2, lc))
+            lab.update({"extensionStart": S.ratio(*p0), "extensionEnd": S.ratio(*p1), "extensionEvidenceKind": "vectorizer"})
+        sem_dims.append(lab)
     def swing_geometry(g):
         """where the hinge is and which way the leaf swings, as source-pixel points (the app works out start / end and
         left / right against the direction of ITS wall)"""

@@ -24,23 +24,68 @@ function centeredSpan(segment: SourceVectorSegment, label: SemanticDimensionLabe
   return { segment, length, distance };
 }
 
-/** Vision-only labels that a well-supported cluster outvotes: their indexes, so that neither the conflict list nor the
- *  source-span interval counts them (they are reported as review items instead). */
+/** Labels that may not veto the candidate: vision-only labels a well-supported cluster outvotes, and numbers the
+ *  vectorizer read but could not pair with two stops (their span is a search hint; a disagreement is expected noise).
+ *  Their indexes, so that neither the conflict list nor the source-span interval counts them (they are reported as
+ *  review items instead). */
 export function visionOnlyLabelsSetAside(page: RegisteredPageEvidence, solution: SourceScaleSolution | null): Set<number> {
   const aside = new Set<number>();
-  if (!solution || solution.evidence.length < VISION_ONLY_VETO_MIN_SUPPORT) return aside;
+  if (!solution) return aside;
+  const outvotesVision = solution.evidence.length >= VISION_ONLY_VETO_MIN_SUPPORT;
   for (const conflict of scaleDimensionConflicts(page, solution, new Set())) {
     const label = page.semantics.dimensionLabels[conflict.labelIndex];
-    if (label?.evidenceKind === "vision") aside.add(conflict.labelIndex);
+    if (label?.unpaired || (outvotesVision && label?.evidenceKind === "vision")) aside.add(conflict.labelIndex);
   }
   return aside;
 }
 
+const unpairedLabelIndexes = (page: RegisteredPageEvidence) =>
+  new Set(page.semantics.dimensionLabels.flatMap((label, index) => label.unpaired ? [index] : []));
+
+/** Unpaired labels whose hint-found span does not sit on the candidate scale to the tolerance: joining a cluster at
+ *  a few per cent off would sink it on the residual rule, so they are left out rather than argued with. */
+function unpairedLabelsOffScale(page: RegisteredPageEvidence, solution: SourceScaleSolution): number[] {
+  return [...unpairedLabelIndexes(page)].filter((labelIndex) => {
+    const observed = page.dimensionSpanEvidence?.observations.find((entry) => entry.labelIndex === labelIndex);
+    if (!observed?.start || !observed.end || observed.status !== "source_supported") return false;
+    const length = Math.hypot(observed.end.x - observed.start.x, observed.end.y - observed.start.y);
+    const expected = observed.valueMm / solution.millimetresPerPixel;
+    return Math.abs(expected - length) > Math.min(TOLERANCE_PX, 0.01 * expected);
+  });
+}
+
+/** The inspection with the labels that may not veto it left out. Paired labels (two stops measured by the vectorizer,
+ *  or hints from another reader) decide the scale on their own first, exactly as before unpaired labels existed;
+ *  unpaired labels that agree with that answer are then let in to strengthen it, and the ones that disagree are set
+ *  aside as review items. Only when the paired labels reach no answer do the unpaired ones get to find one, again
+ *  with the disagreeing ones set aside. */
+function inspectWithoutVetoes(page: RegisteredPageEvidence) {
+  const unpaired = unpairedLabelIndexes(page);
+  const pairedOnly = inspectScaleFromRegisteredEvidence(page, unpaired);
+  const everything = unpaired.size ? inspectScaleFromRegisteredEvidence(page) : pairedOnly;
+  const seed = pairedOnly.solution ? pairedOnly : everything;
+  const candidate = seed.solution;
+  if (!candidate) return { setAside: new Set<number>(), inspection: everything };
+  const setAside = new Set([...visionOnlyLabelsSetAside(page, candidate), ...unpairedLabelsOffScale(page, candidate)]);
+  const widened = setAside.size || seed === pairedOnly ? inspectScaleFromRegisteredEvidence(page, setAside) : everything;
+  // The widened answer stands only if it is the same answer with more behind it: a nudge of the median that tips a
+  // paired label over the conflict tolerance would turn added support into a veto, so the seed is kept instead.
+  const kept = widened.solution && Math.abs(widened.solution.millimetresPerPixel / candidate.millimetresPerPixel - 1) <= 0.01 &&
+    widened.solution.dimensionCount >= candidate.dimensionCount &&
+    scaleDimensionConflicts(page, widened.solution, setAside).length <= scaleDimensionConflicts(page, candidate, setAside).length;
+  return { setAside, inspection: kept ? widened : seed };
+}
+
 function noteLabelsSetAside(page: RegisteredPageEvidence, candidate: SourceScaleSolution | null, setAside: Set<number>) {
   if (!setAside.size || !candidate) return;
-  const values = [...setAside].map((index) => `${page.semantics.dimensionLabels[index].valueMm} mm`).join(", ");
-  const note = `${SET_ASIDE_PREFIX} ${values} read by the AI reader only, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`;
-  if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);
+  const labels = page.semantics.dimensionLabels;
+  const values = (indexes: number[]) => indexes.map((index) => `${labels[index].valueMm} mm`).join(", ");
+  const unpaired = [...setAside].filter((index) => labels[index].unpaired), vision = [...setAside].filter((index) => !labels[index].unpaired);
+  const notes = [
+    ...(vision.length ? [`${SET_ASIDE_PREFIX} ${values(vision)} read by the AI reader only, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`] : []),
+    ...(unpaired.length ? [`${SET_ASIDE_PREFIX} ${values(unpaired)} read on the plan but not matched to two stops, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`] : []),
+  ];
+  for (const note of notes) if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);
 }
 
 /** Cross-check nearby centered dimension spans independently of the winning ratio cluster. */
@@ -84,8 +129,7 @@ function sourceSupportedScaleInterval(page: RegisteredPageEvidence, setAside: Se
 }
 
 export function diagnoseSourceScale(page: RegisteredPageEvidence) {
-  const { solution: candidate, ...inspection } = inspectScaleFromRegisteredEvidence(page);
-  const setAside = visionOnlyLabelsSetAside(page, candidate);
+  const { setAside, inspection: { solution: candidate, ...inspection } } = inspectWithoutVetoes(page);
   const conflicts = candidate ? scaleDimensionConflicts(page, candidate, setAside) : [];
   const sourceSpanScaleInterval = sourceSupportedScaleInterval(page, setAside);
   noteLabelsSetAside(page, candidate, setAside);

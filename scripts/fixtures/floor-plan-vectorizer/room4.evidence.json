@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.6.0",
+ "exporterVersion": "app-evidence-0.7.0",
  "page": {
   "widthPx": 828,
   "heightPx": 957,
@@ -9,7 +9,7 @@
  "scale": {
   "millimetresPerPixel": 16.6028,
   "basis": "explicit_dimension",
-  "dimensionCount": 17,
+  "dimensionCount": 18,
   "needsReview": false,
   "chainsChecked": [
    {
@@ -1204,6 +1204,25 @@
      ]
     ],
     "readingClean": false
+   },
+   {
+    "valueMm": 1900,
+    "rawText": "1900",
+    "centerXRatio": 0.202492,
+    "centerYRatio": 0.422433,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.133387,
+     "yRatio": 0.434153
+    },
+    "extensionEnd": {
+     "xRatio": 0.271598,
+     "yRatio": 0.434153
+    },
+    "extensionEvidenceKind": "vectorizer"
    }
   ],
   "openingSymbols": [

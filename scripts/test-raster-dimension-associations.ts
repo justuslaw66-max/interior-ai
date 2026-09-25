@@ -81,6 +81,7 @@ export async function testRasterDimensionAssociations() {
   assert.ok(annotations.every((entry) => entry.scope === "reference" && entry.geometry.kind === "source_drawing" && entry.provenance.confidence === 0));
   console.log("Raster dimension associations: full ticks, adjacent spans, missing/ambiguous support, coordinates, contradictions and provenance PASS");
   testVisionOnlyLabelSetAside();
+  testUnpairedLabelsSupportOnly();
 }
 
 /** Seven printed dimensions with raster tick support agree on 10 mm/px; one more label, read by the external vision
@@ -126,4 +127,57 @@ function testVisionOnlyLabelSetAside() {
   const thin = build("vision", spans.slice(0, 3));
   assert.equal(diagnoseSourceScale(thin).status, "rejected_associations", "Three spans are not enough to outvote a reader");
   console.log("Vision-only dimension misread set aside by a well-supported cluster; OCR readings and thin clusters still veto PASS");
+}
+
+/** Numbers the vectorizer read but could not pair with two stops (`unpaired`, hint-found span): they may add support
+ *  to the scale the paired labels found, never change it or veto it, and they may find a scale only where the paired
+ *  labels found none. */
+function testUnpairedLabelsSupportOnly() {
+  const W = 2000, H = 1500;
+  type Span = [number, [number, number], [number, number]];
+  const paired: Span[] = [[900, [100, 100], [190, 100]], [2920, [300, 100], [592, 100]], [4490, [50, 200], [50, 649]]];
+  const label = (mm: number, a: [number, number], b: [number, number], unpaired: boolean): SemanticDimensionLabel => ({
+    valueMm: mm, centerXRatio: (a[0] + b[0]) / 2 / W, centerYRatio: (a[1] + b[1]) / 2 / H, orientation: a[0] === b[0] ? "vertical" : "horizontal",
+    confidence: unpaired ? 0.7 : 0.85, evidenceKind: "vectorizer", extensionEvidenceKind: "vectorizer", rawText: String(mm), ...(unpaired ? { unpaired } : {}),
+    extensionStart: { xRatio: a[0] / W, yRatio: a[1] / H }, extensionEnd: { xRatio: b[0] / W, yRatio: b[1] / H } });
+  // `found` is where the tick finder put each label's span (the hint is the label's own extension).
+  const build = (pairedSpans: Span[], unpairedSpans: Span[], found: Map<number, [number, number]> = new Map()) => {
+    const all = [...pairedSpans, ...unpairedSpans];
+    const labels = all.map(([mm, a, b], index) => label(mm, a, b, index >= pairedSpans.length));
+    const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: W, heightPx: H, vectorPaths: [], text: [],
+      vectorSegments: all.map(([, a, b], index) => ({ id: `seg-${index}`, pageNumber: 1, start: { x: a[0], y: a[1] }, end: { x: b[0], y: b[1] },
+        strokeWidthPx: 1, evidenceKind: "raster_linework" as const })),
+      semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: labels } };
+    // Hints are laid out from the label's ratios exactly as the tick finder does, so they compare equal.
+    page.dimensionSpanEvidence = { coordinateSpace: "rendered_px", imageSha256: "c".repeat(64), observations: all.map(([mm, a, b], labelIndex) => {
+      const { extensionStart, extensionEnd } = labels[labelIndex];
+      const hintStart = { x: extensionStart!.xRatio * W, y: extensionStart!.yRatio * H }, hintEnd = { x: extensionEnd!.xRatio * W, y: extensionEnd!.yRatio * H };
+      const ends = found.get(labelIndex);
+      const start = ends ? { x: ends[0], y: a[1] } : hintStart, end = ends ? { x: ends[1], y: b[1] } : hintEnd;
+      return { labelIndex, valueMm: mm, status: "source_supported" as const, hintStart, hintEnd, start, end, lineCoverage: 1, reason: null };
+    }) };
+    return page;
+  };
+  const alone = diagnoseSourceScale(build(paired, []));
+  assert.equal(alone.status, "accepted"); assert.equal(alone.candidate!.dimensionCount, 3);
+  // Agreeing unpaired labels strengthen the answer.
+  const helped = diagnoseSourceScale(build(paired, [[3030, [700, 100], [1003, 100]], [1520, [1100, 100], [1252, 100]]]));
+  assert.equal(helped.status, "accepted"); assert.equal(helped.candidate!.dimensionCount, 5, "two agreeing unpaired labels join the three paired ones");
+  assert.ok(Math.abs(helped.candidate!.millimetresPerPixel - 10) < 0.02); assert.deepEqual(helped.setAsideLabelIndexes, []);
+  // A disagreeing unpaired label (its hint-found span 4 % short) is set aside as a review item, never a veto.
+  const off = build(paired, [[3030, [700, 100], [1003, 100]], [1520, [1100, 100], [1252, 100]]], new Map([[4, [1100, 1246]]]));
+  const aside = diagnoseSourceScale(off);
+  assert.equal(aside.status, "accepted", "an unpaired disagreement does not veto"); assert.equal(aside.candidate!.dimensionCount, 4);
+  assert.deepEqual(aside.setAsideLabelIndexes, [4]); assert.equal(aside.conflicts.length, 0);
+  assert.ok(off.semantics.notes.some((note) => note.startsWith("Printed dimension set aside: 1520 mm read on the plan but not matched to two stops")));
+  // A paired label the seed already accepted at the edge of tolerance is not tipped into a conflict by the widened
+  // median: the paired answer is kept, the unpaired labels add nothing.
+  const edge: Span[] = [[900, [100, 100], [190, 100]], [2920, [300, 100], [592, 100]], [4490, [50, 200], [50, 649]], [2000, [1300, 100], [1502.9, 100]]];
+  const nudged = diagnoseSourceScale(build(edge, [[3030, [700, 100], [1003, 100]], [1520, [1100, 100], [1252, 100]], [2500, [1600, 100], [1850, 100]]]));
+  assert.equal(nudged.status, "accepted", "the paired answer stands"); assert.equal(nudged.conflicts.length, 0);
+  assert.ok(nudged.candidate!.dimensionCount >= 4);
+  // Where the paired labels reach no answer, the unpaired ones may find one.
+  const rescued = diagnoseSourceScale(build([[900, [100, 100], [190, 100]]], [[3030, [700, 100], [1003, 100]], [1520, [1100, 100], [1252, 100]]]));
+  assert.equal(rescued.status, "accepted"); assert.equal(rescued.candidate!.dimensionCount, 3);
+  console.log("Unpaired vectorizer numbers add support to the paired scale, never change or veto it, and find one only where the paired labels found none PASS");
 }

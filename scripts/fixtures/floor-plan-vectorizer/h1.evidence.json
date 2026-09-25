@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.6.0",
+ "exporterVersion": "app-evidence-0.7.0",
  "page": {
   "widthPx": 1220,
   "heightPx": 1046,
@@ -9,7 +9,7 @@
  "scale": {
   "millimetresPerPixel": 14.5784,
   "basis": "explicit_dimension",
-  "dimensionCount": 25,
+  "dimensionCount": 30,
   "needsReview": false,
   "chainsChecked": [
    {
@@ -1724,6 +1724,101 @@
      ]
     ],
     "readingClean": true
+   },
+   {
+    "valueMm": 1700,
+    "rawText": "1700",
+    "centerXRatio": 0.389907,
+    "centerYRatio": 0.548288,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.342116,
+     "yRatio": 0.560154
+    },
+    "extensionEnd": {
+     "xRatio": 0.437698,
+     "yRatio": 0.560154
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 2700,
+    "rawText": "2700",
+    "centerXRatio": 0.613905,
+    "centerYRatio": 0.323795,
+    "orientation": "vertical",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.624396,
+     "yRatio": 0.235264
+    },
+    "extensionEnd": {
+     "xRatio": 0.624396,
+     "yRatio": 0.412325
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 1200,
+    "rawText": "1200",
+    "centerXRatio": 0.138773,
+    "centerYRatio": 0.089945,
+    "orientation": "horizontal",
+    "confidence": 0.55,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.105038,
+     "yRatio": 0.102134
+    },
+    "extensionEnd": {
+     "xRatio": 0.172508,
+     "yRatio": 0.102134
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 1600,
+    "rawText": "1600",
+    "centerXRatio": 0.482736,
+    "centerYRatio": 0.548288,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.437756,
+     "yRatio": 0.560154
+    },
+    "extensionEnd": {
+     "xRatio": 0.527716,
+     "yRatio": 0.560154
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
+    "valueMm": 2300,
+    "rawText": "2300",
+    "centerXRatio": 0.630773,
+    "centerYRatio": 0.861127,
+    "orientation": "vertical",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.641264,
+     "yRatio": 0.785712
+    },
+    "extensionEnd": {
+     "xRatio": 0.641264,
+     "yRatio": 0.936542
+    },
+    "extensionEvidenceKind": "vectorizer"
    }
   ],
   "openingSymbols": [

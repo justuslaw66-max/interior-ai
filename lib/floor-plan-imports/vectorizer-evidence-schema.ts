@@ -111,9 +111,11 @@ const vectorizerEvidenceSchema = z.object({
           centerXRatio: z.number().min(0).max(1),
           centerYRatio: z.number().min(0).max(1),
           orientation: z.enum(["horizontal", "vertical"]),
-          extensionStart: ratioPoint,
-          extensionEnd: ratioPoint,
-          spanSourcePx: z.tuple([point, point]),
+          // A label the vectorizer read but could not pair with two stops carries no measured span; it may still
+          // carry a search hint (the printed length about the number, on its dimension line) for the tick finder.
+          extensionStart: ratioPoint.optional(),
+          extensionEnd: ratioPoint.optional(),
+          spanSourcePx: z.tuple([point, point]).optional(),
           confidence: z.number().min(0).max(1),
         })
       )
