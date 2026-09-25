@@ -2,16 +2,18 @@
 
 import type { FloorPlanAnnotationV2, FloorPlanSourceCalibrationV2 } from "@/lib/floor-plan-document-v2";
 
-/** Badge and copy for the scale step's header, by what the review has so far. */
+/** Badge and copy for the scale step's header, by what the review has so far; `open` is whether the step starts
+ *  expanded and `offerOpenings` whether the measured door openings are still offered (no scale yet, or an assumed one). */
 export function scaleReviewStatus(
   hasConflict: boolean,
   calibration: FloorPlanSourceCalibrationV2 | undefined
-): { label: string; className: string; assumed: boolean } {
+): { label: string; className: string; assumed: boolean; open: boolean; offerOpenings: boolean } {
   const assumed = calibration?.primaryMeasurement?.basis === "assumed_opening_width";
-  if (hasConflict) return { label: "Scale conflict", className: "bg-red-100 text-red-800", assumed };
-  if (assumed) return { label: "Set from an assumed width", className: "bg-amber-100 text-amber-900", assumed };
-  if (calibration) return { label: "Set", className: "bg-emerald-100 text-emerald-800", assumed };
-  return { label: "Start here", className: "bg-blue-100 text-blue-800", assumed };
+  const flags = { assumed, open: hasConflict || !calibration || assumed, offerOpenings: !calibration || assumed };
+  if (hasConflict) return { label: "Scale conflict", className: "bg-red-100 text-red-800", ...flags };
+  if (assumed) return { label: "Set from an assumed width", className: "bg-amber-100 text-amber-900", ...flags };
+  if (calibration) return { label: "Set", className: "bg-emerald-100 text-emerald-800", ...flags };
+  return { label: "Start here", className: "bg-blue-100 text-blue-800", ...flags };
 }
 
 export function FloorPlanScaleAssumedNotice() {

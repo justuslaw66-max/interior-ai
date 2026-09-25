@@ -37,6 +37,7 @@ const APPROVED_STAGE_METRIC_KEYS = new Set([
   "geometryMaxSourceDeviationPx",
   "manualRepairCount",
   "scaleSolved",
+  "scaleAssumed",
   "scaleDimensionCount",
   "scaleResidualMm",
   "scaleSingleSegmentCandidateCount",

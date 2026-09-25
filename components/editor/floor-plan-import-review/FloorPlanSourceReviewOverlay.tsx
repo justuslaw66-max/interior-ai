@@ -48,6 +48,8 @@ export default function FloorPlanSourceReviewOverlay(props: {
   opacity: number; annotations: FloorPlanAnnotationV2[]; selectedId: string;
   picking: boolean; onSelect: (id: string) => void;
 }) {
+  // An invisible layer (the compare wipe draws its own copy of the trace) is not selectable either.
+  if (props.opacity === 0) return null;
   return <g fill="none" opacity={props.opacity}>
     <SourceArtwork {...props} />
     <PlanOutlines {...props} />
