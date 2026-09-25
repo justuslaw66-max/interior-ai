@@ -3,6 +3,7 @@ import {
   addCatalogCardItemToRoom,
   fillCatalogSearch,
   waitForCatalogReady,
+  waitForEditorHydration,
 } from "./variant-test-utils";
 
 // The command bar's Download (audit findings SX2 and PR6): pictures for everyone, a PDF with the
@@ -38,6 +39,7 @@ async function openEditor(page: Page, signedIn: boolean) {
   });
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await waitForEditorHydration(page);
 }
 
 // My designs only shows in More once the session has loaded, so it marks a signed-in editor.
