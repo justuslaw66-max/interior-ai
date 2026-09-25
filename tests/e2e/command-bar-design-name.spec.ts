@@ -7,6 +7,7 @@ import {
   getBetaPrismaClient,
 } from "./beta-seed";
 import { getE2EBaseUrl } from "./release-environment";
+import { waitForEditorHydration } from "./variant-test-utils";
 
 // The design's name (audit finding F): in the bar from 1280px, renamed in one undoable step, kept
 // on this device for guests and saved to the design row, which My designs lists, when signed in.
@@ -27,6 +28,7 @@ async function openGuestEditor(page: Page) {
   });
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await waitForEditorHydration(page);
 }
 
 async function renameTo(page: Page, opener: Locator, name: string) {
