@@ -121,12 +121,30 @@ function testVisionOnlyLabelSetAside() {
   assert.equal(diagnosis.conflicts.length, 0);
   assert.ok(vision.semantics.notes.some((note) => note.startsWith("Printed dimension set aside: 3650 mm")));
   assert.ok(Math.abs(solveCrossCheckedScale(vision)!.millimetresPerPixel - 10) < 0.05);
+  // A locally read contradiction is outvoted the same way (d11: the vectorizer read 2510 for a printed 2570 among
+  // eight agreeing spans); it is a review item, not a veto.
   const ocr = build("ocr");
-  assert.equal(diagnoseSourceScale(ocr).status, "rejected_associations", "A locally read contradiction still vetoes");
-  assert.equal(solveCrossCheckedScale(ocr), null);
+  assert.equal(diagnoseSourceScale(ocr).status, "accepted", "A locally read contradiction is outvoted by seven confirmed spans");
+  assert.deepEqual(diagnoseSourceScale(ocr).setAsideLabelIndexes, [7]);
   const thin = build("vision", spans.slice(0, 3));
   assert.equal(diagnoseSourceScale(thin).status, "rejected_associations", "Three spans are not enough to outvote a reader");
-  console.log("Vision-only dimension misread set aside by a well-supported cluster; OCR readings and thin clusters still veto PASS");
+  assert.equal(solveCrossCheckedScale(thin), null);
+  // A disagreement close enough to fall inside the cluster window (2.5 %) used to sink every cluster on the residual
+  // rule; eight tight spans now outvote it, four do not.
+  const near = (supported: Array<[number, [number, number], [number, number]]>) => {
+    const page = build("vectorizer", supported);
+    page.semantics.dimensionLabels[supported.length].valueMm = 3280;   // 320 px at 10 mm/px says 3200; printed 3280 is 2.5 % off
+    page.dimensionSpanEvidence!.observations[supported.length].valueMm = 3280;
+    return page;
+  };
+  const eight = near([...spans, [1200, [1100, 300], [1220, 300]]]);
+  const outvoted = diagnoseSourceScale(eight);
+  assert.equal(outvoted.status, "accepted", "Eight tight spans outvote a 2.5 % disagreement inside the cluster window");
+  assert.equal(outvoted.candidate!.dimensionCount, 8); assert.deepEqual(outvoted.setAsideLabelIndexes, [8]);
+  assert.ok(eight.semantics.notes.some((note) => note.startsWith("Printed dimension set aside: 3280 mm disagreeing with 8 locally confirmed spans")));
+  const four = near(spans.slice(0, 4));
+  assert.notEqual(diagnoseSourceScale(four).status, "accepted", "Four spans with a near disagreement still fail closed");
+  console.log("Dimension misreads set aside by a well-supported cluster, whichever reader made them; thin clusters still veto PASS");
 }
 
 /** Numbers the vectorizer read but could not pair with two stops (`unpaired`, hint-found span): they may add support

@@ -1,11 +1,8 @@
+import { OUTVOTE_MIN_SUPPORT } from "./dimension-span-candidates";
 import { inspectScaleFromRegisteredEvidence, type RegisteredPageEvidence, type SemanticDimensionLabel, type SourceScaleSolution, type SourceVectorSegment } from "./deterministic-evidence";
 
 const REVIEW_PREFIX = "Dimension association conflict:";
 const TOLERANCE_PX = 3;
-// A printed dimension that only the external vision reader saw (no local OCR, positioned text or vectorizer reading of
-// it) cannot by itself veto a scale that this many locally supported spans agree on: a misread digit (3620 read as
-// 3650) would otherwise sink an otherwise good page, and the label stays a review item instead.
-const VISION_ONLY_VETO_MIN_SUPPORT = 6;
 const SET_ASIDE_PREFIX = "Printed dimension set aside:";
 type DimensionConflict = Pick<SourceScaleSolution["evidence"][number], "valueMm" | "segmentId" | "start" | "end" | "observedLengthPx"> & {
   residualPx: number; orientation: SemanticDimensionLabel["orientation"]; rawText: string | null;
@@ -24,17 +21,17 @@ function centeredSpan(segment: SourceVectorSegment, label: SemanticDimensionLabe
   return { segment, length, distance };
 }
 
-/** Labels that may not veto the candidate: vision-only labels a well-supported cluster outvotes, and numbers the
- *  vectorizer read but could not pair with two stops (their span is a search hint; a disagreement is expected noise).
- *  Their indexes, so that neither the conflict list nor the source-span interval counts them (they are reported as
- *  review items instead). */
+/** Labels that may not veto the candidate: any disagreeing label once OUTVOTE_MIN_SUPPORT locally supported spans agree
+ *  (a misread digit - d12's 3650 for 3620, d11's 2510 for 2570 - or a tick taken from the neighbouring dimension), and
+ *  numbers the vectorizer read but could not pair with two stops (their span is a search hint; a disagreement is
+ *  expected noise). Their indexes, so that neither the conflict list nor the source-span interval counts them (they
+ *  are reported as review items instead). */
 export function visionOnlyLabelsSetAside(page: RegisteredPageEvidence, solution: SourceScaleSolution | null): Set<number> {
   const aside = new Set<number>();
   if (!solution) return aside;
-  const outvotesVision = solution.evidence.length >= VISION_ONLY_VETO_MIN_SUPPORT;
+  const outvoted = solution.evidence.length >= OUTVOTE_MIN_SUPPORT;
   for (const conflict of scaleDimensionConflicts(page, solution, new Set())) {
-    const label = page.semantics.dimensionLabels[conflict.labelIndex];
-    if (label?.unpaired || (outvotesVision && label?.evidenceKind === "vision")) aside.add(conflict.labelIndex);
+    if (outvoted || page.semantics.dimensionLabels[conflict.labelIndex]?.unpaired) aside.add(conflict.labelIndex);
   }
   return aside;
 }
@@ -80,9 +77,9 @@ function noteLabelsSetAside(page: RegisteredPageEvidence, candidate: SourceScale
   if (!setAside.size || !candidate) return;
   const labels = page.semantics.dimensionLabels;
   const values = (indexes: number[]) => indexes.map((index) => `${labels[index].valueMm} mm`).join(", ");
-  const unpaired = [...setAside].filter((index) => labels[index].unpaired), vision = [...setAside].filter((index) => !labels[index].unpaired);
+  const unpaired = [...setAside].filter((index) => labels[index].unpaired), outvoted = [...setAside].filter((index) => !labels[index].unpaired);
   const notes = [
-    ...(vision.length ? [`${SET_ASIDE_PREFIX} ${values(vision)} read by the AI reader only, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`] : []),
+    ...(outvoted.length ? [`${SET_ASIDE_PREFIX} ${values(outvoted)} disagreeing with ${candidate.evidence.length} locally confirmed spans (a misread digit, or the tick of the dimension next to it). Not used for the scale; check the printed number in the review.`] : []),
     ...(unpaired.length ? [`${SET_ASIDE_PREFIX} ${values(unpaired)} read on the plan but not matched to two stops, disagreeing with ${candidate.evidence.length} locally confirmed spans. Not used for the scale; check the printed number in the review.`] : []),
   ];
   for (const note of notes) if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);

@@ -1,6 +1,6 @@
 import type { SourceScaleSolution } from "./scale-diagnostics";
 import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
-import { dimensionCandidateMatchesHint, dimensionHintDistance, rasterDimensionCandidates } from "./dimension-span-candidates";
+import { dimensionCandidateMatchesHint, dimensionHintDistance, outvoteOutliers, rasterDimensionCandidates } from "./dimension-span-candidates";
 import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
 import type { RasterOpeningSpanEvidence } from "./raster-opening-spans";
 export type SourcePointPx = { x: number; y: number };
@@ -771,9 +771,9 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence,
     // Printed dimensions are local annotations. Dense plans often repeat the
     // same lengths elsewhere, so distant ratio matches may support an already
     // local solution but can never establish one by themselves.
-    const anchored = cluster.filter(
+    const anchored = outvoteOutliers(cluster.filter(
       (candidate) => candidate.distancePx <= localAnchorRadiusPx
-    );
+    ));
     if (anchored.length < 2) continue;
     const distance = anchored.reduce(
       (sum, candidate) => sum + candidate.distancePx,
