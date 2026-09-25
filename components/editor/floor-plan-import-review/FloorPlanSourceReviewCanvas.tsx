@@ -15,6 +15,7 @@ import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
 import { FloorPlanReviewZoomControls } from "./FloorPlanReviewZoomControls";
 import { sourceDrawingSvgPoints as polygonPoints } from "@/lib/floor-plan-source-drawing";
 import { useSourceReviewLayers, sourceReviewPresentation, sourceReviewOverlay, sourceReviewLabels } from "./useSourceReviewLayers";
+import { FloorPlanSourceCompareWipe } from "./FloorPlanSourceCompare";
 
 type FloorPlanSourceReviewCanvasProps = {
   document: FloorPlanDocumentV2;
@@ -196,11 +197,7 @@ export default function FloorPlanSourceReviewCanvas({
           {/* This owner-scoped URL verifies both job and derivative IDs. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            alt={
-              isCad
-                ? "CAD drawing preview"
-                : "Your floor plan"
-            }
+            alt={isCad ? "CAD drawing preview" : "Your floor plan"}
             className="absolute inset-0 h-full w-full select-none"
             draggable={false}
             style={{ opacity: presentation.sourceOpacity }}
@@ -370,6 +367,7 @@ export default function FloorPlanSourceReviewCanvas({
               </g>
             ) : null}
           </svg>
+          <FloorPlanSourceCompareWipe layer={sourceReview.layer} wipe={sourceReview.wipe} onWipe={sourceReview.setWipe} annotations={sourceReview.visible} widthPx={page.widthPx} heightPx={page.heightPx} />
             </div>
           </div>
           {hoverSnap && picking ? (
