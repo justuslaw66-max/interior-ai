@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Ottoman"
 variant: "Standard"
 
-price_usd: 549
+price_sgd: 549
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -311,7 +311,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591689/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Det_1-1692591687.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692451016/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Angle-1692451014.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -338,7 +338,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Side.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634715643/crusader/variants/54000045-NG4001/Dawson-Ottoman-Beach-Linen-Angle.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 649
+    price_sgd: 649
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 114, depth_cm: 93, height_cm: 45 }
@@ -356,7 +356,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697602865/crusader/variants/54000132-NG4002/Dawson-Square-Ottoman-Seagull-Front-1697602863.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -373,7 +373,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1720773769/crusader/variants/54000132C-PT4001/Dawson-Ottoman-Creamy-White-Front-1720773766.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -390,7 +390,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012055/crusader/variants/54000132C-PM4002/Dawson-Ottoman-Performance-Brilliant-White-Front-1721012052.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -407,7 +407,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721012023/crusader/variants/54000132C-PY4001/Dawson-Ottoman-Ivory-Front-1721012021.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -424,7 +424,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011746/crusader/variants/54000132C-PY4002/Dawson-Ottoman-Dove-Grey-Front-1721011744.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -441,7 +441,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1722411328/crusader/variants/54000141C-PM4001/Dawson-Ottoman-Performance-Smoke-Grey-Front-1722411326.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -458,7 +458,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751773/pim/converting/1776751772433/Dawson-Small-Storage-Ottoman-Performance-Fleece-Moss-Front.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -475,7 +475,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/upload/w_1995,f_auto,q_auto,c_fit/v1776751840/pim/converting/1776751839091/Dawson-Small-Storage-Ottoman-Performance-Fleece-Caramel-Front.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -492,7 +492,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011575/crusader/variants/54000132C-IN4003/Dawson-Ottoman-Ginger-Front-1721011572.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -509,7 +509,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1721011556/crusader/variants/54000132C-IN4002/Dawson-Ottoman-White-Quartz-Front-1721011553.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -527,7 +527,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773741458/crusader/variants/54000132C-IN4005/Dawson-Small-Storage-Ottoman-Cream-Front-1773741456.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -545,7 +545,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255348/crusader/variants/54000132C-IN4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255346.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -563,7 +563,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909178/crusader/variants/54000132C-PG4002/Dawson-Small-Storage-Ottoman-Performance-Genova-Oat-Front-1773909176.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -581,7 +581,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909197/crusader/variants/54000132C-PG4003/Dawson-Small-Storage-Ottoman-Cream-Front-1773909195.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -599,7 +599,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773909218/crusader/variants/54000132C-PG4004/Dawson-Small-Storage-Ottoman-Light-Grey-Front-1773909216.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -617,7 +617,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902043/crusader/variants/54000132C-PT4002/Dawson-Small-Storage-Ottoman-Performance-Twill-Pearl-Beige-Front-1773902041.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -635,7 +635,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902060/crusader/variants/54000132C-PT4003/Dawson-Small-Storage-Ottoman-Performance-Twill-Slate-Front-1773902057.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -653,7 +653,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902078/crusader/variants/54000132C-PT4004/Dawson-Small-Storage-Ottoman-Performance-Twill-Moss-Front-1773902076.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -671,7 +671,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1773902094/crusader/variants/54000132C-PT4005/Dawson-Small-Storage-Ottoman-Performance-Twill-Dove-Grey-Front-1773902092.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -689,7 +689,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255267/crusader/variants/54000132C-GR4001/Dawson-Small-Storage-Ottoman-Cream-Front-1774255265.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -707,7 +707,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255286/crusader/variants/54000132C-GR4002/Dawson-Small-Storage-Ottoman-Sand-Front-1774255284.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -725,7 +725,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255300/crusader/variants/54000132C-GR4003/Dawson-Small-Storage-Ottoman-Caramel-Front-1774255298.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -743,7 +743,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1774255317/crusader/variants/54000132C-GR4004/Dawson-Small-Storage-Ottoman-Moss-Front-1774255315.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -767,7 +767,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1722581311/crusader/variants/54000132-LE4020/Dawson-Leather-Pit-Sectional-Sofa-Square-Set_2-1722581307.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936902/crusader/variants/54000132-LE4020/Dawson-Leather-Small-Ottoman-Cocoa-Angle-1715936900.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -787,7 +787,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -807,7 +807,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -827,7 +827,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -848,7 +848,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -868,7 +868,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }

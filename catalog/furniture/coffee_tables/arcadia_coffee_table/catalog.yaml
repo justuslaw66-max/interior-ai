@@ -8,7 +8,7 @@ product_name: "Arcadia Coffee Table"
 slug: "castlery-arcadia-coffee-table"
 variant: "Caramel Oak"
 
-price_usd: 749
+price_sgd: 749
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -229,7 +229,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1745228057/crusader/variants/40550324/Arcadia-Coffee-Table-Caramel-Oak-Side-1745228055.jpg"
     swatch_group: "wood_finish"
 
-    price_usd: 749
+    price_sgd: 749
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

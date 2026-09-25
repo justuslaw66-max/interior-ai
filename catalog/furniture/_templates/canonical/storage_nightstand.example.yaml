@@ -5,7 +5,7 @@ product_family: "Canonical Storage"
 product_name: "Canonical Nightstand"
 variant: "Standard"
 
-price_usd: 399
+price_sgd: 399
 price_band: "mid"
 brand_tier: "premium_low"
 
@@ -41,7 +41,7 @@ variants:
     finish_code: "walnut"
     finish_label: "Walnut"
     swatch_group: "wood_finish"
-    price_usd: 399
+    price_sgd: 399
     price_band: "mid"
     brand_tier: "premium_low"
     dimensions:

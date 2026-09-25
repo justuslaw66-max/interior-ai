@@ -6,7 +6,7 @@ product_family: "Sloane"
 product_name: "Sloane Dining Bench"
 variant: "150 No Cushion"
 
-price_usd: 499
+price_sgd: 499
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -124,7 +124,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1677038062/crusader/variants/T50441109/Sloane-Dining-Bench-150cm-Grey-Oak-Dim-1677038060.jpg"
     swatch_group: "upholstery_option"
 
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid"
     brand_tier: "premium_mid"
 

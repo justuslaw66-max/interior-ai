@@ -7,7 +7,7 @@ product_name: "Vento Coffee Table"
 slug: "castlery-vento-coffee-table"
 variant: "Vento Coffee Table / Waterbase Natural Walnut"
 
-price_usd: 599
+price_sgd: 599
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -189,7 +189,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1770256446/crusader/variants/44250004/Vento-Coffee-Table-120cm-Side-1770256444.jpg"
     swatch_group: "wood_finish"
 
-    price_usd: 599
+    price_sgd: 599
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

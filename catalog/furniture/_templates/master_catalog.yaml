@@ -12,7 +12,7 @@ product_name: ""          # e.g., Brighton Oval Dining Table
 variant: ""               # e.g., Oval 180
 
 # Pricing
-price_usd: 0
+price_sgd: 0
 price_band: ""            # budget / mid / mid_premium / premium / luxury
 brand_tier: ""            # premium_low / premium_mid / premium_high
 
@@ -91,7 +91,7 @@ assets:
 # Variants (optional, for shared product-level files)
 variants:
   - variant: ""
-    price_usd: 0
+    price_sgd: 0
     price_band: ""
     brand_tier: ""
     dimensions:

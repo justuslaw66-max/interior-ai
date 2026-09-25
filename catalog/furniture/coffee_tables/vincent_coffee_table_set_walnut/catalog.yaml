@@ -8,7 +8,7 @@ product_name: "Vincent Coffee Table Set, Walnut"
 slug: "castlery-vincent-coffee-table-set-walnut"
 variant: "Walnut"
 
-price_usd: 549
+price_sgd: 549
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -213,7 +213,7 @@ variants:
     model_asset_id: "coffee-real-castlery-vincent-coffee-table-set-walnut"
     model_url: "/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb"
 
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

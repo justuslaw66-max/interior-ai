@@ -8,7 +8,7 @@ product_name: "Avery Performance Boucle Swivel Armchair with Ottoman"
 slug: "castlery-avery-performance-boucle-swivel-armchair-with-ottoman"
 variant: "Swivel Armchair with Ottoman / Performance Infinity Boucle, Light Grey (White Quartz)"
 
-price_usd: 759
+price_sgd: 759
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -245,7 +245,7 @@ variants:
     collection_type: "stocked"
     color_family: "grey"
     tone: "cool"
-    price_usd: 759
+    price_sgd: 759
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 80.5, depth_cm: 130.5, height_cm: 75 }
@@ -277,7 +277,7 @@ variants:
     collection_type: "stocked"
     color_family: "rust"
     tone: "warm"
-    price_usd: 759
+    price_sgd: 759
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 80.5, depth_cm: 130.5, height_cm: 75 }

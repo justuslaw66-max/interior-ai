@@ -31,6 +31,8 @@ Words people read use one name per concept, UK spelling, sentence case and one e
 
 Every document edit is one undo step. A discrete edit runs inside `runHistoryTransaction(name, edit)`, which flushes a slider's coalesced transaction first and refuses to nest; a gesture brackets itself with `syncGestureTransaction`, which keeps `begin()`'s answer. Only `lib/useDesignPageHistory.ts` and `lib/design-page-gesture-history.ts` call `history.begin`, `commit` or `rollback` directly; `scripts/test-design-page-history-callers.ts` fails on any other caller.
 
+Catalogue prices are Singapore dollars. The fields are `price_sgd`, `compare_at_price_sgd` and `savings_sgd` in the catalogue YAML and `priceSgd` and its kin in code, and money is shown with `formatSgd` from `lib/money-format.ts`. This is a naming fact, not a conversion: never convert the numbers. `scripts/test-catalog-price-currency.ts` fails on a USD-named price or the USD currency code outside `features/cabinetry`, whose quotes are priced separately.
+
 Secrets, Prisma, filesystem access, privileged roles, and vendor credentials remain server-side. Client-safe code receives minimal typed DTOs. Minimise `use client`: put it at the narrowest interactive boundary and keep pure domain modules importable without React, browser globals, or Three.js.
 
 ## React and Three.js

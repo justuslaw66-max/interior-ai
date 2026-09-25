@@ -9,7 +9,7 @@ product_name: "Lena Armchair"
 slug: "castlery-lena-armchair"
 variant: "Armchair / Hugo Greige Fabric / Brass Legs"
 
-price_usd: 699
+price_sgd: 699
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -512,14 +512,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
     color_family: grey
     tone: neutral
-    price_usd: 699
+    price_sgd: 699
     price_band: mid_premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     dimensions:
       width_cm: 96
@@ -560,14 +560,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1758786944/crusader/variants/AS-000936-PH4001-GD/Lena-Armchair-Sofa-Performance-Hugo-Greige-Brass-Legs-Square-Set_1-1758786944.jpg
     color_family: grey
     tone: neutral
-    price_usd: 699
+    price_sgd: 699
     price_band: mid_premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     dimensions:
       width_cm: 96
@@ -608,14 +608,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
     color_family: cream
     tone: warm
-    price_usd: 699
+    price_sgd: 699
     price_band: mid_premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     dimensions:
       width_cm: 96
@@ -656,14 +656,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1770099199/crusader/variants/PH-4002/PH4002-Performance-Hugo-Cream-1770099196.jpg
     color_family: cream
     tone: warm
-    price_usd: 699
+    price_sgd: 699
     price_band: mid_premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: https://www.castlery.com/sg/products/lena-performance-fabric-armchair
     dimensions:
       width_cm: 96
@@ -709,7 +709,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -717,7 +717,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4005-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -758,7 +758,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -766,7 +766,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4005-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -812,7 +812,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -820,7 +820,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4002-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -861,7 +861,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -869,7 +869,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4002-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -915,7 +915,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -923,7 +923,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4004-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -964,7 +964,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -972,7 +972,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4004-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1018,7 +1018,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1026,7 +1026,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4003-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1067,7 +1067,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1075,7 +1075,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-IN4003-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1121,7 +1121,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1129,7 +1129,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4001-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1170,7 +1170,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1178,7 +1178,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4001-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1224,7 +1224,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1232,7 +1232,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4002-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1273,7 +1273,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1281,7 +1281,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4002-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1327,7 +1327,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1335,7 +1335,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4003-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1376,7 +1376,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1384,7 +1384,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4003-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1430,7 +1430,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1438,7 +1438,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4004-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1479,7 +1479,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1487,7 +1487,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PY4004-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1533,7 +1533,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1541,7 +1541,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4002-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1582,7 +1582,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1590,7 +1590,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4002-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1636,7 +1636,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1644,7 +1644,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4003-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1685,7 +1685,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1693,7 +1693,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4003-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1739,7 +1739,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1747,7 +1747,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4004-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1788,7 +1788,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1796,7 +1796,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PG4004-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1842,7 +1842,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1850,7 +1850,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4001-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1891,7 +1891,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1899,7 +1899,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4001-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1945,7 +1945,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -1953,7 +1953,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4002-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -1994,7 +1994,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2002,7 +2002,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4002-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2048,7 +2048,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2056,7 +2056,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4005-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2097,7 +2097,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2105,7 +2105,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4005-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2151,7 +2151,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2159,7 +2159,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4003-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2200,7 +2200,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2208,7 +2208,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4003-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2254,7 +2254,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2262,7 +2262,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4004-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2303,7 +2303,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2311,7 +2311,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-PT4004-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2357,7 +2357,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2365,7 +2365,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4001-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2406,7 +2406,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2414,7 +2414,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4001-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2460,7 +2460,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2468,7 +2468,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4002-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2509,7 +2509,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2517,7 +2517,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4002-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2563,7 +2563,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2571,7 +2571,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4003-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2612,7 +2612,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2620,7 +2620,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4003-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2666,7 +2666,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2674,7 +2674,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4004-GD"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2715,7 +2715,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
@@ -2723,7 +2723,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "AS-000936-GR4004-BLK"
-        price_usd: 699
+        price_sgd: 699
         affiliate_url: "https://www.castlery.com/sg/products/lena-performance-fabric-armchair"
     dimensions:
       width_cm: 96
@@ -2769,14 +2769,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
     color_family: brown
     tone: warm
-    price_usd: 1199
+    price_sgd: 1199
     price_band: premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 1199
+        price_sgd: 1199
         affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
     dimensions:
       width_cm: 96
@@ -2817,14 +2817,14 @@ variants:
     swatch_image_url: https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
     color_family: brown
     tone: warm
-    price_usd: 1199
+    price_sgd: 1199
     price_band: premium
     brand_tier: premium_mid
     affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
     purchase_options:
       - label: Single
         quantity: 1
-        price_usd: 1199
+        price_sgd: 1199
         affiliate_url: https://www.castlery.com/sg/products/lena-leather-armchair
     dimensions:
       width_cm: 96

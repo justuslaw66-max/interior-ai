@@ -6,8 +6,8 @@ product_family: "Rochelle"
 product_name: "Rochelle Performance Boucle Bed"
 variant: "Queen - Standard Bedframe - White Quartz Boucle"
 
-price_usd: 1299
-compare_at_price_usd: 1299
+price_sgd: 1299
+compare_at_price_sgd: 1299
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -111,8 +111,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-standard-queen-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed?bed_frame_size=queen&material=performance_white_quartz_boucle_new"
     available: true
-    price_usd: 1299
-    compare_at_price_usd: 1299
+    price_sgd: 1299
+    compare_at_price_sgd: 1299
     dimensions: &standard_queen_dims
       width_cm: 170
       depth_cm: 218
@@ -151,8 +151,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-standard-king-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed?bed_frame_size=king&material=performance_white_quartz_boucle_new"
     available: true
-    price_usd: 1399
-    compare_at_price_usd: 1399
+    price_sgd: 1399
+    compare_at_price_sgd: 1399
     dimensions: &standard_king_dims
       width_cm: 200
       depth_cm: 218
@@ -178,8 +178,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-storage-super-single-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=super_single&material=performance_white_quartz_boucle_new"
     available: true
-    price_usd: 1399
-    compare_at_price_usd: 1399
+    price_sgd: 1399
+    compare_at_price_sgd: 1399
     dimensions: &storage_super_single_dims
       width_cm: 125
       depth_cm: 214.5
@@ -209,8 +209,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-storage-queen-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=queen&material=performance_white_quartz_boucle_new"
     available: true
-    price_usd: 1599
-    compare_at_price_usd: 1599
+    price_sgd: 1599
+    compare_at_price_sgd: 1599
     dimensions: &storage_queen_dims
       width_cm: 170
       depth_cm: 214.5
@@ -236,8 +236,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-storage-king-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-storage-bed?bed_frame_size=king&material=performance_white_quartz_boucle_new"
     available: true
-    price_usd: 1699
-    compare_at_price_usd: 1699
+    price_sgd: 1699
+    compare_at_price_sgd: 1699
     dimensions: &storage_king_dims
       width_cm: 200
       depth_cm: 214.5

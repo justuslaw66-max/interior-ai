@@ -20,7 +20,7 @@ type ImportedModel = {
   catalog?: {
     source_url?: string;
     productName?: string;
-    priceUsd?: number;
+    priceSgd?: number;
     assets?: {
       thumbnail_url?: string;
       gallery_images?: string[];
@@ -55,7 +55,7 @@ test.describe("149. Vincent Coffee Table Product Info", () => {
     expect(model?.modelUrl).toBe("/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb");
     expect(model?.catalog?.source_url).toBe("https://www.castlery.com/sg/products/vincent-coffee-table-set-walnut");
     expect(model?.catalog?.productName).toBe("Vincent Coffee Table Set, Walnut");
-    expect(model?.catalog?.priceUsd).toBe(549);
+    expect(model?.catalog?.priceSgd).toBe(549);
     expect(model?.catalog?.assets?.thumbnail_url).toContain("Vincent-Coffee-Table-Sectional-Walnut-Set-Front");
     expect(model?.catalog?.assets?.gallery_images?.length).toBeGreaterThanOrEqual(10);
 

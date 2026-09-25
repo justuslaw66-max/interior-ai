@@ -6,8 +6,8 @@ product_family: "Dalton"
 product_name: "Dalton Bed"
 variant: "Standard Queen - Beach Linen"
 
-price_usd: 1099
-compare_at_price_usd: 1099
+price_sgd: 1099
+compare_at_price_sgd: 1099
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -120,8 +120,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-standard-queen-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-bed?bed_frame_size=queen&material=beach_linen"
     available: true
-    price_usd: 1099
-    compare_at_price_usd: 1099
+    price_sgd: 1099
+    compare_at_price_sgd: 1099
     dimensions: &standard_queen_dims
       width_cm: 168
       depth_cm: 215
@@ -158,8 +158,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-standard-king-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-bed?bed_frame_size=king&material=beach_linen"
     available: true
-    price_usd: 1299
-    compare_at_price_usd: 1299
+    price_sgd: 1299
+    compare_at_price_sgd: 1299
     dimensions: &standard_king_dims
       width_cm: 198
       depth_cm: 215
@@ -197,8 +197,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-storage-single-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=single&material=beach_linen&frame_cover=fixed"
     available: true
-    price_usd: 999
-    compare_at_price_usd: 999
+    price_sgd: 999
+    compare_at_price_sgd: 999
     dimensions: &storage_single_dims
       width_cm: 107
       depth_cm: 216
@@ -236,8 +236,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-storage-super-single-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=super_single&material=beach_linen&frame_cover=fixed"
     available: true
-    price_usd: 1199
-    compare_at_price_usd: 1199
+    price_sgd: 1199
+    compare_at_price_sgd: 1199
     dimensions: &storage_super_single_dims
       width_cm: 123
       depth_cm: 216
@@ -275,8 +275,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-storage-queen-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=queen&material=beach_linen&frame_cover=fixed"
     available: true
-    price_usd: 1499
-    compare_at_price_usd: 1499
+    price_sgd: 1499
+    compare_at_price_sgd: 1499
     dimensions: *standard_queen_dims
     size_class: "large"
     color_family: "beige"
@@ -312,8 +312,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-dalton-storage-king-beach-linen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/dalton-storage-bed?bed_frame_size=king&material=beach_linen&frame_cover=fixed"
     available: true
-    price_usd: 1699
-    compare_at_price_usd: 1699
+    price_sgd: 1699
+    compare_at_price_sgd: 1699
     dimensions: *standard_king_dims
     size_class: "large"
     color_family: "beige"

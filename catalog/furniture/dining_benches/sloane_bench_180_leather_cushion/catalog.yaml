@@ -6,7 +6,7 @@ product_family: "Sloane"
 product_name: "Sloane Dining Bench"
 variant: "180 Leather Cushion"
 
-price_usd: 749
+price_sgd: 749
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -140,7 +140,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678699345/crusader/variants/T50441109-LE4016/Sloane-Dining-Bench-Grey-Oak-Det_5-1678699343.jpg"
     swatch_group: "upholstery_option"
 
-    price_usd: 749
+    price_sgd: 749
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Recliner Chaise Sectional Sofa"
 variant: "Chaise Sectional Wide Arm"
 
-price_usd: 7346
+price_sgd: 7346
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -213,7 +213,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737599336/crusader/variants/AS-000676-LE4023/Jaron-Leather-Chaise-Sectional-Wide-Arm-Sofa-Marche-Cocoa_-Angle-1737599333.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 7346
+    price_sgd: 7346
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 330, depth_cm: 244, height_cm: 77 }
@@ -231,7 +231,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150918/crusader/variants/AS-000680-LE4021/Jaron-Leather-Chaise-Sectional-Wide-Arm-Sofa_-Marche-Ivory-Angle_-1760150918.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 7346
+    price_sgd: 7346
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 330, depth_cm: 244, height_cm: 77 }
@@ -249,7 +249,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1737535161/crusader/variants/AS-000676-AR4001/Jaron-Chaise-Sectional-Wide-Arm-Sofa-Performance-Arvo-Dune-Angle_1-1737535159.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 5396
+    price_sgd: 5396
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 330, depth_cm: 244, height_cm: 77 }

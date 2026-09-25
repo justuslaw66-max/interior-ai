@@ -74,12 +74,12 @@ export type CatalogYamlPurchaseOptionEntry = {
   sku?: string;
   affiliate_url?: string;
   affiliateUrl?: string;
-  price_usd?: number;
-  priceUsd?: number;
-  compare_at_price_usd?: number;
-  compareAtPriceUsd?: number;
-  savings_usd?: number;
-  savingsUsd?: number;
+  price_sgd?: number;
+  priceSgd?: number;
+  compare_at_price_sgd?: number;
+  compareAtPriceSgd?: number;
+  savings_sgd?: number;
+  savingsSgd?: number;
   image_url?: string;
   imageUrl?: string;
   available?: boolean;
@@ -111,7 +111,7 @@ export type CatalogYamlVariantEntry = {
   color_family?: string;
   tone?: string;
   collection_type?: string;
-  price_usd?: number;
+  price_sgd?: number;
   purchase_options?: CatalogYamlPurchaseOptionEntry[];
   price_band?: string;
   brand_tier?: string;
@@ -172,7 +172,7 @@ export type CatalogYamlEntry = {
   variant?: string;
 
   // Pricing
-  price_usd?: number;
+  price_sgd?: number;
   price_band?: string;
   brand_tier?: string;
 

@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Recliner Sofa"
 variant: "Extended 3-Seater Slim Arm"
 
-price_usd: 3299
+price_sgd: 3299
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -220,7 +220,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936776/crusader/variants/AS-000669-LE4023/Jaron-Extended-3-Seater-Recliner-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936774.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741343792/crusader/variants/AS-000669-LE4023/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa-With-Slim-Arm-Recliner-Armchair_-Marche-Cocoa-Square_-Set_4-1741343789.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3299
+    price_sgd: 3299
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 306, depth_cm: 115, height_cm: 77 }
@@ -242,7 +242,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151469/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Square-Set_1-1760151469.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151470/crusader/variants/AS-000673-LE4021/Jaron-Leather-Extended-3-Seater-Recliner-Slim-Arm-Sofa_-Marche-Ivory-Square-Set_2-1760151469.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3299
+    price_sgd: 3299
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 306, depth_cm: 115, height_cm: 77 }
@@ -266,7 +266,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737528185/crusader/variants/AS-000669-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Det_3-1737528183.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737528185/crusader/variants/AS-000669-AR4001/Jaron-3-Seater-Dual-Recliner-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Det_4-1737528183.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 3199
+    price_sgd: 3199
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 306, depth_cm: 115, height_cm: 77 }

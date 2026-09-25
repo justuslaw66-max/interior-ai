@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Leather Recliner L-Shaped Sectional Sofa"
 variant: "L-Shaped Sectional Slim Arm"
 
-price_usd: 8495
+price_sgd: 8495
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -171,7 +171,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343948/crusader/variants/AS-000681-LE4023/Jaron-Leather-L-Shape-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_4_2-1741343945.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741601463/crusader/variants/AS-000681-LE4023/Jaron-Sofa-_Harper-Coffee-Tables-Living-Room-Campaign-Set_20-1741601460.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 8495
+    price_sgd: 8495
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
@@ -189,7 +189,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150432/crusader/variants/AS-000685-LE4021/Jaron-Leather-L-shape-Sectional-Slim-Arm-Sofa_-Marche-Ivory-Angle-1760150432.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 8495
+    price_sgd: 8495
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }

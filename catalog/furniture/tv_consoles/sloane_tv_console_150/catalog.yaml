@@ -8,7 +8,7 @@ product_name: "Sloane TV Console"
 slug: "sloane-tv-console-150cm"
 variant: "150cm / Grey Oak"
 
-price_usd: 1099
+price_sgd: 1099
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -182,7 +182,7 @@ variants:
     swatch_group: "finish"
     color_family: "brown"
     tone: "neutral"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

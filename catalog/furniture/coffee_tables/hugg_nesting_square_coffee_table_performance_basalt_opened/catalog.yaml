@@ -7,7 +7,7 @@ product_name: "Hugg Nesting Square Coffee Table"
 slug: "castlery-hugg-nesting-square-coffee-table-performance-basalt-opened"
 variant: "Performance Basalt Opened"
 
-price_usd: 1099
+price_sgd: 1099
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -411,7 +411,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564998/crusader/variants/AS-000635-AR4002-NA/Hugg-Square-Coffee-Table-Natural-Performance-Basalt-Front-1729564995.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -444,7 +444,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502859/crusader/variants/AS-000635-AR4002-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Basalt-Front-1729502856.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -477,7 +477,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729502719/crusader/variants/AS-000635-AR4002-BLK/Hugg-Square-Coffee-Table-Black-Performance-Basalt-Front-1729502716.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

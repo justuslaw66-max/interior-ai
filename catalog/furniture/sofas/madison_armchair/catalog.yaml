@@ -8,7 +8,7 @@ product_name: "Madison Armchair"
 slug: "castlery-madison-armchair"
 variant: "Armchair / Bisque Fabric"
 
-price_usd: 649
+price_sgd: 649
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -347,7 +347,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "beige"
     tone: "neutral"
-    price_usd: 649
+    price_sgd: 649
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
@@ -376,7 +376,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "grey"
     tone: "neutral"
-    price_usd: 649
+    price_sgd: 649
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
@@ -405,7 +405,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "green"
     tone: "cool"
-    price_usd: 649
+    price_sgd: 649
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 106.5, depth_cm: 96.5, height_cm: 86.5 }
@@ -441,7 +441,7 @@ variants:
     swatch_group: "upholstery_option"
     color_family: "brown"
     tone: "warm"
-    price_usd: 1299
+    price_sgd: 1299
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 107, depth_cm: 97, height_cm: 87 }

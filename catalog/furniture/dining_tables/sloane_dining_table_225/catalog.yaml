@@ -6,7 +6,7 @@ product_family: "Sloane"
 product_name: "Sloane Dining Table"
 variant: "225 Grey Oak"
 
-price_usd: 1199
+price_sgd: 1199
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -161,7 +161,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Side-1678429676.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1675853356/crusader/variants/T50520003/Sloane-Dining-Table-225cm-Dim-1675853355.jpg"
 
-    price_usd: 1199
+    price_sgd: 1199
     price_band: "premium"
     brand_tier: "premium_mid"
 

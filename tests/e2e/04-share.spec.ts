@@ -120,7 +120,7 @@ test.describe("4. Share Link Read-Only", () => {
         await download.saveAs(csvPath);
         await testInfo.attach(`${state.name}-window-shopping.csv`, { path: csvPath, contentType: "text/csv" });
         const lines = (await fs.readFile(csvPath, "utf8")).split("\n");
-        expect(lines[0]).toBe("Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note");
+        expect(lines[0]).toBe("Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price SGD,Line total SGD,Room subtotal SGD,Review note");
         const warnings = lines.filter((line) => line.startsWith("Plan review,Wall Quantity Warning,"));
         expect(warnings).toEqual(state.blocked ? [
           `Plan review,Wall Quantity Warning,Opening ${openingId},${openingId},unresolved,Wall area left uncut,,0,Blocked pending opening repair,Physical wall host validation,,No,0.00,0.00,0.00,${warning}`,

@@ -8,7 +8,7 @@ product_family: "Harper"
 product_name: "Harper Marble TV Console"
 variant: "Natural oak draft import"
 
-price_usd: 1799
+price_sgd: 1799
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -58,7 +58,7 @@ variants:
   - variant: "Natural oak draft import"
     finish_code: "natural_oak_marble"
     finish_label: "Natural Oak / Marble"
-    price_usd: 1799
+    price_sgd: 1799
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

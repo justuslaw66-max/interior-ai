@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Leather Recliner L-Shaped Sectional Sofa"
 variant: "L-Shaped Sectional Wide Arm"
 
-price_usd: 8595
+price_sgd: 8595
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -169,7 +169,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343838/crusader/variants/AS-000682-LE4023/Jaron-Leather-L-Shape-Sectional-Wide-Arm-Sofa-Marche-Cocoa_-Square-Set_2_2-1741343835.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343838/crusader/variants/AS-000682-LE4023/Jaron-Leather-L-Shape-Sectional-Wide-Arm-Sofa-Marche-Cocoa_-Square-Set_4_2-1741343835.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 8595
+    price_sgd: 8595
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
@@ -187,7 +187,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150454/crusader/variants/AS-000686-LE4021/Jaron-Leather-L-shape-Sectional-Wide-Arm-Sofa_-Marche-Ivory-Angle-1760150454.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 8595
+    price_sgd: 8595
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }

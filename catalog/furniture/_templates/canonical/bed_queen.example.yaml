@@ -5,7 +5,7 @@ product_family: "Canonical Bed"
 product_name: "Canonical Queen Bed"
 variant: "Queen"
 
-price_usd: 1299
+price_sgd: 1299
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -41,7 +41,7 @@ variants:
     finish_code: "oat_fabric"
     finish_label: "Oat Fabric"
     swatch_group: "upholstery"
-    price_usd: 1299
+    price_sgd: 1299
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

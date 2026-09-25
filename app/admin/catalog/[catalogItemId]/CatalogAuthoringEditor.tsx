@@ -42,7 +42,7 @@ type CatalogYamlDraft = {
   product_family?: string;
   product_name?: string;
   variant?: string;
-  price_usd?: number;
+  price_sgd?: number;
   price_band?: string;
   brand_tier?: string;
   design_zone?: string;

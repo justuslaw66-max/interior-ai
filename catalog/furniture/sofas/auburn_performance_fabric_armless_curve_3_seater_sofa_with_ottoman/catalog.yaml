@@ -7,7 +7,7 @@ product_family: "Auburn"
 product_name: "Auburn Performance Fabric Armless Curve 3 Seater Sofa With Ottoman"
 variant: "Chalk Bouclé"
 
-price_usd: 2939
+price_sgd: 2939
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -50,7 +50,7 @@ assets:
 
 variants:
   - variant: "Selected upholstery"
-    price_usd: 2939
+    price_sgd: 2939
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

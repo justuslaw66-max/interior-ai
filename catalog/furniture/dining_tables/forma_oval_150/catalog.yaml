@@ -6,7 +6,7 @@ product_family: "Forma"
 product_name: "Forma Oval Dining Table"
 variant: "Oval 150"
 
-price_usd: 1199
+price_sgd: 1199
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -155,7 +155,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003043/knight/USP/2026/Forma-Oval-Dining-Table-Oak-With-4-Elliot-Performance-Fabric-Dining-Chairs-Blonde-Oak-Set_1.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003151/knight/USP/2026/Forma-Oval-Dining-Table-150cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Dining-Room-Campaingn-Det_3.jpg"
-    price_usd: 1199
+    price_sgd: 1199
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

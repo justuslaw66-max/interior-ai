@@ -53,7 +53,7 @@ async function main() {
 
   for (const [id, entry] of auburnEntries) {
     assert(isLiveCatalogEntry(entry), `${id}: Auburn configuration must be public`);
-    assert.equal(entry.price_usd, EXPECTED_AUBURN_PRICES[id], `${id}: stale published price`);
+    assert.equal(entry.price_sgd, EXPECTED_AUBURN_PRICES[id], `${id}: stale published price`);
     assert.equal(entry.upholstery_library_ref, "auburn", `${id}: missing Auburn upholstery library`);
 
     const modelUrl = entry.assets?.model_url;

@@ -7,7 +7,7 @@ product_family: "Cedric"
 product_name: "Cedric Pendant 20cm"
 variant: "20cm"
 
-price_usd: 99
+price_sgd: 99
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -164,7 +164,7 @@ variants:
     model_url: "/assets/models/ceiling-real-castlery-cedric-pendant-20cm.glb"
     affiliate_url: "https://www.castlery.com/sg/products/cedric-pendant?quantity=single&diameter=0_2m"
     available: true
-    price_usd: 99
+    price_sgd: 99
     dimensions:
       width_cm: 20
       depth_cm: 20
