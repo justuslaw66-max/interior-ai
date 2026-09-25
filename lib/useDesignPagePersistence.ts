@@ -43,6 +43,7 @@ import {
 } from "@/lib/useDesignPageExplicitCloudSaveController";
 import { useGuestSavePromptController } from "@/lib/useGuestSavePromptController";
 import { useDesignPageShareLink } from "@/lib/useDesignPageShareLink";
+import { useCancelOnUnmount } from "@/lib/useCancelOnUnmount";
 
 export { sanitizeDesignPageSavedViews };
 export type { DesignPageCloudSaveConflictState };
@@ -177,7 +178,7 @@ export function useDesignPagePersistence({
       documentEpoch: documentEpochRef.current,
     })
   );
-  const shareStatusAbortRef = useRef<AbortController | null>(null);
+  const shareStatusReadRef = useRef(0);
   const [designLoadRequest] = useState(createDesignPageLoadRequestCoordinator);
   const finishCloudBaselineSaving = useCallback(
     (writeRequest: Parameters<
@@ -254,21 +255,16 @@ export function useDesignPagePersistence({
       const targetId = id ?? designId;
       if (!targetId) return;
       const requestEpoch = documentEpochRef.current;
-      shareStatusAbortRef.current?.abort();
-      const controller = new AbortController();
-      shareStatusAbortRef.current = controller;
+      // A newer read wins by ignoring older answers, not by aborting them.
+      const read = (shareStatusReadRef.current += 1);
 
       try {
-        const data = await designApi.get(targetId, controller.signal);
-        if (requestEpoch !== documentEpochRef.current) return;
+        const data = await designApi.get(targetId);
+        if (requestEpoch !== documentEpochRef.current || read !== shareStatusReadRef.current) return;
         setShareToken(data?.shareToken ?? null);
         setShareEnabled(Boolean(data?.shareEnabled));
       } catch {
         // ignore share status errors
-      } finally {
-        if (shareStatusAbortRef.current === controller) {
-          shareStatusAbortRef.current = null;
-        }
       }
     },
     [designId, setShareEnabled, setShareToken]
@@ -348,7 +344,7 @@ export function useDesignPagePersistence({
       revision: null,
       documentEpoch: documentEpochRef.current,
     });
-    shareStatusAbortRef.current?.abort();
+    shareStatusReadRef.current += 1;
     designLoadRequest.cancel();
     setDesignId(null);
     setShareToken(null);
@@ -529,12 +525,8 @@ export function useDesignPagePersistence({
     setLastCloudRevision(null);
   }, [cloudWriteQueue, detachCloudBaseline]);
 
-  // A share-status read may finish after the editor closes (for My designs); React drops it.
-  useEffect(() => {
-    return () => {
-      designLoadRequest.cancel();
-    };
-  }, [designLoadRequest]);
+  // Closing the editor aborts a design load (not a remount; a share-status read finishes).
+  useCancelOnUnmount(designLoadRequest.cancel);
 
   useEffect(() => {
     if (

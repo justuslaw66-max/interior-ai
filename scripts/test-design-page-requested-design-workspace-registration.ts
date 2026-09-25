@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   createDesignPageLoadRequestCoordinator,
 } from "@/lib/design-page-requested-design-load-coordinator";
+import { createUnmountCancellation } from "@/lib/useCancelOnUnmount";
 import {
   resolveActiveRequestedDesignId,
   resolveRequestedDesignLoadCompletion,
@@ -232,9 +233,29 @@ assert.match(
 );
 assert.match(
   persistenceSource,
-  /return \(\) => \{[\s\S]*?designLoadRequest\.cancel\(\)/,
+  /useCancelOnUnmount\(designLoadRequest\.cancel\)/,
   "Unmount should abort outstanding design work."
 );
+// React can clean up an effect and run it again at once while keeping state (Strict Mode does on
+// a client-side navigation into the editor). That must not abort the local backup's cloud check,
+// which nothing restarts; closing the editor for good still aborts it.
+{
+  const scheduled: Array<() => void> = [];
+  const cancellation = createUnmountCancellation((task) => scheduled.push(task));
+  let cancels = 0;
+  const cancel = () => {
+    cancels += 1;
+  };
+  const flush = () => scheduled.splice(0).forEach((task) => task());
+  cancellation.mount();
+  cancellation.unmount(cancel);
+  cancellation.mount();
+  flush();
+  assert.equal(cancels, 0, "A remount should keep the outstanding design load.");
+  cancellation.unmount(cancel);
+  flush();
+  assert.equal(cancels, 1, "Closing the editor should abort the outstanding design load once.");
+}
 
 assert.ok(requestedDesignSource.trimEnd().split("\n").length <= 200);
 assert.ok(workspaceSource.trimEnd().split("\n").length <= 543);
