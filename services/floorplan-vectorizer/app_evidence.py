@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.5.0"
+VERSION = "app-evidence-0.6.0"
 INNER_SIGN = 1
 ROOM_TYPES = (
     ("shelter", ("SHELTER", "HS", "H.S", "BOMB")),
@@ -248,8 +248,170 @@ def outline_wall_cells(m, gray, known=None):
                 spans = e0 and e1 and max(w, h) * mm >= 900
                 if at_door or spans:
                     out[y:y + h, x:x + w][cell] = 255; pend.remove(item); changed = True
+    out = drop_stacked_cells(m, out, known if known is not None else wall_mask(m))
     grown = cv2.dilate(out, np.ones((7, 7), np.uint8))
     out[(grown > 0) & ink] = 255                             # the outlines belong to the wall
+    return out
+
+
+STACK_RULE = True
+BESIDE_RULE = False
+
+
+def drop_stacked_cells(m, cells, base):
+    """A wardrobe, a kitchen counter, a vanity, a bed head or the back of a sofa drawn against a wall is a rectangle whose
+    inside is cut by a rail or worktop line into strips as narrow as a wall - and each strip passes the cell test.  What
+    tells such a strip from a wall is that it runs ALONGSIDE the wall (or its own twin strip) a stroke or a hand's width
+    away, where walls never run alongside each other.  The cells are taken apart into straight bars; a bar is furniture
+    when traced wall mass or a longer bar of another cell lies along its side, or when a twin bar of its own length does
+    (two twins are furniture together; a bar of a wall network - a cell that turns corners over metres - is not)."""
+    if not STACK_RULE:
+        return cells
+    T = float(m["wall_thickness_px"]); mm = pseudo_scale(m); H, W = cells.shape
+    n, lab, st, _ = cv2.connectedComponentsWithStats(cells, connectivity=4)
+    if n < 2:
+        return cells
+    smooth = cv2.morphologyEx(cells, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))   # the anti-aliased halo of an outline steps by a pixel
+    bars = []
+    for x0, x1, y0, y1 in strips(smooth > 0):
+        y0, y1 = int(round(y0)), int(round(y1)); w_, h_ = x1 - x0, y1 - y0
+        if min(w_, h_) < 4 or max(w_, h_) < 2 * min(w_, h_) or max(w_, h_) * mm < 250:
+            continue
+        cid = int(lab[(y0 + y1) // 2, (x0 + x1) // 2])
+        if cid:
+            bars.append({"x0": int(x0), "x1": int(x1), "y0": y0, "y1": y1, "cell": cid, "o": "h" if w_ >= h_ else "v", "L": max(w_, h_), "wd": min(w_, h_)})
+    if not bars:
+        return cells
+    span = {}
+    for b in bars:
+        s_ = span.setdefault(b["cell"], {"h": 0, "v": 0}); s_[b["o"]] += b["L"]
+    network = {c for c, s_ in span.items() if s_["h"] and s_["v"] and (st[c][2] + st[c][3]) * mm >= 4500}   # turns corners over metres
+    bid = np.zeros((H, W), np.int32)
+    for i, b in enumerate(bars):
+        bid[b["y0"]:b["y1"], b["x0"]:b["x1"]] = i + 1
+    basec = base > 0
+    reach = int(max(4, round(min(T, 250.0 / mm))))            # a stroke, or a hand's width of floor, between the pieces of a stack
+    log = os.environ.get("AE_LOG_STACK")
+    if log:
+        m["_cells_dbg"] = (lab, base)
+    drop = {}
+    changed = True
+    while changed:
+        changed = False
+        for i, b in enumerate(bars):
+            if i in drop:
+                continue
+            why = None
+            for side in (0, 1):
+                if b["o"] == "h":
+                    y0, y1 = (max(0, b["y0"] - reach), b["y0"]) if side == 0 else (b["y1"], min(H, b["y1"] + reach))
+                    if y1 <= y0:
+                        continue
+                    strip_bb = basec[y0:y1, b["x0"]:b["x1"]]; strip_b = strip_bb.any(axis=0); strip_i = bid[y0:y1, b["x0"]:b["x1"]]
+                    cover = lambda mask_: float(mask_.any(axis=0).mean())
+                else:
+                    x0, x1 = (max(0, b["x0"] - reach), b["x0"]) if side == 0 else (b["x1"], min(W, b["x1"] + reach))
+                    if x1 <= x0:
+                        continue
+                    strip_bb = basec[b["y0"]:b["y1"], x0:x1]; strip_b = strip_bb.any(axis=1); strip_i = bid[b["y0"]:b["y1"], x0:x1]
+                    cover = lambda mask_: float(mask_.any(axis=1).mean())
+                if float(strip_b.mean()) >= 0.5 and b["wd"] * mm >= 100:
+                    # (a thinner strip beside a traced wall is the wall's own outline, or a wall back to back with it; and
+                    #  a strip beside a traced LINE is a pale wall whose outline alone was traced)
+                    counts = strip_bb.sum(axis=0) if b["o"] == "h" else strip_bb.sum(axis=1)
+                    if float(np.median(counts[counts > 0])) * mm >= 80:
+                        why = "traced wall alongside"; break
+                for j in np.unique(strip_i):
+                    if not j or j - 1 == i or bars[j - 1]["cell"] == b["cell"]:
+                        continue
+                    q = bars[j - 1]; f = cover(strip_i == j)
+                    if f < 0.5:
+                        continue
+                    if (j - 1) in drop:
+                        # the next strip of the same piece of furniture (a counter behind its worktop edge); a wall that is
+                        # part of a network, or clearly longer than the strip, is not carried away with it
+                        if b["cell"] not in network and q["L"] >= 0.85 * b["L"]:
+                            why = "furniture bar %d alongside" % (j - 1); break
+                    elif q["L"] > 1.15 * b["L"]:
+                        why = "longer bar %d alongside" % (j - 1); break
+                    elif f >= 0.6 and abs(q["L"] - b["L"]) <= 0.15 * max(q["L"], b["L"]) and b["cell"] not in network:
+                        why = "twin bar %d alongside" % (j - 1); break
+                if why:
+                    break
+            if why:
+                drop[i] = why; changed = True
+    if log:
+        for i, b in enumerate(bars):
+            print("bar %d of cell %d at %d,%d %dx%d width %d mm%s -> %s" % (i, b["cell"], b["x0"], b["y0"], b["x1"] - b["x0"], b["y1"] - b["y0"], b["wd"] * mm,
+                  " (network)" if b["cell"] in network else "", drop.get(i, "wall")))
+    # A cell that is not a network and lies along traced wall for a good part of its boundary is furniture whatever its
+    # inside looks like (a counter cut into crumbs by a dashed appliance symbol has no bars at all).
+    thick_k = max(3, int(round(80.0 / mm)))                  # traced wall mass at least a real wall thick, not a traced outline
+    thick_base = cv2.morphologyEx(basec.astype(np.uint8), cv2.MORPH_OPEN, np.ones((thick_k, thick_k), np.uint8))
+    near_base = cv2.dilate(thick_base, np.ones((9, 9), np.uint8)) > 0    # hugging it: only a stroke between
+    along_base = {}
+    for c in range(1, n):
+        if c in network:
+            continue
+        x, y, w, h, area = st[c]
+        sub = (lab[y:y + h, x:x + w] == c).astype(np.uint8)
+        edge = (sub > 0) & (cv2.erode(sub, np.ones((3, 3), np.uint8)) == 0)
+        if edge.sum() >= 20:
+            along_base[c] = float((edge & near_base[y:y + h, x:x + w]).sum()) / float(edge.sum())
+    out = cells.copy()
+    for i in drop:
+        b = bars[i]
+        out[b["y0"]:b["y1"], b["x0"]:b["x1"]] = 0
+    # A piece of furniture is one cell; once a fair part of it has gone as furniture, its rails, hanger marks and end
+    # panels go with it (a wall network only loses the bars that lay against something).
+    gone = {}
+    for i, why in drop.items():
+        b = bars[i]
+        gone[b["cell"]] = gone.get(b["cell"], 0) + (b["x1"] - b["x0"]) * (b["y1"] - b["y0"])
+    whole = {c for c, a in gone.items() if c not in network and a >= 0.25 * st[c][4]}
+    for c, f in along_base.items():
+        if f < 0.3:
+            continue
+        # traced wall INSIDE the cell's own footprint: a wall drawn twice over part of its length (outline and traced
+        # partition), not furniture beside a wall - only the bars along the traced part go
+        x, y, w, h, area = st[c]
+        if float(basec[y:y + h, x:x + w].sum()) >= 0.15 * area:
+            continue
+        whole.add(c)
+    if log:
+        for c in sorted(set(gone) | set(whole)):
+            print("cell %d: %d of %d px in furniture bars, %.2f of its edge along traced wall%s%s" % (c, gone.get(c, 0), st[c][4], along_base.get(c, 0.0),
+                  " (network)" if c in network else "", " -> whole cell goes" if c in whole else ""))
+    if whole:
+        out[np.isin(lab, list(whole))] = 0
+    # A shaft or duct drawn as a box with a cross in it is structure, not furniture: it stays as wall mass even when the
+    # cell it sits in goes (a riser at the end of a wall anchors the window band next to it).
+    opened = cv2.morphologyEx(cells, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    n2, lab2, st2, _ = cv2.connectedComponentsWithStats(opened, connectivity=4)
+    gray = m.get("_work_gray")
+    for c in range(1, n2):
+        x, y, w, h, area = st2[c]
+        if gray is None or min(w, h) < 15 or max(w, h) > 2.5 * min(w, h) or max(w, h) * mm > 1300 or area < 0.6 * w * h:
+            continue
+        if out[y:y + h, x:x + w][lab2[y:y + h, x:x + w] == c].any():
+            continue                                          # still there
+        ink = (gray[y:y + h, x:x + w] < min(235, int(m.get("ink_threshold", 180)) + 20)).astype(np.uint8)
+        ink[cv2.dilate((lab2[y:y + h, x:x + w] == c).astype(np.uint8), np.ones((3, 3), np.uint8)) > 0] = 0
+        ink[:3, :] = 0; ink[-3:, :] = 0; ink[:, :3] = 0; ink[:, -3:] = 0
+        runs = []
+        for slash in (True, False):                          # a cross: strokes both ways at 45 degrees (drawn solid or dashed)
+            kx = np.zeros((5, 5), np.uint8)
+            for i in range(5):
+                kx[i, (4 - i) if slash else i] = 1
+            runs.append(int(cv2.morphologyEx(ink, cv2.MORPH_OPEN, kx).sum()))
+        if min(runs) >= 6:
+            keep_px = cv2.dilate((lab2[y:y + h, x:x + w] == c).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+            out[y:y + h, x:x + w][keep_px & (lab[y:y + h, x:x + w] > 0)] = 255
+            if log:
+                print("cell part at %d,%d %dx%d: a box with a cross in it -> kept as structure" % (x, y, w, h))
+    furniture = ((cells > 0) & (out == 0)).astype(np.uint8)
+    m["_furniture"] = cv2.bitwise_or(m["_furniture"], furniture) if m.get("_furniture") is not None else furniture
+    m["_stackedCellsDropped"] = m.get("_stackedCellsDropped", 0) + len(drop) + len(whole)
     return out
 
 
@@ -387,10 +549,27 @@ def find_gaps(m, k, bars, blobs):
         cs = sorted({round(q["c"]) for q in bars if q["o"] == o} |
                     {round((q["y0"] + q["y1"]) / 2 if o == "h" else (q["x0"] + q["x1"]) / 2) for q in blobs if max(q["x1"] - q["x0"], q["y1"] - q["y0"]) <= 2.6 * T})
         cs = set(cs); wall_rows = set(cs)
+        furn = m.get("_furniture")
+        furn = cv2.dilate(furn, np.ones((7, 7), np.uint8)) if furn is not None else None
         for l in m["lines"]:                                 # sliding panels and screens stand where no wall line runs: look along them too
             if l["o"] == o and l.get("role") not in ("dimension", "extension") and (l["b"] - l["a"]) * mm >= 500:
-                if not any(abs(l["c"] - c_) <= 2 for c_ in cs):
-                    cs.add(round(l["c"]))
+                if any(abs(l["c"] - c_) <= 2 for c_ in cs):
+                    continue
+                c_ = int(min(max(round(l["c"]), 0), (H if o == "h" else W) - 1)); a_, b_ = int(max(0, l["a"])), int(min((W if o == "h" else H) - 1, l["b"]))
+                if furn is not None:                         # the edge of a wardrobe or a counter is no line to look along
+                    along = furn[c_, a_:b_ + 1] if o == "h" else furn[a_:b_ + 1, c_]
+                    if along.size and float((along > 0).mean()) >= 0.5:
+                        continue
+                # nor is a stroke running beside a wall (a sliding-door track, a skirting): a screen stands where no wall is
+                r_ = int(1.5 * T)
+                beside = (b[max(0, c_ - r_):c_ + r_ + 1, a_:b_ + 1] if o == "h" else b[a_:b_ + 1, max(0, c_ - r_):c_ + r_ + 1].T)
+                touch = (b[max(0, c_ - 2):c_ + 3, a_:b_ + 1] if o == "h" else b[a_:b_ + 1, max(0, c_ - 2):c_ + 3].T)
+                if BESIDE_RULE and beside.size and touch.size and float(beside.any(axis=0).mean()) >= 0.5 and float(touch.any(axis=0).mean()) < 0.2:
+                    if os.environ.get("AE_SKIP_ONLY") and os.environ["AE_SKIP_ONLY"] != "%s%d" % (o, c_):
+                        pass
+                    else:
+                        continue                                 # (a line ON the wall mass is that wall's own face: still looked along)
+                cs.add(round(l["c"]))
         for c in sorted(cs):
             c = int(min(max(c, 1), img.shape[0] - 2))
             row = img[c - 1:c + 2].any(axis=0)
@@ -427,12 +606,29 @@ def find_gaps(m, k, bars, blobs):
                 break
         if runs:
             q["lo"], q["hi"] = float(min(r_[0] for r_ in runs)), float(max(r_[1] for r_ in runs) + 1)
+            # the opening is as thick as the wall it sits in, not as the column or post at one of its jambs: the thinner
+            # jamb's run is kept for measuring the wall, the union of both for closing the room
+            thin = min(runs, key=lambda r_: r_[1] - r_[0])
+            q["lo_thin"], q["hi_thin"] = float(thin[0]), float(thin[1] + 1)
+            thin_to_line(q, bars, T)                        # both jambs posts: the wall is as thick as the bars on its line
             q["c"] = (q["lo"] + q["hi"]) / 2.0
             q["c_lo"], q["c_hi"] = min(q["c_lo"], q["c"]), max(q["c_hi"], q["c"])
         else:
             q["lo"], q["hi"] = q["c"] - T / 2.0, q["c"] + T / 2.0
         res.append(q)
     return res
+
+
+def thin_to_line(q, bars, T):
+    """An opening between two posts, or a band of strokes wider than the wall, is still only as thick as the wall bars on
+    its line: that thickness is what the room faces and the exported wall carry (the union stays for closing the room)."""
+    lo, hi = q.get("lo_thin", q["lo"]), q.get("hi_thin", q["hi"])
+    line_bars = [bar for bar in bars if bar["o"] == q["o"] and abs(bar["c"] - q["c"]) <= 0.75 * T and bar["b"] - bar["a"] >= 1.5 * T]
+    if not line_bars:
+        return
+    t_ = float(np.median([bar["t"] for bar in line_bars])); c_line = float(np.median([bar["c"] for bar in line_bars]))
+    if hi - lo > 1.5 * t_:
+        q["lo_thin"], q["hi_thin"] = c_line - t_ / 2.0, c_line + t_ / 2.0
 
 
 def _across_run(k, o, c, x):
@@ -902,6 +1098,13 @@ def window_bundles(m, k, need_ends=True):
                 used.update(grp)
                 a = float(np.median([ls[j]["a"] for j in grp])); b = float(np.median([ls[j]["b"] for j in grp]))
                 lo, hi = ls[grp[0]]["c"], ls[grp[-1]]["c"]
+                furn = m.get("_furniture")
+                if furn is not None:
+                    # the rail and the two long edges of a wardrobe are three parallel strokes as well
+                    ya, yb, xa, xb = (int(lo), int(math.ceil(hi)) + 1, int(a), int(math.ceil(b)) + 1) if o == "h" else (int(a), int(math.ceil(b)) + 1, int(lo), int(math.ceil(hi)) + 1)
+                    box = furn[max(0, ya - 3):yb + 3, max(0, xa - 3):xb + 3]
+                    if box.size and float((box > 0).mean()) >= 0.3:
+                        continue
                 if (hi - lo) * mm >= 60:
                     bands.append({"o": o, "a": a, "b": b, "lo": float(lo), "hi": float(hi), "c": (lo + hi) / 2.0, "c_lo": float(lo), "c_hi": float(hi), "jamb": [0, 0],
                                   "kind": "window", "operation": "fixed", "hinge": "none", "swing_side": 0, "confidence": 0.8, "strokes": len(grp), "why": "a band of parallel strokes"})
@@ -930,14 +1133,33 @@ def window_bundles(m, k, need_ends=True):
     return bands
 
 
-def close_openings(m, k, openings):
-    """the wall mass with every door, window and passage filled in: what is left free is floor"""
-    T = float(m["wall_thickness_px"])
+def close_openings(m, k, openings, thin=False):
+    """the wall mass with every door, window and passage filled in: what is left free is floor (thin: filled only as thick
+    as the thinner of the two jambs - the mask the wall thickness is measured on, so that a post at one jamb does not
+    make the whole wall as thick as itself)"""
+    T = float(m["wall_thickness_px"]); H, W = k.shape
     closed = k.copy()
+    reach = int(0.9 * T) + 2                                  # what window_bundles allows between a band's end and the wall
     for g in openings:
-        g["t"] = max(2.0, g["hi"] - g["lo"])
+        g["t"] = max(2.0, g.get("hi_thin", g["hi"]) - g.get("lo_thin", g["lo"]))   # the opening is as thick as the wall it sits in
         a, b = int(math.floor(g["a"])) - 1, int(math.ceil(g["b"])) + 1
-        c0, c1 = int(math.floor(g["lo"])), int(math.ceil(g["hi"]))
+        lo, hi = (g.get("lo_thin", g["lo"]), g.get("hi_thin", g["hi"])) if thin else (g["lo"], g["hi"])
+        c0, c1 = int(math.floor(lo)), int(math.ceil(hi))
+        # a band of strokes that stops a few pixels short of the wall it belongs to still closes up to that wall
+        cm = int(round((g["lo"] + g["hi"]) / 2.0))
+        for end, sgn in ((0, -1), (1, 1)):
+            u = a if end == 0 else b
+            for d in range(1, reach + 1):
+                v = u + sgn * d
+                if not (0 <= v < (W if g["o"] == "h" else H)):
+                    break
+                hit = k[cm, v] if g["o"] == "h" else k[v, cm]
+                if hit:
+                    if end == 0:
+                        a = v
+                    else:
+                        b = v
+                    break
         if g["o"] == "h":
             closed[max(0, c0):c1, max(0, a):b + 1] = 255
         else:
@@ -1015,6 +1237,29 @@ def _simplify(pts, step_lim, spur_lim):
             drop = {i, (i + 1) % n} if L1 > L2 else {(i - 1) % n, i}
         lines = merge_parallel([l for j, l in enumerate(lines) if j not in drop])
     return [list(v) for v in verts(lines)]
+
+
+def pull_faces_to_wall(rooms, openings):
+    """A door or window is closed as thick as the thicker of its two jambs so that the room stays shut; a room face that
+    then lies along that closed-up strip is moved back to the wall the opening really sits in (the thinner jamb's run)."""
+    for g in openings:
+        lo, hi = g["lo"], g["hi"]; lo_t, hi_t = g.get("lo_thin", lo), g.get("hi_thin", hi)
+        if abs(lo_t - lo) < 1.0 and abs(hi_t - hi) < 1.0:
+            continue
+        ax = 0 if g["o"] == "v" else 1                        # the coordinate across the opening
+        a, b = g["a"] - 2, g["b"] + 2
+        for r in rooms:
+            pts = r["face"]; n = len(pts)
+            for i in range(n):
+                p, q = pts[i], pts[(i + 1) % n]
+                if abs(p[ax] - q[ax]) > 1.0:
+                    continue
+                s0, s1 = sorted((p[1 - ax], q[1 - ax]))
+                if min(s1, b) - max(s0, a) < 0.7 * max(1.0, s1 - s0):
+                    continue
+                for face, thin in ((lo, lo_t), (hi, hi_t)):
+                    if abs(p[ax] - face) <= 1.5 and abs(thin - face) >= 1.0:
+                        p[ax] = q[ax] = thin
 
 
 def room_outlines(m, closed):
@@ -1143,11 +1388,16 @@ def centre_lines(m, closed, rooms):
             grp.append(v)
         flush(grp)
     for s_ in flat:                                          # the wall is as thick as twice the way from the face to its centre-line
+        if os.environ.get("AE_LOG_SIDES") and abs(s_["face"] - float(os.environ["AE_LOG_SIDES"])) < 6:
+            print("side axis %d face %.1f lo %.0f hi %.0f measured t %.1f coord %.1f -> t %.1f" % (s_["axis"], s_["face"], s_["lo"], s_["hi"], s_["t"], s_["coord"], 2.0 * abs(s_["coord"] - s_["face"])))
         s_["t"] = max(2.0, min(4.0 * T, 2.0 * abs(s_["coord"] - s_["face"])))
     kept = []
     for r in rooms:
         if _legal_outline(r, T):
             kept.append(r)
+        elif os.environ.get("AE_LOG_ROOMS"):
+            xs_ = [p[0] for p in r["face"]]; ys_ = [p[1] for p in r["face"]]
+            print("room withheld (no legal outline): face bbox %d,%d %dx%d, %d sides" % (min(xs_), min(ys_), max(xs_) - min(xs_), max(ys_) - min(ys_), len(r["face"])))
     rooms[:] = kept
     _settle_crossings(rooms, T, 650.0 / mm)
     # What is still not legal for the app does not leave this program: the smaller (or the stroke-closed outdoor) room of
@@ -1175,6 +1425,9 @@ def centre_lines(m, closed, rooms):
                 break
         if worst is None:
             break
+        if os.environ.get("AE_LOG_ROOMS"):
+            xs_ = [p[0] for p in worst["pts"]]; ys_ = [p[1] for p in worst["pts"]]
+            print("room withheld (crosses / uses a wall twice): bbox %d,%d %dx%d" % (min(xs_), min(ys_), max(xs_) - min(xs_), max(ys_) - min(ys_)))
         rooms[:] = [r for r in rooms if r is not worst]; dropped += 1
     m["_withheld_rooms"] = m.get("_withheld_rooms", 0) + dropped
     return rooms
@@ -1512,6 +1765,8 @@ def build(m, gray=None):
     # wall, and the openings next to them are looked for once more
     same_place = lambda h_, g: h_["o"] == g["o"] and h_["lo"] - 1.5 * T <= g["c"] <= h_["hi"] + 1.5 * T and min(h_["b"], g["b"]) - max(h_["a"], g["a"]) > 0.5 * min(g["b"] - g["a"], h_["b"] - h_["a"])
     bands = [h_ for h_ in window_bundles(m, k) if not any(same_place(h_, g) for g in openings)]
+    for h_ in bands:
+        thin_to_line(h_, bars, T)
     if bands:
         k2 = k.copy()
         for g in bands:
@@ -1528,8 +1783,11 @@ def build(m, gray=None):
     labels = room_labels(m, k)
     OUTDOOR = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK")
     def make_rooms(ops):
-        closed_ = close_openings(m, k, ops)
+        closed_ = close_openings(m, k, ops, thin=bool(os.environ.get("AE_THIN_CLOSE")))
+        if os.environ.get("AE_DUMP_CLOSED"):
+            cv2.imwrite(os.environ["AE_DUMP_CLOSED"], closed_)
         inner = room_outlines(m, closed_)
+        pull_faces_to_wall(inner, ops)
         at = lambda r_, l: bool(r_["comp"][int(min(H - 1, max(0, (l["box"][1] + l["box"][3]) / 2))), int(min(W - 1, max(0, (l["box"][0] + l["box"][2]) / 2)))])
         # Balconies, ledges and yards are closed in by railings and parapets drawn as plain strokes, not by walls.  Where a
         # label of that kind lies outside every room, the strokes around it count as its boundary.
@@ -1550,7 +1808,10 @@ def build(m, gray=None):
                     r_["outdoor"] = True
                     inner.append(r_)
         m["_withheld_rooms"] = 0
-        rooms_ = attach_openings(m, centre_lines(m, closed2, inner), ops)
+        thin = close_openings(m, k, ops, thin=True)
+        if wanted:
+            thin = cv2.bitwise_or(thin, cv2.bitwise_and(closed2, cv2.bitwise_not(closed_)))   # the strokes that closed the outdoor rooms
+        rooms_ = attach_openings(m, centre_lines(m, thin, inner), ops)
         m["_withheld_rooms_last"] = m.pop("_withheld_rooms", 0)
         tol = 2.0 * max(1.0, float(m.get("work_scale", 1) or 1))
         def twice(r_):                                       # cutting sides at openings must not leave one stretch of wall in the loop twice
@@ -1559,6 +1820,18 @@ def build(m, gray=None):
             return any((near(P_[i], P_[j]) and near(P_[(i + 1) % n_], P_[(j + 1) % n_])) or (near(P_[i], P_[(j + 1) % n_]) and near(P_[(i + 1) % n_], P_[j]))
                        for i in range(n_) for j in range(i + 1, n_))
         legal = [r_ for r_ in rooms_ if not twice(r_)]
+        if os.environ.get("AE_LOG_ROOMS"):
+            for r_ in rooms_:
+                if r_ not in legal:
+                    xs_ = [p[0] for p in r_["pts"]]; ys_ = [p[1] for p in r_["pts"]]
+                    print("room withheld (a stretch of wall twice in the loop): bbox %d,%d %dx%d" % (min(xs_), min(ys_), max(xs_) - min(xs_), max(ys_) - min(ys_)))
+                    P_ = r_["pts"]; n_ = len(P_)
+                    near = lambda a_, b_: math.hypot(a_[0] - b_[0], a_[1] - b_[1]) <= tol
+                    for i in range(n_):
+                        for j in range(i + 1, n_):
+                            if (near(P_[i], P_[j]) and near(P_[(i + 1) % n_], P_[(j + 1) % n_])) or (near(P_[i], P_[(j + 1) % n_]) and near(P_[(i + 1) % n_], P_[j])):
+                                print("   twice: side %d %s-%s and side %d %s-%s" % (i, [round(v) for v in P_[i]], [round(v) for v in P_[(i + 1) % n_]], j, [round(v) for v in P_[j]], [round(v) for v in P_[(j + 1) % n_]]))
+            print("rooms after outlines: %s" % [(int(r_["area_px"] * mm * mm / 1e6 * 10) / 10.0) for r_ in inner])
         m["_withheld_rooms_last"] += len(rooms_) - len(legal); rooms_ = legal
         for r_ in rooms_:
             r_["labels"] = [l for l in labels if at(r_, l)]
