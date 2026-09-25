@@ -661,7 +661,7 @@ async function testIndependentScaleConflict() {
   assert.equal(diagnosis.tolerancePx, 3);
   assert.deepEqual(diagnosis.conflicts[0], { valueMm: 4400, residualPx: 40, segmentId: "dimension-c",
     start: { x: 100, y: 600 }, end: { x: 500, y: 600 }, observedLengthPx: 400,
-    orientation: "horizontal", rawText: null, endpointStatus: "unverified" });
+    orientation: "horizontal", rawText: null, endpointStatus: "unverified", labelIndex: 2 });
   const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
   const scaled = await adapter.solveScale({ candidate: { kind: "floor_plan_deterministic_evidence_v1",
     source: { id: "diagnostic-source", fileName: "authored.png", mimeType: "image/png", sha256: "a".repeat(64) },

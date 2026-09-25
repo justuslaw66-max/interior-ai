@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.5.0",
+ "exporterVersion": "app-evidence-0.7.0",
  "page": {
   "widthPx": 828,
   "heightPx": 957,
@@ -9,7 +9,7 @@
  "scale": {
   "millimetresPerPixel": 16.6028,
   "basis": "explicit_dimension",
-  "dimensionCount": 17,
+  "dimensionCount": 18,
   "needsReview": false,
   "chainsChecked": [
    {
@@ -266,35 +266,43 @@
      },
      {
       "xRatio": 0.39636,
-      "yRatio": 0.748285
+      "yRatio": 0.749739
      },
      {
       "xRatio": 0.403382,
-      "yRatio": 0.748285
+      "yRatio": 0.749739
      },
      {
       "xRatio": 0.599034,
-      "yRatio": 0.748285
+      "yRatio": 0.749739
+     },
+     {
+      "xRatio": 0.610507,
+      "yRatio": 0.749739
+     },
+     {
+      "xRatio": 0.610507,
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.622585,
-      "yRatio": 0.748285
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.707729,
-      "yRatio": 0.748285
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.724638,
-      "yRatio": 0.748285
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.860507,
-      "yRatio": 0.748285
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.871679,
-      "yRatio": 0.748285
+      "yRatio": 0.741379
      },
      {
       "xRatio": 0.871679,
@@ -1196,6 +1204,25 @@
      ]
     ],
     "readingClean": false
+   },
+   {
+    "valueMm": 1900,
+    "rawText": "1900",
+    "centerXRatio": 0.202492,
+    "centerYRatio": 0.422433,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.133387,
+     "yRatio": 0.434153
+    },
+    "extensionEnd": {
+     "xRatio": 0.271598,
+     "yRatio": 0.434153
+    },
+    "extensionEvidenceKind": "vectorizer"
    }
   ],
   "openingSymbols": [
@@ -2217,7 +2244,7 @@
     ],
     [
      328.1864076060048,
-     716.1092032967033
+     717.5
     ]
    ],
    "thicknessPx": 11.63,
@@ -2230,15 +2257,15 @@
    "sourcePx": [
     [
      328.1864076060048,
-     716.1092032967033
+     717.5
     ],
     [
      334.0,
-     716.1092032967033
+     717.5
     ]
    ],
-   "thicknessPx": 22.22,
-   "thicknessMm": 369,
+   "thicknessPx": 15.0,
+   "thicknessMm": 249,
    "opening": null
   },
   {
@@ -2247,11 +2274,11 @@
    "sourcePx": [
     [
      334.0,
-     716.1092032967033
+     717.5
     ],
     [
      496.0,
-     716.1092032967033
+     717.5
     ]
    ],
    "thicknessPx": 9.0,
@@ -2279,32 +2306,66 @@
    "sourcePx": [
     [
      496.0,
-     716.1092032967033
+     717.5
     ],
     [
-     515.5,
-     716.1092032967033
+     505.5,
+     717.5
     ]
    ],
-   "thicknessPx": 22.22,
-   "thicknessMm": 369,
+   "thicknessPx": 15.0,
+   "thicknessMm": 249,
    "opening": null
   },
   {
    "id": "e10",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     505.5,
+     717.5
+    ],
+    [
+     505.5,
+     709.5
+    ]
+   ],
+   "thicknessPx": 20.0,
+   "thicknessMm": 332,
+   "opening": null
+  },
+  {
+   "id": "e11",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     505.5,
+     709.5
+    ],
+    [
+     515.5,
+     709.5
+    ]
+   ],
+   "thicknessPx": 9.0,
+   "thicknessMm": 149,
+   "opening": null
+  },
+  {
+   "id": "e12",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
      515.5,
-     716.1092032967033
+     709.5
     ],
     [
      586.0,
-     716.1092032967033
+     709.5
     ]
    ],
-   "thicknessPx": 19.5,
-   "thicknessMm": 324,
+   "thicknessPx": 6.25,
+   "thicknessMm": 104,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2323,37 +2384,37 @@
    }
   },
   {
-   "id": "e11",
+   "id": "e13",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      586.0,
-     716.1092032967033
+     709.5
     ],
     [
      600.0,
-     716.1092032967033
+     709.5
     ]
    ],
-   "thicknessPx": 22.22,
-   "thicknessMm": 369,
+   "thicknessPx": 9.0,
+   "thicknessMm": 149,
    "opening": null
   },
   {
-   "id": "e12",
+   "id": "e14",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
      600.0,
-     716.1092032967033
+     709.5
     ],
     [
      712.5,
-     716.1092032967033
+     709.5
     ]
    ],
-   "thicknessPx": 19.5,
-   "thicknessMm": 324,
+   "thicknessPx": 6.25,
+   "thicknessMm": 104,
    "opening": {
     "kind": "door",
     "operation": "sliding",
@@ -2372,29 +2433,29 @@
    }
   },
   {
-   "id": "e13",
+   "id": "e15",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      712.5,
-     716.1092032967033
+     709.5
     ],
     [
      721.75,
-     716.1092032967033
+     709.5
     ]
    ],
-   "thicknessPx": 22.22,
-   "thicknessMm": 369,
+   "thicknessPx": 9.0,
+   "thicknessMm": 149,
    "opening": null
   },
   {
-   "id": "e14",
+   "id": "e16",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      721.75,
-     716.1092032967033
+     709.5
     ],
     [
      721.75,
@@ -2406,7 +2467,7 @@
    "opening": null
   },
   {
-   "id": "e15",
+   "id": "e17",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2423,7 +2484,7 @@
    "opening": null
   },
   {
-   "id": "e16",
+   "id": "e18",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2455,7 +2516,7 @@
    }
   },
   {
-   "id": "e17",
+   "id": "e19",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2472,7 +2533,7 @@
    "opening": null
   },
   {
-   "id": "e18",
+   "id": "e20",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2510,7 +2571,7 @@
    }
   },
   {
-   "id": "e19",
+   "id": "e21",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2527,7 +2588,7 @@
    "opening": null
   },
   {
-   "id": "e20",
+   "id": "e22",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2565,7 +2626,7 @@
    }
   },
   {
-   "id": "e21",
+   "id": "e23",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2582,7 +2643,7 @@
    "opening": null
   },
   {
-   "id": "e22",
+   "id": "e24",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2599,7 +2660,7 @@
    "opening": null
   },
   {
-   "id": "e23",
+   "id": "e25",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2611,8 +2672,8 @@
      185.30454166703248
     ]
    ],
-   "thicknessPx": 18.5,
-   "thicknessMm": 307,
+   "thicknessPx": 12.0,
+   "thicknessMm": 199,
    "opening": {
     "kind": "door",
     "operation": "folding",
@@ -2631,7 +2692,7 @@
    }
   },
   {
-   "id": "e24",
+   "id": "e26",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2648,7 +2709,7 @@
    "opening": null
   },
   {
-   "id": "e25",
+   "id": "e27",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2665,7 +2726,7 @@
    "opening": null
   },
   {
-   "id": "e26",
+   "id": "e28",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2682,7 +2743,7 @@
    "opening": null
   },
   {
-   "id": "e27",
+   "id": "e29",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2699,7 +2760,7 @@
    "opening": null
   },
   {
-   "id": "e28",
+   "id": "e30",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2731,7 +2792,7 @@
    }
   },
   {
-   "id": "e29",
+   "id": "e31",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2748,7 +2809,7 @@
    "opening": null
   },
   {
-   "id": "e30",
+   "id": "e32",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2780,7 +2841,7 @@
    }
   },
   {
-   "id": "e31",
+   "id": "e33",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2797,7 +2858,7 @@
    "opening": null
   },
   {
-   "id": "e32",
+   "id": "e34",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2814,7 +2875,7 @@
    "opening": null
   },
   {
-   "id": "e33",
+   "id": "e35",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2846,7 +2907,7 @@
    }
   },
   {
-   "id": "e34",
+   "id": "e36",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2863,7 +2924,7 @@
    "opening": null
   },
   {
-   "id": "e35",
+   "id": "e37",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2880,7 +2941,7 @@
    "opening": null
   },
   {
-   "id": "e36",
+   "id": "e38",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2897,7 +2958,7 @@
    "opening": null
   },
   {
-   "id": "e37",
+   "id": "e39",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2935,7 +2996,7 @@
    }
   },
   {
-   "id": "e38",
+   "id": "e40",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2952,7 +3013,7 @@
    "opening": null
   },
   {
-   "id": "e39",
+   "id": "e41",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2969,7 +3030,7 @@
    "opening": null
   },
   {
-   "id": "e40",
+   "id": "e42",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3001,7 +3062,7 @@
    }
   },
   {
-   "id": "e41",
+   "id": "e43",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3018,7 +3079,7 @@
    "opening": null
   },
   {
-   "id": "e42",
+   "id": "e44",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3030,8 +3091,8 @@
      231.5
     ]
    ],
-   "thicknessPx": 17.5,
-   "thicknessMm": 291,
+   "thicknessPx": 8.0,
+   "thicknessMm": 133,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -3050,7 +3111,7 @@
    }
   },
   {
-   "id": "e43",
+   "id": "e45",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3067,7 +3128,7 @@
    "opening": null
   },
   {
-   "id": "e44",
+   "id": "e46",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3084,7 +3145,7 @@
    "opening": null
   },
   {
-   "id": "e45",
+   "id": "e47",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3101,7 +3162,7 @@
    "opening": null
   },
   {
-   "id": "e46",
+   "id": "e48",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3133,7 +3194,7 @@
    }
   },
   {
-   "id": "e47",
+   "id": "e49",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3150,7 +3211,7 @@
    "opening": null
   },
   {
-   "id": "e48",
+   "id": "e50",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3167,7 +3228,7 @@
    "opening": null
   },
   {
-   "id": "e49",
+   "id": "e51",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3184,7 +3245,7 @@
    "opening": null
   },
   {
-   "id": "e50",
+   "id": "e52",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3201,7 +3262,7 @@
    "opening": null
   },
   {
-   "id": "e51",
+   "id": "e53",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3218,7 +3279,7 @@
    "opening": null
   },
   {
-   "id": "e52",
+   "id": "e54",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3235,7 +3296,7 @@
    "opening": null
   },
   {
-   "id": "e53",
+   "id": "e55",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3252,7 +3313,7 @@
    "opening": null
   },
   {
-   "id": "e54",
+   "id": "e56",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3284,7 +3345,7 @@
    }
   },
   {
-   "id": "e55",
+   "id": "e57",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3301,7 +3362,7 @@
    "opening": null
   },
   {
-   "id": "e56",
+   "id": "e58",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3339,7 +3400,7 @@
    }
   },
   {
-   "id": "e57",
+   "id": "e59",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3356,7 +3417,7 @@
    "opening": null
   },
   {
-   "id": "e58",
+   "id": "e60",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3373,7 +3434,7 @@
    "opening": null
   },
   {
-   "id": "e59",
+   "id": "e61",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3390,7 +3451,7 @@
    "opening": null
   },
   {
-   "id": "e60",
+   "id": "e62",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3407,7 +3468,7 @@
    "opening": null
   },
   {
-   "id": "e61",
+   "id": "e63",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3424,7 +3485,7 @@
    "opening": null
   },
   {
-   "id": "e62",
+   "id": "e64",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3456,7 +3517,7 @@
    }
   },
   {
-   "id": "e63",
+   "id": "e65",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3473,7 +3534,7 @@
    "opening": null
   },
   {
-   "id": "e64",
+   "id": "e66",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3490,7 +3551,7 @@
    "opening": null
   },
   {
-   "id": "e65",
+   "id": "e67",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3507,7 +3568,7 @@
    "opening": null
   },
   {
-   "id": "e66",
+   "id": "e68",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3524,7 +3585,7 @@
    "opening": null
   },
   {
-   "id": "e67",
+   "id": "e69",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3556,7 +3617,7 @@
    }
   },
   {
-   "id": "e68",
+   "id": "e70",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3573,7 +3634,7 @@
    "opening": null
   },
   {
-   "id": "e69",
+   "id": "e71",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3590,7 +3651,7 @@
    "opening": null
   },
   {
-   "id": "e70",
+   "id": "e72",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3622,7 +3683,7 @@
    }
   },
   {
-   "id": "e71",
+   "id": "e73",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3639,7 +3700,7 @@
    "opening": null
   },
   {
-   "id": "e72",
+   "id": "e74",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3656,7 +3717,7 @@
    "opening": null
   },
   {
-   "id": "e73",
+   "id": "e75",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3673,7 +3734,7 @@
    "opening": null
   },
   {
-   "id": "e74",
+   "id": "e76",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3690,7 +3751,7 @@
    "opening": null
   },
   {
-   "id": "e75",
+   "id": "e77",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3722,7 +3783,7 @@
    }
   },
   {
-   "id": "e76",
+   "id": "e78",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3739,7 +3800,7 @@
    "opening": null
   },
   {
-   "id": "e77",
+   "id": "e79",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3756,7 +3817,7 @@
    "opening": null
   },
   {
-   "id": "e78",
+   "id": "e80",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3773,7 +3834,7 @@
    "opening": null
   },
   {
-   "id": "e79",
+   "id": "e81",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3824,35 +3885,43 @@
     },
     {
      "x": 328.1864076060048,
-     "y": 716.1092032967033
+     "y": 717.5
     },
     {
      "x": 334.0,
-     "y": 716.1092032967033
+     "y": 717.5
     },
     {
      "x": 496.0,
-     "y": 716.1092032967033
+     "y": 717.5
+    },
+    {
+     "x": 505.5,
+     "y": 717.5
+    },
+    {
+     "x": 505.5,
+     "y": 709.5
     },
     {
      "x": 515.5,
-     "y": 716.1092032967033
+     "y": 709.5
     },
     {
      "x": 586.0,
-     "y": 716.1092032967033
+     "y": 709.5
     },
     {
      "x": 600.0,
-     "y": 716.1092032967033
+     "y": 709.5
     },
     {
      "x": 712.5,
-     "y": 716.1092032967033
+     "y": 709.5
     },
     {
      "x": 721.75,
-     "y": 716.1092032967033
+     "y": 709.5
     },
     {
      "x": 721.75,
@@ -3904,9 +3973,11 @@
     "e18",
     "e19",
     "e20",
-    "e21"
+    "e21",
+    "e22",
+    "e23"
    ],
-   "areaM2": 32.27,
+   "areaM2": 31.95,
    "sourceLabels": [
     "LIVING"
    ]
@@ -3976,20 +4047,20 @@
     }
    ],
    "edgeIds": [
-    "e22",
-    "e23",
     "e24",
     "e25",
-    "e18",
     "e26",
     "e27",
+    "e20",
     "e28",
     "e29",
     "e30",
     "e31",
     "e32",
     "e33",
-    "e34"
+    "e34",
+    "e35",
+    "e36"
    ],
    "areaM2": 16.07,
    "sourceLabels": [
@@ -4041,15 +4112,15 @@
     }
    ],
    "edgeIds": [
-    "e35",
-    "e36",
     "e37",
     "e38",
     "e39",
     "e40",
     "e41",
     "e42",
-    "e43"
+    "e43",
+    "e44",
+    "e45"
    ],
    "areaM2": 12.51,
    "sourceLabels": [
@@ -4093,13 +4164,13 @@
     }
    ],
    "edgeIds": [
-    "e44",
-    "e45",
     "e46",
     "e47",
     "e48",
+    "e49",
+    "e50",
     "e5",
-    "e49"
+    "e51"
    ],
    "areaM2": 12.47,
    "sourceLabels": [
@@ -4163,18 +4234,18 @@
     }
    ],
    "edgeIds": [
-    "e50",
-    "e28",
-    "e27",
-    "e51",
-    "e16",
-    "e15",
     "e52",
+    "e30",
+    "e29",
     "e53",
+    "e18",
+    "e17",
     "e54",
     "e55",
     "e56",
-    "e57"
+    "e57",
+    "e58",
+    "e59"
    ],
    "areaM2": 10.79,
    "sourceLabels": [
@@ -4230,16 +4301,16 @@
     }
    ],
    "edgeIds": [
-    "e31",
-    "e30",
-    "e58",
-    "e57",
-    "e56",
-    "e59",
+    "e33",
+    "e32",
     "e60",
+    "e59",
+    "e58",
     "e61",
     "e62",
-    "e63"
+    "e63",
+    "e64",
+    "e65"
    ],
    "areaM2": 4.86,
    "sourceLabels": [
@@ -4287,14 +4358,14 @@
     }
    ],
    "edgeIds": [
-    "e60",
-    "e64",
-    "e54",
-    "e53",
-    "e65",
+    "e62",
     "e66",
+    "e56",
+    "e55",
     "e67",
-    "e68"
+    "e68",
+    "e69",
+    "e70"
    ],
    "areaM2": 3.95,
    "sourceLabels": [
@@ -4358,18 +4429,18 @@
     }
    ],
    "edgeIds": [
-    "e69",
-    "e70",
     "e71",
     "e72",
-    "e40",
-    "e39",
     "e73",
-    "e23",
-    "e22",
     "e74",
+    "e42",
+    "e41",
     "e75",
-    "e76"
+    "e25",
+    "e24",
+    "e76",
+    "e77",
+    "e78"
    ],
    "areaM2": 3.63,
    "sourceLabels": [
@@ -4409,12 +4480,12 @@
     }
    ],
    "edgeIds": [
-    "e77",
-    "e78",
+    "e79",
+    "e80",
     "e3",
     "e2",
     "e1",
-    "e79"
+    "e81"
    ],
    "areaM2": 2.53,
    "sourceLabels": [

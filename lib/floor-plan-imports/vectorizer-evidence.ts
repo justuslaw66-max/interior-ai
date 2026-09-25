@@ -90,10 +90,11 @@ function vectorizerSemantics(evidence: FloorPlanVectorizerEvidence): PageSemanti
     // for the vision-guided snapper.
     roomBoundaries: [],
     dimensionLabels: evidence.semantics.dimensionLabels.map(
-      ({ spanSourcePx: _span, ...label }) => ({
+      ({ spanSourcePx, ...label }) => ({
         ...capped(label),
         extensionEvidenceKind: kind,
         evidenceKind: kind,
+        ...(spanSourcePx ? {} : { unpaired: true }),
       })
     ),
     openingSymbols: evidence.semantics.openingSymbols.map((symbol) => ({
@@ -129,12 +130,12 @@ function registeredVectorizerEvidence(
           }
         : null,
     },
-    dimensionSpans: evidence.semantics.dimensionLabels.map((label, labelIndex) => ({
+    dimensionSpans: evidence.semantics.dimensionLabels.flatMap((label, labelIndex) => label.spanSourcePx ? [{
       labelIndex,
       valueMm: label.valueMm,
       start: scalePoint(label.spanSourcePx[0], sx, sy),
       end: scalePoint(label.spanSourcePx[1], sx, sy),
-    })),
+    }] : []),
     wallEdges: evidence.wallEdges.map((edge) => ({ ...edge, sourcePx: scalePair(edge.sourcePx, sx, sy) })),
     rooms: evidence.rooms.map((room) => ({
       ...room,
