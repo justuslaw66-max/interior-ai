@@ -80,4 +80,50 @@ export async function testRasterDimensionAssociations() {
   assert.equal(annotations.length, 3);
   assert.ok(annotations.every((entry) => entry.scope === "reference" && entry.geometry.kind === "source_drawing" && entry.provenance.confidence === 0));
   console.log("Raster dimension associations: full ticks, adjacent spans, missing/ambiguous support, coordinates, contradictions and provenance PASS");
+  testVisionOnlyLabelSetAside();
+}
+
+/** Seven printed dimensions with raster tick support agree on 10 mm/px; one more label, read by the external vision
+ *  reader alone, says 3650 where its ticks span 320 px (the plan prints 3620). d12 behaved like this on 25 Sep 2026:
+ *  one misread digit sank the whole page. The label is set aside as a review item; an OCR reading of the same number
+ *  still vetoes, and so does a vision label when the cluster is thin. */
+function testVisionOnlyLabelSetAside() {
+  const W = 2000, H = 1500;
+  const spans: Array<[number, [number, number], [number, number]]> = [
+    [900, [100, 100], [190, 100]], [900, [200, 100], [290, 100]], [2920, [300, 100], [592, 100]], [2040, [600, 100], [804, 100]],
+    [4490, [50, 200], [50, 649]], [1830, [50, 700], [50, 883]], [1285, [50, 900], [50, 1028.5]],
+  ];
+  const tickLabel = (valueMm: number, a: [number, number], b: [number, number], kind: "vision" | "ocr" | "vectorizer" = "vectorizer"): SemanticDimensionLabel => ({
+    valueMm, centerXRatio: (a[0] + b[0]) / 2 / W, centerYRatio: (a[1] + b[1]) / 2 / H, orientation: a[0] === b[0] ? "vertical" : "horizontal",
+    confidence: kind === "vision" ? 0.55 : 0.85, evidenceKind: kind, rawText: String(valueMm),
+    extensionStart: { xRatio: a[0] / W, yRatio: a[1] / H }, extensionEnd: { xRatio: b[0] / W, yRatio: b[1] / H } });
+  const build = (kind: "vision" | "ocr", supported = spans) => {
+    const labels = supported.map(([mm, a, b]) => tickLabel(mm, a, b));
+    labels.push(tickLabel(3650, [1000, 100], [1320, 100], kind));
+    const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: W, heightPx: H, vectorPaths: [], text: [],
+      vectorSegments: [...supported, [3650, [1000, 100], [1320, 100]] as const].map(([, a, b], index) => ({
+        id: `seg-${index}`, pageNumber: 1, start: { x: a[0], y: a[1] }, end: { x: b[0], y: b[1] }, strokeWidthPx: 1, evidenceKind: "raster_linework" as const })),
+      semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: labels } };
+    page.dimensionSpanEvidence = { coordinateSpace: "rendered_px", imageSha256: "b".repeat(64),
+      observations: labels.map((entry, labelIndex) => {
+        const [, a, b] = labelIndex < supported.length ? supported[labelIndex] : [3650, [1000, 100], [1320, 100]] as const;
+        const start = { x: a[0], y: a[1] }, end = { x: b[0], y: b[1] };
+        return { labelIndex, valueMm: entry.valueMm, status: "source_supported" as const, hintStart: start, hintEnd: end, start, end, lineCoverage: 1, reason: null };
+      }) };
+    return page;
+  };
+  const vision = build("vision");
+  const diagnosis = diagnoseSourceScale(vision);
+  assert.equal(diagnosis.status, "accepted", "Seven confirmed spans outvote one vision-only misread");
+  assert.ok(Math.abs(diagnosis.candidate!.millimetresPerPixel - 10) < 0.05);
+  assert.deepEqual(diagnosis.setAsideLabelIndexes, [7]);
+  assert.equal(diagnosis.conflicts.length, 0);
+  assert.ok(vision.semantics.notes.some((note) => note.startsWith("Printed dimension set aside: 3650 mm")));
+  assert.ok(Math.abs(solveCrossCheckedScale(vision)!.millimetresPerPixel - 10) < 0.05);
+  const ocr = build("ocr");
+  assert.equal(diagnoseSourceScale(ocr).status, "rejected_associations", "A locally read contradiction still vetoes");
+  assert.equal(solveCrossCheckedScale(ocr), null);
+  const thin = build("vision", spans.slice(0, 3));
+  assert.equal(diagnoseSourceScale(thin).status, "rejected_associations", "Three spans are not enough to outvote a reader");
+  console.log("Vision-only dimension misread set aside by a well-supported cluster; OCR readings and thin clusters still veto PASS");
 }

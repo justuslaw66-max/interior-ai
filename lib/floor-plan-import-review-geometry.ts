@@ -1,4 +1,4 @@
-import { reviewerSourceDimensionBaseId, reviewerSourceDimensionProvenance } from "./floor-plan-review-source-dimension";
+import { reviewerSourceDimensionBaseId, upsertReviewerSourceDimension } from "./floor-plan-review-source-dimension";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type {
   FloorPlanDocumentV2,
@@ -333,78 +333,6 @@ export function analyzePointScale(input: {
     measurementValid: true,
     message: "Compare the registered-scale residual before applying.",
   };
-}
-
-function upsertReviewerSourceDimension(input: {
-  document: FloorPlanDocumentV2;
-  floor: FloorPlanDocumentV2["floors"][number];
-  calibrationId: string;
-  sourceId: string;
-  pageNumber: number;
-  firstSource: ReviewSourcePoint;
-  secondSource: ReviewSourcePoint;
-  firstPlan: FloorPlanPointMmV2;
-  secondPlan: FloorPlanPointMmV2;
-  measuredMm: number;
-  firstVertexId?: string;
-  secondVertexId?: string;
-}) {
-  const baseId = reviewerSourceDimensionBaseId(input.floor.id, input.calibrationId);
-  const at = new Date().toISOString();
-  const provenance = (role: "start" | "end" | "dimension") =>
-    reviewerSourceDimensionProvenance({ ...input, baseId, at }, role);
-  const vertex = (
-    preferredId: string | undefined,
-    suffix: "start" | "end",
-    point: FloorPlanPointMmV2
-  ) => {
-    if (preferredId) return preferredId;
-    const coincident = input.floor.vertices.find(
-      (entry) =>
-        Math.hypot(entry.xMm - point.xMm, entry.zMm - point.zMm) <= 1
-    );
-    if (coincident) return coincident.id;
-    const id = `${baseId}:${suffix}`;
-    const existing = input.floor.vertices.find((entry) => entry.id === id);
-    if (existing) {
-      existing.xMm = Math.round(point.xMm);
-      existing.zMm = Math.round(point.zMm);
-      existing.provenance = provenance(suffix);
-      return id;
-    }
-    input.floor.vertices.push({
-      id,
-      xMm: Math.round(point.xMm),
-      zMm: Math.round(point.zMm),
-      provenance: provenance(suffix),
-    });
-    return id;
-  };
-  const fromVertexId = vertex(
-    input.firstVertexId,
-    "start",
-    input.firstPlan
-  );
-  const toVertexId = vertex(
-    input.secondVertexId,
-    "end",
-    input.secondPlan
-  );
-  const id = `${baseId}:measurement`;
-  const nextDimension = {
-    id,
-    label: `${Math.round(input.measuredMm)} mm`,
-    fromVertexId,
-    toVertexId,
-    axis: "aligned" as const,
-    measuredMm: Math.round(input.measuredMm),
-    provenance: provenance("dimension"),
-  };
-  const existingIndex = input.floor.dimensions.findIndex(
-    (dimension) => dimension.id === id
-  );
-  if (existingIndex >= 0) input.floor.dimensions[existingIndex] = nextDimension;
-  else input.floor.dimensions.push(nextDimension);
 }
 
 export function applyPointScaleCalibration(input: {

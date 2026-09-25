@@ -20,8 +20,10 @@ export function useFloorPlanScaleReview(props: FloorPlanScaleReviewPanelProps) {
   const [mode, setMode] = useState<"set" | "check">(hasConflict ? "check" : "set");
   const [firstVertexId, setFirstVertexId] = useState(""), [secondVertexId, setSecondVertexId] = useState("");
   // A door opening offered by the vectorizer's estimate: its assumed width is pre-filled; if the reviewer applies it
-  // unchanged, the measurement is recorded as assumed, not printed.
-  const [assumedMm, setAssumedMm] = useState<number | null>(null);
+  // unchanged, the measurement is recorded as assumed, not printed. An import placed at the estimated scale arrives
+  // with such a measurement already, so its number starts out assumed as well.
+  const [assumedMm, setAssumedMm] = useState<number | null>(
+    calibration?.primaryMeasurement?.basis === "assumed_opening_width" ? calibration.primaryMeasurement.confirmedLengthMm : null);
   const estimateMarks = useMemo(() => (document.floors.find((entry) => entry.id === floorId)?.annotations ?? []).filter((annotation) =>
     annotation.configurationId === "source-scale-estimate" && annotation.geometry.kind === "source_drawing" &&
     annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === page?.pageNumber), [document, floorId, page?.pageNumber, sourceId]);
