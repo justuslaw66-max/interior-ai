@@ -63,7 +63,7 @@ async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbo
     vectorSegments: [
       ...evidence.wallEdges.map((edge) => edge.sourcePx),
       ...(linework === "walls+bar"
-        ? evidence.semantics.dimensionLabels.filter((label) => /m$/.test(label.rawText ?? "")).map((label) => label.spanSourcePx)
+        ? evidence.semantics.dimensionLabels.flatMap((label) => /m$/.test(label.rawText ?? "") && label.spanSourcePx ? [label.spanSourcePx] : [])
         : []),
     ].map((span, index) => ({
       id: `raster-${index + 1}`,
@@ -98,6 +98,7 @@ async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbo
   return {
     evidence,
     page,
+    metrics: solved.metrics,
     scale: (solved.candidate as { scale: { millimetresPerPixel: number; dimensionCount: number } | null }).scale,
     document: validated.candidate as unknown as FloorPlanDocumentV2,
     issues: validated.reviewIssues,
@@ -118,6 +119,12 @@ async function main() {
       page.dimensionSpanEvidence?.observations.every((entry) => entry.status === "source_supported"),
       true
     );
+    // Numbers the vectorizer read but could not pair with two stops arrive as unpaired labels with a search hint at
+    // the printed length; without the raster tick finder (not run here) they neither support nor veto the scale.
+    const unpaired = page.semantics.dimensionLabels.filter((label) => label.unpaired);
+    assert.equal(unpaired.length, evidence.semantics.dimensionLabels.filter((label) => !label.spanSourcePx).length);
+    assert.ok(unpaired.every((label) => label.extensionStart && label.extensionEnd && label.confidence < 0.85));
+    assert.ok(scale.dimensionCount <= evidence.semantics.dimensionLabels.length - unpaired.length, `${name}: the paired spans alone carry the scale`);
     const floor = document.floors[0];
     assert.equal(floor.rooms.length, evidence.rooms.length, `${name}: every vectorizer room becomes a canonical room`);
     const validation = validateFloorPlanDocumentV2(document);
@@ -193,17 +200,24 @@ async function main() {
   );
   summary.push("d12: a vision-only window guess on a measured wall becomes a suggestion, not an opening");
 
-  // A plan without printed dimensions: the estimated scale is a hint for review, never an accepted scale,
-  // so no geometry is promoted and the scale issue stays blocking.
+  // A plan without printed dimensions: the estimated scale is never a confirmed scale, but it carries the geometry so
+  // the reviewer sees the rooms at once - marked assumed, with the scale issue still blocking until a width is confirmed.
   const estimated = await importFixture("c22");
   assert.equal(estimated.evidence.scale.basis, "estimated_door_leaf");
   assert.equal(mergeVectorizerDimensionSpans(estimated.page), 0);
-  assert.equal(estimated.scale, null);
-  assert.equal(estimated.document.floors[0].rooms.length, 0);
+  assert.ok(estimated.scale, "c22: the estimate stands in for the scale");
+  assert.equal((estimated.scale as { basis?: string }).basis, "assumed_opening_width");
+  assert.equal(estimated.scale.dimensionCount, 0);
+  assert.ok(estimated.document.floors[0].rooms.length >= 8, `c22: rooms placed at the estimated scale (${estimated.document.floors[0].rooms.length})`);
+  const calibration = estimated.document.floors[0].calibrations[0];
+  assert.equal(calibration?.primaryMeasurement?.basis, "assumed_opening_width", "the calibration says its width was assumed");
+  assert.equal(calibration?.primaryMeasurement?.confirmedLengthMm, 970, "the first door opening at the width its offer shows");
+  assert.equal((estimated.metrics as { scaleSolved?: boolean } | undefined)?.scaleSolved, false, "an assumed scale does not count as solved");
   const unresolved = estimated.issues.find((issue) => issue.code === "scale_unresolved" && issue.severity === "critical");
   assert.ok(unresolved);
-  // ...but the reviewer is told what the estimate rests on and gets the door openings to confirm it against.
+  // ...and the reviewer is told what the estimate rests on and gets the door openings to confirm it against.
   assert.match(unresolved.message, /estimates about 11\.3 mm per pixel from 4 door swings/);
+  assert.match(unresolved.message, /placed at that estimated scale/);
   const marks = estimated.document.floors[0].annotations.filter(
     (annotation) => annotation.configurationId === "source-scale-estimate"
   );
@@ -211,7 +225,7 @@ async function main() {
   assert.ok(marks.every((mark) => mark.scope === "reference" && mark.geometry.kind === "source_drawing"));
   assert.match(marks[0].text, /about 970 mm if the estimated scale holds/);
   summary.push(
-    "c22: estimated scale is not accepted; scale_unresolved stays critical, no rooms are promoted, 5 door openings are offered to confirm the scale"
+    `c22: no printed dimension; ${estimated.document.floors[0].rooms.length} rooms placed at the vectorizer's estimated scale, marked assumed; scale_unresolved stays critical, 5 door openings are offered to confirm the width`
   );
 
   // The process boundary, with stand-in programs (the real ones need OpenCV and Tesseract): two programs run in a

@@ -185,6 +185,30 @@ assert.deepEqual(
   "Scale calibration must not change vertical evidence"
 );
 
+// Endpoints that land on fractional plan millimetres (a door jamb read off a raster, then rescaled) must still leave
+// the review's own scale dimension reading exactly the printed number once its vertices are whole millimetres.
+{
+  const fractional = applyPointScaleCalibration({
+    document: source,
+    floorId: floor.id,
+    sourceId,
+    pageNumber: 1,
+    pageWidthPx: 1000,
+    pageHeightPx: 800,
+    first: { x: 53.48938814531549, y: 86.1 },
+    second: { x: 53.48938814531549, y: 27.3 },
+    printedMm: 900,
+  });
+  const fractionalFloor = fractional.floors[0];
+  const measurement = fractionalFloor.dimensions.find(({ id }) => id.endsWith(":measurement"))!;
+  const from = fractionalFloor.vertices.find(({ id }) => id === measurement.fromVertexId)!;
+  const to = fractionalFloor.vertices.find(({ id }) => id === measurement.toVertexId)!;
+  assert.equal(measurement.measuredMm, 900);
+  assert.ok(Number.isInteger(from.xMm) && Number.isInteger(from.zMm) && Number.isInteger(to.xMm) && Number.isInteger(to.zMm));
+  assert.ok(Math.abs(Math.hypot(to.xMm - from.xMm, to.zMm - from.zMm) - 900) <= 0.5,
+    "the scale dimension's vertices measure the printed number");
+}
+
 function calibrationPreflight(document: typeof source, factor: number) {
   return planFloorPlanHorizontalCalibrationV2({
     document,

@@ -24,7 +24,7 @@ export function sourceProposalAnnotations(page: RegisteredPageEvidence, sourceId
     if (!dimension.extensionStart || !dimension.extensionEnd) return;
     const observed = page.dimensionSpanEvidence?.observations.find((entry) => entry.labelIndex === index && entry.status === "source_supported");
     const ends = observed?.start && observed.end ? [observed.start, observed.end] : [point(dimension.extensionStart), point(dimension.extensionEnd)];
-    add(`dimension:${index}`, `Unverified printed dimension: ${dimension.rawText ?? dimension.valueMm} (${dimension.valueMm} mm); ${observed ? "raster-supported ticks" : "proposed endpoints"}`, ends);
+    add(`dimension:${index}`, `Unverified printed dimension: ${dimension.rawText ?? dimension.valueMm} (${dimension.valueMm} mm); ${observed ? "raster-supported ticks" : "proposed endpoints"}${dimension.setAside ? `. Set aside by the scale check: ${dimension.setAside}; check the printed number` : ""}`, ends);
   });
   return result;
 }
