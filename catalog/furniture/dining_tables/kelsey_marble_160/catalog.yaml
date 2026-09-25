@@ -6,7 +6,7 @@ product_family: "Kelsey"
 product_name: "Kelsey Marble Dining Table"
 variant: "160 White Wash"
 
-price_usd: 1599
+price_sgd: 1599
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -138,7 +138,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199612/crusader/variants/52460092/Kelsey-Marble-Dining-Table-160-Natural-Side-1660199609.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-160-Natural-Dim-1660199658.jpg"
 
-    price_usd: 1599
+    price_sgd: 1599
     price_band: "premium"
     brand_tier: "premium_mid"
 
@@ -187,7 +187,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1673853279/crusader/variants/52460089/Kelsey_Marble_Dining_Table-Shared_1-1673853276.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1632476927/crusader/variants/52460084/Kelsey-Marble.jpg"
 
-    price_usd: 1599
+    price_sgd: 1599
     price_band: "premium"
     brand_tier: "premium_mid"
 

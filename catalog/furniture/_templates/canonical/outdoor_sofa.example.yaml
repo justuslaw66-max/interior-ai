@@ -5,7 +5,7 @@ product_family: "Canonical Outdoor"
 product_name: "Canonical Outdoor Sofa"
 variant: "3-Seater"
 
-price_usd: 1899
+price_sgd: 1899
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -42,7 +42,7 @@ variants:
     finish_code: "storm"
     finish_label: "Storm"
     swatch_group: "upholstery"
-    price_usd: 1899
+    price_sgd: 1899
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

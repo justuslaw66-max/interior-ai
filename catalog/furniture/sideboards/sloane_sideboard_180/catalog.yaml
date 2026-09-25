@@ -14,7 +14,7 @@ description: >
   Elegant fluted sideboard with brushed brass-finish accents
   and adjustable shelving behind paneled doors.
 
-price_usd: 1599
+price_sgd: 1599
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -224,7 +224,7 @@ variants:
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"
-    price_usd: 1599
+    price_sgd: 1599
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     material_family: "wood"

@@ -7,7 +7,7 @@ product_family: "Cedric"
 product_name: "Cedric Floor Lamp with Table"
 variant: "170.7cm"
 
-price_usd: 199
+price_sgd: 199
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -165,7 +165,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-cedric-floor-lamp-with-table.glb"
     affiliate_url: "https://www.castlery.com/sg/products/cedric-floor-lamp-with-table"
     available: true
-    price_usd: 199
+    price_sgd: 199
     dimensions:
       width_cm: 31
       depth_cm: 44

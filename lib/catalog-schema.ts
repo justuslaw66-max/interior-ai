@@ -327,7 +327,7 @@ export interface CatalogItemSchema {
     designEra?: string;
     colorFamily?: string;
     tone?: string;
-    priceUsd?: number;
+    priceSgd?: number;
     currencyCode?: string;
     lastSynchronizedAt?: string;
     deliveryInformation?: string;

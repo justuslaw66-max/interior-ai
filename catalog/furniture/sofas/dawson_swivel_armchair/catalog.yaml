@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Swivel Armchair"
 variant: "Standard"
 
-price_usd: 1039
+price_sgd: 1039
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -312,7 +312,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1692591107/crusader/variants/54000131-NG4001/Dawson-Swivel-Armchair-Back-1692591104.jpg"
     swatch_group: "upholstery_option"
     collection_type: "stocked"
-    price_usd: 1039
+    price_sgd: 1039
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=beach_linen"
@@ -322,18 +322,18 @@ variants:
         quantity: 1
         sku: "54000131-NG4001"
         affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=beach_linen"
-        price_usd: 1039
-        compare_at_price_usd: 1099
-        savings_usd: 60
+        price_sgd: 1039
+        compare_at_price_sgd: 1099
+        savings_sgd: 60
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "PB-001128-NG4001"
         affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=set_of_2&material=beach_linen"
-        price_usd: 1979
-        compare_at_price_usd: 2198
-        savings_usd: 219
+        price_sgd: 1979
+        compare_at_price_sgd: 2198
+        savings_sgd: 219
         image_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1692591465/crusader/variants/PB-001128-NG4001/Dawson-2-Swivel-Armchairs-Beach-Linen-Square-Set_1-1692591462.jpg"
         available: true
     dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }
@@ -368,7 +368,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697620436/crusader/variants/54000131-NG4002/Dawson-Swivel-Armchair-Seagull-Back-1697620433.jpg"
     swatch_group: "upholstery_option"
     collection_type: "stocked"
-    price_usd: 1039
+    price_sgd: 1039
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=seagull"
@@ -378,18 +378,18 @@ variants:
         quantity: 1
         sku: "54000131-NG4002"
         affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=single&material=seagull"
-        price_usd: 1039
-        compare_at_price_usd: 1099
-        savings_usd: 60
+        price_sgd: 1039
+        compare_at_price_sgd: 1099
+        savings_sgd: 60
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "PB-001128-NG4002"
         affiliate_url: "https://www.castlery.com/sg/products/dawson-swivel-armchair?quantity=set_of_2&material=seagull"
-        price_usd: 1979
-        compare_at_price_usd: 2198
-        savings_usd: 219
+        price_sgd: 1979
+        compare_at_price_sgd: 2198
+        savings_sgd: 219
         image_url: "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1697621458/crusader/variants/PB-001128-NG4002/Dawson-Armchair-Set-of-2-Seagull-Square-Set_2-1697621455.jpg"
         available: true
     dimensions: { width_cm: 114, depth_cm: 117, height_cm: 86 }

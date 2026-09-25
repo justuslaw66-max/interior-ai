@@ -9,7 +9,7 @@ product_name: "Arden Performance Swivel Armchair"
 slug: "castlery-arden-performance-swivel-armchair"
 variant: "Swivel Armchair"
 
-price_usd: 999
+price_sgd: 999
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -253,7 +253,7 @@ variants:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1688632827/crusader/variants/PG-4001/Arden-Swivel-Armchair-Alpine-Square-Det_1-1688632825.jpg"
     color_family: "grey"
     tone: "cool"
-    price_usd: 999
+    price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair"
@@ -263,16 +263,16 @@ variants:
         quantity: 1
         sku: "54000104-PG4001"
         affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair"
-        price_usd: 999
+        price_sgd: 999
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "PB-000575-PG4001"
         affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair?material=performance_alpine&quantity=set_of_2"
-        price_usd: 1899
-        compare_at_price_usd: 1998
-        savings_usd: 99
+        price_sgd: 1899
+        compare_at_price_sgd: 1998
+        savings_sgd: 99
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689067735/crusader/variants/PB-000575-PG4001/Arden-Swivel-2-Armchair-Alpine-Angle-1689067733.jpg"
         available: true
     dimensions:
@@ -308,7 +308,7 @@ variants:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1688632818/crusader/variants/LE-4020/Arden-Leather-Swivel-Armchair-Cocoa-Square-Det_1-1688632815.jpg"
     color_family: "brown"
     tone: "warm"
-    price_usd: 1199
+    price_sgd: 1199
     price_band: "premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/arden-leather-swivel-armchair"

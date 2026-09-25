@@ -8,7 +8,7 @@ product_family: "Panes"
 product_name: "Panes Fluted Glass TV Console"
 variant: "Fluted glass draft import"
 
-price_usd: 799
+price_sgd: 799
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -58,7 +58,7 @@ variants:
   - variant: "Fluted glass draft import"
     finish_code: "fluted_glass"
     finish_label: "Fluted Glass"
-    price_usd: 799
+    price_sgd: 799
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions:

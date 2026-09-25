@@ -189,8 +189,8 @@ function auditVariant(
     audit.failures.push(`${prefix} is missing variant label.`);
   }
 
-  if (!hasPositiveNumber(variant.price_usd)) {
-    audit.failures.push(`${prefix} is missing positive price_usd.`);
+  if (!hasPositiveNumber(variant.price_sgd)) {
+    audit.failures.push(`${prefix} is missing positive price_sgd.`);
   }
 
   if (!hasPositiveNumber(getValueAtPath(variant, "dimensions.width_cm"))) {

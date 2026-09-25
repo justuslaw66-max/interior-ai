@@ -480,7 +480,7 @@ test.describe("00. Beta Smoke Gate", () => {
       stagingSmokeEvidence.csvFilename = csvDownload.suggestedFilename();
       const csv = await readDownloadText(csvDownload);
       expect(csv.split("\n")[0]).toBe(
-        "Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note"
+        "Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price SGD,Line total SGD,Room subtotal SGD,Review note"
       );
       expect(csv).toContain("Living Room");
       expect(csv).toContain("armchair-real-castlery-avery-performance-armchair");

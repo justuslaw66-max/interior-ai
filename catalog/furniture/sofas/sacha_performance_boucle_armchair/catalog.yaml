@@ -9,7 +9,7 @@ product_name: "Sacha Performance Boucle Armchair"
 slug: "castlery-sacha-performance-boucle-armchair"
 variant: ""
 
-price_usd: 999
+price_sgd: 999
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -282,7 +282,7 @@ variants:
     color_family: "grey"
     tone: "neutral"
     collection_type: "stocked_fabric"
-    price_usd: 999
+    price_sgd: 999
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
@@ -292,16 +292,16 @@ variants:
         quantity: 1
         sku: "sacha-performance-boucle-armchair-white-quartz"
         affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=single&material=white_quartz"
-        price_usd: 999
+        price_sgd: 999
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "sacha-performance-boucle-armchair-white-quartz-set-of-2"
         affiliate_url: "https://www.castlery.com/sg/products/sacha-performance-boucle-armchair?quantity=set_of_2&material=white_quartz"
-        price_usd: 1899
-        compare_at_price_usd: 1998
-        savings_usd: 99
+        price_sgd: 1899
+        compare_at_price_sgd: 1998
+        savings_sgd: 99
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1687918816/crusader/variants/54000061-IN4002/Sacha-Armchair-White-Quartz-Angle-1687918814.jpg"
         available: true
     dimensions: { width_cm: 94, depth_cm: 78, height_cm: 73 }

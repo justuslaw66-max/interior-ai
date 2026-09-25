@@ -79,7 +79,7 @@ async function main() {
     const parsed = yamlCodec.parse(originalFileContent) as Record<string, unknown>;
 
     // Force non-publishable state via positive-number validation failure.
-    parsed.price_usd = 0;
+    parsed.price_sgd = 0;
     await fs.writeFile(mutatedFilePath, yamlCodec.stringify(parsed), "utf8");
   } else {
     throw new Error("No preset-linked catalog entries found.");

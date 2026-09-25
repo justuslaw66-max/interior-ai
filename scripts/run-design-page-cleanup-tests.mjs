@@ -14,6 +14,7 @@ const typescriptGuardFiles = [
   "test-beta-readiness-upgrades.ts",
   "test-catalog-panel-logic.ts",
   "test-catalog-placement.ts",
+  "test-catalog-price-currency.ts",
   "test-command-bar-save-status.ts",
   "test-design-page-ai-layout-controller.ts",
   "test-design-page-ai-layout-proposal.ts",

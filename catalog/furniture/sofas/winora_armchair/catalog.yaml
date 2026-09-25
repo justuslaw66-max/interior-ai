@@ -9,7 +9,7 @@ product_name: "Winora Armchair"
 slug: "castlery-winora-armchair"
 variant: ""
 
-price_usd: 549
+price_sgd: 549
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -302,7 +302,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "stocked_fabric"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
@@ -312,14 +312,14 @@ variants:
         quantity: 1
         sku: "winora-armchair-tessa-sand"
         affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
-        price_usd: 549
+        price_sgd: 549
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "winora-armchair-tessa-sand-set-of-2"
         affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=set_of_2&material=tessa_sand"
-        price_usd: 1098
+        price_sgd: 1098
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769054133/crusader/variants/PB-002084-TS4001/Winora-Armchair-Tessa-Sand-Set-of-2-Front-1769054131.jpg"
         available: true
     dimensions: { width_cm: 70.5, depth_cm: 85, height_cm: 85 }
@@ -362,7 +362,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "stocked_fabric"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_moss"
@@ -372,14 +372,14 @@ variants:
         quantity: 1
         sku: "winora-armchair-tessa-moss"
         affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_moss"
-        price_usd: 549
+        price_sgd: 549
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "winora-armchair-tessa-moss-set-of-2"
         affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=set_of_2&material=tessa_moss"
-        price_usd: 1098
+        price_sgd: 1098
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769054148/crusader/variants/PB-002084-TS4002/Winora-Armchair-Moss-Set-of-2-Front-1769054146.jpg"
         available: true
     dimensions: { width_cm: 70.5, depth_cm: 85, height_cm: 85 }

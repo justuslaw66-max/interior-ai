@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Recliner Chaise Sectional Sofa"
 variant: "Chaise Sectional Slim Arm"
 
-price_usd: 7246
+price_sgd: 7246
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -223,7 +223,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741936868/crusader/variants/AS-000675-LE4023/Jaron-Chaise-Sectional-Slim-Arm-Sofa-Marche-Cocoa_Cover-1741936866.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741343884/crusader/variants/AS-000675-LE4023/Jaron-Leather-Chaise-Sectional-Slim-Arm-Sofa-Marche-Cocoa_-Square-Set_4-1741343882.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 7246
+    price_sgd: 7246
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 239, height_cm: 77 }
@@ -241,7 +241,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760150879/crusader/variants/AS-000679-LE4021/Jaron-Leather-Chaise-Sectional-Slim-Arm-Sofa_-Marche-Ivory-Angle_-1760150879.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 7246
+    price_sgd: 7246
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 239, height_cm: 77 }
@@ -265,7 +265,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741852358/crusader/variants/AS-000675-AR4001/Jaron-Chaise-Sectional-Slim-Arm-Sofa-Performance-Arvo-Dune-Square-Set_2-1741852355.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1741936224/crusader/variants/AS-000675-AR4001/Jaron-Chaise-Sectional-Slim-Arm-Sofa-Performance-Arvo-Dune_Cover-1741936222.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 5296
+    price_sgd: 5296
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 325, depth_cm: 239, height_cm: 77 }

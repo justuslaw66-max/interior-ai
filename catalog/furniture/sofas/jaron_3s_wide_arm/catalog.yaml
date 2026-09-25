@@ -6,7 +6,7 @@ product_family: "Jaron"
 product_name: "Jaron Recliner Sofa"
 variant: "3-Seater Wide Arm"
 
-price_usd: 2699
+price_sgd: 2699
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -220,7 +220,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1741936605/crusader/variants/AS-000659-LE4023/Jaron-3-Seater-Dual-Recliner-Wide-Arm-Sofa-Marche-Cocoa_Cover-1741936603.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737528251/crusader/variants/AS-000659-LE4023/Jaron-Leather-3-Seater-Single-Recliner-Wide-Arm-Sofa-Marche-Cocoa_-Det_2-1737528249.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2699
+    price_sgd: 2699
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
@@ -240,7 +240,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151201/crusader/variants/AS-000667-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Wide-Arm-Sofa-Marche-Ivory-Angle_-1760151201.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1760151201/crusader/variants/AS-000667-LE4021/Jaron-Leather-3-Seater-Dual-Recliner-Wide-Arm-Sofa-Marche-Ivory-Side_-1760151201.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2699
+    price_sgd: 2699
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }
@@ -264,7 +264,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1742435444/crusader/variants/AS-000660-AR4001/Jaron-3-Seater-Dual-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-_Cover-1742435441.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1742205787/crusader/variants/AS-000668-AR4001/Jaron-3-Seater-Dual-Recliner-Wide-Arm-Sofa-Performance-Arvo-Dune-Square-Set_1-1742205787.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2599
+    price_sgd: 2599
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 230, depth_cm: 115, height_cm: 77 }

@@ -7,7 +7,7 @@ product_family: "Faro"
 product_name: "Faro Table Lamp"
 variant: "Single"
 
-price_usd: 119
+price_sgd: 119
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -165,7 +165,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-faro-table-lamp.glb"
     affiliate_url: "https://www.castlery.com/sg/products/faro-table-lamp"
     available: true
-    price_usd: 119
+    price_sgd: 119
     dimensions:
       width_cm: 35
       depth_cm: 35

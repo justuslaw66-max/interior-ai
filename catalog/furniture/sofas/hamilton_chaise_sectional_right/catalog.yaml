@@ -9,7 +9,7 @@ product_name: "Hamilton Chaise Sectional Sofa"
 slug: "castlery-hamilton-chaise-sectional-right"
 variant: "Chaise Sectional / Right Facing"
 
-price_usd: 2599
+price_sgd: 2599
 price_band: "premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -134,7 +134,7 @@ variants:
     model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-right.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1634799411/crusader/variants/50440761-MC4002/Hamilton-Chaise-Sectional-Sofa-Left-Facing-Brilliant-White-Front-SG.png"
     swatch_group: "upholstery_option"
-    price_usd: 2599
+    price_sgd: 2599
     dimensions: { width_cm: 278, depth_cm: 171, height_cm: 82 }
     affiliate_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa?orientation=right_facing"
     available: true

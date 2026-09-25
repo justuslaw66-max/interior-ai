@@ -9,7 +9,7 @@ product_name: "Cammy Armchair"
 slug: "castlery-cammy-armchair"
 variant: "Armchair / Pine Green Fabric"
 
-price_usd: 449
+price_sgd: 449
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -273,7 +273,7 @@ variants:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683874365/crusader/variants/TW-4005/Cammy-Armchair-Pine-Green-Det_3-1683874365.jpg"
     color_family: "green"
     tone: "cool"
-    price_usd: 449
+    price_sgd: 449
     price_band: "mid"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=pine_green"
@@ -283,16 +283,16 @@ variants:
         quantity: 1
         sku: "50440514-TW4005"
         affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=pine_green"
-        price_usd: 449
+        price_sgd: 449
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "PB-000083-TW4005"
         affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=set_of_2&material=pine_green"
-        price_usd: 849
-        compare_at_price_usd: 898
-        savings_usd: 49
+        price_sgd: 849
+        compare_at_price_sgd: 898
+        savings_sgd: 49
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683186813/crusader/variants/T50440552-TW4005/Cammy-Armchair-Pine-Green-2-Bundle-1683186810.jpg"
         available: true
     dimensions: { width_cm: 75.5, depth_cm: 72.5, height_cm: 88 }
@@ -334,7 +334,7 @@ variants:
     swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683188657/crusader/variants/TW-4004/Cammy-Armchair-Mustard-Det_1-1683188654.jpg"
     color_family: "yellow"
     tone: "warm"
-    price_usd: 449
+    price_sgd: 449
     price_band: "mid"
     brand_tier: "premium_mid"
     affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=mustard"
@@ -344,16 +344,16 @@ variants:
         quantity: 1
         sku: "50440514-TW4004"
         affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=mustard"
-        price_usd: 449
+        price_sgd: 449
         available: true
       - id: "set_of_2"
         label: "Set of 2"
         quantity: 2
         sku: "PB-000083-TW4004"
         affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=set_of_2&material=mustard"
-        price_usd: 849
-        compare_at_price_usd: 898
-        savings_usd: 49
+        price_sgd: 849
+        compare_at_price_sgd: 898
+        savings_sgd: 49
         image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683184066/crusader/variants/T50440552-TW4004/Cammy-Armchair-Mustard-2-Bundle-1683184064.jpg"
         available: true
     dimensions: { width_cm: 75.5, depth_cm: 72.5, height_cm: 88 }

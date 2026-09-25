@@ -8,7 +8,7 @@ product_name: "Seb TV Console"
 slug: "seb-tv-console-200cm"
 variant: "200cm / Muted Honey"
 
-price_usd: 1099
+price_sgd: 1099
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -185,7 +185,7 @@ variants:
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

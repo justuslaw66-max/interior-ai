@@ -41,7 +41,7 @@ function getVariantPrice(item: CatalogItemSchema, variant: ProductVariant) {
   const price =
     variant.priceHint ??
     (item.commerce.type === "affiliate" ? item.commerce.data.priceHint : undefined) ??
-    item.metadata?.priceUsd ??
+    item.metadata?.priceSgd ??
     0;
   return Number.isFinite(price) ? price : 0;
 }

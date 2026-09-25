@@ -9,7 +9,7 @@ product_name: "Mori Performance Fabric Armchair"
 slug: "castlery-mori-performance-fabric-armchair"
 variant: "Performance Linen Weave (Genova), Alpine / Natural Wood / Removable Cover"
 
-price_usd: 1169
+price_sgd: 1169
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -510,7 +510,7 @@ variants:
     color_family: "neutral"
     tone: "neutral"
     collection_type: "stocked_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -519,7 +519,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-alpine-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_alpine&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -564,7 +564,7 @@ variants:
     color_family: "neutral"
     tone: "neutral"
     collection_type: "stocked_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -573,7 +573,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-alpine-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_alpine&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -618,7 +618,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "stocked_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -627,7 +627,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-oat-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_oat&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -672,7 +672,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "stocked_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -681,7 +681,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-oat-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_oat&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -726,7 +726,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -735,7 +735,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-cream-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_cream&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -780,7 +780,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -789,7 +789,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-cream-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_cream&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -834,7 +834,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -843,7 +843,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-white-quartz-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_white_quartz&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -888,7 +888,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -897,7 +897,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-white-quartz-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_white_quartz&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -942,7 +942,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -951,7 +951,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-moss-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_moss&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -996,7 +996,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1005,7 +1005,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-moss-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_moss&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1050,7 +1050,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1059,7 +1059,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-ginger-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_ginger&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1104,7 +1104,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1113,7 +1113,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-infinity-boucle-ginger-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=infinity_boucle_ginger&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1158,7 +1158,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1167,7 +1167,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-ivory-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_ivory&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1212,7 +1212,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1221,7 +1221,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-ivory-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_ivory&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1266,7 +1266,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1275,7 +1275,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-dove-grey-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_dove_grey&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1320,7 +1320,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1329,7 +1329,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-dove-grey-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_dove_grey&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1374,7 +1374,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1383,7 +1383,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-moss-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_moss&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1428,7 +1428,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1437,7 +1437,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-moss-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_moss&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1482,7 +1482,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1491,7 +1491,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-cumin-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_cumin&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1536,7 +1536,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1545,7 +1545,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-peyton-cumin-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=peyton_cumin&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1590,7 +1590,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1599,7 +1599,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-cream-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_cream&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1644,7 +1644,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1653,7 +1653,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-cream-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_cream&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1698,7 +1698,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1707,7 +1707,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-light-grey-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_light_grey&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1752,7 +1752,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1761,7 +1761,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-genova-light-grey-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=genova_light_grey&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1806,7 +1806,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1815,7 +1815,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-creamy-white-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_creamy_white&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1860,7 +1860,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1869,7 +1869,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-creamy-white-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_creamy_white&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1914,7 +1914,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1923,7 +1923,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-pearl-beige-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_pearl_beige&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -1968,7 +1968,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -1977,7 +1977,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-pearl-beige-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_pearl_beige&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2022,7 +2022,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2031,7 +2031,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-medium-grey-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_medium_grey&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2076,7 +2076,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2085,7 +2085,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-medium-grey-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_medium_grey&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2130,7 +2130,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2139,7 +2139,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-slate-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_slate&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2184,7 +2184,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2193,7 +2193,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-slate-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_slate&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2238,7 +2238,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2247,7 +2247,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-moss-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_moss&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2292,7 +2292,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2301,7 +2301,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-performance-twill-moss-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=performance_twill_moss&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2346,7 +2346,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2355,7 +2355,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-cream-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_cream&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2400,7 +2400,7 @@ variants:
     color_family: "cream"
     tone: "neutral"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2409,7 +2409,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-cream-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_cream&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2454,7 +2454,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2463,7 +2463,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-sand-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_sand&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2508,7 +2508,7 @@ variants:
     color_family: "beige"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2517,7 +2517,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-sand-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_sand&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2562,7 +2562,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2571,7 +2571,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-caramel-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_caramel&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2616,7 +2616,7 @@ variants:
     color_family: "brown"
     tone: "warm"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2625,7 +2625,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-caramel-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_caramel&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2670,7 +2670,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2679,7 +2679,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-moss-natural-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_moss&color_option=natural_oak&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:
@@ -2724,7 +2724,7 @@ variants:
     color_family: "green"
     tone: "cool"
     collection_type: "custom_fabric"
-    price_usd: 1169
+    price_sgd: 1169
     price_band: "premium"
     brand_tier: "premium_mid"
     available: true
@@ -2733,7 +2733,7 @@ variants:
       - label: "Single"
         quantity: 1
         sku: "mori-armchair-washed-chenille-moss-walnut-removable"
-        price_usd: 1169
+        price_sgd: 1169
         affiliate_url: "https://www.castlery.com/sg/products/mori-performance-fabric-armchair?material=washed_chenille_moss&color_option=walnut&frame_cover=removable"
     dimensions: { width_cm: 112, depth_cm: 116, height_cm: 81.5 }
     materials:

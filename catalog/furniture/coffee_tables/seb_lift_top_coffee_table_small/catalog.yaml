@@ -7,7 +7,7 @@ product_name: "Seb Lift Top Coffee Table, Small"
 slug: "castlery-seb-lift-top-coffee-table-small"
 variant: "90cm / Muted Honey"
 
-price_usd: 699
+price_sgd: 699
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -331,7 +331,7 @@ variants:
       open_lift:
         model_url: "/assets/models/coffee-real-castlery-seb-lift-top-small-open.glb"
 
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

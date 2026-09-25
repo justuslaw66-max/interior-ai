@@ -56,7 +56,7 @@ const EDITABLE_YAML_FIELDS = [
   "product_family",
   "product_name",
   "variant",
-  "price_usd",
+  "price_sgd",
   "price_band",
   "brand_tier",
   "design_zone",
@@ -308,9 +308,9 @@ function validateYamlUpdateData(data: CatalogYamlUpdateData) {
     }
   }
 
-  if (hasOwn(data as Record<string, unknown>, "price_usd")) {
-    if (!(typeof data.price_usd === "number" || data.price_usd === null)) {
-      return "price_usd must be a number or null.";
+  if (hasOwn(data as Record<string, unknown>, "price_sgd")) {
+    if (!(typeof data.price_sgd === "number" || data.price_sgd === null)) {
+      return "price_sgd must be a number or null.";
     }
   }
 

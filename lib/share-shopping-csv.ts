@@ -24,8 +24,8 @@ export type ShoppingCsvRow = {
   source: string;
   retailerUrl: string | null;
   includeInCheckout: boolean;
-  unitPriceUsd: number;
-  lineTotalUsd: number;
+  unitPriceSgd: number;
+  lineTotalSgd: number;
   reviewNote: string | null;
 };
 
@@ -119,8 +119,8 @@ export function buildShoppingCsvRows(rows: CheckoutReadinessRow[]): ShoppingCsvR
     source: getCheckoutSourceLabel(row),
     retailerUrl: row.retailerUrl,
     includeInCheckout: row.includeInCheckout,
-    unitPriceUsd: row.quantity > 0 ? row.linePrice / row.quantity : row.linePrice,
-    lineTotalUsd: row.linePrice,
+    unitPriceSgd: row.quantity > 0 ? row.linePrice / row.quantity : row.linePrice,
+    lineTotalSgd: row.linePrice,
     reviewNote: row.warningLabel ?? null,
   }));
 }
@@ -152,8 +152,8 @@ export function buildSurfaceMaterialCsvRows(
       source: `${brandLabel} ${row.materialFamily.replace(/_/g, " ")} ${row.purchaseMode.replace(/_/g, " ")}`,
       retailerUrl: row.sampleRequestUrl ?? row.sourceUrl,
       includeInCheckout: row.purchaseMode === "direct_checkout",
-      unitPriceUsd: row.pricePerSqmAmount ?? 0,
-      lineTotalUsd: row.lineTotal ?? 0,
+      unitPriceSgd: row.pricePerSqmAmount ?? 0,
+      lineTotalSgd: row.lineTotal ?? 0,
       reviewNote: [
         `Surface ${row.surfaceLabel}; measured area ${row.surfaceAreaSqm.toFixed(2)} m2; suggested order ${row.orderAreaSqm.toFixed(2)} m2 with 10% waste.`,
         `Pattern ${row.pattern}; rotation ${row.rotationDeg} deg; scale ${row.scale}; joint ${row.jointSizeMm} mm ${row.jointColor}.`,
@@ -175,8 +175,8 @@ export function buildSurfaceMaterialCsvRows(
       source: "Physical wall host validation",
       retailerUrl: null,
       includeInCheckout: false,
-      unitPriceUsd: 0,
-      lineTotalUsd: 0,
+      unitPriceSgd: 0,
+      lineTotalSgd: 0,
       reviewNote: warning.message,
     })),
     ...rows,

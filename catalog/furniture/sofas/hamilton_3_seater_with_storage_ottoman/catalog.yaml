@@ -9,7 +9,7 @@ product_name: "Hamilton 3 Seater Sofa with Storage Ottoman"
 slug: "castlery-hamilton-3-seater-with-storage-ottoman"
 variant: "3 Seater with Storage Ottoman"
 
-price_usd: 1989
+price_sgd: 1989
 price_band: "premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -114,7 +114,7 @@ variants:
     model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-3-seater-with-storage-ottoman.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1756695883/crusader/variants/PB-001798-PM4002/Hamilton-3-Seater-Sofa-With-Storage-Ottoman-Performance-Marcel-Brilliant-White-Front-1756695881.png"
     swatch_group: "upholstery_option"
-    price_usd: 1989
+    price_sgd: 1989
     dimensions: { width_cm: 203.5, depth_cm: 171, height_cm: 82 }
     affiliate_url: "https://www.castlery.com/sg/products/hamilton-3-seater-sofa-with-storage-ottoman"
     available: true

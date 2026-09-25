@@ -7,7 +7,7 @@ product_name: "Seb Coffee Table with Storage"
 slug: "castlery-seb-coffee-table-with-storage-90"
 variant: "Seb Coffee Table with Storage / 90cm / Muted Honey"
 
-price_usd: 548
+price_sgd: 548
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -192,7 +192,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1768897927/crusader/variants/40550392/Seb-Coffee-Table-90cm-Back-1768897926.jpg"
     swatch_group: "wood_finish"
 
-    price_usd: 548
+    price_sgd: 548
     price_band: "mid"
     brand_tier: "premium_mid"
 

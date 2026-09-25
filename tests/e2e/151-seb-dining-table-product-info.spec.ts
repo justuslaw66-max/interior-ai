@@ -15,7 +15,7 @@ type ImportedModel = {
   modelUrl?: string | null;
   catalog?: {
     source_url?: string;
-    priceUsd?: number;
+    priceSgd?: number;
     assets?: { thumbnail_url?: string; gallery_images?: string[] };
     variants?: Array<{
       size_label?: string;
@@ -54,8 +54,8 @@ test.describe("151. Seb Dining Table Product Info", () => {
     expect(table180?.modelUrl).toBe(`/assets/models/${SEB_DINING_TABLE_180_ID}.glb`);
     expect(table150?.catalog?.source_url).toContain("seb-dining-table?length=1_5m");
     expect(table180?.catalog?.source_url).toContain("seb-dining-table?length=1_8m");
-    expect(table150?.catalog?.priceUsd).toBe(699);
-    expect(table180?.catalog?.priceUsd).toBe(799);
+    expect(table150?.catalog?.priceSgd).toBe(699);
+    expect(table180?.catalog?.priceSgd).toBe(799);
 
     expect(table150?.catalog?.assets?.thumbnail_url).toContain("Seb-Dining-Table-150cm-Front");
     expect(table180?.catalog?.assets?.thumbnail_url).toContain("Seb-Dining-Table-180cm-Front");

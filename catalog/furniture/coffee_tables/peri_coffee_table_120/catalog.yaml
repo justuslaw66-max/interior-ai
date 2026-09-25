@@ -7,7 +7,7 @@ product_name: "Peri Coffee Table"
 slug: "castlery-peri-coffee-table"
 variant: "Peri Coffee Table / Walnut / Dark Grey Steel"
 
-price_usd: 549
+price_sgd: 549
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -221,7 +221,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1641292795/crusader/variants/50850023/Peri-Coffee-Table-Back.jpg"
     swatch_group: "finish"
 
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

@@ -6,7 +6,7 @@ product_family: "Forma"
 product_name: "Forma Round Dining Table"
 variant: "Round 120"
 
-price_usd: 1049
+price_sgd: 1049
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -138,7 +138,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769050029/crusader/variants/AS-001038-OA/Forma-Round-Dining-Table-120cm-Walnut-Det_1-1769050027.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774002983/knight/USP/2026/Forma-Round-Dining-Table-120cm-Walnut-With-4-Tavi-Wood-Back-Dining-Chair-Greige-Walnut-Set_3.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1774003084/knight/USP/2026/Forma-Round-Dining-Table-120cm-Oak-Det_2.jpg"
-    price_usd: 1049
+    price_sgd: 1049
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
