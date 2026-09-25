@@ -1324,7 +1324,7 @@ export function useDesignPageCabinetry({
     openedAtRef.current = performance.now();
     track("millwork_studio_opened", {
       access_level: accessLevel,
-      entry_point: "command_bar",
+      entry_point: "furnish_step",
       studio_mode: "create",
     });
     setStudio({ mode: "create" });

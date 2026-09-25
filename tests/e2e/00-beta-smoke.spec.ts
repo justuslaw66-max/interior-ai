@@ -259,6 +259,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await clickVisibleControl(page.getByTestId("apply-furnished-template-studio"));
       await confirmPlanTemplateReplacementIfNeeded(page);
     } else {
+      await openEditorCommandOverflow(page);
       await clickVisibleControl(page.getByTestId("editor-command-new-plan"));
       await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
       await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();

@@ -140,6 +140,7 @@ test.describe("19. Staging Signoff Evidence", () => {
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
       await betaStartTemplate.click();
     } else {
+      await page.getByTestId("editor-command-overflow").click();
       await page.getByTestId("editor-command-new-plan").click();
       await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
     }

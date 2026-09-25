@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { errors, type Locator } from "@playwright/test";
-import { ensureEditorWorkspaceMenuOpen } from "../tests/e2e/variant-test-utils";
+import { ensureCommandMenuOpen } from "../tests/e2e/variant-test-utils";
 
 async function main() {
   let cases = 0;
@@ -29,7 +29,7 @@ async function main() {
         if ("failure" in input) throw input.failure;
       },
     };
-    const operation = ensureEditorWorkspaceMenuOpen(trigger);
+    const operation = ensureCommandMenuOpen(trigger);
     if (input.getterFailure === "initial") {
       await assert.rejects(operation, (cause) => cause === getterError);
     } else if ("expectedFailure" in input) {
@@ -57,7 +57,7 @@ async function main() {
   await check({ initial: "false", getterFailure: "initial" });
   await check({ initial: "false", afterClick: "true", failure: timeout,
     getterFailure: "after-click", expectedFailure: timeout });
-  console.log(`Editor workspace menu helper: ${cases} deterministic cases passed.`);
+  console.log(`Editor command menu helper: ${cases} deterministic cases passed.`);
 }
 
 main().catch((cause) => {

@@ -10,6 +10,7 @@ import {
   buildSelectedCabinetDocumentation,
 } from "../features/cabinetry/useDesignPageCabinetry";
 import { createRoom } from "../lib/room-types";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -24,16 +25,17 @@ const commandBarWrapperSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageEditorCommandBar.tsx"),
   "utf8"
 );
-const commandBarSource = readFileSync(
-  join(root, "components/editor/EditorCommandBar.tsx"),
+const commandBarSource = readEditorCommandBarSource(root);
+const panelWorkspaceRegistrationSource = readFileSync(
+  join(root, "lib/design-page-panel-workspace-registration.ts"),
   "utf8"
 );
-const workspaceMenuKeyboardSource = readFileSync(
-  join(root, "components/editor/workspaceMenuKeyboard.ts"),
+const panelRegistrationSource = readFileSync(
+  join(root, "lib/design-page-panel-registration.ts"),
   "utf8"
 );
-const editorChromeControllerSource = readFileSync(
-  join(root, "lib/useDesignPageEditorChromeController.ts"),
+const furnishStepModesSource = readFileSync(
+  join(root, "components/editor/FurnishStepModes.tsx"),
   "utf8"
 );
 const cabinetryFeatureFlagSource = readFileSync(
@@ -132,28 +134,33 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-workspace"[\s\S]*?workspaceRef\.current\?\.querySelector<HTMLElement>\("button"\)\?\.focus\(\);[\s\S]*?setWorkspaceOpen\(false\);[\s\S]*?step\.onClick\(\)/,
-  "Workspace actions should return focus to their visible trigger before opening the selected workflow."
+  /id: "furnish"[\s\S]*?active: millworkActive \|\| editorMode === "adjust" \|\| editorMode === "ai"/,
+  "The Furnish step should stay current while the Built-ins studio is open."
 );
-assert.match(
+assert.doesNotMatch(
   commandBarSource,
-  /event\.detail === 0[\s\S]*?\[role="menuitem"\][\s\S]*?\.focus\(\)[\s\S]*?onKeyDown=\{handleWorkspaceMenuKeyDown\}/,
-  "Keyboard activation should move focus into the visible Workspace menu."
-);
-assert.match(
-  workspaceMenuKeyboardSource,
-  /event\.key !== "ArrowDown" && event\.key !== "ArrowUp"[\s\S]*?event\.preventDefault\(\);[\s\S]*?items\[nextIndex\]\.focus\(\)/,
-  "Workspace menu items should provide deterministic Arrow-key navigation."
+  /editor-command-workspace"|editor-workflow-millwork/,
+  "Built-ins opens from the Furnish step, not from a Workspace menu in the command bar."
 );
 assert.match(
   presentationWorkspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetry\.state\.studio !== null[\s\S]*?canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*?openStudio:\s*cabinetry\.actions\.openCreateStudio/,
-  "The presentation workspace should inject millwork state, capability, and opening at the presentation/QA boundary."
+  /useDesignPagePresentationQaFacade\(\{[\s\S]*?millworkActive:\s*cabinetry\.state\.studio !== null/,
+  "The presentation workspace should tell the command bar while the Built-ins studio is open."
 );
 assert.match(
-  editorChromeControllerSource,
-  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
-  "The editor-chrome controller should preserve the command wrapper's millwork availability policy."
+  panelWorkspaceRegistrationSource,
+  /canUseCabinetryStudio:\s*cabinetry\.state\.canUseStudio[\s\S]*?openBuiltIns:\s*cabinetry\.actions\.openCreateStudio/,
+  "The panel workspace should inject the Built-ins capability and opening."
+);
+assert.match(
+  panelRegistrationSource,
+  /onOpenBuiltIns: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.navigation\.openBuiltIns[\s\S]*?: undefined/,
+  "The Furnish step should only offer Built-ins when the studio is available."
+);
+assert.match(
+  furnishStepModesSource,
+  /data-testid="editor-workflow-millwork"[\s\S]*?data-testid="open-custom-millwork-studio"[\s\S]*?data-testid="open-cabinetry-studio">Built-ins/,
+  "The Furnish step's Built-ins button should keep the legacy Studio test ids."
 );
 assert.match(
   cabinetryFeatureFlagSource,
@@ -163,7 +170,7 @@ assert.match(
 assert.match(
   cabinetryControllerSource,
   /const canUseStudio = CABINETRY_STUDIO_FEATURE_ENABLED && !isClientPreview/,
-  "A disabled Studio flag or client preview must remove the canonical Workspace action."
+  "A disabled Studio flag or client preview must remove the Built-ins action."
 );
 assert.doesNotMatch(
   workspaceSource,

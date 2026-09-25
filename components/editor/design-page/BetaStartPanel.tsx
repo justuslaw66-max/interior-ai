@@ -18,7 +18,7 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
   return (
     <div
       data-testid="beta-start-panel"
-      className="fixed bottom-4 left-1/2 z-30 max-h-[calc(100vh-5.75rem)] w-[min(92vw,760px)] -translate-x-1/2 overflow-y-auto rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-2xl backdrop-blur"
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-30 max-h-[calc(100vh-9.75rem-env(safe-area-inset-bottom))] w-[min(92vw,760px)] md:bottom-4 md:max-h-[calc(100vh-5.75rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-2xl backdrop-blur"
       role="region"
       aria-label="Public beta fast start"
     >

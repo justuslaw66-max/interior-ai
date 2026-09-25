@@ -37,10 +37,12 @@ export function registerStartAndFloorTests() {
     if (await betaStartPanel.isVisible({ timeout: 5000 }).catch(() => false)) {
       await page.getByTestId("beta-start-ai-layout").click();
     } else {
+      await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
       await clickWithFallback(page.getByTestId("editor-workflow-ai"));
     }
 
-    await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("aria-current", "step");
+    await expect(page.getByTestId("furnish-step-back-to-products")).toBeVisible();
     await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByText("Step 1 · Room goal")).toBeVisible();
     await expect(page.getByText("Step 2 · Style")).toBeVisible();

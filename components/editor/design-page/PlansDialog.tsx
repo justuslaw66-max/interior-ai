@@ -6,6 +6,8 @@ import { getPlansReturnFocusIds } from "@/lib/plans-dialog-focus";
 export type PlansDialogState = {
   open: boolean;
   openedFromUpgrade: boolean;
+  /** The control that opened Pricing, when it isn't in the Account menu (Get Pro, Download). */
+  openerId?: string | null;
   layout: "default" | "annual_highlight";
   proActive: boolean;
   startingCheckout: boolean;
@@ -43,7 +45,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
       testId="plans-dialog"
       dialogId="editor-plans-dialog"
       closeButtonTestId="plans-dialog-close"
-      returnFocusIds={getPlansReturnFocusIds(state.openedFromUpgrade)}
+      returnFocusIds={getPlansReturnFocusIds(state.openedFromUpgrade, state.openerId)}
       cancelFocusRestorationOnUnmount
       manageBackground
       forceLight

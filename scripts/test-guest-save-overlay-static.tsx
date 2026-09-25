@@ -12,6 +12,7 @@ import {
 } from "../lib/guest-save-prompt";
 import { GuestSavePromptController } from "../lib/useGuestSavePromptController";
 import { createGuestPromptScopeKey } from "../lib/useDesignPagePersistenceWorkspaceRegistration";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(`${root}/${path}`, "utf8");
@@ -24,7 +25,7 @@ const controllerSource = read("lib/useGuestSavePromptController.ts");
 const workspaceSource = read(
   "components/editor/design-page/DesignPageWorkspace.tsx"
 );
-const commandBarSource = read("components/editor/EditorCommandBar.tsx");
+const commandBarSource = readEditorCommandBarSource();
 const aiPanelSource = read("components/editor/DesignControlsAiPanel.tsx");
 const cartSource = read("components/CartSidebar.tsx");
 
@@ -49,6 +50,10 @@ assert.equal((open.match(/role="dialog"/g) ?? []).length, 1);
 assert.match(open, /aria-modal="true"/);
 assert.match(open, /Sign in to save this design/);
 assert.match(open, /aria-label="Close sign-in prompt"/);
+const shareOpen = render({ reason: "share" });
+assert.match(shareOpen, /Sign in to share this design/, "The Share button's prompt should say it is about sharing.");
+assert.match(shareOpen, /Share links need an account/);
+assert.match(shareOpen, /data-testid="guest-save-prompt-primary"/);
 
 let continuationCalls = 0;
 const firstSession = createGuestPromptSession(
@@ -89,7 +94,7 @@ assert.equal(continuationCalls, 1);
 
 assert.match(
   promptSource,
-  /<EditorDialog[\s\S]*?title="Sign in to save this design"[\s\S]*?manageBackground/,
+  /title: "Sign in to save this design"[\s\S]*?<EditorDialog[\s\S]*?title=\{copy\.title\}[\s\S]*?manageBackground/,
   "Guest Save Prompt must compose the shared managed EditorDialog lifecycle."
 );
 assert.match(promptSource, /reason: GuestPromptReason \| null/);
@@ -134,6 +139,7 @@ assert.doesNotMatch(
 );
 
 assert.match(commandBarSource, /id=\{GUEST_SAVE_OPENER_ID\}/);
+assert.match(commandBarSource, /id=\{GUEST_SHARE_OPENER_ID\}/);
 assert.match(aiPanelSource, /id=\{GUEST_AI_LAYOUT_OPENER_ID\}/);
 assert.match(cartSource, /id=\{GUEST_CHECKOUT_OPENER_ID\}/);
 assert.match(cartSource, /onGuestCapture\("checkout"/);

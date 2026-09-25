@@ -10,6 +10,7 @@ import {
 import { track, trackProductEvent, trackProductPerformance } from "@/lib/analytics";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
+import { resolveDesignTitle } from "@/lib/design-title";
 import type {
   DesignPageCloudWriteBinding,
   DesignPageCloudWriteQueue,
@@ -98,8 +99,8 @@ function prepareManualWrite(
 ) {
   const legacyData = snapshotToLegacyApi(storedToSnapshot(stored));
   const payload = {
-    title: "My Living Room",
     ...legacyData,
+    title: resolveDesignTitle(legacyData.title),
     savedViews: input.state.savedViews,
     style: input.state.style,
     budget: input.state.budget,
@@ -248,7 +249,7 @@ function preparePreserveWrite(
         savedViews: input.state.savedViews,
         roomWidth: input.state.roomWidth,
         roomDepth: input.state.roomDepth,
-        snapshot: stored,
+        snapshot: stored, title: resolveDesignTitle(stored.title),
         style: input.state.style,
         budget: input.state.budget,
         mode: input.state.mode,
@@ -256,8 +257,8 @@ function preparePreserveWrite(
         ...(binding.revision ? { expectedUpdatedAt: binding.revision } : {}),
       }
     : {
-        title: "My Living Room",
         ...legacyData,
+        title: resolveDesignTitle(legacyData.title),
         savedViews: input.state.savedViews,
         style: input.state.style,
         budget: input.state.budget,

@@ -75,6 +75,7 @@ export function useDesignPageEditorShellRuntime({
     setEditorMode,
     designPanelOpen: state.designPanelOpen,
     setDesignPanelOpen,
+    setDesignPanelCollapsed,
     setItemCartOpen,
   });
 
@@ -127,12 +128,6 @@ export function useDesignPageEditorShellRuntime({
     },
     [setPlanDebugMetrics]
   );
-
-  useEffect(() => {
-    if (!state.designPanelOpen) {
-      setDesignPanelCollapsed(false);
-    }
-  }, [setDesignPanelCollapsed, state.designPanelOpen]);
 
   return {
     boundaries: { surfaceState },

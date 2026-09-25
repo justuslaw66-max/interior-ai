@@ -240,9 +240,8 @@ assertSourceOrder(
     'window.localStorage.getItem("design_layout_debug")',
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
-    "if (!state.designPanelOpen)",
   ],
-  "Editor shell runtime should preserve cart-through-collapse hook order"
+  "Editor shell runtime should preserve cart-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,

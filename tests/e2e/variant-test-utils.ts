@@ -75,7 +75,7 @@ async function clickButtonWithDomFallback(locator: Locator): Promise<void> {
   });
 }
 
-export async function ensureEditorWorkspaceMenuOpen(
+export async function ensureCommandMenuOpen(
   trigger: Pick<Locator, "click" | "getAttribute">,
 ): Promise<void> {
   if (await trigger.getAttribute("aria-expanded") === "true") return;
@@ -96,17 +96,47 @@ export async function ensureEditorWorkspaceMenuOpen(
   }
 }
 
+// The editor is rendered on the server first, and a click before it hydrates does nothing.
+export async function waitForEditorHydration(page: Page, timeout = 30_000): Promise<void> {
+  await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute("data-client-hydrated", "true", { timeout });
+}
+
+// Opens More until `item` shows. The dev server can reload the editor while a test runs, and
+// the open menu goes with it, so this waits for the editor to hydrate again and reopens it.
+async function openMoreMenuFor(page: Page, item: Locator): Promise<void> {
+  const more = page.getByTestId("editor-command-overflow");
+  await expect(async () => {
+    await waitForEditorHydration(page, 10_000);
+    await ensureCommandMenuOpen(more);
+    await expect(item).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 45_000 });
+}
+
+// New design lives in the More menu.
+export async function chooseNewDesign(page: Page): Promise<void> {
+  const newDesign = page.getByTestId("editor-command-new-plan");
+  await openMoreMenuFor(page, newDesign);
+  await newDesign.click();
+}
+
+// Plan, Furnish and Shop are always-visible steps in the command bar. Suggest a layout and
+// Built-ins open from inside the Furnish step, and Present & export sits in the More menu.
+const FURNISH_STEP_ENTRIES = new Set(["editor-workflow-ai", "editor-workflow-millwork"]);
+const MORE_MENU_ENTRIES = new Set(["editor-workflow-export"]);
+
 export async function selectEditorWorkspace(
   page: Page,
   itemTestId: string
 ): Promise<void> {
   const item = page.getByTestId(itemTestId).first();
   if (!(await item.isVisible().catch(() => false))) {
-    const trigger = page.getByTestId("editor-command-workspace");
-    await expect(trigger).toBeVisible({ timeout: 20_000 });
-    await ensureEditorWorkspaceMenuOpen(trigger);
+    if (FURNISH_STEP_ENTRIES.has(itemTestId)) {
+      await selectEditorWorkspace(page, "editor-workflow-furnish");
+    } else if (MORE_MENU_ENTRIES.has(itemTestId)) {
+      await openMoreMenuFor(page, item);
+    }
   }
-  await expect(item).toBeVisible({ timeout: 10_000 });
+  await expect(item).toBeVisible({ timeout: 20_000 });
   await clickButtonWithDomFallback(item);
 }
 

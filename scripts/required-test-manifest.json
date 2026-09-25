@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 317,
-      "expectedPathSha256": "aa63cd138ad2baefaa7c9b78d5272b2096d7b763756bec971f1a0ae163a87f12"
+      "expectedFileCount": 318,
+      "expectedPathSha256": "98d14c73e435673e4e0c127fe7e9d318f1e842bf6502581c917b467b8543879d"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 103,
-      "expectedPathSha256": "712171eac11047541792a96c2e1e4b2fee9abb78751099bb443b22f5848ed301"
+      "expectedFileCount": 107,
+      "expectedPathSha256": "12a7285a6ae04d62b8e7a46827056395b4895542dadd2fd527e0032bfca57ff9"
     },
     {
       "id": "cabinetry-browser-modules",

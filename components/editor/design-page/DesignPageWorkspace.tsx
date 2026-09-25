@@ -18,6 +18,7 @@ import { buildDesignPageDialogLayerAdapter } from "@/lib/design-page-dialog-laye
 import { buildDesignPagePanelWorkspaceRegistration } from "@/lib/design-page-panel-workspace-registration";
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
 import { DEFAULT_EDITOR_CAMERA_VIEW } from "@/lib/design-page-editor-configuration";
+import { EDITOR_DOWNLOAD_OPENER_ID } from "@/lib/editor-download-focus";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import { useDesignPageCabinetryWorkspaceRegistration } from "@/lib/useDesignPageCabinetryWorkspaceRegistration";
 import { useDesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
@@ -80,23 +81,16 @@ export function DesignPageWorkspace() {
     state: {
       identity: { session, designId },
       brief: { mode },
-      dialogs: { showPlans, feedbackOpen, showUpgrade },
-      paywall: {
-        upgradeReason,
-        upgradeCtaVariant,
-        pricingLayoutVariant,
-      },
-      panels: {
-        itemCartOpen,
-        itemCart,
-      },
+      dialogs: { showPlans, plansOpenerId, feedbackOpen, downloadOpen, showUpgrade },
+      paywall: { upgradeReason, upgradeCtaVariant, pricingLayoutVariant },
+      panels: { itemCartOpen, itemCart },
       editor: { viewMode },
     },
     derived: { navigation: { router, pathname, searchParams } },
     actions: {
       brief: { setMode },
       access: { setPlan },
-      dialogs: { setShowPlans, setFeedbackOpen, setShowUpgrade },
+      dialogs: { setShowPlans, setPlansOpenerId, setFeedbackOpen, setDownloadOpen, setShowUpgrade },
       paywall: {
         setUpgradeReason,
         setUpgradeCtaVariant,
@@ -393,7 +387,7 @@ export function DesignPageWorkspace() {
   const {
     derived: { betaFeedbackContext },
     regions: { presentExport: presentExportDialog, editorChrome: editorChromeModel,
-      presentationQaLayer: presentationQaLayerModel },
+      presentationQaLayer: presentationQaLayerModel, designRename: designRenameDialog },
   } = presentationQaWorkspace;
   const sceneCanvasRegionModel =
     useDesignPageSceneRegionWorkspaceRegistration({
@@ -415,7 +409,7 @@ export function DesignPageWorkspace() {
       upgrade: { open: showUpgrade, variantLabel: upgradeCtaVariant, contentVariant: upgradeCtaVariant,
         description: upgradeDialogDescription, exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,
         pricingGuidance: upgradeDialogPricingGuidance, primaryCtaLabel: primaryUpgradeCtaLabel },
-      plans: { open: showPlans, layout: pricingLayoutVariant, openingBillingPortal, monthlyLabel: PRO_PLAN_PRICING.monthly.label,
+      plans: { open: showPlans, openerId: plansOpenerId, layout: pricingLayoutVariant, openingBillingPortal, monthlyLabel: PRO_PLAN_PRICING.monthly.label,
         yearlyLabel: PRO_PLAN_PRICING.yearly.label, yearlyEffectiveMonthlyLabel: PRO_PLAN_PRICING.yearly.effectiveMonthlyLabel },
       startingCheckout, annualSavingsLabel: annualPlanSavingsLabel,
       upgradeActions: { onSeePlans: openPlansFromUpgrade, onSignIn: signInFromUpgrade, onClose: closeUpgradeDialog },
@@ -444,8 +438,11 @@ export function DesignPageWorkspace() {
       },
     },
     ai: { notes: { open: showAINotes, data: aiNotesData, onApplySuggestion: applySuggestion, onClose: closeAiNotes } },
-    presentation: { presentExport: presentExportDialog },
-    editing: {
+    presentation: { presentExport: presentExportDialog, download: { open: downloadOpen, onClose: () => setDownloadOpen(false),
+      onDownloadImages: () => presentationBackupRegistration.actions.exportImages({ limitsShown: true }),
+      onDownloadPdf: () => presentationBackupRegistration.actions.exportPdf({ limitsShown: true }),
+      onSignIn: signInWithReturn, onSeePricing: () => { setPlansOpenerId(EDITOR_DOWNLOAD_OPENER_ID); setShowPlans(true); } } },
+    editing: { designRename: designRenameDialog,
       roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
         onValueChange: setPendingRoomRenameValue, onCancel: cancelRoomRename, onSave: commitRoomRename },
       annotation: { kind: pendingAnnotationKind, text: pendingAnnotationText, onTextChange: setPendingAnnotationText,
@@ -476,7 +473,7 @@ export function DesignPageWorkspace() {
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
     },
-    sharing: { url: persistenceState.shareLinkFallback, onClose: persistenceActions.closeShareLinkFallback,
+    sharing: { url: persistenceState.shareLinkFallback, standalone: persistenceState.shareLinkFallbackStandalone, onClose: persistenceActions.closeShareLinkFallback,
       onCopy: persistenceActions.copyFallbackShareLink, onOpen: persistenceActions.openFallbackShareLink },
     cabinetry: {
       state: cabinetryStudioState, access: { enabled: canUseCabinetryStudio, accessLevel: cabinetryAccessLevel },
@@ -492,7 +489,7 @@ export function DesignPageWorkspace() {
   return (
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
-      <div className="absolute inset-0">
+      <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
         <DesignPageSceneRegion {...sceneRegionModel} />
         <DesignPageEditorChrome {...editorChromeModel} />
         {viewMode === "2d" &&

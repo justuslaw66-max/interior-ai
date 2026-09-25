@@ -15,6 +15,7 @@ import {
   getMyDesignsDeleteActionId,
   getMyDesignsOpenActionId,
 } from "../lib/my-designs-dialog-focus";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const noOp = () => undefined;
 const designs = [
@@ -102,10 +103,7 @@ assert.deepEqual(
 );
 assert.notEqual(MY_DESIGNS_COMMAND_ACTION_ID, MY_DESIGNS_FALLBACK_ACTION_ID);
 
-const commandBarSource = readFileSync(
-  `${process.cwd()}/components/editor/EditorCommandBar.tsx`,
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource();
 assert.match(commandBarSource, /id=\{MY_DESIGNS_COMMAND_ACTION_ID\}/);
 assert.match(commandBarSource, /role="menuitem"[\s\S]*?editor-command-overflow-load/);
 

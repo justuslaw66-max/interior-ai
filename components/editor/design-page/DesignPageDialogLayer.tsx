@@ -27,6 +27,11 @@ import {
   DesignValidationFeedback,
   type DesignValidationFeedbackProps,
 } from "@/components/editor/design-page/DesignValidationFeedback";
+import { DesignRenameDialog, type DesignRenameDialogProps } from "@/components/editor/design-page/DesignRenameDialog";
+import {
+  DownloadDialog,
+  type DownloadDialogProps,
+} from "@/components/editor/design-page/DownloadDialog";
 import {
   GuestSavePromptDialog,
   type GuestSavePromptDialogProps,
@@ -72,7 +77,9 @@ export type DesignPageDialogLayerDialogs = {
   plans: PlansDialogProps;
   aiNotes: AiNotesDialogProps;
   presentExport: PresentExportDialogProps;
+  download: DownloadDialogProps;
   myDesigns: MyDesignsDialogProps;
+  designRename: DesignRenameDialogProps;
   roomRename: RoomRenameDialogProps;
   planAnnotation: PlanAnnotationDialogProps;
   catalogPlacement: CatalogPlacementConfirmPanelProps;
@@ -84,6 +91,8 @@ export type DesignPageDialogLayerOverlays = {
   toasts: DesignPageToastsProps;
   shareFallback: Omit<ShareLinkFallbackDialogProps, "copied" | "errorMessage"> & {
     lifecycleMode: "consumer" | "designer";
+    /** From the Share button: it opens without Present & export behind it. */
+    standalone: boolean;
   };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
@@ -100,7 +109,7 @@ function getShareFallbackLayerState(
   overlays: DesignPageDialogLayerOverlays
 ) {
   const parentOpen = dialogs.presentExport.configuration.open;
-  const open = parentOpen && Boolean(overlays.shareFallback.url);
+  const open = (parentOpen || overlays.shareFallback.standalone) && Boolean(overlays.shareFallback.url);
   return {
     open,
     toasts: open ? { ...overlays.toasts, shareCopied: false, shareErrorMessage: null } : overlays.toasts,
@@ -113,10 +122,7 @@ function getShareFallbackLayerState(
 export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLayerProps) {
   const [myDesignsMounted, setMyDesignsMounted] = useState(false);
   const shareFallback = getShareFallbackLayerState(dialogs, overlays);
-  const closeMyDesigns = () => {
-    setMyDesignsMounted(true);
-    dialogs.myDesigns.onClose();
-  };
+  const closeMyDesigns = () => { setMyDesignsMounted(true); dialogs.myDesigns.onClose(); };
   const openMyDesignTemplates = () => {
     setMyDesignsMounted(false);
     dialogs.myDesigns.onOpenTemplates();
@@ -132,6 +138,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <GuestSavePromptDialog key={dialogs.guestSave.lifecycleScopeKey} {...dialogs.guestSave} />
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
+      <DownloadDialog {...dialogs.download} />
       <PresentExportDialog
         {...dialogs.presentExport}
         configuration={{
@@ -149,11 +156,11 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
           />
         </Suspense>
       ) : null}
+      <DesignRenameDialog {...dialogs.designRename} />
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />
       <PlanTemplateChoiceDialog {...dialogs.planTemplateChoice} />
-
       {overlays.betaFeedback ? (
         <BetaFeedbackWidget {...overlays.betaFeedback} />
       ) : null}

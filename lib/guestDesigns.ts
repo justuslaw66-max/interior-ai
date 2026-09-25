@@ -1,4 +1,5 @@
 import { getAnonId } from "./anon";
+import { resolveDesignTitle } from "./design-title";
 
 const LEGACY_GUEST_ID_KEY = "interior_ai_guest_id";
 const LEGACY_GUEST_DESIGNS_KEY = (guestId: string) =>
@@ -53,7 +54,7 @@ function migrateLegacyDesigns() {
       roomType: "living_room",
       itemsCount: Array.isArray(d.items) ? d.items.length : 0,
       snapshot: {
-        title: d.title ?? "My Living Room",
+        title: resolveDesignTitle(d.title),
         roomWidth: Number(d.roomWidth) || 4.2,
         roomDepth: Number(d.roomDepth) || 4.2,
         items: Array.isArray(d.items) ? d.items : [],

@@ -1,3 +1,4 @@
+import type { DownloadDialogProps } from "@/components/editor/design-page/DownloadDialog";
 import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
 import type { EditorCapabilities } from "@/lib/editor-capabilities";
 import type { BuildDesignPageDialogLayerAdapterInput } from "@/lib/design-page-dialog-layer-adapter";
@@ -25,6 +26,7 @@ type UpgradeModel = {
 
 type PlansModel = {
   open: PlansState["open"];
+  openerId: PlansState["openerId"];
   layout: PlansState["layout"];
   openingBillingPortal: PlansState["openingBillingPortal"];
   monthlyLabel: PlansState["monthlyLabel"];
@@ -70,6 +72,11 @@ type TemplateChoiceActions = Pick<
   | "onSignIn"
 >;
 
+type DownloadModel = Pick<
+  DownloadDialogProps,
+  "open" | "onClose" | "onDownloadImages" | "onDownloadPdf" | "onSignIn" | "onSeePricing"
+>;
+
 type PlacementIdentity = Pick<Placement["state"], "scene" | "roomName">;
 type PlacementAssessment = Omit<
   Placement["state"],
@@ -110,8 +117,9 @@ export type BuildDesignPageDialogLayerModelInput = {
       onClose: Dialogs["aiNotes"]["onClose"];
     };
   };
-  presentation: { presentExport: PresentExportDialogProps };
+  presentation: { presentExport: PresentExportDialogProps; download: DownloadModel };
   editing: {
+    designRename: Dialogs["designRename"];
     roomRename: {
       pendingRoomId: string | null;
       value: Dialogs["roomRename"]["value"];
@@ -149,6 +157,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
   sharing: {
     url: Overlays["shareFallback"]["url"];
+    standalone: Overlays["shareFallback"]["standalone"];
     onClose: Overlays["shareFallback"]["onClose"];
     onCopy: Overlays["shareFallback"]["onCopy"];
     onOpen: Overlays["shareFallback"]["onOpen"];
@@ -174,6 +183,24 @@ export type BuildDesignPageDialogLayerModelInput = {
     onToggle: ItemCart["onToggle"];
   };
 };
+
+/** Download reads the scene and export state that Present & export already carries. */
+function buildDownloadDialog(
+  access: BuildDesignPageDialogLayerModelInput["access"],
+  presentation: BuildDesignPageDialogLayerModelInput["presentation"]
+): DownloadDialogProps {
+  const exportState = presentation.presentExport.state;
+  return {
+    ...presentation.download,
+    dark: access.designerTheme,
+    signedIn: access.isAuthenticated,
+    freeLimits: !access.capabilities.exportWithoutWatermark,
+    sceneReady: exportState.sceneReady,
+    hasItems: exportState.hasItems,
+    exportingImages: exportState.isExporting,
+    exportingPdf: exportState.isPdfExporting,
+  };
+}
 
 /** Builds the fixed dialog layer from domain data, policy, and callbacks. */
 export function buildDesignPageDialogLayerModel({
@@ -218,7 +245,7 @@ export function buildDesignPageDialogLayerModel({
       guestSave,
       plans: {
         state: {
-          open: billing.plans.open, openedFromUpgrade: billing.upgrade.open,
+          open: billing.plans.open, openedFromUpgrade: billing.upgrade.open, openerId: billing.plans.openerId,
           layout: billing.plans.layout,
           proActive: access.capabilities.manageSubscription,
           startingCheckout: billing.startingCheckout,
@@ -239,18 +266,15 @@ export function buildDesignPageDialogLayerModel({
         onClose: ai.notes.onClose,
       },
       presentExport: presentation.presentExport,
+      download: buildDownloadDialog(access, presentation),
       myDesigns: {
         ...persistence.myDesigns.data,
         designerTheme: access.designerTheme,
         ...persistence.myDesigns.actions,
       },
-      roomRename: {
-        open: Boolean(editing.roomRename.pendingRoomId),
-        value: editing.roomRename.value,
-        onValueChange: editing.roomRename.onValueChange,
-        onCancel: editing.roomRename.onCancel,
-        onSave: editing.roomRename.onSave,
-      },
+      designRename: editing.designRename,
+      roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
+        onValueChange: editing.roomRename.onValueChange, onCancel: editing.roomRename.onCancel, onSave: editing.roomRename.onSave },
       planAnnotation: {
         kind: editing.annotation.kind,
         text: editing.annotation.text,
@@ -281,11 +305,9 @@ export function buildDesignPageDialogLayerModel({
       },
       toasts: feedback.toasts,
       shareFallback: {
-        url: sharing.url, dark: access.designerTheme,
+        url: sharing.url, standalone: sharing.standalone, dark: access.designerTheme,
         lifecycleMode: access.isDesigner ? "designer" : "consumer",
-        onClose: sharing.onClose,
-        onCopy: sharing.onCopy,
-        onOpen: sharing.onOpen,
+        onClose: sharing.onClose, onCopy: sharing.onCopy, onOpen: sharing.onOpen,
       },
       validation: {
         hidden: false,
@@ -310,7 +332,7 @@ export function buildDesignPageDialogLayerModel({
         onToggle: cart.onToggle,
         triggerClassName: cart.controlsPanelVisible
           ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
-          : "bottom-4 right-4",
+          : "bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-4",
       },
     },
   };

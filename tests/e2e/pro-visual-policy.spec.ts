@@ -50,6 +50,7 @@ async function dismissBlockingPrompt(page: Page) {
   }
 }
 
+// Built-ins opens from inside the Furnish step, which stays the current step while the studio is open.
 async function openCustomMillworkStudioFromWorkspace(
   page: Page,
   options: {
@@ -57,37 +58,29 @@ async function openCustomMillworkStudioFromWorkspace(
     activation: "keyboard" | "pointer";
   }
 ) {
-  const workspace = page.getByTestId("editor-command-workspace");
-  const menu = page.getByTestId("editor-command-workspace-menu");
+  const furnishStep = page.getByTestId("editor-workflow-furnish");
   const workflow = page.getByTestId("editor-workflow-millwork");
   const legacyLabel = page.getByTestId("open-custom-millwork-studio");
 
   await page.waitForLoadState("networkidle");
   await dismissBlockingPrompt(page);
-  await expect(workspace).toBeVisible();
-  await expect(menu).toBeHidden();
-  await expect(workflow).toHaveCount(1);
-  await expect(workflow).toBeHidden();
-  await expect(legacyLabel).toHaveCount(1);
-  await expect(legacyLabel).toBeHidden();
+  await expect(furnishStep).toBeVisible();
 
   if (options.activation === "keyboard") {
-    await workspace.focus();
-    await expect(workspace).toBeFocused();
-    await workspace.press("Enter");
+    await furnishStep.focus();
+    await expect(furnishStep).toBeFocused();
+    await furnishStep.press("Enter");
   } else {
-    await workspace.click();
+    await furnishStep.click();
   }
 
-  await expect(workspace).toHaveAttribute("aria-expanded", "true");
-  await expect(menu).toBeVisible();
+  await expect(furnishStep).toHaveAttribute("aria-current", "step");
   await expect(workflow).toBeVisible();
   await expect(workflow).toHaveAccessibleName("Built-ins");
   await expect(legacyLabel).toBeVisible();
 
   if (options.activation === "keyboard") {
-    await expect(page.getByTestId("editor-workflow-plan")).toBeFocused();
-    await page.keyboard.press("ArrowDown");
+    await workflow.focus();
     await expect(workflow).toBeFocused();
     await workflow.press("Enter");
   } else {
@@ -101,8 +94,7 @@ async function openCustomMillworkStudioFromWorkspace(
   await expect(studio).toHaveAttribute("data-access-level", options.accessLevel);
   await expect(dialog).toBeVisible();
   await expect(dialog).toBeFocused();
-  await expect(menu).toBeHidden();
-  await expect(workspace).toHaveAttribute("aria-expanded", "false");
+  await expect(furnishStep).toHaveAttribute("aria-current", "step");
 }
 
 async function readThemeTokens(page: Page) {
@@ -146,7 +138,7 @@ async function expectRestrainedNavigationAccent(page: Page) {
   const commandBar = page.getByTestId("editor-command-bar");
   const navigationItems = [
     commandBar.getByRole("button", { name: "3D", exact: true }),
-    page.getByTestId("editor-command-workspace"),
+    page.getByTestId("editor-design-steps").locator('[aria-current="step"]'),
     page.getByTestId("editor-rail-design"),
   ];
   const activeBackgrounds: string[] = [];
@@ -598,12 +590,13 @@ async function openPresentExport(
   page: Page,
   activation: "keyboard" | "pointer"
 ) {
-  const workspace = page.getByTestId("editor-command-workspace");
+  // Present & export lives in the More menu.
+  const more = page.getByTestId("editor-command-overflow");
   if (activation === "keyboard") {
-    await workspace.focus();
-    await workspace.press("Enter");
+    await more.focus();
+    await more.press("Enter");
   } else {
-    await workspace.click();
+    await more.click();
   }
   const exportAction = page.getByTestId("editor-workflow-export");
   await expect(exportAction).toBeVisible();
@@ -1016,7 +1009,7 @@ test.describe("Pro visual policy", () => {
     page,
   }) => {
     await prepareCommandPaletteEditor(page, "free");
-    const workspace = page.getByTestId("editor-command-workspace");
+    const workspace = page.getByTestId("editor-workflow-plan");
     let palette = await openCommandPalette(page, "Meta+K", workspace);
     let { dialog, input } = palette;
 
@@ -1322,8 +1315,9 @@ test.describe("Pro visual policy", () => {
       .getByTestId("editor-workflow-furnish")
       .evaluate((element) => (element as HTMLButtonElement).click());
     await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-workspace")).toHaveAccessibleName(
-      "Workspace: Furnish"
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute(
+      "aria-current",
+      "step"
     );
     await page
       .getByTestId("editor-workflow-plan")
@@ -1422,7 +1416,7 @@ test.describe("Pro visual policy", () => {
       await editable.evaluate((element) => element.remove());
     }
 
-    const workspace = page.getByTestId("editor-command-workspace");
+    const workspace = page.getByTestId("editor-workflow-plan");
     const fingerprint = page.getByTestId("qa-editor-snapshot-fingerprint");
     const F0 = await readEditorSnapshotFingerprint(page);
     const palette = await openCommandPalette(page, "Meta+K", workspace);
@@ -1755,8 +1749,9 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("upgrade-dialog")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
-    await page.getByTestId("editor-command-account").click();
+    // Guests sign in from the bar; they have no Account menu.
     await expect(page.getByTestId("editor-command-sign-in")).toBeVisible();
+    await expect(page.getByTestId("editor-command-account")).toHaveCount(0);
     await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
   });
 
@@ -2178,7 +2173,7 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("cabinet-experience-detailed")).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(consumerStudio).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-workspace")).toBeFocused();
+    await expect(page.getByTestId("editor-workflow-millwork")).toBeFocused();
   });
 
   test("keeps all recommended Cabinet Preview templates readable under the RC-5 policy", async ({
@@ -2264,7 +2259,7 @@ test.describe("Pro visual policy", () => {
     const studio = page.getByTestId("custom-millwork-studio");
     await page.getByTestId("cabinetry-studio-close").click();
     await expect(studio).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-workspace")).toBeFocused();
+    await expect(page.getByTestId("editor-workflow-millwork")).toBeFocused();
     await openCustomMillworkStudioFromWorkspace(page, {
       accessLevel: "pro",
       activation: "keyboard",
@@ -2637,9 +2632,9 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await dismissBlockingPrompt(page);
 
-    const workspace = page.getByTestId("editor-command-workspace");
-    await workspace.focus();
-    await workspace.press("Enter");
+    const more = page.getByTestId("editor-command-overflow");
+    await more.focus();
+    await more.press("Enter");
     await page.getByTestId("editor-workflow-export").click();
     const dialog = page.getByRole("dialog", { name: "Present & Export" });
     await expect(dialog).toBeVisible();

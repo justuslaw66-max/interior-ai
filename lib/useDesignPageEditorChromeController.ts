@@ -10,6 +10,7 @@ import type {
 } from "@/components/editor/design-page/DesignPageEditorChrome";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
+import { PLANS_GET_PRO_OPENER_ID } from "@/lib/plans-dialog-focus";
 
 type CommandBarActions = DesignPageEditorChromeActions["commandBar"]["commandBar"];
 type RoomActions = DesignPageEditorChromeActions["commandBar"]["room"];
@@ -31,13 +32,11 @@ export type UseDesignPageEditorChromeControllerInput = {
     commandBar: DesignPageEditorChromeConfiguration["commandBar"];
     toolRail: DesignPageEditorChromeConfiguration["toolRail"];
     canUseDesigner: boolean;
-    canUseCabinetryStudio: boolean;
   };
   actions: {
     navigation: {
       plan: CommandBarActions["onPlan"];
       furnish: CommandBarActions["onFurnish"];
-      aiDesign: CommandBarActions["onAiDesign"];
       shop: CommandBarActions["onShop"];
       changeViewMode: CommandBarActions["onViewModeChange"];
       fitPlan: NonNullable<RoomActions["onFitPlan"]>;
@@ -56,8 +55,13 @@ export type UseDesignPageEditorChromeControllerInput = {
     };
     dialogs: {
       setPlansOpen: Dispatch<SetStateAction<boolean>>;
+      /** Pricing returns focus to this control when it closes; null means Account, then More. */
+      setPlansOpenerId: (id: string | null) => void;
       openNewPlan: CommandBarActions["onNewPlan"];
+      /** Opens Rename design for the design's name in the bar, or for More below `xl`. */
+      openDesignRename: () => void;
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
+      setDownloadOpen: Dispatch<SetStateAction<boolean>>;
       setPresentOpen: Dispatch<SetStateAction<boolean>>;
       setUpgradeReason: (reason: "designer") => void;
       setUpgradeOpen: Dispatch<SetStateAction<boolean>>;
@@ -68,14 +72,13 @@ export type UseDesignPageEditorChromeControllerInput = {
     persistence: {
       toggleMyDesigns: CommandBarActions["onToggleLoadDesign"];
       saveDesignToCloud: () => Promise<string | null | undefined>;
+      /** Saves a design that isn't in the cloud yet, then creates and copies its share link. */
+      shareDesign: () => Promise<void>;
       retrySaveStatus: CommandBarActions["onRetrySaveStatus"];
       openGuestPrompt: (
         reason: GuestPromptReason,
         onContinue: () => void
       ) => void;
-    };
-    cabinetry: {
-      openStudio: () => void;
     };
     room: {
       reviewHealth: RoomActions["onReviewHealth"];
@@ -97,12 +100,6 @@ export function useDesignPageEditorChromeController({
 }: UseDesignPageEditorChromeControllerInput): DesignPageEditorChromeProps {
   const commandState = state.commandBar.commandBar;
 
-  const runAiDesign = () => {
-    if (commandState.aiDesignEnabled) {
-      actions.navigation.aiDesign();
-    }
-  };
-
   const togglePresentMode = () => {
     if (commandState.editorMode === "present") {
       actions.dialogs.setPresentOpen(false);
@@ -123,21 +120,14 @@ export function useDesignPageEditorChromeController({
     );
   };
 
-  const toggleClientPreview = () => {
-    actions.editor.setClientPreview((visible) => !visible);
-  };
+  const toggleClientPreview = () => { actions.editor.setClientPreview((visible) => !visible); };
 
-  const openPlans = () => {
-    actions.dialogs.setPlansOpen(true);
-  };
+  const openPlans = () => { actions.dialogs.setPlansOpenerId(null); actions.dialogs.setPlansOpen(true); };
+  const getPro = () => { actions.dialogs.setPlansOpenerId(PLANS_GET_PRO_OPENER_ID); actions.dialogs.setPlansOpen(true); };
 
-  const manageBilling = () => {
-    void actions.billing.openPortal();
-  };
+  const manageBilling = () => { void actions.billing.openPortal(); };
 
-  const openFeedback = () => {
-    actions.dialogs.setFeedbackOpen(true);
-  };
+  const openFeedback = () => { actions.dialogs.setFeedbackOpen(true); };
 
   const save = async () => {
     if (!commandState.isAuthed) {
@@ -151,14 +141,26 @@ export function useDesignPageEditorChromeController({
     }
   };
 
-  const openPresentExport = () => {
-    actions.dialogs.setPresentOpen(true);
+  // Share links need an account, so guests get the sign-in prompt first.
+  const share = () => {
+    if (!commandState.isAuthed) return actions.persistence.openGuestPrompt("share", () => {});
+    void actions.persistence.shareDesign();
+  };
+  const openPresentExport = () => { actions.dialogs.setPresentOpen(true); };
+
+  // Downloads capture the 3D view, so the 3D view shows behind the Download dialog.
+  const openDownload = () => {
+    actions.navigation.changeViewMode("3d");
+    actions.dialogs.setDownloadOpen(true);
   };
 
-  const openDesignTools = () => {
-    actions.editor.setMode("design");
+  // The Pro tool rail's steps show their panel even when the sidebar was collapsed (ST13).
+  const openToolsPanel = (mode: "design" | "adjust" | "ai") => {
+    actions.editor.setMode(mode);
     actions.editor.setDesignPanelOpen(true);
+    actions.editor.setDesignPanelCollapsed(false);
   };
+  const openDesignTools = () => openToolsPanel("design");
 
   const toggleDesignSidebar = () => {
     if (!state.designPanelOpen) {
@@ -169,15 +171,8 @@ export function useDesignPageEditorChromeController({
     actions.editor.setDesignPanelCollapsed((collapsed) => !collapsed);
   };
 
-  const openAdjustTools = () => {
-    actions.editor.setMode("adjust");
-    actions.editor.setDesignPanelOpen(true);
-  };
-
-  const openAiTools = () => {
-    actions.editor.setMode("ai");
-    actions.editor.setDesignPanelOpen(true);
-  };
+  const openAdjustTools = () => openToolsPanel("adjust");
+  const openAiTools = () => openToolsPanel("ai");
 
   const openCart = () => {
     actions.editor.setMode("buy");
@@ -188,16 +183,10 @@ export function useDesignPageEditorChromeController({
     state: {
       commandBar: state.commandBar,
       betaStart: {
-        visible:
-          !commandState.isClientPreview &&
-          state.betaStart.visible &&
-          !state.designPanelOpen,
+        visible: !commandState.isClientPreview && state.betaStart.visible && !state.designPanelOpen,
         panel: state.betaStart.panel,
       },
-      toolRail: {
-        visible: !commandState.isClientPreview && commandState.isDesigner,
-        mode: commandState.editorMode,
-      },
+      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner, mode: commandState.editorMode },
     },
     configuration: {
       commandBar: configuration.commandBar,
@@ -207,11 +196,7 @@ export function useDesignPageEditorChromeController({
       commandBar: {
         commandBar: {
           onPlan: actions.navigation.plan,
-          onMillwork: configuration.canUseCabinetryStudio
-            ? actions.cabinetry.openStudio
-            : undefined,
           onFurnish: actions.navigation.furnish,
-          onAiDesign: runAiDesign,
           onShop: actions.navigation.shop,
           onExport: togglePresentMode,
           onUndo: actions.history.undo,
@@ -220,12 +205,14 @@ export function useDesignPageEditorChromeController({
           onViewModeChange: actions.navigation.changeViewMode,
           onToggleDesignerMode: toggleDesignerMode,
           onToggleClientPreview: toggleClientPreview,
-          onViewPlans: openPlans,
-          onNewPlan: actions.dialogs.openNewPlan,
+          onViewPlans: openPlans, onGetPro: getPro,
+          onNewPlan: actions.dialogs.openNewPlan, onRenameDesign: actions.dialogs.openDesignRename,
           onManageBilling: manageBilling,
           onFeedback: openFeedback,
           onToggleLoadDesign: actions.persistence.toggleMyDesigns,
           onSave: save,
+          onShare: share,
+          onDownload: openDownload,
           onRetrySaveStatus: actions.persistence.retrySaveStatus,
           onOpenPresentExport: openPresentExport,
         },

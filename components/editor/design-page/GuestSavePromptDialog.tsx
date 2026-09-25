@@ -23,6 +23,18 @@ export type GuestSavePromptDialogProps = {
   onSaveAndContinue: () => void | Promise<void>;
 };
 
+// Sharing needs an account, so the Share button's prompt says why before offering the same sign-in.
+const PROMPT_COPY = {
+  save: {
+    title: "Sign in to save this design",
+    description: "After you sign in, this design appears in My designs.",
+  },
+  share: {
+    title: "Sign in to share this design",
+    description: "Share links need an account. After you sign in, this design appears in My designs, ready to share.",
+  },
+} as const;
+
 export function GuestSavePromptDialog({
   reason,
   busy,
@@ -30,11 +42,12 @@ export function GuestSavePromptDialog({
   onContinueWithoutSaving,
   onSaveAndContinue,
 }: GuestSavePromptDialogProps) {
+  const copy = reason === "share" ? PROMPT_COPY.share : PROMPT_COPY.save;
   return (
     <EditorDialog
       open={reason !== null}
-      title="Sign in to save this design"
-      description="After you sign in, this design appears in My designs."
+      title={copy.title}
+      description={copy.description}
       onClose={onCancel}
       closeLabel="Close sign-in prompt"
       closeButtonId={GUEST_PROMPT_CLOSE_ACTION_ID}

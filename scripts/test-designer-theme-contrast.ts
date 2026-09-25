@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const cssPath = path.join(root, "app", "globals.css");
@@ -249,21 +250,23 @@ for (const [relativePath, semanticClass] of [
   );
 }
 
-const commandBarSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource(root);
 assert.match(commandBarSource, /designer-command-bar/, "The Pro command bar should use the shell token.");
 assert.match(commandBarSource, /designer-control/, "The Pro command bar should use strong control boundaries.");
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-workspace"[\s\S]*?designer-control/,
-  "The Pro workspace trigger should use a restrained neutral command control."
+  /data-testid="editor-design-steps"[\s\S]*?dark \? "designer-control md:border"/,
+  "The Pro design steps should sit in a restrained neutral command control."
 );
 assert.match(
   commandBarSource,
-  /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "page" : undefined\}[\s\S]*?step\.active[\s\S]*?Current/,
-  "The Pro workspace menu should expose its current workflow semantically."
+  /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "step" : undefined\}/,
+  "The design steps should expose the current step semantically."
+);
+assert.match(
+  commandBarSource,
+  /if \(dark\) return `\$\{shape\} \$\{active \? "designer-control-active" : "designer-work-control"\}`;/,
+  "The current Pro design step should use the active control token."
 );
 assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
 assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");
@@ -319,10 +322,7 @@ const coreShellSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageCoreShellRegistration.ts"),
   "utf8"
 );
-const editorCommandBarSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const editorCommandBarSource = readEditorCommandBarSource(root);
 const designPageCommandBarSource = fs.readFileSync(
   path.join(
     root,

@@ -170,8 +170,8 @@ test.describe("1. Onboarding Activation Flow", () => {
     await expect(continueToFurnish).toBeVisible();
     await expect(continueToFurnish).toBeEnabled();
     await continueToFurnish.click({ timeout: 5000 });
-    await expect(page.getByTestId("editor-command-workspace")).toHaveAttribute(
-      "aria-label", "Workspace: Furnish",
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute(
+      "aria-current", "step",
     );
 
     const opened = await openCatalogPreview(page, MADISON_2S_ID, "Madison", [

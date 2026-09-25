@@ -7,6 +7,7 @@ import {
   type CommandPaletteSession,
 } from "@/lib/command-palette-session";
 import { resolveEditorDialogStackZIndexes } from "@/components/editor/design-system/editorDialogRegistry";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = process.cwd();
 const workspaceSource = fs.readFileSync(
@@ -33,10 +34,7 @@ const commandBarSource = fs.readFileSync(
   ),
   "utf8"
 );
-const commandBarLeafSource = fs.readFileSync(
-  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarLeafSource = readEditorCommandBarSource(root);
 const panelRegionSource = fs.readFileSync(
   path.join(
     root,
@@ -182,7 +180,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?min-\[1800px\]:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
   "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
 );
 // The room size waits for the saved display unit instead of flashing the default unit.
@@ -295,10 +293,10 @@ assert.match(
   /useDesignPagePresentationQaFacade\(\{[\s\S]*?editor:\s*\{[\s\S]*?activeRoom:\s*documentRoom\.derived\.room\.activeRoom \?\? null[\s\S]*?scene:\s*\{[\s\S]*?configuration:\s*\{[\s\S]*?actions:\s*\{[\s\S]*?room:\s*\{[\s\S]*?scenePerformance:\s*\{/,
   "The presentation workspace should inject grouped command, room, and performance state, configuration, and actions through the presentation/QA facade."
 );
-assert.match(
+assert.doesNotMatch(
   editorChromeControllerSource,
-  /onMillwork: configuration\.canUseCabinetryStudio[\s\S]*?\? actions\.cabinetry\.openStudio[\s\S]*?: undefined/,
-  "Unavailable Millwork should remain undefined so the leaf hides both command entries."
+  /onMillwork|onAiDesign/,
+  "Built-ins and Suggest a layout open from the Furnish step, so the command bar carries neither."
 );
 assert.match(
   presentationWorkspaceSource,
