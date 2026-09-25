@@ -92,7 +92,9 @@ test.describe("Start a new design", () => {
     await page.getByTestId("new-plan-replace-current").click();
     await expect(choice).toHaveCount(0);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByText("Draw room walls in 2D")).toBeVisible();
+    // The toast; screen readers get the same words from the status line.
+    await expect(page.getByTestId("collision-toast")).toContainText("Draw room walls in 2D");
+    await expect(page.getByTestId("rule-announcement-status")).toHaveText("Draw room walls in 2D");
   });
 
   test("guests sign in before uploading, and Not now keeps the choices open", async ({ page }) => {
