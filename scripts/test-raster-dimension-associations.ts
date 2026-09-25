@@ -98,7 +98,7 @@ function testVisionOnlyLabelSetAside() {
     valueMm, centerXRatio: (a[0] + b[0]) / 2 / W, centerYRatio: (a[1] + b[1]) / 2 / H, orientation: a[0] === b[0] ? "vertical" : "horizontal",
     confidence: kind === "vision" ? 0.55 : 0.85, evidenceKind: kind, rawText: String(valueMm),
     extensionStart: { xRatio: a[0] / W, yRatio: a[1] / H }, extensionEnd: { xRatio: b[0] / W, yRatio: b[1] / H } });
-  const build = (kind: "vision" | "ocr", supported = spans) => {
+  const build = (kind: "vision" | "ocr" | "vectorizer", supported = spans) => {
     const labels = supported.map(([mm, a, b]) => tickLabel(mm, a, b));
     labels.push(tickLabel(3650, [1000, 100], [1320, 100], kind));
     const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: W, heightPx: H, vectorPaths: [], text: [],
