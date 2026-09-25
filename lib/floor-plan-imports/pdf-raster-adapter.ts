@@ -1,7 +1,8 @@
 import { extractRasterEvidence,attachRasterSourceArtwork } from "./raster-page-evidence";
 import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
 import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
-import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
+import { diagnoseSourceScale } from "./source-scale-cross-check";
+import { assumedScaleFallback, calibrationScaleFields, scaleEstimateMarksWanted, scaleSolvedMetrics, scaleUnresolvedIssues } from "./assumed-scale";
 import { registerRasterDimensionSpans } from "./raster-dimension-spans";
 import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
 import { mergeSemantics } from "./semantic-merge";
@@ -13,7 +14,6 @@ import {
   swingAgainstWall,
   vectorizerRoomBoundaries,
   vectorizerScaleEstimateAnnotations,
-  vectorizerScaleEstimateMessage,
   type FloorPlanVectorizerProvider,
 } from "./vectorizer-evidence";
 import { z } from "zod";
@@ -1438,25 +1438,8 @@ function buildCanonicalCandidate(
   issues: FloorPlanReviewIssue[];
   topology: RegisteredPageTopology;
 } {
-  const issues: FloorPlanReviewIssue[] = [];
   const { page, topology, scale, rooms } = selectCanonicalPage(envelope);
-  if (!scale || !page) {
-    const solvedOtherPage =
-      page &&
-      (envelope.scales ?? (envelope.scale ? [envelope.scale] : [])).find(
-        (entry) => entry.pageNumber !== page.pageNumber
-      );
-    issues.push(
-      issue(
-        "scale-review",
-        "scale_unresolved",
-        solvedOtherPage
-          ? `Dimensions were solved on source page ${solvedOtherPage.pageNumber}, but the selected plan is on page ${page.pageNumber}. Confirm dimensions from this plan page before geometry can be trusted.`
-          : (vectorizerScaleEstimateMessage(page) ?? automaticScaleReviewMessage(page)),
-        "critical"
-      )
-    );
-  }
+  const issues: FloorPlanReviewIssue[] = scaleUnresolvedIssues(envelope, page, scale);
   if (!page || rooms.length === 0) {
     issues.push(
       issue(
@@ -1491,7 +1474,7 @@ function buildCanonicalCandidate(
   const annotations: FloorPlanAnnotationV2[] = sourceDrawingAnnotations(page, sourceId, EXTRACTION_VERSION, issues);
   // Where the plan prints no dimensions, the vectorizer's door openings give the reviewer something to confirm the
   // scale against; they are reference marks, never geometry.
-  if (page && !scale) annotations.push(...vectorizerScaleEstimateAnnotations(page, sourceId, EXTRACTION_VERSION));
+  if (page && scaleEstimateMarksWanted(scale)) annotations.push(...vectorizerScaleEstimateAnnotations(page, sourceId, EXTRACTION_VERSION));
   const vertexByPoint = new Map<string, FloorPlanVertexV2>();
   const wallBySpan = new Map<
     string,
@@ -2106,7 +2089,7 @@ function buildCanonicalCandidate(
                       },
                     },
                   ],
-                  rmsErrorPx: scale.rmsResidualMm / scale.millimetresPerPixel,
+                  ...calibrationScaleFields(page, scale),
                 },
               ]
             : [],
@@ -2456,6 +2439,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     const scales: PageScaleSolution[] = solutions.flatMap(({ page, solution }) =>
       solution ? [{ pageNumber: page.pageNumber, ...solution }] : []
     );
+    if (!scales.length) scales.push(...assumedScaleFallback(selectedPages));
     const next: ExtractionEnvelope = {
       ...envelope,
       scales,
@@ -2477,6 +2461,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
                   rmsResidualMm: next.scale.rmsResidualMm,
                   confidence: next.scale.confidence,
                   diagnostics: next.scale.diagnostics ?? null,
+                  basis: next.scale.basis ?? "printed",
                 }
               : null,
             pages: Array.isArray(result.sourceManifest.pages)
@@ -2497,7 +2482,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         : result.sourceManifest,
       metrics: {
         ...result.metrics,
-        scaleSolved: Boolean(next.scale),
+        ...scaleSolvedMetrics(next.scale),
         labelObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.roomLabels.length, 0),
         roomBoundaryProposalCount: envelope.pages.reduce((sum, page) => sum + (page.semantics.roomBoundaries?.length ?? 0), 0),
         dimensionObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.dimensionLabels.length, 0),
