@@ -213,7 +213,11 @@ function historySummary(job: ImportJob) {
   };
 }
 
-async function installBoundaries(page: Page, state: { job: ImportJob | null }) {
+async function installBoundaries(
+  page: Page,
+  state: { job: ImportJob | null },
+  { signedIn = true }: { signedIn?: boolean } = {}
+) {
   await page.route("**/api/floor-plans*", (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -235,16 +239,23 @@ async function installBoundaries(page: Page, state: { job: ImportJob | null }) {
     route.fulfill({ status: 200, contentType: "application/json", body: '{"models":[]}' })
   );
   await page.route("**/api/me", (route) =>
-    route.fulfill({ status: 200, contentType: "application/json", body: '{"plan":"pro","source":"fixture"}' })
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: signedIn ? '{"plan":"pro","source":"fixture"}' : '{"plan":"free","source":"fixture"}',
+    })
   );
+  // A guest's session is null, as the auth route answers when nobody is signed in.
   await page.route("**/api/auth/**", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({
-        user: { id: "ch0015i-user", email: "ch0015i@example.test", name: "CH-0015I" },
-        expires: "2030-01-01T00:00:00.000Z",
-      }),
+      body: signedIn
+        ? JSON.stringify({
+          user: { id: "ch0015i-user", email: "ch0015i@example.test", name: "CH-0015I" },
+          expires: "2030-01-01T00:00:00.000Z",
+        })
+        : "null",
     })
   );
   await page.route("**/api/floor-plan-imports**", (route) => {
@@ -431,6 +442,11 @@ for (const entry of ["pointer", "keyboard"] as const) {
     const { action, dialog } = await openWorkspace(page, "consumer", entry);
     await expectParentContract(page);
     await expect(page.getByRole("button", { name: "Choose a file" })).toBeFocused();
+    // The first step says what can be uploaded and that it opens as a new design (ST4, ST5).
+    await expect(dialog.getByTestId("floor-plan-upload-formats")).toContainText("PDF, JPG, PNG");
+    await expect(dialog.getByTestId("floor-plan-upload-new-design-note")).toHaveText(
+      "It opens as a new design in Plan, where you check the walls and set the scale."
+    );
     const historySummary = dialog.getByText("Previous uploads & privacy", {
       exact: true,
     });
@@ -471,6 +487,26 @@ for (const entry of ["pointer", "keyboard"] as const) {
     await expect(surfacesOpener).toBeFocused();
   });
 }
+
+test("guests sign in before choosing a file, and focus returns to Plan's Upload", async ({ page }) => {
+  const state = { job: null as ImportJob | null };
+  await installBoundaries(page, state, { signedIn: false });
+  await openEditor(page, "consumer");
+  const upload = page.getByTestId("plan-tool-import-2d");
+  await expect(upload).toBeVisible();
+  await expect(upload).toBeEnabled();
+  await upload.click();
+  const signIn = page.getByRole("dialog", { name: "Sign in to upload your floor plan" });
+  await expect(signIn).toBeVisible();
+  await expect(signIn).toHaveAttribute("aria-modal", "true");
+  await expect(signIn.getByText("DXF and other CAD files need Pro.", { exact: true })).toBeVisible();
+  // No file is chosen only to be refused: the upload window never opens for a guest (ST3).
+  await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(0);
+  await expectFocusInside(page);
+  await page.keyboard.press("Escape");
+  await expect(signIn).toHaveCount(0);
+  await expectFocusId(page, "floor-plan-consumer-import-2d-action");
+});
 
 test("mobile 390x844 remains full-screen without overflow and survives responsive replacement", async ({ page }) => {
   const state = { job: null as ImportJob | null };
@@ -551,6 +587,12 @@ test("state transitions focus ready, failure, and image upload", async ({ page }
   const uploadMayFinish = new Promise<void>((resolve) => {
     releaseUpload = resolve;
   });
+  // A DWG is refused in words before anything is uploaded; the first step stays.
+  await page.getByTestId("floor-plan-upload-input").setInputFiles({
+    name: "synthetic-plan.dwg", mimeType: "image/vnd.dwg", buffer: Buffer.from("AC1032"),
+  });
+  await expect(page.getByTestId("floor-plan-upload-file-problem")).toContainText("DWG files can't be read yet.");
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
   await page.route("**/api/floor-plan-imports", async (route) => {
     if (route.request().method() !== "POST") return route.fallback();
     await uploadMayFinish;

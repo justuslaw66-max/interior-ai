@@ -24,7 +24,7 @@ export type StartDesignChooserProps = {
   onChooseUpload: () => void;
   onChooseBlank: () => void;
   onSearchAddress: () => void;
-  /** Guests sign in before uploading; the dialog opens over the choices. */
+  /** Guests sign in before uploading: over the choices, or on its own for Upload elsewhere. */
   uploadSignIn: UploadSignInDialogProps;
 };
 
@@ -58,7 +58,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
     focusRestorationEnabledRef, hideWhenSuperseded: false, cancelFocusRestorationOnUnmount: false,
     manageBackground: true, lockBodyScroll: true, waitForEntryTransition: false, closeDisabled: false, onClose,
   });
-  if (!open) return null;
+  if (!open) return <UploadSignInDialog {...props.uploadSignIn} />;
   const showTemplates = () => {
     templatesHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     templatesHeadingRef.current?.focus({ preventScroll: true });

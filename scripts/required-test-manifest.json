@@ -1268,6 +1268,11 @@
           "title": "pro keyboard desktop preserves backdrop, close, and opener return"
         },
         {
+          "id": "floor-plan-upload.guest-sign-in",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "guests sign in before choosing a file, and focus returns to Plan's Upload"
+        },
+        {
           "id": "floor-plan-upload.mobile",
           "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
           "title": "mobile 390x844 remains full-screen without overflow and survives responsive replacement"

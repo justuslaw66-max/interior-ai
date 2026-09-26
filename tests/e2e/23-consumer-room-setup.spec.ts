@@ -607,11 +607,15 @@ test.describe("23. Consumer room setup", () => {
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("Visible scale:");
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("m²");
 
-    for (const section of ["importFloorPlan", "drawRoom", "openings", "templates"]) {
+    for (const section of ["drawRoom", "openings", "templates"]) {
       await expect(
         page.getByTestId(`plan-tool-section-${section}`).getByRole("button").first()
       ).toHaveAttribute("aria-expanded", "false");
     }
+    // Upload floor plan is one visible line under the room card, not a collapsed section (ST2).
+    await expect(page.getByTestId("plan-tool-section-importFloorPlan")).toHaveCount(0);
+    await expect(page.getByTestId("plan-tool-import-2d")).toHaveText("Upload floor plan");
+    await expect(page.getByTestId("plan-tool-import-2d")).toBeVisible();
 
     const displayUnits = page.getByTestId("room-setup-measurement-units");
     await expect(displayUnits).toHaveAccessibleName("Units");
@@ -745,19 +749,6 @@ test.describe("23. Consumer room setup", () => {
     );
     await expect(page.getByTestId("room-setup-width-input")).toHaveValue("14′ 0″");
 
-    const importFloorPlanSection = page.getByTestId(
-      "plan-tool-section-importFloorPlan"
-    );
-    await importFloorPlanSection
-      .getByRole("button", { name: "Upload floor plan", exact: true })
-      .click();
-    await expect(
-      importFloorPlanSection.getByRole("button", {
-        name: "Upload floor plan",
-        exact: true,
-      })
-    ).toHaveAttribute("aria-expanded", "true");
-
     const touchTargets = [
       [page.getByTestId("room-setup-measurement-units"), "display units"],
       [page.getByTestId("room-setup-width-input"), "room width"],
@@ -767,7 +758,7 @@ test.describe("23. Consumer room setup", () => {
       [page.getByTestId("room-setup-continue-furnish"), "continue to furnish"],
       [page.getByTestId("plan-start-template"), "starter layouts"],
       [page.getByTestId("plan-start-draw"), "draw measured room"],
-      [page.getByTestId("plan-tool-import-2d"), "choose a file"],
+      [page.getByTestId("plan-tool-import-2d"), "upload floor plan"],
     ] as const;
     for (const [locator, label] of touchTargets) {
       await expectTouchTarget(locator, label);

@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { signIn } from "next-auth/react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { StartDesignChooserProps } from "@/components/editor/start/StartDesignChooser";
+import { START_UPLOAD_CHOICE_ID, type UploadSignInDialogProps } from "@/components/editor/start/UploadSignInDialog";
 import { track } from "@/lib/analytics";
 import type { HousePlanTemplate, HousePlanTemplateApplyOptions } from "@/lib/design-page-house-plan";
 import { BLANK_ROOM_TEMPLATE } from "@/lib/start-design";
-import { parseStartDesignParam, START_UPLOAD_CALLBACK_URL, type StartDesignParam } from "@/lib/start-design-link";
+import { parseStartDesignParam, type StartDesignParam } from "@/lib/start-design-link";
+import {
+  answerFloorPlanUploadRequest,
+  signInForFloorPlanUpload,
+  useFloorPlanUploadEntry,
+  type FloorPlanUploadEntryInput,
+} from "@/lib/useFloorPlanUploadEntry";
 
 export type UseDesignPageStartChooserInput = {
   state: {
     isAuthenticated: boolean;
+    /** The session has loaded: until then a member looks like a guest. */
+    sessionKnown: boolean;
     /** Nothing to keep: the first visit's room, untouched. */
     designIsEmpty: boolean;
     localBackupHydrated: boolean;
@@ -32,9 +40,10 @@ export type UseDesignPageStartChooserInput = {
   };
 };
 
-export type StartChooserState = { open: boolean; asNewDesign: boolean; signIn: boolean };
-type SetChooser = (next: StartChooserState) => void;
-const CLOSED: StartChooserState = { open: false, asNewDesign: false, signIn: false };
+/** `signIn` is the upload's sign-in dialog, over the choices when they're open, else on its own. */
+export type StartChooserState = { open: boolean; asNewDesign: boolean; signIn: boolean; signInOpenerId: string | null };
+type SetChooser = Dispatch<SetStateAction<StartChooserState>>;
+const CLOSED: StartChooserState = { open: false, asNewDesign: false, signIn: false, signInOpenerId: null };
 
 /**
  * One `launch_path_selected` per choice: a click in Start a new design, or a `?start=` link.
@@ -45,14 +54,31 @@ function trackStartPath(path: "template" | "draw" | "blank", source: "start_choo
 }
 
 /**
- * Goes to Plan, then asks its upload section to open the upload window once it has rendered
- * (the section listens for `floor-plan-upload-requested`, as for the address search's Upload).
+ * Every Upload floor plan in the editor is answered here (lib/useFloorPlanUploadEntry.ts): guests
+ * get the sign-in dialog, which a `?start=upload` link shows over the choices, as in the mockup.
  */
-function openUploadWindow(actions: UseDesignPageStartChooserInput["actions"]) {
-  actions.goPlan();
-  window.requestAnimationFrame(() =>
-    window.requestAnimationFrame(() => window.dispatchEvent(new Event("floor-plan-upload-requested")))
-  );
+function uploadEntryInput(input: UseDesignPageStartChooserInput, setChooser: SetChooser): FloorPlanUploadEntryInput {
+  return {
+    isAuthenticated: input.state.isAuthenticated,
+    sessionKnown: input.state.sessionKnown,
+    goPlan: input.actions.goPlan,
+    askToSignIn: ({ source, openerId }) =>
+      setChooser((current) => ({
+        ...current,
+        open: current.open || source === "start_link",
+        signIn: true,
+        signInOpenerId: source === "start_link" ? START_UPLOAD_CHOICE_ID : openerId,
+      })),
+  };
+}
+
+function uploadSignInProps(chooser: StartChooserState, setChooser: SetChooser): UploadSignInDialogProps {
+  return {
+    open: chooser.signIn,
+    openerId: chooser.signInOpenerId,
+    onClose: () => setChooser((current) => ({ ...current, signIn: false, signInOpenerId: null })),
+    onSignIn: signInForFloorPlanUpload,
+  };
 }
 
 type EntryLink = { start: StartDesignParam | null; pricing: boolean };
@@ -75,15 +101,13 @@ function takeEntryLink(): EntryLink | null {
 export function applyStartParam(start: StartDesignParam, input: UseDesignPageStartChooserInput, setChooser: SetChooser) {
   const { state, actions } = input;
   if (start === "upload") {
-    if (state.isAuthenticated) openUploadWindow(actions);
-    else setChooser({ open: true, asNewDesign: false, signIn: true });
-    return;
+    return answerFloorPlanUploadRequest({ source: "start_link", openerId: null }, uploadEntryInput(input, setChooser));
   }
   // New design (from My designs) asks before replacing, as it does in the editor.
-  if (start === "new") return setChooser({ open: true, asNewDesign: true, signIn: false });
+  if (start === "new") return setChooser({ ...CLOSED, open: true, asNewDesign: true });
   // A design with content stays as it is; the address never replaces work.
   if (!state.designIsEmpty) return;
-  if (start === "choose" || start === "template") return setChooser({ open: true, asNewDesign: false, signIn: false });
+  if (start === "choose" || start === "template") return setChooser({ ...CLOSED, open: true });
   trackStartPath(start, "start_link");
   if (start === "draw") actions.drawRoom();
   else actions.goPlan();
@@ -101,7 +125,7 @@ function useStartParam(input: UseDesignPageStartChooserInput, setChooser: SetCho
   useEffect(() => {
     latest.current = input;
   });
-  const ready = input.state.localBackupHydrated && input.state.canEdit;
+  const ready = input.state.localBackupHydrated && input.state.canEdit && input.state.sessionKnown;
   useEffect(() => {
     if (handled.current || !ready) return;
     handled.current = true;
@@ -132,7 +156,8 @@ export function buildStartChooserProps(
   };
   return {
     open: chooser.open,
-    ready: state.canEdit,
+    // The choices wait for the session too, so Upload never asks a member to sign in.
+    ready: state.canEdit && state.sessionKnown,
     isAuthenticated: state.isAuthenticated,
     onClose: close,
     onChooseTemplate: (card, furnished) =>
@@ -150,20 +175,15 @@ export function buildStartChooserProps(
       actions.goPlan();
     }),
     onChooseUpload: () => {
-      if (!state.isAuthenticated) return setChooser({ ...chooser, signIn: true });
-      close();
-      openUploadWindow(actions);
+      if (state.isAuthenticated) close();
+      answerFloorPlanUploadRequest({ source: "start_chooser", openerId: START_UPLOAD_CHOICE_ID }, uploadEntryInput(input, setChooser));
     },
     onSearchAddress: () => {
       close();
       if (chooser.asNewDesign) actions.openNewDesignTemplatePicker();
       else actions.openTemplatePicker();
     },
-    uploadSignIn: {
-      open: chooser.open && chooser.signIn,
-      onClose: () => setChooser({ ...chooser, signIn: false }),
-      onSignIn: () => void signIn("google", { callbackUrl: START_UPLOAD_CALLBACK_URL }),
-    },
+    uploadSignIn: uploadSignInProps(chooser, setChooser),
   };
 }
 
@@ -173,7 +193,8 @@ export function buildStartChooserProps(
  */
 export function useDesignPageStartChooser(input: UseDesignPageStartChooserInput) {
   const [chooser, setChooser] = useState<StartChooserState>(CLOSED);
+  useFloorPlanUploadEntry(uploadEntryInput(input, setChooser));
   useStartParam(input, setChooser);
-  const openAsNewDesign = () => setChooser({ open: true, asNewDesign: true, signIn: false });
+  const openAsNewDesign = () => setChooser({ ...CLOSED, open: true, asNewDesign: true });
   return { chooserProps: buildStartChooserProps(chooser, setChooser, input), openAsNewDesign };
 }

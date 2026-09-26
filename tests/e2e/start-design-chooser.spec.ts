@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import { addAuthCookies, cleanupBetaSeed, createBetaSeedDesign } from "./beta-seed";
 import { chooseNewDesign, chooseStartTemplate } from "./variant-test-utils";
 
 // Start a new design (audit findings FR1, FR3, ST2, ST3, ST7, ST8): `/` and New design open it,
@@ -137,6 +138,93 @@ test.describe("Start a new design", () => {
     await page.goto("/design?start=upload", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("upload-sign-in-dialog")).toBeVisible({ timeout: 30_000 });
     await expect(page).toHaveURL(/\/design$/);
+  });
+
+  test("Plan's Upload floor plan asks guests to sign in first, and gives focus back", async ({ page }) => {
+    await clearEditorStorage(page);
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    const upload = page.getByTestId("plan-tool-import-2d");
+    await expect(upload).toHaveText("Upload floor plan");
+    await expect(upload).toBeEnabled({ timeout: 30_000 });
+    await upload.click();
+
+    const signIn = page.getByTestId("upload-sign-in-dialog");
+    await expect(signIn).toBeVisible();
+    await expect(signIn).toContainText("PDF, JPG, PNG or WebP, up to 25 MB.");
+    await expect(signIn).toContainText("DXF and other CAD files need Pro.");
+    // No file is chosen only to be refused: the upload window stays shut, and so do the choices.
+    await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(0);
+    await expect(chooser(page)).toHaveCount(0);
+    await signIn.getByTestId("upload-sign-in-not-now").click();
+    await expect(signIn).toBeHidden();
+    await expect(upload).toBeFocused();
+  });
+
+  test("members get the upload window's first step, and a file they can't upload is refused in words", async ({ page, baseURL }) => {
+    const seed = await createBetaSeedDesign();
+    try {
+      await clearEditorStorage(page);
+      await addAuthCookies(page.context(), baseURL ?? "http://127.0.0.1:3000", seed.sessionToken);
+      await page.goto("/design", { waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+      const upload = page.getByTestId("plan-tool-import-2d");
+      await expect(upload).toBeEnabled({ timeout: 30_000 });
+      await upload.click();
+
+      const uploadWindow = page.getByRole("dialog", { name: "Upload floor plan" });
+      await expect(uploadWindow).toBeVisible();
+      await expect(page.getByRole("button", { name: "Choose a file" })).toBeFocused();
+      await expect(uploadWindow.getByTestId("floor-plan-upload-formats")).toHaveText(
+        "PDF, JPG, PNG or WebP, up to 25 MB. DXF and other CAD files need Pro."
+      );
+      await expect(uploadWindow.getByTestId("floor-plan-upload-new-design-note")).toHaveText(
+        "It opens as a new design in Plan, where you check the walls and set the scale."
+      );
+      const uploads: string[] = [];
+      page.on("request", (request) => {
+        if (request.method() === "POST" && new URL(request.url()).pathname === "/api/floor-plan-imports") uploads.push(request.url());
+      });
+      await page.getByTestId("floor-plan-upload-input").setInputFiles({
+        name: "apartment.dxf", mimeType: "application/dxf", buffer: Buffer.from("0\nSECTION\n0\nEOF\n"),
+      });
+      await expect(uploadWindow.getByTestId("floor-plan-upload-file-problem")).toHaveText(
+        "DXF and other CAD files need Pro. Upload a PDF, JPG, PNG or WebP instead."
+      );
+      await page.getByTestId("floor-plan-upload-input").setInputFiles({
+        name: "apartment.dwg", mimeType: "image/vnd.dwg", buffer: Buffer.from("AC1032"),
+      });
+      await expect(uploadWindow.getByTestId("floor-plan-upload-file-problem")).toHaveText(
+        "DWG files can't be read yet. Save the plan as a PDF and upload that."
+      );
+      expect(uploads).toEqual([]);
+      await page.keyboard.press("Escape");
+      await expect(uploadWindow).toHaveCount(0);
+      await expect(upload).toBeFocused();
+    } finally {
+      await cleanupBetaSeed(seed);
+    }
+  });
+
+  test("a design made from a floor plan opens in Plan, in 2D, with a note on what to check", async ({ page, baseURL }) => {
+    const seed = await createBetaSeedDesign();
+    try {
+      await clearEditorStorage(page);
+      await addAuthCookies(page.context(), baseURL ?? "http://127.0.0.1:3000", seed.sessionToken);
+      await page.goto(`/design?designId=${encodeURIComponent(seed.designId)}&view=2d&floorPlanImport=e2e-import`, {
+        waitUntil: "domcontentloaded",
+      });
+      const note = page.getByTestId("floor-plan-import-arrival");
+      await expect(note).toBeVisible({ timeout: 30_000 });
+      await expect(note).toContainText("Made from your floor plan");
+      await expect(page.getByRole("button", { name: "2D", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await note.getByTestId("floor-plan-import-arrival-dismiss").click();
+      await expect(note).toHaveCount(0);
+      await expect(page).not.toHaveURL(/floorPlanImport=/);
+      await expect(page).toHaveURL(new RegExp(`designId=${seed.designId}`));
+    } finally {
+      await cleanupBetaSeed(seed);
+    }
   });
 
   test("Search by HDB address opens Plan's template list without a forced choice on a first visit", async ({ page }) => {

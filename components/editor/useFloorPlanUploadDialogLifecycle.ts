@@ -37,7 +37,12 @@ function useNavigationInvalidation(open: boolean, invalidate: () => void) {
   }, [invalidate, open]);
 }
 
-export function useFloorPlanUploadDialogLifecycle(scopeKey: string) {
+/** `onClosed` runs however the window closes: Close, Escape, the backdrop, or a change of scope. */
+export function useFloorPlanUploadDialogLifecycle(scopeKey: string, onClosed?: () => void) {
+  const onClosedRef = useRef(onClosed);
+  useEffect(() => {
+    onClosedRef.current = onClosed;
+  });
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -52,10 +57,14 @@ export function useFloorPlanUploadDialogLifecycle(scopeKey: string) {
     setReturnFocusIds(getFloorPlanWorkspaceReturnFocusIds(openerId));
     setOpen(true);
   }, []);
+  const close = useCallback(() => {
+    setOpen(false);
+    onClosedRef.current?.();
+  }, []);
   const invalidate = useCallback(() => {
     focusRestorationEnabledRef.current = false;
-    setOpen(false);
-  }, []);
+    close();
+  }, [close]);
   const initialFocusRef = useFloorPlanWorkspaceFocus({
     open, panelRef, closeButtonRef,
   });
@@ -64,7 +73,7 @@ export function useFloorPlanUploadDialogLifecycle(scopeKey: string) {
     focusRestorationEnabledRef, hideWhenSuperseded: false,
     cancelFocusRestorationOnUnmount: true, manageBackground: true,
     lockBodyScroll: true, waitForEntryTransition: false,
-    closeDisabled: historyConfirmationOpen, onClose: () => setOpen(false),
+    closeDisabled: historyConfirmationOpen, onClose: close,
   });
   useScopeInvalidation(scopeKey, open, invalidate);
   useNavigationInvalidation(open, invalidate);

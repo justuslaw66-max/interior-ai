@@ -37,7 +37,7 @@ test("Issue focus switches evidence pages and offers existing correction control
   const issueButton = (message: string) => page.getByRole("checkbox", { name: `Resolve ${message}`, exact: true }).locator("..").getByRole("button", { name: /^(Show|Clear)/ });
   const wallIssue = issueButton("Check the marked shared wall.");
   await wallIssue.focus(); await page.keyboard.press("Enter");
-  await expect(page.getByLabel("Source page", { exact: true })).toHaveValue("2");
+  await expect(page.getByLabel("Floor plan page", { exact: true })).toHaveValue("2");
   await expect(wallIssue).toBeFocused();
   await expect(page.getByRole("button", { name: "Open wall controls", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Open wall controls", exact: true }).click();
@@ -48,11 +48,11 @@ test("Issue focus switches evidence pages and offers existing correction control
   await thickness.fill("175");
   expect(await saved()).toEqual(original);
   await issueButton("Check the overall dimension.").click();
-  await expect(page.getByLabel("Source page", { exact: true })).toHaveValue("1");
+  await expect(page.getByLabel("Floor plan page", { exact: true })).toHaveValue("1");
   await page.getByRole("button", { name: "Open dimension controls", exact: true }).click();
   await expect(page.locator('[data-review-controls="dimension"] select').first()).toBeFocused();
   await wallIssue.click();
-  await expect(page.getByLabel("Source page", { exact: true })).toHaveValue("2");
+  await expect(page.getByLabel("Floor plan page", { exact: true })).toHaveValue("2");
   await page.getByRole("button", { name: "Open wall controls", exact: true }).click();
   await expect(wall).toHaveValue("shared"); await expect(thickness).toHaveValue("175");
   expect(await saved()).toEqual(original);
@@ -60,7 +60,7 @@ test("Issue focus switches evidence pages and offers existing correction control
   await expect.poll(async () => (await saved()).floors[0].walls.find((entry: { id: string }) => entry.id === "shared").thicknessMm).toBe(175);
   const correctedWall = await saved();
   await issueButton("Check the kitchen text.").click();
-  await expect(page.getByLabel("Source page", { exact: true })).toHaveValue("2");
+  await expect(page.getByLabel("Floor plan page", { exact: true })).toHaveValue("2");
   await expect(page.getByText("400%", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Select marked artwork", exact: true }).click();
   const artwork = page.getByRole("button", { name: "Source text: Uncertain kitchen", exact: true });

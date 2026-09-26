@@ -4,17 +4,16 @@ import {
   captureFloorPlanWorkspaceOpener,
   forwardFloorPlanWorkspaceOpener,
 } from "@/lib/floor-plan-upload-dialog-focus";
+import type { FloorPlanUploadSource } from "@/lib/floor-plan-upload-request";
 
+/** Opens the upload window from Plan, recording where the upload started. */
 export function openFloorPlanUploadWorkspace(
   semanticOpenerId: string | undefined,
-  isDesigner: boolean,
+  source: FloorPlanUploadSource,
   selectUploadMode: () => void
 ) {
   const openerId = semanticOpenerId ?? captureFloorPlanWorkspaceOpener();
-  track("launch_path_selected", {
-    path: "upload",
-    source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
-  });
+  track("launch_path_selected", { path: "upload", source });
   flushSync(selectUploadMode);
   const uploadPanel = document.getElementById("floor-plan-upload");
   const uploadInput = uploadPanel?.querySelector<HTMLInputElement>(

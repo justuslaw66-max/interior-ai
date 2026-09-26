@@ -62,6 +62,11 @@ for (const relativePath of [
     .filter((name) => name.endsWith(".tsx"))
     .map((name) => `components/editor/command-bar/${name}`),
   "components/editor/design-page/DesignPageWorkspace.tsx",
+  // Upload floor plan: which files can be uploaded comes from `importCad` alone (ST4).
+  "components/editor/FloorPlanUploadPanel.tsx",
+  "components/editor/FloorPlanUploadChooseStep.tsx",
+  "components/editor/start/UploadSignInDialog.tsx",
+  "lib/floor-plan-upload-formats.ts",
   "lib/design-page-dialog-layer-model.ts",
   "lib/useDesignPageExport.ts",
   "lib/useDesignPageOnboarding.ts",

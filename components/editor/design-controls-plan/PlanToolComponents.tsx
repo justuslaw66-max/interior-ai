@@ -7,7 +7,6 @@ import {
 
 export type CollapsiblePlanSection =
   | "floorPlan"
-  | "importFloorPlan"
   | "drawRoom"
   | "openings"
   | "templates"

@@ -18,6 +18,9 @@ const planPanelOpener = read("lib/open-floor-plan-upload-workspace.ts");
 const focusContract = read("lib/floor-plan-upload-dialog-focus.ts");
 const addressSearch = read("components/editor/FloorPlanAddressSearch.tsx");
 const workspace = read("components/editor/FloorPlanImportWorkspace.tsx");
+const chooseStep = read("components/editor/FloorPlanUploadChooseStep.tsx");
+const roomSetupStartActions = read("components/editor/RoomSetupStartActions.tsx");
+const pausedNotice = read("components/editor/FloorPlanImportPausedNotice.tsx");
 const assistant = read("components/editor/FloorPlanImportAssistant.tsx");
 const pageSelection = read("components/editor/FloorPlanPageSelectionPanel.tsx");
 const review = read(
@@ -48,7 +51,8 @@ assert.match(uploadLifecycle, /useEditorDialogLifecycle\(\{/);
 assert.match(uploadLifecycle, /manageBackground:\s*true/);
 assert.match(uploadLifecycle, /lockBodyScroll:\s*true/);
 assert.match(uploadLifecycle, /cancelFocusRestorationOnUnmount:\s*true/);
-assert.match(workspace, /data-editor-dialog-initial-focus/);
+assert.match(workspace, /<FloorPlanUploadChooseStep \{\.\.\.choose\}/);
+assert.match(chooseStep, /data-editor-dialog-initial-focus/);
 assert.match(dialog, /data-testid="floor-plan-import-dialog"/);
 assert.match(dialog, /role="dialog"/);
 assert.match(dialog, /aria-modal="true"/);
@@ -58,13 +62,18 @@ assert.match(dialog, /sm:max-w-\[1600px\]/);
 assert.doesNotMatch(panel, /window\.addEventListener\("keydown"/);
 assert.doesNotMatch(panel, /document\.body\.style\.overflow\s*=/);
 
-assert.match(planPanel, /id:\s*FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,[\s\S]*?testId:\s*"plan-tool-import-2d"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/);
+// One visible Upload floor plan under the room card (ST2), asking through the shared entry.
+assert.match(roomSetupStartActions, /id=\{FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\}[\s\S]*?data-testid="plan-tool-import-2d"[\s\S]*?onClick=\{actions\.uploadFloorPlan\}/);
+assert.match(planPanel, /uploadFloorPlan: \(\) =>\s*requestFloorPlanUpload\(\{ source: "plan_panel", openerId: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID \}\)/);
 assert.match(planPanel, /<EmptyFloorPlanSurfacesActions[\s\S]*?onSelectUploadMode=\{\(\) => setPlanStartMode\("upload"\)\}/);
 assert.match(emptySurfacesActions, /<FloorPlanWorkspaceOpener[\s\S]*?semanticId=\{FLOOR_PLAN_SURFACES_UPLOAD_ACTION_ID\}[\s\S]*?data-testid="floor-plan-surfaces-upload"/);
 assert.match(planPanel, /<EmptyFloorPlanProUploadAction[\s\S]*?onSelectUploadMode=\{\(\) => setPlanStartMode\("upload"\)\}/);
 assert.match(emptySurfacesActions, /<FloorPlanWorkspaceOpener[\s\S]*?semanticId=\{FLOOR_PLAN_PRO_START_UPLOAD_ACTION_ID\}[\s\S]*?data-testid="plan-start-upload"/);
 assert.match(addressSearch, /id=\{FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID\}[\s\S]*?onClick=\{requestUpload\}/);
-assert.match(planPanel, /openFloorPlanUploadPicker\(FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID\)/);
+assert.match(addressSearch, /requestFloorPlanUpload\(\{ source: "address_search", openerId: FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID \}\)/);
+// Plan opens the window for an entry that let it through, with that entry's opener and source.
+assert.match(planPanel, /addEventListener\(FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, handleUploadRequest\)/);
+assert.match(planPanel, /const \{ openerId, source \} = floorPlanUploadRequestOf\(event\);\s*openFloorPlanUploadWorkspace\(openerId \?\? undefined, source, \(\) => setPlanStartMode\("upload"\)\);/);
 assert.match(panel, /id=\{FLOOR_PLAN_IMPORT_ACTION_ID\}[\s\S]*?dialog\.openWorkspace\(FLOOR_PLAN_IMPORT_ACTION_ID\)/);
 assert.match(panel, /id=\{FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID\}[\s\S]*?forwardedOpener \?\? FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID/);
 assert.match(panel, /id=\{FLOOR_PLAN_FILE_INPUT_ACTION_ID\}[\s\S]*?captureFloorPlanWorkspaceOpener\(\)/);
@@ -104,7 +113,15 @@ assert.match(inertFixtureHost, /getByRole\("heading", \{ name: "404", exact: tru
 assert.doesNotMatch(inertFixtureHost, /from "next\//);
 assert.doesNotMatch(inertFixtureHost, /from "@\//);
 
-assert.match(workspace, /data-floor-plan-workspace-state="empty"/);
+assert.match(chooseStep, /data-floor-plan-workspace-state="empty"/);
+assert.match(chooseStep, /data-floor-plan-workspace-state="sign-in"/);
+assert.match(pausedNotice, /data-floor-plan-workspace-state="failure"[\s\S]*?authenticationRequired \?[\s\S]*?Sign in and continue/);
+// The window checks a file against what the plan can upload (ST4), and forgets it when it closes,
+// so opening it again resumes that upload instead of sending the file a second time.
+assert.match(panel, /accept=\{choice\.formats\.accept\}/);
+assert.match(panel, /floorPlanUploadFileProblem\(file, importCad\)/);
+assert.match(panel, /useFloorPlanUploadDialogLifecycle\(lifecycleScopeKey, choice\.forget\)/);
+assert.match(uploadLifecycle, /const close = useCallback\(\(\) => \{\s*setOpen\(false\);\s*onClosedRef\.current\?\.\(\);/);
 assert.match(workspace, /data-floor-plan-workspace-history/);
 assert.match(assistant, /data-floor-plan-workspace-state="working"/);
 assert.match(assistant, /data-floor-plan-workspace-state="failure"/);

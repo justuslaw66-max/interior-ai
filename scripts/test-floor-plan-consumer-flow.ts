@@ -12,6 +12,7 @@ import {
   writeActiveFloorPlanImportId,
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
+import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
@@ -469,7 +470,7 @@ assert.doesNotMatch(
 );
 assert.match(
   uploadPanel,
-  /<FloorPlanUploadWorkspaceDialog[\s\S]*?request=\{autoImportRequest\}/,
+  /<FloorPlanUploadWorkspaceDialog[\s\S]*?request=\{choice\.request\}/,
   "The selected source file should reach the full-screen workspace owner."
 );
 assert.match(
@@ -522,14 +523,13 @@ assert.doesNotMatch(
   /lg:grid-cols-\[minmax\(260px,320px\)_minmax\(0,1fr\)\]/,
   "The consumer review should not permanently give screen space to a technical sidebar."
 );
-for (const acceptedType of [
-  "application/pdf",
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-] as const) {
-  assert.ok(uploadPanel.includes(`"${acceptedType}"`), `Uploads should accept ${acceptedType}.`);
+for (const importCad of [false, true]) {
+  const accepted = floorPlanUploadFormats(importCad).accept.split(",");
+  for (const acceptedType of ["application/pdf", "image/png", "image/jpeg", "image/webp"] as const) {
+    assert.ok(accepted.includes(acceptedType), `Uploads should accept ${acceptedType}.`);
+  }
 }
+assert.match(uploadPanel, /accept=\{choice\.formats\.accept\}/, "The file input offers what the plan can upload.");
 
 assert.match(
   importSession,
@@ -640,7 +640,7 @@ assert.match(
 assert.match(assistant,/Retry with improved detection/,"The consumer retry action stays available alongside photo recomputation.");
 assert.match(addressFields, /floor-plan-address-floor[\s\S]*?floor-plan-address-stack/);
 assert.doesNotMatch(addressSearch, /floorPlanRequest|floor-plan-address-requested|CustomEvent/);
-assert.match(addressSearch, /floor-plan-upload-requested/);
+assert.match(addressSearch, /requestFloorPlanUpload\(\{ source: "address_search"/);
 assert.match(floorPlanDirectoryClient, /method: "POST"[\s\S]*?body: JSON\.stringify\(request\)/);
 assert.match(addressSearch, /ph-no-capture/);
 assert.match(addressFields, /ph-no-capture/);
@@ -743,14 +743,15 @@ assert.match(
 );
 assert.match(
   assistant,
-  /\/design\?designId=[\s\S]*?view=2d&workspace=furnish&floorPlanImport=/,
-  "A confirmed import should open its new design in the 2D furnish workspace."
+  /router\.push\(buildDesignEditorUrl\(\{ designId: id, view: "2d", floorPlanImportId: activeJob\.id \}\)\)/,
+  "A confirmed import opens its new design in Plan, in 2D, with the note on what to check (ST5)."
 );
 assert.match(
   importHistory,
-  /\/design\?designId=[\s\S]*?view=2d&workspace=furnish&floorPlanImport=/,
-  "Import history must reopen an applied plan in the canonical 2D furnish editor."
+  /router\.push\(buildDesignEditorUrl\(\{ designId: job\.appliedDesignId!, view: "2d" \}\)\)/,
+  "Import history reopens an applied plan in the canonical editor, in Plan and 2D."
 );
+assert.doesNotMatch(`${assistant}\n${importHistory}`, /workspace=furnish/, "A design made from a floor plan opens in Plan, not Furnish.");
 assert.match(
   requestedDesignWorkspace,
   /searchParams\.get\("designId"\)[\s\S]*?localBackupHydrated[\s\S]*?loadDesign\(decision\.designId\)/,
@@ -767,9 +768,9 @@ assert.match(
   "The underlay boundary should expose persisted visibility to the canonical editor."
 );
 assert.match(
-  coreShellBase,
-  /urlView === "2d" \? "2d" : "3d"/,
-  "The imported-design route should initialize directly in 2D."
+  `${coreShellBase}\n${read("lib/useUrlViewMode.ts")}`,
+  /useUrlViewMode\(urlView\)[\s\S]*?urlView === "2d" \? "2d" : "3d"[\s\S]*?if \(urlView === "2d" \|\| urlView === "3d"\) setViewMode\(urlView\);/,
+  "The imported-design route should open in 2D, on a fresh load and on a link within the editor."
 );
 assert.match(
   confirmRoute,

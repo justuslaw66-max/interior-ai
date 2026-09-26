@@ -89,6 +89,7 @@ function buildStartChooserInput(
   return {
     state: {
       isAuthenticated: Boolean(base.state.identity.session?.user),
+      sessionKnown: base.state.identity.sessionStatus !== "loading",
       localBackupHydrated: snapshotDocument.state.localBackupHydrated,
       canEdit: coreShell.derived.access.canEdit,
       designIsEmpty: !shouldConfirmPlanTemplateReplacement(
