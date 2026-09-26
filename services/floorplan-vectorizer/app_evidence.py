@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.9.0"
+VERSION = "app-evidence-0.10.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -1002,6 +1002,22 @@ def classify_gaps(m, k, gaps):
             cover[max(0, int(l["a"] - a)):max(0, int(l["b"] - a))] = True
         tipped = _tip(k, o, c, a - 2, T, g["jamb"][0]) or _tip(k, o, c, b_ + 1, T, g["jamb"][1])
         if len(inside) >= 2 and L * mm >= 350 and tipped:
+            # A closed door leaf drawn across the opening (the household-shelter blast door, c21 / p05): a thin rectangle
+            # two long strokes 25-90 mm apart, lying against ONE face of the wall, nothing on the other half of the
+            # thickness.  A window band spreads its strokes over the wall's thickness.  A stroke on the face line itself
+            # is the wall's outline running across the opening, not the symbol.
+            lo_, hi_ = g.get("lo", c), g.get("hi", c)
+            sym = [l["c"] for l in inside if min(abs(l["c"] - lo_), abs(l["c"] - hi_)) > 2.5]
+            leaf = any(25 <= abs(u_ - v_) * mm <= 90 for i_, u_ in enumerate(sym) for v_ in sym[i_ + 1:]) or \
+                   any(25 <= min(abs(u_ - lo_), abs(u_ - hi_)) * mm <= 90 for u_ in sym)
+            one_side = bool(sym) and (all(u_ <= c for u_ in sym) or all(u_ >= c for u_ in sym))
+            # Only where a household shelter is labelled next to the opening: an exterior window is drawn flush with
+            # the outer face as well, and the blast door is the one door on these plans drawn closed.
+            mid_ = ((a + b_) / 2.0, c) if o == "h" else (c, (a + b_) / 2.0)
+            shelter = any(room_type(t.get("s", "")) == "shelter" and math.hypot(t["box"][0] + t["box"][2] / 2 - mid_[0], t["box"][1] + t["box"][3] / 2 - mid_[1]) * mm <= 2500
+                          for t in m.get("texts", []))
+            if leaf and one_side and shelter and 600 <= L * mm <= 1300 and (hi_ - lo_) * mm >= 150:
+                out.append(dict(g, kind="door", operation="swing", hinge="unknown", swing_side=0, confidence=0.55, why="a closed leaf drawn across the opening, against one face of the wall")); continue
             out.append(dict(g, kind="window", operation="fixed", hinge="none", swing_side=0, confidence=0.85 if len(inside) >= 3 else 0.7, strokes=len(inside))); continue
         # sliding doors: two or more PANELS (each a thin rectangle: two strokes of one length, a panel's thickness apart),
         # staggered across the wall line and between them covering the gap
