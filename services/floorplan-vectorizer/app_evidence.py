@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.8.0"
+VERSION = "app-evidence-0.9.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -854,6 +854,52 @@ def drawn_door(m, k, g, T):
     return best
 
 
+def _bifold_base(tri, o):
+    """The two ends of a folding door's V that stand on the wall: for a gap running along o, the pair of the triangle's
+    corners that lie level (o = h) or plumb (o = v) with each other.  Stage 1 does not order the corners: on some plans
+    the apex comes last, on others in between."""
+    pairs = ((0, 1), (0, 2), (1, 2))
+    axis = 1 if o == "h" else 0
+    i, j = min(pairs, key=lambda pr: abs(tri[pr[0]][axis] - tri[pr[1]][axis]))
+    return tri[i], tri[j]
+
+
+def _line_broken_over(m, k, g, u0, u1, band, T):
+    """One of the strokes drawn along the gap (within its band) is missing over [u0, u1] but drawn on both flanks of it:
+    a partition line stops at the jambs of a door hung in it."""
+    gray = m.get("_work_gray")
+    if gray is None:
+        return False
+    thr = min(200, int(m.get("ink_threshold", 180)))
+    o, c = g["o"], g["c"]
+    P = (lambda u, v: (u, v)) if o == "h" else (lambda u, v: (v, u))
+    w = u1 - u0
+    if w < 8:
+        return False
+    for l in m["lines"]:
+        if l["o"] != o or l.get("role") in ("dimension", "extension", "door-leaf") or abs(l["c"] - c) > band + 0.5 * T:
+            continue
+        if l["a"] > u0 - 0.3 * w or l["b"] < u1 + 0.3 * w:
+            continue                                       # the stroke must reach past the door on both sides to be the partition
+        over = [P(u0 + w * t, l["c"]) for t in np.linspace(0.2, 0.8, 13)]
+        left = [P(u0 - w * t, l["c"]) for t in np.linspace(0.08, 0.3, 6)]
+        right = [P(u1 + w * t, l["c"]) for t in np.linspace(0.08, 0.3, 6)]
+        # read the paper itself (a partition stroke lies inside the wall mask, which _ink_cover would count as wall): the
+        # darkest ink under the stroke, over the door against either flank.  On a scan the line does not vanish at the
+        # jambs, it goes pale (the closed leaf is drawn thin), so the test is the contrast, not presence.
+        def darkest(pts):
+            H, W = gray.shape; vals = []
+            for x, y in pts:
+                xi, yi = int(round(x)), int(round(y))
+                if 2 <= xi < W - 2 and 2 <= yi < H - 2:
+                    vals.append(int(gray[yi - 2:yi + 3, xi - 2:xi + 3].min()))
+            return float(np.median(vals)) if vals else 255.0
+        d_over, d_left, d_right = darkest(over), darkest(left), darkest(right)
+        if d_over - max(d_left, d_right) >= 40 and max(d_left, d_right) < thr:
+            return True
+    return False
+
+
 def classify_gaps(m, k, gaps):
     """door / window / folding door / passage / hidden wall, from what is drawn in the gap"""
     T = float(m["wall_thickness_px"]); mm = pseudo_scale(m)
@@ -927,11 +973,18 @@ def classify_gaps(m, k, gaps):
         part_fold = None
         for s_ in m.get("free_symbols", []):
             if s_.get("type") == "bifold" and not s_.get("_hosted"):
-                p0, p2 = s_["tri"][0], s_["tri"][2]
+                p0, p2 = _bifold_base(s_["tri"], o)
                 if (abs(p0[1] - p2[1]) <= abs(p0[0] - p2[0])) != (o == "h"):
                     continue
                 u = sorted((p0[0], p2[0]) if o == "h" else (p0[1], p2[1])); v = ((p0[1] + p2[1]) / 2) if o == "h" else ((p0[0] + p2[0]) / 2)
-                if abs(v - c) <= band + T and u[0] >= a - 0.6 * T and u[1] <= b_ + 0.6 * T and (u[1] - u[0]) >= 0.25 * L:
+                if not (abs(v - c) <= band + T and u[0] >= a - 0.6 * T and u[1] <= b_ + 0.6 * T):
+                    continue
+                if (u[1] - u[0]) >= 0.25 * L:
+                    part_fold = (s_, max(a, u[0]), min(b_, u[1]))
+                elif 250 <= (u[1] - u[0]) * mm <= 1300 and _line_broken_over(m, k, g, u[0], u[1], band, T):
+                    # A bathroom folding door 400-900 mm wide hung in a long partition (exec, h1): the V is narrow against
+                    # the gap, but one of the partition's strokes stops at its jambs.  The folded corner of a bed is a V
+                    # too, drawn against the bedside strip - its edge lines run straight through.
                     part_fold = (s_, max(a, u[0]), min(b_, u[1]))
         if part_fold is not None:
             s_, u0, u1 = part_fold; s_["_hosted"] = True
@@ -1838,6 +1891,19 @@ def build(m, gray=None):
         for r_ in rooms_:
             r_["labels"] = [l for l in labels if at(r_, l)]
         return closed_, rooms_
+    # Two openings side by side on one wall line (the entrance beside its side light, a door beside a fixed panel) can
+    # leave a hairline of wall mass between their jambs that no gap finder returns.  A room would leak through it: the
+    # wider opening takes the hairline.
+    for g1 in openings:
+        for g2 in openings:
+            if g1 is g2 or g1["o"] != g2["o"] or abs(g1["c"] - g2["c"]) > T or g1["kind"] == "wall" or g2["kind"] == "wall":
+                continue
+            d_ = g2["a"] - g1["b"]
+            if 0 < d_ <= max(3.0, 0.15 * T):
+                if g1["b"] - g1["a"] >= g2["b"] - g2["a"]:
+                    g1["b"] = g2["a"]
+                else:
+                    g2["a"] = g1["b"]
     closed, rooms = make_rooms(openings)
     # A doorway without a door between a NAMED room and a space without a name (the passage in front of the bedroom doors,
     # open to the living room) does not make two rooms: the passage belongs to the room it is open to.
