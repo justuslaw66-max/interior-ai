@@ -97,6 +97,7 @@ const typescriptGuardFiles = [
   "test-room-resize-handle-style.ts",
   "test-room-shopping-catalog-refresh.ts",
   "test-shopping-readiness-polish.ts",
+  "test-start-design.tsx",
   "test-tap-target-placement.ts",
   "test-touch-placement-polish.ts",
   "test-window-opening-drag.ts",

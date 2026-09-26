@@ -65,6 +65,7 @@ import {
   UpgradeDialog,
   type UpgradeDialogProps,
 } from "@/components/editor/design-page/UpgradeDialog";
+import { StartDesignChooser, type StartDesignChooserProps } from "@/components/editor/start/StartDesignChooser";
 
 const MyDesignsDialog = lazy(async () => {
   const dialogModule = await import("@/components/editor/design-page/MyDesignsDialog");
@@ -84,6 +85,7 @@ export type DesignPageDialogLayerDialogs = {
   planAnnotation: PlanAnnotationDialogProps;
   catalogPlacement: CatalogPlacementConfirmPanelProps;
   planTemplateChoice: PlanTemplateChoiceDialogProps;
+  startChooser: StartDesignChooserProps;
 };
 
 export type DesignPageDialogLayerOverlays = {
@@ -161,6 +163,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />
       <PlanTemplateChoiceDialog {...dialogs.planTemplateChoice} />
+      <StartDesignChooser {...dialogs.startChooser} />
       {overlays.betaFeedback ? (
         <BetaFeedbackWidget {...overlays.betaFeedback} />
       ) : null}

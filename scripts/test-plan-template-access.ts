@@ -965,14 +965,14 @@ assert.doesNotMatch(
 
 assert.match(
   betaSmokeSource,
-  /apply-furnished-template-studio[\s\S]*?room-setup-step-furnish-meta[\s\S]*?itemCount\)\.toBeGreaterThanOrEqual\(1\)/,
-  "The blocking beta smoke should start from a furnished template and assert starter items."
+  /start-template-furnished[\s\S]*?start-template-studio[\s\S]*?room-setup-step-furnish-meta[\s\S]*?itemCount\)\.toBeGreaterThanOrEqual\(1\)/,
+  "The blocking beta smoke should start from a furnished template in Start a new design and assert starter items."
 );
 
 assert.match(
   betaSmokeSource,
-  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?starter-floor-plan-picker[\s\S]*?apply-furnished-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
-  "The blocking beta smoke should prove the Load modal shortcut opens templates before loading saved designs."
+  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?start-design-chooser[\s\S]*?start-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
+  "The blocking beta smoke should prove the Load modal shortcut opens Start a new design before loading saved designs."
 );
 
 assert.match(

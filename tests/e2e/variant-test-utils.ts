@@ -119,6 +119,25 @@ export async function chooseNewDesign(page: Page): Promise<void> {
   await newDesign.click();
 }
 
+// New design (and `/` on a first visit) opens Start a new design; this picks a template card there.
+export async function chooseStartTemplate(
+  page: Page,
+  templateId: string,
+  { furnished = false }: { furnished?: boolean } = {}
+): Promise<void> {
+  const chooser = page.getByTestId("start-design-chooser");
+  await expect(chooser).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId(furnished ? "start-template-furnished" : "start-template-empty").click();
+  const card = page.getByTestId(`start-template-${templateId}`);
+  if (!(await card.isVisible().catch(() => false))) {
+    await page.getByTestId("start-templates-see-all").click();
+  }
+  // The cards wait for products to load, as Plan's own template buttons do.
+  await expect(card).toBeEnabled({ timeout: 30_000 });
+  await card.click();
+  await expect(chooser).toBeHidden();
+}
+
 // Plan, Furnish and Shop are always-visible steps in the command bar. Suggest a layout and
 // Built-ins open from inside the Furnish step, and Present & export sits in the More menu.
 const FURNISH_STEP_ENTRIES = new Set(["editor-workflow-ai", "editor-workflow-millwork"]);

@@ -67,6 +67,7 @@ export function buildDesignPageDialogLayerAdapter({
       planAnnotation: dialogs.planAnnotation,
       catalogPlacement: dialogs.catalogPlacement,
       planTemplateChoice: dialogs.planTemplateChoice,
+      startChooser: dialogs.startChooser,
     },
     overlays: {
       betaFeedback: isClientPreview ? null : overlays.betaFeedback,

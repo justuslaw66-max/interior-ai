@@ -36,7 +36,8 @@ export type UseDesignPageBetaStartControllerInput = {
 
 export type DesignPageBetaStartController = {
   state: { visible: boolean };
-  actions: BetaStartPanelProps["actions"];
+  /** `startDrawRoom` is Draw room without this panel's tracking: Start a new design records its own. */
+  actions: BetaStartPanelProps["actions"] & { startDrawRoom: () => void };
 };
 
 export function useDesignPageBetaStartController({
@@ -80,16 +81,20 @@ export function useDesignPageBetaStartController({
     dismiss();
   }, [actions, dismiss]);
 
-  const drawRoom = useCallback(() => {
-    track("launch_path_selected", { path: "draw", source: "beta_start" });
+  const startDrawRoom = useCallback(() => {
     actions.setGuidedPlanStartMode("draw");
     actions.goPlan();
     actions.setViewMode("2d");
     actions.activateFloorPlanRoomTrace(true);
     actions.setDesignPanelOpen(true);
     actions.showToast("Draw room walls in 2D");
+  }, [actions]);
+
+  const drawRoom = useCallback(() => {
+    track("launch_path_selected", { path: "draw", source: "beta_start" });
+    startDrawRoom();
     dismiss();
-  }, [actions, dismiss]);
+  }, [dismiss, startDrawRoom]);
 
   const uploadPlan = useCallback(() => {
     track("launch_path_selected", { path: "upload", source: "beta_start" });
@@ -112,14 +117,8 @@ export function useDesignPageBetaStartController({
   }, [actions, dismiss]);
 
   const controllerActions = useMemo(
-    () => ({
-      dismiss,
-      chooseTemplate,
-      drawRoom,
-      uploadPlan,
-      generateAiLayout,
-    }),
-    [chooseTemplate, dismiss, drawRoom, generateAiLayout, uploadPlan]
+    () => ({ dismiss, chooseTemplate, drawRoom, startDrawRoom, uploadPlan, generateAiLayout }),
+    [chooseTemplate, dismiss, drawRoom, generateAiLayout, startDrawRoom, uploadPlan]
   );
 
   return {

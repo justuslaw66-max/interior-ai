@@ -415,7 +415,7 @@ export function DesignPageWorkspace() {
       upgradeActions: { onSeePlans: openPlansFromUpgrade, onSignIn: signInFromUpgrade, onClose: closeUpgradeDialog },
       plansActions: { onClose: closePlansDialog, onManageBilling: manageBillingFromPlans, onStartCheckout: startCheckoutFromPlans },
     },
-    persistence: {
+    persistence: { startChooser: persistenceWorkspaceRegistration.state.startChooser,
       guestSave: { reason: persistenceState.guestPrompt?.reason ?? null, busy: persistenceState.guestPromptPrimaryBusy, lifecycleScopeKey: persistenceState.guestPromptScopeKey, onCancel: () => { if (persistenceState.guestPrompt) persistenceActions.cancelGuestPrompt(persistenceState.guestPrompt); }, onContinueWithoutSaving: () => { if (persistenceState.guestPrompt) persistenceActions.handleGuestPromptNotNow(persistenceState.guestPrompt); }, onSaveAndContinue: () => persistenceState.guestPrompt ? persistenceActions.handleGuestSaveAndContinue(persistenceState.guestPrompt) : undefined },
       myDesigns: {
         data: { open: persistenceState.showMyDesigns, designs: persistenceState.myDesigns, loading: persistenceState.loadingDesigns, allDesignIds: persistenceState.allSavedDesignIds,
