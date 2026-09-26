@@ -68,6 +68,11 @@ export type UseDesignPageSceneReadModelInput = {
       stackedFloorView: boolean;
       hiddenFloorLevels: number[];
       selectedPlanRoomId: string | null;
+      /**
+       * The first visit's untouched room, for consumers: it isn't selected on arrival, so the
+       * inspector waits for a real selection and the size stays in Plan's room card (FR5).
+       */
+      deferStarterRoomSelection?: boolean;
     };
     editor: {
       viewMode: EditorViewMode;
@@ -95,7 +100,7 @@ export function useDesignPageSceneReadModel({
       roomDepth,
       stackedFloorView,
       hiddenFloorLevels,
-      selectedPlanRoomId,
+      selectedPlanRoomId, deferStarterRoomSelection = false,
     },
     editor: { viewMode },
     ai: { pendingProposal },
@@ -138,7 +143,7 @@ export function useDesignPageSceneReadModel({
     if (activeRoomChanged) {
       previousSelectedPlanActiveRoomIdRef.current = activeRoomId;
       setSelectedPlanRoomId(
-        activeRoomId && roomIds.has(activeRoomId) ? activeRoomId : null
+        activeRoomId && roomIds.has(activeRoomId) && !deferStarterRoomSelection ? activeRoomId : null
       );
       return;
     }
@@ -147,7 +152,7 @@ export function useDesignPageSceneReadModel({
       currentRoomId && !roomIds.has(currentRoomId) ? null : currentRoomId
     );
   }, [
-    designSnapshot.activeRoomId,
+    designSnapshot.activeRoomId, deferStarterRoomSelection,
     housePlanRooms,
     setSelectedPlanRoomId,
   ]);

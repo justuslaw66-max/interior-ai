@@ -71,7 +71,7 @@ export function isTemplateFurnishingNearDoorway(
 }
 
 export function shouldConfirmPlanTemplateReplacement(
-  snapshot: DesignSnapshot,
+  snapshot: Pick<DesignSnapshot, "rooms">,
   openings: RoomOpening2D[]
 ): boolean {
   const rooms = snapshot.rooms ?? [];
@@ -88,4 +88,12 @@ export function shouldConfirmPlanTemplateReplacement(
     Math.abs(room.geometry.depth - ROOM_DIMENSION_DEFAULTS.depth) < 0.001;
 
   return !isDefaultStarterLivingRoom || openings.length > 2;
+}
+
+/**
+ * The first visit's room, untouched (audit finding FR2): one living room at the default size, with no
+ * products and at most the two openings it starts with. It reads as a draft until it is changed.
+ */
+export function isUntouchedStarterRoom(snapshot: Pick<DesignSnapshot, "rooms">, openings: RoomOpening2D[]): boolean {
+  return (snapshot.rooms ?? []).length === 1 && !shouldConfirmPlanTemplateReplacement(snapshot, openings);
 }

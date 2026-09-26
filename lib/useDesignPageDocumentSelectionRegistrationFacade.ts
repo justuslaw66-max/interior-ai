@@ -11,6 +11,7 @@ import { useDesignPageItemSelectionController } from "@/lib/useDesignPageItemSel
 import { useDesignPageLateBoundRef } from "@/lib/useDesignPageLateBoundRef";
 import { useDesignPageSceneRoomReadRegistration } from "@/lib/useDesignPageSceneRoomReadRegistration";
 import { useDesignPageShoppingCatalogRuntime } from "@/lib/useDesignPageShoppingCatalogRuntime";
+import { isUntouchedStarterRoom } from "@/lib/design-page-template-furnishings";
 
 export type UseDesignPageDocumentSelectionRegistrationFacadeInput = {
   boundaries: {
@@ -32,7 +33,7 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
       placement: { pendingAiLayoutProposal },
     },
     derived: {
-      access: { isClientPreview, isDesigner, liveCatalogReady, canEdit },
+      access: { isClientPreview, isDesigner, wantsDesigner, liveCatalogReady, canEdit },
     },
     actions: {
       feedback: { showRuleToast },
@@ -90,8 +91,8 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
     boundaries: { documentRoom },
     state: {
       plan: {
-        selectedPlanRoomId:
-          planViewport.state.overlaySelection.selectedPlanRoomId,
+        selectedPlanRoomId: planViewport.state.overlaySelection.selectedPlanRoomId,
+        deferStarterRoomSelection: !wantsDesigner && isUntouchedStarterRoom(snapshotDocument.state.designSnapshot, planViewport.boundaries.planDocument.state.planOpenings),
       },
       editor: {
         viewMode: base.state.editor.viewMode,

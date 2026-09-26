@@ -60,6 +60,7 @@ import FloorPlanToolStrip from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
 import MeasurementField from "./MeasurementField";
 import { ConsumerRoomSetupCard } from "./ConsumerRoomSetupCard";
+import { RoomSetupProgressChips } from "./RoomSetupProgressChips";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
@@ -156,7 +157,7 @@ export default function DesignControlsPlanPanel({
   visiblePlanOpeningMaxHeightMeters,
   planRoomCount,
   planItemCount,
-  planOpeningCount,
+  planOpeningCount, roomIsDraft = false,
   activeRoomName,
   activeRoomId,
   activeRoomType,
@@ -633,7 +634,7 @@ export default function DesignControlsPlanPanel({
         : `Review ${connectionBlockerCount} room connection${connectionBlockerCount === 1 ? "" : "s"}.`
       : "";
   const consumerPlanNextSteps = [
-    `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} ready.`,
+    roomIsDraft ? "Enter your room's real size." : `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} ready.`,
     consumerPlanOpeningSummary,
     consumerPlanConnectionSummary,
     hasStartedFurniture ? "Review the shop list when ready." : "Start furnishing when ready.",
@@ -2116,19 +2117,10 @@ export default function DesignControlsPlanPanel({
                 {floorPlanCollapsed ? "Expand" : "Collapse"}
               </button>
             </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <span
-                data-testid="room-setup-step-furnish-meta"
-                className={hasStartedFurniture ? progressReadyClass : progressTodoClass}
-              >
-                {furnitureStatusLabel}
-              </span>
-              {hasRooms && (
-                <span className={hasOpenings || !hasConnectionBlockers ? progressReadyClass : progressTodoClass}>
-                  {openingStatusLabel}
-                </span>
-              )}
-            </div>
+            <RoomSetupProgressChips roomIsDraft={roomIsDraft} hasRooms={hasRooms}
+              furniture={{ label: furnitureStatusLabel, ready: hasStartedFurniture }}
+              openings={{ label: openingStatusLabel, ready: hasOpenings || !hasConnectionBlockers }}
+              readyClass={progressReadyClass} todoClass={progressTodoClass} />
           </div>
 
           {!floorPlanCollapsed && (
@@ -2137,7 +2129,7 @@ export default function DesignControlsPlanPanel({
                 dark={dark}
                 canEdit={canEdit}
                 canEditPlanGeometry={canEditPlanGeometry}
-                hasRooms={hasRooms}
+                hasRooms={hasRooms} roomIsDraft={roomIsDraft}
                 activeRoomName={activeRoomName}
                 newRoomType={newRoomType}
                 activeRoomPresetId={activeRoomPresetId}

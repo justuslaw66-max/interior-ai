@@ -14,7 +14,7 @@ export type UseDesignPageSceneRoomReadRegistrationInput = {
     documentRoom: DesignPageDocumentRoomRegistration;
   };
   state: {
-    plan: Pick<SceneInput["state"]["plan"], "selectedPlanRoomId">;
+    plan: Pick<SceneInput["state"]["plan"], "selectedPlanRoomId" | "deferStarterRoomSelection">;
     editor: SceneInput["state"]["editor"];
     ai: SceneInput["state"]["ai"];
     surface: RoomInput["state"]["surface"];
@@ -59,7 +59,7 @@ export function useDesignPageSceneRoomReadRegistration({
           roomDepth: room.roomDepth,
           stackedFloorView: floor.stackedFloorView,
           hiddenFloorLevels: floor.hiddenFloorLevels,
-          selectedPlanRoomId: state.plan.selectedPlanRoomId,
+          ...state.plan,
         },
         editor: state.editor,
         ai: state.ai,

@@ -58,6 +58,7 @@ export type BuildDesignPagePanelRegistrationInput = {
     plan: Pick<
       ControlsInput["floorPlan"]["state"],
       | "roomConnectionChecklistItems"
+      | "roomIsDraft"
       | "visiblePlanOpening"
       | "visiblePlanOpeningRoomName"
       | "visiblePlanOpeningWallSpanMeters"

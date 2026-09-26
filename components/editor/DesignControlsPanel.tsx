@@ -117,7 +117,7 @@ export type DesignControlsPanelProps = {
   visiblePlanOpeningMaxHeightMeters: number;
   planRoomCount: number;
   planItemCount: number;
-  planOpeningCount: number;
+  planOpeningCount: number; roomIsDraft: boolean;
   activeRoomName: string;
   activeRoomId: string;
   catalogRoomNavigationRevision: number;
@@ -340,7 +340,7 @@ export default function DesignControlsPanel({
   visiblePlanOpeningMaxHeightMeters,
   planRoomCount,
   planItemCount,
-  planOpeningCount,
+  planOpeningCount, roomIsDraft,
   activeRoomName,
   activeRoomId,
   catalogRoomNavigationRevision,
@@ -708,7 +708,7 @@ export default function DesignControlsPanel({
             visiblePlanOpeningMaxHeightMeters={visiblePlanOpeningMaxHeightMeters}
             planRoomCount={planRoomCount}
             planItemCount={planItemCount}
-            planOpeningCount={planOpeningCount}
+            planOpeningCount={planOpeningCount} roomIsDraft={roomIsDraft}
             activeRoomName={activeRoomName}
             activeRoomId={activeRoomId}
             activeRoomType={activeRoomType}
@@ -836,7 +836,7 @@ export default function DesignControlsPanel({
             dark={dark}
             style={style}
             budget={budget}
-            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit }}
+            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit, roomIsDraft }}
             roomFloorAreaSqm={getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId)}
             activeRoomItemCount={planItemCount}
             aiLayoutProposal={aiLayoutProposal}
