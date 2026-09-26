@@ -1,0 +1,17 @@
+# Build context for services/floorplan-vectorizer/worker.Dockerfile: the repository without what the image
+# installs itself (node_modules, the Python venv), local secrets and build output.
+.git
+node_modules
+.next
+.env
+.env.*
+!.env.example
+services/floorplan-vectorizer/.venv
+services/floorplan-vectorizer/heldout
+services/floorplan-vectorizer/_to_delete
+public/qa-plans
+reports
+*.log
+.local-scratch
+test-results
+playwright-report

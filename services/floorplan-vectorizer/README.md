@@ -43,6 +43,21 @@ machine needs, in the worker's working directory (the repository checkout the wo
 Hosts that run only the Next.js app (Vercel functions) cannot run this: no persistent process, no `tesseract`. Leave
 the flag unset there; in `background` mode the app process never runs imports anyway.
 
+There is no production worker yet (26 Sep 2026): the app on Vercel cannot host one. `worker.Dockerfile` in this folder
+builds one — Node 24, the pinned venv, `tesseract` + English data, the worker as the command, and the doctor at build
+time so a broken runtime does not build:
+
+    docker build -f services/floorplan-vectorizer/worker.Dockerfile -t interior-ai-floor-plan-worker .
+    docker run --rm --env-file .env.worker interior-ai-floor-plan-worker                                   # imports
+    docker run --rm --env-file .env.worker interior-ai-floor-plan-worker npm run worker:floor-plan-deletions   # deletions
+
+`.env.worker` is the app's server environment (`DATABASE_URL` for the same database the app writes to, `APP_ENV`
+= `production` or `staging`, the `FLOOR_PLAN_*` storage settings the app uses, `OPENAI_API_KEY` / `FLOOR_PLAN_VISION_*`
+if the vision pass is on); the image already sets `FLOOR_PLAN_PROCESSING_MODE=background` and the three vectorizer
+settings. The app side must run with `FLOOR_PLAN_PROCESSING_MODE=background` too (the production default), so that
+requests enqueue and this process, not the request, does the work. One container is enough: the vectorizer is single-
+threaded per plan and the worker processes one job at a time; start it with 2 CPUs and 2 GB and watch the run times (32 s – 6 min per plan on 2 cores in the sandbox).
+
 `doctor.py` checks all of it and must be run with the interpreter the worker will use:
 
     services/floorplan-vectorizer/.venv/bin/python3 services/floorplan-vectorizer/doctor.py --run
