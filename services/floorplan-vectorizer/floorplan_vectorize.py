@@ -28,6 +28,11 @@ if int(cv2.__version__.split(".")[0]) >= 5:
     sys.exit("This program was built and measured on OpenCV 4 (4.9 - 4.13); OpenCV %s returns several results in a different shape.\n"
              "Use the pinned versions:  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt  and run with .venv/bin/python3" % cv2.__version__)
 import pytesseract
+try:
+    pytesseract.get_tesseract_version()
+except pytesseract.TesseractNotFoundError:
+    # One line: the app keeps the last line of stderr as the reason the vectorizer was unavailable.
+    sys.exit("the tesseract program is not on PATH (apt-get install tesseract-ocr / brew install tesseract) - the vectorizer reads printed numbers and room names with it; services/floorplan-vectorizer/doctor.py checks the whole runtime")
 DEBUG = False
 DEBUG_BOX = [float(v) for v in os.environ.get("FV_DEBUG_BOX", "").split(",")] if os.environ.get("FV_DEBUG_BOX") else None   # x0,y0,x1,y1 (working px)
 
