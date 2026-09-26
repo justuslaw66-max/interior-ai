@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import type { DimensionsMm } from "@/lib/catalog-schema";
 import {
@@ -18,8 +18,11 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
+import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 
-type PlacementDimensions = Pick<DimensionsMm, "w" | "d">;
+type PlacementDimensions = Pick<DimensionsMm, "w" | "d"> & Partial<Pick<DimensionsMm, "h">>;
 type ExcludedPlacementItems = string | string[] | undefined;
 type GetItemAABB = (item: DesignItem) => AABB | null;
 
@@ -60,6 +63,7 @@ export type IsPlacementContainedInRoom = (
 type UseDesignPagePlacementRoomQueriesInput = {
   configuration: {
     houseRoomById: ReadonlyMap<string, HousePlanRoom2D>;
+    canonicalDocument?: FloorPlanDocumentV2;
   };
   actions: {
     getItemAABB: GetItemAABB;
@@ -161,13 +165,16 @@ export function isPlacementContainedInRoom({
   rotationY,
   dimensions,
   houseRoom,
+  canonicalModel,
 }: {
   room: RoomSnapshot;
   position: [number, number, number];
   rotationY: number;
   dimensions: PlacementDimensions;
   houseRoom?: HousePlanRoom2D;
+  canonicalModel?: CanonicalFloorPlanRenderModel;
 }): boolean {
+  if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   return isCatalogPlacementLocalFootprintInsideRoom({
     room: {
       id: room.id,
@@ -194,19 +201,15 @@ export function useDesignPagePlacementRoomQueries({
   actions,
 }: UseDesignPagePlacementRoomQueriesInput) {
   const { houseRoomById } = configuration;
+  const canonicalModel = useMemo(() => configuration.canonicalDocument
+    ? compileCanonicalFloorPlanRenderModel(configuration.canonicalDocument) : undefined, [configuration.canonicalDocument]);
   const { getItemAABB } = actions;
 
   const catalogPlacementCollidesInRoom =
     useCallback<PlacementCollidesInRoom>(
       (room, productId, position, rotationY, dimensions, excludedItems) =>
         placementCollidesInRoom({
-          room,
-          productId,
-          position,
-          rotationY,
-          dimensions,
-          excludedItems,
-          getItemAABB,
+          room, productId, position, rotationY, dimensions, excludedItems, getItemAABB,
         }),
       [getItemAABB]
     );
@@ -215,13 +218,7 @@ export function useDesignPagePlacementRoomQueries({
     useCallback<FindPlacementBlockerInRoom>(
       (room, productId, position, rotationY, dimensions, excludedItems) =>
         findPlacementBlockerInRoom({
-          room,
-          productId,
-          position,
-          rotationY,
-          dimensions,
-          excludedItems,
-          getItemAABB,
+          room, productId, position, rotationY, dimensions, excludedItems, getItemAABB,
         }),
       [getItemAABB]
     );
@@ -235,8 +232,9 @@ export function useDesignPagePlacementRoomQueries({
           rotationY,
           dimensions,
           houseRoom: houseRoomById.get(room.id),
+          canonicalModel,
         }),
-      [houseRoomById]
+      [houseRoomById, canonicalModel]
     );
 
   return {

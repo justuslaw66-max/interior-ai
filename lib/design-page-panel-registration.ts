@@ -438,10 +438,8 @@ export function buildDesignPagePanelRegistration({
         onReviewShoppingIssue: actions.shopping.reviewIssue,
         onSelectPlacedItem: (instanceId) =>
           placementSelection.actions.selection.selectItem(instanceId, false),
-        onSelectedImportedFamilyChange:
-          importedModels.actions.setSelectedFamilyKey,
-        onSelectedImportedProductChange:
-          importedModels.actions.setSelectedProductId,
+        onSelectedImportedFamilyChange: importedModels.actions.setSelectedFamilyKey,
+        onSelectedImportedProductChange: importedModels.actions.setSelectedProductId,
       },
     },
     ai: { state: state.ai, actions: actions.ai },
@@ -450,6 +448,7 @@ export function buildDesignPagePanelRegistration({
         onSignIn: actions.navigation.signIn,
         onGoFurnish: actions.navigation.goFurnish,
         onGoAiDesign: actions.navigation.goAiDesign,
+        onOpenBuiltIns: configuration.canUseCabinetryStudio ? actions.navigation.openBuiltIns : undefined,
         onGoShop: actions.navigation.goShop,
         onSelectRoom: actions.navigation.selectRoom,
         onPlacementAddModeChange: actions.navigation.changePlacementAddMode,

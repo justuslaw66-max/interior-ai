@@ -6,7 +6,7 @@ product_name: "Hugg Nesting Rectangular Coffee Table"
 slug: "castlery-hugg-nesting-rectangular-coffee-table-performance-basalt-opened"
 variant: "Performance Basalt / Seats Open"
 
-price_usd: 799
+price_sgd: 799
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -239,7 +239,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729563860/crusader/variants/AS-000633-AR4002-NA/Hugg-Rectangular-Coffee-Table-Natural-Performance-Basalt-Front-1729563858.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
-    price_usd: 799
+    price_sgd: 799
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -267,7 +267,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729496469/crusader/variants/AS-000633-AR4002-CT/Hugg-Rectangular-Coffee-Table-Chestnut-Performance-Basalt-Front-1729496467.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
-    price_usd: 799
+    price_sgd: 799
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -295,7 +295,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729497150/crusader/variants/AS-000633-AR4002-BLK/Hugg-Rectangular-Coffee-Table-Black-Performance-Basalt-Front-1729497148.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
-    price_usd: 799
+    price_sgd: 799
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

@@ -47,11 +47,6 @@ const floorPlanTemplateMatchLevel = (template: HousePlanTemplate) =>
 
 type MutableRef<T> = { current: T };
 
-type HistoryAdapter = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
-
 export type PendingPlanTemplateReplacement = {
   template: HousePlanTemplate;
   options?: HousePlanTemplateApplyOptions;
@@ -77,7 +72,6 @@ type UseDesignPageFloorPlanUnderlayControllerInput = {
     pdfSourceDataRef: MutableRef<ArrayBuffer | null>;
   };
   actions: {
-    history: HistoryAdapter;
     setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
     setFloorPlanUnderlay: Dispatch<SetStateAction<FloorPlanUnderlay | null>>;
     setFloorPlanPdfSourceReady: Dispatch<SetStateAction<boolean>>;
@@ -119,7 +113,6 @@ export function useDesignPageFloorPlanUnderlayController({
     pdfSourceDataRef,
   } = refs;
   const {
-    history,
     setDesignSnapshot,
     setFloorPlanUnderlay,
     setFloorPlanPdfSourceReady,
@@ -394,11 +387,7 @@ export function useDesignPageFloorPlanUnderlayController({
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {
         showRuleToast("Some items couldn't be added");
       } else {
-        showRuleToast(
-          selectedFurnishingPack
-            ? `${template.label} added with furniture`
-            : `${template.label} added`
-        );
+        showRuleToast(selectedFurnishingPack ? `${template.label} added with furniture` : `${template.label} added`);
       }
       track("floor_plan_template_applied", {
         templateId: template.id,
@@ -408,6 +397,8 @@ export function useDesignPageFloorPlanUnderlayController({
         roomCount: rooms.length,
         openingCount: templateOpenings.length,
       });
+      // After the template's own toast, so a follow-up (Draw room) can show its hint.
+      options?.onApplied?.();
     },
     [
       clearAllSelection,
@@ -524,28 +515,28 @@ export function useDesignPageFloorPlanUnderlayController({
         planDepthMeters: planViewDepth,
       });
 
-      history.begin("Upload floor plan");
-      setFloorPlanUnderlay({
-        id: `underlay_${Date.now()}`,
-        floorId: "floor_1",
-        name: file.name || "Uploaded floor plan",
-        assetUrl,
-        mimeType: renderedMimeType,
-        sourceMimeType: mimeType,
-        sourceAssetSha256,
-        renderedPage,
-        pageCount,
-        widthPx,
-        heightPx,
-        position: { x: 0, z: 0 },
-        widthMeters,
-        depthMeters,
-        opacity: 0.45,
-        visible: true,
-        rotationDeg: 0,
-        locked: true,
-      });
-      history.commit();
+      runHistoryTransaction("Upload floor plan", () =>
+        setFloorPlanUnderlay({
+          id: `underlay_${Date.now()}`,
+          floorId: "floor_1",
+          name: file.name || "Uploaded floor plan",
+          assetUrl,
+          mimeType: renderedMimeType,
+          sourceMimeType: mimeType,
+          sourceAssetSha256,
+          renderedPage,
+          pageCount,
+          widthPx,
+          heightPx,
+          position: { x: 0, z: 0 },
+          widthMeters,
+          depthMeters,
+          opacity: 0.45,
+          visible: true,
+          rotationDeg: 0,
+          locked: true,
+        })
+      );
       resetFloorPlanInteraction();
       setViewMode("2d");
       track("floor_plan_underlay_uploaded", {
@@ -557,11 +548,11 @@ export function useDesignPageFloorPlanUnderlayController({
       });
     },
     [
-      history,
       pdfSourceDataRef,
       planViewDepth,
       planViewWidth,
       resetFloorPlanInteraction,
+      runHistoryTransaction,
       setFloorPlanPdfSourceReady,
       setFloorPlanUnderlay,
       setViewMode,
@@ -649,24 +640,24 @@ export function useDesignPageFloorPlanUnderlayController({
           planDepthMeters: planViewDepth,
         });
 
-        history.begin("Change floor plan page");
-        setFloorPlanUnderlay((previous) =>
-          previous
-            ? {
-                ...previous,
-                assetUrl: rendered.dataUrl,
-                mimeType: "image/png",
-                widthPx: rendered.widthPx,
-                heightPx: rendered.heightPx,
-                widthMeters,
-                depthMeters,
-                renderedPage: nextPage,
-                pageCount: rendered.pageCount,
-                calibration: undefined,
-              }
-            : previous
+        runHistoryTransaction("Change floor plan page", () =>
+          setFloorPlanUnderlay((previous) =>
+            previous
+              ? {
+                  ...previous,
+                  assetUrl: rendered.dataUrl,
+                  mimeType: "image/png",
+                  widthPx: rendered.widthPx,
+                  heightPx: rendered.heightPx,
+                  widthMeters,
+                  depthMeters,
+                  renderedPage: nextPage,
+                  pageCount: rendered.pageCount,
+                  calibration: undefined,
+                }
+              : previous
+          )
         );
-        history.commit();
         resetFloorPlanInteraction();
         showRuleToast(`PDF page ${nextPage} rendered`);
         track("floor_plan_pdf_page_rendered", {
@@ -681,11 +672,11 @@ export function useDesignPageFloorPlanUnderlayController({
     },
     [
       floorPlanUnderlay,
-      history,
       pdfSourceDataRef,
       planViewDepth,
       planViewWidth,
       resetFloorPlanInteraction,
+      runHistoryTransaction,
       setFloorPlanPdfRenderingPage,
       setFloorPlanUnderlay,
       showRuleToast,
@@ -745,15 +736,15 @@ export function useDesignPageFloorPlanUnderlayController({
 
   const clearUnderlay = useCallback(() => {
     pdfSourceDataRef.current = null;
-    history.begin("Clear floor plan");
-    setFloorPlanPdfSourceReady(false);
-    setFloorPlanUnderlay(null);
-    history.commit();
+    runHistoryTransaction("Clear floor plan", () => {
+      setFloorPlanPdfSourceReady(false);
+      setFloorPlanUnderlay(null);
+    });
     resetFloorPlanInteraction();
   }, [
-    history,
     pdfSourceDataRef,
     resetFloorPlanInteraction,
+    runHistoryTransaction,
     setFloorPlanPdfSourceReady,
     setFloorPlanUnderlay,
   ]);

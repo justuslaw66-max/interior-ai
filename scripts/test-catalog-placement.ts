@@ -153,6 +153,20 @@ function runCatalogPlacementHitTests() {
   assert.equal(isWorldPointInsideCatalogPlacementRoom(customRoom, 1.5, 1.5), false);
 }
 
+function testPolygonFurnitureExtent() {
+  const room: CatalogPlacementPlanRoom = { id: "edited", name: "Edited living", shape: "custom_polygon", x: 6.13, z: 3,
+    w: 6.26, d: 6, polygon: [{ x: -3.13, z: -3 }, { x: 3.13, z: -3 }, { x: 3.13, z: 3 }, { x: -3.13, z: 3 }] };
+  const query = { room, position: [4, 0, 3] as [number, number, number], rotationY: 0, dimsMm: { w: 1730, d: 970 }, wallThickness: 0.112 };
+  assert.equal(isCatalogPlacementFootprintInsideRoom({ ...query, room: { ...room, shape: "rectangle" } }), true);
+  assert.equal(isCatalogPlacementFootprintInsideRoom(query), true, "A polygon projection must test the footprint once at its centre, not again at each corner.");
+  assert.equal(isCatalogPlacementFootprintInsideRoom({ ...query, position: [3.95, 0, 3] }), false, "A real inset violation still rejects.");
+  assert.equal(isCatalogPlacementFootprintInsideRoom({ ...query, position: [3.65, 0, 3], rotationY: Math.PI / 2 }), true);
+  assert.equal(isCatalogPlacementLocalFootprintInsideRoom({ ...query, position: [-2.13, 0, 0] }), true, "Translated and local frames agree.");
+  const holes = [[{ x: -1.4, z: -0.2 }, { x: -1.1, z: -0.2 }, { x: -1.1, z: 0.2 }, { x: -1.4, z: 0.2 }]];
+  assert.equal(isCatalogPlacementFootprintInsideRoom({ ...query, room: { ...room, holes } }), false, "Footprint crossing a real void still rejects even when its centre is outside the void.");
+}
+
+testPolygonFurnitureExtent();
 runCatalogPlacementHitTests();
 
 const makeCatalogItem = (

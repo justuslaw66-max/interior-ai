@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Storage Ottoman"
 variant: "Standard"
 
-price_usd: 649
+price_sgd: 649
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -332,7 +332,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 93, depth_cm: 93, height_cm: 45 }
@@ -351,7 +351,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1692451017/crusader/variants/54000132-NG4001/Dawson-Square-Ottoman-Front_-1692451014.jpg"
     swatch_group: "upholstery_option"
     collection_type: "all_materials"
-    price_usd: 649
+    price_sgd: 649
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 114, depth_cm: 93, height_cm: 45 }

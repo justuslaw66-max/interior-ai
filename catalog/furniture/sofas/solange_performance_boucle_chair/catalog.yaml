@@ -7,7 +7,7 @@ product_family: "Solange"
 product_name: "Solange Performance Boucle Chair"
 slug: "castlery-solange-performance-boucle-chair"
 variant: "Chalk Boucle / White Wash Wood Legs"
-price_usd: 599
+price_sgd: 599
 price_band: mid
 brand_tier: premium_mid
 design_zone: living_zone
@@ -540,7 +540,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: stocked_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -550,14 +550,14 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102-CB4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=white_wash
         available: true
       - id: set_of_2
         label: Set of 2
         quantity: 2
         sku: PB-000508-CB4001-WW
-        price_usd: 1198
+        price_sgd: 1198
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=set_of_2&material=chalk_boucle&wood=white_wash
         image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883350/crusader/variants/T50441146-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683883348.jpg
         available: true
@@ -606,7 +606,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: stocked_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -616,14 +616,14 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103-CB4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=black
         available: true
       - id: set_of_2
         label: Set of 2
         quantity: 2
         sku: PB-000508-CB4001-BLK
-        price_usd: 1198
+        price_sgd: 1198
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=set_of_2&material=chalk_boucle&wood=black
         image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883208/crusader/variants/T50441147-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-Black-Angle-1683883205.jpg
         available: true
@@ -667,7 +667,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -677,7 +677,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-IN4005
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=white_wash
         available: true
     dimensions:
@@ -720,7 +720,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -730,7 +730,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-IN4005
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=black
         available: true
     dimensions:
@@ -773,7 +773,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -783,7 +783,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-IN4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=white_wash
         available: true
     dimensions:
@@ -826,7 +826,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -836,7 +836,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-IN4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=black
         available: true
     dimensions:
@@ -879,7 +879,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -889,7 +889,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-IN4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=white_wash
         available: true
     dimensions:
@@ -932,7 +932,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -942,7 +942,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-IN4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=black
         available: true
     dimensions:
@@ -985,7 +985,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -995,7 +995,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-IN4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=white_wash
         available: true
     dimensions:
@@ -1038,7 +1038,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1048,7 +1048,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-IN4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=black
         available: true
     dimensions:
@@ -1091,7 +1091,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1101,7 +1101,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PY4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=white_wash
         available: true
     dimensions:
@@ -1144,7 +1144,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1154,7 +1154,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PY4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=black
         available: true
     dimensions:
@@ -1197,7 +1197,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1207,7 +1207,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PY4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=white_wash
         available: true
     dimensions:
@@ -1250,7 +1250,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1260,7 +1260,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PY4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=black
         available: true
     dimensions:
@@ -1303,7 +1303,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1313,7 +1313,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PY4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=white_wash
         available: true
     dimensions:
@@ -1356,7 +1356,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1366,7 +1366,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PY4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=black
         available: true
     dimensions:
@@ -1409,7 +1409,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1419,7 +1419,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PY4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=white_wash
         available: true
     dimensions:
@@ -1462,7 +1462,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1472,7 +1472,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PY4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=black
         available: true
     dimensions:
@@ -1515,7 +1515,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1525,7 +1525,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PG4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=white_wash
         available: true
     dimensions:
@@ -1568,7 +1568,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1578,7 +1578,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PG4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=black
         available: true
     dimensions:
@@ -1621,7 +1621,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1631,7 +1631,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PG4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=white_wash
         available: true
     dimensions:
@@ -1674,7 +1674,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1684,7 +1684,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PG4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=black
         available: true
     dimensions:
@@ -1727,7 +1727,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1737,7 +1737,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PG4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=white_wash
         available: true
     dimensions:
@@ -1780,7 +1780,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1790,7 +1790,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PG4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=black
         available: true
     dimensions:
@@ -1833,7 +1833,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1843,7 +1843,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PT4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=white_wash
         available: true
     dimensions:
@@ -1886,7 +1886,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1896,7 +1896,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PT4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=black
         available: true
     dimensions:
@@ -1939,7 +1939,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -1949,7 +1949,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PT4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=white_wash
         available: true
     dimensions:
@@ -1992,7 +1992,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2002,7 +2002,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PT4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=black
         available: true
     dimensions:
@@ -2045,7 +2045,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2055,7 +2055,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PT4005
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=white_wash
         available: true
     dimensions:
@@ -2098,7 +2098,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2108,7 +2108,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PT4005
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=black
         available: true
     dimensions:
@@ -2151,7 +2151,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2161,7 +2161,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PT4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=white_wash
         available: true
     dimensions:
@@ -2204,7 +2204,7 @@ variants:
     color_family: grey
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2214,7 +2214,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PT4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=black
         available: true
     dimensions:
@@ -2257,7 +2257,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2267,7 +2267,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-PT4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=white_wash
         available: true
     dimensions:
@@ -2310,7 +2310,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2320,7 +2320,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-PT4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=black
         available: true
     dimensions:
@@ -2363,7 +2363,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2373,7 +2373,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-GR4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=white_wash
         available: true
     dimensions:
@@ -2416,7 +2416,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2426,7 +2426,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-GR4001
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=black
         available: true
     dimensions:
@@ -2469,7 +2469,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2479,7 +2479,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-GR4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=white_wash
         available: true
     dimensions:
@@ -2522,7 +2522,7 @@ variants:
     color_family: beige
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2532,7 +2532,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-GR4002
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=black
         available: true
     dimensions:
@@ -2575,7 +2575,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2585,7 +2585,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-GR4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=white_wash
         available: true
     dimensions:
@@ -2628,7 +2628,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2638,7 +2638,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-GR4003
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=black
         available: true
     dimensions:
@@ -2681,7 +2681,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2691,7 +2691,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000102C-GR4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=white_wash
         available: true
     dimensions:
@@ -2734,7 +2734,7 @@ variants:
     color_family: green
     tone: cool
     collection_type: custom_fabric
-    price_usd: 599
+    price_sgd: 599
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2744,7 +2744,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000103C-GR4004
-        price_usd: 599
+        price_sgd: 599
         affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=black
         available: true
     dimensions:
@@ -2795,7 +2795,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: stocked_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2805,14 +2805,14 @@ variants:
         label: Single
         quantity: 1
         sku: 54000196-LE4016
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=caramel
         available: true
       - id: set_of_2
         label: Set of 2
         quantity: 2
         sku: PB-001496-LE4016-WW
-        price_usd: 1598
+        price_sgd: 1598
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=set_of_2&leg_color=white_wash&material=caramel
         available: true
     dimensions:
@@ -2856,7 +2856,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: stocked_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2866,14 +2866,14 @@ variants:
         label: Single
         quantity: 1
         sku: 54000197-LE4016
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=caramel
         available: true
       - id: set_of_2
         label: Set of 2
         quantity: 2
         sku: PB-001496-LE4016-BLK
-        price_usd: 1598
+        price_sgd: 1598
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=set_of_2&leg_color=black&material=caramel
         available: true
     dimensions:
@@ -2916,7 +2916,7 @@ variants:
     color_family: brown
     tone: neutral
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2926,7 +2926,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000196C-LE4017
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=warm_taupe
         available: true
     dimensions:
@@ -2969,7 +2969,7 @@ variants:
     color_family: brown
     tone: neutral
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -2979,7 +2979,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000197C-LE4017
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=warm_taupe
         available: true
     dimensions:
@@ -3022,7 +3022,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3032,7 +3032,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000196C-LE4021
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_Ivory
         available: true
     dimensions:
@@ -3075,7 +3075,7 @@ variants:
     color_family: cream
     tone: neutral
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3085,7 +3085,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000197C-LE4021
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_Ivory
         available: true
     dimensions:
@@ -3128,7 +3128,7 @@ variants:
     color_family: black
     tone: cool
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3138,7 +3138,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000196C-LE4022
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_graphite
         available: true
     dimensions:
@@ -3181,7 +3181,7 @@ variants:
     color_family: black
     tone: cool
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3191,7 +3191,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000197C-LE4022
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_graphite
         available: true
     dimensions:
@@ -3234,7 +3234,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3244,7 +3244,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000196C-LE4023
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_cocoa
         available: true
     dimensions:
@@ -3287,7 +3287,7 @@ variants:
     color_family: brown
     tone: warm
     collection_type: custom_leather
-    price_usd: 799
+    price_sgd: 799
     price_band: mid
     brand_tier: premium_mid
     available: true
@@ -3297,7 +3297,7 @@ variants:
         label: Single
         quantity: 1
         sku: 54000197C-LE4023
-        price_usd: 799
+        price_sgd: 799
         affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_cocoa
         available: true
     dimensions:

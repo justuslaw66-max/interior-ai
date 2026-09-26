@@ -388,6 +388,14 @@ assert.deepEqual(
   "An explicitly selected opening should take precedence over other plan objects."
 );
 
+assert.deepEqual(summarize({
+  visiblePlanOpening: { ...opening, kind: "window", canonicalHost: {
+    floorId: "floor-1", floorLevel: 0, pathKind: "line", startMm: { x: 0, z: 0 },
+    endMm: { x: 2000, z: 2000 }, thicknessMm: 100, offsetOriginMm: 0,
+  } }, visiblePlanOpeningRoomName: room.name,
+}), { kind: "Window", title: "Window on selected wall", detail: room.name,
+  metrics: ["900 mm wide", "350 mm from center"] }, "Canonical diagonal hosts should not be labelled as cardinal walls; legacy offsets stay unchanged.");
+
 assert.deepEqual(
   summarize({
     selectedPlanAnnotation: annotation,
@@ -575,5 +583,8 @@ assert.equal(
   true,
   "Adjust mode should keep plan-object summaries visible when no product is selected."
 );
+
+const roomWithHole = { ...room, holes: [[{ x: -0.5, z: -0.5 }, { x: 0.5, z: -0.5 }, { x: 0.5, z: 0.5 }, { x: -0.5, z: 0.5 }]] };
+assert.equal(summarize({ selectedPlanRoom: roomWithHole })!.detail, `${room.roomType} room · ${(room.w * room.d - 1).toFixed(1)} m²`);
 
 console.log("design page selection-inspector model guardrails passed");

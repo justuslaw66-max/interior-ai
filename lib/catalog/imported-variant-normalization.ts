@@ -48,12 +48,12 @@ export type ImportedPurchaseOptionLike = {
   sku?: string;
   affiliate_url?: string;
   affiliateUrl?: string;
-  price_usd?: number;
-  priceUsd?: number;
-  compare_at_price_usd?: number;
-  compareAtPriceUsd?: number;
-  savings_usd?: number;
-  savingsUsd?: number;
+  price_sgd?: number;
+  priceSgd?: number;
+  compare_at_price_sgd?: number;
+  compareAtPriceSgd?: number;
+  savings_sgd?: number;
+  savingsSgd?: number;
   image_url?: string;
   imageUrl?: string;
   available?: boolean;
@@ -74,8 +74,8 @@ export type ImportedVariantEntryLike = {
   size_label?: string;
   affiliate_url?: string;
   affiliateUrl?: string;
-  price_usd?: number;
-  priceUsd?: number;
+  price_sgd?: number;
+  priceSgd?: number;
   purchase_options?: ImportedPurchaseOptionLike[];
   available?: boolean;
   dimensions?: {
@@ -241,11 +241,11 @@ function normalizeImportedPurchaseOptions(value: unknown): CatalogPurchaseOption
       const id = normalizePurchaseOptionId(option.id, quantity > 1 ? `set_of_${quantity}` : "single");
       const label = String(option.label ?? (quantity > 1 ? `Set of ${quantity}` : "Single")).trim();
       const affiliateUrl = normalizeImportedUrl(option.affiliate_url ?? option.affiliateUrl);
-      const priceHint = normalizePositiveNumber(option.price_usd ?? option.priceUsd);
+      const priceHint = normalizePositiveNumber(option.price_sgd ?? option.priceSgd);
       const compareAtPriceHint = normalizePositiveNumber(
-        option.compare_at_price_usd ?? option.compareAtPriceUsd
+        option.compare_at_price_sgd ?? option.compareAtPriceSgd
       );
-      const savingsHint = normalizePositiveNumber(option.savings_usd ?? option.savingsUsd);
+      const savingsHint = normalizePositiveNumber(option.savings_sgd ?? option.savingsSgd);
       const imageUrl = normalizeImportedUrl(option.image_url ?? option.imageUrl);
       const sku = String(option.sku ?? "").trim();
 
@@ -520,7 +520,7 @@ export function normalizeImportedVariants({
         ? sentenceCaseLabel(legFinishCode.replace(/-/g, " "))
         : undefined);
     const authoredAffiliateUrl = normalizeImportedUrl(entryAny.affiliate_url ?? entryAny.affiliateUrl);
-    const priceHint = normalizePositiveNumber(entryAny.price_usd ?? entryAny.priceUsd);
+    const priceHint = normalizePositiveNumber(entryAny.price_sgd ?? entryAny.priceSgd);
     const purchaseOptions = normalizeImportedPurchaseOptions(entryAny.purchase_options);
     const available = typeof entryAny.available === "boolean" ? entryAny.available : undefined;
     const inferredOptionMaterialType = inferMaterialTypeFromText(

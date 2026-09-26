@@ -99,8 +99,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
     },
     derived: {
       surface: {
-        showFloorPropertiesPanel:
-          planWorkspace.derived.inlineFloorPropertiesPanelVisible,
+        showFloorPropertiesPanel: planWorkspace.derived.inlineFloorPropertiesPanelVisible,
       },
     },
     configuration: {
@@ -117,6 +116,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
         signIn: coreShell.actions.paywall.signInWithReturn,
         goFurnish: viewportShell.actions.panels.goFurnish,
         goAiDesign: viewportShell.actions.panels.goAiDesign,
+        openBuiltIns: cabinetry.actions.openCreateStudio,
         goShop: viewportShell.actions.panels.goShop,
         selectRoom: planWorkspace.actions.room.switchRoom,
         changePlacementAddMode: base.actions.editor.setPlacementAddMode,

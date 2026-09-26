@@ -1,4 +1,11 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { resolveCanonicalOpeningHost } from "@/lib/design-page-canonical-opening-host";
+import type {
+  DesignPageOpeningHostResolution,
+  DesignPagePhysicalWallHost,
+  OpeningHostFailure,
+  OpeningHostInput,
+} from "@/lib/design-page-opening-host-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   buildRoomWallSegments2D,
@@ -19,47 +26,11 @@ function roundHostCoordinate(value: number) {
   return Number(value.toFixed(6));
 }
 
-export type OpeningHostInput = Pick<
-  RoomOpening2D,
-  | "id"
-  | "roomId"
-  | "wall"
-  | "offsetMm"
-  | "widthMm"
-  | "canonicalWallId"
-  | "requestedWorldCenterMm"
->;
-
-export type DesignPagePhysicalWallHost = {
-  physicalWallId: string;
-  segment: RoomWallSegment2D;
-  roomId: string;
-  roomWall: RoomOpening2D["wall"];
-  roomSegmentKey: string;
-  roomSegment: RoomWallSegment2D;
-  segmentOffsetMeters: number;
-  alongSegmentMeters: number;
-  worldCenter: PlanPoint2D;
-  tangent: PlanPoint2D;
-  inwardNormal: PlanPoint2D;
-  spanMeters: number;
-};
-
-type OpeningHostFailure = {
-  status: "unresolved" | "ambiguous" | "unsupported" | "invalid";
-  code:
-    | "NO_PHYSICAL_WALL"
-    | "AMBIGUOUS_PHYSICAL_WALL"
-    | "UNSUPPORTED_PHYSICAL_WALL"
-    | "INVALID_OPENING_GEOMETRY";
-  diagnostic: string;
-  consumerMessage: string;
-  requestedWorldCenter?: PlanPoint2D;
-};
-
-export type DesignPageOpeningHostResolution =
-  | { status: "resolved"; host: DesignPagePhysicalWallHost }
-  | OpeningHostFailure;
+export type {
+  DesignPageOpeningHostResolution,
+  DesignPagePhysicalWallHost,
+  OpeningHostInput,
+} from "@/lib/design-page-opening-host-types";
 
 export type DesignPageOpeningHostContext = {
   walls: Array<{ floorLevel: number; segment: RoomWallSegment2D }>;
@@ -263,7 +234,7 @@ function owningRoomCandidates(
     if (floorLevel !== roomFloorLevel(room)) return [];
     if (!segment.roomIds.includes(room.id)) return [];
     if (segment.roomWalls[room.id] !== opening.wall) return [];
-    const requestedPoint = requestedPointOnOriginalSegment(
+    const requestedPoint = (opening.canonicalWallId ? persistedRequestedWorldCenter(opening) : null) ?? requestedPointOnOriginalSegment(
       opening,
       originalRoomSegmentContaining(segment, originalSegments)
     );
@@ -333,7 +304,7 @@ function hostFailure(
   return { status, code, diagnostic, consumerMessage: message, requestedWorldCenter };
 }
 
-export function resolveDesignPageOpeningHostWithContext(
+function resolveLegacyOpeningHostWithContext(
   opening: OpeningHostInput,
   topology: DesignPageOpeningHostContext
 ): DesignPageOpeningHostResolution {
@@ -378,14 +349,17 @@ export function resolveDesignPageOpeningHostWithContext(
     `Opening ${opening.id} does not resolve to a physical wall segment.`, requestedWorldCenter);
 }
 
-export function resolveDesignPageOpeningHost(
-  opening: OpeningHostInput,
-  rooms: readonly HousePlanRoom2D[]
+export function resolveDesignPageOpeningHostWithContext(
+  opening: OpeningHostInput, topology: DesignPageOpeningHostContext
 ): DesignPageOpeningHostResolution {
-  return resolveDesignPageOpeningHostWithContext(
-    opening,
-    createDesignPageOpeningHostContext(rooms)
-  );
+  return opening.canonicalHost ? resolveCanonicalOpeningHost(opening, topology.roomsById)
+    : resolveLegacyOpeningHostWithContext(opening, topology);
+}
+
+export function resolveDesignPageOpeningHost(
+  opening: OpeningHostInput, rooms: readonly HousePlanRoom2D[]
+): DesignPageOpeningHostResolution {
+  return resolveDesignPageOpeningHostWithContext(opening, createDesignPageOpeningHostContext(rooms));
 }
 
 export function resolveDesignPageOpeningHosts<TOpening extends OpeningHostInput>(

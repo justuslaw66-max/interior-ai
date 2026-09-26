@@ -53,11 +53,7 @@ export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
   custom: "Custom Room",
 };
 
-export type HouseRoomTemplateId =
-  | "bedroom"
-  | "kitchen"
-  | "bathroom"
-  | "dining";
+export type HouseRoomTemplateId = "bedroom" | "kitchen" | "bathroom" | "dining";
 
 export type HousePlanTemplateId =
   | "studio"
@@ -72,7 +68,7 @@ export type HousePlanTemplateId =
   | "small_condo"
   | "hdb_two_room"
   | "family_two_bed"
-  | "railroad_apartment"
+  | "railroad_apartment" | "blank_room"
   | `library_${string}`;
 
 export type HousePlanTemplateLayoutType =
@@ -167,6 +163,8 @@ export type HousePlanTemplateApplyOptions = {
   furnishingPackId?: HousePlanTemplateFurnishingPackId;
   /** Address-library primary action: preserve the current design before applying. */
   startAsNewDesign?: boolean;
+  /** Runs once the template has replaced the plan: Start a new design's Draw room starts drawing. */
+  onApplied?: () => void;
 };
 
 export type HousePlanTemplate = {

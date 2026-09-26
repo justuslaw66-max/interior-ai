@@ -1,23 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import type {
   FloorPlanDocumentV2,
   FloorPlanSourceCalibrationV2,
 } from "@/lib/floor-plan-document-v2";
-import {
-  analyzePointScale,
-  applyPointScaleCalibration,
-  registerEmptyPlanScaleCalibration,
-  registerPointScaleCalibration,
-  type ReviewSourcePoint,
-} from "@/lib/floor-plan-import-review-geometry";
-import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
+import FloorPlanMeasurementInput from "./FloorPlanMeasurementInput";
+import FloorPlanIndependentScaleReview from "./FloorPlanIndependentScaleReview";
+import { useFloorPlanScaleReview } from "./useFloorPlanScaleReview";
+import { FloorPlanScaleAssumedNotice, FloorPlanScaleEstimateOffer, scaleReviewStatus } from "./FloorPlanScaleEstimateOffer";
 
 type RenderedPage = ConsumerFloorPlanImportJob["renderedPagesJson"][number];
 
-type FloorPlanScaleReviewPanelProps = {
+export type FloorPlanScaleReviewPanelProps = {
   document: FloorPlanDocumentV2;
   floorId: string;
   sourceId: string;
@@ -34,64 +30,46 @@ type FloorPlanScaleReviewPanelProps = {
   disabled: boolean;
 };
 
-export default function FloorPlanScaleReviewPanel({
-  document,
-  floorId,
-  sourceId,
-  page,
-  calibration,
-  pickingScale,
-  scalePoints,
-  onPickingScaleChange,
-  onScalePointsChange,
-  onChange,
-  onError,
-  openByDefault = false,
-  dark,
-  disabled,
-}: FloorPlanScaleReviewPanelProps) {
-  const [printedMm, setPrintedMm] = useState(3000);
-  const [firstVertexId, setFirstVertexId] = useState("");
-  const [secondVertexId, setSecondVertexId] = useState("");
-  const floor = document.floors.find((entry) => entry.id === floorId);
-  const canMapExistingVertices = (floor?.vertices.length ?? 0) >= 2;
-  const scale = useMemo(
-    () =>
-      page
-        ? analyzePointScale({
-            first: scalePoints[0] ?? null,
-            second: scalePoints[1] ?? null,
-            printedMm,
-            pageWidthPx: page.widthPx,
-            pageHeightPx: page.heightPx,
-            calibration,
-          })
-        : null,
-    [calibration, page, printedMm, scalePoints]
-  );
+export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPanelProps) {
+  const {
+    document, floorId, page, calibration, pickingScale, scalePoints,
+    onPickingScaleChange, onScalePointsChange, onChange, onError,
+    openByDefault = false, dark, disabled,
+  } = props;
+  const { input, printedMm, hasConflict, mode, setMode, floor, canMapExistingVertices, scale, apply, canApply,
+    firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId, estimateMarks, applyEstimateMark, assumedMm } = useFloorPlanScaleReview(props);
+  const status = scaleReviewStatus(hasConflict, calibration);
   const control = dark
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
     : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
 
   return (
-    <details className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || !calibration}>
+    <details data-review-controls="scale" className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || status.open}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
         Set scale
-        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${
-          calibration
-            ? "bg-emerald-100 text-emerald-800"
-            : "bg-blue-100 text-blue-800"
-        }`}>
-          {calibration ? "Set" : "Start here"}
-        </span>
+        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${status.className}`}>{status.label}</span>
       </summary>
-      <div className="mt-2 grid gap-2">
+      {status.assumed ? <FloorPlanScaleAssumedNotice /> : null}
+      {calibration && <div className="mt-2 flex gap-2">
+        {(["set", "check"] as const).map((value) => <button key={value} type="button" className={control}
+          aria-pressed={mode === value} disabled={disabled} onClick={() => {
+            setMode(value); onScalePointsChange([]); onPickingScaleChange(false);
+          }}>{value === "set" ? "Set scale" : "Cross-check scale"}</button>)}
+      </div>}
+      {mode === "check" && calibration ? <FloorPlanIndependentScaleReview
+        document={document} floorId={floorId} calibration={calibration} scalePoints={scalePoints}
+        onScalePointsChange={onScalePointsChange} onPickingScaleChange={onPickingScaleChange}
+        onChange={onChange} onError={onError} disabled={disabled} control={control} /> : <div className="mt-2 grid gap-2">
         <p className={`text-[10px] leading-4 ${subtle}`}>
           Find a printed measurement such as 2890. Select both ends of that
           measurement on the plan, then enter the number exactly as printed.
         </p>
+        {status.offerOpenings && estimateMarks.length > 0 ? (
+          <FloorPlanScaleEstimateOffer marks={estimateMarks} assumedMm={assumedMm} control={control}
+            disabled={disabled || !page} onPick={applyEstimateMark} />
+        ) : null}
         <button
           type="button"
           className={control}
@@ -107,17 +85,7 @@ export default function FloorPlanScaleReviewPanel({
               ? "Choose different points"
               : "Choose the two endpoints on the plan"}
         </button>
-        <label className={`text-[10px] ${subtle}`}>
-          Printed measurement (mm)
-          <input
-            className={`${control} mt-1 w-full`}
-            min={100}
-            step={1}
-            type="number"
-            value={printedMm}
-            onChange={(event) => setPrintedMm(Number(event.target.value))}
-          />
-        </label>
+        <FloorPlanMeasurementInput input={input} control={control} disabled={disabled} />
         {!calibration && floor && canMapExistingVertices ? (
           <div className="grid grid-cols-2 gap-2">
             <label className={`text-[10px] ${subtle}`}>
@@ -177,66 +145,8 @@ export default function FloorPlanScaleReviewPanel({
         <button
           type="button"
           className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
-          disabled={
-            disabled ||
-            !page ||
-            scalePoints.length !== 2 ||
-            (calibration
-              ? !scale?.valid
-              : !scale?.measurementValid ||
-                (canMapExistingVertices &&
-                  (!firstVertexId ||
-                    !secondVertexId ||
-                    firstVertexId === secondVertexId)))
-          }
-          onClick={() => {
-            if (!page || scalePoints.length !== 2) return;
-            try {
-              onError(null);
-              onChange(
-                calibration
-                  ? applyPointScaleCalibration({
-                      document,
-                      floorId,
-                      sourceId,
-                      pageNumber: page.pageNumber,
-                      pageWidthPx: page.widthPx,
-                      pageHeightPx: page.heightPx,
-                      first: scalePoints[0],
-                      second: scalePoints[1],
-                      printedMm,
-                    })
-                  : canMapExistingVertices
-                    ? registerPointScaleCalibration({
-                        document,
-                        floorId,
-                        sourceId,
-                        pageNumber: page.pageNumber,
-                        pageWidthPx: page.widthPx,
-                        pageHeightPx: page.heightPx,
-                        first: scalePoints[0],
-                        second: scalePoints[1],
-                        firstVertexId,
-                        secondVertexId,
-                        printedMm,
-                      })
-                    : registerEmptyPlanScaleCalibration({
-                        document,
-                        floorId,
-                        sourceId,
-                        pageNumber: page.pageNumber,
-                        pageWidthPx: page.widthPx,
-                        pageHeightPx: page.heightPx,
-                        first: scalePoints[0],
-                        second: scalePoints[1],
-                        printedMm,
-                      })
-              );
-              onPickingScaleChange(false);
-            } catch (cause) {
-              onError(userFacingErrorMessage(cause, "Scale could not be applied."));
-            }
-          }}
+          disabled={!canApply}
+          onClick={apply}
         >
           {calibration
             ? "Update measurement"
@@ -244,7 +154,7 @@ export default function FloorPlanScaleReviewPanel({
               ? "Apply measurement"
               : "Use this measurement"}
         </button>
-      </div>
+      </div>}
     </details>
   );
 }

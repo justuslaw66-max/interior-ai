@@ -8,7 +8,7 @@ product_name: "Casa TV Console"
 slug: "casa-tv-console-200cm"
 variant: "200cm / White Wash"
 
-price_usd: 1199
+price_sgd: 1199
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -178,7 +178,7 @@ variants:
     swatch_group: "finish"
     color_family: "brown"
     tone: "warm"
-    price_usd: 1199
+    price_sgd: 1199
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

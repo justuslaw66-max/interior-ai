@@ -10,6 +10,7 @@ import {
 import { buildDesignControlsPanelModel } from "../lib/design-page-controls-panel-model";
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
@@ -189,13 +190,7 @@ const dialogLayerSource = fs.readFileSync(
   ),
   "utf8"
 );
-const commandBarPath = path.join(
-  process.cwd(),
-  "components",
-  "editor",
-  "EditorCommandBar.tsx"
-);
-const commandBarSource = fs.readFileSync(commandBarPath, "utf8");
+const commandBarSource = readEditorCommandBarSource();
 const designPageCommandBarPath = path.join(
   process.cwd(),
   "components",
@@ -777,7 +772,7 @@ assert.doesNotMatch(
 
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new design"[\s\S]*?onClick=\{onNewPlan\}[\s\S]*?New design/,
+  /data-testid="editor-command-new-plan"[\s\S]*?aria-label="Start a new design"[\s\S]*?onNewPlan\(\);[\s\S]*?New design/,
   "The command bar should expose a visible one-click New plan action."
 );
 
@@ -829,7 +824,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
     },
   },
   ai: { notes: {} },
-  presentation: { presentExport: {} },
+  presentation: { presentExport: { state: {} }, download: {} },
   editing: { roomRename: {}, annotation: {} },
   placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
   feedback: { beta: {}, toasts: {}, validation: {} },
@@ -970,14 +965,14 @@ assert.doesNotMatch(
 
 assert.match(
   betaSmokeSource,
-  /apply-furnished-template-studio[\s\S]*?room-setup-step-furnish-meta[\s\S]*?itemCount\)\.toBeGreaterThanOrEqual\(1\)/,
-  "The blocking beta smoke should start from a furnished template and assert starter items."
+  /start-template-furnished[\s\S]*?start-template-studio[\s\S]*?room-setup-step-furnish-meta[\s\S]*?itemCount\)\.toBeGreaterThanOrEqual\(1\)/,
+  "The blocking beta smoke should start from a furnished template in Start a new design and assert starter items."
 );
 
 assert.match(
   betaSmokeSource,
-  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?starter-floor-plan-picker[\s\S]*?apply-furnished-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
-  "The blocking beta smoke should prove the Load modal shortcut opens templates before loading saved designs."
+  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?start-design-chooser[\s\S]*?start-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
+  "The blocking beta smoke should prove the Load modal shortcut opens Start a new design before loading saved designs."
 );
 
 assert.match(

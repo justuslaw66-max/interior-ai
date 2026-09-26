@@ -241,8 +241,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveCount(1);
     await expect(page.getByTestId("editor-workflow-shop")).toHaveCount(1);
-    await expect(page.getByTestId("editor-workflow-export")).toHaveCount(1);
-    await expect(page.getByTestId("editor-workflow-ai")).toHaveCount(1);
+    await expect(page.getByTestId("editor-design-steps").getByRole("button")).toHaveCount(3);
     await expect(page.getByTestId("house-room-3d-label")).toHaveCount(0);
 
     await chooseTemplateStart(page);
@@ -356,9 +355,10 @@ export function registerTemplateTests() {
     await page.getByTestId("room-pan-reset-view").click();
     await expect(page.getByTestId("collision-toast")).toContainText("Home fitted");
 
-    await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
+    await page.getByTestId("editor-workflow-furnish").click({ timeout: 10_000 });
     await page.getByTestId("editor-workflow-ai").click({ timeout: 5_000, noWaitAfter: true });
-    await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("furnish-step-back-to-products")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("aria-current", "step");
     await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goals")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goal-balanced")).toHaveAttribute("data-active", "true");
@@ -367,8 +367,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("ai-layout-readiness")).toContainText("Ready to generate");
     await expect(page.getByTestId("ai-layout-readiness")).toContainText("Living rooms first");
     await expect(page.getByText("AI layout supports living rooms first")).toBeVisible();
-    await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
-    await page.getByTestId("editor-workflow-plan").click({ timeout: 5_000, noWaitAfter: true });
+    await page.getByTestId("editor-workflow-plan").click({ timeout: 10_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
     await page.getByRole("button", { name: "2D", exact: true }).click();

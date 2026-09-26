@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
       "./incoming/**/*",
       "./release-evidence-private/**/*",
       "./reports/**/*",
+      "./services/**/*",
       "./test-results*/**/*",
       "./public/assets/catalog/**/*",
       "./public/assets/models/**/*",

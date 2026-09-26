@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import { issueNavigationDocument, issueNavigationPages, issueNavigationIssues } from "./fixtures/scan-to-editable-plan/issue-navigation";
+import { resolveFloorPlanReviewTarget, floorPlanReviewPage, expandFloorPlanReviewFocus } from "@/lib/floor-plan-review-target";
+
+const document = issueNavigationDocument(), original = JSON.stringify(document);
+const targets = issueNavigationIssues.map((issue) => resolveFloorPlanReviewTarget(document, issueNavigationPages, issue));
+assert.deepEqual(targets.map((target) => [target?.control, target?.pageNumber]), [["wall", 2], ["dimension", 1], ["artwork", 2], ["scale", undefined]]);
+assert.equal(floorPlanReviewPage(document, issueNavigationPages, 2).calibration?.id, "page-two-scale");
+assert.equal(floorPlanReviewPage(document, issueNavigationPages, 99).page?.pageNumber, 1);
+assert.equal(resolveFloorPlanReviewTarget(document, [issueNavigationPages[0]], issueNavigationIssues[0])?.pageNumber, undefined);
+assert.equal(resolveFloorPlanReviewTarget(document, issueNavigationPages, { code: "unknown", entityIds: ["not-an-entity"] }), null);
+assert.equal(resolveFloorPlanReviewTarget(document, issueNavigationPages, { code: "room_topology_unresolved" })?.control, "room");
+assert.equal(resolveFloorPlanReviewTarget(document, issueNavigationPages, { code: "independent_scale_conflict", entityIds: ["page-two-scale"] })?.pageNumber, 2);
+assert.ok(expandFloorPlanReviewFocus(document.floors[0], ["living"], ["door"]).includes("shared"));
+const otherSource = structuredClone(document);
+otherSource.floors[0].walls.find(({ id }) => id === "shared")!.provenance.evidence[0].sourceId = "private-supplement";
+assert.equal(resolveFloorPlanReviewTarget(otherSource, issueNavigationPages, issueNavigationIssues[0])?.pageNumber, undefined);
+const foreignArtwork = otherSource.floors[0].annotations.find(({ id }) => id === "review-note")!;
+if (foreignArtwork.geometry?.kind !== "source_drawing") throw new Error("Authored artwork missing");
+foreignArtwork.geometry.sourceId = "private-supplement";
+assert.equal(resolveFloorPlanReviewTarget(otherSource, issueNavigationPages, issueNavigationIssues[2]), null);
+assert.equal(resolveFloorPlanReviewTarget(document, [issueNavigationPages[0]], issueNavigationIssues[2]), null);
+assert.equal(JSON.stringify(document), original);
+console.log("PASS: evidence-page and correction target routing, unavailable/foreign-page rejection, room-wall focus expansion and unchanged canonical document.");

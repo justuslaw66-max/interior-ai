@@ -73,6 +73,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       qualityIssues: StructureState["plan"]["qualityIssues"];
       canonicalDocument: StructureState["plan"]["canonicalDocument"];
       canonicalGeometryHash: StructureState["plan"]["canonicalGeometryHash"];
+      wallEditing?: StructureState["plan"]["wallEditing"];
       measurementUnit: StructureConfiguration["plan"]["measurementUnit"];
       theme: StructureConfiguration["plan"]["theme"];
       layers: StructureConfiguration["plan"]["layers"];
@@ -160,25 +161,7 @@ export function buildDesignPageSceneRegionAdapter({
       },
       structure: {
         viewMode: editor.viewMode,
-        plan: {
-          underlay: plan.underlay,
-          calibration: plan.calibration,
-          roomTrace: plan.roomTrace,
-          openingTrace: plan.openingTrace,
-          width: plan.width,
-          depth: plan.depth,
-          rooms: plan.rooms,
-          activeRoomId: plan.selectedRoomId,
-          selectedRoomIds: plan.selectedRoomIds,
-          selectedOverlayId: plan.selectedOverlayId,
-          suppressedDoorwaySuggestionKeys:
-            plan.suppressedDoorwaySuggestionKeys,
-          scene: plan.editorScene,
-          zones: plan.zones,
-          qualityIssues: plan.qualityIssues,
-          canonicalDocument: plan.canonicalDocument,
-          canonicalGeometryHash: plan.canonicalGeometryHash,
-        },
+        plan: projectStructurePlan(plan),
         wholeHome: {
           rooms: room.wholeHomeRooms,
           activeRoomId: room.activeId,
@@ -305,4 +288,27 @@ export function buildDesignPageSceneRegionAdapter({
       preview: actions.preview,
     },
   });
+}
+
+function projectStructurePlan(plan: BuildDesignPageSceneRegionAdapterInput["state"]["plan"]): StructureState["plan"] {
+  return {
+    underlay: plan.underlay,
+    calibration: plan.calibration,
+    roomTrace: plan.roomTrace,
+    openingTrace: plan.openingTrace,
+    width: plan.width,
+    depth: plan.depth,
+    rooms: plan.rooms,
+    activeRoomId: plan.selectedRoomId,
+    selectedRoomIds: plan.selectedRoomIds,
+    selectedOverlayId: plan.selectedOverlayId,
+    suppressedDoorwaySuggestionKeys:
+      plan.suppressedDoorwaySuggestionKeys,
+    scene: plan.editorScene,
+    zones: plan.zones,
+    qualityIssues: plan.qualityIssues,
+    canonicalDocument: plan.canonicalDocument,
+    canonicalGeometryHash: plan.canonicalGeometryHash,
+    wallEditing: plan.wallEditing,
+  };
 }

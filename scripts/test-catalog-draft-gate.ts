@@ -12,7 +12,7 @@ category: "rug"
 product_family: "Draft Rug"
 product_name: "Draft Rug"
 variant: "200x300"
-price_usd: 399
+price_sgd: 399
 price_band: "mid"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -33,7 +33,7 @@ design_pairings:
   - "sofa"
 variants:
   - variant: "Draft Rug / 200x300"
-    price_usd: 399
+    price_sgd: 399
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions:

@@ -6,7 +6,7 @@ product_family: "Madison"
 product_name: "Madison Ottoman"
 variant: "Ottoman"
 
-price_usd: 499
+price_sgd: 499
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -173,7 +173,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645673995/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Side.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1645674203/crusader/variants/50440732-AM4001/Madison-Ottoman-Bisque-Det_1.jpg"
     swatch_group: "upholstery"
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -205,7 +205,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Angle-1757405686.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1757405686/crusader/variants/50440732-CM4001/Madison-Ottoman-Forest-Side-1757405686.jpg"
     swatch_group: "upholstery"
-    price_usd: 549
+    price_sgd: 549
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -236,7 +236,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587659/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Angle.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1642587660/crusader/variants/50440732-LE4016/Madison-ottoman-Caramel-Side.jpg"
     swatch_group: "upholstery"
-    price_usd: 649
+    price_sgd: 649
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

@@ -8,7 +8,7 @@ product_family: "Panes"
 product_name: "Panes Clear Glass TV Console"
 variant: "Clear glass draft import"
 
-price_usd: 799
+price_sgd: 799
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -58,7 +58,7 @@ variants:
   - variant: "Clear glass draft import"
     finish_code: "clear_glass"
     finish_label: "Clear Glass"
-    price_usd: 799
+    price_sgd: 799
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions:

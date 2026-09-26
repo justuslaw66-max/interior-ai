@@ -19,9 +19,9 @@ type ImportedModel = {
   dimsWmm?: number;
   dimsDmm?: number;
   catalog?: {
-    priceUsd?: number;
+    priceSgd?: number;
     variants?: Array<{
-      price_usd?: number;
+      price_sgd?: number;
       size_label?: string;
       upholstery_code?: string;
       dimensions?: { width_cm?: number; depth_cm?: number };
@@ -74,24 +74,24 @@ test.describe("151. Jaron L-Shaped Sectional Product Info", () => {
     expect(slim).toBeDefined();
     expect(wide).toBeDefined();
 
-    expect(slim?.catalog?.priceUsd).toBe(8495);
+    expect(slim?.catalog?.priceSgd).toBe(8495);
     expect(slim?.dimsWmm).toBe(3250);
     expect(slim?.dimsDmm).toBe(3250);
     expect(slim?.catalog?.variants?.map((variant) => variant.upholstery_code)).toEqual([
       "marche_cocoa",
       "marche_ivory",
     ]);
-    expect(slim?.catalog?.variants?.map((variant) => variant.price_usd)).toEqual([8495, 8495]);
+    expect(slim?.catalog?.variants?.map((variant) => variant.price_sgd)).toEqual([8495, 8495]);
     expect(slim?.catalog?.variants?.every((variant) => variant.size_label === "325x325")).toBeTruthy();
 
-    expect(wide?.catalog?.priceUsd).toBe(8595);
+    expect(wide?.catalog?.priceSgd).toBe(8595);
     expect(wide?.dimsWmm).toBe(3250);
     expect(wide?.dimsDmm).toBe(3250);
     expect(wide?.catalog?.variants?.map((variant) => variant.upholstery_code)).toEqual([
       "marche_cocoa",
       "marche_ivory",
     ]);
-    expect(wide?.catalog?.variants?.map((variant) => variant.price_usd)).toEqual([8595, 8595]);
+    expect(wide?.catalog?.variants?.map((variant) => variant.price_sgd)).toEqual([8595, 8595]);
     expect(wide?.catalog?.variants?.every((variant) => variant.size_label === "325x325")).toBeTruthy();
 
     const slimDetails = slim?.catalog?.product_details_by_material_type;

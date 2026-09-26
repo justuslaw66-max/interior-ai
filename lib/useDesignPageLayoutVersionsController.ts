@@ -20,18 +20,13 @@ import {
   type LayoutVersion,
 } from "@/lib/room-types";
 
-type LayoutVersionHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
-
 export type DesignPageLayoutVersionsRefs = {
   designSnapshot: MutableRefObject<DesignSnapshot>;
 };
 
 export type DesignPageLayoutVersionsActions = {
   setDesignSnapshot: Dispatch<SetStateAction<DesignSnapshot>>;
-  history: LayoutVersionHistory;
+  runHistoryTransaction: (name: string, mutation: () => void) => void;
   updateSelection: (next: Set<string>, primaryId: string | null) => void;
   showToast: (message: string) => void;
 };
@@ -47,7 +42,7 @@ type SaveRoomLayoutVersionOptions = {
 
 export function useDesignPageLayoutVersionsController({
   refs: { designSnapshot: designSnapshotRef },
-  actions: { setDesignSnapshot, history, updateSelection, showToast },
+  actions: { setDesignSnapshot, runHistoryTransaction, updateSelection, showToast },
 }: UseDesignPageLayoutVersionsControllerParams) {
   const [layoutVersionNameInput, setLayoutVersionNameInput] = useState("");
 
@@ -113,32 +108,32 @@ export function useDesignPageLayoutVersionsController({
         return;
       }
 
-      history.begin(`Restore ${version.name}`);
-      setDesignSnapshot((previous) => {
-        const currentRoom = getActiveRoom(previous);
-        const currentVersion = currentRoom?.layoutVersions?.find(
-          (entry) => entry.id === versionId
-        );
-        if (!currentRoom || !currentVersion) return previous;
-        const beforeRestore = createLayoutVersion(currentRoom, {
-          name: `Before ${currentVersion.name}`,
-          source: "manual",
+      runHistoryTransaction(`Restore ${version.name}`, () => {
+        setDesignSnapshot((previous) => {
+          const currentRoom = getActiveRoom(previous);
+          const currentVersion = currentRoom?.layoutVersions?.find(
+            (entry) => entry.id === versionId
+          );
+          if (!currentRoom || !currentVersion) return previous;
+          const beforeRestore = createLayoutVersion(currentRoom, {
+            name: `Before ${currentVersion.name}`,
+            source: "manual",
+          });
+          return updateRoom(
+            previous,
+            appendLayoutVersion(
+              restoreLayoutVersion(currentRoom, currentVersion),
+              beforeRestore
+            )
+          );
         });
-        return updateRoom(
-          previous,
-          appendLayoutVersion(
-            restoreLayoutVersion(currentRoom, currentVersion),
-            beforeRestore
-          )
-        );
+        updateSelection(new Set(), null);
       });
-      updateSelection(new Set(), null);
-      history.commit();
       showToast(`${version.name} restored`);
     },
     [
       designSnapshotRef,
-      history,
+      runHistoryTransaction,
       setDesignSnapshot,
       showToast,
       updateSelection,

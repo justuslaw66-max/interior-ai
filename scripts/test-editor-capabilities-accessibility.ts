@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
@@ -58,6 +58,9 @@ assert.equal(
 
 for (const relativePath of [
   "components/editor/EditorCommandBar.tsx",
+  ...readdirSync(join(process.cwd(), "components/editor/command-bar"))
+    .filter((name) => name.endsWith(".tsx"))
+    .map((name) => `components/editor/command-bar/${name}`),
   "components/editor/design-page/DesignPageWorkspace.tsx",
   "lib/design-page-dialog-layer-model.ts",
   "lib/useDesignPageExport.ts",
@@ -288,14 +291,14 @@ assert.match(
   "the fixed dialog layer must coordinate one nested parent/child ownership state"
 );
 
-const persistence = read("lib/useDesignPagePersistence.ts");
+const shareLink = read("lib/useDesignPageShareLink.ts");
 assert.match(
-  persistence,
+  shareLink,
   /setShareLinkFallback\(\{ designId, url: shareUrl \}\)/,
   "clipboard-failure fallback state must remain bound to the design that created the share URL"
 );
 assert.match(
-  persistence,
+  shareLink,
   /current\?\.designId === designId \? current : null/,
   "a project identity change must retire stale fallback state"
 );

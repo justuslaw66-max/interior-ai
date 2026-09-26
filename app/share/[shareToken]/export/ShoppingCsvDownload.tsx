@@ -14,7 +14,7 @@ function escapeCsvCell(value: string | number | boolean | null) {
 
 function buildCsv(rows: ShoppingCsvRow[]) {
   const roomSubtotals = rows.reduce<Record<string, number>>((acc, row) => {
-    acc[row.roomName] = (acc[row.roomName] ?? 0) + row.lineTotalUsd;
+    acc[row.roomName] = (acc[row.roomName] ?? 0) + row.lineTotalSgd;
     return acc;
   }, {});
   const headers = [
@@ -30,9 +30,9 @@ function buildCsv(rows: ShoppingCsvRow[]) {
     "Source",
     "Retailer URL",
     "Include in checkout",
-    "Unit price USD",
-    "Line total USD",
-    "Room subtotal USD",
+    "Unit price SGD",
+    "Line total SGD",
+    "Room subtotal SGD",
     "Review note",
   ];
   const body = rows.map((row) => [
@@ -48,9 +48,9 @@ function buildCsv(rows: ShoppingCsvRow[]) {
     row.source,
     row.retailerUrl,
     row.includeInCheckout ? "Yes" : "No",
-    row.unitPriceUsd.toFixed(2),
-    row.lineTotalUsd.toFixed(2),
-    (roomSubtotals[row.roomName] ?? row.lineTotalUsd).toFixed(2),
+    row.unitPriceSgd.toFixed(2),
+    row.lineTotalSgd.toFixed(2),
+    (roomSubtotals[row.roomName] ?? row.lineTotalSgd).toFixed(2),
     row.reviewNote,
   ]);
 

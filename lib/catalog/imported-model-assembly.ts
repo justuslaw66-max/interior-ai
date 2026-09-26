@@ -110,7 +110,7 @@ export type ImportedModelCatalog = {
   media_presentation?: string;
   category?: string;
   subCategory?: string;
-  priceUsd?: number;
+  priceSgd?: number;
   priceBand?: string;
   seatCapacity?: number;
   sizeClass?: string;
@@ -420,7 +420,7 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
       productName: "Dawson Storage Ottoman",
       productFamily: "Dawson",
       variant: "Standard",
-      priceUsd: 649,
+      priceSgd: 649,
       priceBand: "mid",
       featureFlags: {
         is_configurable: true,
@@ -738,7 +738,7 @@ function buildFallbackCatalogOptions(): ImportedModelOption[] {
       productName: "Ollie Storage Ottoman",
       productFamily: "Ollie",
       variant: "Standard",
-      priceUsd: 499,
+      priceSgd: 499,
       priceBand: "mid",
       featureFlags: {
         is_configurable: true,
@@ -911,7 +911,7 @@ export function shouldRefreshImportedCatalogItem(
   existing: CatalogItemSchema | undefined,
   option: ImportedModelOption,
 ): boolean {
-  const expectedPriceHint = Number(option.catalog?.priceUsd ?? 0);
+  const expectedPriceHint = Number(option.catalog?.priceSgd ?? 0);
   const existingPriceHint =
     existing?.commerce.type === "affiliate" ? Number(existing.commerce.data.priceHint ?? 0) : 0;
   const existingVariantPipelineRevision = String(existing?.metadata?.importedVariantPipelineRevision ?? "");
@@ -1159,15 +1159,11 @@ export function buildImportedCatalogItem({
     : sizeMatchedYamlVariants.length > 0
       ? sizeMatchedYamlVariants
       : yamlVariants;
-  const firstYamlVariant = (yamlPreferredVariants[0] ?? null) as
-    | { price_usd?: number; priceUsd?: number }
-    | null;
-  const resolvedPriceUsd = Number(
-    yamlCatalog?.priceUsd ?? firstYamlVariant?.priceUsd ?? firstYamlVariant?.price_usd ?? 0,
-  );
+  const firstYamlVariant = (yamlPreferredVariants[0] ?? null) as { price_sgd?: number } | null;
+  const resolvedPriceSgd = Number(yamlCatalog?.priceSgd ?? firstYamlVariant?.price_sgd ?? 0);
   const fallbackPriceHint = template.commerce.type === "affiliate" ? (template.commerce.data.priceHint ?? 0) : 0;
   const importedPriceHint =
-    Number.isFinite(resolvedPriceUsd) && resolvedPriceUsd > 0 ? resolvedPriceUsd : fallbackPriceHint;
+    Number.isFinite(resolvedPriceSgd) && resolvedPriceSgd > 0 ? resolvedPriceSgd : fallbackPriceHint;
   const importedSourceUrl = resolveImportedSourceUrl(yamlCatalog);
   const importedRetailer =
     String(yamlCatalog?.retailer ?? "").trim() ||
@@ -1268,7 +1264,7 @@ export function buildImportedCatalogItem({
       designEra: yamlCatalog?.designEra,
       colorFamily: yamlCatalog?.colorFamily,
       tone: yamlCatalog?.tone,
-      priceUsd: yamlCatalog?.priceUsd,
+      priceSgd: yamlCatalog?.priceSgd,
       priceBand: yamlCatalog?.priceBand,
       seatCapacity: yamlCatalog?.seatCapacity,
       materialFamily: yamlCatalog?.materialFamily,

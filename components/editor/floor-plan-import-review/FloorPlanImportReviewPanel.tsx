@@ -1,5 +1,8 @@
 "use client";
 
+import { createImportReviewMutationMetadata,importReviewSummary,photoReviewRequired } from "./import-review-summary";
+
+
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
@@ -16,6 +19,7 @@ import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanPropertyEvidenceControl from "../FloorPlanPropertyEvidenceControl";
 import FloorPlanOptionalConfigurationPanel from "../FloorPlanOptionalConfigurationPanel";
 import FloorPlanVisualReviewTools from "./FloorPlanVisualReviewTools";
+import { FloorPlanIssueFocusButton } from "./FloorPlanIssueFocusButton";
 
 type FloorPlanImportReviewPanelProps = {
   candidate: FloorPlanDocumentV2;
@@ -104,20 +108,6 @@ function issuePrerequisite(
   return null;
 }
 
-function createImportReviewMutationMetadata(
-  floorId: string,
-  property: string,
-  note: string
-) {
-  const timestamp = Date.now().toString(36);
-  return {
-    mutationId: `import-review:${floorId}:${property}:${timestamp}`,
-    nextRevisionId: `import-review-revision:${timestamp}:${property}`,
-    actorId: "consumer-import-review",
-    mutatedAt: new Date().toISOString(),
-    note,
-  };
-}
 
 export default function FloorPlanImportReviewPanel({
   candidate,
@@ -159,7 +149,8 @@ export default function FloorPlanImportReviewPanel({
   const needsManualRecovery =
     Boolean(cannotFinishReason) ||
     blockingPrerequisites.length > 0 ||
-    needsDetectionRetry;
+    needsDetectionRetry || photoReviewRequired(unresolvedCritical);
+  const summary=importReviewSummary({needsRoomRecovery,needsScaleRecovery,unresolvedCritical,photo:floor.calibrations.some(c=>Boolean(c.photoCorrection))});
   const focusedIssueEntityIds =
     issues.find((issue) => issue.id === focusedIssueId)?.entityIds ?? [];
 
@@ -343,20 +334,10 @@ export default function FloorPlanImportReviewPanel({
             AI floor-plan check
           </div>
           <h3 className="mt-1 text-xl font-semibold">
-            {needsRoomRecovery
-              ? "AI needs a clearer wall outline"
-              : needsScaleRecovery
-                ? "Set scale"
-                : unresolvedCritical.length
-                  ? "Check your floor plan"
-                  : "Your floor plan is ready for a final check"}
+            {summary.title}
           </h3>
           <p className={`mt-1 max-w-3xl text-sm leading-6 ${subtle}`}>
-            {needsRoomRecovery
-              ? "The drawing is visible, but the AI could not safely close the room walls. Nothing has been created or added to your current design."
-              : needsScaleRecovery
-                ? "The rooms are visible, but the AI needs one printed measurement to make your floor plan the right size."
-                : "AI read your floor plan. Check the preview once, then continue to create a separate editable 2D and 3D design."}
+            {summary.description}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -407,7 +388,7 @@ export default function FloorPlanImportReviewPanel({
           </div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             {needsRoomRecovery
-              ? "Use the original PDF or a clean image without browser controls, furniture labels, or another editor drawn over it. AI will retry automatically."
+              ? "Check the scale and visible wall outlines. You can save an incomplete draft, retry detection, or choose another source. Manually traced rooms remain consumer-authored corrections."
               : blockingPrerequisites[0] ??
                 "Open the correction tools and adjust the highlighted part of the plan."}
           </p>
@@ -441,7 +422,7 @@ export default function FloorPlanImportReviewPanel({
                 disabled={disabled || submitting}
                 onClick={onChooseFile}
               >
-                Upload a clearer file
+                Choose another file
               </button>
             ) : null}
             <button
@@ -450,7 +431,7 @@ export default function FloorPlanImportReviewPanel({
               disabled={disabled || submitting}
               onClick={openManualTools}
             >
-              Help AI finish this one
+              Review scale and wall outlines
             </button>
           </div>
         </div>
@@ -460,6 +441,7 @@ export default function FloorPlanImportReviewPanel({
         document={candidate}
         job={job}
         focusedIssueEntityIds={focusedIssueEntityIds}
+        focusedIssue={issues.find((issue) => issue.id === focusedIssueId)}
         onChange={(next) => setCandidate(next)}
         consumerMode proMode={proMode}
         manualToolsOpen={manualToolsOpen}
@@ -718,24 +700,8 @@ export default function FloorPlanImportReviewPanel({
                       />
                     </label>
                   ) : null}
-                  {issue.entityIds?.length ? (
-                    <button
-                      type="button"
-                      className="mt-1 text-[10px] font-semibold text-blue-600"
-                      aria-pressed={focusedIssueId === issue.id}
-                      onClick={() =>
-                        setFocusedIssueId((current) =>
-                          current === issue.id ? null : issue.id
-                        )
-                      }
-                    >
-                      {focusedIssueId === issue.id
-                        ? "Clear highlight"
-                        : `Show ${issue.entityIds.length} affected item${
-                            issue.entityIds.length === 1 ? "" : "s"
-                          }`}
-                    </button>
-                  ) : null}
+                  <FloorPlanIssueFocusButton issue={issue} document={candidate} pages={job.renderedPagesJson}
+                    focusedIssueId={focusedIssueId} setFocusedIssueId={setFocusedIssueId} />
                 </div>
               </div>
             );

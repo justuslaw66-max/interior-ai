@@ -90,7 +90,7 @@ export function DesignPagePanelRegion({
       {state.shopping ? (
         <div
           data-testid="shopping-dock"
-          className={`absolute bottom-3 left-3 right-3 top-auto z-20 w-auto max-h-[64vh] space-y-3 overflow-y-auto pb-[calc(0.75rem+env(safe-area-inset-bottom))] pr-1 transition-opacity duration-300 md:bottom-auto md:right-auto md:top-15 md:w-[18.15rem] md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
+          className={`absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 top-auto z-20 w-auto max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] space-y-3 overflow-y-auto pb-3 pr-1 transition-opacity duration-300 md:bottom-auto md:right-auto md:top-15 md:w-[18.15rem] md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
             isDesigner ? "md:left-20" : "md:left-4"
           } ${
             isClientPreview

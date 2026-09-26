@@ -7,7 +7,7 @@ product_name: "Hugg Nesting Square Coffee Table"
 slug: "castlery-hugg-nesting-square-coffee-table-performance-dune-closed"
 variant: "Performance Dune Closed"
 
-price_usd: 1099
+price_sgd: 1099
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -411,7 +411,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564013/crusader/variants/AS-000635-AR4001-NA/Hugg-Square-Coffee-Table-Natural-Performance-Dune_-Front-1729564011.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -444,7 +444,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564332/crusader/variants/AS-000635-AR4001-CT/Hugg-Square-Coffee-Table-Chestnut-Performance-Dune_-Front-1729564330.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -477,7 +477,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729564820/crusader/variants/AS-000635-AR4001-BLK/Hugg-Square-Coffee-Table-Black-Performance-Dune-Front-1729564818.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
-    price_usd: 1099
+    price_sgd: 1099
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

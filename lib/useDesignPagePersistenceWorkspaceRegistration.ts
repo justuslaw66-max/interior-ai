@@ -7,7 +7,9 @@ import {
   replaceDesignIdInRouteIdentity,
   type ConflictCopyRouteSnapshot,
 } from "@/lib/design-page-cloud-conflict-copy-transition";
+import { shouldConfirmPlanTemplateReplacement } from "@/lib/design-page-template-furnishings";
 import { useDesignPagePersistenceRegistration } from "@/lib/useDesignPagePersistenceRegistration";
+import { useDesignPageStartChooser, type UseDesignPageStartChooserInput } from "@/lib/useDesignPageStartChooser";
 
 export type UseDesignPagePersistenceWorkspaceRegistrationInput = {
   boundaries: {
@@ -69,6 +71,45 @@ const conflictCopyRouteActions = {
   replaceDesignRoute: replaceBrowserDesignRoute,
   restoreDesignRoute: restoreBrowserDesignRoute,
 };
+
+type PersistenceRegistration = ReturnType<typeof useDesignPagePersistenceRegistration>;
+
+/** New design opens Start a new design; Plan's template list stays behind "Search by HDB address". */
+function buildStartChooserInput(
+  { coreShell, documentSelection, planAuthoring }: UseDesignPagePersistenceWorkspaceRegistrationInput["boundaries"],
+  persistence: PersistenceRegistration
+): UseDesignPageStartChooserInput {
+  const { base, viewportShell } = coreShell.boundaries;
+  const { snapshotDocument } = documentSelection.boundaries;
+  const underlay = planAuthoring.boundaries.underlay;
+  const goPlan = () => {
+    viewportShell.actions.panels.goPlan();
+    base.actions.editor.setViewMode("2d");
+  };
+  return {
+    state: {
+      isAuthenticated: Boolean(base.state.identity.session?.user),
+      localBackupHydrated: snapshotDocument.state.localBackupHydrated,
+      canEdit: coreShell.derived.access.canEdit,
+      designIsEmpty: !shouldConfirmPlanTemplateReplacement(
+        snapshotDocument.state.designSnapshot,
+        viewportShell.state.plan.planOpenings
+      ),
+    },
+    actions: {
+      applyPlanTemplate: underlay.actions.applyPlanTemplate,
+      requirePlanChoiceForNextTemplate: underlay.actions.requirePlanChoiceForNextTemplate,
+      openTemplatePicker: () => {
+        viewportShell.actions.editor.setGuidedPlanStartMode("template");
+        goPlan();
+      },
+      openNewDesignTemplatePicker: persistence.actions.newPlan.openNewPlanPicker,
+      closeMyDesigns: persistence.actions.persistence.closeMyDesigns,
+      goPlan,
+      drawRoom: documentSelection.actions.betaStart.startDrawRoom,
+    },
+  };
+}
 
 /**
  * Adapts the established shell, document, and authoring contracts to the
@@ -137,22 +178,22 @@ export function useDesignPagePersistenceWorkspaceRegistration({
       clearPlanAnnotations: () =>
         viewportShell.actions.plan.setPlanAnnotations([]),
     },
-    refs: {
-      localBackupPersistenceActions:
-        coreShell.refs.localBackupPersistenceActionsRef,
-    },
+    refs: { localBackupPersistenceActions: coreShell.refs.localBackupPersistenceActionsRef },
   });
+  const startChooser = useDesignPageStartChooser(
+    buildStartChooserInput({ coreShell, documentSelection, planAuthoring }, persistence)
+  );
 
   return {
     boundaries: { coreShell, documentSelection, planAuthoring, persistence },
-    state: persistence.state,
+    state: { ...persistence.state, startChooser: startChooser.chooserProps },
     derived: {},
     configuration: {},
-    refs: {
-      localBackupPersistenceActions:
-        coreShell.refs.localBackupPersistenceActionsRef,
+    refs: { localBackupPersistenceActions: coreShell.refs.localBackupPersistenceActionsRef },
+    actions: {
+      ...persistence.actions,
+      newPlan: { ...persistence.actions.newPlan, openNewPlanPicker: startChooser.openAsNewDesign },
     },
-    actions: persistence.actions,
   };
 }
 

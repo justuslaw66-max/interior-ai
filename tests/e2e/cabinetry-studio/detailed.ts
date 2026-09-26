@@ -12,24 +12,25 @@ export function registerDetailedTests() {
       await page.goto("/design?mode=designer");
 
       const commandBar = page.getByTestId("editor-command-bar");
-      const workspaceTrigger = commandBar.getByTestId("editor-command-workspace");
-      await expect(workspaceTrigger).toBeVisible({ timeout: 30000 });
+      const steps = commandBar.getByTestId("editor-design-steps");
+      const furnishStep = commandBar.getByTestId("editor-workflow-furnish");
+      await expect(furnishStep).toBeVisible({ timeout: 30000 });
       await dismissBlockingPrompt(page);
-      await workspaceTrigger.click();
-      const workflow = commandBar.getByTestId("editor-command-workspace-menu");
-      const openStudio = commandBar.getByTestId("open-custom-millwork-studio");
+      await expect(steps.locator("button")).toHaveCount(3);
+      await expect(steps.locator("button").nth(0)).toHaveAttribute("data-testid", "editor-workflow-plan");
+      await expect(steps.locator("button").nth(1)).toHaveAttribute("data-testid", "editor-workflow-furnish");
+      await expect(steps.locator("button").nth(2)).toHaveAttribute("data-testid", "editor-workflow-shop");
+      await expect(commandBar.getByTestId("open-custom-millwork-studio")).toHaveCount(0);
+      await furnishStep.click();
+      // Built-ins opens from inside the Furnish step.
+      const openStudio = page.getByTestId("design-controls-panel").getByTestId("open-custom-millwork-studio");
       await expect(openStudio).toBeVisible();
       await expect(openStudio).toContainText("Built-ins");
       await expect(page.getByTestId("open-custom-millwork-studio")).toHaveCount(1);
-      await expect(page.getByTestId("design-controls-panel").getByTestId("open-custom-millwork-studio")).toHaveCount(0);
-      await expect(workflow.locator("button")).toHaveCount(6);
-      await expect(workflow.locator("button").nth(0)).toHaveAttribute("data-testid", "editor-workflow-plan");
-      await expect(workflow.locator("button").nth(1)).toHaveAttribute("data-testid", "editor-workflow-millwork");
-      await expect(workflow.locator("button").nth(2)).toHaveAttribute("data-testid", "editor-workflow-furnish");
       await openStudio.click();
 
       await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
-      await expect(page.getByTestId("editor-workflow-millwork")).toHaveAttribute("data-active", "true");
+      await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
       await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
       await expect(page.getByRole("heading", { name: "Built-ins", exact: true })).toBeVisible();
       await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-experience", "guided");

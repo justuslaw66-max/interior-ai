@@ -1,3 +1,8 @@
+import type { SourceScaleSolution } from "./scale-diagnostics";
+import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
+import { dimensionCandidateMatchesHint, dimensionHintDistance, outvoteOutliers, rasterDimensionCandidates } from "./dimension-span-candidates";
+import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
+import type { RasterOpeningSpanEvidence } from "./raster-opening-spans";
 export type SourcePointPx = { x: number; y: number };
 
 export type SourceVectorSegment = {
@@ -70,8 +75,12 @@ export type SourceTextEvidence = {
   center: SourcePointPx;
   widthPx: number;
   heightPx: number;
+  rotationDegrees?: number;
+  reviewRequired?: boolean;
   evidenceKind?: "positioned_text" | "ocr";
 };
+
+export type SemanticEvidenceKind = "positioned_text" | "ocr" | "vision" | "vectorizer";
 
 export type SemanticRoomLabel = {
   label: string;
@@ -90,7 +99,7 @@ export type SemanticRoomLabel = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticDimensionLabel = {
@@ -102,8 +111,11 @@ export type SemanticDimensionLabel = {
   bbox?: SemanticBoundingBox;
   extensionStart?: SemanticRatioPoint;
   extensionEnd?: SemanticRatioPoint;
+  extensionEvidenceKind?: SemanticEvidenceKind;
+  unpaired?: boolean; // read but not paired with two stops: the extension is a search hint; may support a scale, never veto one
+  setAside?: string; // why the scale solver left this label out; the label stays a printed-dimension proposal for review
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticOpeningSymbol = {
@@ -115,13 +127,10 @@ export type SemanticOpeningSymbol = {
   spanStart?: SemanticRatioPoint;
   spanEnd?: SemanticRatioPoint;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
-/**
- * A source-drawing symbol that helps classify an otherwise unlabeled room.
- * Fixture observations never become walls, openings, or placeable furniture.
- */
+/** Source fixture observations may suggest room meaning, never building geometry. */
 export type SemanticFixtureSymbol = {
   kind:
     | "toilet"
@@ -137,20 +146,16 @@ export type SemanticFixtureSymbol = {
   centerYRatio: number;
   bbox?: SemanticBoundingBox;
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
-/**
- * Approximate semantic proposal only. These points are never canonical
- * geometry until every edge is independently snapped to deterministic source
- * linework and the complete room set passes the topology gates.
- */
+/** Approximate proposals require independent source-edge registration and complete topology validation. */
 export type SemanticRoomBoundary = {
   label: string;
   roomType: SemanticRoomLabel["roomType"];
   points: SemanticRatioPoint[];
   confidence: number;
-  evidenceKind?: "positioned_text" | "ocr" | "vision";
+  evidenceKind?: SemanticEvidenceKind;
 };
 
 export type SemanticRatioPoint = {
@@ -158,67 +163,42 @@ export type SemanticRatioPoint = {
   yRatio: number;
 };
 
-export type SemanticBoundingBox = {
-  leftRatio: number;
-  topRatio: number;
-  rightRatio: number;
-  bottomRatio: number;
-};
+export type SemanticBoundingBox = { leftRatio: number; topRatio: number; rightRatio: number; bottomRatio: number };
 
 export type PageSemanticEvidence = {
-  planRegion?: {
-    bbox: SemanticBoundingBox;
-    rotationDegrees: number;
-    confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision";
-  } | null;
+  planRegion?: { bbox: SemanticBoundingBox; rotationDegrees: number; confidence: number; evidenceKind?: SemanticEvidenceKind } | null;
   unitSystem?: "metric_mm" | "metric_cm" | "imperial" | "unknown";
   roomLabels: SemanticRoomLabel[];
   roomBoundaries?: SemanticRoomBoundary[];
   dimensionLabels: SemanticDimensionLabel[];
   openingSymbols: SemanticOpeningSymbol[];
   fixtureSymbols?: SemanticFixtureSymbol[];
-  entrance?: {
-    centerXRatio: number;
-    centerYRatio: number;
-    confidence: number;
-    evidenceKind?: "positioned_text" | "ocr" | "vision";
-  } | null;
+  entrance?: { centerXRatio: number; centerYRatio: number; confidence: number; evidenceKind?: SemanticEvidenceKind } | null;
   notes: string[];
 };
 
 export type RegisteredPageEvidence = {
-  pageNumber: number;
-  widthPx: number;
-  heightPx: number;
+  sourceArtwork?: import("./source-artwork-trace").SourceArtworkTrace;
+  /** Inverse correction keeps acceptance tolerances in original pixels. */
+  originalPixelMapping?: import("../floor-plan-photo-math").PhotoMatrix;
+  pageNumber: number; widthPx: number; heightPx: number;
+  rasterRegions?: SourcePointPx[][];
   vectorSegments: SourceVectorSegment[];
   vectorPaths: SourceVectorPath[];
   text: SourceTextEvidence[];
   semantics: PageSemanticEvidence;
+  /** Spans, wall edges and rooms reported by the local vectorizer; evidence, not accepted geometry. */
+  vectorizer?: import("./vectorizer-evidence").RegisteredVectorizerEvidence;
+  dimensionSpanEvidence?: RasterDimensionSpanEvidence;
+  openingSpanEvidence?: RasterOpeningSpanEvidence;
 };
+export type { SourceScaleSolution } from "./scale-diagnostics";
 
-export type SourceScaleSolution = {
-  millimetresPerPixel: number;
-  dimensionCount: number;
-  rmsResidualMm: number;
-  confidence: number;
-  evidence: Array<{
-    valueMm: number;
-    observedLengthPx: number;
-    residualMm: number;
-    segmentId: string;
-    start: SourcePointPx;
-    end: SourcePointPx;
-  }>;
-  diagnostics?: {
-    eligibleDimensionCount: number;
-    singleSegmentCandidateCount: number;
-    compoundSpanCandidateCount: number;
-    rejectedMissingEndpoints: number;
-    rejectedUnsupportedSpan: number;
-    rejectedResidualClusters: number;
-  };
-};
+export type RoomBoundaryRegistrationKind =
+  | "closed_source_path" | "assembled_wall_topology" | "vision_guided_source_snap" | "vectorizer_wall_topology";
+export type RegisteredOpeningProof =
+  | "swing_arc_and_leaf" | "sliding_staggered_panels" | "folding_connected_leaves"
+  | "paired_fixed_frame_lines" | "vectorizer_drawn_symbol";
 
 export type RegisteredRoomBoundary = {
   key: string;
@@ -233,10 +213,7 @@ export type RegisteredRoomBoundary = {
   sourceLabels?: SemanticRoomLabel[];
   /** Non-architectural symbols used only to infer room meaning. */
   sourceFixtures?: SemanticFixtureSymbol[];
-  registrationKind?:
-    | "closed_source_path"
-    | "assembled_wall_topology"
-    | "vision_guided_source_snap";
+  registrationKind?: RoomBoundaryRegistrationKind;
   sourceEdges?: Array<{
     evidenceId: string;
     kind: "wall_centerline" | "supported_opening_span";
@@ -245,19 +222,19 @@ export type RegisteredRoomBoundary = {
     sourceSegmentIds: string[];
     opening?: {
       id: string;
-      kind: "door" | "window";
-      operation: "swing" | "sliding" | "folding" | "fixed";
-      proof:
-        | "swing_arc_and_leaf"
-        | "sliding_staggered_panels"
-        | "folding_connected_leaves"
-        | "paired_fixed_frame_lines";
+      kind: "door" | "window" | "open_passage";
+      operation: "swing" | "sliding" | "folding" | "fixed" | "open";
+      proof: RegisteredOpeningProof;
       widthMm: number;
       confidence: number;
       supportPathIds: string[];
       supportSubpathIds: string[];
       supportSegmentIds: string[];
       supportCurveIds: string[];
+      /** Swing doors measured on the drawing: the hinge, and a point on the side the leaf swings to. */
+      hingeSourcePx?: SourcePointPx;
+      swingTowardSourcePx?: SourcePointPx;
+      double?: boolean;
     };
   }>;
 };
@@ -267,6 +244,9 @@ export type RegisteredRoomRect = RegisteredRoomBoundary;
 
 const SEMANTIC_EVIDENCE_PRIOR = {
   positioned_text: 0.98,
+  // Local vectorizer: numbers cross-checked against their dimension chains, symbols measured on the
+  // drawing. A ceiling, not a replacement: an item's own lower confidence is kept (registerVectorizerEvidence).
+  vectorizer: 0.85,
   ocr: 0.72,
   vision: 0.55,
 } as const;
@@ -356,10 +336,6 @@ function midpoint(segment: SourceVectorSegment): SourcePointPx {
   };
 }
 
-function pointDistance(left: SourcePointPx, right: SourcePointPx) {
-  return Math.hypot(left.x - right.x, left.y - right.y);
-}
-
 function median(values: number[]) {
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);
@@ -423,18 +399,6 @@ export function parsePrintedLengthMm(text: string): number | null {
   }
   return null;
 }
-
-type DimensionCandidate = {
-  dimensionIndex: number;
-  valueMm: number;
-  observedLengthPx: number;
-  ratio: number;
-  distancePx: number;
-  segmentId: string;
-  start: SourcePointPx;
-  end: SourcePointPx;
-  kind: "single_segment" | "compound_span";
-};
 
 function segmentOrientation(segment: SourceVectorSegment) {
   return Math.abs(segment.end.x - segment.start.x) >=
@@ -709,26 +673,27 @@ function textGapDimensionCandidates(
  * Semantic positions select nearby vector dimension lines; final scale comes
  * from the vector length and printed integer value, never a model coordinate.
  */
-export function solveScaleFromRegisteredEvidence(
-  page: RegisteredPageEvidence
-): SourceScaleSolution | null {
+export const solveScaleFromRegisteredEvidence = (page: RegisteredPageEvidence): SourceScaleSolution | null => inspectScaleFromRegisteredEvidence(page).solution;
+
+export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence, setAside: ReadonlySet<number> = new Set()): SourceScaleInspection {
   const dimensions = page.semantics.dimensionLabels.filter(
-    (dimension) =>
-      Number.isSafeInteger(dimension.valueMm) &&
+    (dimension, labelIndex) =>
+      !setAside.has(labelIndex) && Number.isSafeInteger(dimension.valueMm) &&
       dimension.valueMm >= 100 &&
       dimension.valueMm <= 100_000 &&
       dimension.confidence >= 0.45
   );
-  if (dimensions.length < 2 || page.vectorSegments.length === 0) return null;
+  if (dimensions.length < 2 || page.vectorSegments.length === 0) return scaleInspection(dimensions, [], "insufficient_evidence");
 
   const pageDiagonal = Math.hypot(page.widthPx, page.heightPx);
   const candidates: DimensionCandidate[] = dimensions.flatMap(
-    (dimension, dimensionIndex) => [
+    (dimension, dimensionIndex) => rasterDimensionCandidates(page, dimension, dimensionIndex) ?? [
       ...compoundDimensionCandidates(page, dimension, dimensionIndex),
       ...textGapDimensionCandidates(page, dimension, dimensionIndex),
-    ]
+    ].filter((candidate) => dimensionCandidateMatchesHint(page, dimension, candidate))
   );
   dimensions.forEach((dimension, dimensionIndex) => {
+    if (rasterDimensionCandidates(page, dimension, dimensionIndex) !== null) return;
     const center = {
       x: dimension.centerXRatio * page.widthPx,
       y: dimension.centerYRatio * page.heightPx,
@@ -740,39 +705,7 @@ export function solveScaleFromRegisteredEvidence(
         const orientation = dx >= dy ? "horizontal" : "vertical";
         const lengthPx = segmentLengthPx(segment);
         const lineCenter = midpoint(segment);
-        const extensionDistance =
-          dimension.extensionStart && dimension.extensionEnd
-            ? Math.min(
-                pointDistance(
-                  segment.start,
-                  {
-                    x: dimension.extensionStart.xRatio * page.widthPx,
-                    y: dimension.extensionStart.yRatio * page.heightPx,
-                  }
-                ) +
-                  pointDistance(
-                    segment.end,
-                    {
-                      x: dimension.extensionEnd.xRatio * page.widthPx,
-                      y: dimension.extensionEnd.yRatio * page.heightPx,
-                    }
-                  ),
-                pointDistance(
-                  segment.end,
-                  {
-                    x: dimension.extensionStart.xRatio * page.widthPx,
-                    y: dimension.extensionStart.yRatio * page.heightPx,
-                  }
-                ) +
-                  pointDistance(
-                    segment.start,
-                    {
-                      x: dimension.extensionEnd.xRatio * page.widthPx,
-                      y: dimension.extensionEnd.yRatio * page.heightPx,
-                    }
-                  )
-              ) / 2
-            : null;
+        const extensionDistance = dimensionHintDistance(page, dimension, segment.start, segment.end);
         return {
           segment,
           orientation,
@@ -787,6 +720,7 @@ export function solveScaleFromRegisteredEvidence(
         };
       })
       .filter((entry) => {
+        if (!dimensionCandidateMatchesHint(page, dimension, entry.segment)) return false;
         if (entry.lengthPx < pageDiagonal * 0.025) return false;
         if (entry.distancePx > pageDiagonal * 0.16) return false;
         return (
@@ -813,7 +747,7 @@ export function solveScaleFromRegisteredEvidence(
       });
     }
   });
-  if (candidates.length < 2) return null;
+  if (candidates.length < 2) return scaleInspection(dimensions, candidates, "insufficient_evidence");
 
   const clusters: Array<{
     candidates: DimensionCandidate[];
@@ -836,9 +770,9 @@ export function solveScaleFromRegisteredEvidence(
     // Printed dimensions are local annotations. Dense plans often repeat the
     // same lengths elsewhere, so distant ratio matches may support an already
     // local solution but can never establish one by themselves.
-    const anchored = cluster.filter(
+    const anchored = outvoteOutliers(cluster.filter(
       (candidate) => candidate.distancePx <= localAnchorRadiusPx
-    );
+    ));
     if (anchored.length < 2) continue;
     const distance = anchored.reduce(
       (sum, candidate) => sum + candidate.distancePx,
@@ -904,7 +838,7 @@ export function solveScaleFromRegisteredEvidence(
       left.distancePx - right.distancePx
   );
   const best = clusters[0];
-  if (!best) return null;
+  if (!best) return scaleInspection(dimensions, candidates, "no_supported_cluster");
   const bestMeanDistancePx = best.distancePx / best.candidates.length;
   // A competing scale must have comparable independent support and be locally
   // anchored to its labels. Repeated lengths elsewhere in a dense plan are
@@ -927,9 +861,9 @@ export function solveScaleFromRegisteredEvidence(
       }
     )
   ) {
-    return null;
+    return scaleInspection(dimensions, candidates, "competing_clusters", null, clusters);
   }
-  return {
+  return scaleInspection(dimensions, candidates, "supported_cluster", {
     millimetresPerPixel: best.millimetresPerPixel,
     dimensionCount: best.candidates.length,
     rmsResidualMm: best.rmsResidualMm,
@@ -941,31 +875,7 @@ export function solveScaleFromRegisteredEvidence(
       )
     ),
     evidence: best.evidence,
-    diagnostics: {
-      eligibleDimensionCount: dimensions.length,
-      singleSegmentCandidateCount: candidates.filter(
-        (candidate) => candidate.kind === "single_segment"
-      ).length,
-      compoundSpanCandidateCount: candidates.filter(
-        (candidate) => candidate.kind === "compound_span"
-      ).length,
-      rejectedMissingEndpoints: dimensions.filter(
-        (dimension) =>
-          !dimension.extensionStart || !dimension.extensionEnd
-      ).length,
-      rejectedUnsupportedSpan: dimensions.filter(
-        (dimension, dimensionIndex) =>
-          dimension.extensionStart &&
-          dimension.extensionEnd &&
-          !candidates.some(
-            (candidate) =>
-              candidate.dimensionIndex === dimensionIndex &&
-              candidate.kind === "compound_span"
-          )
-      ).length,
-      rejectedResidualClusters: Math.max(0, candidates.length - best.candidates.length),
-    },
-  };
+  }, clusters);
 }
 
 function containsPoint(

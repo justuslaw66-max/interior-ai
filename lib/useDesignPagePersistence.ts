@@ -12,9 +12,8 @@ import {
 import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
+import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
-import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
-import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
@@ -43,6 +42,7 @@ import {
   useDesignPagePreserveCloudSave,
 } from "@/lib/useDesignPageExplicitCloudSaveController";
 import { useGuestSavePromptController } from "@/lib/useGuestSavePromptController";
+import { useDesignPageShareLink } from "@/lib/useDesignPageShareLink";
 
 export { sanitizeDesignPageSavedViews };
 export type { DesignPageCloudSaveConflictState };
@@ -98,7 +98,7 @@ type DesignPagePersistenceActions = ConflictCopyRouteActions & {
   setDesignId: Dispatch<SetStateAction<string | null>>;
   setShareToken: Dispatch<SetStateAction<string | null>>;
   setShareEnabled: Dispatch<SetStateAction<boolean>>;
-  setDesignSnapshot: (snapshot: DesignSnapshot) => void;
+  setDesignSnapshot: (next: DesignSnapshot | ((previous: DesignSnapshot) => DesignSnapshot)) => void;
   hydratePersistedFloorPlanState: (
     snapshot: DesignSnapshot,
     clearWhenMissing?: boolean
@@ -153,13 +153,10 @@ export function useDesignPagePersistence({
   },
   actions: {
     readDesignRoute, replaceDesignRoute, restoreDesignRoute, setDesignId,
-    setShareToken,
-    setShareEnabled,
-    setDesignSnapshot,
+    setShareToken, setShareEnabled, setDesignSnapshot,
     hydratePersistedFloorPlanState,
     clearHistory,
-    setMode,
-    setNotes,
+    setMode, setNotes,
     setSavedViews,
     setStyle,
     setBudget,
@@ -181,11 +178,9 @@ export function useDesignPagePersistence({
   const [cloudSaveConflict, setCloudSaveConflict] =
     useState<DesignPageCloudSaveConflictState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [sharingDesign, setSharingDesign] = useState(false);
-  const [shareSuccessToast, setShareSuccessToast] = useState(false);
-  const [shareErrorToast, setShareErrorToast] = useState<string | null>(null);
-  const [shareLinkFallback, setShareLinkFallback] =
-    useState<{ designId: string; url: string } | null>(null);
+  const { state: shareLinkState, actions: shareLinkActions } =
+    useDesignPageShareLink({ designId, setShareToken, setShareEnabled });
+  const { resetShareLink } = shareLinkActions;
   const [showMyDesigns, setShowMyDesigns] = useState(false);
   const [myDesigns, setMyDesigns] = useState<SavedDesignSummary[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
@@ -390,12 +385,11 @@ export function useDesignPagePersistence({
     setLastLocalAutosaveAt(null);
     setLastLocalSaveError(null);
     setIsSaving(false);
-    setSharingDesign(false);
-    setShareSuccessToast(false);
-    setShareErrorToast(null);
-    setShareLinkFallback(null);
+    resetShareLink();
     setSavedViews([]);
     setNotes("");
+    // The new draft doesn't keep the saved design's name; a template may give it its own.
+    setDesignSnapshot(withoutDesignTitle);
     firstSaveRef.current = false;
     try {
       window.localStorage.removeItem(storageKey);
@@ -406,7 +400,8 @@ export function useDesignPagePersistence({
     cloudWriteQueue,
     designLoadRequest,
     detachCloudBaseline,
-    setDesignId,
+    resetShareLink,
+    setDesignId, setDesignSnapshot,
     setNotes,
     setSavedViews,
     setShareEnabled,
@@ -576,57 +571,6 @@ export function useDesignPagePersistence({
     showRuleToast,
   ]);
 
-  const createShareLinkAndCopy = useCallback(async () => {
-    if (!designId) return;
-    setSharingDesign(true);
-    try {
-      const data = await designApi.share(designId);
-
-      setShareToken(data.shareToken);
-      setShareEnabled(true);
-      const shareUrl = `${window.location.origin}/share/${data.shareToken}`;
-
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareSuccessToast(true);
-        setTimeout(() => setShareSuccessToast(false), EDITOR_FEEDBACK_DURATION_MS.success);
-        track("share_link_copied", {
-          design_id: designId,
-          shared_context: true,
-        });
-      } catch (clipboardError) {
-        console.warn("Clipboard access denied, showing fallback modal:", clipboardError);
-        setShareLinkFallback({ designId, url: shareUrl });
-        track("share_link_created_fallback", {
-          design_id: designId,
-          shared_context: true,
-          error:
-            clipboardError instanceof Error
-              ? clipboardError.name
-              : String(clipboardError),
-        });
-      }
-    } catch (error) {
-      const errorMessage = userFacingErrorMessage(error, "Try again.");
-      setShareErrorToast(`Failed to create share link: ${errorMessage}`);
-      setTimeout(() => setShareErrorToast(null), EDITOR_FEEDBACK_DURATION_MS.error);
-    } finally {
-      setSharingDesign(false);
-    }
-  }, [designId, setShareEnabled, setShareToken]);
-
-  const closeShareLinkFallback = useCallback(() => {
-    setShareLinkFallback(null);
-  }, []);
-
-  const copyFallbackShareLink = useCallback((url: string, signal: AbortSignal) =>
-    copyFallbackShareLinkWithFeedback(url, signal, setShareSuccessToast, setShareErrorToast), []);
-
-  const openFallbackShareLink = useCallback((url: string) => {
-    window.open(url, "_blank");
-    setShareLinkFallback(null);
-  }, []);
-
   const { loadDesign, cancelDesignLoad } = useDesignPageCloudLoadController({
     baseline: cloudBaselineController.actions,
     requestCoordinator: designLoadRequest,
@@ -724,7 +668,7 @@ export function useDesignPagePersistence({
       roomType: "living_room",
       itemsCount: items.length,
       designSnapshot: {
-        title: "My Living Room",
+        title: resolveDesignTitle(designSnapshot.title),
         roomWidth,
         roomDepth,
         items,
@@ -742,7 +686,7 @@ export function useDesignPagePersistence({
       markGuestDesignClaimed("current", data.designId);
     }
   }, [
-    budget,
+    budget, designSnapshot.title,
     getStoredDesignForPersistence,
     isAuthenticated,
     items,
@@ -803,7 +747,6 @@ export function useDesignPagePersistence({
   }, [designId, enableShare, isDesigner, shareEnabled]);
 
   useEffect(() => {
-    setShareLinkFallback((current) => current?.designId === designId ? current : null);
     if (!designId) setIsSaving(false);
   }, [designId]);
 
@@ -879,7 +822,7 @@ export function useDesignPagePersistence({
               savedViews,
               roomWidth,
               roomDepth,
-              snapshot,
+              snapshot, title: resolveDesignTitle(snapshot.title),
               expectedUpdatedAt: binding.revision,
             };
             return () => designApi.update(targetDesignId, payload);
@@ -962,7 +905,7 @@ export function useDesignPagePersistence({
         roomType: "living_room",
         itemsCount: items.length,
         snapshot: {
-          title: "My Living Room",
+          title: resolveDesignTitle(designSnapshot.title),
           roomWidth,
           roomDepth,
           items,
@@ -977,7 +920,7 @@ export function useDesignPagePersistence({
 
     return () => clearTimeout(timer);
   }, [
-    budget,
+    budget, designSnapshot.title,
     designId,
     getStoredDesignForPersistence,
     guestSaveDelayMs,
@@ -1060,10 +1003,7 @@ export function useDesignPagePersistence({
       cloudSaveConflict,
       isSaving,
       saveStatus,
-      sharingDesign,
-      shareSuccessToast,
-      shareErrorToast,
-      shareLinkFallback: shareLinkFallback?.designId === designId ? shareLinkFallback.url : null,
+      ...shareLinkState,
       showMyDesigns,
       myDesigns,
       loadingDesigns,
@@ -1087,10 +1027,10 @@ export function useDesignPagePersistence({
       loadDesign: loadDesignAfterCancellingConflictCopy,
       cancelDesignLoad: cancelDesignTransitions,
       clearPersistedSnapshotFingerprint,
-      createShareLinkAndCopy,
-      closeShareLinkFallback,
-      copyFallbackShareLink,
-      openFallbackShareLink,
+      createShareLinkAndCopy: shareLinkActions.createShareLinkAndCopy, shareDesign: () => shareLinkActions.shareFromCommandBar(saveDesignToCloud),
+      closeShareLinkFallback: shareLinkActions.closeShareLinkFallback,
+      copyFallbackShareLink: shareLinkActions.copyFallbackShareLink,
+      openFallbackShareLink: shareLinkActions.openFallbackShareLink,
       toggleMyDesigns,
       closeMyDesigns,
       toggleSavedDesignSelection,

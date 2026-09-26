@@ -11,13 +11,15 @@ const workspaceSource = readSource(
 const registrationSource = readSource(
   "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"
 );
+const dragRegistrationSource = readSource("lib/useDesignPageSceneItemDragRegistration.ts");
 const sceneItemDragSource = readSource("lib/useDesignPageSceneItemDrag.ts");
 
 assert.match(
   workspaceSource,
   /useDesignPageSceneRegionWorkspaceRegistration\(\{[\s\S]*?presentation: presentationQaWorkspace/
 );
-assert.match(registrationSource, /useDesignPageSceneItemDrag\(\{/);
+assert.match(registrationSource, /useDesignPageSceneItemDragRegistration\(presentation\)/);
+assert.match(dragRegistrationSource, /useDesignPageSceneItemDrag\(\{/);
 assert.match(registrationSource, /buildDesignPageSceneRegionAdapter\(\{/);
 assert.doesNotMatch(workspaceSource, /useDesignPageSceneItemDrag\(\{/);
 assert.doesNotMatch(workspaceSource, /buildDesignPageSceneRegionAdapter\(\{/);
@@ -35,17 +37,17 @@ for (const group of [
 }
 
 assert.match(
-  registrationSource,
+  dragRegistrationSource,
   /selectedIds: itemSelection\.refs\.selectedIds,[\s\S]*?dragCommit: camera\.refs\.canvas\.itemDragCommit/,
   "Drag behavior should retain selection and camera commit refs."
 );
 assert.match(
-  registrationSource,
+  dragRegistrationSource,
   /setItems: itemDocument\.actions\.setItemsPresent,[\s\S]*?history: documentRoom\.refs\.documentHistory\.history/,
   "Drag mutations should remain connected to document and history owners."
 );
 assert.match(
-  registrationSource,
+  dragRegistrationSource,
   /flushCoalescedHistoryTransaction:[\s\S]*?documentRoom\.actions\.history\.flushCoalescedHistoryTransaction/,
   "Scene dragging should flush a pending coalesced edit before opening its gesture transaction."
 );

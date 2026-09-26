@@ -1,34 +1,31 @@
 "use client";
 
-import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { CommandBarAccountMenu } from "@/components/editor/command-bar/CommandBarAccountMenu";
+import { CommandBarCanvasControls } from "@/components/editor/command-bar/CommandBarCanvasControls";
+import { CommandBarDesignTitle } from "@/components/editor/command-bar/CommandBarDesignTitle";
+import { CommandBarDownloadButton } from "@/components/editor/command-bar/CommandBarDownloadButton";
+import { CommandBarGetProButton } from "@/components/editor/command-bar/CommandBarGetProButton";
+import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
+import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBarSaveButton";
+import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
+import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
+import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
-import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKeyboard";
-import { ChevronDown, Ellipsis, PanelLeft, Plus, Redo2, Undo2, UserRound } from "lucide-react";
-import { signIn, signOut } from "next-auth/react";
-import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
-import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
-import { MY_DESIGNS_COMMAND_ACTION_ID } from "@/lib/my-designs-command-focus";
-import { GUEST_PROMPT_WORKFLOW_FALLBACK_ID, GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
+import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
+import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
-export type EditorSaveStatus = {
-  kind: "pending" | "saving" | "saved" | "failed" | "conflict";
-  source: string;
-  label: string;
-  detail: string;
-  tone: "error" | "saving" | "saved" | "pending";
-  canRetry: boolean;
-  lastSuccessfulSaveAt: number | null;
-};
 
 type EditorCommandBarProps = {
   isClientPreview: boolean;
   dark?: boolean;
-  aiDesignEnabled?: boolean;
   editorMode: EditorMode;
   viewMode: EditorViewMode;
   isDesigner: boolean;
   isAuthed: boolean;
+  /** The account corner waits for the session; Get Pro also waits for the plan, then shows unless it is Pro. */
+  accountReady: boolean; accountName: string | null; canUpgrade: boolean; onGetPro?: () => void;
   planLabel: string;
   canManageBilling: boolean;
   isOpeningBillingPortal: boolean;
@@ -40,9 +37,7 @@ type EditorCommandBarProps = {
   onToggleDesignSidebar: () => void;
   onPlan: () => void;
   millworkActive?: boolean;
-  onMillwork?: () => void;
   onFurnish: () => void;
-  onAiDesign: () => void;
   onShop: () => void;
   onExport: () => void;
   onUndo: () => void;
@@ -58,6 +53,10 @@ type EditorCommandBarProps = {
   onToggleLoadDesign: () => void;
   onSave: () => void | Promise<void>;
   isSaving?: boolean;
+  /** Share and Download show when given handlers. Share saves the design first if it isn't in the cloud. */
+  onShare?: () => void; isSharing?: boolean; onDownload?: () => void;
+  /** The design's name, shown from `xl`, and Rename design, which More offers below that. */
+  designTitle?: string; onRenameDesign?: () => void;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   onOpenPresentExport: () => void;
@@ -66,39 +65,13 @@ type EditorCommandBarProps = {
   lightingSettingsSlot?: ReactNode;
 };
 
-function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
-  if (dark) {
-    if (tone === "error") return "designer-status-blocked";
-    if (tone === "saving") return "designer-status-info";
-    if (tone === "saved") return "designer-status-ready";
-    return "designer-status-pending";
-  }
-
-  if (tone === "error") return "border-red-200 bg-red-50 text-red-800";
-  if (tone === "saving") return "border-blue-200 bg-blue-50 text-blue-800";
-  if (tone === "saved") return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  return "border-neutral-200 bg-white text-neutral-700";
-}
-
-function getSaveStatusDotClassName(tone: EditorSaveStatus["tone"]) {
-  if (tone === "error") return "bg-red-500";
-  if (tone === "saving") return "bg-blue-500";
-  if (tone === "saved") return "bg-emerald-500";
-  return "bg-neutral-400";
-}
-
-function signInWithReturn() {
-  signIn("google", { callbackUrl: window.location.href });
-}
-
 export default function EditorCommandBar({
   isClientPreview,
   dark = false,
-  aiDesignEnabled = false,
   editorMode,
   viewMode,
   isDesigner,
-  isAuthed,
+  isAuthed, accountReady, accountName, canUpgrade, onGetPro,
   planLabel,
   canManageBilling,
   isOpeningBillingPortal,
@@ -110,9 +83,7 @@ export default function EditorCommandBar({
   onToggleDesignSidebar,
   onPlan,
   millworkActive = false,
-  onMillwork,
   onFurnish,
-  onAiDesign,
   onShop,
   onExport,
   onUndo,
@@ -127,7 +98,7 @@ export default function EditorCommandBar({
   showLoadDesign,
   onToggleLoadDesign,
   onSave,
-  isSaving = false,
+  isSaving = false, onShare, isSharing = false, onDownload, designTitle, onRenameDesign,
   saveStatus,
   onRetrySaveStatus,
   onOpenPresentExport,
@@ -135,35 +106,29 @@ export default function EditorCommandBar({
   overflowSlot,
   lightingSettingsSlot,
 }: EditorCommandBarProps) {
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [lightingSettingsOpen, setLightingSettingsOpen] = useState(false);
-  const workspaceRef = useRef<HTMLDivElement | null>(null);
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeLightingSettings = useCallback(() => setLightingSettingsOpen(false), []);
 
   useEffect(() => {
-    if (!workspaceOpen && !overflowOpen && !accountOpen) return;
+    if (!overflowOpen && !accountOpen) return;
 
     const handlePointerDown = (event: PointerEvent) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
-      const insideWorkspace = workspaceRef.current?.contains(target) ?? false;
       const insideOverflow = overflowRef.current?.contains(target) ?? false;
       const insideAccount = accountRef.current?.contains(target) ?? false;
-      if (!insideWorkspace && !insideOverflow && !insideAccount) {
-        setWorkspaceOpen(false);
+      if (!insideOverflow && !insideAccount) {
         setOverflowOpen(false);
         setAccountOpen(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        if (workspaceOpen) workspaceRef.current?.querySelector<HTMLElement>("button")?.focus();
-        setWorkspaceOpen(false);
         setOverflowOpen(false);
         setAccountOpen(false);
       }
@@ -175,71 +140,18 @@ export default function EditorCommandBar({
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [accountOpen, overflowOpen, workspaceOpen]);
+  }, [accountOpen, overflowOpen]);
 
-  const workflowSteps: Array<{
-    id: string;
-    label: string;
-    testId: string;
-    onClick: () => void;
-    active: boolean;
-    ariaLabel?: string;
-    title?: string;
-    legacyTestId?: string;
-    screenReaderLabel?: string;
-  }> = [
-    {
-      id: "plan",
-      label: "Plan",
-      testId: "editor-workflow-plan",
-      onClick: onPlan,
-      active: !millworkActive && editorMode === "design",
-    },
-    ...(onMillwork
-      ? [{
-          id: "millwork",
-          label: "Built-ins",
-          testId: "editor-workflow-millwork",
-          onClick: onMillwork,
-          active: millworkActive,
-          ariaLabel: "Built-ins",
-          title: "Built-ins",
-          legacyTestId: "open-custom-millwork-studio",
-          screenReaderLabel: "Built-ins",
-        }]
-      : []),
-    {
-      id: "furnish",
-      label: "Furnish",
-      testId: "editor-workflow-furnish",
-      onClick: onFurnish,
-      active: !millworkActive && editorMode === "adjust",
-    },
-    ...(aiDesignEnabled
-      ? [{
-          id: "ai",
-          label: "Suggest a layout",
-          testId: "editor-workflow-ai",
-          onClick: onAiDesign,
-          active: !millworkActive && editorMode === "ai",
-        }]
-      : []),
-    {
-      id: "shop",
-      label: "Shop",
-      testId: "editor-workflow-shop",
-      onClick: onShop,
-      active: !millworkActive && editorMode === "buy",
-    },
-    {
-      id: "export",
-      label: "Export",
-      testId: "editor-workflow-export",
-      onClick: onExport,
-      active: !millworkActive && editorMode === "present",
-    },
+  // Built-ins and Suggest a layout open from inside Furnish, so Furnish stays current while either is open.
+  const steps: CommandBarStep[] = [
+    { id: "plan", number: 1, label: "Plan", testId: "editor-workflow-plan", onSelect: onPlan,
+      active: !millworkActive && editorMode === "design" },
+    { id: "furnish", number: 2, label: "Furnish", testId: "editor-workflow-furnish", onSelect: onFurnish,
+      active: millworkActive || editorMode === "adjust" || editorMode === "ai" },
+    { id: "shop", number: 3, label: "Shop", testId: "editor-workflow-shop", onSelect: onShop,
+      active: !millworkActive && editorMode === "buy" },
   ];
-  const activeWorkflowStep = workflowSteps.find((step) => step.active) ?? workflowSteps[0];
+  const focusFallbackStepId = steps.find((step) => step.active)?.id ?? "plan";
   const designSidebarToggleVisible =
     !millworkActive && (editorMode === "design" || editorMode === "adjust" || editorMode === "ai");
   const menuButtonClass = dark
@@ -248,18 +160,10 @@ export default function EditorCommandBar({
   const menuPanelClass = dark
     ? "designer-work-surface absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
-  const workspaceMenuPanelClass = dark
-    ? "designer-work-surface absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
-    : "absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
   const handleViewModeChange = (next: EditorViewMode) => {
     if (next !== "3d") setLightingSettingsOpen(false);
     onViewModeChange(next);
   };
-  const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-current disabled:cursor-not-allowed disabled:opacity-40 md:h-[30px] md:w-[30px] ${
-    dark
-      ? "designer-control"
-      : "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
-  }`;
 
   return (
     <div
@@ -268,155 +172,48 @@ export default function EditorCommandBar({
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 md:h-9 md:gap-2 ${
+      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm transition-opacity duration-300 sm:px-4 md:h-9 md:gap-2 md:backdrop-blur ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
-      <div className="flex min-w-0 flex-[1.25] items-center gap-1 md:gap-1.5">
-        {designSidebarToggleVisible ? (
-          <button
-            type="button"
-            data-testid="editor-design-sidebar-toggle"
-            data-state={designSidebarCollapsed ? "collapsed" : "expanded"}
-            aria-label={
-              designSidebarCollapsed
-                ? "Open design sidebar"
-                : "Collapse design sidebar"
-            }
-            aria-expanded={!designSidebarCollapsed}
-            title="Toggle design sidebar (Ctrl/⌘ B)"
-            className={
-              dark
-                ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border"
-                : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
-            }
-            onClick={onToggleDesignSidebar}
-          >
-            <PanelLeft className="h-4 w-4" aria-hidden="true" />
-          </button>
-        ) : null}
-        <button
-          type="button"
-          data-testid="command-undo"
-          aria-label={undoName ? `Undo ${undoName}` : "Undo"}
-          className={commandHistoryButtonClass}
-          onClick={onUndo}
-          disabled={isClientPreview || !canUndo}
-          title={undoName ? `Undo "${undoName}" (Cmd/Ctrl+Z)` : "Undo (Cmd/Ctrl+Z)"}
-        >
-          <Undo2 className="h-4 w-4" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          data-testid="command-redo"
-          aria-label={redoName ? `Redo ${redoName}` : "Redo"}
-          className={commandHistoryButtonClass}
-          onClick={onRedo}
-          disabled={isClientPreview || !canRedo}
-          title={redoName ? `Redo "${redoName}" (Cmd/Ctrl+Shift+Z)` : "Redo (Cmd/Ctrl+Shift+Z)"}
-        >
-          <Redo2 className="h-4 w-4" aria-hidden="true" />
-        </button>
+      <div className="flex min-w-0 items-center gap-1 md:gap-1.5">
+        <CommandBarDesignTitle dark={dark} title={designTitle} onRename={onRenameDesign} />
+        <CommandBarCanvasControls
+          dark={dark}
+          isClientPreview={isClientPreview}
+          sidebarToggleVisible={designSidebarToggleVisible}
+          designSidebarCollapsed={designSidebarCollapsed}
+          onToggleDesignSidebar={onToggleDesignSidebar}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          undoName={undoName}
+          redoName={redoName}
+          onUndo={onUndo}
+          onRedo={onRedo}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+        />
 
-        <div className="shrink-0">
-          <EditorViewToggle value={viewMode} onChange={handleViewModeChange} dark={dark} />
-        </div>
-
-        <div ref={workspaceRef} className="relative shrink-0">
-          <button id={GUEST_PROMPT_WORKFLOW_FALLBACK_ID}
-            type="button"
-            data-testid="editor-command-workspace"
-            aria-label={`Workspace: ${activeWorkflowStep.label}`}
-            aria-haspopup="menu"
-            aria-expanded={workspaceOpen}
-            className={
-              dark
-                ? "designer-control inline-flex h-[30px] items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold leading-none sm:px-3"
-                : "inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-sm font-semibold leading-none text-neutral-800 shadow-sm hover:bg-neutral-50 sm:px-3"
-            }
-            onClick={(event) => {
-              setWorkspaceOpen((value) => !value);
-              setOverflowOpen(false);
-              setAccountOpen(false);
-              if (!workspaceOpen && event.detail === 0)
-                window.requestAnimationFrame(() => workspaceRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus());
-            }}
-          >
-            <span className="hidden text-xs font-medium opacity-60 lg:inline">
-              Workspace
-            </span>
-            <span>{activeWorkflowStep.label}</span>
-            <ChevronDown
-              className={`h-4 w-4 transition-transform ${
-                workspaceOpen ? "rotate-180" : ""
-              }`}
-              aria-hidden="true"
-            />
-          </button>
-          <div
-            data-testid="editor-command-workspace-menu"
-            role="menu"
-            aria-label="Workspace"
-            onKeyDown={handleWorkspaceMenuKeyDown}
-            className={`${workspaceMenuPanelClass} ${
-              workspaceOpen ? "" : "hidden"
-            }`}
-          >
-            <div className="px-3 pb-1 pt-1 text-[11px] font-bold uppercase tracking-[0.14em] opacity-50">
-              Workspace
-            </div>
-            {workflowSteps.map((step) => (
-              <button
-                key={step.id}
-                type="button"
-                role="menuitem"
-                data-testid={step.testId}
-                data-active={step.active ? "true" : "false"}
-                aria-current={step.active ? "page" : undefined}
-                aria-label={step.ariaLabel}
-                title={step.title}
-                className={menuButtonClass}
-                onClick={() => {
-                  workspaceRef.current?.querySelector<HTMLElement>("button")?.focus();
-                  setWorkspaceOpen(false);
-                  step.onClick();
-                }}
-              >
-                {step.legacyTestId ? (
-                  <span data-testid={step.legacyTestId}>
-                    <span data-testid="open-cabinetry-studio">
-                      {step.label}
-                    </span>
-                    {step.screenReaderLabel ? (
-                      <span className="sr-only">{step.screenReaderLabel}</span>
-                    ) : null}
-                  </span>
-                ) : (
-                  <span>{step.label}</span>
-                )}
-                {step.active ? (
-                  <span className="text-xs font-medium opacity-60">Current</span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </div>
+        <CommandBarStepTabs
+          dark={dark}
+          steps={steps}
+          focusFallbackStepId={focusFallbackStepId}
+        />
 
         {isDesigner && !isClientPreview ? (
           <span
             data-testid="pro-mode-indicator"
             role="status"
             aria-label="Pro tools on"
-            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
+            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700 max-[390px]:hidden"
           >
-            <span className="sm:hidden">Pro</span>
-            <span className="hidden sm:inline">Pro tools</span>
+            <span className="lg:hidden">Pro</span>
+            <span className="hidden lg:inline">Pro tools</span>
           </span>
         ) : null}
-
       </div>
 
-      <div className="pointer-events-none hidden min-w-0 flex-[0.95] items-center justify-center 2xl:flex">
+      <div className="pointer-events-none hidden min-w-0 flex-1 items-center justify-center min-[1800px]:flex">
         {contextSlot ? (
           <div
             data-testid="editor-command-context"
@@ -427,292 +224,47 @@ export default function EditorCommandBar({
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
-        <button
-          type="button"
-          data-testid="editor-command-new-plan"
-          aria-label="Start a new design"
-          title="Start a new design"
-          className={
-            dark
-              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold leading-none text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
-              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-sm font-semibold leading-none text-emerald-800 shadow-sm hover:bg-emerald-100 sm:w-auto sm:px-3"
-          }
-          onClick={onNewPlan}
-        >
-          <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-          <span className="hidden sm:inline">New design</span>
-        </button>
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 md:gap-1.5">
+        <CommandBarGetProButton dark={dark} accountReady={accountReady} canUpgrade={canUpgrade} onGetPro={onGetPro} />
+        <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
+        <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
+        <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
+        <CommandBarDownloadButton dark={dark} onDownload={onDownload} />
+        <CommandBarMoreMenu
+          dark={dark}
+          containerRef={overflowRef}
+          buttonRef={moreButtonRef}
+          open={overflowOpen}
+          onToggle={() => { setOverflowOpen((value) => !value); setAccountOpen(false); }}
+          onClose={() => setOverflowOpen(false)}
+          menuButtonClass={menuButtonClass}
+          menuPanelClass={menuPanelClass}
+          lightingSettingsOpen={lightingSettingsOpen}
+          showLoadDesign={showLoadDesign}
+          isDesigner={isDesigner}
+          isClientPreview={isClientPreview}
+          presentModeActive={editorMode === "present"}
+          onExport={onExport}
+          lightingAvailable={viewMode === "3d" && Boolean(lightingSettingsSlot)}
+          overflowSlot={overflowSlot}
+          onToggleLoadDesign={onToggleLoadDesign} onNewPlan={onNewPlan}
+          onToggleDesignerMode={onToggleDesignerMode} onToggleClientPreview={onToggleClientPreview}
+          onOpenPresentExport={onOpenPresentExport} onFeedback={onFeedback} onDownload={onDownload} onRenameDesign={onRenameDesign}
+          onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
+        />
 
-        <div
-          data-testid="save-status"
-          data-status={saveStatus.kind}
-          data-source={saveStatus.source}
-          data-last-successful-save-at={
-            saveStatus.lastSuccessfulSaveAt
-              ? new Date(saveStatus.lastSuccessfulSaveAt).toISOString()
-              : ""
-          }
-          role="status"
-          aria-live="polite"
-          aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
-          title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden h-[30px] min-w-0 shrink-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
-            saveStatus.canRetry ? "" : "lg:shrink"
-          } ${getSaveStatusClassName(
-            saveStatus.tone,
-            dark
-          )}`}
-        >
-          <span
-            className={`h-2.5 w-2.5 shrink-0 rounded-full ${getSaveStatusDotClassName(saveStatus.tone)} ${
-              saveStatus.tone === "saving" ? "animate-pulse" : ""
-            }`}
-            aria-hidden="true"
-          />
-          <span className="hidden min-w-0 max-w-28 truncate font-semibold lg:inline">
-            {saveStatus.label}
-          </span>
-          <span className="hidden min-w-0 max-w-36 truncate xl:inline">
-            {saveStatus.detail}
-          </span>
-          {saveStatus.canRetry ? (
-            <button
-              type="button"
-              data-testid="save-status-retry"
-              className={
-                dark
-                  ? "hidden shrink-0 rounded-full border border-white/20 px-2 py-0.5 font-semibold text-white hover:bg-white/10 xl:inline-flex"
-                  : "hidden shrink-0 rounded-full border border-current/20 bg-white/70 px-2 py-0.5 font-semibold hover:bg-white xl:inline-flex"
-              }
-              onClick={onRetrySaveStatus}
-            >
-              Retry
-            </button>
-          ) : null}
-        </div>
-        <button id={GUEST_SAVE_OPENER_ID}
-          type="button"
-          data-testid="save-design"
-          className={
-            dark
-              ? "designer-primary-action inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg px-3 text-sm font-semibold leading-none disabled:cursor-wait disabled:opacity-70 sm:px-4"
-              : "inline-flex h-[30px] shrink-0 items-center justify-center rounded-lg bg-neutral-900 px-3 text-sm font-semibold leading-none text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:px-4"
-          }
-          onClick={onSave}
-          disabled={isSaving}
-        >
-          {isSaving ? "Saving…" : "Save"}
-        </button>
-        <div ref={overflowRef} className="relative shrink-0">
-          <button
-            ref={moreButtonRef}
-            id={CLIENT_PREVIEW_FALLBACK_ACTION_ID}
-            type="button"
-            data-testid="editor-command-overflow"
-            aria-label="More"
-            aria-haspopup="menu"
-            aria-expanded={overflowOpen}
-            aria-controls={
-              lightingSettingsOpen ? "lighting-settings-drawer" : undefined
-            }
-            className={
-              dark
-                ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none sm:w-auto sm:px-3"
-                : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
-            }
-            onClick={() => {
-              setOverflowOpen((value) => !value);
-              setWorkspaceOpen(false);
-              setAccountOpen(false);
-            }}
-          >
-            <Ellipsis className="h-4 w-4 sm:hidden" aria-hidden="true" />
-            <span className="hidden sm:inline">More</span>
-          </button>
-          {overflowOpen && (
-            <div
-              data-testid="editor-command-overflow-menu"
-              role="menu"
-              className={menuPanelClass}
-            >
-              {showLoadDesign && (
-                <button
-                  type="button" role="menuitem" id={MY_DESIGNS_COMMAND_ACTION_ID} data-testid="editor-command-overflow-load"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    onToggleLoadDesign();
-                  }}
-                >
-                  My designs
-                </button>
-              )}
-              <button
-                type="button"
-                data-testid="editor-command-overflow-pro-tools"
-                className={menuButtonClass}
-                onClick={() => {
-                  setOverflowOpen(false);
-                  onToggleDesignerMode();
-                }}
-              >
-                {isDesigner ? "Exit Pro tools" : "Pro tools"}
-              </button>
-              {isDesigner && (
-                <button
-                  type="button"
-                  data-testid="editor-command-overflow-preview"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    setLightingSettingsOpen(false);
-                    onToggleClientPreview();
-                  }}
-                >
-                  {isClientPreview ? "Exit preview" : "Preview"}
-                </button>
-              )}
-              {editorMode === "present" && (
-                <button
-                  type="button"
-                  data-testid="editor-command-overflow-present-export"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    onOpenPresentExport();
-                  }}
-                >
-                  Export & Camera
-                </button>
-              )}
-              {viewMode === "3d" && lightingSettingsSlot ? (
-                <button
-                  type="button"
-                  role="menuitem"
-                  data-testid="editor-command-overflow-lighting"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    setLightingSettingsOpen(true);
-                  }}
-                >
-                  Lighting settings
-                </button>
-              ) : null}
-              {overflowSlot ? (
-                <div className="mt-1 border-t border-neutral-200 pt-1">
-                  {overflowSlot}
-                </div>
-              ) : null}
-              <div className="mt-1 border-t border-neutral-200 pt-1">
-                <button
-                  type="button"
-                  data-testid="beta-feedback-open"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setOverflowOpen(false);
-                    onFeedback();
-                  }}
-                >
-                  Feedback
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div ref={accountRef} className="relative shrink-0">
-          <button
-            id={PLANS_ACCOUNT_OPENER_ID} type="button"
-            data-testid="editor-command-account"
-            aria-label="Account"
-            aria-haspopup="menu"
-            aria-expanded={accountOpen}
-            className={
-              dark
-                ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none sm:w-auto sm:px-3"
-                : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 sm:w-auto sm:px-3"
-            }
-            onClick={() => {
-              setAccountOpen((value) => !value);
-              setWorkspaceOpen(false);
-              setOverflowOpen(false);
-            }}
-          >
-            <UserRound className="h-4 w-4 sm:hidden" aria-hidden="true" />
-            <span className="hidden sm:inline">Account</span>
-          </button>
-          {accountOpen && (
-            <div
-              data-testid="editor-command-account-menu"
-              role="menu"
-              className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
-            >
-              <div
-                data-testid="editor-account-plan"
-                className={
-                  dark
-                    ? "designer-work-muted mb-1 rounded-lg px-3 py-2 text-xs font-semibold"
-                    : "mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
-                }
-              >
-                {planLabel}
-              </div>
-              {isAuthed && (canManageBilling ? (
-                <button
-                  type="button"
-                  data-testid="editor-command-manage-billing"
-                  className={menuButtonClass}
-                  disabled={isOpeningBillingPortal}
-                  onClick={() => {
-                    setAccountOpen(false);
-                    onManageBilling();
-                  }}
-                >
-                  {isOpeningBillingPortal ? "Opening billing…" : "Manage billing"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  data-testid="editor-command-view-plans"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setAccountOpen(false);
-                    onViewPlans();
-                  }}
-                >
-                  Pricing
-                </button>
-              ))}
-              {isAuthed ? (
-                <button
-                  type="button"
-                  data-testid="editor-command-sign-out"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setAccountOpen(false);
-                    signOut();
-                  }}
-                >
-                  Sign out
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  data-testid="editor-command-sign-in"
-                  className={menuButtonClass}
-                  onClick={() => {
-                    setAccountOpen(false);
-                    signInWithReturn();
-                  }}
-                >
-                  Sign in
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <CommandBarAccountMenu
+          dark={dark}
+          containerRef={accountRef}
+          open={accountOpen}
+          onToggle={() => { setAccountOpen((value) => !value); setOverflowOpen(false); }}
+          onClose={() => setAccountOpen(false)}
+          menuButtonClass={menuButtonClass}
+          menuPanelClass={menuPanelClass}
+          isAuthed={isAuthed} accountReady={accountReady} accountName={accountName} planLabel={planLabel}
+          canManageBilling={canManageBilling} isOpeningBillingPortal={isOpeningBillingPortal}
+          onManageBilling={onManageBilling} onViewPlans={onViewPlans}
+        />
       </div>
       {lightingSettingsSlot ? (
         <LightingSettingsDrawer

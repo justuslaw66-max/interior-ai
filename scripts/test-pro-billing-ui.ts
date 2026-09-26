@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { buildDesignPageDialogLayerModel } from "../lib/design-page-dialog-layer-model";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 const root = path.resolve(__dirname, "..");
 const read = (relativePath: string) =>
@@ -18,7 +19,7 @@ const upgradeModal = read("components/UpgradeModal.tsx");
 assert.match(upgradeModal, /PRO_PLAN_PRICING\.monthly\.label/);
 assert.doesNotMatch(upgradeModal, /\$29\/month/);
 
-const commandBar = read("components/editor/EditorCommandBar.tsx");
+const commandBar = readEditorCommandBarSource();
 assert.match(commandBar, /data-testid="editor-command-manage-billing"/);
 assert.match(commandBar, /data-testid="editor-command-view-plans"/);
 assert.match(commandBar, /data-testid="editor-account-plan"/);
@@ -180,7 +181,7 @@ const plansModel = buildDesignPageDialogLayerModel({
     templateChoice: { data: {}, actions: {} },
   },
   ai: { notes: {} },
-  presentation: { presentExport: {} },
+  presentation: { presentExport: { state: {} }, download: {} },
   editing: { roomRename: {}, annotation: {} },
   placement: { identity: {}, assessment: {}, activeRoomName: null, actions: {} },
   feedback: { beta: {}, toasts: {}, validation: {} },

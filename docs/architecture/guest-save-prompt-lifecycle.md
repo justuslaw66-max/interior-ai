@@ -34,7 +34,7 @@ mapping or eligibility branch is added and no merchant is contacted.
 
 ### Typed reason and single continuation owner
 
-`GuestPromptReason` is exactly `save | ai-layout | checkout`. One in-memory
+`GuestPromptReason` is exactly `save | ai-layout | checkout | share`. One in-memory
 `GuestPromptSession` binds the typed reason, route/design/workspace/mode/auth
 scope key, generation, and callback. Opening supersedes the previous session;
 cancel, continuation, primary action, scope change, authentication transition,
@@ -70,7 +70,16 @@ non-obscured semantic actions in this order:
 - AI layout: `guest-ai-layout-action`, then
   `editor-command-workspace-action`;
 - checkout: `guest-checkout-action`, then
-  `editor-command-workspace-action`.
+  `editor-command-workspace-action`;
+- share (UX phase 3): `guest-share-action`, the command bar's Share button,
+  then persistent `editor-command-more-action`.
+
+The share reason stores a no-op continuation, like Save, and titles the prompt
+"Sign in to share this design": share links need an account, so there is
+nothing to continue without one.
+
+`editor-command-workspace-action` sits on the current design step in the
+command bar (Plan, Furnish or Shop), or on Plan when no step is current.
 
 Responsive replacement carrying the same semantic ID is valid; a removed or
 disabled reason-specific action is skipped. Route, requested/actual design,

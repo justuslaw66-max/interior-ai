@@ -43,6 +43,8 @@ export function useDesignPageBilling({
 }) {
   const [startingCheckout, setStartingCheckout] = useState(false);
   const [openingBillingPortal, setOpeningBillingPortal] = useState(false);
+  // The account corner waits for the first answer, so Get Pro never flashes for Pro users.
+  const [planLoaded, setPlanLoaded] = useState(false);
   const {
     authenticated,
     designId,
@@ -89,12 +91,10 @@ export function useDesignPageBilling({
     } catch {
       console.warn("Failed to refresh plan status");
       setPlan("free");
+    } finally {
+      setPlanLoaded(true);
     }
-  }, [
-    setPlan,
-    setShowUpgrade,
-    setUpgradeReason,
-  ]);
+  }, [setPlan, setShowUpgrade, setUpgradeReason]);
 
   const openBillingPortal = useCallback(async () => {
     if (!authenticated) {
@@ -298,7 +298,7 @@ export function useDesignPageBilling({
   }, [cleanUrlParameter, refreshPlanRequested, setPlan, showToast]);
 
   return {
-    state: { startingCheckout, openingBillingPortal },
+    state: { startingCheckout, openingBillingPortal, planLoaded },
     actions: {
       refreshPlan,
       openBillingPortal,

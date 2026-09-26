@@ -89,6 +89,7 @@ export type BuildDesignPagePanelRegistrationInput = {
       signIn: ControlsInput["actions"]["navigation"]["onSignIn"];
       goFurnish: ControlsInput["actions"]["navigation"]["onGoFurnish"];
       goAiDesign: ControlsInput["actions"]["navigation"]["onGoAiDesign"];
+      openBuiltIns: () => void;
       goShop: ControlsInput["actions"]["navigation"]["onGoShop"];
       selectRoom: ControlsInput["actions"]["navigation"]["onSelectRoom"];
       changePlacementAddMode: ControlsInput["actions"]["navigation"]["onPlacementAddModeChange"];

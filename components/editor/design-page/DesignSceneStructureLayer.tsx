@@ -26,8 +26,8 @@ import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
-import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { CANONICAL_ROOM_GEOMETRY_LOCK_REASON } from "@/lib/floor-plan-topology-editor";
+import { resolveCanonicalSceneModel } from "@/lib/floor-plan-scene-model-resolution";
+import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
@@ -65,6 +65,7 @@ export type DesignSceneStructureLayerState = {
     qualityIssues: FloorPlanQualityIssue[];
     canonicalDocument: FloorPlanDocumentV2 | null;
     canonicalGeometryHash: string | null;
+    wallEditing?: Pick<CanonicalWallGestureControls, "enabled" | "selectedWallId">;
   };
   wholeHome: {
     rooms: HousePlanRoom2D[];
@@ -102,6 +103,7 @@ export type DesignSceneStructureLayerConfiguration = {
 };
 
 export type DesignSceneStructureLayerActions = {
+  walls?: Pick<CanonicalWallGestureControls, "select" | "commit" | "setDragging">;
   underlay: {
     addCalibrationPoint: NonNullable<
       UnderlayRendererProps["onCalibrationPoint"]
@@ -170,27 +172,18 @@ type DesignSceneStructureLayerProps = {
   focusRoomId?: string | null;
 };
 
+function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
+  return state && actions ? { ...state, ...actions } : undefined;
+}
+
 export function DesignSceneStructureLayer({
   state,
   configuration,
   actions,
   focusRoomId = null,
 }: DesignSceneStructureLayerProps) {
-  const canonicalResolution = useMemo(() => {
-    if (!state.plan.canonicalDocument) return { plan: null, error: null };
-    try {
-      return {
-        plan: compileCanonicalFloorPlanRenderModel(
-          state.plan.canonicalDocument,
-          state.plan.canonicalGeometryHash
-        ),
-        error: null,
-      };
-    } catch (cause) {
-      console.error("Canonical floor-plan render model rejected", cause);
-      return { plan: null, error: "Canonical floor-plan integrity check failed" };
-    }
-  }, [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
+  const canonicalResolution = useMemo(() => resolveCanonicalSceneModel(state.plan.canonicalDocument, state.plan.canonicalGeometryHash),
+    [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;
   const canonicalActiveFloorId =
     canonicalPlan?.floors.find(
@@ -223,7 +216,7 @@ export function DesignSceneStructureLayer({
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
-          title={CANONICAL_ROOM_GEOMETRY_LOCK_REASON}
+          title="Use the wall tools in 2D to create an editable copy of the uploaded plan."
           style={{
             border: "1px solid rgba(37,99,235,0.22)",
             borderRadius: 999,
@@ -236,7 +229,7 @@ export function DesignSceneStructureLayer({
             whiteSpace: "nowrap",
           }}
         >
-          Room boundaries source-locked · doors and windows editable
+          Walls editable in 2D · doors and windows editable on the wall
         </div>
       </Html>
     ) : null;
@@ -265,6 +258,7 @@ export function DesignSceneStructureLayer({
           measurementUnit={configuration.plan.measurementUnit}
         />
         <RoomRenderer2D
+          canonicalWallEditing={resolveWallGestureControls(plan.wallEditing, actions.walls)}
           width={plan.width}
           depth={plan.depth}
           rooms={plan.rooms}
@@ -399,8 +393,8 @@ export function DesignSceneStructureLayer({
           if (kind) actions.overlays.setDragging(dragging, kind);
           else actions.wholeHome.setOpeningDragging(dragging);
         }}
-        canonicalPlan={canonicalPlan}
-        canonicalStructureExpected={canonicalStructureExpected}
+        canonicalPlan={canonicalPlan} canonicalStructureExpected={canonicalStructureExpected}
+        canonicalWallEditing={resolveWallGestureControls(state.plan.wallEditing, actions.walls)}
       />
       {canonicalIntegrityWarning}
       {canonicalEditingNotice}

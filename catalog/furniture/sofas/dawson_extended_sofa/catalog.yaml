@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson Extended Sofa"
 variant: "Standard"
 
-price_usd: 2747
+price_sgd: 2747
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -252,7 +252,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Side.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634717099/crusader/variants/T50440987-NG4001/Dawson-Extended-Sofa-Beach-Linen-Back.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -276,7 +276,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Side-1697616885.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697616888/crusader/variants/AS-000375-NG4002/Dawson-Extended-3-Seater-Sofa-Seagull-Back-1697616885.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -293,7 +293,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283373/crusader/variants/AS-000375C-PT4001/Dawson-Extended-Sofa-Creamy-White-Front-1721283371.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -310,7 +310,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283322/crusader/variants/AS-000375C-PM4002/Dawson-Extended-Sofa-Brilliant-White-Front-1721283320.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -327,7 +327,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283310/crusader/variants/AS-000375C-PY4001/Dawson-Extended-Sofa-Ivory-Front-1721283307.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -344,7 +344,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1737360943/crusader/variants/AS-000375C-PY4002/Dawson-Extended-Sofa-Dove-Grey-Front-1737360941.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -361,7 +361,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283270/crusader/variants/AS-000375C-PM4001/Dawson-Extended-Sofa-Smoke-Grey-Front-1721283268.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -379,7 +379,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283819/crusader/variants/AS-000375C-PY4003/Dawson-Sofa-Moss-Campaign-Square-Set_1-1721283816.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283249/crusader/variants/AS-000375C-PY4003/Dawson-Extended-Sofa-Moss-Front-1721283246.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -396,7 +396,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1721283221/crusader/variants/AS-000375C-PY4004/Dawson-Extended-Sofa-Cumin-Front-1721283219.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -413,7 +413,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1723540812/crusader/variants/AS-000375C-IN4003/Dawson-Extended-Sofa-Ginger-Front-1723540810.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -430,7 +430,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1721283192/crusader/variants/AS-000375C-IN4002/Dawson-Extended-Sofa-White-Quartz-Front-1721283190.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -448,7 +448,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903294/crusader/variants/AS-000375C-IN4005/Dawson-Extended-Sofa-Cream-Front-1773903292.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -466,7 +466,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246273/crusader/variants/AS-000375C-IN4004/Dawson-Extended-Sofa-Moss-Front-1774246271.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -484,7 +484,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900859/crusader/variants/AS-000375C-PT4002/Dawson-Extended-Sofa-Performance-Twill-Pearl-Beige-Front-1773900857.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -502,7 +502,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900883/crusader/variants/AS-000375C-PT4003/Dawson-Extended-Sofa-Performance-Twill-Slate-Front-1773900880.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -520,7 +520,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900896/crusader/variants/AS-000375C-PT4004/Dawson-Extended-Sofa-Performance-Twill-Moss-Front-1773900893.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -538,7 +538,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900913/crusader/variants/AS-000375C-PT4005/Dawson-Extended-Sofa-Performance-Twill-Dove-Grey-Front-1773900910.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -556,7 +556,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911268/crusader/variants/AS-000375C-PG4002/Dawson-Extended-Sofa-Performance-Genova-Oat-Front-1773911265.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -574,7 +574,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911282/crusader/variants/AS-000375C-PG4003/Dawson-Extended-Sofa-Cream-Front-1773911280.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -592,7 +592,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911296/crusader/variants/AS-000375C-PG4004/Dawson-Extended-Sofa-Light-Grey-Front-1773911293.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -610,7 +610,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246327/crusader/variants/AS-000375C-GR4001/Dawson-Extended-Sofa-Cream-Front-1774246325.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -628,7 +628,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246339/crusader/variants/AS-000375C-GR4002/Dawson-Extended-Sofa-Sand-Front-1774246337.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -646,7 +646,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246365/crusader/variants/AS-000375C-GR4003/Dawson-Extended-Sofa-Caramel-Front-1774246362.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -664,7 +664,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246379/crusader/variants/AS-000375C-GR4004/Dawson-Extended-Sofa-Moss-Front-1774246377.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -690,7 +690,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Side-1715936697.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936700/crusader/variants/AS-000529-LE4020/Dawson-Extended-3-Seater-Sofa-Cocoa-Back-1715936698.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -710,7 +710,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800883/crusader/variants/AS-000529C-LE4016/Dawson-Extended-Sofa-Caramel-Front-1773800881.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -730,7 +730,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800903/crusader/variants/AS-000529C-LE4017/Dawson-Extended-Sofa-Warm-Taupe-Front-1773800901.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -750,7 +750,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800921/crusader/variants/AS-000529C-LE4021/Dawson-Extended-Sofa-Marche-Ivory-Front-1773800919.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -771,7 +771,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773912087/crusader/variants/AS-000529C-LE4022/Dawson-Extended-Sofa-Marche-Graphite-Front-1773912085.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }
@@ -791,7 +791,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773912105/crusader/variants/AS-000529C-LE4023/Dawson-Extended-Sofa-Marche-Cocoa-Front-1773912103.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 2747
+    price_sgd: 2747
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 321, depth_cm: 114, height_cm: 81 }

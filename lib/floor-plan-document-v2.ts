@@ -1,3 +1,4 @@
+import type { FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 /**
  * Canonical, source-auditable floor-plan document.
  *
@@ -142,6 +143,21 @@ export type FloorPlanSourceCalibrationPointV2 = {
   planMm: FloorPlanPointMmV2;
 };
 
+/** Confirmed source span; residuals are always derived from the current calibration. */
+export type FloorPlanSourceMeasurementV2 = {
+  id: string;
+  firstPx: { x: number; y: number };
+  secondPx: { x: number; y: number };
+  confirmedLengthMm: number;
+  inputUnit: "mm" | "cm" | "in" | "ft-in";
+  sourceQuality: "clean" | "scan";
+  /** Where the number came from: read off the plan (default), or an assumed door-leaf width the reviewer accepted. */
+  basis?: "printed" | "assumed_opening_width";
+  confirmedAt: string;
+  /** Historical reading only; never used as the current readiness result. */
+  residualAtConfirmation?: { millimetres: number; pixels: number };
+};
+
 export type FloorPlanSourceCalibrationV2 = {
   id: string;
   sourceId: string;
@@ -149,7 +165,13 @@ export type FloorPlanSourceCalibrationV2 = {
   imageWidthPx: number;
   imageHeightPx: number;
   controlPoints: FloorPlanSourceCalibrationPointV2[];
+  /** Original pixels remain authoritative; this invertible normalization precedes affine registration. */
+  photoCorrection?: import("./floor-plan-photo-constraints").PhotoCorrection;
+  /** Handedness for two-point or collinear registration; affine controls remain authoritative. */
+  reflected?: boolean;
   rmsErrorPx?: number;
+  primaryMeasurement?: FloorPlanSourceMeasurementV2;
+  independentMeasurements?: FloorPlanSourceMeasurementV2[];
 };
 
 export type FloorPlanWallClassificationV2 =
@@ -264,14 +286,17 @@ export type FloorPlanStructureV2 = {
 };
 
 export type FloorPlanAnnotationGeometryV2 =
+  | FloorPlanSourceDrawingGeometryV2
   | { kind: "point"; vertexId: string }
   | { kind: "polygon"; vertexIds: string[] }
+  | { kind: "polyline"; vertexIds: string[] }
   | { kind: "wall_span"; wallId: string; offsetMm: number; widthMm: number };
 
 export type FloorPlanAnnotationV2 = {
   id: string;
   kind: "label" | "suggested_room" | "optional_partition" | "note";
   text: string;
+  scope?: "reference" | "proposed";
   geometry: FloorPlanAnnotationGeometryV2;
   configurationId?: string;
   provenance: FloorPlanEntityProvenanceV2;
@@ -308,6 +333,8 @@ export type FloorPlanFloorV2 = {
   verticalEvidence?: FloorPlanFloorVerticalEvidenceV2;
   defaults: FloorPlanDefaultsV2;
   calibrations: FloorPlanSourceCalibrationV2[];
+  /** Unaccepted source observations, persisted separately from metric registration and geometry. */
+  photoReviewDrafts?: import("./floor-plan-photo-constraints").PhotoReviewDraft[];
   vertices: FloorPlanVertexV2[];
   walls: FloorPlanWallV2[];
   rooms: FloorPlanRoomV2[];
@@ -322,6 +349,8 @@ export type FloorPlanVerificationV2 = {
   criticalIssueIds: string[];
   approvedBy?: string;
   approvedAt?: string;
+  /** Consumer review record only; never a source/construction verification tier. */
+  planningReview?: { reviewerId: string; reviewedAt: string; revisionId: string; geometryHash: string };
 };
 
 export type FloorPlanDocumentV2 = {

@@ -163,7 +163,7 @@ async function main() {
       category: "sofa",
       product_family: "Route Hardening",
       product_name: "Temporary Catalog Route Hardening Sofa",
-      price_usd: 1999,
+      price_sgd: 1999,
       price_band: "premium",
       dimensions: {
         width_cm: 220,

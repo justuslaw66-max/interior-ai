@@ -217,8 +217,8 @@ assert.match(
 );
 assert.match(
   panelSource,
-  /max-h-\[calc\(100vh-4\.75rem\)\][^"`]*overflow-y-auto/,
-  "The panel should preserve its bounded scrolling container.",
+  /max-h-\[calc\(100vh-8\.75rem-env\(safe-area-inset-bottom\)\)\][^"`]*overflow-y-auto[^"`]*md:max-h-\[calc\(100vh-4\.75rem\)\]/,
+  "The panel should preserve its bounded scrolling container, clear of the phone step bar.",
 );
 assert.match(
   panelSource,

@@ -144,6 +144,39 @@ async function expectDesktopHistoryGeometry(page: Page) {
   await expectNoHorizontalOverflow(page);
 }
 
+const STEP_TEST_IDS = ["editor-workflow-plan", "editor-workflow-furnish", "editor-workflow-shop"] as const;
+
+// Phones get the design steps as a bar along the bottom of the screen; wider screens keep them
+// in the command bar.
+async function expectStepGeometry(page: Page, viewport: { width: number; height: number }) {
+  const steps = page.getByRole("navigation", { name: "Design steps" });
+  const box = await steps.boundingBox();
+  expect(box, "The design steps should be measurable").not.toBeNull();
+  if (viewport.width < 768) {
+    expect(Math.round(box!.x)).toBe(0);
+    expect(Math.round(box!.width)).toBe(viewport.width);
+    expect(Math.round(box!.y + box!.height)).toBe(viewport.height);
+  } else {
+    const bar = await page.getByTestId("editor-command-bar").boundingBox();
+    expect(box!.y).toBeGreaterThanOrEqual(bar!.y);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(bar!.y + bar!.height);
+  }
+  for (const testId of STEP_TEST_IDS) {
+    const step = page.getByTestId(testId);
+    const stepBox = await step.boundingBox();
+    expect(stepBox, `${testId} should be measurable`).not.toBeNull();
+    if (viewport.width < 768) {
+      expect(stepBox!.height, `${testId} should be finger-friendly`).toBeGreaterThanOrEqual(44);
+    }
+    const ownsCentre = await step.evaluate((button) => {
+      const bounds = button.getBoundingClientRect();
+      const hit = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+      return hit === button || (hit instanceof Node && button.contains(hit));
+    });
+    expect(ownsCentre, `${testId} should not sit under another control`).toBe(true);
+  }
+}
+
 async function createOneHistoryEntry(page: Page) {
   const continueToFurnish = page.getByTestId("room-setup-continue-furnish");
   if (await continueToFurnish.isVisible().catch(() => false)) {
@@ -203,12 +236,14 @@ for (const plan of ["free", "pro"] as const) {
     }
 
     await expectMobileHistoryGeometry(page);
+    await expectStepGeometry(page, MOBILE_VIEWPORT);
     await page.screenshot({
       path: testInfo.outputPath(`${plan}-mobile-command-bar.png`),
       animations: "disabled",
     });
     await page.setViewportSize(DESKTOP_VIEWPORT);
     await expectDesktopHistoryGeometry(page);
+    await expectStepGeometry(page, DESKTOP_VIEWPORT);
     await page.screenshot({
       path: testInfo.outputPath(`${plan}-desktop-command-bar.png`),
       animations: "disabled",

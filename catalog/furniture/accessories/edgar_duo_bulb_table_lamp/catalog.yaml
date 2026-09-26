@@ -7,7 +7,7 @@ product_family: "Edgar"
 product_name: "Edgar Duo Bulb Table Lamp"
 variant: "Single"
 
-price_usd: 139
+price_sgd: 139
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -170,7 +170,7 @@ variants:
     model_url: "/assets/models/accessory-real-castlery-edgar-duo-bulb-table-lamp.glb"
     affiliate_url: "https://www.castlery.com/sg/products/edgar-duo-bulb-table-lamp?quantity=single"
     available: true
-    price_usd: 139
+    price_sgd: 139
     dimensions:
       width_cm: 35
       depth_cm: 16

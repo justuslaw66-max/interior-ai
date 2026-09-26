@@ -1,11 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
-const commandBarSource = readFileSync(
-  join(process.cwd(), "components/editor/EditorCommandBar.tsx"),
-  "utf8"
-);
+const commandBarSource = readEditorCommandBarSource();
 const designPageCommandBarSource = readFileSync(
   join(
     process.cwd(),

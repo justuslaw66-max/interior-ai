@@ -139,7 +139,8 @@ async function activate(page: Page, action: Locator, entry: Entry) {
 async function openWorkflow(page: Page, actionTestId: string) {
   const action = page.getByTestId(actionTestId);
   if (!(await action.isVisible())) {
-    await page.getByTestId("editor-command-workspace").click();
+    // Suggest a layout opens from inside the Furnish step.
+    await page.getByTestId("editor-workflow-furnish").click();
   }
   await expect(action).toHaveCount(1);
   await expect(action).toBeVisible();
@@ -151,16 +152,20 @@ async function openSavePrompt(page: Page, entry: Entry) {
   return expectPromptContract(page, "save", "guest-save-action");
 }
 
+// The AI panel's own Suggest a layout button, not the Furnish step's entry with the same name.
+const aiLayoutAction = (page: Page) => page.locator("#guest-ai-layout-action");
+
 async function revealAiPanel(page: Page) {
-  if ((await page.getByRole("button", { name: "Suggest a layout", exact: true }).count()) === 0) {
+  if ((await aiLayoutAction(page).count()) === 0) {
     await openWorkflow(page, "editor-workflow-ai");
   }
-  await expect(page.getByRole("button", { name: "Suggest a layout", exact: true })).toBeEnabled();
+  await expect(aiLayoutAction(page)).toHaveAccessibleName("Suggest a layout");
+  await expect(aiLayoutAction(page)).toBeEnabled();
 }
 
 async function openAiPrompt(page: Page, entry: Entry) {
   await revealAiPanel(page);
-  await activate(page, page.getByRole("button", { name: "Suggest a layout", exact: true }), entry);
+  await activate(page, aiLayoutAction(page), entry);
   return expectPromptContract(page, "ai-layout", "guest-ai-layout-action");
 }
 

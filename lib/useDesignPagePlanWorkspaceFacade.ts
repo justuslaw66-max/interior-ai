@@ -124,7 +124,7 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
         "setViewMode" | "prepareCameraForPlanTemplate"
       >;
     history: EditingInput["actions"]["history"] &
-      Pick<UnderlayInput["actions"], "history" | "runCoalescedHistoryTransaction">;
+      Pick<UnderlayInput["actions"], "runCoalescedHistoryTransaction">;
     feedback: EditingInput["actions"]["feedback"];
     floorPlanState: Pick<
       UnderlayInput["actions"],
@@ -289,7 +289,6 @@ export function useDesignPagePlanWorkspaceFacade({
       pdfSourceDataRef: refs.pdfSourceData,
     },
     actions: {
-      history: actions.history.history,
       setDesignSnapshot: actions.document.setDesignSnapshot,
       setFloorPlanUnderlay: actions.floorPlanState.setFloorPlanUnderlay,
       setFloorPlanPdfSourceReady:
@@ -348,7 +347,7 @@ export function useDesignPagePlanWorkspaceFacade({
     },
     refs: { keyboardOwnership: refs.keyboardOwnership },
     actions: {
-      history: actions.history.history,
+      runHistoryTransaction: actions.history.runHistoryTransaction,
       handleAddRoom: actions.room.handleAddRoom,
       setDesignSnapshot: actions.document.setDesignSnapshot,
       setPlanOpenings: actions.document.setPlanOpenings,

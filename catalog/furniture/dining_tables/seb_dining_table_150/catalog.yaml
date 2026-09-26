@@ -7,7 +7,7 @@ product_family: "Seb"
 product_name: "Seb Dining Table"
 variant: "150cm Muted Honey"
 
-price_usd: 699
+price_sgd: 699
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -144,7 +144,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1664534413/crusader/variants/40550113/Seb-Dining-Table-150cm-Front-1664534410.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1624965658/crusader/variants/40550113/Seb-Dining-Table-Set2.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655201674/crusader/variants/40550113/Seb-Dining-Table-Regular-006-1655201670.jpg"
-    price_usd: 699
+    price_sgd: 699
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions:

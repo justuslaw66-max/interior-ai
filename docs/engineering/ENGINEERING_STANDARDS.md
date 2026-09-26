@@ -29,6 +29,10 @@ The UI never shows an `Error`'s own message or an internal id. Pass a caught err
 
 Words people read use one name per concept, UK spelling, sentence case and one ellipsis character (…). The names and the retired terms live in `lib/ui-glossary.ts`; `scripts/test-ui-glossary.ts` reads user-facing text with the TypeScript parser and fails on a retired term. Terms a later UX phase restructures are listed there but not enforced until that phase lands. Renaming visible text also renames Playwright selectors that use it; test titles stay as they are.
 
+Every document edit is one undo step. A discrete edit runs inside `runHistoryTransaction(name, edit)`, which flushes a slider's coalesced transaction first and refuses to nest; a gesture brackets itself with `syncGestureTransaction`, which keeps `begin()`'s answer. Only `lib/useDesignPageHistory.ts` and `lib/design-page-gesture-history.ts` call `history.begin`, `commit` or `rollback` directly; `scripts/test-design-page-history-callers.ts` fails on any other caller.
+
+Catalogue prices are Singapore dollars. The fields are `price_sgd`, `compare_at_price_sgd` and `savings_sgd` in the catalogue YAML and `priceSgd` and its kin in code, and money is shown with `formatSgd` from `lib/money-format.ts`. This is a naming fact, not a conversion: never convert the numbers. `scripts/test-catalog-price-currency.ts` fails on a USD-named price or the USD currency code outside `features/cabinetry`, whose quotes are priced separately.
+
 Secrets, Prisma, filesystem access, privileged roles, and vendor credentials remain server-side. Client-safe code receives minimal typed DTOs. Minimise `use client`: put it at the narrowest interactive boundary and keep pure domain modules importable without React, browser globals, or Three.js.
 
 ## React and Three.js

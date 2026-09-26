@@ -62,11 +62,11 @@ assertSourceOrder(
   changeOrientationSource,
   [
     "reorientConsumerFloorPlanDesign(",
-    'history.begin("Change floor-plan orientation")',
+    'runHistoryTransaction("Change floor-plan orientation", () => {',
     "setDesignSnapshot(reoriented.snapshot)",
     "setPlanOpenings(reoriented.openings)",
     "setPlanFixedElements(reoriented.fixedElements)",
-    "history.commit()",
+    'showRuleToast("Floor-plan orientation updated and confirmed")',
   ],
   "Orientation changes must remain one history transaction across 2D and 3D state"
 );

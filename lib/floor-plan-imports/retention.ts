@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { lockFloorPlanImportSource } from "./source-retention-lock";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "./status";
 import {
   assessFloorPlanRetentionPurge,
@@ -195,17 +196,7 @@ export async function sanitizePrivateFloorPlanUnderlayForSave(input: {
   const client = (input.client ?? prisma) as FloorPlanUnderlaySaveRetentionClient;
 
   if (link.sourceJobId) {
-    await client.$queryRaw(
-      Prisma.sql`
-        SELECT source."id"
-        FROM "FloorPlanSourceAsset" source
-        INNER JOIN "FloorPlanImportJob" job
-          ON job."sourceAssetId" = source."id"
-        WHERE job."id" = ${link.sourceJobId}
-          AND job."userId" = ${input.ownerUserId}
-        FOR UPDATE OF source
-      `
-    );
+    await lockFloorPlanImportSource(client, link.sourceJobId, input.ownerUserId);
     const job = await client.floorPlanImportJob.findFirst({
       where: { id: link.sourceJobId, userId: input.ownerUserId },
       select: {

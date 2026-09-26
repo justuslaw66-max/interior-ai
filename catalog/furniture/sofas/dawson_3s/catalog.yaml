@@ -6,7 +6,7 @@ product_family: "Dawson"
 product_name: "Dawson 3 Seater Sofa"
 variant: "Standard"
 
-price_usd: 1898
+price_sgd: 1898
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -257,7 +257,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716860/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Side.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1634716879/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Back.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -282,7 +282,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Side-1697614103.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Back-1697614103.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -300,7 +300,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1731313137/crusader/variants/AS-000374C-PT4001/Dawson-3-Seater-Sofa-Creamy-White-Front-1731313134.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -318,7 +318,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313178/crusader/variants/AS-000374C-PM4002/Dawson-3-Seater-Sofa-Brilliant-White-Front-1731313175.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -336,7 +336,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946379/crusader/variants/AS-000374C-PY4001/Dawson-3-Seater-Sofa-Ivory-Front-1730946377.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -354,7 +354,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946413/crusader/variants/AS-000374C-PY4002/Dawson-3-Seater-Sofa-Dove-Grey-Front-1730946410.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -372,7 +372,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313159/crusader/variants/AS-000374C-PM4001/Dawson-3-Seater-Sofa-Smoke-Grey-Front-1731313156.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -390,7 +390,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946446/crusader/variants/AS-000374C-PY4003/Dawson-3-Seater-Sofa-Moss-Front-1730946444.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -408,7 +408,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1730946570/crusader/variants/AS-000374C-PY4004/Dawson-3-Seater-Sofa-Cumin-Front-1730946567.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -426,7 +426,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1731313112/crusader/variants/AS-000374C-IN4003/Dawson-3-Seater-Sofa-Ginger-Front-1731313109.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -444,7 +444,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313073/crusader/variants/AS-000374C-IN4002/Dawson-3-Seater-Sofa-White-Quartz-Front-1731313071.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -463,7 +463,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903244/crusader/variants/AS-000374C-IN4005/Dawson-3-Seater-Sofa-Cream-Front-1773903241.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -482,7 +482,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246106/crusader/variants/AS-000374C-IN4004/Dawson-3-Seater-Sofa-Moss-Front-1774246103.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -501,7 +501,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900669/crusader/variants/AS-000374C-PT4002/Dawson-3-Seater-Sofa-Performance-Twill-Pearl-Beige-Front-1773900666.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -520,7 +520,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900741/crusader/variants/AS-000374C-PT4003/Dawson-3-Seater-Sofa-Performance-Twill-Slate-Front-1773900738.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -539,7 +539,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900767/crusader/variants/AS-000374C-PT4004/Dawson-3-Seater-Sofa-Performance-Twill-Moss-Front-1773900764.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -558,7 +558,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773900782/crusader/variants/AS-000374C-PT4005/Dawson-3-Seater-Sofa-Performance-Twill-Dove-Grey-Front-1773900779.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -577,7 +577,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911115/crusader/variants/AS-000374C-PG4002/Dawson-3-Seater-Sofa-Performance-Genova-Oat-Front-1773911112.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -596,7 +596,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911135/crusader/variants/AS-000374C-PG4003/Dawson-3-Seater-Sofa-Cream-Front-1773911132.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -615,7 +615,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911148/crusader/variants/AS-000374C-PG4004/Dawson-3-Seater-Sofa-Light-Grey-Front-1773911145.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -634,7 +634,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246163/crusader/variants/AS-000374C-GR4001/Dawson-3-Seater-Sofa-Cream-Front-1774246160.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -653,7 +653,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246184/crusader/variants/AS-000374C-GR4002/Dawson-3-Seater-Sofa-Sand-Front-1774246181.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -672,7 +672,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246197/crusader/variants/AS-000374C-GR4003/Dawson-3-Seater-Sofa-Caramel-Front-1774246194.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -691,7 +691,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1774246216/crusader/variants/AS-000374C-GR4004/Dawson-3-Seater-Sofa-Moss-Front-1774246214.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -717,7 +717,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936762/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Side-1715936759.jpg"
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1715936762/crusader/variants/AS-000528-LE4020/Dawson-3-Seater-Sofa-Cocoa-Back-1715936759.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -738,7 +738,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800729/crusader/variants/AS-000528C-LE4016/Dawson-3-Seater-Sofa-Caramel-Front-1773800726.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -759,7 +759,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800747/crusader/variants/AS-000528C-LE4017/Dawson-3-Seater-Sofa-Warm-Taupe-Front-1773800745.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -780,7 +780,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773800766/crusader/variants/AS-000528C-LE4021/Dawson-3-Seater-Sofa-Marche-Ivory-Front-1773800764.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -802,7 +802,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911958/crusader/variants/AS-000528C-LE4022/Dawson-3-Seater-Sofa-Marche-Graphite-Front-1773911956.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }
@@ -823,7 +823,7 @@ variants:
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,c_fit/v1773911977/crusader/variants/AS-000528C-LE4023/Dawson-3-Seater-Sofa-Marche-Cocoa-Front-1773911974.jpg"
     swatch_group: "upholstery_option"
-    price_usd: 1898
+    price_sgd: 1898
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 228, depth_cm: 114, height_cm: 81 }

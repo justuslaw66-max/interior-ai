@@ -8,7 +8,7 @@ product_name: "Bristol Coffee Table Set, Walnut"
 slug: "castlery-bristol-coffee-table-set-walnut"
 variant: "Walnut"
 
-price_usd: 499
+price_sgd: 499
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -214,7 +214,7 @@ variants:
     model_asset_id: "coffee-real-castlery-bristol-coffee-table-set-walnut"
     model_url: "/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb"
 
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
 

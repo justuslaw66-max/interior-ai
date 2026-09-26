@@ -10,6 +10,12 @@ import {
   type DesignPagePresentationQaFacade,
 } from "@/lib/useDesignPagePresentationQaFacade";
 import type { DesignPageSelectionWorkspaceRegistration } from "@/lib/useDesignPageSelectionWorkspaceRegistration";
+import type { Session } from "next-auth";
+
+/** The Account button shows the first letter of this. */
+function accountNameOf(session: Session | null | undefined) {
+  return session?.user?.name ?? session?.user?.email ?? null;
+}
 
 type DeferredPaywallRegistration = ReturnType<
   typeof useDesignPageWorkspaceDeferredPaywallRegistration
@@ -62,10 +68,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
   });
   const presentationQa = useDesignPagePresentationQaFacade({
     state: {
-      identity: {
-        designId: base.state.identity.designId,
-        shareToken: base.state.identity.shareToken,
-      },
+      identity: { designId: base.state.identity.designId, shareToken: base.state.identity.shareToken },
       editor: {
         mode: base.state.brief.mode,
         viewMode: base.state.editor.viewMode,
@@ -73,6 +76,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
         isClientPreview: coreShell.derived.access.isClientPreview,
         isDesigner: coreShell.derived.access.isDesigner,
         authenticated: Boolean(base.state.identity.session?.user),
+        accountReady: base.state.identity.sessionStatus !== "loading", planLoaded: deferredPaywall.state.planLoaded,
+        accountName: accountNameOf(base.state.identity.session),
         plan: base.state.access.plan,
         aiDesignEnabled: viewportShell.derived.aiDesignEnabled,
         canUndo: documentSelection.state.history.canUndo,
@@ -212,7 +217,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
       canUseAdvancedExportStyles:
         coreShell.derived.access.capabilities.exportMultipleViews,
       canUseDesigner: coreShell.derived.access.canUseDesigner,
-      canUseCabinetryStudio: cabinetry.state.canUseStudio,
       compactRoomStatus: planWorkspace.derived.compactRoomPlanStatusBar,
       showRoomHealth: planWorkspace.derived.showRoomPlanStatusHealth,
       eyeLevelTransitionDurationMs: 500,
@@ -313,24 +317,21 @@ export function useDesignPagePresentationWorkspaceRegistration({
       navigation: {
         plan: viewportShell.actions.panels.goPlan,
         furnish: viewportShell.actions.panels.goFurnish,
-        aiDesign: viewportShell.actions.panels.goAiDesign,
         shop: viewportShell.actions.panels.goShop,
       },
       dialogs: {
-        setPlansOpen: base.actions.dialogs.setShowPlans,
+        setPlansOpen: base.actions.dialogs.setShowPlans, setPlansOpenerId: base.actions.dialogs.setPlansOpenerId,
         openNewPlan: persistence.actions.newPlan.openNewPlanPicker,
-        setFeedbackOpen: base.actions.dialogs.setFeedbackOpen,
+        setFeedbackOpen: base.actions.dialogs.setFeedbackOpen, setDownloadOpen: base.actions.dialogs.setDownloadOpen,
       },
       billing: { openPortal: deferredPaywall.actions.openBillingPortal },
       persistence: {
-        toggleMyDesigns:
-          persistence.actions.persistence.toggleMyDesigns,
-        saveDesignToCloud:
-          persistence.actions.persistence.saveDesignToCloud,
+        toggleMyDesigns: persistence.actions.persistence.toggleMyDesigns,
+        saveDesignToCloud: persistence.actions.persistence.saveDesignToCloud,
+        shareDesign: persistence.actions.persistence.shareDesign,
         retrySaveStatus: persistence.actions.persistence.retrySaveStatus,
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
       },
-      cabinetry: { openStudio: cabinetry.actions.openCreateStudio },
       room: {
         reviewHealth: sceneRoomRead.actions.room.reviewActiveRoomHealth,
         rename: planWorkspace.actions.room.startRoomRename,

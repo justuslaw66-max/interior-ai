@@ -8,7 +8,7 @@ product_family: "Harper"
 product_name: "Harper TV Console"
 variant: "150cm natural oak draft import"
 
-price_usd: 999
+price_sgd: 999
 price_band: "mid"
 brand_tier: "premium_mid"
 
@@ -58,7 +58,7 @@ variants:
   - variant: "150cm natural oak draft import"
     finish_code: "natural_oak"
     finish_label: "Natural Oak"
-    price_usd: 999
+    price_sgd: 999
     price_band: "mid"
     brand_tier: "premium_mid"
     dimensions:

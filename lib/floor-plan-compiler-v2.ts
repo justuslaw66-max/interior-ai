@@ -1,3 +1,6 @@
+import { validateFloorSourceReviews } from "./floor-plan-source-calibration-validation";
+import { compileFloorPlanAnnotationV2 } from "./floor-plan-annotation-compiler";
+import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 import type {
   FloorPlanAnnotationGeometryV2,
   FloorPlanAnnotationV2,
@@ -104,8 +107,10 @@ export type CompiledFloorPlanStructureV2 = Omit<
 };
 
 export type CompiledFloorPlanAnnotationGeometryV2 =
+  | FloorPlanSourceDrawingGeometryV2
   | { kind: "point"; point: FloorPlanPointMmV2 }
   | { kind: "polygon"; points: FloorPlanPointMmV2[] }
+  | { kind: "polyline"; points: FloorPlanPointMmV2[] }
   | {
       kind: "wall_span";
       wallId: string;
@@ -763,17 +768,24 @@ function validateAnnotationGeometry(
   geometry: FloorPlanAnnotationGeometryV2,
   path: string,
   maps: FloorMaps,
-  issues: FloorPlanValidationIssueV2[]
+  issues: FloorPlanValidationIssueV2[],
+  sourceIds: Set<string>
 ): void {
+  if (geometry.kind === "source_drawing") {
+    const error = sourceDrawingGeometryError(geometry) ??
+      (sourceIds.has(geometry.sourceId) ? null : "Source artwork must reference an existing document source.");
+    if (error) addIssue(issues, "INVALID_SOURCE_ARTWORK", path, error);
+    return;
+  }
   if (geometry.kind === "point") {
     if (!maps.vertices.has(geometry.vertexId)) {
       addIssue(issues, "UNKNOWN_VERTEX", `${path}.vertexId`, `Unknown vertex: ${geometry.vertexId}.`);
     }
     return;
   }
-  if (geometry.kind === "polygon") {
-    if (geometry.vertexIds.length < 3) {
-      addIssue(issues, "ANNOTATION_POLYGON_TOO_SHORT", `${path}.vertexIds`, "Annotation polygons need at least three vertices.");
+  if (geometry.kind === "polygon" || geometry.kind === "polyline") {
+    if (geometry.vertexIds.length < (geometry.kind === "polyline" ? 2 : 3)) {
+      addIssue(issues, "ANNOTATION_POLYGON_TOO_SHORT", `${path}.vertexIds`, "Annotations need at least two polyline vertices or three polygon vertices.");
     }
     geometry.vertexIds.forEach((vertexId, index) => {
       if (!maps.vertices.has(vertexId)) {
@@ -858,31 +870,12 @@ export function validateFloorPlanDocumentV2(
     validateMeasuredProperty(floor.defaults.windowSillHeight, `${path}.defaults.windowSillHeight`, sourceIds, issues);
 
     validateUniqueIds(floor.calibrations, `${path}.calibrations`, issues);
-    floor.calibrations.forEach((calibration, index) => {
-      const calibrationPath = `${path}.calibrations[${index}]`;
-      if (!sourceIds.has(calibration.sourceId)) addIssue(issues, "UNKNOWN_SOURCE", `${calibrationPath}.sourceId`, `Unknown source: ${calibration.sourceId}.`);
-      validateInteger(calibration.pageNumber, `${calibrationPath}.pageNumber`, issues, { positive: true });
-      validateInteger(calibration.imageWidthPx, `${calibrationPath}.imageWidthPx`, issues, { positive: true });
-      validateInteger(calibration.imageHeightPx, `${calibrationPath}.imageHeightPx`, issues, { positive: true });
-      if (calibration.controlPoints.length < 2) {
-        addIssue(issues, "INSUFFICIENT_CALIBRATION", `${calibrationPath}.controlPoints`, "Source registration needs at least two control points.");
+    validateFloorSourceReviews(floor,path,sourceIds,{
+        issue: (code, location, message) => addIssue(issues, code, location, message),
+        integer: (value, location, options) => validateInteger(value, location, issues, options),
+        finite: (value, location) => validateFinite(value, location, issues),
       }
-      const sourcePointKeys = new Set<string>();
-      calibration.controlPoints.forEach((point, pointIndex) => {
-        const pointPath = `${calibrationPath}.controlPoints[${pointIndex}]`;
-        validateFinite(point.sourcePx.x, `${pointPath}.sourcePx.x`, issues);
-        validateFinite(point.sourcePx.y, `${pointPath}.sourcePx.y`, issues);
-        validateInteger(point.planMm.xMm, `${pointPath}.planMm.xMm`, issues);
-        validateInteger(point.planMm.zMm, `${pointPath}.planMm.zMm`, issues);
-        const key = `${point.sourcePx.x}:${point.sourcePx.y}`;
-        if (sourcePointKeys.has(key)) addIssue(issues, "DUPLICATE_CALIBRATION_POINT", pointPath, "Calibration source points must be distinct.");
-        sourcePointKeys.add(key);
-      });
-      if (calibration.rmsErrorPx !== undefined) {
-        validateFinite(calibration.rmsErrorPx, `${calibrationPath}.rmsErrorPx`, issues);
-        if (calibration.rmsErrorPx < 0) addIssue(issues, "NEGATIVE_CALIBRATION_ERROR", `${calibrationPath}.rmsErrorPx`, "Calibration error cannot be negative.");
-      }
-    });
+    );
 
     validateUniqueIds(floor.vertices, `${path}.vertices`, issues);
     validateUniqueIds(floor.walls, `${path}.walls`, issues);
@@ -1104,7 +1097,7 @@ export function validateFloorPlanDocumentV2(
     floor.annotations.forEach((annotation, index) => {
       const annotationPath = `${path}.annotations[${index}]`;
       if (!annotation.text.trim()) addIssue(issues, "EMPTY_ANNOTATION", `${annotationPath}.text`, "Annotation text is required.");
-      validateAnnotationGeometry(annotation.geometry, `${annotationPath}.geometry`, maps, issues);
+      validateAnnotationGeometry(annotation.geometry, `${annotationPath}.geometry`, maps, issues, sourceIds);
       validateProvenance(annotation.provenance, `${annotationPath}.provenance`, sourceIds, issues);
     });
 
@@ -1416,32 +1409,6 @@ function compileOpening(opening: FloorPlanOpeningV2, floor: FloorPlanFloorV2, ma
   };
 }
 
-function compileAnnotation(annotation: FloorPlanAnnotationV2, maps: FloorMaps): CompiledFloorPlanAnnotationV2 {
-  let geometry: CompiledFloorPlanAnnotationGeometryV2;
-  if (annotation.geometry.kind === "point") {
-    geometry = { kind: "point", point: getVertexPoint(maps.vertices.get(annotation.geometry.vertexId)!) };
-  } else if (annotation.geometry.kind === "polygon") {
-    geometry = {
-      kind: "polygon",
-      points: annotation.geometry.vertexIds.map((vertexId) => getVertexPoint(maps.vertices.get(vertexId)!)),
-    };
-  } else {
-    const wall = maps.walls.get(annotation.geometry.wallId)!;
-    geometry = {
-      ...annotation.geometry,
-      start: pointAlongWall(wall, annotation.geometry.offsetMm, maps.vertices),
-      end: pointAlongWall(wall, annotation.geometry.offsetMm + annotation.geometry.widthMm, maps.vertices),
-    };
-  }
-  return {
-    id: annotation.id,
-    kind: annotation.kind,
-    text: annotation.text,
-    ...(annotation.configurationId ? { configurationId: annotation.configurationId } : {}),
-    geometry,
-  };
-}
-
 function compileDimension(dimension: FloorPlanDimensionV2, maps: FloorMaps): CompiledFloorPlanDimensionV2 {
   const { provenance: _provenance, ...compiledDimension } = dimension;
   const from = getVertexPoint(maps.vertices.get(dimension.fromVertexId)!);
@@ -1492,7 +1459,10 @@ function compileFloor(floor: FloorPlanFloorV2): CompiledFloorPlanFloorV2 {
         ),
       })
     ),
-    annotations: floor.annotations.slice().sort(compareById).map((annotation) => compileAnnotation(annotation, maps)),
+    annotations: floor.annotations.slice().sort(compareById).map((annotation) => compileFloorPlanAnnotationV2(annotation, {
+      vertex: (id) => getVertexPoint(maps.vertices.get(id)!),
+      wallPoint: (id, offset) => pointAlongWall(maps.walls.get(id)!, offset, maps.vertices),
+    })),
     dimensions: floor.dimensions.slice().sort(compareById).map((dimension) => compileDimension(dimension, maps)),
   };
 }

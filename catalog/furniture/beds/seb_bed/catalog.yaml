@@ -6,8 +6,8 @@ product_family: "Seb"
 product_name: "Seb Bed"
 variant: "Super Single - Performance Creamy White"
 
-price_usd: 849
-compare_at_price_usd: 849
+price_sgd: 849
+compare_at_price_sgd: 849
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -111,8 +111,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-super-single-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=super_single"
     available: true
-    price_usd: 849
-    compare_at_price_usd: 849
+    price_sgd: 849
+    compare_at_price_sgd: 849
     dimensions: &super_single_dims
       width_cm: 114
       depth_cm: 209
@@ -151,8 +151,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-queen-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=queen"
     available: true
-    price_usd: 999
-    compare_at_price_usd: 999
+    price_sgd: 999
+    compare_at_price_sgd: 999
     dimensions: &queen_dims
       width_cm: 158.6
       depth_cm: 209
@@ -179,8 +179,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-king-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=king"
     available: true
-    price_usd: 1099
-    compare_at_price_usd: 1099
+    price_sgd: 1099
+    compare_at_price_sgd: 1099
     dimensions: &king_dims
       width_cm: 188.6
       depth_cm: 209
@@ -207,8 +207,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-super-single-single-table-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=1-drawer&bed_frame_size=super_single"
     available: true
-    price_usd: 1089
-    compare_at_price_usd: 1148
+    price_sgd: 1089
+    compare_at_price_sgd: 1148
     dimensions: &super_single_single_table_dims
       width_cm: 154
       depth_cm: 209
@@ -237,8 +237,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-queen-single-table-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=queen"
     available: true
-    price_usd: 1289
-    compare_at_price_usd: 1358
+    price_sgd: 1289
+    compare_at_price_sgd: 1358
     dimensions: &queen_single_table_dims
       width_cm: 198.6
       depth_cm: 209
@@ -264,8 +264,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-king-single-table-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=king"
     available: true
-    price_usd: 1389
-    compare_at_price_usd: 1458
+    price_sgd: 1389
+    compare_at_price_sgd: 1458
     dimensions: &king_single_table_dims
       width_cm: 244.6
       depth_cm: 209
@@ -291,8 +291,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-super-single-two-tables-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=1-drawer&bed_frame_size=super_single"
     available: true
-    price_usd: 1379
-    compare_at_price_usd: 1447
+    price_sgd: 1379
+    compare_at_price_sgd: 1447
     dimensions: &super_single_two_tables_dims
       width_cm: 194
       depth_cm: 209
@@ -321,8 +321,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-queen-two-tables-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=queen"
     available: true
-    price_usd: 1629
-    compare_at_price_usd: 1717
+    price_sgd: 1629
+    compare_at_price_sgd: 1717
     dimensions: &queen_two_tables_dims
       width_cm: 238.6
       depth_cm: 209
@@ -348,8 +348,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-seb-king-two-tables-performance-creamy-white.glb"
     affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=king"
     available: true
-    price_usd: 1729
-    compare_at_price_usd: 1817
+    price_sgd: 1729
+    compare_at_price_sgd: 1817
     dimensions: &king_two_tables_dims
       width_cm: 300.6
       depth_cm: 209

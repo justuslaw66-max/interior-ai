@@ -161,8 +161,8 @@ export function DesignPageEditorCommandBar({
           data-testid="editor-command-overflow-room-context"
           className={
             configuration.dark
-              ? "mb-1 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-neutral-100 2xl:hidden"
-              : "mb-1 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-neutral-900 2xl:hidden"
+              ? "mb-1 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-neutral-100 min-[1800px]:hidden"
+              : "mb-1 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-neutral-900 min-[1800px]:hidden"
           }
         >
           <div className="flex items-start justify-between gap-2">

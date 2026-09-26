@@ -6,7 +6,7 @@ product_name: "Hugg Nesting Side Table"
 slug: "castlery-hugg-nesting-side-table-performance-basalt-opened"
 variant: "Performance Basalt / Seats Open"
 
-price_usd: 499
+price_sgd: 499
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -238,7 +238,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837485/crusader/variants/AS-000634-AR4002-NA/Hugg-Nesting-Side-Table-Natural-Performance-Basalt-Front-1729837483.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#a89070"
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -272,7 +272,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729837267/crusader/variants/AS-000634-AR4002-CT/Hugg-Nesting-Side-Table-Chestnut-Performance-Basalt-Front-1729837264.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#8B6F47"
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:
@@ -306,7 +306,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1729836921/crusader/variants/AS-000634-AR4002-BLK/Hugg-Nesting-Side-Table-Black-Performance-Basalt-Front-1729836919.jpg"
     swatch_group: "wood_finish"
     swatch_hex: "#1f1f1f"
-    price_usd: 499
+    price_sgd: 499
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

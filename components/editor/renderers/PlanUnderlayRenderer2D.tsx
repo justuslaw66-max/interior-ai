@@ -1,5 +1,7 @@
 "use client";
 
+import FloorPlanUnderlaySurface from "./FloorPlanUnderlaySurface";
+
 import { useLoader } from "@react-three/fiber";
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
@@ -181,58 +183,10 @@ function ImagePlanUnderlay({
 
   return (
     <>
-      <group
-        position={[underlay.position.x, 0.001, underlay.position.z]}
-        rotation-y={(underlay.rotationDeg * Math.PI) / 180}
-      >
-        <mesh
-          rotation-x={-Math.PI / 2}
-          renderOrder={-10}
-          onClick={(event) => {
-            if (!isPickingPoint) return;
-            event.stopPropagation();
-            handlePointClick(event.point);
-          }}
-          onPointerMove={(event) => {
-            if (!isPickingPoint) return;
-            handlePointPreview(event.point);
-          }}
-              onPointerOut={() => {
-                setTraceRoomPreviewPoint(null);
-                setTraceOpeningPreviewPoint(null);
-              }}
-        >
-          <planeGeometry args={[underlay.widthMeters, underlay.depthMeters]} />
-          <meshBasicMaterial
-            map={texture}
-            transparent
-            opacity={underlay.opacity}
-            depthWrite={false}
-            toneMapped={false}
-          />
-        </mesh>
-        {isPickingPoint && (
-          <mesh
-            rotation-x={-Math.PI / 2}
-            position={[0, 0.04, 0]}
-              onClick={(event) => {
-                event.stopPropagation();
-                handlePointClick(event.point);
-              }}
-              onPointerMove={(event) => {
-                event.stopPropagation();
-                handlePointPreview(event.point);
-              }}
-              onPointerOut={() => {
-                setTraceRoomPreviewPoint(null);
-                setTraceOpeningPreviewPoint(null);
-              }}
-            >
-            <planeGeometry args={[underlay.widthMeters, underlay.depthMeters]} />
-            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-          </mesh>
-        )}
-      </group>
+      <FloorPlanUnderlaySurface underlay={underlay} texture={texture} picking={Boolean(isPickingPoint)}
+        onPoint={handlePointClick} onPreview={handlePointPreview} onLeave={() => {
+          setTraceRoomPreviewPoint(null); setTraceOpeningPreviewPoint(null);
+        }} />
 
       {calibrationMode && calibrationPoints.length === 2 && (
         <Line

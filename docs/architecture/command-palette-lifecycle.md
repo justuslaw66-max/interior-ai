@@ -129,7 +129,8 @@ requested and current design, workspace/project, Consumer/Pro and editor mode,
 Preview state, query, action consumption, and cancellation. Scope change,
 Preview entry, unmount, or reopen supersession invalidates stale restoration.
 Ordinary close returns to the current semantic equivalent of the recognized
-editor action, then the visible More action, then the visible Workspace action.
+editor action, then the visible More action, then the current design step
+(Plan when no step is current; the Workspace menu trigger before UX phase 3).
 Canvas or another non-action opener intentionally uses that fallback hierarchy;
 `body` is not a target.
 
@@ -172,7 +173,7 @@ invalidates it instead of merely hiding rendered output.
 Recognized editor actions are captured by stable test ID, DOM ID, or accessible
 label only within the command bar, tool rail, design controls, selected-item
 panel, or focused editor toolbars. Close resolves exactly one current semantic
-replacement, then More, then Workspace; hidden, inert, disabled, disconnected,
+replacement, then More, then the current step; hidden, inert, disabled, disconnected,
 obscured, ambiguous, or out-of-viewport candidates are rejected. The temporary
 return ID is session-local and removed before the next capture.
 

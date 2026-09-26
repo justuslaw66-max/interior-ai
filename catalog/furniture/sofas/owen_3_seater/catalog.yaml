@@ -9,7 +9,7 @@ product_name: "Owen 3 Seater Sofa"
 slug: "castlery-owen-3-seater-sofa"
 variant: "3 Seater"
 
-price_usd: 1399
+price_sgd: 1399
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -232,7 +232,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "beige"
     tone: "neutral"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"
@@ -256,7 +256,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "beige"
     tone: "warm"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"
@@ -280,7 +280,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "grey"
     tone: "cool"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"
@@ -304,7 +304,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "beige"
     tone: "neutral"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"
@@ -328,7 +328,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "beige"
     tone: "warm"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"
@@ -354,7 +354,7 @@ variants:
     collection_type: "stocked_fabric"
     color_family: "grey"
     tone: "cool"
-    price_usd: 1399
+    price_sgd: 1399
     dimensions: { width_cm: 203, depth_cm: 99, height_cm: 81 }
     seat_capacity: 3
     size_class: "large"

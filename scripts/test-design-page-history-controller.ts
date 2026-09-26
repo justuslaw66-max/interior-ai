@@ -136,14 +136,10 @@ assert.match(
   /publishAllMovedItems[\s\S]*?previewItems\(update\)[\s\S]*?commitActiveDrag[\s\S]*?setItems\(input\)/,
   "Single-item pointer previews should stay off root document state until the gesture commits."
 );
-const pointerUpSource = furnitureItemSource.slice(
-  furnitureItemSource.indexOf("const onPointerUp"),
-  furnitureItemSource.indexOf("const onPointerMove")
-);
-assert.ok(
-  pointerUpSource.indexOf("onDragEnd(instanceId, position)") <
-    pointerUpSource.indexOf("onDraggingChange?.(false)"),
-  "Pointer-up should commit or roll back the document gesture before the canvas closes it."
+assert.match(
+  furnitureItemSource,
+  /onFinish: \(cancelled, finalPosition\)[\s\S]*?try \{ if \(!cancelled && interactive\) onDragEnd\?\.\(instanceId, finalPosition\); \}[\s\S]*?finally \{ onDraggingChange\?\.\(false\); \}/,
+  "Accepted release must commit before the canvas closes the gesture; cancellation must skip commit and use its rollback."
 );
 assert.doesNotMatch(
   documentHistoryControllerSource,
@@ -230,7 +226,7 @@ for (const gesture of [
 }
 assert.match(
   editorInteractionRegistrationSource,
-  /const \{ flushCoalescedHistoryTransaction \} = documentRoom\.actions\.history;[\s\S]*?canvas: \{ history, flushCoalescedHistoryTransaction \}/,
+  /const \{ flushCoalescedHistoryTransaction, runHistoryTransaction \} = documentRoom\.actions\.history;[\s\S]*?canvas: \{ history, flushCoalescedHistoryTransaction \}/,
   "The canvas controller must receive the design page's own coalesced-transaction flush."
 );
 
@@ -377,6 +373,42 @@ function captureHistoryWarnings(run: () => void): string[] {
     "Move item",
     "A gesture must never commit a transaction it did not open."
   );
+}
+
+// Behavioural: runHistoryTransaction, which the discrete edits use (Duplicate room, the floor
+// actions, and the fourteen callers scripts/test-design-page-history-callers.ts guards). Made inside
+// a slider's coalesced transaction, the edit must get its own undo step and keep the slider's.
+{
+  const fixture = renderDesignPageHistory();
+  const { history, runCoalescedHistoryTransaction, runHistoryTransaction, flushCoalescedHistoryTransaction } =
+    fixture.designHistory;
+  const warnings = captureHistoryWarnings(() => {
+    runCoalescedHistoryTransaction("Change ceiling height", () => fixture.setCeilingHeight(2.9));
+    runHistoryTransaction("Change floor-plan orientation", () => fixture.moveRoom(1.5));
+    // What the slider's idle timer does 420 ms later.
+    flushCoalescedHistoryTransaction();
+  });
+  assert.deepEqual(warnings, [], "A discrete edit inside a slider's window must not close the slider's transaction.");
+  assert.equal(history.getUndoName(), "Change floor-plan orientation", "The edit should be its own undo step.");
+  history.undo();
+  assert.deepEqual(fixture.room().planPosition, { x: 0, z: 0 }, "Undo should revert the edit.");
+  assert.equal(fixture.room().geometry.height, 2.9, "Undoing the edit must keep the slider edit.");
+  assert.equal(history.getUndoName(), "Change ceiling height");
+}
+
+// During a gesture a discrete edit is refused outright rather than folded into the gesture.
+{
+  const fixture = renderDesignPageHistory();
+  const { history, runHistoryTransaction } = fixture.designHistory;
+  history.beginContinuousCommand({ id: SCENE_ITEM_DRAG_COMMAND_ID, description: "Move item" });
+  assert.throws(
+    () => runHistoryTransaction("Create zone", () => fixture.moveRoom(3)),
+    /while "Move item" is active/,
+    "A discrete edit must not run inside another transaction."
+  );
+  assert.deepEqual(fixture.room().planPosition, { x: 0, z: 0 }, "The refused edit must not have run.");
+  history.commitContinuousCommand(SCENE_ITEM_DRAG_COMMAND_ID);
+  assert.equal(history.getStatus().activeCommand, null, "The gesture should still close its own transaction.");
 }
 
 console.log("design page history controller guardrails passed");

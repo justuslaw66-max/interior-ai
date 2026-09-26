@@ -2,6 +2,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { enrichDesignSnapshotProductSnapshots } from "@/lib/design-item-product-snapshot";
 import type { LoadedDesignTransport } from "@/lib/design-api-client";
 import { migrateDesignDocument } from "@/lib/design-document-migrations";
+import { withCloudDesignTitle } from "@/lib/design-title";
 import {
   reconcileZonesForItems,
   updateActiveRoomZones,
@@ -138,5 +139,6 @@ export function normalizeLoadedCloudDesign(
   } else {
     snapshot = legacyApiToSnapshot({ ...data, snapshot: undefined });
   }
-  return { ...projectCanonicalDesignPersistence(snapshot), revision };
+  const titled = withCloudDesignTitle(snapshot, data.title);
+  return { ...projectCanonicalDesignPersistence(titled), revision };
 }

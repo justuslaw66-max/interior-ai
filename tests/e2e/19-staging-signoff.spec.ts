@@ -11,6 +11,7 @@ import {
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
+import { chooseStartTemplate } from "./variant-test-utils";
 import {
   getE2EBaseUrl,
   resolveE2EAdminEmail,
@@ -139,11 +140,13 @@ test.describe("19. Staging Signoff Evidence", () => {
     const betaStartTemplate = page.getByTestId("beta-start-template");
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
       await betaStartTemplate.click();
+      await page.getByTestId("apply-furnished-template-studio").click();
     } else {
+      // New design opens Start a new design.
+      await page.getByTestId("editor-command-overflow").click();
       await page.getByTestId("editor-command-new-plan").click();
-      await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
+      await chooseStartTemplate(page, "studio", { furnished: true });
     }
-    await page.getByTestId("apply-furnished-template-studio").click();
     await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);

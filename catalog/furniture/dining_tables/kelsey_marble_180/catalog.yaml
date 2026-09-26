@@ -6,7 +6,7 @@ product_family: "Kelsey"
 product_name: "Kelsey Marble Dining Table"
 variant: "180 White Wash"
 
-price_usd: 1699
+price_sgd: 1699
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -128,7 +128,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199639/crusader/variants/52460093/Kelsey-Marble-Dining-Table-180-Natural-Side-1660199637.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1660199660/crusader/variants/T52460092/Kelsey-Marble-Dining-Table-180-Natural-Dim-1660199659.jpg"
 
-    price_usd: 1699
+    price_sgd: 1699
     price_band: "premium"
     brand_tier: "premium_mid"
 
@@ -185,7 +185,7 @@ variants:
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755482044/knight/USP/Refresh%202025/Kelsey-Marble-Dining-Table-Walnut-Stain-Square-Det_5.jpg"
       - "https://res.cloudinary.com/castlery/image/upload/w_1200,f_auto,q_auto/v1755482041/knight/USP/Refresh%202025/Kelsey-Marble-Dining-Table-Walnut-Stain-Square-Det_3.jpg"
 
-    price_usd: 1699
+    price_sgd: 1699
     price_band: "premium"
     brand_tier: "premium_mid"
 

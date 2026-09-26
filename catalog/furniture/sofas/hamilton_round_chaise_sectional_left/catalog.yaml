@@ -9,7 +9,7 @@ product_name: "Hamilton Round Chaise Sectional Sofa"
 slug: "castlery-hamilton-round-chaise-sectional-left"
 variant: "Round Chaise Sectional / Left Facing"
 
-price_usd: 2799
+price_sgd: 2799
 price_band: "premium"
 brand_tier: "premium_mid"
 design_zone: "living_zone"
@@ -134,7 +134,7 @@ variants:
     model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-round-chaise-sectional-left.glb"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1655431871/crusader/variants/50440780-MC4002/Hamilton-Round-Chaise-Sectional-Sofa-Left-Brilliant-White-Front-1655431869.png"
     swatch_group: "upholstery_option"
-    price_usd: 2799
+    price_sgd: 2799
     dimensions: { width_cm: 310, depth_cm: 145, height_cm: 82 }
     affiliate_url: "https://www.castlery.com/sg/products/hamilton-round-chaise-sectional-sofa?orientation=left_facing"
     available: true
