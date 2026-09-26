@@ -13,6 +13,7 @@ import type {
   SemanticOpeningSymbol,
 } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { PdfRasterFloorPlanSourceAdapter } from "@/lib/floor-plan-imports/pdf-raster-adapter";
+import { applyVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-pass";
 import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-adapter";
 import {
   PythonFloorPlanVectorizerProvider,
@@ -103,6 +104,35 @@ async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbo
     document: validated.candidate as unknown as FloorPlanDocumentV2,
     issues: validated.reviewIssues,
   };
+}
+
+/** The vectorizer pass over one page with a provider that cannot run; returns its diagnostics after checking the page kept its evidence. */
+async function failSoftPass(config: ConstructorParameters<typeof PythonFloorPlanVectorizerProvider>[0]) {
+  const page: RegisteredPageEvidence = {
+    pageNumber: 1,
+    widthPx: 10,
+    heightPx: 10,
+    vectorSegments: [],
+    vectorPaths: [],
+    text: [],
+    semantics: { roomLabels: [{ label: "KITCHEN", roomType: "kitchen", centerXRatio: 0.5, centerYRatio: 0.5, confidence: 0.6 }], dimensionLabels: [], openingSymbols: [], notes: [] },
+  };
+  const roomLabelsBefore = JSON.stringify(page.semantics.roomLabels);
+  const store = { readDerivative: async () => ({ id: "d", fileName: "page.png", mimeType: "image/png", byteLength: 1, sha256: "0".repeat(64), bytes: new Uint8Array([1]) }) };
+  const diagnostics = await applyVectorizerEvidence({
+    pages: [page],
+    renderedPages: [{ pageNumber: 1, widthPx: 10, heightPx: 10, assetKey: "d" }],
+    context: { ...context, store: store as unknown as FloorPlanAdapterContext["store"] },
+    provider: new PythonFloorPlanVectorizerProvider(config),
+    pageLimit: 1,
+    rankPages: (pages) => pages,
+    mergeSemantics: () => assert.fail("nothing to merge when the provider failed"),
+  });
+  assert.equal(JSON.stringify(page.semantics.roomLabels), roomLabelsBefore, "the other sources' evidence is kept");
+  assert.match(page.semantics.notes.at(-1) ?? "", /^Local vectorizer unavailable: /);
+  const result = diagnostics.get(1);
+  assert.ok(result);
+  return result;
 }
 
 async function main() {
@@ -243,14 +273,14 @@ async function main() {
         `import sys, shutil\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`
       );
       const config = { ...floorPlanVectorizerRuntimeConfiguration({ FLOOR_PLAN_VECTORIZER_ENABLED: "1" }), directory };
-      const before = readdirSync(tmpdir()).filter((entry) => entry.startsWith("floor-plan-vectorizer-")).length;
+      const before = readdirSync(tmpdir()).filter((entry) => entry.startsWith("vectorizer-run-")).length;
       const evidence = await new PythonFloorPlanVectorizerProvider(config).analyzePage(
         { pageNumber: 1, widthPx: 828, heightPx: 957, mimeType: "image/png", bytes: new Uint8Array([1, 2, 3]) },
         { timeoutMs: 30_000 }
       );
       assert.equal(evidence.rooms.length > 0, true);
       assert.equal(
-        readdirSync(tmpdir()).filter((entry) => entry.startsWith("floor-plan-vectorizer-")).length,
+        readdirSync(tmpdir()).filter((entry) => entry.startsWith("vectorizer-run-")).length,
         before,
         "the private page copy is removed"
       );
@@ -263,6 +293,17 @@ async function main() {
         /exceeded 400 ms/
       );
       summary.push("provider: stand-in programs run, evidence parsed, temporary folder removed, slow program killed");
+
+      // Without the runtime the import goes on: a missing interpreter, or a program that stops with a message
+      // (no OpenCV, no tesseract), leaves the page exactly as the other sources made it and records why.
+      writeFileSync(path.join(directory, "floorplan_vectorize.py"), "import sys\nsys.exit('the tesseract program is not on PATH')\n");
+      const missing = await failSoftPass({ ...config, pythonPath: path.join(directory, "no-such-python3") });
+      assert.equal(missing.status, "failed");
+      assert.match(missing.error ?? "", /ENOENT/);
+      const stopped = await failSoftPass(config);
+      assert.equal(stopped.status, "failed");
+      assert.match(stopped.error ?? "", /exited with 1: the tesseract program is not on PATH/);
+      summary.push("provider: a missing interpreter or a stopped program fails soft - page unchanged, reason noted");
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

@@ -15,7 +15,9 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.7.0"
+VERSION = "app-evidence-0.8.0"
+OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
+SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
 ROOM_TYPES = (
     ("shelter", ("SHELTER", "HS", "H.S", "BOMB")),
@@ -1905,20 +1907,52 @@ def build(m, gray=None):
                 n_tot += 1
                 n_hit += 1 if max([b_ - a_ for a_, b_ in _runs(line > 0)] or [0]) >= 0.5 * T else 0
         return n_tot > 0 and n_hit >= 0.6 * n_tot
-    bad = []
+    bad = []; partitions = 0
+    def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
+        labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
+        return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
     for g in openings:
         bt = g.get("between", [None, None])
         if g["kind"] == "open_passage" and walled_up(g):       # (folding and sliding doors are also read ACROSS a traced wall: not those)
             bad.append(g); continue
+        # Two or three parallel lines between two named indoor rooms are a lightweight partition drawn in outline (the
+        # bedroom / kitchen wall on HDB plans), not a window: a window has the outdoors, or a space without a name, on one side.
+        if g["kind"] == "window" and None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
+            g.update(kind="wall", operation=None, confidence=0.5, why="parallel lines between two named indoor rooms: a partition drawn in outline, not a window")
+            partitions += 1; continue
         if bt[0] is not None and bt[0] == bt[1] and (g["kind"] == "window" or (g["kind"] == "open_passage" and g.get("confidence", 1) <= 0.55)):
             bad.append(g)
         elif (bt[0] is None) != (bt[1] is None) and g["kind"] != "window" and g.get("operation") != "swing" and blocked(g, -1 if bt[0] is None else 1):
             bad.append(g)
-    if bad:
+    if bad or partitions:
         openings = [g for g in openings if not any(g is d_ for d_ in bad)]
         closed, rooms = make_rooms(openings)
         settle(rooms, openings)
-    m["_openings_rejected"] = len(bad)
+    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions
+    # A face under 1.5 m2 that carries no label is not a room: the inside of a shaft, the strip behind a wardrobe
+    # drawn against a wall, a notch between a column and a cupboard.  The smallest named space on any plan seen is a
+    # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
+    # not an opening (the wall stands solid there); the rooms are rebuilt without it.
+    def slivers(rooms_):
+        return [r_ for r_ in rooms_ if scale_work and not r_["labels"] and r_["area"] * scale_work * scale_work < SLIVER_M2 * 1e6]
+    sliver_count = 0
+    for _round in range(3):
+        sl = slivers(rooms)
+        if not sl:
+            break
+        gone = {n_ for n_, r_ in enumerate(rooms) if any(r_ is q for q in sl)}
+        into = [g for g in openings if any(b_ in gone for b_ in g.get("between", [None, None]) if b_ is not None)]
+        sliver_count += len(sl)
+        if not into:
+            rooms = [r_ for r_ in rooms if not any(r_ is q for q in sl)]
+            settle(rooms, openings)
+            break
+        openings = [g for g in openings if not any(g is d_ for d_ in into)]
+        closed, rooms = make_rooms(openings)
+        settle(rooms, openings)
+        rooms = [r_ for r_ in rooms if not any(r_ is q for q in slivers(rooms))]
+        settle(rooms, openings)
+    m["_slivers"] = sliver_count
     # The way onto a balcony from the living room is a sliding door, drawn like a window (two or three lines from jamb to
     # jamb).  A wide "window" between a living / dining / kitchen space and a balcony-type space is that door.
     ONTO = ("BALCONY", "PES", "TERRACE", "PATIO", "DECK", "COURTYARD", "YARD")
@@ -2070,7 +2104,7 @@ def build(m, gray=None):
                       "dimensionLabels": sem_dims, "openingSymbols": sem_open, "fixtureSymbols": sem_fix, "entrance": None, "notes": notes},
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
-                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
+                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
                         "unsupportedWallPx": int(unsupported), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
