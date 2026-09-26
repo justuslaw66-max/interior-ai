@@ -224,13 +224,12 @@ export function DesignPageWorkspace() {
         planAuthoring: planAuthoringRegistration,
       },
     });
-  const requestedDesignWorkspaceRegistration =
-    useDesignPageRequestedDesignWorkspaceRegistration({
-      boundaries: {
-        coreShell: coreShellRegistration,
-        persistence: persistenceWorkspaceRegistration,
-      },
-    });
+  useDesignPageRequestedDesignWorkspaceRegistration({
+    boundaries: {
+      coreShell: coreShellRegistration,
+      persistence: persistenceWorkspaceRegistration,
+    },
+  });
   const persistenceState = persistenceWorkspaceRegistration.state.persistence;
   const newPlanState = persistenceWorkspaceRegistration.state.newPlan;
   const persistenceActions =
@@ -417,19 +416,6 @@ export function DesignPageWorkspace() {
     },
     persistence: { startChooser: persistenceWorkspaceRegistration.state.startChooser,
       guestSave: { reason: persistenceState.guestPrompt?.reason ?? null, busy: persistenceState.guestPromptPrimaryBusy, lifecycleScopeKey: persistenceState.guestPromptScopeKey, onCancel: () => { if (persistenceState.guestPrompt) persistenceActions.cancelGuestPrompt(persistenceState.guestPrompt); }, onContinueWithoutSaving: () => { if (persistenceState.guestPrompt) persistenceActions.handleGuestPromptNotNow(persistenceState.guestPrompt); }, onSaveAndContinue: () => persistenceState.guestPrompt ? persistenceActions.handleGuestSaveAndContinue(persistenceState.guestPrompt) : undefined },
-      myDesigns: {
-        data: { open: persistenceState.showMyDesigns, designs: persistenceState.myDesigns, loading: persistenceState.loadingDesigns, allDesignIds: persistenceState.allSavedDesignIds,
-          selectedDesignIds: persistenceState.selectedSavedDesignIds, selectedDesignCount: persistenceState.selectedSavedDesignCount,
-          allDesignsSelected: persistenceState.allSavedDesignsSelected, deletingDesignIds: persistenceState.deletingDesignIds,
-          pendingDeleteDesign: persistenceState.pendingDeleteDesign },
-        actions: { onClose: persistenceActions.closeMyDesigns, onOpenTemplates: newPlanActions.openNewPlanPicker,
-          onToggleAll: persistenceActions.toggleAllSavedDesignSelection,
-          onToggleSelection: persistenceActions.toggleSavedDesignSelection,
-          onLoadDesign: requestedDesignWorkspaceRegistration.actions.openSavedDesign,
-          onRequestDelete: persistenceActions.requestDeleteSavedDesigns,
-          onCancelDelete: persistenceActions.cancelDeleteSavedDesigns,
-          onConfirmDelete: persistenceActions.handleDeleteSavedDesign },
-      },
       templateChoice: {
         data: { open: Boolean(pendingPlanTemplateReplacement), templateLabel: pendingPlanTemplateReplacement?.template.label ?? "this floor plan",
           busy: newPlanState.startingNewPlan, errorMessage: newPlanState.newPlanStartError },

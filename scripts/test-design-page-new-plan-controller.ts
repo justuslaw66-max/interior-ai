@@ -267,7 +267,7 @@ assert.match(
 );
 assert.match(
   controllerSource,
-  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);/,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*setGuidedPlanStartMode\("template"\);/,
   "The visible New plan command must require a choice before the next template can replace the document."
 );
 assert.match(

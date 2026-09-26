@@ -61,7 +61,6 @@ export function buildDesignPageDialogLayerAdapter({
             dialogs.presentExport.configuration.open && !isClientPreview,
         },
       },
-      myDesigns: dialogs.myDesigns,
       designRename: dialogs.designRename,
       roomRename: dialogs.roomRename,
       planAnnotation: dialogs.planAnnotation,

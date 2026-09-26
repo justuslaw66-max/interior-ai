@@ -7,7 +7,6 @@ type Dialogs = BuildDesignPageDialogLayerAdapterInput["dialogs"];
 type Overlays = BuildDesignPageDialogLayerAdapterInput["overlays"];
 type UpgradeState = Dialogs["upgrade"]["state"];
 type PlansState = Dialogs["plans"]["state"];
-type MyDesigns = Dialogs["myDesigns"];
 type TemplateChoice = Dialogs["planTemplateChoice"];
 type Placement = Dialogs["catalogPlacement"];
 type BetaFeedback = NonNullable<Overlays["betaFeedback"]>;
@@ -33,31 +32,6 @@ type PlansModel = {
   yearlyLabel: PlansState["yearlyLabel"];
   yearlyEffectiveMonthlyLabel: PlansState["yearlyEffectiveMonthlyLabel"];
 };
-
-type MyDesignsData = Pick<
-  MyDesigns,
-  | "open"
-  | "designs"
-  | "loading"
-  | "allDesignIds"
-  | "selectedDesignIds"
-  | "selectedDesignCount"
-  | "allDesignsSelected"
-  | "deletingDesignIds"
-  | "pendingDeleteDesign"
->;
-
-type MyDesignsActions = Pick<
-  MyDesigns,
-  | "onClose"
-  | "onOpenTemplates"
-  | "onToggleAll"
-  | "onToggleSelection"
-  | "onLoadDesign"
-  | "onRequestDelete"
-  | "onCancelDelete"
-  | "onConfirmDelete"
->;
 
 type TemplateChoiceData = Pick<
   TemplateChoice,
@@ -103,7 +77,6 @@ export type BuildDesignPageDialogLayerModelInput = {
     guestSave: Dialogs["guestSave"] & {
       reason: BuildDesignPageDialogLayerAdapterInput["state"]["guestSaveReason"];
     };
-    myDesigns: { data: MyDesignsData; actions: MyDesignsActions };
     templateChoice: {
       data: TemplateChoiceData;
       actions: TemplateChoiceActions;
@@ -268,11 +241,6 @@ export function buildDesignPageDialogLayerModel({
       },
       presentExport: presentation.presentExport,
       download: buildDownloadDialog(access, presentation),
-      myDesigns: {
-        ...persistence.myDesigns.data,
-        designerTheme: access.designerTheme,
-        ...persistence.myDesigns.actions,
-      },
       designRename: editing.designRename,
       roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
         onValueChange: editing.roomRename.onValueChange, onCancel: editing.roomRename.onCancel, onSave: editing.roomRename.onSave },

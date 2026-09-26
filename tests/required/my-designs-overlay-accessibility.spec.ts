@@ -1,10 +1,15 @@
 import crypto from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 import { Pool } from "pg";
-import { assertCurrentDesignDocument } from "../../lib/design-page-local-backup-recovery";
-import { DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY } from "../../lib/useDesignPageLocalBackupHydration";
+
+// My designs is one page (audit findings MD1–MD4 and MD6). The editor's More → My designs saves
+// the open design first and goes there. On the page, each card's More menu and its Rename, Share
+// and Delete dialogs own focus while open, hide the page behind them, call the server once, and
+// hand focus back to the card's More button (after a delete, to the next card's), in Chromium
+// and WebKit, on desktop and phone widths. The gate keeps the name it had when My designs was an
+// editor dialog.
 
 type UserMode = "consumer" | "pro";
 type Seed = {
@@ -22,10 +27,10 @@ if (!databaseUrl) throw new Error("DATABASE_URL is required for My Designs tests
 const pool = new Pool({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
-function fixtureIdentity(testInfo: TestInfo) {
+function fixtureIdentity(testInfo: TestInfo, variant: string) {
   return crypto
     .createHash("sha256")
-    .update(`${testInfo.project.name}:${testInfo.title}`)
+    .update(`${testInfo.project.name}:${testInfo.title}:${variant}`)
     .digest("hex")
     .slice(0, 16);
 }
@@ -46,12 +51,14 @@ async function deleteFixtureRows(userId: string) {
   });
 }
 
+/** One user with a session and these designs, created oldest first (the page lists newest first). */
 async function createSeed(
   testInfo: TestInfo,
   mode: UserMode,
-  designTitles: readonly string[]
+  designTitles: readonly string[],
+  variant = "main"
 ): Promise<Seed> {
-  const identity = fixtureIdentity(testInfo);
+  const identity = fixtureIdentity(testInfo, variant);
   const userId = `ch0015d-user-${identity}`;
   const sessionToken = `ch0015d-session-${identity}`;
   await deleteFixtureRows(userId);
@@ -75,32 +82,10 @@ async function createSeed(
     const designIds: string[] = [];
     for (const [index, title] of designTitles.entries()) {
       const id = `ch0015d-design-${identity}-${index + 1}`;
-      await prisma.design.create({
-        data: {
-          id,
-          title,
-          roomWidth: 5.8,
-          roomDepth: 4.2,
-          items: [],
-          zones: [],
-          savedViews: [],
-          mode: "homeowner",
-          userId,
-          createdAt: new Date(`2026-08-09T0${index}:00:00.000Z`),
-        },
-      });
+      await createDesign(userId, id, title, index);
       designIds.push(id);
     }
-    const [designCount, sessionCount, userCount] = await Promise.all([
-      prisma.design.count({ where: { userId } }),
-      prisma.session.count({ where: { userId } }),
-      prisma.user.count({ where: { id: userId } }),
-    ]);
-    expect({ designCount, sessionCount, userCount }).toEqual({
-      designCount: designTitles.length,
-      sessionCount: 1,
-      userCount: 1,
-    });
+    expect(await prisma.design.count({ where: { userId } })).toBe(designTitles.length);
     return { userId, sessionToken, designIds };
   } catch (error) {
     await deleteFixtureRows(userId);
@@ -108,20 +93,29 @@ async function createSeed(
   }
 }
 
+async function createDesign(userId: string, id: string, title: string, index: number) {
+  await prisma.design.create({
+    data: {
+      id,
+      title,
+      roomWidth: 5.8,
+      roomDepth: 4.2,
+      items: [],
+      zones: [],
+      savedViews: [],
+      mode: "homeowner",
+      userId,
+      createdAt: new Date(Date.UTC(2026, 7, 9, 0, index)),
+      updatedAt: new Date(Date.UTC(2026, 7, 9, 0, index)),
+    },
+  });
+}
+
 async function cleanupSeed(seed: Seed) {
   await deleteFixtureRows(seed.userId);
 }
 
-async function openEditor(
-  page: Page,
-  seed: Seed,
-  mode: UserMode,
-  viewport = DESKTOP
-) {
-  await page.setViewportSize(viewport);
-  await page.addInitScript(() => {
-    localStorage.setItem("scene_performance_mode", "lite");
-  });
+async function signIn(page: Page, seed: Seed) {
   await page.context().addCookies([
     {
       name: "authjs.session-token",
@@ -133,272 +127,239 @@ async function openEditor(
       secure: false,
     },
   ]);
-  const sessionReady = page.waitForResponse(async (response) => {
-    if (new URL(response.url()).pathname !== "/api/auth/session") return false;
-    if (response.status() !== 200) return false;
-    const payload = (await response.json()) as { user?: unknown } | null;
-    return Boolean(payload?.user);
+}
+
+async function openMyDesignsPage(page: Page, seed: Seed | null, viewport = DESKTOP) {
+  await page.setViewportSize(viewport);
+  if (seed) await signIn(page, seed);
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+  // Server-rendered first: clicks before React hydrates the page do nothing.
+  await expect(page.getByTestId(seed ? "my-designs-page" : "my-designs-signed-out"))
+    .toHaveAttribute("data-client-hydrated", "true");
+}
+
+async function openEditor(page: Page, path: string) {
+  await page.setViewportSize(DESKTOP);
+  await page.addInitScript(() => {
+    localStorage.setItem("scene_performance_mode", "lite");
   });
-  await page.goto(mode === "pro" ? "/design?mode=designer" : "/design", {
-    waitUntil: "domcontentloaded",
-  });
-  await sessionReady;
+  await page.goto(path, { waitUntil: "domcontentloaded" });
   const scene = page.getByTestId("scene-canvas");
   await expect(scene).toHaveCount(1);
-  await expect(scene).toBeVisible();
   await expect(scene).toHaveAttribute("data-client-hydrated", "true");
-  await expect(scene).toHaveAttribute("data-lighting-quality", "low");
-  if (mode === "pro") {
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
-  }
 }
 
-async function openMyDesigns(page: Page, entry: "pointer" | "keyboard") {
-  const more = page.getByTestId("editor-command-overflow");
-  const action = page.getByTestId("editor-command-overflow-load");
-  if (await action.count() === 0) {
-    if (entry === "pointer") await more.click();
-    else {
-      await more.focus();
-      await page.keyboard.press("Enter");
-    }
-  }
-  await expect(action).toHaveCount(1);
-  await expect(action).toBeVisible();
-  if (entry === "pointer") await action.click();
-  else {
-    await action.focus();
-    await page.keyboard.press("Enter");
-  }
-  const dialog = page.getByRole("dialog", { name: "My designs" });
-  await expect(dialog).toHaveCount(1);
-  await expect(dialog).toBeVisible();
-  return dialog;
+async function openMoreMenu(page: Page) {
+  await page.getByTestId("editor-command-overflow").click();
+  await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
 }
 
-async function readValidatedLocalBackup(page: Page) {
-  const raw = await page.evaluate(
-    (key) => window.localStorage.getItem(key),
-    DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY
-  );
-  if (raw === null) return null;
-  assertCurrentDesignDocument(raw);
-  const parsed: unknown = JSON.parse(raw);
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error("Expected a complete local design backup object.");
-  }
-  return parsed;
+async function renameDesign(page: Page, name: string) {
+  await page.getByTestId("editor-design-title").click();
+  await page.getByTestId("design-rename-input").fill(name);
+  await page.getByTestId("design-rename-save").click();
+  await expect(page.getByTestId("design-rename-dialog")).toHaveCount(0);
 }
 
-async function expectParentContract(page: Page) {
-  const dialog = page.getByRole("dialog", { name: "My designs" });
+function card(page: Page, designId: string) {
+  return {
+    root: page.getByTestId(`my-design-card-${designId}`),
+    actions: page.getByTestId(`my-design-actions-${designId}`),
+  };
+}
+
+async function chooseFromCardMenu(page: Page, actions: Locator, item: string) {
+  await actions.click();
+  await expect(actions).toHaveAttribute("aria-expanded", "true");
+  await page.getByRole("menuitem", { name: item, exact: true }).click();
+}
+
+/** The dialog is modal: the page behind it is hidden and inert, and Tab stays inside. */
+async function expectModal(page: Page, dialog: Locator) {
   await expect(dialog).toHaveAttribute("aria-modal", "true");
-  await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
-  await expect(page.getByTestId("load-designs-close")).toBeFocused();
-  const background = await page.getByTestId("editor-command-overflow").evaluate((element) => {
-    const owner = element.closest<HTMLElement>("[inert]");
-    return { inert: Boolean(owner?.inert), ariaHidden: owner?.getAttribute("aria-hidden") };
-  });
-  expect(background).toEqual({ inert: true, ariaHidden: "true" });
-  return dialog;
+  await expect(page.getByTestId("app-header")).toHaveAttribute("aria-hidden", "true");
+  expect(await page.getByTestId("app-header").evaluate((element) => (element as HTMLElement).inert)).toBe(true);
+  for (const key of ["Tab", "Shift+Tab"]) {
+    await page.keyboard.press(key);
+    expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+  }
 }
 
-async function expectFocusInside(page: Page, containerTestId: string) {
-  expect(
-    await page.evaluate((testId) => {
-      const container = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
-      return Boolean(container?.contains(document.activeElement));
-    }, containerTestId)
-  ).toBe(true);
-}
-
-async function openSingleConfirm(page: Page, designId: string) {
-  const action = page.getByTestId(`delete-saved-design-${designId}`);
-  await action.click();
-  const confirm = page.getByRole("dialog", { name: "Delete saved design?" });
-  await expect(confirm).toHaveCount(1);
-  await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
-  return { action, confirm };
-}
-
-async function expectNestedOwnership(page: Page, confirmName: string) {
-  const parent = page.getByTestId("load-designs-modal");
-  expect(
-    await parent.evaluate((element) => ({
-      inert: (element as HTMLElement).inert,
-      ariaHidden: element.getAttribute("aria-hidden"),
-    }))
-  ).toEqual({ inert: true, ariaHidden: "true" });
-  await expect(page.getByRole("dialog", { name: confirmName })).toHaveCount(1);
-  expect(
-    await page.evaluate(() =>
-      document.querySelectorAll(':is([role="dialog"], [role="alertdialog"])[aria-modal="true"]').length
-    )
-  ).toBe(2);
+async function expectPageBack(page: Page) {
+  await expect(page.getByTestId("app-header")).not.toHaveAttribute("aria-hidden", "true");
 }
 
 test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-test("consumer parent pointer lifecycle owns semantics, containment, dismissal, return, and lazy entry", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "consumer", ["Consumer Living Room"]);
-  try {
-    await openEditor(page, seed, "consumer");
-    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
-    const scriptsBefore = await page.evaluate(() =>
-      performance.getEntriesByType("resource").map(({ name }) => name).filter((name) => name.endsWith(".js"))
-    );
-    const dialog = await openMyDesigns(page, "pointer");
-    await expectParentContract(page);
-    await expect.poll(async () =>
-      page.evaluate((before) =>
-        performance.getEntriesByType("resource")
-          .map(({ name }) => name)
-          .filter((name) => name.endsWith(".js") && !before.includes(name)).length,
-        scriptsBefore
-      )
-    ).toBeGreaterThan(0);
-    await page.keyboard.press("Shift+Tab");
-    await expectFocusInside(page, "load-designs-modal");
-    await page.keyboard.press("Tab");
-    await expectFocusInside(page, "load-designs-modal");
-    await page.keyboard.press("Escape");
-    await expect(dialog).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
-
-    await openMyDesigns(page, "pointer");
-    await page.getByTestId("load-designs-close").click();
-    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
-  } finally {
-    await cleanupSeed(seed);
-  }
-});
-
-test("pro keyboard and narrow lifecycle preserves backdrop return without overflow or clipped focus", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "pro", ["Pro Living Room"]);
-  try {
-    await openEditor(page, seed, "pro", MOBILE);
-    const dialog = await openMyDesigns(page, "keyboard");
-    await expectParentContract(page);
-    const geometry = await dialog.evaluate((element) => {
-      const panel = element.firstElementChild as HTMLElement;
-      const close = element.querySelector<HTMLElement>('[data-testid="load-designs-close"]');
-      const panelRect = panel.getBoundingClientRect();
-      const closeRect = close?.getBoundingClientRect();
-      return {
-        documentWidth: document.documentElement.scrollWidth,
-        viewportWidth: innerWidth,
-        panel: { left: panelRect.left, right: panelRect.right, top: panelRect.top, bottom: panelRect.bottom },
-        close: closeRect
-          ? { left: closeRect.left, right: closeRect.right, top: closeRect.top, bottom: closeRect.bottom }
-          : null,
-      };
-    });
-    expect(geometry.documentWidth).toBe(geometry.viewportWidth);
-    expect(geometry.panel.left).toBeGreaterThanOrEqual(0);
-    expect(geometry.panel.right).toBeLessThanOrEqual(MOBILE.width);
-    expect(geometry.panel.top).toBeGreaterThanOrEqual(0);
-    expect(geometry.panel.bottom).toBeLessThanOrEqual(MOBILE.height);
-    expect(geometry.close?.left).toBeGreaterThanOrEqual(geometry.panel.left);
-    expect(geometry.close?.right).toBeLessThanOrEqual(geometry.panel.right);
-    await dialog.click({ position: { x: 2, y: 2 } });
-    await expect(dialog).toHaveCount(0);
-    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
-  } finally {
-    await cleanupSeed(seed);
-  }
-});
-
-test("loading, empty, and populated states retain one parent owner", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "consumer", []);
-  let releaseList!: () => void;
-  let listRequested!: () => void;
-  const listGate = new Promise<void>((resolve) => { releaseList = resolve; });
-  const requested = new Promise<void>((resolve) => { listRequested = resolve; });
-  await page.route("**/api/designs", async (route) => {
-    if (route.request().method() !== "GET") return route.continue();
-    listRequested();
-    await listGate;
-    await route.continue();
+test("More → My designs saves first, stays in the editor when saving fails, and opens the page once saved", async ({ page }, testInfo) => {
+  const seed = await createSeed(testInfo, "consumer", ["Entry Target"]);
+  const [designId] = seed.designIds;
+  const designRoute = `**/api/designs/${designId}`;
+  let failedWrites = 0;
+  await page.route(designRoute, async (route) => {
+    if (route.request().method() !== "PUT") return route.continue();
+    failedWrites += 1;
+    await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"Saving is unavailable right now."}' });
   });
   try {
-    await openEditor(page, seed, "consumer");
-    const open = openMyDesigns(page, "pointer");
-    await requested;
-    await expect(page.getByText("Loading your designs…")).toBeVisible();
-    releaseList();
-    const dialog = await open;
-    await expect(page.getByText("No saved designs yet")).toBeVisible();
-    await expectParentContract(page);
-    await dialog.getByRole("button", { name: "Close My designs" }).click();
+    await signIn(page, seed);
+    await openEditor(page, `/design?designId=${designId}`);
+    await expect(page.getByTestId("rule-announcement-status")).toHaveText("Loaded Entry Target");
+    await renameDesign(page, "Renamed Once");
 
-    const id = `ch0015d-design-${fixtureIdentity(testInfo)}-populated`;
-    await prisma.design.create({
-      data: { id, title: "Now Populated", roomWidth: 5.8, roomDepth: 4.2, items: [], zones: [], savedViews: [], userId: seed.userId },
+    await openMoreMenu(page);
+    await page.getByTestId("editor-command-overflow-load").click();
+    await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "failed");
+    await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
+    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+    expect(failedWrites).toBeGreaterThan(0);
+
+    // Saves work again, slowly: the autosave of a fresh edit comes due while leaving saves. Leaving
+    // must still finish its own save and open the page (an autosave write would supersede it).
+    await page.unroute(designRoute);
+    await page.route(designRoute, async (route) => {
+      if (route.request().method() === "PUT") await new Promise((resolve) => setTimeout(resolve, 1_500));
+      await route.continue();
     });
-    seed.designIds.push(id);
-    await page.unroute("**/api/designs");
-    await openMyDesigns(page, "pointer");
-    await expect(page.getByTestId(`load-design-${id}`)).toBeVisible();
-    await expect(page.getByTestId("load-designs-bulk-toolbar")).toBeVisible();
+    await renameDesign(page, "Renamed Before Leaving");
+    await openMoreMenu(page);
+    await page.getByTestId("editor-command-overflow-load").click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(card(page, designId).root).toContainText("Renamed Before Leaving");
+    const saved = await prisma.design.findUniqueOrThrow({ where: { id: designId }, select: { title: true } });
+    expect(saved.title).toBe("Renamed Before Leaving");
   } finally {
-    releaseList();
     await cleanupSeed(seed);
   }
 });
 
-test("single delete cancel and success conceal the parent and restore a current semantic target", async ({ page }, testInfo) => {
+test("guests get a sign-in prompt, and the editor offers them no My designs", async ({ page }) => {
+  await openMyDesignsPage(page, null);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: "Sign in to see your designs" })).toBeVisible();
+  await expect(page.getByTestId("my-designs-sign-in")).toHaveText("Continue with Google");
+  await expect(page.getByTestId("app-header-sign-in")).toBeVisible();
+
+  await openEditor(page, "/design");
+  await openMoreMenu(page);
+  await expect(page.getByTestId("editor-command-overflow-load")).toHaveCount(0);
+});
+
+test("empty, populated, at-the-limit and Pro states", async ({ page }, testInfo) => {
+  const seed = await createSeed(testInfo, "consumer", []);
+  const pro = await createSeed(testInfo, "pro", ["Pro Living Room"], "pro");
+  try {
+    await openMyDesignsPage(page, seed);
+    await expect(page.getByTestId("my-designs-empty")).toBeVisible();
+    await expect(page.getByTestId("my-designs-grid")).toHaveCount(0);
+    await expect(page.getByTestId("my-designs-limit")).toContainText("0 of 20 designs on the Free plan.");
+    await expect(page.getByTestId("my-designs-new-design")).toHaveAttribute("href", "/design?start=new");
+
+    for (let index = 0; index < 20; index += 1) {
+      await createDesign(seed.userId, `${seed.userId}-extra-${index + 1}`, `Saved ${index + 1}`, index);
+    }
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("my-designs-grid").locator(":scope > li")).toHaveCount(20);
+    await expect(page.getByTestId("my-designs-limit")).toContainText(
+      "20 of 20 designs on the Free plan. Delete a design or upgrade to save more."
+    );
+    await expect(page.getByTestId("my-designs-empty")).toHaveCount(0);
+
+    await page.context().clearCookies();
+    await openMyDesignsPage(page, pro);
+    await expect(card(page, pro.designIds[0]).root).toContainText("Pro Living Room");
+    await expect(page.getByTestId("my-designs-limit")).toHaveCount(0);
+  } finally {
+    await cleanupSeed(seed);
+    await cleanupSeed(pro);
+  }
+});
+
+test("a card's menu opens from the keyboard, Escape returns focus to its button, and one menu opens at a time", async ({ page }, testInfo) => {
+  const seed = await createSeed(testInfo, "consumer", ["Second", "First"]);
+  const [secondId, firstId] = seed.designIds;
+  try {
+    await openMyDesignsPage(page, seed);
+    const first = card(page, firstId);
+    await first.actions.focus();
+    await page.keyboard.press("Enter");
+    await expect(first.actions).toHaveAttribute("aria-expanded", "true");
+    const menu = first.root.getByRole("menu");
+    await expect(menu.getByRole("menuitem")).toHaveText(["Open", "Share", "Make a copy", "Rename", "Delete"]);
+    await page.keyboard.press("Tab");
+    expect(await menu.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(menu).toHaveCount(0);
+    await expect(first.actions).toBeFocused();
+    await expect(first.actions).toHaveAttribute("aria-expanded", "false");
+
+    await first.actions.click();
+    const second = card(page, secondId);
+    await second.actions.click();
+    await expect(page.getByRole("menu")).toHaveCount(1);
+    await expect(second.root.getByRole("menu")).toBeVisible();
+    await page.getByRole("heading", { name: "My designs", level: 1 }).click();
+    await expect(page.getByRole("menu")).toHaveCount(0);
+  } finally {
+    await cleanupSeed(seed);
+  }
+});
+
+test("delete asks first, Escape keeps the design, and confirming deletes once and focuses the next card", async ({ page }, testInfo) => {
   const seed = await createSeed(testInfo, "consumer", ["Oldest", "Middle", "Newest"]);
-  const [oldestId, middleId, newestId] = seed.designIds;
+  const [oldestId, middleId] = seed.designIds;
   let deleteCalls = 0;
   page.on("request", (request) => {
-    if (request.method() === "DELETE" && new URL(request.url()).pathname === `/api/designs/${newestId}`) deleteCalls += 1;
+    if (request.method() === "DELETE" && new URL(request.url()).pathname === `/api/designs/${middleId}`) deleteCalls += 1;
   });
   try {
-    await openEditor(page, seed, "consumer");
-    await openMyDesigns(page, "pointer");
-    const firstConfirm = await openSingleConfirm(page, newestId);
-    await expectNestedOwnership(page, "Delete saved design?");
-    await firstConfirm.action.evaluate((button) => (button as HTMLButtonElement).focus());
-    await expect(firstConfirm.confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
-    await page.keyboard.press("Tab");
-    expect(await firstConfirm.confirm.evaluate((dialog) => dialog.contains(document.activeElement))).toBe(true);
+    await openMyDesignsPage(page, seed);
+    const middle = card(page, middleId);
+    await chooseFromCardMenu(page, middle.actions, "Delete");
+    let confirm = page.getByRole("dialog", { name: "Delete Middle?" });
+    await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await expectModal(page, confirm);
     await page.keyboard.press("Escape");
-    await expect(firstConfirm.confirm).toHaveCount(0);
-    await expect(firstConfirm.action).toBeFocused();
+    await expect(confirm).toHaveCount(0);
+    await expect(middle.actions).toBeFocused();
+    await expectPageBack(page);
+    expect(deleteCalls).toBe(0);
 
-    const secondConfirm = await openSingleConfirm(page, newestId);
-    await secondConfirm.confirm.getByRole("button", { name: "Delete", exact: true }).click();
-    await expect(secondConfirm.confirm).toHaveCount(0);
-    await expect(page.getByTestId(`delete-saved-design-${newestId}`)).toHaveCount(0);
-    await expect(page.getByTestId(`load-design-${middleId}`)).toBeFocused();
+    await chooseFromCardMenu(page, middle.actions, "Delete");
+    confirm = page.getByRole("dialog", { name: "Delete Middle?" });
+    await confirm.getByRole("button", { name: "Delete", exact: true }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(middle.root).toHaveCount(0);
+    await expect(card(page, oldestId).actions).toBeFocused();
+    await expect(page.getByTestId("my-designs-status")).toHaveText("Deleted Middle");
     expect(deleteCalls).toBe(1);
     expect(await prisma.design.count({ where: { userId: seed.userId } })).toBe(2);
-    await expect(page.getByTestId(`load-design-${oldestId}`)).toBeVisible();
   } finally {
     await cleanupSeed(seed);
   }
 });
 
-test("failed single delete invokes once and restores the surviving delete action", async ({ page }, testInfo) => {
+test("a failed delete calls once, keeps the card, says why, and returns focus to its button", async ({ page }, testInfo) => {
   const seed = await createSeed(testInfo, "consumer", ["Failure Target"]);
   const [designId] = seed.designIds;
   let deleteCalls = 0;
   await page.route(`**/api/designs/${designId}`, async (route) => {
     if (route.request().method() !== "DELETE") return route.continue();
     deleteCalls += 1;
-    await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"fixture failure"}' });
+    await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"Deleting is unavailable right now."}' });
   });
   try {
-    await openEditor(page, seed, "consumer");
-    await openMyDesigns(page, "pointer");
-    const { action, confirm } = await openSingleConfirm(page, designId);
+    await openMyDesignsPage(page, seed);
+    const target = card(page, designId);
+    await chooseFromCardMenu(page, target.actions, "Delete");
+    const confirm = page.getByRole("dialog", { name: "Delete Failure Target?" });
     await confirm.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(confirm).toHaveCount(0);
-    await expect(action).toBeFocused();
-    await expect(page.getByTestId(`load-design-${designId}`)).toBeVisible();
+    await expect(page.getByTestId("my-designs-error")).toHaveText("Deleting is unavailable right now.");
+    await expect(target.root).toBeVisible();
+    await expect(target.actions).toBeFocused();
     expect(deleteCalls).toBe(1);
     expect(await prisma.design.count({ where: { userId: seed.userId } })).toBe(1);
   } finally {
@@ -406,146 +367,86 @@ test("failed single delete invokes once and restores the surviving delete action
   }
 });
 
-test("bulk delete cancel, busy guard, and success invoke once per target and focus the surviving row", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "consumer", ["Survivor", "Delete B", "Delete C"]);
-  const [survivorId, secondId, thirdId] = seed.designIds;
-  let releaseDelete!: () => void;
-  const deleteGate = new Promise<void>((resolve) => { releaseDelete = resolve; });
-  const deleteCalls: string[] = [];
-  await page.route("**/api/designs/*", async (route) => {
-    if (route.request().method() !== "DELETE") return route.continue();
-    deleteCalls.push(new URL(route.request().url()).pathname);
-    if (deleteCalls.length === 1) await deleteGate;
-    await route.continue();
-  });
-  try {
-    await openEditor(page, seed, "consumer");
-    await openMyDesigns(page, "pointer");
-    await page.getByTestId(`select-saved-design-${secondId}`).check();
-    await page.getByTestId(`select-saved-design-${thirdId}`).check();
-    const bulkAction = page.getByTestId("delete-selected-saved-designs");
-    await bulkAction.click();
-    let confirm = page.getByRole("dialog", { name: "Delete 2 selected designs?" });
-    await expectNestedOwnership(page, "Delete 2 selected designs?");
-    await page.keyboard.press("Escape");
-    await expect(confirm).toHaveCount(0);
-    await expect(bulkAction).toBeFocused();
-
-    await bulkAction.click();
-    confirm = page.getByRole("dialog", { name: "Delete 2 selected designs?" });
-    const confirmAction = confirm.getByRole("button", { name: "Delete", exact: true });
-    await confirmAction.click();
-    await expect.poll(() => deleteCalls.length).toBe(1);
-    await expect(confirm.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    await expect(confirm.getByRole("button", { name: "Working…" })).toBeDisabled();
-    await confirm.getByRole("button", { name: "Working…" }).evaluate((button) =>
-      (button as HTMLButtonElement).click()
-    );
-    expect(deleteCalls).toHaveLength(1);
-    await expectNestedOwnership(page, "Delete 2 selected designs?");
-    releaseDelete();
-    await expect(confirm).toHaveCount(0);
-    await expect(page.getByTestId(`load-design-${survivorId}`)).toBeFocused();
-    expect(deleteCalls).toHaveLength(2);
-    expect(new Set(deleteCalls)).toEqual(new Set([`/api/designs/${secondId}`, `/api/designs/${thirdId}`]));
-    expect(await prisma.design.count({ where: { userId: seed.userId } })).toBe(1);
-  } finally {
-    releaseDelete();
-    await cleanupSeed(seed);
-  }
-});
-
-test("deleting the loaded final design preserves detach semantics and focuses the empty parent hierarchy", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "consumer", ["Loaded Target"]);
+test("Rename and Share hide the page, keep focus inside, and return it to the card's button", async ({ page }, testInfo) => {
+  const seed = await createSeed(testInfo, "consumer", ["Rename Target"]);
   const [designId] = seed.designIds;
   try {
-    await openEditor(page, seed, "consumer");
-    await openMyDesigns(page, "pointer");
-    const loadAnnouncement = page.getByTestId("rule-announcement-status");
-    const loadedMessage = "Loaded Loaded Target";
-    await expect(loadAnnouncement).not.toHaveText(loadedMessage);
-    const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
-    await page.getByTestId(`load-design-${designId}`).click();
-    await committedLoad;
-    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
-    await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
-    await expect.poll(() => readValidatedLocalBackup(page)).toMatchObject({ designId });
-    const loadedBackup = await readValidatedLocalBackup(page);
-    expect(loadedBackup).toMatchObject({ designId });
+    await openMyDesignsPage(page, seed);
+    const target = card(page, designId);
+    await chooseFromCardMenu(page, target.actions, "Rename");
+    const rename = page.getByTestId("design-rename-dialog");
+    await expect(page.getByTestId("design-rename-input")).toBeFocused();
+    await expect(page.getByTestId("design-rename-input")).toHaveValue("Rename Target");
+    await expectModal(page, page.getByRole("dialog", { name: "Rename design" }));
+    await page.keyboard.press("Escape");
+    await expect(rename).toHaveCount(0);
+    await expect(target.actions).toBeFocused();
 
-    await openMyDesigns(page, "pointer");
-    await page.getByTestId("delete-all-saved-designs").click();
-    const confirm = page.getByRole("dialog", { name: "Delete all saved designs?" });
-    await confirm.getByRole("button", { name: "Delete", exact: true }).click();
-    await expect(confirm).toHaveCount(0);
-    await expect(page.getByText("No saved designs yet")).toBeVisible();
-    await expect(page.getByTestId("load-designs-close")).toBeFocused();
-    await expect.poll(() => readValidatedLocalBackup(page)).toEqual({
-      ...loadedBackup,
-      designId: null,
+    await chooseFromCardMenu(page, target.actions, "Rename");
+    await page.getByTestId("design-rename-input").fill("Renamed On The Page");
+    await page.getByTestId("design-rename-save").click();
+    await expect(page.getByTestId("my-designs-status")).toHaveText("Renamed to Renamed On The Page");
+    await expect(target.root).toContainText("Renamed On The Page");
+    await expect(target.actions).toBeFocused();
+    await expectPageBack(page);
+    expect((await prisma.design.findUniqueOrThrow({ where: { id: designId }, select: { title: true } })).title)
+      .toBe("Renamed On The Page");
+
+    await chooseFromCardMenu(page, target.actions, "Share");
+    const share = page.getByRole("dialog", { name: "Share this design" });
+    await expect(share.getByTestId("my-design-share-url")).toHaveValue(/\/share\/\S+$/);
+    const stored = await prisma.design.findUniqueOrThrow({
+      where: { id: designId },
+      select: { shareToken: true, shareEnabled: true },
     });
-    expect(await prisma.design.count({ where: { userId: seed.userId } })).toBe(0);
+    expect(stored.shareEnabled).toBe(true);
+    await expect(share.getByTestId("my-design-share-url")).toHaveValue(`${BASE_URL}/share/${stored.shareToken}`);
+    await expectModal(page, share);
+    await share.getByTestId("my-design-share-done").click();
+    await expect(share).toHaveCount(0);
+    await expect(target.actions).toBeFocused();
+    await expect(target.root.getByTestId("my-design-shared")).toHaveText("Shared");
   } finally {
     await cleanupSeed(seed);
   }
 });
 
-test("semantic replacement, newer owned dialog, reopen, and route unmount suppress stale restoration", async ({ page }, testInfo) => {
-  const seed = await createSeed(testInfo, "consumer", ["Supersession Target"]);
-  const [designId] = seed.designIds;
+test("on a phone the page fits, and the card menu and Delete dialog stay on screen", async ({ page }, testInfo) => {
+  const seed = await createSeed(testInfo, "pro", ["Phone Second", "Phone First"]);
+  const [secondId, firstId] = seed.designIds;
   try {
-    await openEditor(page, seed, "consumer");
-    let parent = await openMyDesigns(page, "pointer");
-    await page.getByTestId("editor-command-overflow").evaluate((element) => {
-      const id = element.id;
-      element.removeAttribute("id");
-      const replacement = document.createElement("button");
-      replacement.id = id;
-      replacement.dataset.testid = "my-designs-replacement-opener";
-      replacement.textContent = "Replacement My Designs opener";
-      document.body.append(replacement);
-    });
-    await page.getByTestId("load-designs-close").click();
-    await expect(page.getByTestId("my-designs-replacement-opener")).toBeFocused();
+    await openMyDesignsPage(page, seed, MOBILE);
+    await expect(page.getByTestId("my-designs-limit")).toHaveCount(0);
+    const [firstBox, secondBox] = await Promise.all([
+      card(page, firstId).root.boundingBox(),
+      card(page, secondId).root.boundingBox(),
+    ]);
+    expect(firstBox && secondBox && secondBox.y > firstBox.y && secondBox.x === firstBox.x).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(MOBILE.width);
+    expect((await page.getByTestId("app-header").boundingBox())?.height ?? 0).toBeLessThanOrEqual(65);
 
-    await openMyDesigns(page, "pointer");
-    const loadAnnouncement = page.getByTestId("rule-announcement-status");
-    const loadedMessage = "Loaded Supersession Target";
-    await expect(loadAnnouncement).not.toHaveText(loadedMessage);
-    const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
-    await page.getByTestId(`load-design-${designId}`).click();
-    await committedLoad;
-    await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
-    await expect(page.getByTestId("my-designs-replacement-opener")).not.toBeFocused();
-    await expect.poll(() => readValidatedLocalBackup(page)).toMatchObject({ designId });
-
-    await openMyDesigns(page, "pointer");
-    const { action, confirm } = await openSingleConfirm(page, designId);
-    await page.getByTestId("editor-command-overflow").evaluate((button) =>
-      (button as HTMLButtonElement).click()
-    );
-    const renameOpener = page.getByTestId("editor-command-overflow-rename-room");
-    await expect(renameOpener).toHaveCount(1);
-    await renameOpener.evaluate((button) => (button as HTMLButtonElement).click());
-    const renameDialog = page.getByTestId("room-rename-dialog");
-    await expect(renameDialog).toBeVisible();
-    await expect(page.getByTestId("room-rename-input")).toBeFocused();
-    await page.keyboard.press("Escape");
-    await expect(renameDialog).toHaveCount(0);
+    const first = card(page, firstId);
+    await first.actions.focus();
+    await page.keyboard.press("Enter");
+    const menu = first.root.getByRole("menu");
+    await expect(menu).toBeVisible();
+    const menuBox = await menu.boundingBox();
+    expect(menuBox && menuBox.x >= 0 && menuBox.x + menuBox.width <= MOBILE.width).toBe(true);
+    await menu.getByRole("menuitem", { name: "Delete" }).click();
+    const confirm = page.getByRole("dialog", { name: "Delete Phone First?" });
     await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
+    const panel = await confirm.evaluate((element) => {
+      const box = (element.firstElementChild as HTMLElement).getBoundingClientRect();
+      return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+    });
+    expect(panel.left).toBeGreaterThanOrEqual(0);
+    expect(panel.right).toBeLessThanOrEqual(MOBILE.width);
+    expect(panel.top).toBeGreaterThanOrEqual(0);
+    expect(panel.bottom).toBeLessThanOrEqual(MOBILE.height);
     await page.keyboard.press("Escape");
     await expect(confirm).toHaveCount(0);
-    await expect(action).toBeFocused();
-
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
-    parent = await openMyDesigns(page, "pointer");
-    const pendingRouteConfirm = await openSingleConfirm(page, designId);
-    await expectNestedOwnership(page, "Delete saved design?");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(parent).toHaveCount(0);
-    await expect(pendingRouteConfirm.confirm).toHaveCount(0);
-    expect(await page.evaluate(() => document.activeElement?.isConnected ?? false)).toBe(true);
+    await expect(first.actions).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(MOBILE.width);
   } finally {
     await cleanupSeed(seed);
   }

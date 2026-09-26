@@ -988,7 +988,16 @@ function testSourceGuards() {
   const persistence = read("lib/useDesignPagePersistence.ts");
   assert.doesNotMatch(persistence, /fetch\(`?\/api\/designs/);
   assert.match(persistence, /designApi\.update/);
-  assert.match(persistence, /AbortController/);
+  // A design load can be cancelled: its coordinator owns the AbortController, and closing the
+  // editor (not a React remount) cancels it. A share-status read that a newer read or another
+  // design has replaced is ignored rather than aborted.
+  assert.match(persistence, /createDesignPageLoadRequestCoordinator/);
+  assert.match(persistence, /useCancelOnUnmount\(designLoadRequest\.cancel\)/);
+  assert.match(persistence, /read !== shareStatusReadRef\.current/);
+  assert.match(
+    read("lib/design-page-requested-design-load-coordinator.ts"),
+    /new AbortController\(\)/
+  );
 
   const client = read("lib/design-api-client.ts");
   assert.match(client, /MAX_RESPONSE_BYTES/);
