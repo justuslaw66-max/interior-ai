@@ -86,6 +86,9 @@ async function openEditorCommandOverflow(page: Page) {
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
   const accountMenu = page.getByTestId("editor-command-account-menu");
+  // The Account button waits for the session, like Sign out below; after a reload the page can
+  // be busy loading the room's 3D models for a few seconds.
+  await expect(accountButton).toBeVisible({ timeout: 30000 });
   await clickVisibleControl(accountButton);
   await expect(accountMenu).toBeVisible();
   await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
