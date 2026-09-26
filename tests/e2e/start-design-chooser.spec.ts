@@ -214,6 +214,8 @@ test.describe("Start a new design", () => {
       await page.goto(`/design?designId=${encodeURIComponent(seed.designId)}&view=2d&floorPlanImport=e2e-import`, {
         waitUntil: "domcontentloaded",
       });
+      // The note is in the server's HTML too: wait for React before pressing Got it.
+      await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
       const note = page.getByTestId("floor-plan-import-arrival");
       await expect(note).toBeVisible({ timeout: 30_000 });
       await expect(note).toContainText("Made from your floor plan");

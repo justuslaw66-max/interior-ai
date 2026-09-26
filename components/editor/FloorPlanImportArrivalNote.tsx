@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-/** Takes `floorPlanImport` off the address, so the note doesn't come back on a reload. */
+/**
+ * Takes `floorPlanImport` off the address, so the note doesn't come back on a reload. The `null`
+ * state lets Next.js follow the new address, so its own later updates don't put it back.
+ */
 function forgetArrival() {
   const url = new URL(window.location.href);
   url.searchParams.delete("floorPlanImport");
-  window.history.replaceState(window.history.state, "", url);
+  window.history.replaceState(null, "", url);
 }
 
 /**
