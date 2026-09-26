@@ -29,12 +29,6 @@ export class DesignApiError extends UserFacingError {
   }
 }
 
-export type SavedDesignTransport = {
-  id: string;
-  title: string;
-  createdAt: string;
-};
-
 export type LoadedDesignTransport = Parameters<typeof legacyApiToSnapshot>[0] & {
   shareEnabled?: boolean;
   shareToken?: string | null;
@@ -223,21 +217,6 @@ export const designApi = {
       validate: validateLoadedDesign,
     });
   },
-  list(signal?: AbortSignal) {
-    return fetchJson("/api/designs", {
-      signal,
-      validate(value) {
-        if (!Array.isArray(value)) return null;
-        const parsed = value.filter((entry): entry is SavedDesignTransport =>
-          isRecord(entry) &&
-          isNonEmptyString(entry.id) &&
-          typeof entry.title === "string" &&
-          typeof entry.createdAt === "string"
-        );
-        return parsed.length === value.length ? parsed : null;
-      },
-    });
-  },
   create(payload: unknown, signal?: AbortSignal) {
     return fetchJson("/api/designs", {
       method: "POST",
@@ -260,6 +239,16 @@ export const designApi = {
       signal,
       validate(value) {
         return isRecord(value) && value.ok === true ? true : null;
+      },
+    });
+  },
+  /** A copy of the caller's design; the copy's ID. */
+  duplicate(id: string, signal?: AbortSignal) {
+    return fetchJson(`/api/designs/${encodeURIComponent(id)}/duplicate`, {
+      method: "POST",
+      signal,
+      validate(value) {
+        return isRecord(value) && isNonEmptyString(value.id) ? { id: value.id } : null;
       },
     });
   },

@@ -54,7 +54,7 @@ assert.throws(
 );
 
 const legacyRoute = read("app/design/[id]/page.tsx");
-const dashboardList = read("components/DesignsListWithSelection.tsx");
+const dashboardList = read("components/my-designs/MyDesignCardView.tsx");
 const duplicateButton = read("components/DuplicateDesignButton.tsx");
 const checkoutSuccess = read("app/checkout/success/page.tsx");
 const floorPlanAssistant = read("components/editor/FloorPlanImportAssistant.tsx");
@@ -89,7 +89,7 @@ for (const arbitraryParameter of ["next", "redirect", "returnTo", "utm_source"])
 }
 
 for (const [label, source, identity] of [
-  ["dashboard", dashboardList, "design.id"],
+  ["dashboard", dashboardList, "card.id"],
   ["duplicate", duplicateButton, "newDesignId"],
   ["checkout", checkoutSuccess, "designId"],
 ] as const) {
@@ -145,10 +145,10 @@ assert.match(
   /currentDesignId[\s\S]*?buildDesignEditorUrl\(\{[\s\S]*?designId: input\.currentDesignId,[\s\S]*?context: input\.context[\s\S]*?: "\/design"/,
   "A denied route load should restore the previous design with allowed editor context."
 );
-assert.match(
+assert.doesNotMatch(
   requestedDesignWorkspace,
-  /closeMyDesigns\(\);[\s\S]*?router\.push\(buildDesignEditorUrl\(\{ designId, context: searchParams \}\)\)/,
-  "The in-editor My Designs list should navigate with the canonical URL before loading."
+  /closeMyDesigns|openSavedDesign/,
+  "My designs is its own page now; its cards link to the canonical editor URL."
 );
 assert.match(
   floorPlanLifecycle,

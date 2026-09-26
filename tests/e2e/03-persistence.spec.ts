@@ -185,7 +185,18 @@ async function openMyDesigns(page: Page) {
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
   await expect(loadDesigns).toBeVisible();
   await loadDesigns.click();
-  await expect(page.getByTestId("load-designs-modal")).toBeVisible();
+}
+
+// My designs is its own page (MD1): its cards open a design in the editor, which restores its
+// saved design and products first, then loads the one asked for.
+async function openDesignFromMyDesigns(page: Page, designId: string) {
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+  await page.getByTestId(`my-design-open-${designId}`).click();
+  await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`), { timeout: 30_000 });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute("data-design-id", designId, {
+    timeout: 30_000,
+  });
 }
 
 async function loadSeedDesign(
@@ -224,10 +235,7 @@ async function loadSeedDesign(
     throw cause;
   }
   await openMyDesigns(page);
-  await page.getByTestId(`load-design-${seed.designId}`).click();
-  await expect(page.getByTestId("load-designs-modal")).toBeHidden({
-    timeout: 30_000,
-  });
+  await openDesignFromMyDesigns(page, seed.designId);
   await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
     "3 rooms",
   );
@@ -576,8 +584,10 @@ test.describe("3. Save + Reload Persistence", () => {
     }
   });
 
+  // Leaving for My designs waits for a design-A write already on its way, then saves A's latest
+  // edits; design B, opened from My designs, then loads and stays as it is.
   for (const staleResult of ["success", "failure"] as const) {
-    test(`stale design-A write ${staleResult} is inert after design B loads`, async ({
+    test(`a design-A write ending in ${staleResult} settles before My designs opens design B`, async ({
       page,
     }) => {
       test.setTimeout(150_000);
@@ -614,10 +624,33 @@ test.describe("3. Save + Reload Persistence", () => {
         const delayedWrite = await heldWrite;
 
         await openMyDesigns(page);
-        await page.getByTestId(`load-design-${seedB.designId}`).click();
-        await expect(page.getByTestId("load-designs-modal")).toBeHidden({
-          timeout: 30_000,
-        });
+        // The editor stays open, saving, while the earlier write is on its way.
+        await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "saving");
+        await expect(page).toHaveURL(/\/design\?/);
+        const responseObserved = page.waitForResponse((response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seedA.designId}`
+        );
+        if (staleResult === "success") {
+          await delayedWrite.continue();
+        } else {
+          await delayedWrite.fulfill({
+            status: 503,
+            contentType: "application/json",
+            headers: { "x-operation-id": "arch-rc53-stale-failure" },
+            body: JSON.stringify({
+              error: "An earlier write failed while leaving for My designs.",
+              code: "INTERNAL_ERROR",
+              operationId: "arch-rc53-stale-failure",
+            }),
+          });
+        }
+        await responseObserved;
+        await openDesignFromMyDesigns(page, seedB.designId);
+        const savedA = await page.request.get(`/api/designs/${encodeURIComponent(seedA.designId)}`);
+        expect(savedA.status()).toBe(200);
+        expect(legacyApiToSnapshot(await savedA.json()).rooms[0]?.geometry.width,
+          "Design A's latest edit was saved before the editor closed.").toBe(5.9);
         await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
           "data-design-id",
           seedB.designId,
@@ -627,33 +660,6 @@ test.describe("3. Save + Reload Persistence", () => {
         await expect(
           page.getByRole("spinbutton", { name: "Width mm" }).first(),
         ).toHaveValue("5800");
-
-        const responseObserved = page.waitForResponse((response) =>
-          response.request().method() === "PUT" &&
-          new URL(response.url()).pathname === `/api/designs/${seedA.designId}`
-        );
-        await delayedWrite.fulfill(
-          staleResult === "success"
-            ? {
-                status: 200,
-                contentType: "application/json",
-                body: JSON.stringify({
-                  id: seedA.designId,
-                  updatedAt: new Date().toISOString(),
-                }),
-              }
-            : {
-                status: 503,
-                contentType: "application/json",
-                headers: { "x-operation-id": "arch-rc53-stale-failure" },
-                body: JSON.stringify({
-                  error: "Obsolete write failed after a newer design loaded.",
-                  code: "INTERNAL_ERROR",
-                  operationId: "arch-rc53-stale-failure",
-                }),
-              },
-        );
-        await responseObserved;
         await expectLoadedDesignRemainsStable(page, seedB.designId, fingerprintB);
         await expect(
           page.getByRole("spinbutton", { name: "Width mm" }).first(),

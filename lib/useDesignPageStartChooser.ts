@@ -22,13 +22,13 @@ export type UseDesignPageStartChooserInput = {
     requirePlanChoiceForNextTemplate: () => void;
     /** Plan's template list, which has the address search. */
     openTemplatePicker: () => void;
-    /** The same from New design: it closes My designs, and the next template asks before replacing. */
+    /** The same from New design: the next template asks before replacing. */
     openNewDesignTemplatePicker: () => void;
-    closeMyDesigns: () => void;
     /** Plan in 2D. */
     goPlan: () => void;
     /** Plan in 2D with the room tool on; records nothing itself. */
     drawRoom: () => void;
+    openPricing: () => void;
   };
 };
 
@@ -55,14 +55,21 @@ function openUploadWindow(actions: UseDesignPageStartChooserInput["actions"]) {
   );
 }
 
-/** Takes `?start=` off the address, so a reload doesn't start again. Saved designs ignore it. */
-function takeStartParam(): StartDesignParam | null {
+type EntryLink = { start: StartDesignParam | null; pricing: boolean };
+
+/**
+ * Takes `?start=` and `?pricing=` off the address, so a reload doesn't act on them again. Saved
+ * designs ignore `?start=`.
+ */
+function takeEntryLink(): EntryLink | null {
   const url = new URL(window.location.href);
-  if (!url.searchParams.has("start")) return null;
+  if (!url.searchParams.has("start") && !url.searchParams.has("pricing")) return null;
   const start = parseStartDesignParam(url.searchParams.get("start"));
+  const pricing = url.searchParams.get("pricing") === "open";
   url.searchParams.delete("start");
+  url.searchParams.delete("pricing");
   window.history.replaceState(window.history.state, "", url);
-  return url.searchParams.has("designId") ? null : start;
+  return { start: url.searchParams.has("designId") ? null : start, pricing };
 }
 
 export function applyStartParam(start: StartDesignParam, input: UseDesignPageStartChooserInput, setChooser: SetChooser) {
@@ -72,6 +79,8 @@ export function applyStartParam(start: StartDesignParam, input: UseDesignPageSta
     else setChooser({ open: true, asNewDesign: false, signIn: true });
     return;
   }
+  // New design (from My designs) asks before replacing, as it does in the editor.
+  if (start === "new") return setChooser({ open: true, asNewDesign: true, signIn: false });
   // A design with content stays as it is; the address never replaces work.
   if (!state.designIsEmpty) return;
   if (start === "choose" || start === "template") return setChooser({ open: true, asNewDesign: false, signIn: false });
@@ -80,7 +89,12 @@ export function applyStartParam(start: StartDesignParam, input: UseDesignPageSta
   else actions.goPlan();
 }
 
-/** `?start=choose|template|draw|upload|blank` opens the editor at that choice, once. */
+export function applyEntryLink(link: EntryLink, input: UseDesignPageStartChooserInput, setChooser: SetChooser) {
+  if (link.start) applyStartParam(link.start, input, setChooser);
+  if (link.pricing) input.actions.openPricing();
+}
+
+/** `?start=choose|new|template|draw|upload|blank` opens the editor at that choice, once; `?pricing=open` opens Pricing. */
 function useStartParam(input: UseDesignPageStartChooserInput, setChooser: SetChooser) {
   const latest = useRef(input);
   const handled = useRef(false);
@@ -91,9 +105,9 @@ function useStartParam(input: UseDesignPageStartChooserInput, setChooser: SetCho
   useEffect(() => {
     if (handled.current || !ready) return;
     handled.current = true;
-    const start = takeStartParam();
+    const link = takeEntryLink();
     // Next frame: the local design has hydrated, and the chooser's state isn't set inside an effect.
-    if (start) window.requestAnimationFrame(() => applyStartParam(start, latest.current, setChooser));
+    if (link) window.requestAnimationFrame(() => applyEntryLink(link, latest.current, setChooser));
   }, [ready, setChooser]);
 }
 
@@ -160,9 +174,6 @@ export function buildStartChooserProps(
 export function useDesignPageStartChooser(input: UseDesignPageStartChooserInput) {
   const [chooser, setChooser] = useState<StartChooserState>(CLOSED);
   useStartParam(input, setChooser);
-  const openAsNewDesign = () => {
-    input.actions.closeMyDesigns();
-    setChooser({ open: true, asNewDesign: true, signIn: false });
-  };
+  const openAsNewDesign = () => setChooser({ open: true, asNewDesign: true, signIn: false });
   return { chooserProps: buildStartChooserProps(chooser, setChooser, input), openAsNewDesign };
 }

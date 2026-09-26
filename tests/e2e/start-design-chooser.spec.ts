@@ -97,6 +97,25 @@ test.describe("Start a new design", () => {
     await expect(page.getByTestId("rule-announcement-status")).toHaveText("Draw room walls in 2D");
   });
 
+  test("My designs' links: ?start=new opens it as New design does, ?pricing=open opens Pricing", async ({ page }) => {
+    await clearEditorStorage(page);
+    await page.goto("/design?start=new", { waitUntil: "domcontentloaded" });
+    await expect(chooser(page)).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(/\/design$/);
+    await expect(page.getByTestId("start-choice-draw")).toBeEnabled({ timeout: 30_000 });
+    await page.getByTestId("start-choice-draw").click();
+    // As with New design in More, it asks before replacing the design that's open.
+    const choice = page.getByTestId("new-plan-choice-dialog");
+    await expect(choice).toBeVisible();
+    await page.getByTestId("new-plan-cancel").click();
+    await expect(choice).toHaveCount(0);
+
+    await page.goto("/design?pricing=open", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("dialog", { name: "Pricing", exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(/\/design$/);
+    await expect(chooser(page)).toHaveCount(0);
+  });
+
   test("guests sign in before uploading, and Not now keeps the choices open", async ({ page }) => {
     await clearEditorStorage(page);
     await page.goto("/design?start=choose", { waitUntil: "domcontentloaded" });

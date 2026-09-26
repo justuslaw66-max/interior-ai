@@ -14,6 +14,8 @@ type ConfirmDialogProps = {
   busy?: boolean;
   destructive?: boolean;
   returnFocusIds?: readonly string[];
+  /** Hides everything else from assistive technology while open (My designs' page). */
+  manageBackground?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 };
@@ -26,6 +28,7 @@ export default function ConfirmDialog({
   busy = false,
   destructive = false,
   returnFocusIds,
+  manageBackground = false,
   onCancel,
   onConfirm,
 }: ConfirmDialogProps) {
@@ -40,6 +43,7 @@ export default function ConfirmDialog({
       closeDisabled={busy}
       showCloseButton={false}
       returnFocusIds={returnFocusIds}
+      manageBackground={manageBackground}
       panelClassName="max-w-sm"
       footer={
         <EditorDialogActions>

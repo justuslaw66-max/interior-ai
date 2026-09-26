@@ -90,7 +90,7 @@ const barProps = {
   designSidebarCollapsed: false, onToggleDesignSidebar: noop, onPlan: noop, onFurnish: noop, onShop: noop,
   onExport: noop, onUndo: noop, onRedo: noop, onViewModeChange: noop, onToggleDesignerMode: noop,
   onToggleClientPreview: noop, onViewPlans: noop, onNewPlan: noop, onManageBilling: noop, onFeedback: noop,
-  showLoadDesign: true, onToggleLoadDesign: noop, onSave: noop, onRetrySaveStatus: noop,
+  showLoadDesign: true, onOpenMyDesigns: noop, onSave: noop, onRetrySaveStatus: noop,
   onOpenPresentExport: noop,
   saveStatus: {
     kind: "saved", source: "cloud", label: "Cloud saved", detail: "Just now", tone: "saved",
@@ -122,7 +122,7 @@ const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
   dark: false, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
   open: true, onToggle: noop, onClose: noop, menuButtonClass: "item", menuPanelClass: "panel",
   lightingSettingsOpen: false, showLoadDesign: true, isDesigner: false, isClientPreview: false,
-  presentModeActive: false, lightingAvailable: false, onToggleLoadDesign: noop, onNewPlan: noop,
+  presentModeActive: false, lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
   onToggleDesignerMode: noop, onToggleClientPreview: noop, onOpenPresentExport: noop, onExport: noop,
   onOpenLightingSettings: noop, onCloseLightingSettings: noop, onFeedback: noop, onRenameDesign: noop,
 } satisfies MoreProps));

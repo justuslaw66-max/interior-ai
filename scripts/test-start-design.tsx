@@ -17,6 +17,7 @@ import {
 } from "../lib/start-design";
 import { parseStartDesignParam, rootStartDesignHref, START_UPLOAD_CALLBACK_URL } from "../lib/start-design-link";
 import {
+  applyEntryLink,
   applyStartParam,
   buildStartChooserProps,
   type StartChooserState,
@@ -30,6 +31,7 @@ const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 
 // Start links: `/` opens the chooser; older `?source=` links and `?start=` keep their choice.
 assert.equal(parseStartDesignParam("draw"), "draw");
+assert.equal(parseStartDesignParam("new"), "new");
 assert.equal(parseStartDesignParam("templates"), null);
 assert.equal(parseStartDesignParam(null), null);
 assert.equal(rootStartDesignHref({}), "/design?start=choose");
@@ -172,9 +174,9 @@ function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}):
         requirePlanChoiceForNextTemplate: record("requireChoice"),
         openTemplatePicker: record("templatePicker"),
         openNewDesignTemplatePicker: record("newDesignTemplatePicker"),
-        closeMyDesigns: record("closeMyDesigns"),
         goPlan: record("goPlan"),
         drawRoom: record("drawRoom"),
+        openPricing: record("pricing"),
       },
     },
   };
@@ -254,11 +256,25 @@ for (const start of ["choose", "template", "draw", "blank"] as const) {
 assert.deepEqual(startWith("upload", { designIsEmpty: false }), ["goPlan"]);
 assert.deepEqual(dispatched.splice(0), ["floor-plan-upload-requested"]);
 assert.deepEqual(startWith("upload", { isAuthenticated: false }), ["chooser:open+signIn"]);
+// My designs' New design opens Start a new design as New design does, over any design.
+assert.deepEqual(startWith("new", { designIsEmpty: false }), ["chooser:open+new"]);
+// My designs' "See pricing" opens Pricing; it can come with a start link.
+const entry = (link: Parameters<typeof applyEntryLink>[0]) => {
+  const { input, calls, setChooser } = recorder();
+  applyEntryLink(link, input, setChooser);
+  return calls;
+};
+assert.deepEqual(entry({ start: null, pricing: true }), ["pricing"]);
+assert.deepEqual(entry({ start: "blank", pricing: false }), ["goPlan"]);
 
 // Wiring.
 const chooserHook = read("lib/useDesignPageStartChooser.ts");
-assert.match(chooserHook, /url\.searchParams\.delete\("start"\);\s*window\.history\.replaceState\(/, "The link starts once.");
-assert.match(chooserHook, /return url\.searchParams\.has\("designId"\) \? null : start;/, "Saved designs ignore ?start=.");
+assert.match(
+  chooserHook,
+  /url\.searchParams\.delete\("start"\);\s*url\.searchParams\.delete\("pricing"\);\s*window\.history\.replaceState\(/,
+  "A link starts once, and opens Pricing once."
+);
+assert.match(chooserHook, /start: url\.searchParams\.has\("designId"\) \? null : start, pricing \}/, "Saved designs ignore ?start=.");
 assert.match(chooserHook, /signIn\("google", \{ callbackUrl: START_UPLOAD_CALLBACK_URL \}\)/);
 assert.match(chooserHook, /track\("launch_path_selected", \{ path, source \}\)/);
 assert.doesNotMatch(chooserHook, /path: "upload"/, "The upload window records uploads, once.");

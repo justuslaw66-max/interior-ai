@@ -15,13 +15,30 @@ const coreShellSource = readFileSync(
 
 assert.match(
   hookSource,
-  /fetch\("\/api\/catalog\/live", \{\s*cache: "no-store",\s*signal: controller\.signal,\s*\}\)/,
-  "The live catalog controller should retain the uncached, abortable editor endpoint."
+  /fetch\("\/api\/catalog\/live", \{\s*cache: "no-store",\s*\}\)/,
+  "The live catalog controller should retain the uncached editor endpoint."
+);
+// Leaving the editor (for My designs, say) mid-read used to abort the request; the read now
+// finishes, prunes the shared catalogue once per page session, and the next editor reuses it.
+assert.doesNotMatch(
+  hookSource,
+  /AbortController|\.abort\(/,
+  "Closing the editor should let the live catalog read finish rather than abort it."
 );
 assert.match(
   hookSource,
-  /return \(\) => \{\s*cancelled = true;\s*controller\.abort\(\);\s*\}/,
-  "The live catalog controller should abort its request when the editor unmounts."
+  /sessionLoad \?\?= fetchLiveCatalogIds\(\)/,
+  "The live catalog should be read once per page session."
+);
+assert.match(
+  hookSource,
+  /\(cause: unknown\) => \{\s*sessionLoad = null;\s*throw cause;\s*\}/,
+  "A failed live catalog read should be tried again by the next editor."
+);
+assert.match(
+  hookSource,
+  /useState\(\(\) => sessionLoaded\)/,
+  "An editor opened after the read (back from My designs, say) should be ready at once."
 );
 assert.match(
   hookSource,

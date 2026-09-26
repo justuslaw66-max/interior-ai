@@ -1,17 +1,14 @@
 "use client";
 
 import type { HousePlanTemplate, HousePlanTemplateFurnishingPackId } from "@/lib/design-page-house-plan";
-import type { RoomType } from "@/lib/room-types";
+import {
+  fitPlanThumbnail,
+  PLAN_THUMBNAIL_DEFAULT_FILL,
+  PLAN_THUMBNAIL_HEIGHT,
+  PLAN_THUMBNAIL_ROOM_FILLS,
+  PLAN_THUMBNAIL_WIDTH,
+} from "@/lib/plan-thumbnail-frame";
 
-const VIEW_WIDTH = 240;
-const VIEW_HEIGHT = 140;
-const PADDING = 12;
-const ROOM_FILLS: Partial<Record<RoomType, string>> = {
-  toilet: "#dbeafe",
-  kitchen: "#dcfce7",
-  bedroom: "#ede9fe",
-  dining: "#fef3c7",
-};
 const MARKER_FILLS: Record<string, string> = {
   sofa: "#2563eb",
   accent_chair: "#2563eb",
@@ -21,18 +18,12 @@ const MARKER_FILLS: Record<string, string> = {
 };
 
 function planFrame(template: HousePlanTemplate) {
-  const left = Math.min(...template.rooms.map((room) => room.x - room.width / 2));
-  const right = Math.max(...template.rooms.map((room) => room.x + room.width / 2));
-  const top = Math.min(...template.rooms.map((room) => room.z - room.depth / 2));
-  const bottom = Math.max(...template.rooms.map((room) => room.z + room.depth / 2));
-  const width = Math.max(1, right - left);
-  const depth = Math.max(1, bottom - top);
-  const scale = Math.min((VIEW_WIDTH - PADDING * 2) / width, (VIEW_HEIGHT - PADDING * 2) / depth);
-  return {
-    scale,
-    x: (value: number) => (VIEW_WIDTH - width * scale) / 2 + (value - left) * scale,
-    y: (value: number) => (VIEW_HEIGHT - depth * scale) / 2 + (value - top) * scale,
-  };
+  return fitPlanThumbnail(
+    template.rooms.flatMap((room) => [
+      { x: room.x - room.width / 2, z: room.z - room.depth / 2 },
+      { x: room.x + room.width / 2, z: room.z + room.depth / 2 },
+    ])
+  );
 }
 
 type PlanTemplatePreviewProps = {
@@ -49,7 +40,7 @@ export function PlanTemplatePreview({ template, furnishingPackId = null }: PlanT
     : undefined;
   return (
     <svg
-      viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+      viewBox={`0 0 ${PLAN_THUMBNAIL_WIDTH} ${PLAN_THUMBNAIL_HEIGHT}`}
       aria-hidden="true"
       data-testid={`start-template-preview-${template.id}`}
       className="block h-[140px] w-full bg-[#f6f5f1]"
@@ -61,7 +52,7 @@ export function PlanTemplatePreview({ template, furnishingPackId = null }: PlanT
           y={frame.y(room.z - room.depth / 2)}
           width={room.width * frame.scale}
           height={room.depth * frame.scale}
-          fill={ROOM_FILLS[room.roomType] ?? "#e7e5e4"}
+          fill={PLAN_THUMBNAIL_ROOM_FILLS[room.roomType] ?? PLAN_THUMBNAIL_DEFAULT_FILL}
           stroke="#78716c"
           strokeWidth="1.5"
         />

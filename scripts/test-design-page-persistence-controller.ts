@@ -251,7 +251,6 @@ assert.match(
 for (const apiGuard of [
   /designApi\.claim\(payload\)/,
   /designApi\.share\(id\)/,
-  /designApi\.delete\(targetId\)/,
 ]) {
   assert.match(controllerSource, apiGuard, "Persistence API client operations should remain centralized.");
 }
