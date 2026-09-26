@@ -68,8 +68,8 @@ function WorkspaceHeader({
 }
 
 /**
- * The upload window. It is light in Pro too, like the other forced-light dialogs (audit SX3, D11):
- * it is portaled to the page body, outside the Pro theme, so the Pro classes wouldn't apply in it.
+ * The upload window, light for everyone: Pro uses the standard theme (`showDesignerTheme` is off),
+ * and a portal to the page body would sit outside a Pro theme anyway.
  */
 export function FloorPlanUploadWorkspaceDialog(
   {

@@ -122,8 +122,8 @@ assert.doesNotMatch(paused({ authenticationRequired: true }), /Resume processing
 assert.match(paused({ resumableJobId: "job" }), />Resume processing</);
 assert.doesNotMatch(paused({}), /<button/);
 
-// The upload window is light in Pro too (SX3, D11): it is portaled outside the Pro theme, where the
-// Pro classes don't apply, so a dark window had unstyled controls and 2.5:1 hints.
+// The upload window is light for everyone: Pro uses the standard theme, so its dark variant was never
+// shown. Its close button is a 44px target.
 const windowSource = read("components/editor/FloorPlanUploadWorkspaceDialog.tsx");
 assert.match(windowSource, /<FloorPlanImportWorkspace [^>]*dark=\{false\}/);
 assert.doesNotMatch(windowSource, /bg-neutral-950|designer-|dark \?/);
