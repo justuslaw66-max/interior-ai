@@ -153,7 +153,7 @@ assert.match(
 assert.match(read("components/editor/FloorPlanImportAssistant.tsx"), /Opens in Plan, in 2D, so you can check it before you furnish\./);
 const arrival = read("components/editor/FloorPlanImportArrivalNote.tsx");
 assert.match(arrival, /useSearchParams\(\)\.get\("floorPlanImport"\)/);
-assert.match(arrival, /url\.searchParams\.delete\("floorPlanImport"\);\s*window\.history\.replaceState\(/);
+assert.match(arrival, /url\.searchParams\.delete\("floorPlanImport"\);\s*window\.history\.replaceState\(null, "", url\);/);
 assert.match(read("components/editor/DesignControlsPlanPanel.tsx"), /<FloorPlanImportArrivalNote dark=\{dark\} \/>/);
 const urlView = read("lib/useUrlViewMode.ts");
 assert.match(urlView, /if \(urlView !== followedView\) \{\s*setFollowedView\(urlView\);\s*if \(urlView === "2d" \|\| urlView === "3d"\) setViewMode\(urlView\);/);
