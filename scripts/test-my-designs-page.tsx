@@ -208,9 +208,14 @@ assert.equal(needsSaveBeforeLeaving({ ...cloud, isSaving: true }), true);
 assert.equal(needsSaveBeforeLeaving({ ...cloud, lastCloudSaveError: "Offline" }), true);
 assert.equal(needsSaveBeforeLeaving({ ...cloud, designId: null, hasPendingCloudSnapshotChanges: true }), false,
   "A design never saved to the cloud stays in this browser's backup.");
-assert.match(read("lib/useDesignPagePersistence.ts"),
-  /const saveBeforeLeaving = useCallback\(async \(\) => \{\s*if \(!needsSaveBeforeLeaving\(\{ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError \}\)\) return true;\s*const savedFingerprint = currentStoredDesignFingerprint;\s*const saved = \(await saveDesignToCloud\(\)\) !== null;\s*return saved && latestFingerprintRef\.current === savedFingerprint;/,
+const persistenceSource = read("lib/useDesignPagePersistence.ts");
+assert.match(persistenceSource,
+  /const saveBeforeLeaving = useCallback\(async \(\) => \{\s*if \(!needsSaveBeforeLeaving\(\{ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError \}\)\) return true;\s*const savedFingerprint = currentStoredDesignFingerprint;\s*leaveSavesRef\.current \+= 1;\s*const saved = \(await saveDesignToCloud\(\)\.finally\(\(\) => \{ leaveSavesRef\.current -= 1; \}\)\) !== null;\s*return saved && latestFingerprintRef\.current === savedFingerprint;/,
   "A failed save, or edits made while it saved, keep the editor open.");
+// An autosave that started during the leave-save would supersede it: the leave-save would report
+// nothing saved and keep the editor open with the design saved (CI's first run of the gate).
+assert.match(persistenceSource, /const timer = setTimeout\(async \(\) => \{\s*if \(leaveSavesRef\.current > 0\) return;/,
+  "Autosave waits while leaving saves.");
 const chrome = read("lib/useDesignPageEditorChromeController.ts");
 assert.match(chrome, /async function openMyDesigns\([^)]*\) \{\s*if \(await actions\.persistence\.saveBeforeLeaving\(\)\) actions\.navigation\.myDesigns\(\);\s*\}/);
 assert.match(chrome, /onOpenMyDesigns: \(\) => void openMyDesigns\(actions\),/);

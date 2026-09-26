@@ -669,7 +669,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 850,
+      "lines": 849,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -4549,7 +4549,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 729
+        "maximum": 728
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {

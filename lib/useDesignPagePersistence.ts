@@ -179,6 +179,7 @@ export function useDesignPagePersistence({
     })
   );
   const shareStatusReadRef = useRef(0);
+  const leaveSavesRef = useRef(0);
   const [designLoadRequest] = useState(createDesignPageLoadRequestCoordinator);
   const finishCloudBaselineSaving = useCallback(
     (writeRequest: Parameters<
@@ -205,10 +206,7 @@ export function useDesignPagePersistence({
     detach: detachCloudBaseline, stageWrite: stageCloudWriteBaseline } =
     cloudBaselineController.actions;
 
-  const invalidateCloudWrites = useCallback(() => {
-    cloudWriteQueue.invalidate();
-    setIsSaving(false);
-  }, [cloudWriteQueue]);
+  const invalidateCloudWrites = useCallback(() => { cloudWriteQueue.invalidate(); setIsSaving(false); }, [cloudWriteQueue]);
 
   const installCloudWriteIdentity = useCallback(
     (identity: {
@@ -607,6 +605,7 @@ export function useDesignPagePersistence({
       null;
     setIsSaving(true);
     const timer = setTimeout(async () => {
+      if (leaveSavesRef.current > 0) return;
       try {
         const snapshot = getStoredDesignForPersistence();
         const fingerprint = fingerprintStoredDesign(snapshot);
@@ -802,15 +801,15 @@ export function useDesignPagePersistence({
   ]);
 
   // Leaving the editor for My designs. False keeps the editor open: when the save failed, or when
-  // the design changed while it saved, since those edits would be left behind.
+  // the design changed while it saved. Autosave waits meanwhile: a write it started would supersede
+  // this save, which then reports nothing saved and keeps the editor open with the design saved.
   const latestFingerprintRef = useRef(currentStoredDesignFingerprint);
-  useEffect(() => {
-    latestFingerprintRef.current = currentStoredDesignFingerprint;
-  }, [currentStoredDesignFingerprint]);
+  useEffect(() => { latestFingerprintRef.current = currentStoredDesignFingerprint; }, [currentStoredDesignFingerprint]);
   const saveBeforeLeaving = useCallback(async () => {
     if (!needsSaveBeforeLeaving({ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError })) return true;
     const savedFingerprint = currentStoredDesignFingerprint;
-    const saved = (await saveDesignToCloud()) !== null;
+    leaveSavesRef.current += 1;
+    const saved = (await saveDesignToCloud().finally(() => { leaveSavesRef.current -= 1; })) !== null;
     return saved && latestFingerprintRef.current === savedFingerprint;
   }, [currentStoredDesignFingerprint, designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError, saveDesignToCloud]);
 

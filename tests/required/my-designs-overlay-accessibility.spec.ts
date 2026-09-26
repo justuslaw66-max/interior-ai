@@ -154,6 +154,13 @@ async function openMoreMenu(page: Page) {
   await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
 }
 
+async function renameDesign(page: Page, name: string) {
+  await page.getByTestId("editor-design-title").click();
+  await page.getByTestId("design-rename-input").fill(name);
+  await page.getByTestId("design-rename-save").click();
+  await expect(page.getByTestId("design-rename-dialog")).toHaveCount(0);
+}
+
 function card(page: Page, designId: string) {
   return {
     root: page.getByTestId(`my-design-card-${designId}`),
@@ -200,10 +207,7 @@ test("More → My designs saves first, stays in the editor when saving fails, an
     await signIn(page, seed);
     await openEditor(page, `/design?designId=${designId}`);
     await expect(page.getByTestId("rule-announcement-status")).toHaveText("Loaded Entry Target");
-    await page.getByTestId("editor-design-title").click();
-    await page.getByTestId("design-rename-input").fill("Renamed Before Leaving");
-    await page.getByTestId("design-rename-save").click();
-    await expect(page.getByTestId("design-rename-dialog")).toHaveCount(0);
+    await renameDesign(page, "Renamed Once");
 
     await openMoreMenu(page);
     await page.getByTestId("editor-command-overflow-load").click();
@@ -212,7 +216,14 @@ test("More → My designs saves first, stays in the editor when saving fails, an
     await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
     expect(failedWrites).toBeGreaterThan(0);
 
+    // Saves work again, slowly: the autosave of a fresh edit comes due while leaving saves. Leaving
+    // must still finish its own save and open the page (an autosave write would supersede it).
     await page.unroute(designRoute);
+    await page.route(designRoute, async (route) => {
+      if (route.request().method() === "PUT") await new Promise((resolve) => setTimeout(resolve, 1_500));
+      await route.continue();
+    });
+    await renameDesign(page, "Renamed Before Leaving");
     await openMoreMenu(page);
     await page.getByTestId("editor-command-overflow-load").click();
     await expect(page).toHaveURL(/\/dashboard$/);
