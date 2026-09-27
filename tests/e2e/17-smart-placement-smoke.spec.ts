@@ -3,6 +3,8 @@ import { expect, test } from "./fixtures";
 import { storedToSnapshot, type StoredDesign } from "../../lib/room-persistence";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import {
+  chooseNewDesign,
+  chooseStartTemplate,
   getSelectedItemPanel,
   openCatalogPreview,
   openDesignAsPro,
@@ -65,16 +67,15 @@ test.describe("17. Smart Placement Smoke", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
 
-    const betaStartTemplate = page.getByTestId("beta-start-template");
-    if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await betaStartTemplate.click();
-    } else {
-      const planStartTemplate = page.getByTestId("plan-start-template");
-      await expect(planStartTemplate).toBeVisible({ timeout: 5000 });
-      await planStartTemplate.click();
-    }
-    await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
-    await page.getByTestId("apply-furnished-template-studio").click();
+    // Pro's Plan panel has no Beta start or template shortcut: the furnished studio comes from
+    // New design, in More, as in 26-phase14-product-flow.
+    const startChooser = page.getByTestId("start-design-chooser");
+    await expect(async () => {
+      if (await startChooser.isVisible().catch(() => false)) return;
+      await chooseNewDesign(page);
+      await expect(startChooser).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
+    await chooseStartTemplate(page, "studio", { furnished: true });
     await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
