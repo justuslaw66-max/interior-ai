@@ -8,7 +8,6 @@ import {
   isDrawPointCountVisible,
   openDrawToolPanelIfNeeded,
   readNumberAttribute,
-  selectFirstPlanRoom,
 } from "./helpers";
 
 export function registerDrawingTests() {
@@ -228,8 +227,6 @@ export function registerDrawingTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D", exact: true }).click();
-    // The starter room isn't selected on arrival (FR5); select it, before the rectangle tool is on.
-    await selectFirstPlanRoom(page);
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 

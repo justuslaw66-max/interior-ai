@@ -144,19 +144,6 @@ export function boxesOverlap(
   );
 }
 
-/**
- * Selects the first room on the 2D plan by clicking its middle, as a person does. The first visit's
- * room isn't selected on arrival (audit finding FR5), so the inspector waits for this.
- */
-export async function selectFirstPlanRoom(page: Page) {
-  const roomLabel = page.getByTestId("house-room-2d-label").first();
-  await expect(roomLabel).toBeVisible();
-  const roomBox = await roomLabel.boundingBox();
-  expect(roomBox).toBeTruthy();
-  await page.mouse.click(roomBox!.x + roomBox!.width / 2, roomBox!.y + roomBox!.height / 2);
-  await expect(roomLabel).toHaveAttribute("data-selected", "true");
-}
-
 export async function chooseDrawFromScratch(page: Page) {
   const firstStartDraw = page.getByTestId("plan-start-draw");
   if (await firstStartDraw.isVisible().catch(() => false)) {

@@ -7,7 +7,6 @@ import {
   expectInactiveOrHidden,
   getActiveRoomBodyProbe,
   getEmptyCanvasPoint,
-  selectFirstPlanRoom,
 } from "./helpers";
 
 // Plan, Furnish and Shop are steps in the command bar; Present & export sits in the More menu.
@@ -288,10 +287,6 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     const widthInput = page.getByTestId("selection-inspector-room-width");
     const depthInput = page.getByTestId("selection-inspector-room-depth");
-    // The first visit's room isn't selected on arrival; its size is in Plan's room card (FR5).
-    await expect(page.getByTestId("room-setup-width-input")).toBeVisible();
-    await expect(widthInput).toHaveCount(0);
-    await selectFirstPlanRoom(page);
     await expect(widthInput).toBeVisible();
     await expect(depthInput).toBeVisible();
     const displayUnits = page.getByTestId("selection-inspector-measurement-units");
