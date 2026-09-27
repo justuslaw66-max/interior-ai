@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.10.0"
+VERSION = "app-evidence-0.11.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -151,6 +151,7 @@ def outline_wall_cells(m, gray, known=None):
             bands[a:b + 1, c0:c1 + 1] = 1
     sel = np.zeros(n, bool)
     light_ids = set()
+    pen_cut = None
     idt = cv2.distanceTransform(ink.astype(np.uint8), cv2.DIST_L2, 3)
     weight = {}
     for i in range(1, n):
@@ -182,6 +183,7 @@ def outline_wall_cells(m, gray, known=None):
             if m1 - m0 >= 1.4 and inside <= 0.08 and (best is None or score_ > best[0]):
                 best = (score_, cut)
         if best is not None:
+            pen_cut = best[1]
             for i, (a, _b) in weight.items():
                 if a < best[1]:
                     sel[i] = False; light_ids.add(i)
@@ -250,9 +252,125 @@ def outline_wall_cells(m, gray, known=None):
                 spans = e0 and e1 and max(w, h) * mm >= 900
                 if at_door or spans:
                     out[y:y + h, x:x + w][cell] = 255; pend.remove(item); changed = True
+    # Walls whose outlines stop without a cap have no cell of their own: their channel is cut out of the room or the page
+    # it runs into, and joins the cells under the same tests (lettering, window bands, dimension lines, the light pen)
+    chan = leaked_channels(m, ink, free, n, lab, maxdt)
+    n3, lab3, st3, _ = cv2.connectedComponentsWithStats(chan, connectivity=4)
+    recovered = 0
+    for i in range(1, n3):
+        x, y, w, h, area = st3[i]
+        cell = lab3[y:y + h, x:x + w] == i
+        if veto[y:y + h, x:x + w][cell].mean() > 0.3 or bands[y:y + h, x:x + w][cell].mean() > 0.5:
+            continue
+        ring = cv2.dilate(cell.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & ~cell
+        if ring.any() and dimk[y:y + h, x:x + w][ring].mean() > 0.3:
+            continue
+        if pen_cut is not None:
+            x0, y0 = max(0, x - 4), max(0, y - 4)
+            sub = lab3[y0:y + h + 4, x0:x + w + 4] == i
+            ring2 = cv2.dilate(sub.astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool) & ~sub & ink[y0:y + h + 4, x0:x + w + 4]
+            if ring2.sum() >= 5 and 2.0 * float(np.percentile(idt[y0:y + h + 4, x0:x + w + 4][ring2], 80)) < pen_cut:
+                continue                                      # drawn with the light (furniture) pen
+        out[y:y + h, x:x + w][cell] = 255; recovered += 1
+    m["_leaked_channels"] = recovered
     out = drop_stacked_cells(m, out, known if known is not None else wall_mask(m))
     grown = cv2.dilate(out, np.ones((7, 7), np.uint8))
     out[(grown > 0) & ink] = 255                             # the outlines belong to the wall
+    return out
+
+
+LEAK_DISC_MM = 420.0      # as wide as the widest wall: a channel is where no disc this wide fits
+NARROW_SWING_MM = float(os.environ.get("AE_NARROW_SWING", 550))   # no door swing is narrower (0 = rule off)
+
+
+def leaked_channels(m, ink, free, n, lab, maxdt):
+    """A wall drawn as two outlines whose outlines stop without a cap - at the edge of the plan, at a doorway drawn as a
+    plain break - is no closed cell: its paper runs out into the page around the plan or into a room, and the whole
+    component is as wide as that.  Its channel is cut out of such a WIDE component at the mouth: the part where no disc
+    as wide as the widest wall fits.  Not every narrow part of a room is a wall - the floor between a rug and the wall,
+    between a bed and a wardrobe, the counter behind a sink - so a channel is kept only when it passes the cell test and
+    LEAKS: every mouth is about as wide as the channel, and the ink that bounds it ends there.  A strip of floor opens into
+    the room because the furniture beside it turns away while the wall runs on past the mouth.  A channel is also straight
+    (most of it in straight runs at least a thin wall wide).  Returns the channels' mask (1 = channel)."""
+    mm = pseudo_scale(m); H, W = free.shape
+    out = np.zeros((H, W), np.uint8)
+    wide = np.zeros(n, bool)
+    wide[1:] = 2.0 * maxdt[1:] * mm > 420.0
+    if not wide.any():
+        return out
+    kd = int(round(LEAK_DISC_MM / mm)) + 3; kd += (kd % 2 == 0)
+    wide_px = wide[lab] & (free > 0)
+    opened = cv2.morphologyEx(wide_px.astype(np.uint8), cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kd, kd))) > 0
+    narrow = (wide_px & ~opened).astype(np.uint8)
+    n2, lab2, st2, _ = cv2.connectedComponentsWithStats(narrow, connectivity=4)
+    if n2 < 2:
+        return out
+    # dashed strokes (wall cupboards over a counter, stair treads above) close nothing: the strips they cut a counter
+    # into are no channels, and a dash is no stroke that runs on past a mouth
+    dashed = np.zeros((H, W), np.uint8)
+    for l in m["lines"]:
+        if l.get("dash"):
+            p0, p1 = ((l["a"], l["c"]), (l["b"], l["c"])) if l["o"] == "h" else ((l["c"], l["a"]), (l["c"], l["b"]))
+            cv2.line(dashed, (int(round(p0[0])), int(round(p0[1]))), (int(round(p1[0])), int(round(p1[1]))), 1, 5)
+    dt2 = cv2.distanceTransform(narrow, cv2.DIST_L2, 3)
+    md2 = np.zeros(n2, np.float32)
+    np.maximum.at(md2, lab2.ravel(), dt2.ravel())
+    near_open = cv2.dilate(opened.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    log = os.environ.get("AE_LOG_LEAK")
+    for i in range(1, n2):
+        x, y, w, h, area = st2[i]
+        width = 2.0 * float(md2[i])
+        if x == 0 or y == 0 or x + w >= W or y + h >= H or not (45.0 <= width * mm <= 420.0) or area < 6:
+            continue
+        length = area / max(1.0, width)
+        if length < 2.5 * width or length * mm < 250:
+            continue
+        x0, y0, x1, y1 = max(0, x - 2), max(0, y - 2), min(W, x + w + 2), min(H, y + h + 2)
+        piece = lab2[y0:y1, x0:x1] == i
+        if dashed[y0:y1, x0:x1][piece].mean() > 0.05:
+            continue
+        # a wall channel runs between two straight outlines: most of it is straight runs at least a thin wall wide (the
+        # hairline ring inside a box drawn with a double outline, or the ragged floor beside a bed, is not)
+        straight = np.zeros(piece.shape, bool)
+        for tr in (False, True):
+            for a0, a1, c0, c1 in strips(piece.T if tr else piece):
+                c0, c1 = int(round(c0)), int(round(c1))
+                if c1 - c0 >= max(3.0, 40.0 / mm) and a1 - a0 >= 2.0 * (c1 - c0):
+                    if tr:
+                        straight[a0:a1, c0:c1] = True
+                    else:
+                        straight[c0:c1, a0:a1] = True
+        if float((straight & piece).sum()) < 0.75 * float(piece.sum()):
+            continue
+        mouth = piece & near_open[y0:y1, x0:x1]
+        nm, _lm, stm, cm = cv2.connectedComponentsWithStats(mouth.astype(np.uint8), connectivity=8)
+        why = None
+        for j in range(1, nm):
+            mx, my = cm[j][0] + x0, cm[j][1] + y0
+            if stm[j][4] > 2.0 * width + 4:
+                why = "mouth %d px long" % stm[j][4]; break      # open along its side: a strip of floor
+            # which way the channel runs out through this mouth: from its own pixels near the mouth to the mouth
+            r = int(2.5 * width) + 4
+            bx0, by0 = max(0, int(mx) - r), max(0, int(my) - r)
+            ys_, xs_ = np.nonzero(lab2[by0:int(my) + r + 1, bx0:int(mx) + r + 1] == i)
+            u = np.array([mx - (xs_.mean() + bx0), my - (ys_.mean() + by0)]) if len(xs_) >= 4 else np.zeros(2)
+            if np.hypot(*u) < 1e-3:
+                why = "no direction at the mouth"; break
+            u = u / np.hypot(*u)
+            # ink past the mouth, within one and a half widths: a stroke running on (the wall a strip of floor lay beside)
+            R = max(4.0, 1.5 * width)
+            gx0, gy0, gx1, gy1 = max(0, int(mx - R) - 1), max(0, int(my - R) - 1), min(W, int(mx + R) + 2), min(H, int(my + R) + 2)
+            gy, gx = np.mgrid[gy0:gy1, gx0:gx1]
+            dx, dy = gx - mx, gy - my
+            beyond = ((dx * dx + dy * dy) <= R * R) & ((dx * u[0] + dy * u[1]) >= 2.0)
+            if int((ink[gy0:gy1, gx0:gx1] & (dashed[gy0:gy1, gx0:gx1] == 0) & beyond).sum()) > 0.5 * R:
+                why = "a stroke runs on past the mouth at %d,%d" % (mx, my); break
+        if nm < 2:
+            why = "no mouth"
+        if log:
+            print("leak piece at %d,%d %dx%d width %d mm length %d mm, %d mouth(s): %s" % (x, y, w, h, width * mm, length * mm, nm - 1, why or "channel"))
+        if why is None:
+            out[y0:y1, x0:x1][piece] = 1
     return out
 
 
@@ -1238,7 +1356,7 @@ def close_openings(m, k, openings, thin=False):
     return closed
 
 
-def _simplify(pts, step_lim, spur_lim):
+def _simplify(pts, step_lim, spur_lim, far_lim=0.0):
     """Take the small steps (a column standing a little proud of its wall) and the stubs (a wall end standing in the room) out
     of a room outline.  The outline is handled as a ring of LINES (corners are where neighbours cross), so taking a side out
     can never bend the sides that stay."""
@@ -1278,6 +1396,7 @@ def _simplify(pts, step_lim, spur_lim):
         a, b = V[i], V[(i + 1) % n]
         return math.hypot(b[0] - a[0], b[1] - a[1])
     lines = merge_parallel(lines)
+    kept = set()                                             # steps whose removal would throw a corner far away
     for _ in range(300):
         n = len(lines)
         if n < 5:
@@ -1285,6 +1404,8 @@ def _simplify(pts, step_lim, spur_lim):
         V = verts(lines)
         best = None
         for i in range(n):
+            if id(lines[i]) in kept:
+                continue
             L = _len(V, i, n)
             a, b = lines[i - 1], lines[(i + 1) % n]
             par = abs(a["u"][0] * b["u"][1] - a["u"][1] * b["u"][0]) < 0.03
@@ -1306,7 +1427,15 @@ def _simplify(pts, step_lim, spur_lim):
             drop = {(i - 1) % n, i, (i + 1) % n}
         else:
             drop = {i, (i + 1) % n} if L1 > L2 else {(i - 1) % n, i}
-        lines = merge_parallel([l for j, l in enumerate(lines) if j not in drop])
+        cand = merge_parallel([l for j, l in enumerate(lines) if j not in drop])
+        if far_lim and len(cand) >= 3:
+            # every corner a removal leaves is one of the old corners, or within the size of the step it took out; two
+            # lines a few degrees apart that become neighbours meet far out instead - that step stays
+            lim_ = max(far_lim, step_lim if same else spur_lim)
+            if any(min(math.hypot(v_[0] - w_[0], v_[1] - w_[1]) for w_ in V) > lim_ for v_ in verts(cand)):
+                kept.add(id(lines[i]))
+                continue
+        lines = cand
     return [list(v) for v in verts(lines)]
 
 
@@ -1363,7 +1492,7 @@ def room_outlines(m, closed):
                 v = (a[1] + b[1]) / 2.0; a[1] = b[1] = v
             elif abs(dx) <= 0.14 * abs(dy):
                 v = (a[0] + b[0]) / 2.0; a[0] = b[0] = v
-        pts = _simplify(pts, step_lim=160.0 / mm, spur_lim=450.0 / mm)
+        pts = _simplify(pts, step_lim=160.0 / mm, spur_lim=450.0 / mm, far_lim=3.0 * T + 3.0)
         if len(pts) >= 3:
             rooms.append({"face": pts, "comp": comp, "area_px": float(area)})
     return rooms
@@ -1573,6 +1702,12 @@ def _outline_from_sides(sides):
         else:
             k_ = ((p2[0] - p1[0]) * u2[1] - (p2[1] - p1[1]) * u2[0]) / den
             q = [p1[0] + u1[0] * k_, p1[1] + u1[1] * k_]
+            # Two sides a few degrees apart meet far out along their lines, and the corner would be thrown across the
+            # room.  A centre-line corner stands within a wall's thickness or two of the face corner it comes from:
+            # side i then starts where its own face starts, on its own centre-line.
+            c_ = sides[i]["a"]
+            if abs(den) < 0.35 and math.hypot(q[0] - c_[0], q[1] - c_[1]) > 3.0 * max(sides[i - 1]["t"], sides[i]["t"]) + 3.0:
+                q = list(p2)
         poly.append(q)
     return poly                                              # poly[i] is the START of side i
 
@@ -1989,7 +2124,7 @@ def build(m, gray=None):
                 n_tot += 1
                 n_hit += 1 if max([b_ - a_ for a_, b_ in _runs(line > 0)] or [0]) >= 0.5 * T else 0
         return n_tot > 0 and n_hit >= 0.6 * n_tot
-    bad = []; partitions = 0
+    bad = []; partitions = 0; narrow_swings = 0
     def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
         labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
         return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
@@ -1997,6 +2132,17 @@ def build(m, gray=None):
         bt = g.get("between", [None, None])
         if g["kind"] == "open_passage" and walled_up(g):       # (folding and sliding doors are also read ACROSS a traced wall: not those)
             bad.append(g); continue
+        # A swing narrower than any door (the narrowest on the plans seen is a 570 mm shelter door) is the leaf of a
+        # casement window on an outer wall, or a cupboard door or a fixture's arc between two rooms.  (Folding doors are
+        # measured on their V, which can be half the opening: not those.)
+        if g["kind"] == "door" and g.get("operation") == "swing" and (g["b"] - g["a"]) * mm < NARROW_SWING_MM:
+            if None in bt:
+                g.update(kind="window", operation="fixed", hinge="none", swing_side=0, confidence=min(g.get("confidence", 0.7), 0.6),
+                         why="a swing too narrow for a door, on an outer wall: a casement window")
+            else:
+                g.update(kind="wall", operation=None, confidence=0.45, why="a swing too narrow for a door between two rooms: a cupboard door or a fixture")
+            narrow_swings += 1
+            continue
         # Two or three parallel lines between two named indoor rooms are a lightweight partition drawn in outline (the
         # bedroom / kitchen wall on HDB plans), not a window: a window has the outdoors, or a space without a name, on one side.
         if g["kind"] == "window" and None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
@@ -2010,7 +2156,7 @@ def build(m, gray=None):
         openings = [g for g in openings if not any(g is d_ for d_ in bad)]
         closed, rooms = make_rooms(openings)
         settle(rooms, openings)
-    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions
+    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings
     # A face under 1.5 m2 that carries no label is not a room: the inside of a shaft, the strip behind a wardrobe
     # drawn against a wall, a notch between a column and a cupboard.  The smallest named space on any plan seen is a
     # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
@@ -2186,7 +2332,7 @@ def build(m, gray=None):
                       "dimensionLabels": sem_dims, "openingSymbols": sem_open, "fixtureSymbols": sem_fix, "entrance": None, "notes": notes},
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
-                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
+                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
                         "unsupportedWallPx": int(unsupported), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
