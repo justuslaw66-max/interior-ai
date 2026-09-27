@@ -53,8 +53,6 @@ export function useDesignPageEditorShellRuntime({
     setShowLayoutDebugOverlay,
     setViewportSize,
   } = actions.diagnostics;
-  const [hoveredCartInstanceId, setHoveredCartInstanceId] =
-    useState<string | null>(null);
   const [showPresentModal, setShowPresentModal] = useState(false);
   const [presentModeRoomId, setPresentModeRoomId] =
     useState<string | null>(null);
@@ -126,7 +124,6 @@ export function useDesignPageEditorShellRuntime({
   return {
     boundaries: { surfaceState },
     state: {
-      cart: { hoveredCartInstanceId },
       presentation: { showPresentModal, presentModeRoomId },
       surface: surfaceState.state,
       editor: { editorMode, guidedPlanStartMode },
@@ -136,7 +133,6 @@ export function useDesignPageEditorShellRuntime({
       },
     },
     actions: {
-      cart: { setHoveredCartInstanceId },
       presentation: { setShowPresentModal, setPresentModeRoomId },
       surface: surfaceState.actions,
       editor: { setEditorMode, setGuidedPlanStartMode },

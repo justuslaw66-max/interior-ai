@@ -70,15 +70,6 @@ function productRemoval(names: readonly string[], count: number) {
     : { step: `Remove ${count} items`, message: `${count} products removed` };
 }
 
-function isDeleteShortcutTarget(target: EventTarget | null): boolean {
-  const element = target as HTMLElement | null;
-  return Boolean(
-    element?.tagName === "INPUT" ||
-      element?.tagName === "TEXTAREA" ||
-      element?.isContentEditable
-  );
-}
-
 export function useDesignPageDeleteSelectionShortcut({
   state,
   configuration,
@@ -92,7 +83,8 @@ export function useDesignPageDeleteSelectionShortcut({
 
   useEffect(() => {
     const handleDeleteKey = (event: KeyboardEvent) => {
-      if (isClientPreview || isDeleteShortcutTarget(event.target)) return;
+      // Not from a field, a select or behind a dialog (UX audit ED12).
+      if (isClientPreview || isDesignPageSelectionShortcutBlocked(event.target)) return;
       if (event.key !== "Delete" && event.key !== "Backspace") return;
 
       if (selectedPlanOverlayId) {

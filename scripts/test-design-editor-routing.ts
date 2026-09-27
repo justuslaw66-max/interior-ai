@@ -57,7 +57,7 @@ const legacyRoute = read("app/design/[id]/page.tsx");
 const dashboardList = read("components/my-designs/MyDesignCardView.tsx");
 const duplicateButton = read("components/DuplicateDesignButton.tsx");
 const checkoutSuccess = read("app/checkout/success/page.tsx");
-const floorPlanAssistant = read("components/editor/FloorPlanImportAssistant.tsx");
+const floorPlanImportCreation = read("components/editor/useConsumerFloorPlanImportCreation.ts");
 const floorPlanHistory = read("components/editor/FloorPlanImportHistory.tsx");
 const floorPlanLifecycle = read(
   "lib/useDesignPageFloorPlanLifecycleRegistration.ts"
@@ -117,11 +117,23 @@ assert.match(
   /if \(!res\.ok\)[\s\S]*?return;[\s\S]*?const newDesignId[\s\S]*?router\.push\(buildDesignEditorUrl/,
   "Duplicate failures must return without navigation, while success uses the response ID."
 );
-for (const source of [floorPlanAssistant, floorPlanHistory]) {
-  assert.match(
+// An upload opens its new design in Plan, in 2D, with the import's arrival note (UX phase 3b-2);
+// Previous uploads' Open design opens it in 2D without the note.
+assert.match(
+  floorPlanImportCreation,
+  /router\.push\(buildDesignEditorUrl\(\{ designId: id, view: "2d", floorPlanImportId: activeJob\.id \}\)\)/,
+  "A new design from an upload should open through the canonical saved-design URL, in 2D, with its import."
+);
+assert.match(
+  floorPlanHistory,
+  /router\.push\(buildDesignEditorUrl\(\{ designId: job\.appliedDesignId!, view: "2d" \}\)\)/,
+  "A previous upload's design should open through the canonical saved-design URL, in 2D."
+);
+for (const source of [floorPlanImportCreation, floorPlanHistory]) {
+  assert.doesNotMatch(
     source,
-    /`\/design\?designId=\$\{encodeURIComponent\([\s\S]*?view=2d&workspace=furnish&floorPlanImport=\$\{encodeURIComponent\(/,
-    "Existing floor-plan continuations should retain the canonical saved-design URL and encoded context."
+    /`\/design\?designId=/,
+    "Floor-plan continuations must not hand-build the editor URL."
   );
 }
 

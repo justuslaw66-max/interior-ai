@@ -1,4 +1,8 @@
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import {
+  hasCommandModifier,
+  isEditorShortcutTargetBlocked,
+} from "@/lib/editor-shortcut-guard";
 
 export type DesignPageKeyboardInput = {
   key: string;
@@ -41,9 +45,14 @@ const NUDGE_DIRECTION_BY_KEY = {
   ArrowDown: [0, 1],
 } as const;
 
-function resolveNudgeCommand(key: string, step: number): NudgeCommand | null {
+/** Arrows nudge; with ⌘, Ctrl or Alt they're the browser's (UX audit ED12). */
+function resolveNudgeCommand(
+  input: DesignPageKeyboardInput,
+  step: number
+): NudgeCommand | null {
+  if (hasCommandModifier(input)) return null;
   const direction = NUDGE_DIRECTION_BY_KEY[
-    key as keyof typeof NUDGE_DIRECTION_BY_KEY
+    input.key as keyof typeof NUDGE_DIRECTION_BY_KEY
   ];
   if (!direction) return null;
   return {
@@ -51,10 +60,6 @@ function resolveNudgeCommand(key: string, step: number): NudgeCommand | null {
     deltaX: direction[0] * step,
     deltaZ: direction[1] * step,
   };
-}
-
-function hasRotationModifier(input: DesignPageKeyboardInput): boolean {
-  return Boolean(input.metaKey || input.ctrlKey || input.altKey);
 }
 
 export type ResolvePendingPlacementKeyboardCommandInput =
@@ -71,10 +76,10 @@ export function resolvePendingPlacementKeyboardCommand(
   if (input.key === "Escape") return { type: "cancel" };
   if (!input.canEdit || input.keyboardShortcutsEnabled === false) return null;
   if (input.key === "Enter") return { type: "confirm" };
-  if (input.key.toLowerCase() === "r" && !hasRotationModifier(input)) {
+  if (input.key.toLowerCase() === "r" && !hasCommandModifier(input)) {
     return { type: "rotate", direction: input.shiftKey ? "left" : "right" };
   }
-  return resolveNudgeCommand(input.key, input.shiftKey ? 0.25 : 0.1);
+  return resolveNudgeCommand(input, input.shiftKey ? 0.25 : 0.1);
 }
 
 export type ResolveSelectedItemKeyboardCommandInput = DesignPageKeyboardInput & {
@@ -88,7 +93,7 @@ export type ResolveSelectedItemKeyboardCommandInput = DesignPageKeyboardInput & 
 function resolveSelectedItemRotationCommand(
   input: ResolveSelectedItemKeyboardCommandInput
 ): SelectedItemKeyboardCommand | null {
-  if (hasRotationModifier(input)) return null;
+  if (hasCommandModifier(input)) return null;
   const key = input.key.toLowerCase();
   const step = input.rotationSnapEnabled ? input.rotationSnapStepDegrees : 1;
   if (key === "r") {
@@ -114,7 +119,7 @@ export function resolveSelectedItemKeyboardCommand(
   }
   return (
     resolveSelectedItemRotationCommand(input) ??
-    resolveNudgeCommand(input.key, input.shiftKey ? 0.25 : 0.05)
+    resolveNudgeCommand(input, input.shiftKey ? 0.25 : 0.05)
   );
 }
 
@@ -165,27 +170,13 @@ export function resolveSelectedPlanKeyboardCommand(
   }
   const editCommand = resolveSelectedRoomEditCommand(input);
   if (editCommand || input.viewMode !== "2d") return editCommand;
-  const nudge = resolveNudgeCommand(input.key, input.shiftKey ? 0.25 : 0.05);
+  const nudge = resolveNudgeCommand(input, input.shiftKey ? 0.25 : 0.05);
   return nudge ? { ...nudge, type: "nudge-room", snap: !input.shiftKey } : null;
 }
 
-const CAPTURED_KEYBOARD_CONTEXT_SELECTOR =
-  '[aria-modal="true"], [data-testid="editor-command-palette"]';
-
+/** Selection shortcuts follow the editor's one rule (`lib/editor-shortcut-guard.ts`). */
 export function isDesignPageSelectionShortcutBlocked(
   target: EventTarget | null
 ): boolean {
-  const element = target as HTMLElement | null;
-  const tagName = element?.tagName;
-  const isEditable =
-    tagName === "INPUT" ||
-    tagName === "TEXTAREA" ||
-    tagName === "SELECT" ||
-    element?.isContentEditable;
-  if (isEditable) return true;
-  if (element?.closest?.(CAPTURED_KEYBOARD_CONTEXT_SELECTOR)) return true;
-  return (
-    typeof document !== "undefined" &&
-    Boolean(document.querySelector(CAPTURED_KEYBOARD_CONTEXT_SELECTOR))
-  );
+  return isEditorShortcutTargetBlocked(target);
 }

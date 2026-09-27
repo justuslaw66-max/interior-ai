@@ -202,8 +202,6 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
           selectionInspection.state.inspection.previewVariantId,
         previewMaterialPresetId:
           selectionInspection.state.inspection.previewMaterialPresetId,
-        hoveredCartInstanceId:
-          viewportShell.state.shopping.hoveredCartInstanceId,
         activeSceneItemsForGuides: roomRead.activeSceneItemsForGuides,
         itemPlanningBoundsByInstanceId:
           selectionInspection.derived.itemPlanningBoundsByInstanceId,
