@@ -1,5 +1,24 @@
 # Required-test truthfulness
 
+## UX phase 3c-2 Cart owner re-pin — 2026-09-27
+
+The Selection Tray is gone, and `ci.cart-overlay-accessibility` now owns the
+Shopping list in the real editor (J, 27 Sep). It keeps its id, its `cart`
+development-server owner, its config, spec and static prerequisite paths, its
+two-script package closure (SHA-256
+`cc8a751cbca29e97536938dab1525cb17ee1cc8dad18174564d58d4dae1703fb`) and its
+stable-checks step. The spec seeds a design as the browser's local backup
+before the page loads, so no database or catalogue search is involved.
+
+Eight identities run once in Chromium and WebKit (16 results), with the same
+zero retry, skip, annotation, flake, filter, shard, focus and timeout rules.
+They cover the inert, hidden canvas behind Shop for Consumer and Pro, focus
+after removing a product (next, previous, the heading, and by pointer), Undo
+from the toast, and desktop and 390×844 layout with 44px actions and focus
+rings. `ci.pro-visual-policy` keeps its identities; its two supersession tests
+open Download instead of the Tray as the newer modal. Gate and source counts
+are unchanged.
+
 ## UX phase 3c-2 Retailer owner re-pin — 2026-09-27
 
 Shop is one Shopping list (audit findings FU7 and FU8), and the Cart's
@@ -11,7 +30,7 @@ and its stable-checks step. It now owns Shop's buy list: "Buy at <shop>" opens
 a shop's only product directly, or that shop's buy list, where each Open opens
 exactly one tab (J, Q2, 27 Sep).
 
-Fourteen identities execute once in Chromium and WebKit: **28/28**, with the
+Fourteen identities run once in Chromium and WebKit (28 results), with the
 same zero retry, skip, annotation, flake, filter, shard, focus and timeout
 rules. They cover pointer and keyboard entry and dismissal, one tracked tab per
 Open, fail-open tracking, the direct single-product path, the empty list,

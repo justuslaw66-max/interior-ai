@@ -77,7 +77,6 @@ export function buildDesignPageDialogLayerAdapter({
         hidden: overlays.validation.hidden || isClientPreview,
       },
       cabinetry: overlays.cabinetry,
-      itemCart: overlays.itemCart,
     },
   };
 }

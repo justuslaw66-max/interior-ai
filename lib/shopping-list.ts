@@ -156,14 +156,31 @@ export function buildShoppingList({ rooms, style, catalogItems = CATALOG_ITEMS }
     }
   }
   const retailerList = Array.from(retailers.values()).map((retailer) => ({ ...retailer, subtotal: subtotal(retailer.lines) }));
-  const all = [...retailerList.flatMap((retailer) => retailer.lines), ...here, ...unavailable];
+  const checkoutHere = here.length ? { lines: here, subtotal: subtotal(here) } : null;
+  const all = shoppingListLines({ retailers: retailerList, checkoutHere, unavailable });
   return {
     retailers: retailerList,
-    checkoutHere: here.length ? { lines: here, subtotal: subtotal(here) } : null,
+    checkoutHere,
     unavailable,
     total: subtotal(all),
     productCount: all.length,
   };
+}
+
+/** The lines in the order the page shows them: each shop, then Checkout here, then Not sold online yet. */
+export function shoppingListLines(list: Pick<ShoppingList, "retailers" | "checkoutHere" | "unavailable">): ShoppingListLine[] {
+  return [...list.retailers.flatMap((retailer) => retailer.lines), ...(list.checkoutHere?.lines ?? []), ...list.unavailable];
+}
+
+/**
+ * Where keyboard focus may go when a line is removed, best first: the lines after it, then the lines
+ * before it, nearest first. The page takes the first one still listed, or its heading when none is.
+ */
+export function removalFocusCandidates(list: ShoppingList, instanceId: string): string[] {
+  const ids = shoppingListLines(list).map((line) => line.instanceId);
+  const index = ids.indexOf(instanceId);
+  if (index < 0) return [];
+  return [...ids.slice(index + 1), ...ids.slice(0, index).reverse()];
 }
 
 /** Where a retailer's list says it checks out: "castlery.com". */

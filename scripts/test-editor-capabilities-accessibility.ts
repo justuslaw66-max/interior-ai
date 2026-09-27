@@ -182,7 +182,6 @@ assert.match(
 for (const relativePath of [
   "components/ConfirmDialog.tsx",
   "components/CopyFallbackDialog.tsx",
-  "components/ItemCartDrawer.tsx",
   "components/editor/design-page/AiNotesDialog.tsx",
   "components/editor/design-page/PlanAnnotationDialog.tsx",
   "components/editor/design-page/PlansDialog.tsx",
@@ -190,6 +189,7 @@ for (const relativePath of [
   "components/editor/design-page/UpgradeDialog.tsx",
   "components/editor/design-page/PresentExportDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
+  "components/editor/shop/ShoppingBuyListDialog.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
@@ -197,13 +197,11 @@ for (const relativePath of [
     /EditorDialog/,
     `${relativePath} should use the shared accessible dialog primitive`
   );
-  if (relativePath !== "components/ItemCartDrawer.tsx") {
-    assert.doesNotMatch(
-      source,
-      /waitForEntryTransition/,
-      `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
-    );
-  }
+  assert.doesNotMatch(
+    source,
+    /waitForEntryTransition/,
+    `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
+  );
 }
 
 const presentExport = read(

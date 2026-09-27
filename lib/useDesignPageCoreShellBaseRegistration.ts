@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { useUrlViewMode } from "@/lib/useUrlViewMode";
 import type { Style } from "@/lib/design-page-types";
-import type { DesignPageItemCartEntry } from "@/lib/design-page-item-cart";
 import type {
   PricingLayoutVariant,
   UpgradeCtaVariant,
@@ -52,8 +51,6 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [showGrid, setShowGrid] = useState(false);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [clientPreview, setClientPreview] = useState(false);
-  const [itemCartOpen, setItemCartOpen] = useState(false);
-  const [itemCart, setItemCart] = useState<DesignPageItemCartEntry[]>([]);
 
   const importedModelsWorkspace = useDesignPageImportedModels();
   const {
@@ -97,8 +94,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         viewMode,
       },
       panels: {
-        itemCartOpen,
-        itemCart,
         designPanelOpen,
         designPanelCollapsed,
         planFocusPanelRevealed,
@@ -136,8 +131,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         bumpHistoryRevision,
       },
       panels: {
-        setItemCartOpen,
-        setItemCart,
         setDesignPanelOpen,
         setDesignPanelCollapsed,
         setPlanFocusPanelRevealed,

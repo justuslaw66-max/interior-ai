@@ -236,7 +236,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         setDesignPanelOpen: base.actions.panels.setDesignPanelOpen,
         setDesignPanelCollapsed:
           base.actions.panels.setDesignPanelCollapsed,
-        setItemCartOpen: base.actions.panels.setItemCartOpen,
         setClientPreview: base.actions.access.setClientPreview,
         setUrlMode: coreShell.actions.paywall.setUrlMode,
       },

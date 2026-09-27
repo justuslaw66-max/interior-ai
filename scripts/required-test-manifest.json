@@ -872,7 +872,7 @@
     },
     {
       "id": "ci.cart-overlay-accessibility",
-      "invariant": "The Selection Tray owns one modal drawer lifecycle with no closed accessibility-active controls and deterministic focus entry, containment, Escape, backdrop, return, replacement, supersession, responsive, Consumer, and Pro behavior in Chromium and WebKit.",
+      "invariant": "The Shopping list is one page over an inert, hidden canvas for Consumer and Pro; removing a product by keyboard or pointer moves focus to the next product's Remove, the one before it, or the heading; Undo restores the product with focus on the current step; and desktop and 390x844 layouts fit with 44px actions and focus rings, in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:cart-overlay-accessibility-required",
@@ -888,44 +888,44 @@
       ],
       "requiredTests": [
         {
-          "id": "cart.consumer-lifecycle",
+          "id": "cart.shop-page-consumer",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "consumer empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+          "title": "Consumer Shop shows the Shopping list over an inert canvas and Furnish gives the editor back"
         },
         {
-          "id": "cart.pro-lifecycle",
+          "id": "cart.shop-page-pro",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "pro empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+          "title": "Pro Shop hides the tool rail and removes by keyboard as Consumer does"
         },
         {
-          "id": "cart.semantic-opener-replacement",
+          "id": "cart.remove-focus-next",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "cart restoration resolves the current semantic replacement opener"
+          "title": "Removing a product by keyboard moves focus to the next product's Remove"
         },
         {
-          "id": "cart.missing-opener",
+          "id": "cart.remove-focus-previous",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "cart restoration ignores a missing and disabled opener"
+          "title": "Removing the last product in the list moves focus to the product before it"
         },
         {
-          "id": "cart.newer-modal",
+          "id": "cart.remove-focus-heading",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "a newer modal supersedes cart Escape and focus restoration"
+          "title": "Removing the only product moves focus to the Shopping list heading"
         },
         {
-          "id": "cart.owned-dialog",
+          "id": "cart.undo-focus",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "an owned dialog keeps initial focus and cannot steal focus when the cart closes"
+          "title": "Undo in the toast puts the product back and keeps keyboard focus on Shop"
         },
         {
-          "id": "cart.responsive-lifecycle",
+          "id": "cart.pointer-remove-focus",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "responsive cart retains modal ownership without overflow or clipped focus"
+          "title": "Removing with the pointer also leaves focus on the next product's Remove"
         },
         {
-          "id": "cart.route-unmount",
+          "id": "cart.responsive-layout",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "route replacement cancels cart focus restoration"
+          "title": "Desktop and 390x844 Shopping lists fit the screen with 44px actions and focus rings"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

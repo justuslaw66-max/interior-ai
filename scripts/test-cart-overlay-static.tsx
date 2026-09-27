@@ -1,108 +1,165 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import ItemCartDrawer, {
-  runCartMutationWithFocus,
-  type ItemCartDrawerProps,
-} from "../components/ItemCartDrawer";
 
-const noOp = () => undefined;
-const baseProps: ItemCartDrawerProps = {
-  items: [],
-  onRemove: noOp,
-  onUpdateQty: noOp,
-  onClear: noOp,
-  onAddAllToRoom: noOp,
-  isOpen: false,
-  onToggle: noOp,
+import { ShoppingListPage, type ShoppingListPageProps } from "../components/editor/shop/ShoppingListPage";
+import {
+  SHOPPING_LIST_TITLE_ID,
+  focusAfterShoppingListEdit,
+} from "../components/editor/shop/useShoppingListFocus";
+import {
+  removalFocusCandidates,
+  shoppingListLines,
+  type ShoppingList,
+  type ShoppingListLine,
+} from "../lib/shopping-list";
+
+// CH-0015A's Cart gate prerequisite, re-pinned in UX phase 3c-2 (J, 27 Sep): the Selection Tray is
+// gone, and the gate owns the Shopping list, the page Shop shows over the canvas (audit findings
+// FU7, FU8). The browser matrix is tests/required/cart-overlay-accessibility.spec.ts; buying at a
+// shop is the Retailer gate's (test-retailer-confirmation-static).
+
+const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
+const noop = () => undefined;
+
+const line = (instanceId: string, title: string, group = "castlery.com"): ShoppingListLine => ({
+  instanceId, roomId: "living", roomName: "Living Room", productId: `${instanceId}-product`, variantId: `${instanceId}-variant`,
+  title, detail: "Synthetic finish", imageUrl: null, fallbackImageUrl: null, addCount: 1, price: 100, priceLabel: "S$100",
+  buyUrl: group === "unavailable" ? null : `https://${group}/${instanceId}`, shopifyVariantId: group === "here" ? "gid://1" : null,
+  cheaperSwap: null,
+});
+const list: ShoppingList = {
+  retailers: [
+    { id: "castlery.com", name: "Castlery", subtotal: 200, lines: [line("a", "Alpha Armchair"), line("b", "Beta Side Table")] },
+    { id: "safe-retailer.test", name: "Safe Retailer", subtotal: 100, lines: [line("c", "Gamma Lamp", "safe-retailer.test")] },
+  ],
+  checkoutHere: { subtotal: 100, lines: [line("d", "Delta Rug", "here")] },
+  unavailable: [line("e", "Epsilon Shelf", "unavailable")],
+  total: 400,
+  productCount: 5,
 };
 
-function render(props: Partial<ItemCartDrawerProps>) {
-  return renderToStaticMarkup(createElement(ItemCartDrawer, { ...baseProps, ...props }));
+// The page's reading order: each shop, then Checkout here, then Not sold online yet.
+assert.deepEqual(shoppingListLines(list).map((entry) => entry.instanceId), ["a", "b", "c", "d", "e"]);
+
+// Removing a product: the next product's Remove, else the one before it, nearest first.
+assert.deepEqual(removalFocusCandidates(list, "a"), ["b", "c", "d", "e"]);
+assert.deepEqual(removalFocusCandidates(list, "c"), ["d", "e", "b", "a"]);
+assert.deepEqual(removalFocusCandidates(list, "e"), ["d", "c", "b", "a"]);
+assert.deepEqual(removalFocusCandidates(list, "missing"), []);
+const only: ShoppingList = { retailers: [{ ...list.retailers[0], lines: [line("a", "Alpha Armchair")] }], checkoutHere: null, unavailable: [], total: 100, productCount: 1 };
+assert.deepEqual(removalFocusCandidates(only, "a"), []);
+
+// Focus moves once the list shows the edit, on a fake page with the rows' controls.
+function fakePage(lines: readonly ShoppingListLine[], swaps: readonly string[] = []) {
+  const focused: string[] = [];
+  const control = (name: string) => ({ focus: () => focused.push(name) });
+  const rows = lines.map((entry) => ({
+    dataset: { instanceId: entry.instanceId },
+    querySelector: (selector: string) =>
+      selector === '[data-testid="shopping-list-remove"]'
+        ? control(`remove:${entry.instanceId}`)
+        : selector === '[data-testid="shopping-list-swap"]' && swaps.includes(entry.instanceId)
+          ? control(`swap:${entry.instanceId}`)
+          : null,
+  }));
+  const page = {
+    querySelectorAll: (selector: string) => (selector === '[data-testid="shopping-list-row"]' ? rows : []),
+    ownerDocument: { getElementById: (id: string) => (id === SHOPPING_LIST_TITLE_ID ? control("heading") : null) },
+  } as unknown as HTMLElement;
+  return { page, focused };
+}
+const without = (removed: readonly string[]) => shoppingListLines(list).filter((entry) => !removed.includes(entry.instanceId));
+{
+  const after = without(["a"]);
+  const { page, focused } = fakePage(after);
+  focusAfterShoppingListEdit(page, { kind: "remove", instanceId: "a", candidates: removalFocusCandidates(list, "a") }, after);
+  assert.deepEqual(focused, ["remove:b"], "Removing the first product focuses the next product's Remove.");
+}
+{
+  const after = without(["e"]);
+  const { page, focused } = fakePage(after);
+  focusAfterShoppingListEdit(page, { kind: "remove", instanceId: "e", candidates: removalFocusCandidates(list, "e") }, after);
+  assert.deepEqual(focused, ["remove:d"], "Removing the last product focuses the one before it.");
+}
+{
+  // A set takes its parts with it: focus skips the lines that went too.
+  const after = without(["b", "c"]);
+  const { page, focused } = fakePage(after);
+  focusAfterShoppingListEdit(page, { kind: "remove", instanceId: "b", candidates: removalFocusCandidates(list, "b") }, after);
+  assert.deepEqual(focused, ["remove:d"]);
+}
+{
+  const { page, focused } = fakePage([]);
+  focusAfterShoppingListEdit(page, { kind: "remove", instanceId: "a", candidates: removalFocusCandidates(only, "a") }, []);
+  assert.deepEqual(focused, ["heading"], "Removing the only product focuses the Shopping list heading.");
+}
+{
+  const lines = shoppingListLines(list);
+  const { page, focused } = fakePage(lines);
+  focusAfterShoppingListEdit(page, { kind: "remove", instanceId: "a", candidates: removalFocusCandidates(list, "a") }, lines);
+  assert.deepEqual(focused, [], "A removal that didn't happen moves nothing.");
+}
+{
+  const swapped = shoppingListLines(list).map((entry) => (entry.instanceId === "a" ? { ...entry, productId: "cheaper-product" } : entry));
+  const withSwap = fakePage(swapped, ["a"]);
+  focusAfterShoppingListEdit(withSwap.page, { kind: "swap", instanceId: "a", productId: "a-product" }, swapped);
+  assert.deepEqual(withSwap.focused, ["swap:a"], "After a swap, focus stays on the row's Swap when there is one.");
+  const noSwap = fakePage(swapped);
+  focusAfterShoppingListEdit(noSwap.page, { kind: "swap", instanceId: "a", productId: "a-product" }, swapped);
+  assert.deepEqual(noSwap.focused, ["remove:a"], "When the cheaper product has no swap, focus goes to the row's Remove.");
+  const unchanged = fakePage(shoppingListLines(list));
+  focusAfterShoppingListEdit(unchanged.page, { kind: "swap", instanceId: "a", productId: "a-product" }, shoppingListLines(list));
+  assert.deepEqual(unchanged.focused, [], "A swap that didn't happen moves nothing.");
 }
 
-const populatedItems: ItemCartDrawerProps["items"] = [
-  { id: "chair-1", productId: "chair", title: "Reading Chair", qty: 2 },
-  { id: "table-1", productId: "table", title: "Side Table", qty: 1 },
-];
-const closed = render({ items: populatedItems });
-assert.match(closed, /aria-haspopup="dialog"/);
-assert.match(closed, /aria-expanded="false"/);
-assert.doesNotMatch(closed, /role="dialog"/);
-assert.doesNotMatch(closed, /data-testid="selection-tray-close"/);
-assert.doesNotMatch(closed, /Reading Chair|Side Table|Add All to Room/);
+// The page: a section named by its heading, which can take focus; one Remove per product, named.
+const actions: ShoppingListPageProps["actions"] = {
+  buyAtRetailer: noop, openLine: noop, closeBuyList: noop, checkoutHere: noop,
+  dismissNotice: noop, remove: noop, swapForCheaper: noop, goFurnish: noop,
+};
+const html = renderToStaticMarkup(createElement(ShoppingListPage, {
+  list, canEdit: true, busy: false, notice: null, buyList: { retailer: null, openedIds: new Set<string>() }, actions,
+}));
+assert.match(html, new RegExp(`<section data-testid="shopping-list-page" aria-labelledby="${SHOPPING_LIST_TITLE_ID}"`));
+assert.match(html, new RegExp(`<h1 id="${SHOPPING_LIST_TITLE_ID}" tabindex="-1" class="[^"]*focus-visible:ring-2[^"]*">Shopping list</h1>`));
+assert.equal((html.match(/data-testid="shopping-list-row"/g) ?? []).length, 5);
+assert.equal((html.match(/data-testid="shopping-list-remove"/g) ?? []).length, 5);
+for (const entry of shoppingListLines(list)) {
+  assert.match(html, new RegExp(`data-instance-id="${entry.instanceId}"`));
+  assert.ok(html.includes(`aria-label="Remove ${entry.title} from the design"`), `${entry.title} keeps a named Remove.`);
+}
+const rowOrder = Array.from(html.matchAll(/data-testid="shopping-list-row" data-instance-id="([^"]+)"/g), (match) => match[1]);
+assert.deepEqual(rowOrder, ["a", "b", "c", "d", "e"], "Rows follow the reading order focus moves through.");
 
-const emptyOpen = render({ isOpen: true });
-assert.match(emptyOpen, /role="dialog"/);
-assert.match(emptyOpen, /aria-modal="true"/);
-assert.match(emptyOpen, /Selection Tray/);
-assert.match(emptyOpen, /data-testid="selection-tray-close"/);
-assert.match(emptyOpen, /data-editor-dialog-state="mounting"/);
-assert.match(emptyOpen, /No items selected/);
-assert.doesNotMatch(emptyOpen, /data-testid="selection-tray-clear"/);
+// Wiring: the page wraps Remove and Swap with focus, and the canvas behind Shop is out of reach.
+const pageSource = read("components/editor/shop/ShoppingListPage.tsx");
+assert.match(pageSource, /const \{ remove, swapForCheaper \} = useShoppingListFocus\(list, actions, pageRef\);/);
+assert.match(pageSource, /const rowActions = \{ \.\.\.actions, remove, swapForCheaper \};/);
+assert.match(pageSource, /<ShoppingListSections list=\{list\} canEdit=\{canEdit\} actions=\{rowActions\} \/>/);
+assert.match(pageSource, /<section ref=\{pageRef\}/);
+const focusSource = read("components/editor/shop/useShoppingListFocus.ts");
+assert.match(focusSource, /useEffect\(\(\) => \{[\s\S]*?focusAfterShoppingListEdit\(pageRef\.current, pending, shoppingListLines\(list\)\);\s*\}, \[list, pageRef\]\);/);
+const workspace = read("components/editor/design-page/DesignPageWorkspace.tsx");
+assert.match(workspace, /<CanvasBehindPage covered=\{panelRegionModel\.state\.shopping !== null\}><DesignPageSceneRegion/);
+const region = read("components/editor/design-page/DesignPagePanelRegion.tsx");
+assert.match(region, /data-testid="canvas-behind-page" className="h-full w-full" inert=\{covered\} aria-hidden=\{covered \|\| undefined\}/);
+assert.match(read("lib/useDesignPageEditorChromeController.ts"), /commandState\.editorMode !== "buy"/);
+// Undo from the toast, by keyboard, keeps focus on the current step.
+assert.match(read("components/editor/command-bar/CommandBarActionToast.tsx"), /if \(hadFocus\) document\.getElementById\("editor-command-workspace-action"\)\?\.focus\(\);/);
 
-const populatedOpen = render({ isOpen: true, items: populatedItems });
-for (const expected of [
-  "Reading Chair",
-  "Side Table",
-  "Decrease Reading Chair quantity",
-  "Increase Reading Chair quantity",
-  "Remove Reading Chair",
-  'data-testid="selection-tray-add-all"',
-  'data-testid="selection-tray-clear"',
+// The Tray is gone: no drawer, no cart state, nothing named Selection Tray in the editor.
+assert.equal(existsSync(join(process.cwd(), "components/ItemCartDrawer.tsx")), false);
+assert.equal(existsSync(join(process.cwd(), "lib/design-page-item-cart.ts")), false);
+for (const path of [
+  "components/editor/design-page/DesignPageDialogLayer.tsx",
+  "lib/design-page-dialog-layer-model.ts",
+  "lib/useDesignPageCoreShellBaseRegistration.ts",
+  "lib/useDesignPagePanelMode.ts",
 ]) {
-  assert.ok(populatedOpen.includes(expected), `Populated tray must retain ${expected}.`);
-}
-assert.equal((populatedOpen.match(/data-testid="selection-tray-add-all"/g) ?? []).length, 1);
-assert.equal((populatedOpen.match(/data-testid="selection-tray-clear"/g) ?? []).length, 1);
-
-const mutationOrder: string[] = [];
-runCartMutationWithFocus(
-  () => mutationOrder.push("focus surviving close"),
-  () => mutationOrder.push("mutate populated cart"),
-);
-assert.deepEqual(mutationOrder, ["focus surviving close", "mutate populated cart"]);
-
-const drawerSource = readFileSync(
-  `${process.cwd()}/components/ItemCartDrawer.tsx`,
-  "utf8"
-);
-assert.match(
-  drawerSource,
-  /cancelFocusRestorationOnUnmount/,
-  "The tray must cancel semantic restoration when its route owner unmounts."
-);
-assert.match(
-  drawerSource,
-  /waitForEntryTransition/,
-  "The tray must own focus during entry and defer close-button focus until interactive."
-);
-assert.match(
-  drawerSource,
-  /data-\[editor-dialog-state=mounting\]:translate-x-full/,
-  "The tray must derive its off-canvas entry geometry from the explicit mounting state."
-);
-assert.doesNotMatch(
-  drawerSource,
-  /starting:translate-x-full/,
-  "The tray must not depend on an ambiguous starting-style paint boundary."
-);
-assert.match(
-  drawerSource,
-  /onClick=\{onAddAllToRoom\}/,
-  "The populated Add All action must retain its commerce callback without a duplicate close path."
-);
-for (const [pattern, message] of [
-  [/runCartMutationWithFocus\(onBeforeMutation, onClear\)/, "Clear"],
-  [/item\.qty <= 1[\s\S]*?runCartMutationWithFocus\(onBeforeMutation, update\)/, "decrement-to-zero"],
-  [/runCartMutationWithFocus\(onBeforeMutation, \(\) => onRemove\(item\.productId\)\)/, "Remove"],
-] as const) {
-  assert.match(
-    drawerSource,
-    pattern,
-    `${message} must focus a surviving modal control before removing its focused action.`
-  );
+  assert.doesNotMatch(read(path), /selection-tray|ItemCart|itemCart/, `${path} keeps nothing of the Tray.`);
 }
 
-console.log("Cart overlay static lifecycle checks passed.");
+console.log("Cart gate (Shopping list) static checks passed.");

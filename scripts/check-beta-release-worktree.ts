@@ -103,7 +103,6 @@ const SHARED_UI_APP_SHELL_PREFIXES = [
   "components/DeleteDesignButton.tsx",
   "components/DesignsListWithSelection.tsx",
   "components/InviteCopyButton.tsx",
-  "components/ItemCartDrawer.tsx",
   "components/PDFDownloadButton.tsx",
   "components/RecentClicksTable.tsx",
   "lib/sentry-browser-noop.ts",

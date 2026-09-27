@@ -18,7 +18,7 @@ export type UseDesignPageCommerceOnboardingRegistrationInput = {
   };
 };
 
-/** Registers shopping actions before the consumer activation lifecycle. */
+/** Registers the imported-catalog Add before the consumer activation lifecycle. */
 export function useDesignPageCommerceOnboardingRegistration({
   boundaries: {
     coreShell,
@@ -39,27 +39,16 @@ export function useDesignPageCommerceOnboardingRegistration({
     state: {
       selectedImportedProductId:
         importedModels.state.selectedProductId,
-      itemCart: base.state.panels.itemCart,
     },
     actions: {
       catalog: {
-        previewPlacement:
-          placement.actions.catalog.previewCatalogPlacementIntent,
         addToRoom: placement.actions.catalog.addCatalogItemToRoom,
-        addDirectlyToRoom:
-          placement.actions.catalog.addCatalogItemDirectlyToRoom,
       },
       importedCatalog: {
         getRelatedProductIds:
           importedModels.actions.getRelatedProductIds,
         ensureCatalogItem: importedModels.actions.ensureCatalogItem,
       },
-      cart: {
-        setItems: base.actions.panels.setItemCart,
-        setOpen: base.actions.panels.setItemCartOpen,
-      },
-      navigation: { goFurnish: viewportShell.actions.panels.goFurnish },
-      feedback: { showToast: coreShell.actions.feedback.showRuleToast },
     },
   });
 

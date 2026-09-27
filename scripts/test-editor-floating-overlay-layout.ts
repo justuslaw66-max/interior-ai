@@ -573,9 +573,6 @@ assert.match(
   "The viewport overlay should compose the extracted inspector from its grouped state."
 );
 
-const itemCartDrawerPath = path.join(process.cwd(), "components", "ItemCartDrawer.tsx");
-const itemCartDrawerSource = fs.readFileSync(itemCartDrawerPath, "utf8");
-
 const designControlsPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPanel.tsx");
 const designControlsPanelSource = fs.readFileSync(designControlsPanelPath, "utf8");
 const editorCommandBarSource = readEditorCommandBarSource();
@@ -776,10 +773,10 @@ assert.match(
   "Rotated 2D camera fit should convert screen safe-area offsets into rotated world axes."
 );
 
-assert.match(
-  itemCartDrawerSource,
-  /data-testid="selection-tray-trigger"/,
-  "Selection tray trigger should remain test-addressable for layout checks."
+assert.equal(
+  fs.existsSync(path.join(process.cwd(), "components", "ItemCartDrawer.tsx")),
+  false,
+  "The Selection Tray went with the one Shopping list (UX 3c-2): nothing floats a Tray button over the editor."
 );
 
 const draggablePanelPath = path.join(process.cwd(), "components", "editor", "DraggableFloatingPanel.tsx");

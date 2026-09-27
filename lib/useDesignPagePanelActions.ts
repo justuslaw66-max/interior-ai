@@ -27,7 +27,6 @@ export type DesignPagePanelActionAdapters = {
   setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
   setShowGrid: Dispatch<SetStateAction<boolean>>;
   setSnapEnabled: Dispatch<SetStateAction<boolean>>;
-  setItemCartOpen: Dispatch<SetStateAction<boolean>>;
   changeViewMode: (viewMode: EditorViewMode) => void;
   runAiLayout: (options?: {
     requestedRoles?: AiLayoutRole[];
@@ -82,7 +81,6 @@ export function useDesignPagePanelActions({
     setDesignPanelOpen,
     setShowGrid,
     setSnapEnabled,
-    setItemCartOpen,
     changeViewMode,
     runAiLayout: runAiLayoutAction,
     regenerateAiLayout: regenerateAiLayoutAction,
@@ -111,10 +109,6 @@ export function useDesignPagePanelActions({
   const toggleSnap = useCallback(() => {
     setSnapEnabled((enabled) => !enabled);
   }, [setSnapEnabled]);
-
-  const toggleItemCart = useCallback(() => {
-    setItemCartOpen((open) => !open);
-  }, [setItemCartOpen]);
 
   const goView3D = useCallback(() => {
     changeViewMode("3d");
@@ -206,7 +200,6 @@ export function useDesignPagePanelActions({
       changeDesignPanelCollapsed,
       toggleGrid,
       toggleSnap,
-      toggleItemCart,
       goView3D,
       runAiLayout,
       regenerateAiLayout,

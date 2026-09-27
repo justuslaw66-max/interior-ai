@@ -83,7 +83,6 @@ export function DesignPageWorkspace() {
       brief: { mode },
       dialogs: { showPlans, plansOpenerId, feedbackOpen, downloadOpen, showUpgrade },
       paywall: { upgradeReason, upgradeCtaVariant, pricingLayoutVariant },
-      panels: { itemCartOpen, itemCart },
       editor: { viewMode },
     },
     derived: { navigation: { router, pathname, searchParams } },
@@ -116,9 +115,7 @@ export function DesignPageWorkspace() {
     },
   } = documentSelectionRegistration;
   const documentRoomModel = documentRoomRegistration.derived.room;
-  const documentPlanModel = documentRoomRegistration.derived.plan;
   const { activeRoom } = documentRoomModel;
-  const { designControlsPanelVisibleForLayout } = documentPlanModel;
 
   const presentationBackupRegistration =
     useDesignPagePresentationBackupRegistrationFacade({
@@ -249,8 +246,6 @@ export function DesignPageWorkspace() {
   });
   const { aiPanel: aiPanelRegistration } =
     aiWorkspaceRegistration.boundaries;
-  const { panel: panelController } = aiPanelRegistration.boundaries;
-  const { actions: panelActions } = panelController;
   const {
     state: { notes: aiNotesState },
     actions: {
@@ -321,17 +316,6 @@ export function DesignPageWorkspace() {
         placement: placementWorkspaceRegistration,
       },
     });
-  const {
-    actions: {
-      commerce: {
-        removeFromCart,
-        updateCartQty,
-        clearCart,
-        addAllToRoom,
-      },
-    },
-  } = commerceOnboardingRegistration;
-
   const cabinetryRegistration = useDesignPageCabinetryWorkspaceRegistration({
     boundaries: {
       coreShell: coreShellRegistration,
@@ -465,9 +449,6 @@ export function DesignPageWorkspace() {
       refs: { openedAt: cabinetryStudioOpenedAtRef },
       actions: { onSave: handleSaveCabinetDefinition, onPlaceInPlan: handlePlaceCabinetInPlan, onDismiss: dismissCabinetryStudio },
     },
-    cart: { items: itemCart, isOpen: itemCartOpen, controlsPanelVisible: designControlsPanelVisibleForLayout,
-      onRemove: removeFromCart, onUpdateQty: updateCartQty, onClear: clearCart,
-      onAddAllToRoom: addAllToRoom, onToggle: panelActions.toggleItemCart },
   }));
   return (
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>

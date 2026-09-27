@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 import type { ShoppingList, ShoppingListLine, ShoppingRetailer } from "@/lib/shopping-list";
@@ -8,6 +9,7 @@ import type { ShoppingNotice } from "@/lib/useShoppingListBuy";
 import { ShoppingBuyListDialog } from "./ShoppingBuyListDialog";
 import { ShoppingListSection } from "./ShoppingListSection";
 import { ShoppingSummary } from "./ShoppingSummary";
+import { SHOPPING_LIST_TITLE_ID, useShoppingListFocus } from "./useShoppingListFocus";
 
 export type ShoppingListPageProps = {
   list: ShoppingList;
@@ -77,19 +79,23 @@ function ShoppingListSections({ list, canEdit, actions }: Pick<ShoppingListPageP
 
 /**
  * Shop, as in the Shop mockups (audit findings FU7, FU8): one page over the canvas at every width,
- * with the design's products by shop, one total, and one way to buy at each shop.
+ * with the design's products by shop, one total, and one way to buy at each shop. Removing a product
+ * keeps focus on the page: the next product's Remove, the one before it, or the heading.
  */
 export function ShoppingListPage({ list, canEdit, busy, notice, buyList, actions }: ShoppingListPageProps) {
   const empty = list.productCount === 0;
+  const pageRef = useRef<HTMLElement | null>(null);
+  const { remove, swapForCheaper } = useShoppingListFocus(list, actions, pageRef);
+  const rowActions = { ...actions, remove, swapForCheaper };
   return (
-    <section data-testid="shopping-list-page" aria-labelledby="shopping-list-title" className="mx-auto flex w-full max-w-[1132px] flex-col gap-4 px-4 pt-5 lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:pb-8 lg:pt-7">
+    <section ref={pageRef} data-testid="shopping-list-page" aria-labelledby={SHOPPING_LIST_TITLE_ID} className="mx-auto flex w-full max-w-[1132px] flex-col gap-4 px-4 pt-5 lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:pb-8 lg:pt-7">
       <div className="flex min-w-0 flex-1 flex-col gap-4 pb-2">
         <div className="flex flex-col gap-1">
-          <h1 id="shopping-list-title" className="text-[22px] font-bold leading-7 text-neutral-900 lg:text-[26px] lg:leading-8">Shopping list</h1>
+          <h1 id={SHOPPING_LIST_TITLE_ID} tabIndex={-1} className="rounded text-[22px] font-bold leading-7 text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 lg:text-[26px] lg:leading-8">Shopping list</h1>
           <p className="text-sm text-neutral-600 lg:text-[15px]">Everything in this design, in one place. You pay on the retailer&apos;s website.</p>
         </div>
         {notice && !buyList.retailer ? <ShoppingNoticeBar notice={notice} onDismiss={actions.dismissNotice} /> : null}
-        {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} actions={actions} />}
+        {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} actions={rowActions} />}
       </div>
       {empty ? null : (
         <ShoppingSummary list={list} busy={busy} onBuyAtRetailer={actions.buyAtRetailer} onCheckoutHere={actions.checkoutHere} />

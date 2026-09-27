@@ -51,7 +51,6 @@ export type UseDesignPageEditorChromeControllerInput = {
       setMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
       setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
       setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
-      setItemCartOpen: Dispatch<SetStateAction<boolean>>;
       setClientPreview: Dispatch<SetStateAction<boolean>>;
       setUrlMode: (mode: "designer" | "homeowner") => void;
     };
@@ -187,7 +186,6 @@ export function useDesignPageEditorChromeController({
 
   const openCart = () => {
     actions.editor.setMode("buy");
-    actions.editor.setItemCartOpen(false);
   };
 
   return {

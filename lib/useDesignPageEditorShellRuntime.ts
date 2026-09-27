@@ -26,7 +26,6 @@ export type UseDesignPageEditorShellRuntimeInput = {
   actions: {
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
     setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
-    setItemCartOpen: Dispatch<SetStateAction<boolean>>;
     diagnostics: {
       setPlanDebugMetrics: Dispatch<
         SetStateAction<DesignPagePlanDebugMetrics>
@@ -49,7 +48,6 @@ export function useDesignPageEditorShellRuntime({
   const {
     setDesignPanelOpen,
     setDesignPanelCollapsed,
-    setItemCartOpen,
   } = actions;
   const {
     setPlanDebugMetrics,
@@ -76,7 +74,6 @@ export function useDesignPageEditorShellRuntime({
     designPanelOpen: state.designPanelOpen,
     setDesignPanelOpen,
     setDesignPanelCollapsed,
-    setItemCartOpen,
   });
 
   useEffect(() => {

@@ -3,9 +3,6 @@
 import BetaFeedbackWidget, {
   type BetaFeedbackWidgetProps,
 } from "@/components/BetaFeedbackWidget";
-import ItemCartDrawer, {
-  type ItemCartDrawerProps,
-} from "@/components/ItemCartDrawer";
 import {
   AiNotesDialog,
   type AiNotesDialogProps,
@@ -90,7 +87,6 @@ export type DesignPageDialogLayerOverlays = {
   };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
-  itemCart: ItemCartDrawerProps;
 };
 
 export type DesignPageDialogLayerProps = {
@@ -148,7 +144,6 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       />
       <DesignValidationFeedback {...overlays.validation} />
       <CabinetryStudioOverlay {...overlays.cabinetry} />
-      <ItemCartDrawer {...overlays.itemCart} />
     </>
   );
 }

@@ -82,7 +82,6 @@ export function useDesignPageAiWorkspaceRegistration({
         setDesignPanelOpen: base.actions.panels.setDesignPanelOpen,
         setShowGrid: base.actions.editor.setShowGrid,
         setSnapEnabled: base.actions.editor.setSnapEnabled,
-        setItemCartOpen: base.actions.panels.setItemCartOpen,
         changeViewMode: camera.actions.navigation.handleEditorViewModeChange,
         changeWallSurfaceSettings:
           surfaceWorkspace.actions.changeActiveWallSurfaceSettings,
