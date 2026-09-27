@@ -15,7 +15,7 @@ import type { BuildDesignControlsPanelModelInput } from "@/lib/design-page-contr
 import type { BuildDesignPagePanelRegionAdapterInput } from "@/lib/design-page-panel-region-adapter";
 import type { BuildDesignPageSelectionPanelModelsInput } from "@/lib/design-page-selection-panel-model";
 import type { BuildDesignPageShoppingPanelModelInput } from "@/lib/design-page-shopping-panel-model";
-import type { ShoppingListRoom } from "@/lib/shopping-list";
+import type { RoomSnapshot } from "@/lib/room-types";
 
 type ControlsInput = BuildDesignControlsPanelModelInput;
 type ShoppingInput = BuildDesignPageShoppingPanelModelInput;
@@ -43,7 +43,7 @@ export type BuildDesignPagePanelRegistrationInput = {
     document: {
       designId: ShoppingInput["state"]["designId"];
       plan: "free" | "pro";
-      rooms: ShoppingListRoom[];
+      rooms: RoomSnapshot[];
       activeRoomId: string;
       catalogRoomNavigationRevision: number;
       authenticated: boolean;
@@ -137,7 +137,6 @@ export type BuildDesignPagePanelRegistrationInput = {
       commitItemsToRoom: ShoppingInput["actions"]["commitItemsToRoom"];
       openGuestPrompt: ShoppingInput["actions"]["openGuestPrompt"];
       addImportedToRoom: ControlsInput["shopping"]["actions"]["onAddImportedToRoom"];
-      reviewIssue: ControlsInput["shopping"]["actions"]["onReviewShoppingIssue"];
     };
     cabinetry: {
       deleteSelected: SelectionInput["cabinet"]["actions"]["delete"];

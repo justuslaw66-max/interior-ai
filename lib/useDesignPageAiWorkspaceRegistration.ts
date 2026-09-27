@@ -34,7 +34,7 @@ export function useDesignPageAiWorkspaceRegistration({
   const base = coreShell.boundaries.base;
   const viewportShell = coreShell.boundaries.viewportShell;
   const editorShell = viewportShell.boundaries.editorShell;
-  const { documentRoom, sceneRoomRead, itemSelection, itemDocument } =
+  const { documentRoom, sceneRoomRead, itemDocument } =
     documentSelection.boundaries;
   const { selectionInspection, planWorkspace, surfaceWorkspace } =
     planAuthoring.boundaries;
@@ -91,7 +91,6 @@ export function useDesignPageAiWorkspaceRegistration({
           surfaceWorkspace.actions.resetActiveCeilingSurface,
       },
       notes: { addItem: itemDocument.actions.addItem },
-      selection: { updateSelection: itemSelection.actions.updateSelection },
     },
     configuration: {
       isAuthenticated: Boolean(base.state.identity.session?.user),
@@ -112,10 +111,6 @@ export function useDesignPageAiWorkspaceRegistration({
       layout: {
         createInstanceId: itemDocument.actions.createInstanceId,
         clampToRoom: documentRoom.actions.room.clampToActiveRoom,
-      },
-      panel: {
-        selectedIds: itemSelection.refs.selectedIds,
-        primaryId: itemSelection.refs.primaryId,
       },
     },
   });

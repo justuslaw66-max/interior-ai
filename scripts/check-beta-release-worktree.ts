@@ -83,8 +83,6 @@ const API_PERSISTENCE_PREFIXES = [
   "app/api/",
   "lib/design-duplication.ts",
   "lib/design-route-payload.ts",
-  "lib/shopping-readiness.ts",
-  "lib/shopping-replacements.ts",
   "lib/ai/layout-planner.ts",
   "next.config.ts",
 ];

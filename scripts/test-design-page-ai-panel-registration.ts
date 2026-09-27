@@ -84,8 +84,8 @@ assert.match(
 );
 assert.match(
   facadeSource,
-  /runAiLayout: layout\.actions\.runAiLayout[\s\S]*?regenerateAiLayout: layout\.actions\.regenerateAiLayout[\s\S]*?commitItems: actions\.layout\.commitItems[\s\S]*?updateSelection: actions\.selection\.updateSelection/,
-  "Panel actions should retain the layout, history, and selection adapters."
+  /const panel = useDesignPagePanelActions\(\{\s*state: state\.panel,\s*actions: \{\s*\.\.\.actions\.panel,\s*runAiLayout: layout\.actions\.runAiLayout,\s*regenerateAiLayout: layout\.actions\.regenerateAiLayout,\s*\},\s*\}\);/,
+  "Panel actions should retain the layout adapters. The Shop dock's remove went with it (UX 3c-2), so they need no history or selection adapters."
 );
 assert.match(
   facadeSource,

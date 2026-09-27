@@ -79,8 +79,6 @@ export function useDesignPageSelectionWorkspaceRegistration({
       },
       room: {
         activeRoom: activeRoom ?? null,
-        activeRoomShoppingItems:
-          sceneRoomRead.derived.room.activeRoomShoppingItems,
       },
       editor: {
         editorMode: viewportShell.state.editor.editorMode,

@@ -28,7 +28,6 @@ import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly"
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
-import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { DesignSelectionContext } from "@/lib/design-page-selection-context";
 import type { RoomFloorPattern, RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { FloorSurfacePatch, NormalizedSurfaceSettings, SurfaceSettingsPatch } from "@/lib/surface-settings";
@@ -252,8 +251,6 @@ export type DesignControlsPanelProps = {
   onPreviewCatalogPlacementIntent?: (productId: string | null, variantId?: string) => void;
   onCatalogDragStart?: (productId: string, variantId?: string) => void;
   onCatalogDragEnd?: () => void;
-  onAddActiveRoomCartReadyItems: () => void;
-  onReviewShoppingIssue: (filter: ShoppingReadinessFilter) => void;
   onSelectPlacedItem: (instanceId: string) => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;

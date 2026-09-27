@@ -41,7 +41,7 @@ export function buildDesignPagePanelRegistration({
 
   const shoppingPanelModel = buildDesignPageShoppingPanelModel({
     state: {
-      rooms: state.document.rooms,
+      rooms: state.document.rooms, planOpenings: planDocument.state.planOpenings,
       style: state.editor.controls.style,
       designId: state.document.designId,
       isGuest: !state.document.authenticated,
@@ -408,9 +408,6 @@ export function buildDesignPagePanelRegistration({
           catalogActions.previewCatalogPlacementIntent,
         onCatalogDragStart: catalogActions.handleCatalogDragStart,
         onCatalogDragEnd: catalogActions.handleCatalogDragEnd,
-        onAddActiveRoomCartReadyItems:
-          interactionActions.addActiveRoomCartReadyItems,
-        onReviewShoppingIssue: actions.shopping.reviewIssue,
         onSelectPlacedItem: (instanceId) =>
           placementSelection.actions.selection.selectItem(instanceId, false),
         onSelectedImportedFamilyChange: importedModels.actions.setSelectedFamilyKey,

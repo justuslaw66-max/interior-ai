@@ -181,7 +181,6 @@ export function buildDesignPagePanelWorkspaceRegistration({
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
         addImportedToRoom:
           commerceOnboarding.actions.commerce.addSelectedImportedToRoom,
-        reviewIssue: documentSelection.actions.shopping.reviewIssue,
       },
       cabinetry: {
         deleteSelected:

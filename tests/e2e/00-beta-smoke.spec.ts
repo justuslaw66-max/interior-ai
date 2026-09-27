@@ -401,7 +401,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(shareViewer).toBeVisible({ timeout: 60000 });
       await expect(shareViewer).toHaveAttribute("data-ready", "true", { timeout: 60000 });
       await expect(page.getByTestId("share-room-list")).toContainText("Living Room");
-      await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Cart-ready|Retailer link/i);
+      await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Checkout here|Retailer link/i);
       await expect(page.getByTestId("share-copy-link")).toBeVisible();
       await expect(page.getByTestId("share-download-pdf")).toHaveAttribute(
         "href",

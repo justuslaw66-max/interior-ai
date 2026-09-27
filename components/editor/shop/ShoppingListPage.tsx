@@ -5,14 +5,18 @@ import { useRef } from "react";
 import { createPortal } from "react-dom";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 import type { ShoppingList, ShoppingListLine, ShoppingRetailer } from "@/lib/shopping-list";
+import type { ShoppingSurface } from "@/lib/shopping-surfaces";
 import type { ShoppingNotice } from "@/lib/useShoppingListBuy";
 import { ShoppingBuyListDialog } from "./ShoppingBuyListDialog";
 import { ShoppingListSection } from "./ShoppingListSection";
 import { ShoppingSummary } from "./ShoppingSummary";
+import { ShoppingSurfacesSection } from "./ShoppingSurfacesSection";
 import { SHOPPING_LIST_TITLE_ID, useShoppingListFocus } from "./useShoppingListFocus";
 
 export type ShoppingListPageProps = {
   list: ShoppingList;
+  /** The design's floor and wall finishes, priced by their suppliers. */
+  surfaces?: readonly ShoppingSurface[];
   canEdit: boolean;
   busy: boolean;
   notice: ShoppingNotice | null;
@@ -82,7 +86,7 @@ function ShoppingListSections({ list, canEdit, actions }: Pick<ShoppingListPageP
  * with the design's products by shop, one total, and one way to buy at each shop. Removing a product
  * keeps focus on the page: the next product's Remove, the one before it, or the heading.
  */
-export function ShoppingListPage({ list, canEdit, busy, notice, buyList, actions }: ShoppingListPageProps) {
+export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, buyList, actions }: ShoppingListPageProps) {
   const empty = list.productCount === 0;
   const pageRef = useRef<HTMLElement | null>(null);
   const { remove, swapForCheaper } = useShoppingListFocus(list, actions, pageRef);
@@ -96,9 +100,10 @@ export function ShoppingListPage({ list, canEdit, busy, notice, buyList, actions
         </div>
         {notice && !buyList.retailer ? <ShoppingNoticeBar notice={notice} onDismiss={actions.dismissNotice} /> : null}
         {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} actions={rowActions} />}
+        <ShoppingSurfacesSection surfaces={surfaces} />
       </div>
       {empty ? null : (
-        <ShoppingSummary list={list} busy={busy} onBuyAtRetailer={actions.buyAtRetailer} onCheckoutHere={actions.checkoutHere} />
+        <ShoppingSummary list={list} hasSurfaces={surfaces.length > 0} busy={busy} onBuyAtRetailer={actions.buyAtRetailer} onCheckoutHere={actions.checkoutHere} />
       )}
       <ShoppingBuyListPortal buyList={buyList} notice={notice} busy={busy} actions={actions} />
     </section>

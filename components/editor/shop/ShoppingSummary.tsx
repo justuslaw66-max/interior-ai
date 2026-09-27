@@ -8,6 +8,8 @@ import { shoppingBuyOpenerId } from "@/lib/shopping-list-buy";
 
 export type ShoppingSummaryProps = {
   list: ShoppingList;
+  /** Suppliers price the design's surfaces, so the total leaves them out and says so. */
+  hasSurfaces?: boolean;
   busy: boolean;
   onBuyAtRetailer: (retailerId: string) => void;
   onCheckoutHere: () => void;
@@ -67,7 +69,9 @@ export function ShoppingSummary(props: ShoppingSummaryProps) {
           <span data-testid="shopping-list-total" className="text-xl font-bold text-neutral-900 lg:text-[32px] lg:leading-[38px] lg:tracking-tight">
             {formatSgd(list.total)}
           </span>
-          <span className="hidden text-[13px] text-neutral-600 lg:block">{productCountLabel(list.productCount)}.</span>
+          <span data-testid="shopping-summary-count" className="hidden text-[13px] text-neutral-600 lg:block">
+            {productCountLabel(list.productCount)}.{props.hasSurfaces ? " Surfaces are priced separately." : ""}
+          </span>
         </div>
         <SummaryActions {...props} />
       </div>

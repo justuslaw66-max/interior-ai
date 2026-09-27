@@ -34,7 +34,6 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
 } from "@/lib/room-types";
-import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import {
   getCeilingSurfaceSettings,
   getDefaultWallSurfaceSettings,
@@ -84,9 +83,6 @@ export type UseDesignPageRoomReadModelInput = {
   actions: {
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
     setEditorMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
-    setShoppingReadinessFilter: Dispatch<
-      SetStateAction<ShoppingReadinessFilter>
-    >;
     goPlan: () => void;
     goFurnish: () => void;
     goShop: () => void;
@@ -116,7 +112,6 @@ export function useDesignPageRoomReadModel({
   const {
     setDesignPanelOpen,
     setEditorMode,
-    setShoppingReadinessFilter,
     goPlan,
     goFurnish,
     goShop,
@@ -172,8 +167,7 @@ export function useDesignPageRoomReadModel({
 
     if (target === "shopping") {
       goShop();
-      setShoppingReadinessFilter("all");
-      showToast("Review shopping readiness for this room");
+      showToast("Review this room's products in the Shopping list");
       return;
     }
 
@@ -198,7 +192,6 @@ export function useDesignPageRoomReadModel({
     goShop,
     setDesignPanelOpen,
     setEditorMode,
-    setShoppingReadinessFilter,
     showToast,
   ]);
   const activeRoomSurfaces =

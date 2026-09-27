@@ -33,6 +33,10 @@ const COPY_FUNCTIONS = /(?:Label|Copy|Text|Message|Title|Description|Hint|Captio
 const ALLOWED = new Map<string, string>([
   ["app/share/[shareToken]/(presentation)/page.tsx|Drag to look around • Make a copy to edit", "an instruction, not the retired \"Copy to edit\" button"],
   ["components/SharePageActions.tsx|- Interior AI design preview", "the product name Interior AI, then \"design preview\""],
+  // The buy list sends people to a shop's website, where they add products to that shop's own cart.
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Add to your cart", "the retailer's own cart, on its website"],
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Add 1 to your cart", "the retailer's own cart, on its website"],
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Open each product at and add it to your cart there.", "the retailer's own cart, on its website"],
 ]);
 
 type UiText = { file: string; line: number; text: string };

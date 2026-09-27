@@ -33,7 +33,6 @@ export type UseDesignPageItemInteractionFacadeInput = {
     };
     room: {
       activeRoom: TransformInput["state"]["activeRoom"];
-      activeRoomShoppingItems: TransformInput["state"]["activeRoomShoppingItems"];
     };
     editor: {
       editorMode: KeyboardInput["state"]["editorMode"];
@@ -213,7 +212,6 @@ export function useDesignPageItemInteractionFacade({
         state.selection.selectedItemPlanningDimensionsMm,
       selectedItemDeleteLabel: state.selection.selectedItemDeleteLabel,
       activeRoom: state.room.activeRoom,
-      activeRoomShoppingItems: state.room.activeRoomShoppingItems,
       rotationInputValue: state.productInspection.rotationInputValue,
     },
     configuration: {

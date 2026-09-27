@@ -3,12 +3,10 @@
 import {
   useCallback,
   type Dispatch,
-  type MutableRefObject,
   type SetStateAction,
 } from "react";
 
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
-import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { DesignItem } from "@/lib/room-types";
 import type { SurfaceSettingsPatch } from "@/lib/surface-settings";
@@ -44,22 +42,10 @@ export type DesignPagePanelActionAdapters = {
     faceId?: string | null
   ) => void;
   resetCeilingSurface: (roomId?: string | null) => void;
-  commitItems: (
-    updater: DesignItem[] | ((previous: DesignItem[]) => DesignItem[]),
-    actionName?: string
-  ) => void;
-  updateSelection: (
-    selectedIds: Set<string>,
-    primaryId: string | null
-  ) => void;
 };
 
 export type UseDesignPagePanelActionsInput = {
   state: DesignPagePanelActionsState;
-  refs: {
-    selectedIds: MutableRefObject<Set<string>>;
-    primaryId: MutableRefObject<string | null>;
-  };
   actions: DesignPagePanelActionAdapters;
 };
 
@@ -72,7 +58,6 @@ export function resolveDesignPageActiveWallFaceId(
 
 export function useDesignPagePanelActions({
   state,
-  refs,
   actions,
 }: UseDesignPagePanelActionsInput) {
   const {
@@ -87,8 +72,6 @@ export function useDesignPagePanelActions({
     changeWallSurfaceSettings,
     resetWallSurface,
     resetCeilingSurface,
-    commitItems,
-    updateSelection,
   } = actions;
   const exitClientPreview = useCallback(() => {
     setClientPreview(false);
@@ -166,34 +149,6 @@ export function useDesignPagePanelActions({
     resetCeilingSurface(state.activeRoomId);
   }, [resetCeilingSurface, state.activeRoomId]);
 
-  const removeShoppingItem = useCallback(
-    (instanceId: string) => {
-      const removedItem = state.items.find(
-        (item) => item.instanceId === instanceId
-      );
-      const productName = removedItem
-        ? CATALOG_ITEMS[removedItem.productId]?.title || "Item"
-        : "Item";
-      commitItems(
-        (previous) =>
-          previous.filter((item) => item.instanceId !== instanceId),
-        `Delete ${productName}`
-      );
-
-      if (!refs.selectedIds.current.has(instanceId)) return;
-      const next = new Set(refs.selectedIds.current);
-      next.delete(instanceId);
-      const nextPrimary =
-        refs.primaryId.current === instanceId
-          ? next.size
-            ? Array.from(next)[next.size - 1]
-            : null
-          : refs.primaryId.current;
-      updateSelection(next, nextPrimary);
-    },
-    [commitItems, refs.primaryId, refs.selectedIds, state.items, updateSelection]
-  );
-
   return {
     actions: {
       exitClientPreview,
@@ -206,7 +161,6 @@ export function useDesignPagePanelActions({
       changeActiveWallSurfaceSettings,
       resetActiveWallSurface,
       resetActiveCeilingSurface,
-      removeShoppingItem,
     },
   };
 }

@@ -205,7 +205,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 884,
+      "lines": 881,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -497,7 +497,7 @@
       "limit": 400
     },
     "lib/design-page-panel-registration.ts": {
-      "lines": 458,
+      "lines": 455,
       "limit": 400
     },
     "lib/design-page-product-data.ts": {
@@ -629,7 +629,7 @@
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
-      "lines": 2091,
+      "lines": 2040,
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
@@ -693,7 +693,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
-      "lines": 1210,
+      "lines": 1145,
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
@@ -3213,13 +3213,13 @@
     "lib/design-page-panel-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 449
+        "maximum": 446
       }
     },
     "lib/design-page-panel-workspace-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 191
+        "maximum": 190
       }
     },
     "lib/design-page-plan-canvas-overlays.ts": {
@@ -4088,12 +4088,6 @@
         "maximum": 77
       }
     },
-    "lib/shopping-replacements.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 78
-      }
-    },
     "lib/snapGuides.ts": {
       "overlongFunctions": {
         "count": 1,
@@ -4120,12 +4114,6 @@
         "maximum": 16
       }
     },
-    "lib/surface-material-bom.ts": {
-      "overlongFunctions": {
-        "count": 3,
-        "maximum": 183
-      }
-    },
     "lib/surface-settings.ts": {
       "overlongFunctions": {
         "count": 1,
@@ -4148,16 +4136,10 @@
         "maximum": 158
       }
     },
-    "lib/useDesignPageAiPanelRegistrationFacade.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 61
-      }
-    },
     "lib/useDesignPageAiWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 109
       }
     },
     "lib/useDesignPageBetaStartController.ts": {
@@ -4221,7 +4203,7 @@
     "lib/useDesignPageCatalogPlacement.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 1912
+        "maximum": 1862
       },
       "complexFunctions": {
         "count": 2,
@@ -4289,7 +4271,7 @@
     "lib/useDesignPageDocumentSelectionRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 220
+        "maximum": 207
       }
     },
     "lib/useDesignPageDocumentStateController.ts": {
@@ -4319,7 +4301,7 @@
     "lib/useDesignPageEditorShellRuntime.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 119
+        "maximum": 115
       }
     },
     "lib/useDesignPageExport.ts": {
@@ -4399,7 +4381,7 @@
     "lib/useDesignPageItemInteractionFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 139
+        "maximum": 138
       }
     },
     "lib/useDesignPageItemSelectionController.ts": {
@@ -4441,7 +4423,7 @@
     "lib/useDesignPagePanelActions.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 108
       }
     },
     "lib/useDesignPagePaywallTelemetryController.ts": {
@@ -4661,7 +4643,7 @@
     "lib/useDesignPageRoomReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 301
       },
       "complexFunctions": {
         "count": 1,
@@ -4733,7 +4715,7 @@
     "lib/useDesignPageSelectionTransforms.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 1041
+        "maximum": 981
       },
       "complexFunctions": {
         "count": 4,
@@ -4743,7 +4725,7 @@
     "lib/useDesignPageSelectionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 125
+        "maximum": 123
       }
     },
     "lib/useDesignPageSurfaceActions.ts": {
@@ -4787,7 +4769,7 @@
     "lib/useDesignPageViewportShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 250
+        "maximum": 247
       }
     },
     "lib/useDesignPageZoneController.ts": {

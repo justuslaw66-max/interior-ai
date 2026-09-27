@@ -214,8 +214,6 @@ type ShoppingActions = ActionSlice<
   | "onPreviewCatalogPlacementIntent"
   | "onCatalogDragStart"
   | "onCatalogDragEnd"
-  | "onAddActiveRoomCartReadyItems"
-  | "onReviewShoppingIssue"
   | "onSelectPlacedItem"
   | "onSelectedImportedFamilyChange"
   | "onSelectedImportedProductChange"
