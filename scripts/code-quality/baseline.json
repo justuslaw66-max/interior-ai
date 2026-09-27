@@ -4739,7 +4739,7 @@
     "lib/useDesignPageSceneReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 226
+        "maximum": 225
       }
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {

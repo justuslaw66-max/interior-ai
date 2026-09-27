@@ -64,7 +64,8 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       openingTrace: StructureState["plan"]["openingTrace"];
       width: StructureState["plan"]["width"];
       depth: StructureState["plan"]["depth"];
-      selectedRoomId: StructureState["plan"]["activeRoomId"];
+      /** The room Plan draws in focus: the selected room, else a plan's only room. */
+      focusRoomId: StructureState["plan"]["activeRoomId"];
       selectedRoomIds: StructureState["plan"]["selectedRoomIds"];
       selectedOverlayId: StructureState["plan"]["selectedOverlayId"];
       suppressedDoorwaySuggestionKeys: StructureState["plan"]["suppressedDoorwaySuggestionKeys"];
@@ -299,7 +300,7 @@ function projectStructurePlan(plan: BuildDesignPageSceneRegionAdapterInput["stat
     width: plan.width,
     depth: plan.depth,
     rooms: plan.rooms,
-    activeRoomId: plan.selectedRoomId,
+    activeRoomId: plan.focusRoomId,
     selectedRoomIds: plan.selectedRoomIds,
     selectedOverlayId: plan.selectedOverlayId,
     suppressedDoorwaySuggestionKeys:

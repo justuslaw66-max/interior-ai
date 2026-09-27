@@ -106,5 +106,13 @@ assert.match(
   /deferStarterRoomSelection: !wantsDesigner && isUntouchedStarterRoom\(snapshotDocument\.state\.designSnapshot, planViewport\.boundaries\.planDocument\.state\.planOpenings\)/
 );
 assert.match(read("lib/useDesignPageSceneRoomReadRegistration.ts"), /"selectedPlanRoomId" \| "deferStarterRoomSelection"/);
+// Not selected isn't out of focus: Plan still draws a plan's only room in focus, with its sizes and
+// its door and window labels, so a window can be picked on arrival (the window suite's sill test).
+assert.match(
+  sceneReadModel,
+  /const planFocusRoomId = selectedPlanRoomId \?\? \(housePlanRooms\.length === 1 \? housePlanRooms\[0\]\.id : null\);/
+);
+assert.match(read("lib/useDesignPageSceneRegionWorkspaceRegistration.ts"), /focusRoomId: scene\.planFocusRoomId,/);
+assert.match(read("lib/design-page-scene-region-adapter.ts"), /activeRoomId: plan\.focusRoomId,/);
 
 console.log("First room draft (FR2) and no preselected inspector (FR5) checks passed.");
