@@ -68,6 +68,7 @@ const canonicalWorkspace = read(
 const requestedDesignWorkspace = read(
   "lib/useDesignPageRequestedDesignWorkspaceRegistration.ts"
 );
+const requestedDesignLoad = read("lib/design-page-requested-design-load.ts");
 const ownedDesignApi = read("app/api/designs/[id]/route.ts");
 
 assert.match(legacyRoute, /redirect\(buildDesignEditorUrl\(\{/);
@@ -148,12 +149,12 @@ assert.match(
   "The canonical editor should continue loading the requested persisted design."
 );
 assert.match(
-  requestedDesignWorkspace,
+  requestedDesignLoad,
   /!input\.active \|\| input\.result === "loaded" \|\| input\.result === "superseded"[\s\S]*?kind: "unchanged"/,
   "A superseded route load must not pull navigation back to a stale design."
 );
 assert.match(
-  requestedDesignWorkspace,
+  requestedDesignLoad,
   /currentDesignId[\s\S]*?buildDesignEditorUrl\(\{[\s\S]*?designId: input\.currentDesignId,[\s\S]*?context: input\.context[\s\S]*?: "\/design"/,
   "A denied route load should restore the previous design with allowed editor context."
 );
@@ -168,7 +169,7 @@ assert.match(
   "A successfully loaded floor-plan revision copy should replace the source URL identity."
 );
 assert.doesNotMatch(
-  `${canonicalWorkspace}\n${requestedDesignWorkspace}\n${floorPlanLifecycle}`,
+  `${canonicalWorkspace}\n${requestedDesignWorkspace}\n${requestedDesignLoad}\n${floorPlanLifecycle}`,
   /import\("@\/lib\/design-editor-url"\)/,
   "Client navigation should not resume from a late helper import after unmount."
 );

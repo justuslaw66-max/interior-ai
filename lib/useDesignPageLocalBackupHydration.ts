@@ -23,6 +23,7 @@ import {
   seedLastKnownValidLocalBackup,
 } from "@/lib/design-page-local-backup-recovery";
 import { getSerializedDesignDocumentByteLength } from "@/lib/design-document-contract";
+import { openRequestedDesignBeforeBackup } from "@/lib/design-page-requested-design-load";
 import type {
   DesignPageCloudLoadResult,
   NamedCameraView,
@@ -87,6 +88,16 @@ export type DesignPageLocalBackupHydrationResult = {
   state: DesignPageLocalBackupRecoveryState;
   actions: DesignPageLocalBackupRecoveryActions;
 };
+
+/** This browser's backup, or null when there is none or storage can't be read. */
+function readLocalBackup(storageKey: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Restores the mount-time local backup once. The initial input ref makes that
@@ -266,8 +277,8 @@ export function useDesignPageLocalBackupHydration(
   }, []);
 
   useEffect(() => {
-    const { configuration: { storageKey }, actions: { setLocalBackupHydrated } } =
-      initialInputRef.current;
+    const initialInput = initialInputRef.current;
+    const { configuration: { storageKey }, actions: { setLocalBackupHydrated } } = initialInput;
 
     // React Strict Mode replays passive mount effects in development. Starting
     // two cloud restores would let the aborted request clear an identity that
@@ -275,22 +286,13 @@ export function useDesignPageLocalBackupHydration(
     if (hydrationStartedRef.current) return;
     hydrationStartedRef.current = true;
 
-    if (typeof window === "undefined") {
-      setLocalBackupHydrated(true);
-      return;
-    }
-
-    let raw: string | null = null;
-    try {
-      raw = window.localStorage.getItem(storageKey);
-    } catch {
-      setLocalBackupHydrated(true);
-      return;
-    }
+    const raw = readLocalBackup(storageKey);
     if (!raw) {
       setLocalBackupHydrated(true);
       return;
     }
+    // A link to another design opens that design first (UX phase 4a).
+    if (openRequestedDesignBeforeBackup(raw, initialInput, restoreRawBackup)) return;
     void restoreRawBackup(raw);
   }, [restoreRawBackup]);
 

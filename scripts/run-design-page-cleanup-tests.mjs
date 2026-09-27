@@ -100,6 +100,7 @@ const typescriptGuardFiles = [
   "test-pro-billing-ui.ts",
   "test-pro-tools-toggle-copy.ts",
   "test-room-resize-handle-style.ts",
+  "test-requested-design-first.tsx",
   "test-room-shopping-catalog-refresh.ts",
   "test-shopping-readiness-polish.ts",
   "test-shopping-list.tsx",
