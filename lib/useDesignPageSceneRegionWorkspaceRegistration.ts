@@ -128,7 +128,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         },
         width: plan.planViewWidth,
         depth: plan.planViewDepth,
-        selectedRoomId: viewportShell.state.planSelection.selectedPlanRoomId,
+        focusRoomId: scene.planFocusRoomId,
         selectedRoomIds: viewportShell.state.planSelection.selectedPlanRoomIds,
         selectedOverlayId:
           viewportShell.state.planSelection.selectedPlanOverlayId,
