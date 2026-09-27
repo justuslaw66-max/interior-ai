@@ -298,6 +298,7 @@ assert.deepEqual(
       action: "furnish",
       key: "ready:Ready to furnish:furnish",
       dismissible: true,
+      aboveStepSheet: false,
     },
     emptyPromptVisible: false,
     restoreTools: { label: "Plan tools" },
@@ -316,6 +317,41 @@ assert.equal(
 assert.ok(
   !existsSync(join(process.cwd(), "components/editor/design-page/PlanGuidedActionsChoice.tsx")),
   "The Plan mode choice went with ED6: Tips is the one switch."
+);
+
+// On a phone the open step panel is a sheet over the canvas, so the tip sits above it: its Furnish
+// and Hide buttons had covered the sheet's Expand buttons (3c-3b's Mac run, 18-multi-room at 390px).
+assert.equal(
+  resolveDesignPagePlanCanvasOverlaysState({
+    ...baseInput,
+    guidedActionsEnabled: true,
+    designControlsPanelVisible: true,
+  }).guidance?.aboveStepSheet,
+  true,
+  "With the step panel open, the tip should sit above the phone sheet."
+);
+assert.match(overlaysSource, /aboveStepSheet: guidance\.aboveStepSheet/);
+const guidanceSource = readSource("components/editor/design-page/PlanCanvasGuidance.tsx");
+assert.match(
+  guidanceSource,
+  /PLACEMENT_ABOVE_STEP_SHEET = "bottom-\[calc\(64vh-3\.25rem-env\(safe-area-inset-bottom\)\)\] md:bottom-6"/
+);
+assert.match(guidanceSource, /aboveStepSheet \? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6"/);
+assert.match(guidanceSource, /backdrop-blur \$\{placementClass\(state\.aboveStepSheet\)\}`\}/);
+// The tip's offset follows the sheet's tallest top (4.25rem + 64vh - 4rem) less the overlay box's
+// bottom inset (4rem), plus 0.5rem: change them together.
+assert.ok(
+  readSource("components/editor/DesignControlsPanel.tsx").includes(
+    "absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))]"
+  ) &&
+    readSource("components/editor/DesignControlsPanel.tsx").includes(
+      "max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))]"
+    ),
+  "The phone sheet's place and tallest height are what the tip's offset assumes."
+);
+assert.ok(
+  workspaceSource.includes("absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"),
+  "The overlay box's bottom inset on phones is what the tip's offset assumes."
 );
 
 assert.deepEqual(
@@ -344,6 +380,7 @@ assert.deepEqual(
       action: null,
       key: "ready:Ready to furnish:furnish",
       dismissible: false,
+      aboveStepSheet: false,
     },
     emptyPromptVisible: false,
     restoreTools: null,

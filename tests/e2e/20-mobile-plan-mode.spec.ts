@@ -57,6 +57,15 @@ test.describe("20. Mobile Plan Mode", () => {
       // Tips is on by default and is the one switch (UX audit ED6): no "Plan mode" choice first.
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "true");
       await expect(page.getByRole("switch", { name: "Tips" })).toBeVisible();
+      if (viewport.name === "phone") {
+        // On a phone the tip sits above the open Plan sheet, so its buttons never cover the sheet's.
+        const tip = page.getByTestId("plan-canvas-guidance");
+        const sheet = page.getByTestId("design-controls-panel");
+        await expect(tip).toBeVisible();
+        await expect(sheet).toBeVisible();
+        const [tipBox, sheetBox] = await Promise.all([tip.boundingBox(), sheet.boundingBox()]);
+        expect((tipBox?.y ?? Infinity) + (tipBox?.height ?? 0)).toBeLessThanOrEqual(sheetBox?.y ?? 0);
+      }
       await page.getByTestId("plan-guided-actions-toggle").click();
 
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "false");
