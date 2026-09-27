@@ -157,7 +157,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 525,
+      "lines": 522,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -657,7 +657,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 755,
+      "lines": 675,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -1378,12 +1378,6 @@
         "maximum": 29
       }
     },
-    "app/billing/success/RefreshPlanButton.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 118
-      }
-    },
     "app/checkout/success/page.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1665,7 +1659,7 @@
     "components/editor/design-page/DesignPageToasts.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 78
+        "maximum": 68
       }
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -1681,7 +1675,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 491
+        "maximum": 488
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -4486,8 +4480,8 @@
     },
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
-        "count": 6,
-        "maximum": 543
+        "count": 5,
+        "maximum": 464
       }
     },
     "lib/useDesignPagePanelActions.ts": {

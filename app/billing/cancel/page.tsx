@@ -11,7 +11,7 @@ export default function BillingCancelPage() {
 
         <div className="mt-6 flex flex-col gap-2">
           <Link
-            href="/"
+            href="/design"
             className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white"
           >
             Back to editor

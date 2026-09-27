@@ -322,9 +322,6 @@ export function DesignPageWorkspace() {
       },
     });
   const {
-    state: {
-      onboarding: { nextBestActionNudge },
-    },
     actions: {
       commerce: {
         removeFromCart,
@@ -454,7 +451,7 @@ export function DesignPageWorkspace() {
     },
     feedback: {
       beta: { open: feedbackOpen, context: betaFeedbackContext, onOpenChange: setFeedbackOpen },
-      toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge,
+      toasts: { ruleMessage: ruleToast,
         shareCopied: persistenceState.shareSuccessToast, shareErrorMessage: persistenceState.shareErrorToast },
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
