@@ -92,6 +92,21 @@
     "label": "BATH/WC",
     "rawText": "BATH/WC",
     "roomType": "toilet",
+    "centerXRatio": 0.291456,
+    "centerYRatio": 0.592665,
+    "bbox": {
+     "leftRatio": 0.267484,
+     "topRatio": 0.583987,
+     "rightRatio": 0.315429,
+     "bottomRatio": 0.601344
+    },
+    "confidence": 0.875,
+    "evidenceKind": "vectorizer"
+   },
+   {
+    "label": "BATH/WC",
+    "rawText": "BATH/WC",
+    "roomType": "toilet",
     "centerXRatio": 0.430245,
     "centerYRatio": 0.592665,
     "bbox": {
@@ -462,9 +477,9 @@
     ]
    },
    {
-    "label": "Room",
-    "roomType": "other",
-    "confidence": 0.5,
+    "label": "BATH/WC",
+    "roomType": "toilet",
+    "confidence": 0.875,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -3469,10 +3484,10 @@
   },
   {
    "key": "room-6",
-   "label": "",
-   "roomType": "other",
+   "label": "BATH/WC",
+   "roomType": "toilet",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.5,
+   "confidence": 0.875,
    "sourcePoints": [
     {
      "x": 993.4666781174853,
@@ -3508,7 +3523,9 @@
     "e58"
    ],
    "areaM2": 5.08,
-   "sourceLabels": []
+   "sourceLabels": [
+    "BATH/WC"
+   ]
   },
   {
    "key": "room-7",

@@ -71,13 +71,13 @@
     "label": "BATH/W.C. 1",
     "rawText": "BATH/W.C. 1",
     "roomType": "toilet",
-    "centerXRatio": 0.326214,
+    "centerXRatio": 0.326512,
     "centerYRatio": 0.144915,
     "bbox": {
-     "leftRatio": 0.295417,
+     "leftRatio": 0.296013,
      "topRatio": 0.126396,
-     "rightRatio": 0.357011,
-     "bottomRatio": 0.163434
+     "rightRatio": 0.357012,
+     "bottomRatio": 0.163433
     },
     "confidence": 0.78,
     "evidenceKind": "vectorizer"
@@ -101,11 +101,11 @@
     "label": "SERVICE BALCONY",
     "rawText": "SERVICE BALCONY",
     "roomType": "service_yard",
-    "centerXRatio": 0.679906,
-    "centerYRatio": 0.18034,
+    "centerXRatio": 0.680208,
+    "centerYRatio": 0.180867,
     "bbox": {
-     "leftRatio": 0.639146,
-     "topRatio": 0.161295,
+     "leftRatio": 0.639749,
+     "topRatio": 0.162349,
      "rightRatio": 0.720667,
      "bottomRatio": 0.199386
     },

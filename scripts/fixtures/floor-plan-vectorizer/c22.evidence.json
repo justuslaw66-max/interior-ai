@@ -230,6 +230,21 @@
     "evidenceKind": "vectorizer"
    },
    {
+    "label": "COMMON",
+    "rawText": "COMMON",
+    "roomType": "other",
+    "centerXRatio": 0.661013,
+    "centerYRatio": 0.556865,
+    "bbox": {
+     "leftRatio": 0.654489,
+     "topRatio": 0.527322,
+     "rightRatio": 0.667537,
+     "bottomRatio": 0.586407
+    },
+    "confidence": 0.072,
+    "evidenceKind": "vectorizer"
+   },
+   {
     "label": "WC",
     "rawText": "WC",
     "roomType": "toilet",
@@ -455,11 +470,11 @@
      },
      {
       "xRatio": 0.682933,
-      "yRatio": 0.26349
+      "yRatio": 0.263832
      },
      {
       "xRatio": 0.715684,
-      "yRatio": 0.26349
+      "yRatio": 0.263832
      },
      {
       "xRatio": 0.715684,
@@ -672,9 +687,9 @@
     ]
    },
    {
-    "label": "Room",
+    "label": "COMMON",
     "roomType": "other",
-    "confidence": 0.5,
+    "confidence": 0.072,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -807,11 +822,7 @@
     "points": [
      {
       "xRatio": 0.682933,
-      "yRatio": 0.26349
-     },
-     {
-      "xRatio": 0.682933,
-      "yRatio": 0.268784
+      "yRatio": 0.268955
      },
      {
       "xRatio": 0.682933,
@@ -827,11 +838,11 @@
      },
      {
       "xRatio": 0.787578,
-      "yRatio": 0.26349
+      "yRatio": 0.268955
      },
      {
       "xRatio": 0.724426,
-      "yRatio": 0.26349
+      "yRatio": 0.268955
      }
     ]
    },
@@ -1203,39 +1214,6 @@
    {
     "kind": "door",
     "operation": "sliding",
-    "centerXRatio": 0.776618,
-    "centerYRatio": 0.263661,
-    "spanStart": {
-     "xRatio": 0.724426,
-     "yRatio": 0.263661
-    },
-    "spanEnd": {
-     "xRatio": 0.82881,
-     "yRatio": 0.263661
-    },
-    "confidence": 0.55,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      694.0,
-      386.0
-     ],
-     [
-      794.0,
-      386.0
-     ]
-    ],
-    "widthMm": 1130,
-    "hinge": "none",
-    "swingSide": 0,
-    "handing": "unknown",
-    "note": "staggered strokes between two wall ends",
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null
-   },
-   {
-    "kind": "door",
-    "operation": "sliding",
     "centerXRatio": 0.683194,
     "centerYRatio": 0.315403,
     "spanStart": {
@@ -1457,6 +1435,39 @@
      ]
     ],
     "widthMm": 2587,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.765919,
+    "centerYRatio": 0.269296,
+    "spanStart": {
+     "xRatio": 0.724426,
+     "yRatio": 0.269296
+    },
+    "spanEnd": {
+     "xRatio": 0.807411,
+     "yRatio": 0.269296
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      694.0,
+      394.25
+     ],
+     [
+      773.5,
+      394.25
+     ]
+    ],
+    "widthMm": 898,
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
@@ -2482,7 +2493,7 @@
     ],
     [
      654.25,
-     385.75
+     386.25
     ]
    ],
    "thicknessPx": 14.5,
@@ -2495,15 +2506,15 @@
    "sourcePx": [
     [
      654.25,
-     385.75
+     386.25
     ],
     [
      685.625,
-     385.75
+     386.25
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 181,
+   "thicknessPx": 17.0,
+   "thicknessMm": 192,
    "opening": null
   },
   {
@@ -2512,7 +2523,7 @@
    "sourcePx": [
     [
      685.625,
-     385.75
+     386.25
     ],
     [
      685.625,
@@ -3625,6 +3636,38 @@
   },
   {
    "id": "e94",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     654.25,
+     393.75
+    ],
+    [
+     654.25,
+     530.0
+    ]
+   ],
+   "thicknessPx": 14.0,
+   "thicknessMm": 158,
+   "opening": {
+    "kind": "door",
+    "operation": "sliding",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.55,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "staggered strokes between two wall ends",
+    "widthMm": 1542,
+    "between": [
+     "room-2",
+     "room-10"
+    ]
+   }
+  },
+  {
+   "id": "e95",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3641,7 +3684,7 @@
    "opening": null
   },
   {
-   "id": "e95",
+   "id": "e96",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3650,7 +3693,7 @@
     ],
     [
      754.5,
-     385.75
+     393.75
     ]
    ],
    "thicknessPx": 16.0,
@@ -3658,31 +3701,31 @@
    "opening": null
   },
   {
-   "id": "e96",
+   "id": "e97",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
      754.5,
-     385.75
+     393.75
     ],
     [
      694.0,
-     385.75
+     393.75
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 181,
+   "thicknessPx": 12.5,
+   "thicknessMm": 141,
    "opening": {
-    "kind": "door",
-    "operation": "sliding",
+    "kind": "window",
+    "operation": "fixed",
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
-    "confidence": 0.55,
+    "confidence": 0.7,
     "hingeSourcePx": null,
     "swingTowardSourcePx": null,
-    "note": "staggered strokes between two wall ends",
-    "widthMm": 1130,
+    "note": null,
+    "widthMm": 898,
     "between": [
      "outside",
      "room-10"
@@ -3690,24 +3733,24 @@
    }
   },
   {
-   "id": "e97",
+   "id": "e98",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      694.0,
-     385.75
+     393.75
     ],
     [
      654.25,
-     385.75
+     393.75
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 181,
+   "thicknessPx": 13.5,
+   "thicknessMm": 152,
    "opening": null
   },
   {
-   "id": "e98",
+   "id": "e99",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3724,7 +3767,7 @@
    "opening": null
   },
   {
-   "id": "e99",
+   "id": "e100",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3741,7 +3784,7 @@
    "opening": null
   },
   {
-   "id": "e100",
+   "id": "e101",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3773,7 +3816,7 @@
    }
   },
   {
-   "id": "e101",
+   "id": "e102",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3790,7 +3833,7 @@
    "opening": null
   },
   {
-   "id": "e102",
+   "id": "e103",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3807,7 +3850,7 @@
    "opening": null
   },
   {
-   "id": "e103",
+   "id": "e104",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3824,7 +3867,7 @@
    "opening": null
   },
   {
-   "id": "e104",
+   "id": "e105",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3841,7 +3884,7 @@
    "opening": null
   },
   {
-   "id": "e105",
+   "id": "e106",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4063,11 +4106,11 @@
     },
     {
      "x": 654.25,
-     "y": 385.75
+     "y": 386.25
     },
     {
      "x": 685.625,
-     "y": 385.75
+     "y": 386.25
     },
     {
      "x": 685.625,
@@ -4368,10 +4411,10 @@
   },
   {
    "key": "room-7",
-   "label": "",
+   "label": "COMMON",
    "roomType": "other",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.5,
+   "confidence": 0.072,
    "sourcePoints": [
     {
      "x": 534.8938814531549,
@@ -4427,7 +4470,9 @@
     "e83"
    ],
    "areaM2": 4.25,
-   "sourceLabels": []
+   "sourceLabels": [
+    "COMMON"
+   ]
   },
   {
    "key": "room-8",
@@ -4546,11 +4591,7 @@
    "sourcePoints": [
     {
      "x": 654.25,
-     "y": 385.75
-    },
-    {
-     "x": 654.25,
-     "y": 393.5
+     "y": 393.75
     },
     {
      "x": 654.25,
@@ -4566,23 +4607,22 @@
     },
     {
      "x": 754.5,
-     "y": 385.75
+     "y": 393.75
     },
     {
      "x": 694.0,
-     "y": 385.75
+     "y": 393.75
     }
    ],
    "edgeIds": [
-    "e36",
-    "e35",
-    "e34",
     "e94",
+    "e34",
     "e95",
     "e96",
-    "e97"
+    "e97",
+    "e98"
    ],
-   "areaM2": 1.96,
+   "areaM2": 1.86,
    "sourceLabels": [
     "MASTER BATH"
    ]
@@ -4616,11 +4656,11 @@
     }
    ],
    "edgeIds": [
-    "e98",
     "e99",
     "e100",
     "e101",
-    "e102"
+    "e102",
+    "e103"
    ],
    "areaM2": 1.73,
    "sourceLabels": [
@@ -4668,14 +4708,14 @@
     }
    ],
    "edgeIds": [
-    "e103",
+    "e104",
     "e57",
     "e56",
     "e55",
-    "e104",
+    "e105",
     "e87",
     "e86",
-    "e105"
+    "e106"
    ],
    "areaM2": 1.32,
    "sourceLabels": [
@@ -4687,8 +4727,8 @@
   "bars": 63,
   "gapsSeen": 115,
   "openings": {
-   "door": 11,
-   "window": 9,
+   "door": 10,
+   "window": 10,
    "open_passage": 2,
    "wall": 4
   },
