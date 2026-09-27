@@ -312,8 +312,14 @@ const pdfRoute = read("app/api/export/pdf/route.ts");
 assert.match(pdfRoute, /select:\s*\{\s*plan:\s*true\s*\}/);
 assert.match(pdfRoute, /normalizeTierFromPlan\(dbUser\?\.plan\)/);
 
+// Furnish's "In this room" list is the keyboard path to a placed product.
 const furnishPanel = read(
-  "components/editor/DesignControlsFurnishPanel.tsx"
+  "components/editor/FurnishInThisRoom.tsx"
+);
+assert.match(
+  read("components/editor/DesignControlsFurnishPanel.tsx"),
+  /<FurnishInThisRoom[\s\S]*?onSelect=\{props\.onSelectPlacedItem\}/,
+  "Furnish must render the placed-item keyboard selector"
 );
 for (const required of [
   'data-testid="placed-item-selector"',

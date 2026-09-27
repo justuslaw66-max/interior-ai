@@ -108,10 +108,6 @@
       "lines": 1089,
       "limit": 250
     },
-    "components/catalog/CatalogCategoryTabs.tsx": {
-      "lines": 308,
-      "limit": 250
-    },
     "components/catalog/CatalogFilterDrawer.tsx": {
       "lines": 256,
       "limit": 250
@@ -121,7 +117,7 @@
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
-      "lines": 1159,
+      "lines": 723,
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -212,12 +208,8 @@
       "lines": 427,
       "limit": 250
     },
-    "components/editor/DesignControlsFurnishPanel.tsx": {
-      "lines": 1288,
-      "limit": 250
-    },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 904,
+      "lines": 886,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -1500,22 +1492,6 @@
         "maximum": 16
       }
     },
-    "components/catalog/CatalogCard.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 112
-      }
-    },
-    "components/catalog/CatalogCategoryTabs.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 268
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 18
-      }
-    },
     "components/catalog/CatalogFilterDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1547,11 +1523,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 975
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 32
+        "maximum": 606
       }
     },
     "components/common/LazyImage.tsx": {
@@ -1964,20 +1936,10 @@
         "maximum": 56
       }
     },
-    "components/editor/DesignControlsFurnishPanel.tsx": {
-      "overlongFunctions": {
-        "count": 3,
-        "maximum": 1167
-      },
-      "complexFunctions": {
-        "count": 2,
-        "maximum": 72
-      }
-    },
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 616
+        "maximum": 598
       },
       "complexFunctions": {
         "count": 1,

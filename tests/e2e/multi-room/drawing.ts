@@ -2,7 +2,6 @@ import { test, expect } from "../fixtures";
 import {
   chooseDrawFromScratch,
   chooseTemplateStart,
-  clickWithFallback,
   expectDrawPointCount,
   expectPlan2DProjectionHealthy,
   isDrawPointCountVisible,
@@ -417,10 +416,6 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
 
     await page.getByTestId("editor-workflow-furnish").click({ timeout: 5_000, noWaitAfter: true });
-    const catalogMode = page.getByTestId("furnish-mode-catalog");
-    if (await catalogMode.isVisible().catch(() => false)) {
-      await clickWithFallback(catalogMode);
-    }
     await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
     const firstPreview = page.locator('[data-testid^="catalog-preview-"]').first();
     const firstPreviewTestId = await firstPreview.getAttribute("data-testid");

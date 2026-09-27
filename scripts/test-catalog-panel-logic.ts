@@ -443,7 +443,7 @@ function run(): void {
     "Consumer and Pro must share one CatalogPanel and compare identity path",
   );
   assert.doesNotMatch(
-    furnishPanelSource,
+    furnishPanelSource + readFileSync(path.join(process.cwd(), "components/editor/FurnishImportedModels.tsx"), "utf8"),
     /QA catalog controls|Imported furniture (?:family|product)/,
     "Consumers see the imported-model picker, so its copy must not use QA or import jargon.",
   );

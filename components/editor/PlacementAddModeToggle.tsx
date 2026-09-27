@@ -20,7 +20,7 @@ const IDLE_CLASS =
 export function PlacementAddModeToggle({ visible, mode, onChange }: PlacementAddModeToggleProps) {
   if (!visible) return null;
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2" data-testid="placement-add-mode">
+    <div className="mb-3 grid grid-cols-2 gap-2" data-testid="placement-add-mode">
       {(["preview", "auto"] as const).map((option) => (
         <button
           key={option}

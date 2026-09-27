@@ -150,6 +150,9 @@ test.describe("24. Consumer object placement", () => {
     await expect(toast).toContainText("added to the Living Room");
     await expect(page.getByTestId("catalog-placement-confirm-panel")).toHaveCount(0);
     await expect.poll(() => readFingerprint(page)).not.toBe(beforePlacement);
+    // Its card says it's in the room, and Furnish's "In this room" lists it (FU1).
+    await expect(page.getByTestId(`catalog-in-room-${TEST_ITEM_ID}`)).toHaveCount(1);
+    await expect(page.getByTestId("furnish-in-this-room")).toContainText("Hugg");
     const undo = toast.getByTestId("editor-action-toast-undo");
     await expectTouchTarget(undo, "Undo");
     await undo.click();
@@ -158,6 +161,8 @@ test.describe("24. Consumer object placement", () => {
       beforePlacement
     );
     await expect(toast).toHaveCount(0);
+    await expect(page.getByTestId(`catalog-in-room-${TEST_ITEM_ID}`)).toHaveCount(0);
+    await expect(page.getByTestId("furnish-in-this-room")).toHaveCount(0);
   });
 
   test("placement is one keyboard-undoable Consumer edit", async ({ page }) => {

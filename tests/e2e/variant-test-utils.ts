@@ -39,13 +39,6 @@ async function openFurnishPanel(page: Page): Promise<void> {
 
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const catalogMode = page.locator('[data-testid="furnish-mode-catalog"]:visible').first();
-  if (await catalogMode.isVisible().catch(() => false)) {
-    await clickButtonWithDomFallback(catalogMode);
-  }
-
-  if (await searchInput.isVisible().catch(() => false)) return;
-
   const legacyCatalogToggle = page.locator('[data-testid="furnish-full-catalog-toggle"]:visible').first();
   if (await legacyCatalogToggle.isVisible().catch(() => false)) {
     await legacyCatalogToggle.click();
@@ -403,11 +396,7 @@ export async function addCatalogCardItemToRoom(
   const exactAddButton = page.getByTestId(`catalog-add-${productId}`).first();
   const addButton =
     productTitle && (await exactAddButton.count()) === 0
-      ? page
-          .getByText(productTitle, { exact: true })
-          .first()
-          .locator("xpath=ancestor::div[.//button[@aria-label='Add item']][1]")
-          .getByRole("button", { name: "Add item" })
+      ? page.getByRole("button", { name: `Add ${productTitle} to the ` }).first()
       : exactAddButton;
   const selectedItemPanel = getSelectedItemPanel(page);
   const confirmButton = page.getByTestId("catalog-placement-confirm");

@@ -162,7 +162,7 @@ test.describe("17. Smart Placement Smoke", () => {
       restoredCatalogReady,
       "Catalog controls must reopen for the restored target room",
     ).toBe(true);
-    await expect(page.getByTestId("furnish-shopping-preview")).toContainText(
+    await expect(page.getByTestId("furnish-in-this-room")).toContainText(
       "Madison Sofa",
       { timeout: 30_000 },
     );
