@@ -4,7 +4,6 @@ import { join } from "node:path";
 
 import {
   getDesignPageSelectedItemCommerceTarget,
-  getDesignPageSelectedItemCommerceType,
   getDesignPageSelectedItemLockLabel,
 } from "@/lib/useDesignPageSelectedItemPanelController";
 
@@ -136,24 +135,6 @@ const unavailableVariant = {
   },
 };
 
-assert.equal(
-  getDesignPageSelectedItemCommerceType(affiliateVariant),
-  "affiliate"
-);
-assert.equal(
-  getDesignPageSelectedItemCommerceType(shopifyVariant),
-  "shopify"
-);
-assert.equal(
-  getDesignPageSelectedItemCommerceType(unavailableVariant),
-  "not_buyable"
-);
-assert.equal(
-  getDesignPageSelectedItemCommerceType(null),
-  "not_buyable",
-  "A missing resolved variant should remain non-buyable."
-);
-
 assert.deepEqual(
   getDesignPageSelectedItemCommerceTarget({
     product: { id: "catalog-chair" },
@@ -223,10 +204,9 @@ for (const callbackName of [
   "applySelectedItemStyleAlternative",
   "swapSelectedItem",
   "swapSelectedItemToCheaper",
-  "upgradeSelectedItem",
+  "swapSelectedItemToPricier",
   "openSelectedItemCommerce",
   "toggleSelectedItemLock",
-  "removeSelectedItemFromDesign",
 ] as const) {
   assertIncludes(
     controllerSource,
@@ -244,13 +224,16 @@ const swapSource = sourceBetween(
   "const swapSelectedItem = useCallback",
   "const swapSelectedItemToCheaper = useCallback"
 );
+// Named swaps (UX audit FU10, FU12): the Shopping list's rules pick the product the panel names,
+// sets keep theirs, and each swap is one "Swap X for Y" step with Undo in the toast.
 for (const expected of [
-  "findSwapOptions({",
-  'direction === "cheaper"',
+  'const findSwap = direction === "cheaper" ? cheaperSwapFor : pricierSwapFor',
+  "if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId) return",
   '"No cheaper alternatives found"',
   '"No pricier alternatives found"',
-  "productId: best.id",
-  "variantId: best.defaultVariantId",
+  "const step = `Swap ${selectedProduct.title} for ${product.title}`",
+  "withShoppingLineSwapped(previous, selectedInstanceId, product), step",
+  "announceUndoableAction({ message: `Swapped for ${product.title}`, undoLabels: [step] })",
 ] as const) {
   assertIncludes(
     swapSource,
@@ -291,7 +274,7 @@ for (const expected of [
 const lockSource = sourceBetween(
   controllerSource,
   "const toggleSelectedItemLock = useCallback",
-  "const removeSelectedItemFromDesign = useCallback"
+  "const selectedItemLockLabel ="
 );
 for (const expected of [
   "const selectedSet = getSelectedIds()",
@@ -306,36 +289,16 @@ for (const expected of [
   );
 }
 
-const removeSource = sourceBetween(
-  controllerSource,
-  "const removeSelectedItemFromDesign = useCallback",
-  "const selectedItemLockLabel ="
+// One Remove for a product (UX audit ED3, FU12): the item panel uses the placement's delete, which
+// checks Pro's lock and records "Remove <product>"; the controller's unnamed second path is gone.
+assert.ok(
+  !controllerSource.includes("removeSelectedItemFromDesign"),
+  "The controller should not keep a second remove path."
 );
-assert.match(
-  removeSource,
-  /commitItems\(\(previous\)\s*=>\s*previous\.filter\([\s\S]*?\)\s*\);/,
-  "Remove should keep the direct, unlabeled item commit."
+assert.ok(
+  !controllerSource.includes("selectedItemCommerceType"),
+  "The item panel reads where a product is sold from its summary, not a commerce type."
 );
-assert.doesNotMatch(
-  removeSource,
-  /commitItems\([\s\S]*?,\s*"(?:Remove|Delete)[^"]*"/,
-  "Remove should not acquire a new history label during extraction."
-);
-for (const expected of [
-  "const selectedSet = getSelectedIds()",
-  "selectedSet.has(selectedItem.instanceId)",
-  "const next = new Set(selectedSet)",
-  "next.delete(selectedItem.instanceId)",
-  "getPrimaryId() === selectedItem.instanceId",
-  "Array.from(next)[next.size - 1]",
-  "updateSelection(next, nextPrimary)",
-] as const) {
-  assertIncludes(
-    removeSource,
-    expected,
-    `Remove should preserve selection repair for ${expected}.`
-  );
-}
 
 for (const [getterName, refRead, contractEntry] of [
   [
@@ -347,11 +310,6 @@ for (const [getterName, refRead, contractEntry] of [
     "getSelectedItemPanelItems",
     "itemsRef.current",
     "getItems: getSelectedItemPanelItems",
-  ],
-  [
-    "getSelectedItemPanelPrimaryId",
-    "primaryIdRef.current",
-    "getPrimaryId: getSelectedItemPanelPrimaryId",
   ],
 ] as const) {
   assert.match(
@@ -375,7 +333,6 @@ for (const inlineOwnership of [
   "findSwapOptions({",
   'fetch("/api/track/click", {',
   "const selectedItemLockLabel =",
-  "const selectedItemCommerceType =",
 ] as const) {
   assert.ok(
     !workspaceSource.includes(inlineOwnership),

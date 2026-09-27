@@ -193,7 +193,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedItemPanel.tsx": {
-      "lines": 319,
+      "lines": 260,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -293,7 +293,7 @@
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
-      "lines": 667,
+      "lines": 552,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -693,7 +693,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
-      "lines": 1145,
+      "lines": 1144,
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
@@ -1864,16 +1864,6 @@
         "maximum": 128
       }
     },
-    "components/editor/design-page/SelectedItemPanel.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 189
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 21
-      }
-    },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
       "overlongFunctions": {
         "count": 3,
@@ -2273,11 +2263,11 @@
     "components/editor/SelectedItemDetailsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 589
+        "maximum": 480
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 70
+        "maximum": 57
       }
     },
     "components/editor/SelectedItemRotationControls.tsx": {
@@ -3263,7 +3253,7 @@
     "lib/design-page-selection-panel-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 146
+        "maximum": 145
       }
     },
     "lib/design-page-surface-inspector.ts": {
@@ -4381,7 +4371,7 @@
     "lib/useDesignPageItemInteractionFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 138
+        "maximum": 131
       }
     },
     "lib/useDesignPageItemSelectionController.ts": {
@@ -4687,7 +4677,7 @@
     "lib/useDesignPageSelectedItemPanelController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 240
+        "maximum": 200
       }
     },
     "lib/useDesignPageSelectionCoordinator.ts": {
@@ -4715,7 +4705,7 @@
     "lib/useDesignPageSelectionTransforms.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 981
+        "maximum": 979
       },
       "complexFunctions": {
         "count": 4,

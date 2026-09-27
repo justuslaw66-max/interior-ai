@@ -19,6 +19,7 @@ import {
   type SelectedItemKeyboardCommand,
   type SelectedPlanKeyboardCommand,
 } from "@/lib/design-page-selection-keyboard-commands";
+import { announceUndoableAction } from "@/lib/editor-action-toast";
 import type { DesignItem } from "@/lib/room-types";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
@@ -62,6 +63,13 @@ export type UseDesignPageDeleteSelectionShortcutInput = {
   actions: DesignPageDeleteSelectionShortcutActions;
 };
 
+/** The Delete key removes products as the item panel's Remove does (UX audit ED3, FU12). */
+function productRemoval(names: readonly string[], count: number) {
+  return count === 1
+    ? { step: `Remove ${names[0]}`, message: `${names[0]} removed` }
+    : { step: `Remove ${count} items`, message: `${count} products removed` };
+}
+
 function isDeleteShortcutTarget(target: EventTarget | null): boolean {
   const element = target as HTMLElement | null;
   return Boolean(
@@ -103,17 +111,15 @@ export function useDesignPageDeleteSelectionShortcut({
           return item ? catalogItems[item.productId]?.title || "Item" : "Item";
         })
         .filter((name, index, names) => names.indexOf(name) === index);
-      const actionLabel =
-        selectedIds.length === 1
-          ? `Delete ${itemNames[0]}`
-          : `Delete ${selectedIds.length} items`;
+      const removal = productRemoval(itemNames, selectedIds.length);
 
       commitItems(
         (previous) =>
           previous.filter((item) => !selectedIds.includes(item.instanceId)),
-        actionLabel
+        removal.step
       );
       clearSelection();
+      announceUndoableAction({ message: removal.message, undoLabels: [removal.step] });
     };
 
     window.addEventListener("keydown", handleDeleteKey);

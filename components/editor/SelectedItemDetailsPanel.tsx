@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Info, RotateCw, Ruler, SlidersHorizontal, Truck } from "lucide-react";
+import { Info, Ruler, SlidersHorizontal, Truck } from "lucide-react";
 import LazyImage from "@/components/common/LazyImage";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ProductInfoRow, ProductInfoSections } from "@/lib/design-page-product-info";
@@ -20,7 +20,6 @@ type SelectedItemDetailsPanelProps = {
   rooms: Array<{ id: string; name: string }>;
   activeRoomId: string;
   measurementUnit: PlanMeasurementUnit;
-  planningDimensionsMm?: { w: number; d: number; h: number } | null;
   selectedBrand?: string | null;
   selectedModelTitle?: string | null;
   selectedCategoryDebugLabel?: string | null;
@@ -31,20 +30,15 @@ type SelectedItemDetailsPanelProps = {
   showInspectorDetails: boolean;
   showFullDimensions: boolean;
   showDeliveryWarranty: boolean;
-  showRotationControls: boolean;
   styleConsistencyReport?: StyleConsistencyReport | null;
   onToggleInspectorDetails: () => void;
   onToggleFullDimensions: () => void;
   onToggleDeliveryWarranty: () => void;
-  onToggleRotationControls: () => void;
   onMoveToRoom: (roomId: string) => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
   onCenterInRoom: () => void;
   onSnapToWall: () => void;
   onNudge: (deltaX: number, deltaZ: number) => void;
   onSetPosition: (x: number, z: number) => void;
-  onCheckRetailerStock?: () => void;
   adjustableHangingHeight?: {
     valueCm: number;
     minCm: number;
@@ -64,7 +58,6 @@ export default function SelectedItemDetailsPanel({
   rooms,
   activeRoomId,
   measurementUnit,
-  planningDimensionsMm,
   selectedBrand,
   selectedModelTitle,
   selectedCategoryDebugLabel,
@@ -75,31 +68,20 @@ export default function SelectedItemDetailsPanel({
   showInspectorDetails,
   showFullDimensions,
   showDeliveryWarranty,
-  showRotationControls,
   styleConsistencyReport,
   onToggleInspectorDetails,
   onToggleFullDimensions,
   onToggleDeliveryWarranty,
-  onToggleRotationControls,
   onMoveToRoom,
-  onDuplicate,
-  onDelete,
   onCenterInRoom,
   onSnapToWall,
   onNudge,
   onSetPosition,
-  onCheckRetailerStock,
   adjustableHangingHeight,
   onAdjustHangingHeight,
   onApplyStyleAlternative,
 }: SelectedItemDetailsPanelProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
-  const titleClass = dark
-    ? "designer-text-primary text-base font-semibold"
-    : "text-base font-semibold text-neutral-900";
-  const metaClass = dark
-    ? "designer-text-secondary text-xs font-semibold uppercase tracking-[0.08em]"
-    : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-500";
   const disabledButtonClass = dark
     ? "designer-control rounded-md border px-2 py-1 text-xs disabled:opacity-40"
     : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
@@ -137,8 +119,6 @@ export default function SelectedItemDetailsPanel({
   const itemActionsDisabled = !item || !canEdit || (isDesigner && Boolean(item.locked));
   const positionX = item?.position?.[0] ?? 0;
   const positionZ = item?.position?.[2] ?? 0;
-  const resolvedDimensionsMm = planningDimensionsMm ?? product.dimsMm;
-  const dimensionLabel = `${formatCabinetMeasurement(resolvedDimensionsMm.w, measurementUnit)} x ${formatCabinetMeasurement(resolvedDimensionsMm.d, measurementUnit)} x ${formatCabinetMeasurement(resolvedDimensionsMm.h, measurementUnit)}`;
   const styleStatusClass =
     styleConsistencyReport?.status === "cohesive"
       ? dark
@@ -154,62 +134,7 @@ export default function SelectedItemDetailsPanel({
 
 
   return (
-    <div className="mt-2 space-y-1.5">
-      {selectedBrand ? (
-        <>
-          <div className={metaClass}>{selectedBrand}</div>
-          <h2 className={titleClass}>{selectedModelTitle}</h2>
-        </>
-      ) : (
-        <h2 className={titleClass}>{product.title}</h2>
-      )}
-
-      {item?.locked && (
-        <div
-          className={
-            isDesigner
-              ? "designer-accent-pill mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs"
-              : "mt-2 inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-700"
-          }
-        >
-          Locked
-        </div>
-      )}
-
-      <div
-        className="flex flex-wrap items-center gap-1.5"
-        data-testid={
-          product.commerce.type === "affiliate"
-            ? "selected-item-availability"
-            : undefined
-        }
-      >
-        {product.commerce.type === "shopify" ? (
-          <span className="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">
-            Buy on this site
-          </span>
-        ) : (
-          <span className="inline-flex rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
-            External retailer
-          </span>
-        )}
-        {product.commerce.type === "affiliate" && onCheckRetailerStock ? (
-          <button
-            type="button"
-            aria-label={`Check current stock and delivery at ${product.commerce.data.retailer}`}
-            title="Current stock and delivery are confirmed on the retailer site"
-            className={
-              dark
-                ? "designer-control inline-flex items-center rounded-full border px-2 py-1 text-xs font-semibold text-amber-100"
-                : "inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100"
-            }
-            onClick={onCheckRetailerStock}
-          >
-            Check stock <span aria-hidden="true">↗</span>
-          </button>
-        ) : null}
-      </div>
-
+    <div className="mt-2 space-y-1.5" data-testid="selected-item-details">
       <div className="pt-1">
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -270,21 +195,7 @@ export default function SelectedItemDetailsPanel({
           {item ? (
             <button
               type="button"
-              className={actionToggleClass(showRotationControls)}
-              aria-expanded={showRotationControls}
-              aria-pressed={showRotationControls}
-              data-testid="rotation-controls-toggle"
-              onClick={onToggleRotationControls}
-              title={showRotationControls ? "Hide rotation" : "Show rotation"}
-            >
-              <RotateCw className={actionIconClass} aria-hidden="true" />
-              <span>Rotation</span>
-            </button>
-          ) : null}
-          {item ? (
-            <button
-              type="button"
-              className={`${actionToggleClass(showAdvancedControls)} col-span-2`}
+              className={actionToggleClass(showAdvancedControls)}
               aria-expanded={showAdvancedControls}
               aria-pressed={showAdvancedControls}
               data-testid="selected-item-advanced-controls-toggle"
@@ -292,7 +203,7 @@ export default function SelectedItemDetailsPanel({
               title={showAdvancedControls ? "Hide controls" : "Show controls"}
             >
               <SlidersHorizontal className={actionIconClass} aria-hidden="true" />
-              <span>Controls</span>
+              <span>More controls</span>
             </button>
           ) : null}
         </div>
@@ -346,7 +257,7 @@ export default function SelectedItemDetailsPanel({
       ) : null}
 
       {item && showAdvancedControls ? (
-        <div className={compactPanelClass} data-testid="selected-item-actions">
+        <div className={compactPanelClass} data-testid="selected-item-placement">
           <div className={sectionTitleClass}>Placement</div>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -369,26 +280,6 @@ export default function SelectedItemDetailsPanel({
             >
               Snap wall
             </button>
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
-              disabled={itemActionsDisabled}
-              onClick={onDuplicate}
-              data-testid="selected-item-duplicate"
-              title="Duplicate selected item (Cmd/Ctrl+D)"
-            >
-              Duplicate
-            </button>
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
-              disabled={itemActionsDisabled}
-              onClick={onDelete}
-              data-testid="selected-item-delete"
-              title="Delete selected item (Delete)"
-            >
-              Delete
-            </button>
           </div>
 
           <div
@@ -399,14 +290,8 @@ export default function SelectedItemDetailsPanel({
             }
             data-testid="selected-item-precision"
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className={labelClass}>Size</span>
-              <span className={valueClass} data-testid="selected-item-dimensions">
-                {dimensionLabel}
-              </span>
-            </div>
             <div
-              className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}
+              className={dark ? "text-[11px] text-neutral-400" : "text-[11px] text-neutral-500"}
               data-testid="selected-item-size-guidance"
             >
               Catalogue size is preserved. Choose an available model or size option below to resize accurately.

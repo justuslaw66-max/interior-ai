@@ -30,7 +30,7 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
 
     await addCatalogDrawerItemToRoom(page);
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Caramel Oak/i);
     await expect(page.getByTestId("selected-single-finish-swatch")).toBeVisible();
     await expect(page.getByTestId("selected-single-finish-swatch")).toHaveAttribute(

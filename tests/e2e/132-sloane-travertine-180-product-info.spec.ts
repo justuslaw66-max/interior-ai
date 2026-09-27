@@ -169,7 +169,7 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
     await addCatalogDrawerItemToRoom(page);
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
 
     const finishSection = page.getByTestId("selected-single-finish-section");
     await expect(finishSection).toContainText(/^Leg/i);

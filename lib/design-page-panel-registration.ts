@@ -91,7 +91,6 @@ export function buildDesignPagePanelRegistration({
           product: inspection.selectedProduct!,
           item: placementSelection.state.selection.selectedItem,
           measurementUnit: planDocument.state.planMeasurementUnit,
-          planningDimensionsMm: inspection.selectedItemPlanningDimensionsMm,
           selectedBrand: inspection.selectedBrand,
           selectedModelTitle: inspection.selectedModelTitle,
           selectedCategoryDebugLabel: inspection.selectedCategoryDebugLabel,
@@ -101,6 +100,7 @@ export function buildDesignPagePanelRegistration({
           selectedDimensionImageUrl: inspection.selectedDimensionImageUrl,
           styleConsistencyReport: inspection.selectedStyleConsistencyReport,
         },
+        summarySource: { style: state.editor.controls.style, planningDimensionsMm: inspection.selectedItemPlanningDimensionsMm },
         inspectionController: {
           state: interaction.selectedItemPanelControllerState,
           adjustableHangingHeight: inspection.selectedAdjustablePendantHeight
@@ -142,9 +142,9 @@ export function buildDesignPagePanelRegistration({
           onCenterInRoom: interactionActions.centerSelectedItemInRoom,
           onSnapToWall: interactionActions.snapSelectedItemToNearestWall,
           onNudge: interactionActions.nudgeSelectedItem,
-          onAdjustHangingHeight:
-            placementSelection.actions.inspection.adjustSelectedPendantHeight,
+          onAdjustHangingHeight: placementSelection.actions.inspection.adjustSelectedPendantHeight,
         },
+        selection: { clearAllSelection: placementSelection.actions.selection.clearAllSelection },
         rotation: {
           onSnapPresetChange:
             placementSelection.actions.inspection.setRotationSnapPresetDegrees,

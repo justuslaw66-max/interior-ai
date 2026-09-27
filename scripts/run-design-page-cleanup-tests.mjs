@@ -102,6 +102,7 @@ const typescriptGuardFiles = [
   "test-shopping-readiness-polish.ts",
   "test-shopping-list.tsx",
   "test-shop-page.tsx",
+  "test-selected-item-summary.tsx",
   "test-start-design.tsx",
   "test-tap-target-placement.ts",
   "test-touch-placement-polish.ts",

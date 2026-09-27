@@ -45,12 +45,9 @@ async function openFurnishPanel(page: Page): Promise<void> {
   }
 }
 
+/** The one item panel (UX audit FU12), whatever the product and wherever it is sold. */
 export function getSelectedItemPanel(page: Page): Locator {
-  return page
-    .locator('[data-testid="selected-item-panel"], main > div')
-    .filter({ hasText: "Selected Item" })
-    .filter({ has: page.getByRole("button", { name: "View retailer" }) })
-    .first();
+  return page.getByTestId("selected-item-panel").first();
 }
 
 async function dismissBlockingDialogs(page: Page): Promise<void> {
