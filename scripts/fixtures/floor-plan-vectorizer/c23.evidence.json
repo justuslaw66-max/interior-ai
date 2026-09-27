@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.10.0",
+ "exporterVersion": "app-evidence-0.11.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -3960,6 +3960,8 @@
   "rooms": 9,
   "roomsWithheldAsIllegalGeometry": 0,
   "facesLeftOutAsSlivers": 3,
+  "leakedWallChannels": 0,
+  "swingsTooNarrowForADoor": 0,
   "windowsReadAsPartitions": 3,
   "openingsRejectedAsNotLeadingAnywhere": 4,
   "labelsOutsideRooms": [
