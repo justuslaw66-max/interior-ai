@@ -167,14 +167,20 @@ export async function openDesignAsPro(page: Page): Promise<void> {
   await page.goto("/design?mode=designer");
 }
 
+/** Shop: the Shopping list, one page over the canvas (UX audit FU8). */
 export async function openShopPanel(page: Page): Promise<void> {
   const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
   if (await visibleCartRailButton.isVisible().catch(() => false)) {
     await visibleCartRailButton.click();
-    return;
+  } else {
+    await selectEditorWorkspace(page, "editor-workflow-shop");
   }
+  await expect(page.getByTestId("shopping-list-page")).toBeVisible({ timeout: 20_000 });
+}
 
-  await selectEditorWorkspace(page, "editor-workflow-shop");
+/** The Shopping list's row for a placed product, found by the product's name. */
+export function shoppingListRow(page: Page, name: RegExp): Locator {
+  return page.getByTestId("shopping-list-row").filter({ hasText: name }).first();
 }
 
 function getCatalogSearchInput(page: Page): Locator {

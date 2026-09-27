@@ -18,10 +18,6 @@ const furnishFooterSource = readFileSync(
   join(process.cwd(), "components/editor/FurnishFooter.tsx"),
   "utf8"
 );
-const shoppingSource = readFileSync(
-  join(process.cwd(), "components/editor/ShoppingOverviewPanel.tsx"),
-  "utf8"
-);
 const readinessSource = readFileSync(
   join(process.cwd(), "lib/shopping-readiness.ts"),
   "utf8"
@@ -75,26 +71,8 @@ assert.doesNotMatch(
 );
 assert.match(furnishFooterSource, /formatSgd\(total\)/, "Furnish's room total should use the shared money format.");
 assert.match(furnishFooterSource, /data-testid="furnish-continue-to-shop"/, "Furnish's foot should lead on to Shop.");
-assert.match(
-  shoppingSource,
-  /data-testid="shopping-readiness-filters"/,
-  "Shopping overview should expose filter chips for readiness issues."
-);
-assert.match(
-  shoppingSource,
-  /data-testid=\{`shopping-readiness-badge-\$\{badge\.id\}`\}/,
-  "Shopping overview rows should show item-level readiness badges."
-);
-assert.match(
-  shoppingSource,
-  /data-testid="shopping-item-add-to-cart"/,
-  "Shopping overview rows should include a one-click add-to-cart action."
-);
-assert.match(
-  shoppingSource,
-  /Replace with shoppable/,
-  "Shopping overview rows should offer a shoppable replacement path."
-);
+// Shop is one Shopping list (UX audit FU8): products without a buy link are listed apart, as "Not sold
+// online yet", instead of carrying readiness badges, filters and add-to-cart (test-shop-page.tsx).
 assert.match(
   replacementSource,
   /export function buildShoppingReplacementSuggestions/,
@@ -114,21 +92,6 @@ assert.match(
   replacementSource,
   /price <= 0/,
   "Shopping replacements should require a positive price."
-);
-assert.match(
-  shoppingSource,
-  /data-testid="shopping-item-replacements"/,
-  "Bad shopping rows should show inline replacement suggestions."
-);
-assert.match(
-  shoppingSource,
-  /data-testid="shopping-replacement-swap"/,
-  "Replacement suggestions should support one-click swapping."
-);
-assert.match(
-  shoppingSource,
-  /data-testid="shopping-replacement-preview"/,
-  "Replacement suggestions should support placement preview."
 );
 assert.match(
   designPageSource,
@@ -371,8 +334,9 @@ for (const relativePath of [
   );
 }
 for (const relativePath of [
-  "components/CartSidebar.tsx",
-  "components/editor/ShoppingOverviewPanel.tsx",
+  "components/editor/shop/ShoppingListSection.tsx",
+  "components/editor/shop/ShoppingSummary.tsx",
+  "lib/shopping-list.ts",
   "lib/useDesignPageSelectionInspectorModel.ts",
 ]) {
   const source = readSource(relativePath);

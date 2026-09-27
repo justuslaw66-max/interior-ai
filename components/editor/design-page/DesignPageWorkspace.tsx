@@ -4,7 +4,7 @@ import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPa
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
 import { LocalBackupRecoveryDialog } from "@/components/editor/design-page/LocalBackupRecoveryDialog";
 import { CloudSaveConflictDialog } from "@/components/editor/design-page/CloudSaveConflictDialog";
-import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
+import { CanvasBehindPage, DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
 import { useDesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
@@ -473,7 +473,7 @@ export function DesignPageWorkspace() {
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
       <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
-        <DesignPageSceneRegion {...sceneRegionModel} />
+        <CanvasBehindPage covered={panelRegionModel.state.shopping !== null}><DesignPageSceneRegion {...sceneRegionModel} /></CanvasBehindPage>
         <DesignPageEditorChrome {...editorChromeModel} />
         {viewMode === "2d" &&
         editorMode === "adjust" &&

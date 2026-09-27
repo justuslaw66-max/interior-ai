@@ -40,42 +40,17 @@ export function buildDesignPagePanelRegistration({
   const floorPlanActions = floorPlanDocument.actions;
 
   const shoppingPanelModel = buildDesignPageShoppingPanelModel({
-    configuration: { designerTheme: configuration.designerTheme },
     state: {
-      overview: {
-        activeRoom: roomRead.activeRoomShoppingSummary,
-        activeRoomItems: roomRead.activeRoomShoppingItems,
-        catalogItems: importedModels.state.catalogItems,
-        rooms: roomRead.roomShoppingSummaries,
-        wholeHome: roomRead.wholeHomeShoppingSummary,
-        activeFilter: state.shopping.readinessFilter,
-      },
-      cart: {
-        items: room.items,
-        designId: state.document.designId,
-        plan: state.document.plan,
-        isGuest: !state.document.authenticated,
-      },
+      rooms: state.document.rooms,
+      style: state.editor.controls.style,
+      designId: state.document.designId,
+      isGuest: !state.document.authenticated,
+      canEdit: configuration.canEdit,
     },
     actions: {
-      overview: {
-        onSelectRoom: actions.navigation.selectRoom,
-        onGoFurnish: actions.navigation.goFurnish,
-        onAddActiveRoomCartReadyItems:
-          interactionActions.addActiveRoomCartReadyItems,
-        onSetItemInclude: interactionActions.setShoppingItemInclude,
-        onSwapShoppingItem: actions.shopping.swapItem,
-        onPreviewReplacement: actions.shopping.previewReplacement,
-        onFilterChange: actions.shopping.setReadinessFilter,
-      },
-      cart: {
-        onRemove: panelActions.removeShoppingItem,
-        onSetQty: interactionActions.setSelectedItemQuantity,
-        onSetInclude: interactionActions.setShoppingItemInclude,
-        onBulkSwap: actions.shopping.bulkSwap,
-        onShowUpgrade: actions.shopping.showUpgrade,
-        openGuestPrompt: actions.shopping.openGuestPrompt,
-      },
+      commitItemsToRoom: actions.shopping.commitItemsToRoom,
+      openGuestPrompt: actions.shopping.openGuestPrompt,
+      goFurnish: actions.navigation.goFurnish,
     },
   });
 

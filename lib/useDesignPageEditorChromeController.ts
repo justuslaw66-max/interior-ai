@@ -197,7 +197,7 @@ export function useDesignPageEditorChromeController({
         visible: !commandState.isClientPreview && state.betaStart.visible && !state.designPanelOpen,
         panel: state.betaStart.panel,
       },
-      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner, mode: commandState.editorMode },
+      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner && commandState.editorMode !== "buy", mode: commandState.editorMode },
     },
     configuration: {
       commandBar: configuration.commandBar,

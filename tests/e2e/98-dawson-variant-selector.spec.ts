@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { addCatalogDrawerItemToRoom, openCatalogPreview, openShopPanel } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview, openShopPanel, shoppingListRow } from "./variant-test-utils";
 
 async function readHeroSrc(page: Page, panelRoot = drawer(page)): Promise<string | null> {
   const heroImage = panelRoot.locator("img").first();
@@ -80,31 +80,24 @@ test.describe("98. Dawson Variant Selector Smoke", () => {
       .click();
     await expect(page.getByTestId("catalog-compare-tray")).toContainText(/Dawson Ottoman/i);
 
-    // Validate cart keeps selected variant identity.
+    // Validate the Shopping list keeps the selected product.
     await addCatalogDrawerItemToRoom(page);
     await openShopPanel(page);
-    const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
-    if (await autoFillButton.isVisible().catch(() => false)) {
-      await autoFillButton.click();
-    }
 
-    const cartRow = page
-      .locator('[data-testid="cart-item"]')
-      .filter({ hasText: /Dawson Ottoman/i })
-      .first();
-    const rowVisible = await expect(cartRow)
+    const shoppingRow = shoppingListRow(page, /Dawson Ottoman/i);
+    const rowVisible = await expect(shoppingRow)
       .toBeVisible({ timeout: 10000 })
       .then(() => true)
       .catch(() => false);
     if (!rowVisible) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping strict cart assertion because Dawson ottoman row was not present in this runtime",
+        description: "Skipping strict Shopping list assertion because the Dawson ottoman row was not present in this runtime",
       });
       return;
     }
 
-    await expect(cartRow).toContainText(/Dawson Ottoman/i);
+    await expect(shoppingRow).toContainText(/Dawson Ottoman/i);
   });
 
   test("Dawson Chaise Sofa left/right orientation switches update preview and dimensions", async ({ page }) => {

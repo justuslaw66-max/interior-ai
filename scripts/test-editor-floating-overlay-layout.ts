@@ -536,8 +536,8 @@ assert.match(
 
 assert.match(
   panelRegionSource,
-  /data-testid="shopping-dock"[\s\S]*md:w-\[18\.15rem\][\s\S]*md:left-20[\s\S]*md:left-4/,
-  "The panel region should keep Shop in the same left work-panel slot as Plan and Furnish."
+  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-9"/,
+  "Shop should be one page over the canvas at every width, from the command bar to the phone's step bar (UX audit FU8)."
 );
 
 assert.doesNotMatch(

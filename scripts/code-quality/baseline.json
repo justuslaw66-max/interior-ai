@@ -104,10 +104,6 @@
       "lines": 271,
       "limit": 250
     },
-    "components/CartSidebar.tsx": {
-      "lines": 1089,
-      "limit": 250
-    },
     "components/catalog/CatalogFilterDrawer.tsx": {
       "lines": 256,
       "limit": 250
@@ -298,10 +294,6 @@
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
       "lines": 667,
-      "limit": 250
-    },
-    "components/editor/ShoppingOverviewPanel.tsx": {
-      "lines": 640,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -505,7 +497,7 @@
       "limit": 400
     },
     "lib/design-page-panel-registration.ts": {
-      "lines": 483,
+      "lines": 458,
       "limit": 400
     },
     "lib/design-page-product-data.ts": {
@@ -1470,16 +1462,6 @@
         "maximum": 220
       }
     },
-    "components/CartSidebar.tsx": {
-      "overlongFunctions": {
-        "count": 6,
-        "maximum": 978
-      },
-      "complexFunctions": {
-        "count": 3,
-        "maximum": 44
-      }
-    },
     "components/catalog/CatalogActiveFilterChips.tsx": {
       "complexFunctions": {
         "count": 1,
@@ -1620,12 +1602,6 @@
       "complexFunctions": {
         "count": 1,
         "maximum": 34
-      }
-    },
-    "components/editor/design-page/DesignPagePanelRegion.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 78
       }
     },
     "components/editor/design-page/DesignPagePlanCanvasOverlays.tsx": {
@@ -2308,16 +2284,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 213
-      }
-    },
-    "components/editor/ShoppingOverviewPanel.tsx": {
-      "overlongFunctions": {
-        "count": 3,
-        "maximum": 589
-      },
-      "complexFunctions": {
-        "count": 2,
-        "maximum": 60
       }
     },
     "components/editor/useConsumerFloorPlanImportSession.ts": {
@@ -3253,13 +3219,13 @@
     "lib/design-page-panel-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 474
+        "maximum": 449
       }
     },
     "lib/design-page-panel-workspace-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 198
+        "maximum": 191
       }
     },
     "lib/design-page-plan-canvas-overlays.ts": {

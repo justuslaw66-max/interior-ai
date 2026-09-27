@@ -3,6 +3,7 @@ import {
   addCatalogDrawerItemToRoom,
   openCatalogPreview,
   openShopPanel,
+  shoppingListRow,
 } from "./variant-test-utils";
 
 const HUGG_BASALT_CLOSED_ID =
@@ -72,14 +73,10 @@ test.describe("100. Hugg Catalog Smoke", () => {
 
     await openShopPanel(page);
 
-    await expect(page.getByTestId("shopping-overview-panel")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Shopping overview")).toBeVisible();
-    await expect(page.getByText("Current room")).toBeVisible();
-    await expect(page.getByText("Whole home")).toBeVisible();
-    const shoppingBom = page.getByTestId("shopping-room-bom-list");
-    await expect(shoppingBom).toBeVisible({ timeout: 10000 });
-    await expect(shoppingBom.getByText(/Hugg Nesting Square Coffee Table/i)).toBeVisible();
-    await expect(shoppingBom.getByText(/Black/i)).toBeVisible();
+    // The Shopping list lists the whole design by retailer (UX audit FU8), with each product's variant.
+    const huggRow = shoppingListRow(page, /Hugg Nesting Square Coffee Table/i);
+    await expect(huggRow).toBeVisible({ timeout: 10000 });
+    await expect(huggRow.getByTestId("shopping-list-row-detail")).toContainText(/Black/i);
 
     await expect(page.getByRole("button", { name: "2D", exact: true }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: "2D", exact: true }).first().click({ force: true });

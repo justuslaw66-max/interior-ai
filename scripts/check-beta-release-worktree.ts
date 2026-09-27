@@ -97,7 +97,6 @@ const SHARED_UI_APP_SHELL_PREFIXES = [
   "app/layout.tsx",
   "components/AdminTestPanel.tsx",
   "components/admin/",
-  "components/CartSidebar.tsx",
   "components/ConfirmDialog.tsx",
   "components/CopyFallbackDialog.tsx",
   "components/DeleteAllDesignsButton.tsx",

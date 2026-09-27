@@ -946,7 +946,7 @@
     },
     {
       "id": "ci.retailer-confirmation-accessibility",
-      "invariant": "Retailer multi-tab confirmation owns one typed, generation-bound modal lifecycle across global and retailer-group actions while preserving exact affiliate counting, tracking, opening, cancellation, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
+      "invariant": "Buying at a retailer from the Shopping list owns one buy list per shop: a shop's only product opens directly, and every Open opens exactly one tab, blank at the click and then sent to the tracked, fail-open address, while preserving grouping by website, quantities and sets, missing links, blocked tabs, design changes, unmount, newer-dialog ownership, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:retailer-confirmation-accessibility-required",
@@ -965,64 +965,59 @@
       ],
       "requiredTests": [
         {
-          "id": "retailer-confirmation.global-pointer-lifecycle",
+          "id": "retailer-confirmation.buy-list-pointer-lifecycle",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Global pointer lifecycle owns modal cancellation and exact-once continuation"
+          "title": "Buy at a shop with several products opens its buy list and pointer dismissal returns focus to Buy"
         },
         {
-          "id": "retailer-confirmation.global-keyboard-fail-open",
+          "id": "retailer-confirmation.buy-list-keyboard-lifecycle",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Global keyboard lifecycle keeps tracking failure fail-open without duplicate windows"
+          "title": "Buy and Open work from the keyboard and Escape returns focus to Buy"
         },
         {
-          "id": "retailer-confirmation.group-pointer-same-tab",
+          "id": "retailer-confirmation.open-one-tab-per-click",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Retailer-group pointer lifecycle preserves same-tab first-link navigation"
+          "title": "Each Open opens one tracked tab for its product and ticks it"
         },
         {
-          "id": "retailer-confirmation.group-keyboard-restoration",
+          "id": "retailer-confirmation.tracking-fail-open",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
+          "title": "A failed click record still opens the retailer's address"
         },
         {
-          "id": "retailer-confirmation.count-zero",
+          "id": "retailer-confirmation.single-product-direct",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting zero tabs keeps checkout disabled"
+          "title": "A shop with one product opens it directly without the buy list"
         },
         {
-          "id": "retailer-confirmation.count-one",
+          "id": "retailer-confirmation.nothing-to-buy",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting one tab opens directly without confirmation"
+          "title": "Nothing to buy offers the way back to Furnish and no Buy"
         },
         {
-          "id": "retailer-confirmation.count-three",
+          "id": "retailer-confirmation.missing-link",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting three tabs opens directly without confirmation"
+          "title": "A product without a buy link is listed apart and never opened"
         },
         {
-          "id": "retailer-confirmation.count-four",
+          "id": "retailer-confirmation.quantities-and-sets",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting four tabs opens confirmation and supports cancellation"
+          "title": "The buy list says how many to add and a set counts once"
         },
         {
-          "id": "retailer-confirmation.count-bundle-exclusion-missing",
+          "id": "retailer-confirmation.shops-by-website",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves bundle exclusion and missing-link behavior"
+          "title": "A shop's two spellings are one shop and each shop has its own Buy"
         },
         {
-          "id": "retailer-confirmation.count-duplicate",
+          "id": "retailer-confirmation.blocked-tab",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves duplicate URLs without deduplication"
-        },
-        {
-          "id": "retailer-confirmation.count-unavailable-row",
-          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves unavailable affiliate and row-open behavior"
+          "title": "A blocked tab is explained and its product is not ticked"
         },
         {
           "id": "retailer-confirmation.scope-route-unmount",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Scope route and unmount changes cancel stale continuation and restoration"
+          "title": "Design changes and unmount close the buy list without opening anything"
         },
         {
           "id": "retailer-confirmation.newer-dialog",
@@ -1032,12 +1027,12 @@
         {
           "id": "retailer-confirmation.audience-parity",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Guest Consumer and Pro receive the same affiliate confirmation contract"
+          "title": "Guest Consumer and Pro receive the same buy list"
         },
         {
           "id": "retailer-confirmation.responsive-visual",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Desktop and 390x844 global and group prompts contain actions focus rings and IDs"
+          "title": "Desktop and 390x844 buy lists fit the screen with 44px actions and focus rings"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

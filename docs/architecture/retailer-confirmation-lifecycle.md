@@ -1,130 +1,108 @@
 # Retailer confirmation lifecycle
 
-## Classification and bounded source
+## Re-pinned in UX phase 3c-2: buying at a retailer from the Shopping list
 
-CH-0015G classifies the CartSidebar multi-tab Retailer Confirmation as a
-**MODAL_DIALOG**. The bounded branch
-`fix/ch-0015-retailer-confirmation-accessibility` starts from exact integration
-source `d76994a778db99cb57834ef6bb62db5e8705a478`, tree
-`ba00cb930778c84a4879d70274182868eb9c428f`. It changes only the Retailer
-Confirmation caller, its local dialog composition and typed session adapter,
-focused required/static coverage, gate wiring, ratchet baseline decreases, and
-records. Shared dialog primitives, Guest Save, Shopify checkout, catalog data,
-authentication, persistence, APIs, schemas, dependencies, and unrelated
-overlays are unchanged.
+Shop is one Shopping list over the canvas (audit findings FU7 and FU8). It lists
+every product in the design, grouped by the shop that sells it, with one total
+and one "Buy at <shop>" per shop. `CartSidebar`, `ShoppingOverviewPanel`,
+`RetailerConfirmationDialog` and `lib/retailer-confirmation.ts` are gone.
 
-The two modal entry classes are:
+CH-0015G's gate keeps its id (`ci.retailer-confirmation-accessibility`), its
+owner (`retailer`, the development server), its files, package scripts and CI
+step, as the My designs gate did in 3b-3b. It now owns the buy list.
 
-- the global `Open retailer links` action; and
-- each retailer-group `Buy retailer` action.
+### Why a buy list, not a burst of tabs
 
-Per-row `Open` remains a direct action and never enters the multi-tab modal.
+Browsers let one click open one tab. The old Cart opened up to N tabs from one
+click, 350 ms apart, behind a confirmation at four or more; after the first,
+pop-up blockers stop the rest. J chose (Q2, 27 Sep) one list instead:
 
-## Reproduced defect
+- a shop with **one** product: "Buy at <shop>" opens that product directly;
+- a shop with **several**: "Buy at <shop>" opens that shop's buy list, a modal
+  with one row per product, its own **Open**, how many to add ("Add 3 to your
+  cart"; a set counts once), progress ("1 of 3 opened") and **Done**;
+- each Open opens exactly one tab. Opened products stay ticked while Shop is
+  open, so reopening the list keeps the person's place; opening one again is
+  allowed and opens one more tab.
 
-Before production or expectation changes, the actual CartSidebar prompt was
-exercised with one, three, and four-tab fixtures. One and three tabs opened
-directly. Four tabs rendered a visual custom overlay, but its root had no
-dialog role, accessible name, or `aria-modal`; focus remained on the obscured
-global or retailer-group opener. The background was neither inert nor
-`aria-hidden`, Tab reached background actions, Escape and backdrop activation
-did not dismiss, and Cancel left focus on `body`. Continue still produced four
-tracking requests and four windows, demonstrating that the defect was modal
-ownership rather than affiliate-domain behavior.
+### Grouping and counts (`lib/shopping-list.ts`)
 
-Focused screenshot inspection later found a second ownership problem: a
-`position: fixed` dialog rendered inside CartSidebar's `max-height`/`overflow`
-aside was clipped to that scrolling box. The local dialog is therefore a
-sibling of the aside, not its descendant. The required responsive test locks
-the overlay to the complete viewport and the panel/actions to 16px mobile
-gutters for both global and retailer-group entry.
+- Shops are grouped by website: the retailer URL's host without `www.`. Two
+  spellings of one shop ("Castlery", "Castlery Singapore") are one shop, named
+  by the shortest spelling, without a trailing "Singapore" or "SG".
+- Each placed product is one line, in room and placement order; a shop's
+  section spans rooms, with the room on each row.
+- How many to add is the line's quantity, clamped to 1–99; a set bought as a
+  purchase option counts once and opens the set's own page.
+- A product without a buy link is listed apart, under "Not sold online yet",
+  and never opened. Products sold through Shopify are listed under "Checkout
+  here", which stays hidden until a design has one (J, Q5).
 
-## Preserved count, track, and open contract
+### Opening one tab (`lib/shopping-list-buy.ts`)
 
-The count and opening rules remain caller-owned in CartSidebar:
+1. `window.open("", "_blank")` runs at the click, while it still counts as the
+   person's, so no pop-up blocker stops it.
+2. A blocked tab (`null`) records no click. The list says why, in a status line
+   that is always present while the list is open: "Your browser blocked the new
+   tab. Allow pop-ups for this site, then open the product again." The product
+   stays unticked. A later successful Open clears the message.
+3. Otherwise the tab's `opener` is cleared, then the click is recorded:
+   `POST /api/track/click` with `designId`, `productId` and `variantId`. A
+   returned `clickKey` is added to the address with `utm_source=interior-ai` and
+   `utm_medium=affiliate`. If recording fails, the tab still goes to the
+   retailer's own address (fail-open).
+4. The tab is sent to that address, and the product is ticked.
 
-- only included affiliate lines contribute to global/group requests;
-- a line without `buyUrl` contributes zero tabs;
-- an ordinary line contributes its clamped quantity;
-- a bundle line contributes one link even when its bundle quantity is larger;
-- unavailable affiliate catalog variants retain the existing CartSidebar
-  behavior and are not silently excluded;
-- duplicate URLs and duplicate lines are not deduplicated;
-- zero purchasable links retain the existing warning;
-- at most three tabs open directly, while four or more require confirmation;
-  and
-- row `Open` bypasses the multi-tab threshold.
+### Modal and focus contract (`ShoppingBuyListDialog`)
 
-Continue uses the exact captured line snapshot and same-tab preference from
-the session. For each link, the existing `/api/track/click` payload remains
-`designId`, `productId`, and `variantId`; a successful `clickKey` is appended
-with `utm_source=interior-ai` and `utm_medium=affiliate`. Tracking failure
-retains fail-open navigation to the original affiliate URL. New-tab mode keeps
-`window.open(url, "_blank", "noopener,noreferrer")` and 350ms pacing. Same-tab
-mode opens the first link and returns. No merchant or paid external service is
-used by focused tests.
+The buy list composes `EditorDialog` directly and is portaled to the page body,
+because the Shop page is a layer of its own. Closed, it renders nothing. Open,
+it is one named `role="dialog"` with `aria-modal="true"`; focus starts on its
+close button; Tab and Shift+Tab stay inside; Escape, the backdrop, the close
+button and Done close it; the rest of the page is inert and hidden from
+assistive technology. Every action is at least 44px tall on a 390×844 phone and
+shows a focus ring.
 
-## Typed session and exact-once ownership
+Closing returns focus by id: the shop's Buy button
+(`shopping-buy-<website>`), or, when that button has gone, the current step's
+tab (`editor-command-workspace-action`). The focus plan is fixed for each
+opening. When the shop's last product leaves the design, the list closes and
+focus goes to the fallback. When Shop unmounts, the list goes without
+restoring focus, and nothing opens. A newer registered dialog takes Escape and
+focus first; closing it returns to the buy list.
 
-`RetailerConfirmationSession` captures generation, global/group semantic
-opener, title, cloned lines, tab count, same-tab preference, cart/design scope
-key, and a continuation-consumed bit. A canonical NFKC/trimmed/collapsed/
-lowercase retailer identity plus an exact Unicode-code-point discriminator
-produces deterministic, collision-free encoded group-action IDs without
-changing preserved raw retailer grouping.
-The scope key binds design identity plus instance/product/variant, quantity,
-include, purchase-option, bundle group/role, and bundle quantity fields.
+Stable ids: `shopping-buy-list-dialog`, each `shopping-buy-<website>`, and the
+test ids `shopping-buy-list`, `shopping-buy-list-close`, `shopping-buy-list-row`,
+`shopping-buy-list-open`, `shopping-buy-list-progress`,
+`shopping-buy-list-notice` and `shopping-buy-list-done`.
 
-Four or more tabs create a fresh generation. A newer request consumes and
-supersedes the old generation. Same-tab changes update only the matching
-current generation. Continue synchronously validates and consumes the current
-generation, clears modal state, then starts the captured opening operation.
-Repeated activation, a stale render callback, or an older opener cannot run it
-again. Cancel, Escape, backdrop, close, cart/design scope change, and unmount
-consume without continuation. Route replacement unmounts the owner and cannot
-restore or execute stale work.
+### Required owner
 
-## Modal and focus contract
-
-The local `RetailerConfirmationDialog` directly composes `EditorDialog`; it
-does not reuse Guest Save or `ConfirmDialog` and does not modify the shared
-primitive. Closed state has no dialog/action DOM. Open state has one named
-`role="dialog"`, `aria-modal="true"`, a visible close-button initial focus,
-deterministic Tab/Shift+Tab containment, topmost Escape/backdrop ownership, and
-inert plus accessibility-hidden background branches. Retailer-local `focus`
-and `focus-visible` rings cover close, same-tab, Cancel, and Continue in both
-Chromium and WebKit.
-
-Cancellation returns by semantic identity, never a captured DOM node. Global
-entry resolves the current global action first. Group entry resolves the
-current canonical group action first. Both then fall back to the current Cart
-collapse/expand action. The shared resolver rejects missing, disconnected,
-hidden, inert, disabled, obscured, or superseded targets. Explicit Continue
-does not require return because opening disables the Cart actions and may
-navigate away. A newer registered dialog becomes the topmost owner; closing it
-resumes Retailer Confirmation without allowing stale dismissal or focus
-restoration.
-
-Stable IDs cover the dialog, global and canonical group openers, Cart
-fallback, close, same-tab, Cancel, and Continue actions.
-
-## Required owner and rollback
-
-`ci.retailer-confirmation-accessibility` is the sole merge-required browser
-owner. Its static prerequisite builds the actual CartSidebar fixture and locks
-typed state, exact counting boundaries, snapshot/scope/exact-once behavior,
-stable IDs, unchanged tracking/UTM/pacing, direct row behavior, and unchanged
-Guest Shopify call-site ownership. Twelve stable cases execute once in
-Chromium and WebKit: 24 required records, one worker, zero retries, skips,
-annotations, filters, shards, focused tests, or timeout increases. Synthetic
-boundaries cover tracking and safe same-origin destinations. The gate is
-registered after the strict build and outside advisory Full E2E/Gate A3
-discovery. Derived inventory is 26 gates / 376 classified sources; its
-two-script package closure is SHA-256
+`ci.retailer-confirmation-accessibility` stays the sole merge-required browser
+owner. Its static prerequisite (`test:retailer-confirmation-static`) builds the
+harness bundle and runs `scripts/test-retailer-confirmation-static.tsx`, which
+renders the buy list and locks the ids, grouping and counts, and the order of
+opening, clearing the opener, recording and fail-open. The harness
+(`tests/required/fixtures/retailer-confirmation-harness.tsx`) mounts the real
+`ShopStep` with synthetic products sold by synthetic shops on reserved `.test`
+hosts; `window.open` is replaced by a tab that records where it is sent, so no
+merchant is contacted. Fourteen tests run once in Chromium and WebKit: 28
+required records, one worker, no retries, skips, annotations, filters, shards,
+focused tests or timeout increases. The package closure is unchanged: two
+scripts, SHA-256
 `808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836`.
 
-Rollback is one focused commit revert, followed by the Retailer static and
-required owners, Cart/Guest and commerce guards, critical checks, required
-truthfulness, design cleanup, code quality, Phase 8, and strict build. No data,
-schema, dependency, auth, catalog, merchant, deployment, integration-branch,
-or external-service rollback is required.
+Rollback is a revert of the 3c-2 Shop commit, followed by the Retailer static
+and required owners, the Guest Save owner, the commerce guards, design cleanup,
+code quality, Phase 8 and the strict build. No data, schema, dependency, auth,
+catalogue, merchant or deployment rollback is needed.
+
+## History: CH-0015G, the Cart's multi-tab confirmation
+
+CH-0015G made the Cart's four-or-more-tab confirmation a real modal dialog: it
+had had no dialog role, name or `aria-modal`, left focus on the obscured
+opener, and let Tab reach the page behind it. It kept the Cart's counting (at
+most three tabs direct, four or more confirmed, bundles counting once, row
+Open bypassing the threshold), tracking, 350 ms pacing and same-tab option, and
+added a typed, generation-bound session so Continue ran exactly once. UX phase
+3c-2 replaced that flow with the buy list above.

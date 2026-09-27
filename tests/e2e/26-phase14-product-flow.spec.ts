@@ -89,18 +89,14 @@ test.describe("26. Phase 14 Product Lifecycle", () => {
       { timeout: 30_000 },
     );
 
-    const cart = page.getByTestId("cart-panel");
-    await expect(async () => {
-      if (await cart.isVisible().catch(() => false)) return;
-      await openShopPanel(page);
-      await expect(cart).toBeVisible({ timeout: 2_000 });
-    }).toPass({ timeout: 30_000 });
-    const autoFill = page.getByRole("button", { name: "Auto-fill cart from room" });
-    if (await autoFill.isVisible().catch(() => false)) await autoFill.click();
-    await expect(cart).toBeVisible();
-    await expect(cart).toContainText("Hugg Nesting Square Coffee Table");
-    await expect(cart).toContainText("Retailer link ready");
-    await expect(page.getByTestId("checkout-affiliate")).toBeEnabled();
+    // Shop is the Shopping list (UX audit FU8): the product is listed under its retailer, with Buy.
+    await openShopPanel(page);
+    const shoppingList = page.getByTestId("shopping-list-page");
+    await expect(shoppingList).toContainText("Hugg Nesting Square Coffee Table");
+    await expect(
+      page.getByTestId("shopping-list-section").filter({ hasText: "Hugg Nesting Square Coffee Table" })
+    ).toHaveAttribute("data-section", "castlery.com");
+    await expect(page.locator('[data-testid="shopping-buy"][data-retailer="castlery.com"]')).toBeEnabled();
 
     const liveResponse = await page.request.get(`/api/catalog/products/${PRODUCT_ID}/live`);
     expect(liveResponse.status()).toBe(200);
