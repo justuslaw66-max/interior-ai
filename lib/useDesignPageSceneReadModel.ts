@@ -68,11 +68,6 @@ export type UseDesignPageSceneReadModelInput = {
       stackedFloorView: boolean;
       hiddenFloorLevels: number[];
       selectedPlanRoomId: string | null;
-      /**
-       * The first visit's untouched room, for consumers: it isn't selected on arrival, so the
-       * inspector waits for a real selection and the size stays in Plan's room card (FR5).
-       */
-      deferStarterRoomSelection?: boolean;
     };
     editor: {
       viewMode: EditorViewMode;
@@ -100,7 +95,7 @@ export function useDesignPageSceneReadModel({
       roomDepth,
       stackedFloorView,
       hiddenFloorLevels,
-      selectedPlanRoomId, deferStarterRoomSelection = false,
+      selectedPlanRoomId,
     },
     editor: { viewMode },
     ai: { pendingProposal },
@@ -143,7 +138,7 @@ export function useDesignPageSceneReadModel({
     if (activeRoomChanged) {
       previousSelectedPlanActiveRoomIdRef.current = activeRoomId;
       setSelectedPlanRoomId(
-        activeRoomId && roomIds.has(activeRoomId) && !deferStarterRoomSelection ? activeRoomId : null
+        activeRoomId && roomIds.has(activeRoomId) ? activeRoomId : null
       );
       return;
     }
@@ -151,9 +146,9 @@ export function useDesignPageSceneReadModel({
     setSelectedPlanRoomId((currentRoomId) =>
       currentRoomId && !roomIds.has(currentRoomId) ? null : currentRoomId
     );
-  }, [designSnapshot.activeRoomId, deferStarterRoomSelection, housePlanRooms, setSelectedPlanRoomId]);
+  }, [designSnapshot.activeRoomId, housePlanRooms, setSelectedPlanRoomId]);
   // Plan draws the selected room in focus. With nothing selected, a plan's only room stays in focus,
-  // so the first visit's room (not selected on arrival, FR5) keeps its sizes, door and window labels.
+  // so it keeps its sizes and its door and window labels (after Escape, say).
   const planFocusRoomId = selectedPlanRoomId ?? (housePlanRooms.length === 1 ? housePlanRooms[0].id : null);
 
   const houseRoomById = useMemo(
