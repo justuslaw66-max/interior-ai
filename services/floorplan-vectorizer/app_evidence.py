@@ -15,7 +15,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.11.0"
+VERSION = "app-evidence-0.12.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -281,6 +281,12 @@ def outline_wall_cells(m, gray, known=None):
 
 LEAK_DISC_MM = 420.0      # as wide as the widest wall: a channel is where no disc this wide fits
 NARROW_SWING_MM = float(os.environ.get("AE_NARROW_SWING", 550))   # no door swing is narrower (0 = rule off)
+CASEMENT_RATIO = float(os.environ.get("AE_CASEMENT_RATIO", 0.75))   # two leaves this close in size: a casement window (> 1 = rule off)
+SHARED_SPAN = os.environ.get("AE_SHARED_SPAN", "1") != "0"          # one span for an opening both its rooms cut their sides at
+FOLD_MIN_MM = float(os.environ.get("AE_FOLD_MIN", 150))             # no folding door is narrower (a scrap of the symbol; 0 = rule off)
+PANELS_IN_WALL = os.environ.get("AE_PANELS_IN_WALL", "1") != "0"    # "staggered strokes" must be panels in the wall, else a window
+SLIDE_OUT_MIN_MM = float(os.environ.get("AE_SLIDE_OUT_MIN", 2400))  # a sliding "door" to the outside narrower than this is a window (0 = off)
+MEET_AT_OPENING = os.environ.get("AE_MEET", "1") != "0"             # two rooms whose sides miss each other by a wall's width meet at their opening
 
 
 def leaked_channels(m, ink, free, n, lab, maxdt):
@@ -1018,6 +1024,17 @@ def _line_broken_over(m, k, g, u0, u1, band, T):
     return False
 
 
+def _panels_in_wall(part, g, c, L, mm):
+    """two strokes of the gap's own wall (between its faces), 15 - 100 mm apart and staggered along it: sliding panels"""
+    lo_, hi_ = g.get("lo", c) - 2.0, g.get("hi", c) + 2.0
+    wall_ = [l for l in part if lo_ <= l["c"] <= hi_]
+    for i_, l1 in enumerate(wall_):
+        for l2 in wall_[i_ + 1:]:
+            if 15 <= abs(l1["c"] - l2["c"]) * mm <= 100 and (abs(l1["a"] - l2["a"]) >= 0.08 * L or abs(l1["b"] - l2["b"]) >= 0.08 * L):
+                return True
+    return False
+
+
 def classify_gaps(m, k, gaps):
     """door / window / folding door / passage / hidden wall, from what is drawn in the gap"""
     T = float(m["wall_thickness_px"]); mm = pseudo_scale(m)
@@ -1156,7 +1173,8 @@ def classify_gaps(m, k, gaps):
             out.append(dict(g, kind="door", operation="sliding", hinge="none", swing_side=0, confidence=0.6, why="three or more staggered panel strokes")); continue
         if len(part) >= 2 and cover.mean() >= 0.85 and 700 <= L * mm <= 5200 and len({round(l["c"]) for l in part}) >= 2 and \
                 tipped and g.get("on_wall_line"):
-            out.append(dict(g, kind="door", operation="sliding", hinge="none", swing_side=0, confidence=0.55, why="staggered strokes between two wall ends")); continue
+            out.append(dict(g, kind="door", operation="sliding", hinge="none", swing_side=0, confidence=0.55, why="staggered strokes between two wall ends",
+                            panels=_panels_in_wall(part, g, c, L, mm))); continue
         ends_ok = _end_face(k, o, c, a - 2, T) and _end_face(k, o, c, b_ + 1, T)
         if L * mm <= 500:
             if _end_face(k, o, c, a - 2, T) or _end_face(k, o, c, b_ + 1, T):
@@ -1784,6 +1802,42 @@ def _legal_outline(r, T):
 def attach_openings(m, rooms, openings):
     """cut every room side where a door / window / passage lies on it; one side = one kind"""
     T = float(m["wall_thickness_px"])
+    def hosts_on(s_, a, b):
+        o = "v" if s_["axis"] == 0 else "h"; al = 1 if o == "v" else 0
+        lo, hi = sorted((a[al], b[al]))
+        for g in openings:
+            if g["kind"] == "wall" or g["o"] != o or abs(g["c"] - s_["coord"]) > max(T, 0.5 * s_["t"] + 0.5 * T):
+                continue
+            if min(hi, g["b"]) - max(lo, g["a"]) >= 0.6 * (g["b"] - g["a"]):
+                yield g, lo, hi
+    # An opening between two rooms is cut into BOTH their sides.  Where the two sides end at different places (one room's
+    # corner a few pixels short of the other's, a balcony narrower than the living-room wall it opens off), each room
+    # would cut its own stretch and the app would get two openings - two walls, two doors - for one.  Both take the stretch
+    # the two sides have in common.
+    span = {}; mid_line = {}
+    if SHARED_SPAN:
+        seen_h = {}
+        for r in rooms:
+            n = len(r["pts"])
+            for i in range(n):
+                s_ = r["sides"][i]
+                if "axis" not in s_:
+                    continue
+                pa = r["pts"][i]; perp_ = pa[0] if s_["axis"] == 0 else pa[1]
+                for g, lo, hi in hosts_on(s_, r["pts"][i], r["pts"][(i + 1) % n]):
+                    seen_h.setdefault(id(g), (g, []))[1].append((lo, hi, perp_, id(r)))
+        for g, hs in seen_h.values():
+            if len(hs) >= 2:
+                A = max([g["a"]] + [h[0] for h in hs]); B = min([g["b"]] + [h[1] for h in hs])
+                if B - A >= 0.6 * (g["b"] - g["a"]):
+                    span[id(g)] = (A, B)
+                # The two rooms' sides a wall's width apart instead of on one centre line (a door between two walls that do
+                # not line up, a jamb notch taken for the face): each room would cut its own copy of the opening, and the
+                # app would build two walls with two doors in them.  The opening is put on the line half way between, and
+                # each room reaches it with a short stub of wall at either jamb.
+                perps = sorted({round(h[2], 2) for h in hs})
+                if MEET_AT_OPENING and len(hs) == 2 and hs[0][3] != hs[1][3] and 2.0 <= perps[-1] - perps[0] <= 1.6 * T and id(g) in span:
+                    mid_line[id(g)] = 0.5 * (perps[0] + perps[-1])
     for r in rooms:
         n = len(r["pts"]); pts, meta = [], []
         for i in range(n):
@@ -1797,7 +1851,8 @@ def attach_openings(m, rooms, openings):
                         continue
                     ov = min(hi, g["b"]) - max(lo, g["a"])
                     if ov >= 0.6 * (g["b"] - g["a"]):
-                        cuts.append((max(lo, g["a"]), min(hi, g["b"]), g))
+                        A, B = span.get(id(g), (g["a"], g["b"]))
+                        cuts.append((max(lo, A), min(hi, B), g))
             cuts.sort(key=lambda c_: c_[0])
             if not cuts:
                 pts.append(a); meta.append({"kind": "wall", "t": s_["t"], "opening": None}); continue
@@ -1809,6 +1864,14 @@ def attach_openings(m, rooms, openings):
                 p0 = list(a); p0[al] = u0; p1 = list(a); p1[al] = u1
                 if abs(p0[al] - cur[al]) > 1.0:
                     pts.append(cur); meta.append({"kind": "wall", "t": s_["t"], "opening": None})
+                ml = mid_line.get(id(g))
+                if ml is not None and abs(p0[1 - al] - ml) > 0.25:
+                    q0 = list(p0); q0[1 - al] = ml; q1 = list(p1); q1[1 - al] = ml
+                    pts.append(p0); meta.append({"kind": "wall", "t": s_["t"], "opening": None})               # stub to the shared line
+                    pts.append(q0); meta.append({"kind": g["kind"], "t": g.get("t", s_["t"]), "opening": g})
+                    pts.append(q1); meta.append({"kind": "wall", "t": s_["t"], "opening": None})               # and back
+                    cur = p1
+                    continue
                 pts.append(p0); meta.append({"kind": g["kind"], "t": g.get("t", s_["t"]), "opening": g})
                 cur = p1
             if abs(b[al] - cur[al]) > 1.0:
@@ -2124,7 +2187,7 @@ def build(m, gray=None):
                 n_tot += 1
                 n_hit += 1 if max([b_ - a_ for a_, b_ in _runs(line > 0)] or [0]) >= 0.5 * T else 0
         return n_tot > 0 and n_hit >= 0.6 * n_tot
-    bad = []; partitions = 0; narrow_swings = 0
+    bad = []; partitions = 0; narrow_swings = 0; casements = 0; scraps = 0; slide_windows = 0; not_panels = 0
     def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
         labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
         return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
@@ -2143,6 +2206,40 @@ def build(m, gray=None):
                 g.update(kind="wall", operation=None, confidence=0.45, why="a swing too narrow for a door between two rooms: a cupboard door or a fixture")
             narrow_swings += 1
             continue
+        # Strokes along the whole gap that are no sliding panels: the panels of a sliding door lie in the thickness of the
+        # wall, a panel's width apart (15 - 100 mm), overlapping end to end.  Two strokes of one length out beside the wall
+        # (a sash, a laundry rack, the outline of an appliance) or the two faces of a thin wall are a window - or, between
+        # two named indoor rooms, a partition drawn thin.  (The gap stays closed: only what closes it changes.)
+        if g["kind"] == "door" and g.get("operation") == "sliding" and g.get("panels") is False and PANELS_IN_WALL:
+            if None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
+                g.update(kind="wall", operation=None, confidence=0.5, why="strokes along the gap that are no sliding panels, between two named rooms: a partition drawn thin")
+            else:
+                g.update(kind="window", operation="fixed", hinge="none", swing_side=0, confidence=0.5, why="strokes along the gap that are no sliding panels: a window")
+            not_panels += 1
+            continue
+        # Two leaves of one size hung from the two jambs of a gap in an outer wall are a casement window (the bedroom
+        # windows of the HDB plans: leaf radii within 12 % of each other).  A double entrance is a main leaf with a half
+        # leaf or a gate beside it (radii 0.2 - 0.4 of each other).
+        if g["kind"] == "door" and g.get("operation") == "swing" and g.get("handing") == "double" and None in bt and len(g.get("arcs", [])) == 2:
+            r1, r2 = (float(m["arcs"][i_]["r"]) for i_ in g["arcs"])
+            if min(r1, r2) >= CASEMENT_RATIO * max(r1, r2):
+                g.update(kind="window", operation="fixed", hinge="none", handing="unknown", swing_side=0, confidence=min(g.get("confidence", 0.8), 0.7),
+                         why="two leaves of one size from the two jambs, on an outer wall: a casement window")
+                casements += 1
+                continue
+        # a scrap of a folding-door symbol beside the door itself (h2's entrance gate): narrower than any leaf
+        if g["kind"] == "door" and g.get("operation") == "folding" and (g["b"] - g["a"]) * mm < FOLD_MIN_MM:
+            g.update(kind="wall", operation=None, confidence=0.45, why="narrower than any folding leaf: a scrap of the symbol")
+            scraps += 1
+            continue
+        # Sliding panels in an OUTER wall narrower than a balcony door are a sliding window: the way out of a flat is its
+        # entrance door, and a sliding door to the outside leads onto a balcony, 2.4 m wide or more, that did not close.
+        # (Exported as a fixed window: the app allows moving operations on doors and gates only.)
+        if g["kind"] == "door" and g.get("operation") == "sliding" and None in bt and bt != [None, None] and (g["b"] - g["a"]) * mm < SLIDE_OUT_MIN_MM:
+            g.update(kind="window", operation="fixed", hinge="none", swing_side=0, confidence=min(g.get("confidence", 0.6), 0.55),
+                     why="sliding panels in an outer wall, narrower than a door onto a balcony: a sliding window")
+            slide_windows += 1
+            continue
         # Two or three parallel lines between two named indoor rooms are a lightweight partition drawn in outline (the
         # bedroom / kitchen wall on HDB plans), not a window: a window has the outdoors, or a space without a name, on one side.
         if g["kind"] == "window" and None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
@@ -2156,7 +2253,7 @@ def build(m, gray=None):
         openings = [g for g in openings if not any(g is d_ for d_ in bad)]
         closed, rooms = make_rooms(openings)
         settle(rooms, openings)
-    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings
+    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings; m["_casements"] = casements; m["_fold_scraps"] = scraps; m["_slide_windows"] = slide_windows; m["_not_panels"] = not_panels
     # A face under 1.5 m2 that carries no label is not a room: the inside of a shaft, the strip behind a wardrobe
     # drawn against a wall, a notch between a column and a cupboard.  The smallest named space on any plan seen is a
     # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
@@ -2281,8 +2378,20 @@ def build(m, gray=None):
     for f_ in fixtures:
         x0, y0, x1, y1 = f_["box"]; r = S.ratio((x0 + x1) / 2, (y0 + y1) / 2)
         sem_fix.append({"kind": f_["kind"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "bbox": S.bbox(x0, y0, x1, y1), "confidence": f_["confidence"], "evidenceKind": "vectorizer"})
-    walls_out, seen_w = [], {}
+    walls_out, seen_w, seen_g = [], {}, {}
     rooms_out = []
+    if os.environ.get("AE_LOG_OPEN"):
+        _k = k_len
+        for g in openings:
+            if g["kind"] == "wall":
+                continue
+            p0, p1 = ((g["a"], g["c"]), (g["b"], g["c"])) if g["o"] == "h" else ((g["c"], g["a"]), (g["c"], g["b"]))
+            rec = {"kind": g["kind"], "op": g["operation"], "handing": g.get("handing"), "o": g["o"], "src": [S(*p0), S(*p1)],
+                   "L_mm": round((g["b"] - g["a"]) * scale_work) if scale_work else None,
+                   "radii_mm": [round(m["arcs"][i]["r"] * scale_work) for i in g.get("arcs", [])] if scale_work else None,
+                   "between": [(rooms[b_]["labels"][0]["label"] if rooms[b_]["labels"] else "?") if b_ is not None else "OUT" for b_ in g.get("between", [None, None])],
+                   "why": g.get("why")}
+            sys.stderr.write("OPEN " + json.dumps(rec) + "\n")
     for n, r_ in enumerate(rooms):
         named = [l for l in r_["labels"] if l["known"]] or r_["labels"]
         label = " / ".join(l["label"] for l in named) if named else ""
@@ -2291,6 +2400,18 @@ def build(m, gray=None):
         for i in range(npts):
             a, b = r_["pts"][i], r_["pts"][(i + 1) % npts]; me = r_["meta"][i]
             key = tuple(sorted(((round(a[0]), round(a[1])), (round(b[0]), round(b[1])))))
+            # the other room's cut of the same opening, a rounding step off this one's: one edge for both
+            og = me["opening"]; twin = None
+            if og is not None and SHARED_SPAN:
+                hz = abs(a[1] - b[1]) <= abs(a[0] - b[0])
+                perp = (a[1] + b[1]) / 2.0 if hz else (a[0] + b[0]) / 2.0
+                lo_, hi_ = sorted((a[0], b[0])) if hz else sorted((a[1], b[1]))
+                twin = next((w_ for pp, l0, h0, w_ in seen_g.get(id(og), []) if abs(pp - perp) <= 0.25 and abs(l0 - lo_) <= 1.0 and abs(h0 - hi_) <= 1.0), None)
+                if twin is None and key not in seen_w:
+                    seen_g.setdefault(id(og), []).append((perp, lo_, hi_, "e%d" % (len(walls_out) + 1)))
+            if twin is not None:
+                edge_recs.append(twin)
+                continue
             if key not in seen_w:
                 g = me["opening"]
                 seen_w[key] = "e%d" % (len(walls_out) + 1)
@@ -2332,7 +2453,7 @@ def build(m, gray=None):
                       "dimensionLabels": sem_dims, "openingSymbols": sem_open, "fixtureSymbols": sem_fix, "entrance": None, "notes": notes},
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
-                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
+                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
                         "unsupportedWallPx": int(unsupported), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
