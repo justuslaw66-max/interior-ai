@@ -47,7 +47,8 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("furnish-mode-guided")).toHaveCount(0);
     await expect(page.getByTestId("catalog-smart-filters")).toHaveCount(0);
     await expect(page.getByTestId("furnish-footer")).toContainText("Living Room");
-    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+    // "All 3D models" is Pro's (FU5).
+    await expect(page.getByTestId("advanced-imported-models")).toHaveCount(0);
     await expect(page.getByTestId("catalog-memory-all")).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
 

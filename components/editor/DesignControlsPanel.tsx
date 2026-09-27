@@ -667,7 +667,6 @@ export default function DesignControlsPanel({
             isDesigner={isDesigner}
             canEdit={canEdit}
             canEditPlanGeometry={canEditPlanGeometry}
-            aiDesignEnabled={aiDesignEnabled}
             viewMode={viewMode}
             snapEnabled={snapEnabled}
             newRoomType={newRoomType}
@@ -758,7 +757,6 @@ export default function DesignControlsPanel({
             onDrawFloorPlanRoom={onDrawFloorPlanRoom}
             onAddFloorPlanOpeningFromTool={onAddFloorPlanOpeningFromTool}
             onGoFurnish={onGoFurnish}
-            onGoAiDesign={onGoAiDesign}
             onGoShop={onGoShop}
             onGoView3D={onGoView3D}
             onApplyPlanTemplate={onApplyPlanTemplate}

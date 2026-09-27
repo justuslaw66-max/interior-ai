@@ -122,7 +122,6 @@ export default function DesignControlsPlanPanel({
   canEdit,
   canEditPlanGeometry,
   showFloorPropertiesPanel = false,
-  aiDesignEnabled = false,
   viewMode,
   snapEnabled,
   newRoomType,
@@ -212,7 +211,6 @@ export default function DesignControlsPlanPanel({
   onDrawFloorPlanRoom,
   onAddFloorPlanOpeningFromTool,
   onGoFurnish,
-  onGoAiDesign,
   onGoShop,
   onGoView3D,
   onApplyPlanTemplate,
@@ -2730,16 +2728,6 @@ export default function DesignControlsPlanPanel({
               disabled={!canEdit}
             >
               Add doors or windows
-            </button>
-          )}
-          {hasRooms && !hasStartedFurniture && aiDesignEnabled && (
-            <button
-              type="button"
-              className={`${progressSecondaryActionClass} mt-2 w-full min-h-10`}
-              onClick={onGoAiDesign}
-              disabled={!canEdit}
-            >
-              Suggest a layout
             </button>
           )}
         </div>

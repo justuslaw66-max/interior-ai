@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import type { Page } from "@playwright/test";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -10,7 +11,7 @@ import {
 const DAWSON_SWIVEL_ID = "sofa-real-castlery-dawson-swivel-armchair";
 
 async function addDawsonProduct(page: Page, productId: string) {
-  await page.goto("/design");
+  await openDesignAsPro(page);
   await page.waitForLoadState("domcontentloaded");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 

@@ -205,15 +205,15 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 427,
+      "lines": 412,
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 886,
+      "lines": 884,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3703,
+      "lines": 3691,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -1929,17 +1929,17 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 342
+        "maximum": 326
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 56
+        "maximum": 52
       }
     },
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 598
+        "maximum": 596
       },
       "complexFunctions": {
         "count": 1,
@@ -1949,11 +1949,11 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3587
+        "maximum": 3575
       },
       "complexFunctions": {
         "count": 5,
-        "maximum": 247
+        "maximum": 244
       }
     },
     "components/editor/DraggableFloatingPanel.tsx": {

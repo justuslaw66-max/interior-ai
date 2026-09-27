@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   ensureItemSelectedForVariants,
   selectImportedFamilyByHint,
@@ -9,7 +10,7 @@ import {
 
 test.describe("9. Sloane Bench Variant UX", () => {
   test("bench controls follow Castlery model, material, length, leg, and variant order", async ({ page }) => {
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     const ready = await waitForCatalogReady(page);
     if (!ready) {

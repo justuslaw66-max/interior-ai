@@ -159,6 +159,7 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
         onSelect={props.onSelectPlacedItem}
       />
       <FurnishImportedModels
+        visible={isDesigner}
         canEdit={canEdit}
         activeRoomName={activeRoomName}
         selectedFamilyKey={props.selectedImportedFamilyKey}

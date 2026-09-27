@@ -6,7 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import CatalogCard, { CATALOG_CARD_ROW_HEIGHT } from "../components/catalog/CatalogCard";
 import { CatalogCategoryChips } from "../components/catalog/CatalogCategoryChips";
 import { CatalogEmptyState } from "../components/catalog/CatalogEmptyState";
+import DesignControlsAiPanel from "../components/editor/DesignControlsAiPanel";
 import { FurnishFooter, furnishRoomSummary } from "../components/editor/FurnishFooter";
+import { FurnishImportedModels } from "../components/editor/FurnishImportedModels";
 import { FurnishInThisRoom } from "../components/editor/FurnishInThisRoom";
 import { FurnishStepModes } from "../components/editor/FurnishStepModes";
 import {
@@ -124,12 +126,22 @@ assert.match(footer, /class="sticky bottom-0/);
 assert.match(footer, /data-testid="furnish-active-room-name"[^>]*>Living Room</);
 assert.match(footer, /data-testid="furnish-continue-to-shop"[^>]*>Continue to Shop/);
 
+// "All 3D models" is Pro's (FU5); consumers add products from the catalogue.
+const importedModels = (visible: boolean) =>
+  renderToStaticMarkup(createElement(FurnishImportedModels, {
+    visible, canEdit: true, activeRoomName: "Living Room", selectedFamilyKey: "", selectedProductId: "", familyOptions: [],
+    modelOptions: [], visibleModelOptions: [], onFamilyChange: noop, onProductChange: noop, onAdd: noop,
+  }));
+assert.equal(importedModels(false), "");
+assert.match(importedModels(true), /data-testid="advanced-imported-models"[\s\S]*All 3D models/);
+
 // The panel's order, with nothing of the old guided mode or its jargon (FU5).
 const furnishPanel = read("components/editor/DesignControlsFurnishPanel.tsx");
 const panelBody = furnishPanel.slice(furnishPanel.indexOf("export default function DesignControlsFurnishPanel"));
 const order = ["<FurnishRoomRow", "<PlacementAddModeToggle", "<FurnishCatalogSection", "<FurnishInThisRoom", "<FurnishImportedModels", "<FurnishFooter"];
 const positions = order.map((tag) => panelBody.indexOf(tag));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "Furnish reads room, products, room list, foot.");
+assert.match(furnishPanel, /<FurnishImportedModels\s+visible=\{isDesigner\}/, "Only Pro gets All 3D models.");
 assert.match(
   furnishPanel,
   /function FurnishCatalogSection[\s\S]*?data-testid="editor-workflow-ai"[\s\S]*?Suggest a layout[\s\S]*?<CatalogPanel[\s\S]*?searchAside=\{suggestLayout\}/,
@@ -156,5 +168,24 @@ assert.match(catalogPanel, /<CatalogSearchInput value=\{rawSearch\} onChange=\{s
 assert.ok(catalogPanel.indexOf("<CatalogCategoryChips") < catalogPanel.indexOf("<CatalogGrid"), "The chips come before the products.");
 assert.doesNotMatch(catalogPanel, /CatalogCategoryTabs|catalog-smart-filter|catalog-room-context|Adding to/, "Products first: no category dropdown, quick filters or room banner.");
 assert.match(catalogPanel, /Math\.floor\(scrollTop \/ CATALOG_CARD_ROW_HEIGHT\)/);
+
+// Suggest a layout (ST12, ST14): one entry, beside the search; outside a living room the limit
+// comes first, with no brief to fill in.
+const aiPanel = (activeRoomType: "living" | "bedroom", activeRoomName: string) =>
+  renderToStaticMarkup(createElement(DesignControlsAiPanel, {
+    dark: false, style: "Modern", budget: "$$", activeRoomName, activeRoomType, activeRoomTypeLabel: activeRoomName,
+    roomWidth: 4, roomDepth: 3.6, roomFloorAreaSqm: 14.4, measurementUnit: "cm", activeRoomItemCount: 0,
+    aiLayoutProposal: null, onStyleChange: noop, onBudgetChange: noop, onRunAiLayout: noop,
+    onApplyAiLayoutProposal: noop, onTryAiLayoutAgain: noop, onClearAiLayoutProposal: noop,
+  }));
+const bedroomAi = aiPanel("bedroom", "Bedroom");
+assert.match(bedroomAi, /data-testid="ai-layout-room-limit"[\s\S]*Suggest a layout works in living rooms for now/);
+assert.match(bedroomAi, /add products to the Bedroom from Furnish/);
+assert.doesNotMatch(bedroomAi, /Layout brief|ai-layout-goals|guest-ai-layout-action/, "No brief for a room it can't lay out.");
+const livingAi = aiPanel("living", "Living Room");
+assert.match(livingAi, /Layout brief[\s\S]*data-testid="ai-layout-goals"/);
+assert.doesNotMatch(livingAi, /ai-layout-room-limit|supports living rooms first/);
+const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
+assert.doesNotMatch(planPanel, /onGoAiDesign|Suggest a layout/, "Plan's next action no longer offers its own Suggest a layout.");
 
 console.log("Furnish products-first checks passed.");

@@ -152,6 +152,21 @@ export async function selectEditorWorkspace(
   await clickButtonWithDomFallback(item);
 }
 
+/**
+ * "All 3D models", the imported-model picker, is Pro's (UX audit FU5): specs that pick from it open
+ * the design as a Pro user.
+ */
+export async function openDesignAsPro(page: Page): Promise<void> {
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+    });
+  });
+  await page.goto("/design?mode=designer");
+}
+
 export async function openShopPanel(page: Page): Promise<void> {
   const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
   if (await visibleCartRailButton.isVisible().catch(() => false)) {

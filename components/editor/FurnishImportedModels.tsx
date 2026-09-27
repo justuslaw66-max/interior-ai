@@ -8,6 +8,8 @@ type ImportedFamilyOption = {
 };
 
 type FurnishImportedModelsProps = {
+  /** Pro only (UX audit FU5): consumers add products from the catalogue. */
+  visible: boolean;
   canEdit: boolean;
   activeRoomName: string;
   selectedFamilyKey: string;
@@ -58,7 +60,8 @@ function ImportedModelSelects(props: FurnishImportedModelsProps) {
 
 /** "All 3D models": any verified model by family, including pieces not in the catalogue yet. */
 export function FurnishImportedModels(props: FurnishImportedModelsProps) {
-  const { selectedProductId, modelOptions, visibleModelOptions } = props;
+  const { visible, selectedProductId, modelOptions, visibleModelOptions } = props;
+  if (!visible) return null;
   const selected =
     visibleModelOptions.find((option) => option.id === selectedProductId) ??
     modelOptions.find((option) => option.id === selectedProductId) ??

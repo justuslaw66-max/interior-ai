@@ -9,6 +9,7 @@ import { formatDisplayArea, type DisplayUnit } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
 import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
+import { AiLayoutRoomLimit } from "./AiLayoutRoomLimit";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -131,6 +132,9 @@ export default function DesignControlsAiPanel({
   const readinessChecks = aiLayoutReadinessChecks({
     roomSupported, roomArea, roomIsDraft, mustHaveCount: aiMustHaves.length, measurementUnit,
   });
+  const roomSummary = `${activeRoomTypeLabel} · ${roomSizeLabel} · ${formatDisplayArea(roomArea, measurementUnit)}`;
+  // ST14: in a room it can't lay out yet, the limit comes first, with no brief to fill in.
+  if (!roomSupported) return <AiLayoutRoomLimit roomName={activeRoomName} roomSummary={roomSummary} />;
 
   const toggleAiMustHave = (label: string) => {
     setAiMustHaves((prev) =>
@@ -167,28 +171,11 @@ export default function DesignControlsAiPanel({
               <div className={dark ? "truncate text-sm font-semibold text-neutral-100" : "truncate text-sm font-semibold text-neutral-900"}>
                 {activeRoomName}
               </div>
-              <div className={`mt-1 text-xs ${mutedClass}`}>
-                {activeRoomTypeLabel} · {roomSizeLabel} · {formatDisplayArea(roomArea, measurementUnit)}
-              </div>
+              <div className={`mt-1 text-xs ${mutedClass}`}>{roomSummary}</div>
             </div>
             <div className={dark ? "shrink-0 rounded-lg bg-white/10 px-2 py-1 text-xs text-neutral-200" : "shrink-0 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-700"}>
               {activeRoomItemCount} placed
             </div>
-          </div>
-          <div
-            className={
-              roomSupported
-                ? dark
-                  ? "mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
-                  : "mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700"
-                : dark
-                  ? "mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-100"
-                  : "mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
-            }
-          >
-            {roomSupported
-              ? "AI layout ready for this room"
-              : "AI layout supports living rooms first"}
           </div>
           <div className={`mt-3 grid grid-cols-3 gap-2 text-center text-xs ${mutedClass}`}>
             <div>
@@ -323,9 +310,7 @@ export default function DesignControlsAiPanel({
         <div className={dark ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
           {briefReady
             ? "Review the result before saving, exporting, or shopping."
-            : roomSupported
-              ? "Add room dimensions and at least one must-have before generating."
-              : "Switch to a living room to get a suggested layout."}
+            : "Add room dimensions and at least one must-have before generating."}
         </div>
       </div>
       {aiLayoutProposal && (
