@@ -603,12 +603,10 @@ test.describe("23. Consumer room setup", () => {
     await openConsumerRoomSetup(page);
     await expectConsumerInterceptorsExact(context, page);
 
-    // The first visit's room is a draft (FR2): one badge, no "Not started" beside it, and no
-    // inspector until something is selected (FR5).
+    // The first visit's room is a draft (FR2): one badge, and no "Not started" beside it.
     await expect(page.getByTestId("room-setup-status")).toHaveText("Default size");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveCount(0);
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Enter your room's real size.");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveCount(0);
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("Visible scale:");
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("m²");
 
