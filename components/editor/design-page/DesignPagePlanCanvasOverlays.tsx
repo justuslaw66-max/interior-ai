@@ -89,9 +89,8 @@ export function DesignPagePlanCanvasOverlays({
   actions,
 }: DesignPagePlanCanvasOverlaysProps) {
   const guidance = state.guidance;
-  const guidancePrimaryAction = guidance
-    ? resolveGuidancePrimaryAction(guidance.action, actions.guidance)
-    : null;
+  const guidancePrimaryAction =
+    guidance ? resolveGuidancePrimaryAction(guidance.action, actions.guidance) : null;
 
   return (
     <>
@@ -128,6 +127,7 @@ export function DesignPagePlanCanvasOverlays({
             guidance: guidance.guidance,
             primaryAction: guidancePrimaryAction,
             dismissible: guidance.dismissible,
+            aboveStepSheet: guidance.aboveStepSheet,
           }}
           actions={{
             dismiss: () => actions.guidance.dismiss(guidance.key),

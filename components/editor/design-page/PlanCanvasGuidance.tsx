@@ -13,11 +13,22 @@ type PlanCanvasGuidanceProps = {
     guidance: PlanCanvasGuidanceState;
     primaryAction: PlanCanvasGuidancePrimaryAction | null;
     dismissible: boolean;
+    aboveStepSheet: boolean;
   };
   actions: {
     dismiss: () => void;
   };
 };
+
+/**
+ * Below 768px the open step panel is a sheet over the canvas whose top reaches at most 64vh + 0.25rem
+ * above the page's bottom (DesignControlsPanel: 4.25rem up, at most 64vh − 4rem tall), while this
+ * overlay's box ends 4rem above it (DesignPageWorkspace). So the tip sits 0.5rem above the tallest
+ * sheet and its buttons never cover the sheet's. From 768px the panel is beside the canvas.
+ */
+const PLACEMENT_ABOVE_STEP_SHEET = "bottom-[calc(64vh-3.25rem-env(safe-area-inset-bottom))] md:bottom-6";
+const placementClass = (aboveStepSheet: boolean) =>
+  aboveStepSheet ? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6";
 
 export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) {
   const accentClass =
@@ -37,7 +48,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
     <div
       data-testid="plan-canvas-guidance"
       data-tone={state.guidance.tone}
-      className="pointer-events-none absolute bottom-20 left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur sm:bottom-6"
+      className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
       role={state.primaryAction ? "group" : "status"}
       aria-label={state.primaryAction ? state.guidance.title : undefined}
       aria-live="polite"

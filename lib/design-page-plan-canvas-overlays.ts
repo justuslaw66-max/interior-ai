@@ -39,6 +39,8 @@ export type DesignPagePlanCanvasOverlaysState = {
     action: PlanCanvasGuidanceAction | null;
     key: string;
     dismissible: boolean;
+    /** On a phone the step panel is a sheet over the canvas: the tip sits above it, not on it. */
+    aboveStepSheet: boolean;
   } | null;
   emptyPromptVisible: boolean;
   restoreTools: {
@@ -188,8 +190,8 @@ export function resolveDesignPagePlanCanvasOverlaysState({
                 ? visibleGuidance.action
                 : null,
             key: guidanceKey,
-            dismissible:
-              visibleGuidance.tone === "ready" && !activeInteraction,
+            dismissible: visibleGuidance.tone === "ready" && !activeInteraction,
+            aboveStepSheet: designControlsPanelVisible,
           }
         : null,
     emptyPromptVisible,

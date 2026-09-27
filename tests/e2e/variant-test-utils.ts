@@ -386,7 +386,9 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
  */
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
-  const placedToast = page.getByTestId("editor-action-toast");
+  // Only an Add's toast ("<product> added to the <room>") means the product is in: a Remove's or a
+  // swap's toast can still be up from the step before.
+  const placedToast = page.getByTestId("editor-action-toast").filter({ hasText: / added to the / });
   const visible = await expect(confirmButton.or(placedToast).first())
     .toBeVisible({ timeout: 20000 })
     .then(() => true)
