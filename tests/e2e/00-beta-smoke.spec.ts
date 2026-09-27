@@ -584,6 +584,10 @@ test.describe("00. Beta Smoke Gate", () => {
         await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
         await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
       }
+      // Close More before Shop: the step below is clicked through the DOM, which doesn't close it
+      // the way a press outside does, and the Shopping list's Buy buttons sit under it.
+      await page.keyboard.press("Escape");
+      await expect(page.getByTestId("editor-command-overflow-menu")).toBeHidden();
 
       let retailerClickPayload: Record<string, unknown> = {};
       await page.route("**/api/track/click", async (route) => {
