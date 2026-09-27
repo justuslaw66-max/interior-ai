@@ -5,6 +5,7 @@ import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import {
   getSelectedItemPanel,
   openCatalogPreview,
+  openDesignAsPro,
   waitForCatalogReady,
 } from "./variant-test-utils";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
@@ -31,10 +32,11 @@ async function readPersistedFingerprint(page: Page): Promise<string> {
 }
 
 async function startCatalogPlacement(page: Page, productId: string) {
-  // Consumers' Add places the product at once (FU4); "Choose where it goes" opens the preview.
-  const chooseSpotButton = page.getByTestId("catalog-detail-choose-spot");
-  if (await chooseSpotButton.isVisible().catch(() => false)) {
-    await chooseSpotButton.click({ force: true, noWaitAfter: true });
+  // Pro keeps the placement preview (J, 27 Sep): Add opens it at the default spot, which leaves room
+  // for the best-room hint. Consumers' "Choose where it goes" starts at the suggested spot instead.
+  const previewAddButton = page.getByTestId("catalog-detail-add-to-room");
+  if (await previewAddButton.isVisible().catch(() => false)) {
+    await previewAddButton.click({ force: true, noWaitAfter: true });
     return;
   }
 
@@ -59,7 +61,7 @@ test.describe("17. Smart Placement Smoke", () => {
       window.sessionStorage.clear();
       window.localStorage.setItem(clearSentinel, "1");
     });
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
 

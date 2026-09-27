@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import CatalogSearchInput from "./CatalogSearchInput";
 import CatalogFiltersBar from "./CatalogFiltersBar";
-import CatalogFilterDrawer from "./CatalogFilterDrawer";
+import CatalogFilterDrawerInView from "./CatalogFilterDrawerInView";
 import CatalogActiveFilterChips from "./CatalogActiveFilterChips";
 import CatalogGrid from "./CatalogGrid";
 import CatalogItemDrawer from "./CatalogItemDrawer";
@@ -557,7 +557,7 @@ export default function CatalogPanel({
         onClearAll={clearAllFilters}
       />
 
-      <CatalogFilterDrawer
+      <CatalogFilterDrawerInView
         open={filtersOpen}
         filters={applicableFilters}
         brands={facets.brands}
