@@ -98,13 +98,13 @@
     "label": "CEILING",
     "rawText": "CEILING",
     "roomType": "other",
-    "centerXRatio": 0.819651,
-    "centerYRatio": 0.400774,
+    "centerXRatio": 0.819446,
+    "centerYRatio": 0.400522,
     "bbox": {
      "leftRatio": 0.793626,
-     "topRatio": 0.391931,
-     "rightRatio": 0.845675,
-     "bottomRatio": 0.409617
+     "topRatio": 0.392396,
+     "rightRatio": 0.845265,
+     "bottomRatio": 0.408648
     },
     "confidence": 0.552,
     "evidenceKind": "vectorizer"

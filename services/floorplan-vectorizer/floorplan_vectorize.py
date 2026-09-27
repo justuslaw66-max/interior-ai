@@ -577,6 +577,20 @@ def _letters_only_change(tok, v):
     return all(a_ == b_ or (a_.isalpha() and b_.isalpha()) or (not a_.isalnum() and not b_.isdigit()) or (a_, b_) in alike for a_, b_ in zip(tok, v))
 
 
+_EDGE_JUNK = "|=_~\"‘’“”'`"                # what a line, a jamb or a tick beside a word is read as
+
+
+def _strip_edge_junk(s):
+    """'| BATH/WC', '‘OOM 3': a stroke of the drawing standing beside the lettering is read as a bar or a quote and makes the
+    whole read fail the word test.  Strip such marks from the two ends only - inside a word they belong to it (MAID'S)."""
+    if not s:
+        return s
+    toks = [tk for tk in s.split() if tk.strip(_EDGE_JUNK)]     # a token that is nothing but such marks
+    if toks:
+        toks[0] = toks[0].lstrip(_EDGE_JUNK); toks[-1] = toks[-1].rstrip(_EDGE_JUNK)
+    return " ".join(tk for tk in toks if tk)
+
+
 def vocab_fix(st, loose=False):
     out = []
     for tok in st.split():
@@ -589,6 +603,10 @@ def vocab_fix(st, loose=False):
                 tok = c[0]
             elif loose and len(tok) >= 6:                   # blurred input: two slips in a long word still leave only one candidate
                 c = [v for v in PLAN_VOCAB if abs(len(v) - len(tok)) <= 1 and lev(v, tok) <= 2 and _letters_only_change(tok, v)]
+                if len(c) == 1:
+                    tok = c[0]
+            elif loose and len(tok) == 5 and tok.isalpha():  # a letter fused with linework is lost from one end ('OMMON')
+                c = [v for v in PLAN_VOCAB if len(v) == 6 and v.isalpha() and (v.endswith(tok) or v.startswith(tok))]
                 if len(c) == 1:
                     tok = c[0]
         out.append(tok)
@@ -1305,8 +1323,10 @@ def extract(path):
                 part = ((lab_[y:y + h, x:x + w] == i) * 255).astype(np.uint8)
                 # a stretch of double-line wall between two black blocks is isolated and dense as well - but it is thin and all
                 # straight runs (fused lettering is as tall as its capitals and may well contain a long run)
-                if min(w, h) <= 0.6 * T + 6 and (cv2.morphologyEx(part, cv2.MORPH_OPEN, np.ones((1, max(12, int(0.7 * w))), np.uint8)).any() or
-                                                 cv2.morphologyEx(part, cv2.MORPH_OPEN, np.ones((max(12, int(0.7 * h)), 1), np.uint8)).any()):
+                # (a stretch of wall is long for its width; a narrow letter with a bar - B, E, D, R of a serif face - is not)
+                if min(w, h) <= 0.6 * T + 6 and max(w, h) >= 2.2 * min(w, h) and \
+                        (cv2.morphologyEx(part, cv2.MORPH_OPEN, np.ones((1, max(12, int(0.7 * w))), np.uint8)).any() or
+                         cv2.morphologyEx(part, cv2.MORPH_OPEN, np.ones((max(12, int(0.7 * h)), 1), np.uint8)).any()):
                     continue
                 text_protect[lab_ == i] = 255
     if soft:
@@ -1917,6 +1937,7 @@ def extract(path):
                 x1 = max(q[0] + q[2] for q in grp); y1 = max(q[1] + q[3] for q in grp)
                 box = [float(x0), float(y0), float(x1 - x0), float(y1 - y0)]
                 s2, c2 = recog(box, vertical)
+                s2 = _strip_edge_junk(s2)                   # a dashed line or a jamb beside the word is read as '|': not part of it
                 _dbg("cluster read", box[0], box[1], box[2], box[3], repr(s2), c2, "vertical", vertical, "glyphs", len(grp))
                 if soft and s2:                             # typical slips of this engine on blurred condensed lettering
                     s2 = s2.replace("_", ".").replace("..", ".").replace(",", "/").strip(" .")
@@ -3076,44 +3097,260 @@ def read_title_lines(m):
         m.setdefault("dimension_report_pre", {})["title_lines"] = added
 
 
+def _label_width_factor(m):
+    """How condensed this plan's lettering is against the comparison font, from the labels already read (1.0 = the same)."""
+    wr = []
+    for t_ in m["texts"]:
+        if not t_["vertical"] and t_.get("angle") is None and t_["s"] in PLAN_VOCAB and len(t_["s"]) >= 5:
+            a0 = _render_number(t_["s"]); wr.append(t_["box"][2] / (a0.shape[1] * t_["box"][3] / float(a0.shape[0])))
+    return float(np.median(wr)) if len(wr) >= 3 else 0.8
+
+
+def split_tall_labels(m):
+    """A one-line read in a two-line box: the page reader sometimes returns one line of a stacked label with the box of the
+    whole stack ('BEDROOM' in the box of MASTER over BEDROOM, 'JUNIOR SUITE' in that of JUNIOR SUITE over BATH), and the other
+    line is lost with it - its lettering was erased as part of this text, so no later stage sees it.  The line that was read is
+    located in the box by drawing it; what is lettered above or below it inside the box is read on its own."""
+    gray = m.get("_gray")
+    if gray is None or not m.get("soft_input"):
+        return
+    caps = [float(t["box"][3]) for t in m["texts"] if not t["vertical"] and t.get("angle") is None and not t.get("title")
+            and any(ch.isalpha() for ch in t["s"]) and len(t["s"].replace(" ", "")) >= 3]
+    if len(caps) < 3:
+        return
+    cap = float(np.median(caps)); thr_ = max(150, int(m.get("ink_threshold", 150)) - 10)
+    wf_ = _label_width_factor(m); wfs_ = (0.93 * wf_, wf_, 1.07 * wf_)
+    split = []
+    for t in list(m["texts"]):
+        if t["vertical"] or t.get("angle") is not None or t.get("title") or not any(ch.isalpha() for ch in t["s"]):
+            continue
+        x, y, w, h = t["box"]
+        if h < 1.7 * cap or not re.match(r"^[A-Z0-9/.\-' ]+$", t["s"]):
+            continue
+        sc, b = render_find(gray, (x - 0.3 * cap, y - 0.2 * cap, x + w + 0.3 * cap, y + h + 0.2 * cap), False, t["s"], cap, wfs_)
+        if not b or sc < 0.55:
+            continue
+        bx, by, bw, bh = b
+        t["box"] = [x, by, w, bh]; t["cap_px"] = float(bh); t["ink"] = [bx, by, bx + bw, by + bh]; t["box_split"] = round(sc, 2)
+        for ya, yb in ((y - 0.2 * cap, by - 0.1 * cap), (by + bh + 0.1 * cap, y + h + 0.2 * cap)):
+            ya, yb = int(max(0, ya)), int(min(gray.shape[0], yb))
+            xa, xb = int(max(0, x - 0.5 * cap)), int(min(gray.shape[1], x + w + 0.5 * cap))
+            if yb - ya < 0.8 * cap or xb - xa < cap:
+                continue
+            crop = gray[ya:yb, xa:xb]
+            if float((crop < thr_).mean()) < 0.03:
+                continue                                    # nothing lettered on that side
+            zf = float(min(4.0, max(1.0, 44.0 / cap)))
+            big = cv2.copyMakeBorder(cv2.resize(crop, None, fx=zf, fy=zf, interpolation=cv2.INTER_CUBIC), 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
+            d = pytesseract.image_to_data(big, config="--psm 7", output_type=pytesseract.Output.DICT)
+            ws = [(tk.strip(), float(c_)) for tk, c_ in zip(d["text"], d["conf"]) if tk.strip() and float(c_) >= 0]
+            if not ws:
+                continue
+            st = _strip_edge_junk(" ".join(w_[0] for w_ in ws)).upper(); cf = float(np.mean([w_[1] for w_ in ws]))
+            st = vocab_fix(st, loose=True)
+            toks = st.split()
+            if not toks or not all(tk in PLAN_VOCAB or (len(tk) >= 5 and tk.isalpha() and cf >= 75) for tk in toks):
+                continue
+            sc2, b2 = render_find(gray, (xa, ya, xb, yb), False, st, cap, wfs_)
+            if not b2 or sc2 < 0.55:
+                continue
+            nx, ny, nw, nh = b2
+            if any(o is not t and min(o["box"][0] + o["box"][2], nx + nw) - max(o["box"][0], nx) > 0.3 * nw
+                   and min(o["box"][1] + o["box"][3], ny + nh) - max(o["box"][1], ny) > 0.3 * nh for o in m["texts"]):
+                continue                                    # already read as its own line
+            m["texts"].append({"s": st, "box": [nx, ny, nw, nh], "vertical": False, "conf": round(cf, 1), "cap_px": float(nh),
+                               "ink": [nx, ny, nx + nw, ny + nh], "split_from": t["s"], "pixel_match": round(sc2, 2)})
+            split.append("%s | %s" % (t["s"], st))
+    if split:
+        m.setdefault("dimension_report_pre", {})["labels_split"] = split
+
+
+def _ink_extent(g, box, vertical, cap, thr, limit):
+    """Grow `box` along its reading axis over lettering: from the box outwards, ink at letter height continues across gaps
+    shorter than a word space (1.1 cap); a longer gap, or `limit`, ends the run.  Returns [x, y, w, h]."""
+    H, W = g.shape
+    x, y, w, h = [float(v) for v in box]
+    if vertical:
+        c0, c1 = int(x + 0.15 * cap), int(x + w - 0.15 * cap) + 1
+        prof = (g[:, max(0, c0):c1] < thr).any(axis=1)
+        a0, a1 = int(y), int(y + h)
+    else:
+        c0, c1 = int(y + 0.15 * cap), int(y + h - 0.15 * cap) + 1
+        prof = (g[max(0, c0):c1, :] < thr).any(axis=0)
+        a0, a1 = int(x), int(x + w)
+    gap = int(1.1 * cap)
+    lo = a0
+    while lo > max(0, a0 - limit):
+        nxt = lo - 1
+        run = prof[max(0, nxt - gap):nxt]
+        if not run.any():
+            break
+        lo = max(0, nxt - gap) + int(np.where(run)[0].min())
+    hi = a1
+    n = len(prof)
+    while hi < min(n, a1 + limit):
+        run = prof[hi:min(n, hi + gap)]
+        if not run.any():
+            break
+        hi = hi + int(np.where(run)[0].max()) + 1
+    return [x, float(lo), w, float(hi - lo)] if vertical else [float(lo), y, float(hi - lo), h]
+
+
+def reread_crossed_labels(m):
+    """A label crossed by a door swing: the arc runs through the J of JR. MASTER, through the C of COMMON, and the crossed
+    letters fuse with it - the reader drops them and reads the rest in pieces or not at all.  Now that the arcs are known,
+    every unread cluster an arc passes through is read again from the grey image with the arc painted out, over the whole
+    run of lettering it belongs to."""
+    gray = m.get("_gray")
+    if gray is None or not m.get("unread_text"):
+        return
+    caps = [float(t["box"][2] if t["vertical"] else t["box"][3]) for t in m["texts"] if t.get("angle") is None
+            and any(ch.isalpha() for ch in t["s"]) and len(t["s"].replace(" ", "")) >= 3]
+    th = float(np.median(caps)) if len(caps) >= 3 else float(m.get("text_h") or 0)      # the labels' own lettering size
+    sw = float(m.get("stroke_px") or 2.0); thr = int(m.get("ink_threshold", 180))
+    if th < 8:
+        return
+    H, W = gray.shape
+    added = []
+    for u in list(m["unread_text"]):
+        if u not in m["unread_text"] or u.get("vertical") == "down":
+            continue
+        x, y, w, h = u["box"]; v = u["vertical"]; cap = float(w if v else h)
+        if not (0.6 * th <= cap <= 1.6 * th):
+            continue
+        ex = (x - 1.0 * cap, y - 9 * cap, x + w + 1.0 * cap, y + h + 9 * cap) if v else (x - 9 * cap, y - 1.0 * cap, x + w + 9 * cap, y + h + 1.0 * cap)
+        hits = []
+        for a_ in m["arcs"]:
+            # does the arc pass through the expanded box?  sample it
+            for k_ in range(25):
+                ang = a_["start"] + a_["span"] * k_ / 24.0
+                px, py = a_["cx"] + a_["r"] * math.cos(math.radians(ang)), a_["cy"] + a_["r"] * math.sin(math.radians(ang))
+                if ex[0] <= px <= ex[2] and ex[1] <= py <= ex[3]:
+                    hits.append(a_); break
+        g2 = gray.copy()
+        for a_ in hits:
+            cv2.ellipse(g2, (int(round(a_["cx"])), int(round(a_["cy"]))), (int(round(a_["r"])), int(round(a_["r"]))), 0,
+                        a_["start"] - 2, a_["start"] + a_["span"] + 2, 255, max(3, int(round(sw + 2))))   # just the stroke: the crossed letter keeps what it can
+        # the run of lettering this cluster is part of, on the cleaned image; stop at lettering already read
+        box = _ink_extent(g2, u["box"], v, cap, thr, int(8 * cap))
+        bx, by, bw, bh = box
+        if (bh if v else bw) > 14 * cap:
+            continue                                        # ran into linework
+        crop = g2[max(0, int(by - 0.3 * cap)):int(by + bh + 0.3 * cap), max(0, int(bx - 0.3 * cap)):int(bx + bw + 0.3 * cap)]
+        if crop.size == 0:
+            continue
+        if v:
+            crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
+        best = None
+        for zf in (2.0, 3.0):
+            big = cv2.copyMakeBorder(cv2.resize(crop, None, fx=zf, fy=zf, interpolation=cv2.INTER_CUBIC), 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
+            d = pytesseract.image_to_data(big, config="--psm 7", output_type=pytesseract.Output.DICT)
+            ws = [(tk.strip(), float(c_)) for tk, c_ in zip(d["text"], d["conf"]) if tk.strip() and float(c_) >= 0]
+            if ws and (best is None or float(np.mean([w_[1] for w_ in ws])) > best[1]):
+                best = (" ".join(w_[0] for w_ in ws), float(np.mean([w_[1] for w_ in ws])))
+        if not best:
+            continue
+        read_, cf = best
+        read_ = " ".join(tk.strip("[]") for tk in _strip_edge_junk(read_.replace(",", ".")).upper().split() if tk.strip("[]"))   # a wall line at the end reads as ']'; no plan word holds a comma
+        st = vocab_fix(read_, loose=True)
+        # the letter the arc ran through: a three-letter word one letter off a plan word ('IR.' where JR. was) is that word
+        st = " ".join(next(iter(c_)) if (len(tk) == 3 and tk not in PLAN_VOCAB and len(c_ := [v_ for v_ in PLAN_VOCAB if len(v_) == 3 and lev(v_, tk) == 1 and _letters_only_change(tk, v_)]) == 1) else tk
+                      for tk in st.split())
+        toks = st.split()
+        if len(toks) >= 2 and toks[-1] == "/" and toks[-2] + "/" in PLAN_VOCAB:
+            toks = toks[:-2] + [toks[-2] + "/"]              # 'LIVING /': the slash of LIVING/ over DINING, read apart from its word
+        if len(toks) >= 2 and any(tk in PLAN_VOCAB and len(tk) >= 5 for tk in toks):
+            # the thing the lettering touches (a basin's rim, a jamb) reads as a short word at one end: not part of the label
+            junk_ = lambda tk: tk not in PLAN_VOCAB and len(tk) <= 3 and not tk.isdigit()
+            if junk_(toks[0]):
+                toks = toks[1:]
+            if toks and junk_(toks[-1]):
+                toks = toks[:-1]
+        ok_tok = lambda i_, tk: tk in PLAN_VOCAB or (len(tk) >= 5 and tk.isalpha() and cf >= 60) or \
+            (re.fullmatch(r"[1-9]", tk) and i_ > 0 and toks[i_ - 1] in NUMBERED_LABELS)          # 'BEDROOM 3'
+        if not toks or any(ch.islower() for ch in st) or not all(ok_tok(i_, tk) for i_, tk in enumerate(toks)) \
+                or sum(len(tk) for tk in toks if tk in PLAN_VOCAB) < 4:
+            continue
+        st = " ".join(toks)
+        sc_, b_ = render_find(g2, (bx - 0.3 * cap, by - 0.3 * cap, bx + bw + 0.3 * cap, by + bh + 0.3 * cap), v, st, cap, (0.8, 0.9, 1.0, 1.1))
+        if b_ and sc_ >= 0.45:
+            bx, by, bw, bh = b_                             # the run can overshoot into a line: the box is the word's own
+        if any(min(o["box"][0] + o["box"][2], bx + bw) - max(o["box"][0], bx) > 0.3 * min(bw, o["box"][2]) and
+               min(o["box"][1] + o["box"][3], by + bh) - max(o["box"][1], by) > 0.3 * min(bh, o["box"][3]) for o in m["texts"]):
+            continue                                        # the run holds lettering already read
+        t_new = {"s": st, "box": [bx, by, bw, bh], "vertical": v, "conf": round(cf, 1), "cap_px": cap, "ink": [bx, by, bx + bw, by + bh],
+                 "reread_over_arc": read_, "pixel_match": round(sc_, 2)}
+        m["texts"].append(t_new); added.append(st)
+        for u_ in list(m["unread_text"]):                 # the fragments this run was read from
+            ux, uy, uw, uh = u_["box"]
+            if min(ux + uw, bx + bw) - max(ux, bx) > 0.5 * uw and min(uy + uh, by + bh) - max(uy, by) > 0.5 * uh:
+                m["unread_text"].remove(u_)
+    if added:
+        m.setdefault("dimension_report_pre", {})["labels_reread_over_arcs"] = added
+
+
 NUMBERED_LABELS = {"BEDROOM", "BATH", "BATHROOM", "WC", "W.C.", "STORE", "BALCONY", "STUDY"}
 
 
-def number_after_label(m):
+def number_after_label(m, only=None):
     """'BEDROOM 3', 'BATH 2': the room number stands a word space after the label and the page reader often drops it.  It is
     looked for exactly there, by drawing the digits 1-6 at the label's own lettering size; a digit is only taken when the
-    place is inked, it matches clearly, and clearly better than the next best digit."""
+    place is inked, it matches clearly, and clearly better than the next best digit.  `only`: a key the label must carry
+    (a second pass over labels a later stage added)."""
     gray = m.get("_gray")
     if gray is None or not m.get("soft_input"):
         return
     added = []
     for t in m["texts"]:
-        if t.get("angle") is not None or t["s"] not in NUMBERED_LABELS:
+        if t.get("angle") is not None or t["s"] not in NUMBERED_LABELS or (only and not t.get(only)):
             continue
         x, y, w, h = t["box"]; v = t["vertical"]; cap = float(w if v else h)
         if not (8 <= cap <= 80):
             continue
-        if not v:
-            region = (x + w + 0.15 * cap, y - 0.3 * cap, x + w + 1.6 * cap, y + h + 0.3 * cap)
-        elif v == "up":                                      # reads bottom-to-top: the number stands ABOVE the word
-            region = (x - 0.3 * cap, y - 1.6 * cap, x + w + 0.3 * cap, y - 0.15 * cap)
+        # the reader's box can run on past the word - over the very digit looked for ('BEDROOM 3' read as 'BEDROOM' in a box
+        # that covers the 3): the word is drawn to find where its letters end
+        sc_w, box_w = render_find(gray, (x - 0.3 * cap, y - 0.3 * cap, x + w + 0.3 * cap, y + h + 0.3 * cap), v, t["s"], cap, (0.85, 0.95, 1.05))
+        if box_w and sc_w >= 0.6:
+            wx, wy, ww, wh = box_w
         else:
-            region = (x - 0.3 * cap, y + h + 0.15 * cap, x + w + 0.3 * cap, y + h + 1.6 * cap)
-        x0, y0, x1, y1 = [int(round(q)) for q in region]
-        reg = gray[max(0, y0):max(0, y1), max(0, x0):max(0, x1)]
-        if reg.size == 0 or float((reg < 150).mean()) < 0.04:
-            continue                                        # nothing is lettered there
-        if any(o is not t and min(o["box"][0] + o["box"][2], x1) - max(o["box"][0], x0) > 0 and min(o["box"][1] + o["box"][3], y1) - max(o["box"][1], y0) > 0 for o in m["texts"]):
+            wx, wy, ww, wh = x, y, w, h
+        thr_ = max(150, int(m.get("ink_threshold", 150)) - 10)   # pale lettering (c23: threshold 199) is still lettering
+        if not v:
+            regions = [("right", (wx + ww + 0.15 * cap, wy - 0.3 * cap, wx + ww + 1.6 * cap, wy + wh + 0.3 * cap)),
+                       ("below", (wx + ww / 2.0 - 1.2 * cap, wy + wh + 0.1 * cap, wx + ww / 2.0 + 1.2 * cap, wy + wh + 1.8 * cap))]
+        elif v == "up":                                      # reads bottom-to-top: the number stands ABOVE the word
+            regions = [("right", (wx - 0.3 * cap, wy - 1.6 * cap, wx + ww + 0.3 * cap, wy - 0.15 * cap))]
+        else:
+            regions = [("right", (wx - 0.3 * cap, wy + wh + 0.15 * cap, wx + ww + 0.3 * cap, wy + wh + 1.6 * cap))]
+        for where, region in regions:
+          x0, y0, x1, y1 = [int(round(q)) for q in region]
+          reg = gray[max(0, y0):max(0, y1), max(0, x0):max(0, x1)]
+          if reg.size == 0 or float((reg < thr_).mean()) < (0.04 if where == "right" else 0.012):
+            continue                                        # nothing is lettered there (a lone digit is little ink in the wider region below)
+          if any(o is not t and min(o["box"][0] + o["box"][2], x1) - max(o["box"][0], x0) > 0 and min(o["box"][1] + o["box"][3], y1) - max(o["box"][1], y0) > 0 for o in m["texts"]):
             continue
-        sc = {dg: render_find(gray, region, v, dg, cap, (0.7, 0.85, 1.0)) for dg in "123456"}
-        rank = sorted(sc, key=lambda dg: -sc[dg][0])
-        if sc[rank[0]][0] >= 0.72 and sc[rank[0]][0] - sc[rank[1]][0] >= 0.05 and sc[rank[0]][1] is not None:
+          sc = {dg: render_find(gray, region, v, dg, cap, (0.7, 0.85, 1.0)) for dg in "123456"}
+          rank = sorted(sc, key=lambda dg: -sc[dg][0])
+          if sc[rank[0]][0] >= 0.72 and sc[rank[0]][0] - sc[rank[1]][0] >= 0.05 and sc[rank[0]][1] is not None:
             bx, by, bw, bh = sc[rank[0]][1]
+            if where == "below":
+                # 'BEDROOM' over a centred '1': the digit is alone on its line (the I of a second word would pass for a 1)
+                if abs((bx + bw / 2.0) - (wx + ww / 2.0)) > 0.6 * cap:
+                    continue
+                ya_, yb_ = int(by + 0.15 * bh), int(by + 0.85 * bh)
+                xa_, xb_ = max(0, int(bx + bw / 2.0 - 2.5 * cap)), int(bx + bw / 2.0 + 2.5 * cap)
+                cols_ = (gray[ya_:yb_, xa_:xb_] < thr_).any(axis=0)
+                cols_[max(0, int(bx - 0.3 * cap) - xa_):max(0, int(bx + bw + 0.3 * cap) - xa_)] = False
+                run_, longest_ = 0, 0
+                for c_ in cols_:
+                    run_ = run_ + 1 if c_ else 0; longest_ = max(longest_, run_)
+                if longest_ >= 0.35 * cap:
+                    continue                                # other lettering on that line: not a room number
             # a digit is as tall as the lettering and stands alone: a stroke that runs on past the lettering band is a line of the
             # drawing (every vertical line looks like a '1'), and ink right beside it means it is part of something else
             xi0, yi0, xi1, yi1 = int(bx), int(by), int(bx + bw) + 1, int(by + bh) + 1
             ext = int(0.6 * cap)
-            grown = gray[max(0, yi0 - ext):yi1 + ext, max(0, xi0 - ext):xi1 + ext] < 150
+            grown = gray[max(0, yi0 - ext):yi1 + ext, max(0, xi0 - ext):xi1 + ext] < thr_
             inner = np.zeros_like(grown); inner[min(ext, yi0):min(ext, yi0) + (yi1 - yi0), min(ext, xi0):min(ext, xi0) + (xi1 - xi0)] = True
             n_, lab_, st_, _c = cv2.connectedComponentsWithStats((grown * 255).astype(np.uint8))
             touching = {int(v_) for v_ in np.unique(lab_[inner & grown]) if v_ > 0}
@@ -3121,11 +3358,14 @@ def number_after_label(m):
                 continue
             nx0, ny0 = min(x, bx), min(y, by); nx1, ny1 = max(x + w, bx + bw), max(y + h, by + bh)
             t["s"] = t["s"] + " " + rank[0]; t["box"] = [nx0, ny0, nx1 - nx0, ny1 - ny0]; t["number_found"] = round(sc[rank[0]][0], 2)
+            if where == "below":
+                t["number_below"] = True
             if t.get("ink"):
                 t["ink"] = [nx0, ny0, nx1, ny1]
             added.append(t["s"])
+            break
     if added:
-        m.setdefault("dimension_report_pre", {})["numbers_after_labels"] = added
+        m.setdefault("dimension_report_pre", {}).setdefault("numbers_after_labels", []).extend(added)
 
 
 def sanity_texts(m):
@@ -7640,6 +7880,7 @@ if __name__ == "__main__":
     if "--dump-extract" in sys.argv:
         import pickle; pickle.dump(m, open(base + ".extract.pkl", "wb"))
     read_title_lines(m)
+    split_tall_labels(m)
     number_after_label(m)
     sanity_texts(m)
     vote_verify_numbers(m)
@@ -7648,6 +7889,8 @@ if __name__ == "__main__":
     estimate_scale(m)
     diagonal_dimensions(m)
     complete_labels(m)
+    reread_crossed_labels(m)
+    number_after_label(m, only="reread_over_arc")
     validate_slash_labels(m)
     read_level_notes(m)
     recognise_fixtures(m)
