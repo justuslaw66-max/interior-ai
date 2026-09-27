@@ -82,7 +82,6 @@ export function useDesignPageViewportShellRegistration({
         setPlanMeasurementUnit,
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
-        setPlanGuidedActionsChoiceSeen,
       },
       floorPlan: {
         setFloorPlanTraceOpeningKind,
@@ -223,7 +222,6 @@ export function useDesignPageViewportShellRegistration({
         setPlanMeasurementUnit,
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
-        setPlanGuidedActionsChoiceSeen,
         setSelectedPlanOverlayId,
         setSelectedPlanRoomId,
         setSelectedPlanRoomSelection,

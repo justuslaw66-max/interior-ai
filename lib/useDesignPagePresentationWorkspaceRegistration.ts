@@ -287,9 +287,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         deleteRoom: planWorkspace.actions.room.deleteRoom,
       },
       planCanvas: {
-        setGuidedActionsChoiceSeen:
-          viewportShell.actions.plan.setPlanGuidedActionsChoiceSeen,
-        chooseGuidedActionsMode: tracing.actions.choosePlanGuidedActionsMode,
         selectFloorPlanTool: tracing.actions.selectFloorPlanTool,
         setGuidedPlanStartMode:
           viewportShell.actions.editor.setGuidedPlanStartMode,

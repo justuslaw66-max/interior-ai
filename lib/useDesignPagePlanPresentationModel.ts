@@ -197,8 +197,6 @@ export type UseDesignPagePlanPresentationModelInput = {
       activeFloorPlanTool: FloorPlanActiveTool;
       activePlanCanvasInteraction: boolean;
       planCanvasFocusActive: boolean;
-      planSettingsLoaded: boolean;
-      planGuidedActionsChoiceSeen: boolean;
       showBetaStart: boolean;
       dismissedPlanCanvasGuidanceKey: string | null;
     };
@@ -375,9 +373,6 @@ export function useDesignPagePlanPresentationModel({
       showGuidedActionsToggle: showPlanGuidedActionsToggle,
       guidedActionsEnabled: presentation.planGuidedActionsEnabled,
       activeInteraction: presentation.activePlanCanvasInteraction,
-      planSettingsLoaded: presentation.planSettingsLoaded,
-      guidedActionsChoiceSeen:
-        presentation.planGuidedActionsChoiceSeen,
       showBetaStart: presentation.showBetaStart,
       isClientPreview: layout.isClientPreview,
       isDesigner: layout.isDesigner,

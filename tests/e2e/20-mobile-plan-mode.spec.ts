@@ -54,12 +54,10 @@ test.describe("20. Mobile Plan Mode", () => {
       await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("role", "switch");
 
-      const choiceManual = page.getByTestId("plan-guided-actions-choice-manual");
-      if (await choiceManual.isVisible().catch(() => false)) {
-        await choiceManual.click();
-      } else {
-        await page.getByTestId("plan-guided-actions-toggle").click();
-      }
+      // Tips is on by default and is the one switch (UX audit ED6): no "Plan mode" choice first.
+      await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "true");
+      await expect(page.getByRole("switch", { name: "Tips" })).toBeVisible();
+      await page.getByTestId("plan-guided-actions-toggle").click();
 
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "false");
       await expect(page.getByTestId("plan-manual-quick-actions")).toBeVisible();

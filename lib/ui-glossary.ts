@@ -53,6 +53,7 @@ export const UI_GLOSSARY: readonly UiGlossaryEntry[] = [
     use: "Shopping list; Buy at <shop>; Checkout here",
     retire: ["cart", "carts", "cart-ready", "selection tray", "shopping overview"],
   },
+  { concept: "Plan guidance (UX 3c-3, ED6)", use: "Tips (one switch, on by default)", retire: ["guided actions", "plan mode", "manual editing"] },
 ];
 
 /** Restructured by phase 3 or 4; listed so nobody mistakes them for approved names. */
