@@ -31,9 +31,10 @@ async function readPersistedFingerprint(page: Page): Promise<string> {
 }
 
 async function startCatalogPlacement(page: Page, productId: string) {
-  const previewAddButton = page.getByTestId("catalog-detail-add-to-room");
-  if (await previewAddButton.isVisible().catch(() => false)) {
-    await previewAddButton.click({ force: true, noWaitAfter: true });
+  // Consumers' Add places the product at once (FU4); "Choose where it goes" opens the preview.
+  const chooseSpotButton = page.getByTestId("catalog-detail-choose-spot");
+  if (await chooseSpotButton.isVisible().catch(() => false)) {
+    await chooseSpotButton.click({ force: true, noWaitAfter: true });
     return;
   }
 

@@ -78,6 +78,7 @@ const typescriptGuardFiles = [
   "test-floor-plan-quality.ts",
   "test-floor-plan-upload-entry.tsx",
   "test-first-room-draft.tsx",
+  "test-catalog-direct-add.tsx",
   "test-guest-save-overlay-static.tsx",
   "test-retailer-confirmation-static.tsx",
   "test-my-designs-page.tsx",

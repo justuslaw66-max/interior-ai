@@ -430,7 +430,9 @@ export function registerDrawingTests() {
       throw new Error("Catalog preview did not expose a product id");
     }
 
-    await page.getByTestId(`catalog-add-${firstCatalogItemId}`).click();
+    // Consumers' Add places the product at once (FU4); the preview comes from "Choose where it goes".
+    await firstPreview.click();
+    await page.getByTestId("catalog-detail-choose-spot").click();
     await expect(page.getByTestId("catalog-placement-confirm-panel")).toBeVisible();
     await expect(page.getByTestId("catalog-placement-target-room")).toContainText("Bedroom");
 

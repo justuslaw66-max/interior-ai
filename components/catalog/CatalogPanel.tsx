@@ -90,6 +90,8 @@ type Props = {
   items: CatalogItemSchema[];
   canEdit: boolean;
   onAddToRoom: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
+  /** Consumers: Add places the product, and the drawer offers "Choose where it goes" (FU4). */
+  directAdd?: boolean;
   onAutoPlaceInRoom?: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
   onPreviewPlacementIntent?: (productId: string | null, variantId?: string) => void;
   onCatalogDragStart?: (productId: string, variantId?: string) => void;
@@ -183,7 +185,7 @@ function countActiveCatalogFilters(filters: CatalogFilterState) {
 export default function CatalogPanel({
   items,
   canEdit,
-  onAddToRoom,
+  onAddToRoom, directAdd = false,
   onAutoPlaceInRoom,
   onPreviewPlacementIntent,
   onCatalogDragStart,
@@ -939,11 +941,7 @@ export default function CatalogPanel({
           virtual={{ start: startIndex, end: endIndex, topPad, bottomPad }}
           onPreview={(id, opener) => openCatalogDrawerPreview(id, "product-card", opener)}
           onAdd={(id) => addRememberedItem(id)}
-          onAutoPlace={
-            onAutoPlaceInRoom
-              ? (id) => onAutoPlaceInRoom(id, variantSelectionByItem[id])
-              : undefined
-          }
+          onAutoPlace={onAutoPlaceInRoom ? (id) => onAutoPlaceInRoom(id, variantSelectionByItem[id]) : undefined}
           onCatalogDragStart={(id) => onCatalogDragStart?.(id, variantSelectionByItem[id])}
           onCatalogDragEnd={onCatalogDragEnd}
           onToggleCompare={toggleCompare}
@@ -1075,6 +1073,7 @@ export default function CatalogPanel({
         }
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
+        placesDirectly={directAdd} onChooseSpot={onAutoPlaceInRoom}
         focusRestoration={focusRestoration}
         onClose={closeCatalogDrawer}
         configurationOptions={selectedConfigurationOptions}

@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import {
+  confirmCatalogPlacementIfVisible,
   openCatalogPreview,
   selectEditorWorkspace,
   waitForCatalogReady,
@@ -251,10 +252,8 @@ async function createManualZoneInBedroom(page: Page) {
   const addToRoom = page.getByTestId("catalog-detail-add-to-room");
   await expect(addToRoom).toContainText("Add set of 2 to Bedroom");
   await addToRoom.click();
-
-  const confirmPlacement = page.getByTestId("catalog-placement-confirm");
-  await expect(confirmPlacement).toBeVisible({ timeout: 10_000 });
-  await confirmPlacement.click();
+  // Consumers' Add places the set at once, with Undo (FU4); a preview only when no spot is open.
+  expect(await confirmCatalogPlacementIfVisible(page)).toBe(true);
   await expect(page.getByText("Group (2)", { exact: true })).toBeVisible({
     timeout: 10_000,
   });

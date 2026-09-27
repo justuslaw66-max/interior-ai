@@ -368,15 +368,23 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
   return true;
 }
 
+/**
+ * Finishes an Add: consumers' Add places the product at once and says so in a toast with Undo
+ * (audit finding FU4); Pro's preview, or a consumer's preview when no open spot was found, is
+ * confirmed here. True once the product is in the room.
+ */
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
-  const visible = await expect(confirmButton)
+  const placedToast = page.getByTestId("editor-action-toast");
+  const visible = await expect(confirmButton.or(placedToast).first())
     .toBeVisible({ timeout: 20000 })
     .then(() => true)
     .catch(() => false);
   if (!visible) return false;
 
-  await confirmButton.click({ noWaitAfter: true });
+  if (!(await placedToast.isVisible().catch(() => false))) {
+    await confirmButton.click({ noWaitAfter: true });
+  }
   await page.waitForTimeout(600);
   return true;
 }

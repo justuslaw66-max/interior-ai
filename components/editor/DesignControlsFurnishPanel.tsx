@@ -18,6 +18,7 @@ import {
   type CatalogTopCategory,
 } from "@/lib/catalog/view-builders";
 import { useCatalogCategoryNavigation } from "@/lib/catalog/filter-navigation";
+import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -27,6 +28,8 @@ type ImportedFamilyOption = {
 type DesignControlsFurnishPanelProps = {
   dark: boolean;
   canEdit: boolean;
+  /** Pro chooses Preview Add or Auto Add; consumers' Add places the product (FU4). */
+  isDesigner?: boolean;
   activeRoomName: string;
   activeRoomId: string;
   catalogRoomNavigationRevision: number;
@@ -118,7 +121,7 @@ function normalizeRoomRecommendationKey(label: string): keyof typeof ROOM_RECOMM
 
 export default function DesignControlsFurnishPanel({
   dark,
-  canEdit,
+  canEdit, isDesigner = false,
   activeRoomName,
   activeRoomId,
   catalogRoomNavigationRevision,
@@ -811,31 +814,7 @@ export default function DesignControlsFurnishPanel({
             </select>
           </label>
         ) : null}
-        <div className="mt-3 grid grid-cols-2 gap-2" data-testid="placement-add-mode">
-          {(["preview", "auto"] as const).map((mode) => {
-            const active = placementAddMode === mode;
-            return (
-              <button
-                key={mode}
-                type="button"
-                data-testid={`placement-add-mode-${mode}`}
-                data-active={active ? "true" : "false"}
-                className={
-                  active
-                    ? dark
-                      ? "rounded-lg bg-white px-3 py-2 text-xs font-semibold text-neutral-950"
-                      : "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white"
-                    : dark
-                      ? "rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-neutral-200 hover:bg-white/10"
-                      : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-                }
-                onClick={() => onPlacementAddModeChange(mode)}
-              >
-                {mode === "preview" ? "Preview Add" : "Auto Add"}
-              </button>
-            );
-          })}
-        </div>
+        <PlacementAddModeToggle visible={isDesigner} mode={placementAddMode} onChange={onPlacementAddModeChange} />
       </section>
 
       <section
@@ -848,7 +827,7 @@ export default function DesignControlsFurnishPanel({
         <CatalogPanel
             items={catalogItems}
             canEdit={canEdit}
-            onAddToRoom={onAddCatalogItemToRoom}
+            onAddToRoom={onAddCatalogItemToRoom} directAdd={!isDesigner}
             onAutoPlaceInRoom={onAutoPlaceCatalogItemInRoom}
             onPreviewPlacementIntent={onPreviewCatalogPlacementIntent}
             onCatalogDragStart={onCatalogDragStart}

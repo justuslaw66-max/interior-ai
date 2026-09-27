@@ -852,7 +852,7 @@ export default function DesignControlsPanel({
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
             dark={dark}
-            canEdit={canEdit}
+            canEdit={canEdit} isDesigner={isDesigner}
             {...{ activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}

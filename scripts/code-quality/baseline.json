@@ -117,11 +117,11 @@
       "limit": 250
     },
     "components/catalog/CatalogItemDrawer.tsx": {
-      "lines": 516,
+      "lines": 476,
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
-      "lines": 1160,
+      "lines": 1159,
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -213,7 +213,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
-      "lines": 1309,
+      "lines": 1288,
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
@@ -645,7 +645,7 @@
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
-      "lines": 2103,
+      "lines": 2091,
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
@@ -1525,11 +1525,11 @@
     "components/catalog/CatalogItemDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 470
+        "maximum": 426
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 28
+        "maximum": 23
       }
     },
     "components/catalog/CatalogItemFinishPicker.tsx": {
@@ -1547,7 +1547,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 978
+        "maximum": 975
       },
       "complexFunctions": {
         "count": 1,
@@ -1967,7 +1967,7 @@
     "components/editor/DesignControlsFurnishPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1191
+        "maximum": 1167
       },
       "complexFunctions": {
         "count": 2,
@@ -4305,7 +4305,7 @@
     "lib/useDesignPageCatalogPlacement.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 1925
+        "maximum": 1912
       },
       "complexFunctions": {
         "count": 2,

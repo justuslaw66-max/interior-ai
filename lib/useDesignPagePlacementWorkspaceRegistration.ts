@@ -59,7 +59,7 @@ export function useDesignPagePlacementWorkspaceRegistration({
       roomWidth,
       roomDepth,
       wallThickness,
-      placementAddMode: base.state.editor.placementAddMode,
+      placementAddMode: isDesigner ? base.state.editor.placementAddMode : "auto", // FU4: consumers' Add places it
       hasWholeHousePlan: scene.hasWholeHousePlan,
       catalogCanvasDragDisabled:
         isClientPreview || editorMode === "present",
