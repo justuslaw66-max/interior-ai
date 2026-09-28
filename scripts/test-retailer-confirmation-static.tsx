@@ -66,6 +66,12 @@ for (const expected of [
 ]) {
   assert.ok(open.includes(expected), `The open buy list must keep ${expected}.`);
 }
+// The gate's layout test needs Close's ring in WebKit too, where the Tab trap's move isn't focus-visible.
+assert.match(
+  open,
+  /data-testid="shopping-buy-list-close"[^>]*class="[^"]*focus:ring-2 focus:ring-blue-500 focus:ring-offset-2/,
+  "The buy list's Close must show its ring on any focus, as the retailer dialog's Close did."
+);
 assert.match(open, /data-testid="shopping-buy-list-progress"[^>]*>1 of 3 opened</);
 assert.equal((open.match(/data-testid="shopping-buy-list-row"/g) ?? []).length, 3);
 assert.equal((open.match(/data-testid="shopping-buy-list-open"/g) ?? []).length, 3);
