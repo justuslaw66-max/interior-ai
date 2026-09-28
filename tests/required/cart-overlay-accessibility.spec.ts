@@ -125,10 +125,20 @@ async function expectCanvasCovered(page: Page, covered: boolean) {
   expect(reachable).toBeNull();
 }
 
-async function removeByKeyboard(page: Page, instanceId: string, key: "Enter" | "Space") {
+/**
+ * The list shows before the editor can edit (its products are still loading), and a disabled
+ * button can't take focus: `focus()` on it does nothing and isn't retried. So wait for Remove.
+ */
+async function focusRemove(page: Page, instanceId: string) {
   const button = removeButton(page, instanceId);
+  await expect(button).toBeEnabled();
   await button.focus();
   await expect(button).toBeFocused();
+  return button;
+}
+
+async function removeByKeyboard(page: Page, instanceId: string, key: "Enter" | "Space") {
+  await focusRemove(page, instanceId);
   await page.keyboard.press(key);
   await expect(row(page, instanceId)).toHaveCount(0);
 }
@@ -308,8 +318,7 @@ shopTest("Desktop and 390x844 Shopping lists fit the screen with 44px actions an
   expect(phone.layer.bottom).toBeLessThanOrEqual(PHONE.height - 64 + 0.5);
 
   // A keyboard move back onto Remove shows its focus ring.
-  const first = removeButton(page, IDS[0]);
-  await first.focus();
+  const first = await focusRemove(page, IDS[0]);
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
   await expect(first).toBeFocused();
