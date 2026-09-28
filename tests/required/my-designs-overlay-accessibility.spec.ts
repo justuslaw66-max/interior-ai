@@ -24,7 +24,16 @@ const MOBILE = { width: 390, height: 844 };
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required for My Designs tests.");
 
-const pool = new Pool({ connectionString: databaseUrl });
+// In CI this gate has stalled until a test's 30 s limit with no browser call pending, so on a database
+// call, and nothing said which or why. These limits end such a call sooner with its own error: no free
+// connection, a lock held too long, a statement that ran too long, or no answer from the server.
+const pool = new Pool({
+  connectionString: databaseUrl,
+  connectionTimeoutMillis: 10_000,
+  lock_timeout: 10_000,
+  statement_timeout: 15_000,
+  query_timeout: 20_000,
+});
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 function fixtureIdentity(testInfo: TestInfo, variant: string) {
