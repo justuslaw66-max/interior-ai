@@ -69,6 +69,8 @@ function BuyListNotice({ notice }: { notice: ShoppingNotice | null }) {
 /**
  * Buy at a shop with several products: one link per product, each opening one tab, ticked once
  * opened. Browsers let one click open one tab, so a burst of tabs would be blocked (J's Q2, 27 Sep).
+ * Close shows its ring on any focus, as the retailer dialog's Close did: after a click opens the
+ * list, WebKit doesn't treat Close as focus-visible when the dialog's Tab trap moves focus onto it.
  */
 export function ShoppingBuyListDialog({ retailer, openedIds, notice, busy, onOpenLine, onClose }: ShoppingBuyListDialogProps) {
   const opened = retailer ? retailer.lines.filter((line) => openedIds.has(line.instanceId)).length : 0;
@@ -83,6 +85,7 @@ export function ShoppingBuyListDialog({ retailer, openedIds, notice, busy, onOpe
       onClose={onClose}
       closeLabel="Close the buy list"
       closeButtonTestId="shopping-buy-list-close"
+      closeButtonClassName="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       testId="shopping-buy-list"
       dialogId={SHOPPING_BUY_LIST_DIALOG_ID}
       returnFocusIds={returnFocusIds}
