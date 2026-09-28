@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Locator, type Page, type Request, type TestInfo } from "@playwright/test";
 import { Pool } from "pg";
 
 // My designs is one page (audit findings MD1–MD4 and MD6). The editor's More → My designs saves
@@ -34,7 +34,26 @@ const pool = new Pool({
   statement_timeout: 15_000,
   query_timeout: 20_000,
 });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+
+// Each database call while it runs, and the slowest ones in the current test, for the diagnostics below.
+const openDbCalls = new Map<symbol, { name: string; at: number }>();
+let slowestDbCalls: Array<{ name: string; ms: number }> = [];
+const prisma = new PrismaClient({ adapter: new PrismaPg(pool) }).$extends({
+  query: {
+    async $allOperations({ model, operation, args, query }) {
+      const key = Symbol(operation);
+      const name = `${model ?? "raw"}.${operation}`;
+      const at = Date.now();
+      openDbCalls.set(key, { name, at });
+      try {
+        return await query(args);
+      } finally {
+        openDbCalls.delete(key);
+        slowestDbCalls = [...slowestDbCalls, { name, ms: Date.now() - at }].sort((a, b) => b.ms - a.ms).slice(0, 5);
+      }
+    },
+  },
+});
 
 function fixtureIdentity(testInfo: TestInfo, variant: string) {
   return crypto
@@ -202,6 +221,91 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
+// Where a test's time went, and what the database and the page were doing, printed when a test fails
+// or runs over 10 s. In CI, "empty, populated, at-the-limit and Pro states" has still run out of time
+// with the database limits above in place and none of them reached, and once failed with the Pro
+// design's card missing after the switch to the Pro user; the log said no more than that.
+const phases: Array<{ name: string; at: number }> = [];
+const pageEvents: Array<{ name: string; at: number }> = [];
+const openRequests = new Map<Request, number>();
+function phase(name: string) {
+  phases.push({ name, at: Date.now() });
+}
+
+function pathOf(url: string) {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url;
+  }
+}
+
+/** The page's address, its cards and its limit line, or why they couldn't be read within 3 s. */
+async function myDesignsShown(page: Page) {
+  const read = async () => {
+    const cards = await page.locator('[data-testid^="my-design-card-"]').evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("data-testid") ?? ""));
+    const limit = await page.getByTestId("my-designs-limit").textContent({ timeout: 1_000 }).catch(() => null);
+    return `${cards.length} cards (${cards.slice(0, 3).join(", ")}), limit: ${limit ?? "none"}`;
+  };
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<string>((resolve) => {
+    timer = setTimeout(() => resolve("no answer from the page in 3 s"), 3_000);
+  });
+  try {
+    return `${page.url()}: ${await Promise.race([read(), late])}`;
+  } catch (error) {
+    return `${page.url()}: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}`;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+test.beforeEach(({ page }) => {
+  phases.length = 0;
+  pageEvents.length = 0;
+  openRequests.clear();
+  openDbCalls.clear();
+  slowestDbCalls = [];
+  phase("start");
+  const note = (name: string) => pageEvents.push({ name, at: Date.now() });
+  const isDocument = (request: Request) => request.resourceType() === "document";
+  page.on("request", (request) => {
+    openRequests.set(request, Date.now());
+    if (isDocument(request)) note(`${request.method()} ${pathOf(request.url())} sent`);
+  });
+  page.on("requestfinished", (request) => openRequests.delete(request));
+  page.on("requestfailed", (request) => {
+    openRequests.delete(request);
+    if (isDocument(request)) note(`${pathOf(request.url())} failed: ${request.failure()?.errorText ?? "no reason given"}`);
+  });
+  page.on("response", (response) => {
+    if (isDocument(response.request())) note(`${response.status()} ${pathOf(response.url())}`);
+  });
+  page.on("domcontentloaded", () => note("DOMContentLoaded"));
+  page.on("load", () => note("load"));
+  page.on("pageerror", (error) => note(`page error: ${error.message.split("\n")[0]}`));
+  page.on("crash", () => note("page crashed"));
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  const now = Date.now();
+  const start = phases[0]?.at ?? now;
+  const failed = testInfo.status !== testInfo.expectedStatus;
+  if (!failed && now - start < 10_000) return;
+  const label = `[my-designs gate] ${testInfo.project.name} "${testInfo.title}"`;
+  const timings = phases.map(({ name, at }, index) => `${name} ${at - start}–${(phases[index + 1]?.at ?? now) - start} ms`);
+  console.info(`${label} ${failed ? "failed" : "was slow"}: ${timings.join(" · ")}`);
+  const dbOpen = [...openDbCalls.values()].map(({ name, at }) => `${name} since ${at - start} ms`);
+  const dbSlowest = slowestDbCalls.map(({ name, ms }) => `${name} ${ms} ms`);
+  console.info(`${label} database calls still open: ${dbOpen.join(" · ") || "none"}; slowest: ${dbSlowest.join(" · ") || "none"}`);
+  if (!failed) return;
+  const events = pageEvents.slice(-12).map(({ name, at }) => `${at - start} ms ${name}`);
+  const open = [...openRequests].map(([request, at]) => `${request.method()} ${pathOf(request.url())} since ${at - start} ms`);
+  console.info(`${label} page events: ${events.join(" · ") || "none"}; requests still open: ${open.join(" · ") || "none"}`);
+  console.info(`${label} showed ${await myDesignsShown(page)}`);
+});
+
 test("More → My designs saves first, stays in the editor when saving fails, and opens the page once saved", async ({ page }, testInfo) => {
   const seed = await createSeed(testInfo, "consumer", ["Entry Target"]);
   const [designId] = seed.designIds;
@@ -257,30 +361,40 @@ test("guests get a sign-in prompt, and the editor offers them no My designs", as
 });
 
 test("empty, populated, at-the-limit and Pro states", async ({ page }, testInfo) => {
+  phase("seed the consumer");
   const seed = await createSeed(testInfo, "consumer", []);
+  phase("seed the Pro user");
   const pro = await createSeed(testInfo, "pro", ["Pro Living Room"], "pro");
   try {
+    phase("open the consumer's page");
     await openMyDesignsPage(page, seed);
+    phase("check the empty page");
     await expect(page.getByTestId("my-designs-empty")).toBeVisible();
     await expect(page.getByTestId("my-designs-grid")).toHaveCount(0);
     await expect(page.getByTestId("my-designs-limit")).toContainText("0 of 20 designs on the Free plan.");
     await expect(page.getByTestId("my-designs-new-design")).toHaveAttribute("href", "/design?start=new");
 
+    phase("insert 20 designs");
     for (let index = 0; index < 20; index += 1) {
       await createDesign(seed.userId, `${seed.userId}-extra-${index + 1}`, `Saved ${index + 1}`, index);
     }
+    phase("reload");
     await page.reload({ waitUntil: "domcontentloaded" });
+    phase("check 20 cards and the limit");
     await expect(page.getByTestId("my-designs-grid").locator(":scope > li")).toHaveCount(20);
     await expect(page.getByTestId("my-designs-limit")).toContainText(
       "20 of 20 designs on the Free plan. Delete a design or upgrade to save more."
     );
     await expect(page.getByTestId("my-designs-empty")).toHaveCount(0);
 
+    phase("open the Pro user's page");
     await page.context().clearCookies();
     await openMyDesignsPage(page, pro);
+    phase("check the Pro card");
     await expect(card(page, pro.designIds[0]).root).toContainText("Pro Living Room");
     await expect(page.getByTestId("my-designs-limit")).toHaveCount(0);
   } finally {
+    phase("clean up");
     await cleanupSeed(seed);
     await cleanupSeed(pro);
   }
@@ -377,10 +491,13 @@ test("a failed delete calls once, keeps the card, says why, and returns focus to
 });
 
 test("Rename and Share hide the page, keep focus inside, and return it to the card's button", async ({ page }, testInfo) => {
+  phase("seed");
   const seed = await createSeed(testInfo, "consumer", ["Rename Target"]);
   const [designId] = seed.designIds;
   try {
+    phase("open My designs");
     await openMyDesignsPage(page, seed);
+    phase("rename, then Escape");
     const target = card(page, designId);
     await chooseFromCardMenu(page, target.actions, "Rename");
     const rename = page.getByTestId("design-rename-dialog");
@@ -391,6 +508,7 @@ test("Rename and Share hide the page, keep focus inside, and return it to the ca
     await expect(rename).toHaveCount(0);
     await expect(target.actions).toBeFocused();
 
+    phase("rename and save");
     await chooseFromCardMenu(page, target.actions, "Rename");
     await page.getByTestId("design-rename-input").fill("Renamed On The Page");
     await page.getByTestId("design-rename-save").click();
@@ -398,17 +516,21 @@ test("Rename and Share hide the page, keep focus inside, and return it to the ca
     await expect(target.root).toContainText("Renamed On The Page");
     await expect(target.actions).toBeFocused();
     await expectPageBack(page);
+    phase("read the title from the database");
     expect((await prisma.design.findUniqueOrThrow({ where: { id: designId }, select: { title: true } })).title)
       .toBe("Renamed On The Page");
 
+    phase("share");
     await chooseFromCardMenu(page, target.actions, "Share");
     const share = page.getByRole("dialog", { name: "Share this design" });
     await expect(share.getByTestId("my-design-share-url")).toHaveValue(/\/share\/\S+$/);
+    phase("read the share token");
     const stored = await prisma.design.findUniqueOrThrow({
       where: { id: designId },
       select: { shareToken: true, shareEnabled: true },
     });
     expect(stored.shareEnabled).toBe(true);
+    phase("check the Share dialog and close it");
     await expect(share.getByTestId("my-design-share-url")).toHaveValue(`${BASE_URL}/share/${stored.shareToken}`);
     await expectModal(page, share);
     await share.getByTestId("my-design-share-done").click();
@@ -416,6 +538,7 @@ test("Rename and Share hide the page, keep focus inside, and return it to the ca
     await expect(target.actions).toBeFocused();
     await expect(target.root.getByTestId("my-design-shared")).toHaveText("Shared");
   } finally {
+    phase("clean up");
     await cleanupSeed(seed);
   }
 });
