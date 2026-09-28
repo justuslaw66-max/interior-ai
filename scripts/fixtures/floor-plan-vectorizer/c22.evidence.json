@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.11.0",
+ "exporterVersion": "app-evidence-0.12.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -429,7 +429,7 @@
       "yRatio": 0.300803
      },
      {
-      "xRatio": 0.180063,
+      "xRatio": 0.277923,
       "yRatio": 0.300803
      }
     ]
@@ -466,7 +466,7 @@
      },
      {
       "xRatio": 0.682933,
-      "yRatio": 0.268784
+      "yRatio": 0.268955
      },
      {
       "xRatio": 0.682933,
@@ -638,7 +638,7 @@
      },
      {
       "xRatio": 0.343032,
-      "yRatio": 0.906079
+      "yRatio": 0.901981
      },
      {
       "xRatio": 0.343032,
@@ -2343,7 +2343,7 @@
      440.375
     ],
     [
-     172.5,
+     266.25,
      440.375
     ]
    ],
@@ -2371,7 +2371,7 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     172.5,
+     266.25,
      440.375
     ],
     [
@@ -2461,7 +2461,7 @@
     ],
     [
      654.25,
-     393.5
+     393.75
     ]
    ],
    "thicknessPx": 14.0,
@@ -2489,7 +2489,7 @@
    "sourcePx": [
     [
      654.25,
-     393.5
+     393.75
     ],
     [
      654.25,
@@ -3070,43 +3070,11 @@
   },
   {
    "id": "e66",
-   "kind": "supported_opening_span",
-   "sourcePx": [
-    [
-     328.625,
-     1190.5
-    ],
-    [
-     328.625,
-     1326.5
-    ]
-   ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 181,
-   "opening": {
-    "kind": "door",
-    "operation": "sliding",
-    "hinge": "none",
-    "swingSide": 0,
-    "handing": "unknown",
-    "confidence": 0.6,
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null,
-    "note": "three or more staggered panel strokes",
-    "widthMm": 1536,
-    "between": [
-     "room-1",
-     "room-5"
-    ]
-   }
-  },
-  {
-   "id": "e67",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      328.625,
-     1326.5
+     1320.5
     ],
     [
      328.625,
@@ -3118,7 +3086,7 @@
    "opening": null
   },
   {
-   "id": "e68",
+   "id": "e67",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3135,7 +3103,7 @@
    "opening": null
   },
   {
-   "id": "e69",
+   "id": "e68",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3152,7 +3120,7 @@
    "opening": null
   },
   {
-   "id": "e70",
+   "id": "e69",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3184,7 +3152,7 @@
    }
   },
   {
-   "id": "e71",
+   "id": "e70",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3201,7 +3169,7 @@
    "opening": null
   },
   {
-   "id": "e72",
+   "id": "e71",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3218,39 +3186,7 @@
    "opening": null
   },
   {
-   "id": "e73",
-   "kind": "supported_opening_span",
-   "sourcePx": [
-    [
-     266.25,
-     440.375
-    ],
-    [
-     424.5,
-     440.375
-    ]
-   ],
-   "thicknessPx": 14.5,
-   "thicknessMm": 164,
-   "opening": {
-    "kind": "door",
-    "operation": "sliding",
-    "hinge": "none",
-    "swingSide": 0,
-    "handing": "unknown",
-    "confidence": 0.6,
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null,
-    "note": "a wide window onto a balcony from a living space",
-    "widthMm": 2847,
-    "between": [
-     "room-6",
-     "room-1"
-    ]
-   }
-  },
-  {
-   "id": "e74",
+   "id": "e72",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3267,7 +3203,7 @@
    "opening": null
   },
   {
-   "id": "e75",
+   "id": "e73",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3284,7 +3220,7 @@
    "opening": null
   },
   {
-   "id": "e76",
+   "id": "e74",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3301,7 +3237,7 @@
    "opening": null
   },
   {
-   "id": "e77",
+   "id": "e75",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3318,7 +3254,7 @@
    "opening": null
   },
   {
-   "id": "e78",
+   "id": "e76",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3335,7 +3271,7 @@
    "opening": null
   },
   {
-   "id": "e79",
+   "id": "e77",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3352,7 +3288,7 @@
    "opening": null
   },
   {
-   "id": "e80",
+   "id": "e78",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3369,7 +3305,7 @@
    "opening": null
   },
   {
-   "id": "e81",
+   "id": "e79",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3401,7 +3337,7 @@
    }
   },
   {
-   "id": "e82",
+   "id": "e80",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3418,7 +3354,7 @@
    "opening": null
   },
   {
-   "id": "e83",
+   "id": "e81",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3435,7 +3371,7 @@
    "opening": null
   },
   {
-   "id": "e84",
+   "id": "e82",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3452,7 +3388,7 @@
    "opening": null
   },
   {
-   "id": "e85",
+   "id": "e83",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3469,7 +3405,7 @@
    "opening": null
   },
   {
-   "id": "e86",
+   "id": "e84",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3486,7 +3422,7 @@
    "opening": null
   },
   {
-   "id": "e87",
+   "id": "e85",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3518,7 +3454,7 @@
    }
   },
   {
-   "id": "e88",
+   "id": "e86",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3535,7 +3471,7 @@
    "opening": null
   },
   {
-   "id": "e89",
+   "id": "e87",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3552,7 +3488,7 @@
    "opening": null
   },
   {
-   "id": "e90",
+   "id": "e88",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3569,7 +3505,7 @@
    "opening": null
   },
   {
-   "id": "e91",
+   "id": "e89",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3601,7 +3537,7 @@
    }
   },
   {
-   "id": "e92",
+   "id": "e90",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3618,7 +3554,7 @@
    "opening": null
   },
   {
-   "id": "e93",
+   "id": "e91",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3635,39 +3571,7 @@
    "opening": null
   },
   {
-   "id": "e94",
-   "kind": "supported_opening_span",
-   "sourcePx": [
-    [
-     654.25,
-     393.75
-    ],
-    [
-     654.25,
-     530.0
-    ]
-   ],
-   "thicknessPx": 14.0,
-   "thicknessMm": 158,
-   "opening": {
-    "kind": "door",
-    "operation": "sliding",
-    "hinge": "none",
-    "swingSide": 0,
-    "handing": "unknown",
-    "confidence": 0.55,
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null,
-    "note": "staggered strokes between two wall ends",
-    "widthMm": 1542,
-    "between": [
-     "room-2",
-     "room-10"
-    ]
-   }
-  },
-  {
-   "id": "e95",
+   "id": "e92",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3684,7 +3588,7 @@
    "opening": null
   },
   {
-   "id": "e96",
+   "id": "e93",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3701,7 +3605,7 @@
    "opening": null
   },
   {
-   "id": "e97",
+   "id": "e94",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3733,7 +3637,7 @@
    }
   },
   {
-   "id": "e98",
+   "id": "e95",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3750,7 +3654,7 @@
    "opening": null
   },
   {
-   "id": "e99",
+   "id": "e96",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3767,7 +3671,7 @@
    "opening": null
   },
   {
-   "id": "e100",
+   "id": "e97",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3784,7 +3688,7 @@
    "opening": null
   },
   {
-   "id": "e101",
+   "id": "e98",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3816,7 +3720,7 @@
    }
   },
   {
-   "id": "e102",
+   "id": "e99",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3833,7 +3737,7 @@
    "opening": null
   },
   {
-   "id": "e103",
+   "id": "e100",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3850,7 +3754,7 @@
    "opening": null
   },
   {
-   "id": "e104",
+   "id": "e101",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3867,7 +3771,7 @@
    "opening": null
   },
   {
-   "id": "e105",
+   "id": "e102",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3884,7 +3788,7 @@
    "opening": null
   },
   {
-   "id": "e106",
+   "id": "e103",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4026,7 +3930,7 @@
      "y": 440.375
     },
     {
-     "x": 172.5,
+     "x": 266.25,
      "y": 440.375
     }
    ],
@@ -4102,7 +4006,7 @@
     },
     {
      "x": 654.25,
-     "y": 393.5
+     "y": 393.75
     },
     {
      "x": 654.25,
@@ -4325,7 +4229,7 @@
     },
     {
      "x": 328.625,
-     "y": 1326.5
+     "y": 1320.5
     },
     {
      "x": 328.625,
@@ -4357,12 +4261,12 @@
     "e64",
     "e65",
     "e11",
+    "e10",
     "e66",
     "e67",
     "e68",
     "e69",
-    "e70",
-    "e71"
+    "e70"
    ],
    "areaM2": 8.46,
    "sourceLabels": [
@@ -4398,11 +4302,11 @@
     }
    ],
    "edgeIds": [
-    "e72",
-    "e73",
+    "e71",
+    "e29",
     "e28",
-    "e74",
-    "e75"
+    "e72",
+    "e73"
    ],
    "areaM2": 6.54,
    "sourceLabels": [
@@ -4460,14 +4364,14 @@
    "edgeIds": [
     "e21",
     "e20",
+    "e74",
+    "e75",
     "e76",
     "e77",
     "e78",
     "e79",
     "e80",
-    "e81",
-    "e82",
-    "e83"
+    "e81"
    ],
    "areaM2": 4.25,
    "sourceLabels": [
@@ -4508,10 +4412,10 @@
    ],
    "edgeIds": [
     "e13",
-    "e84",
+    "e82",
     "e64",
     "e63",
-    "e85",
+    "e83",
     "e14"
    ],
    "areaM2": 3.43,
@@ -4566,16 +4470,16 @@
     }
    ],
    "edgeIds": [
+    "e84",
+    "e85",
     "e86",
+    "e69",
+    "e68",
     "e87",
     "e88",
-    "e70",
-    "e69",
     "e89",
     "e90",
-    "e91",
-    "e92",
-    "e93"
+    "e91"
    ],
    "areaM2": 2.32,
    "sourceLabels": [
@@ -4615,12 +4519,12 @@
     }
    ],
    "edgeIds": [
-    "e94",
+    "e35",
     "e34",
-    "e95",
-    "e96",
-    "e97",
-    "e98"
+    "e92",
+    "e93",
+    "e94",
+    "e95"
    ],
    "areaM2": 1.86,
    "sourceLabels": [
@@ -4656,11 +4560,11 @@
     }
    ],
    "edgeIds": [
+    "e96",
+    "e97",
+    "e98",
     "e99",
-    "e100",
-    "e101",
-    "e102",
-    "e103"
+    "e100"
    ],
    "areaM2": 1.73,
    "sourceLabels": [
@@ -4708,14 +4612,14 @@
     }
    ],
    "edgeIds": [
-    "e104",
+    "e101",
     "e57",
     "e56",
     "e55",
-    "e105",
-    "e87",
-    "e86",
-    "e106"
+    "e102",
+    "e85",
+    "e84",
+    "e103"
    ],
    "areaM2": 1.32,
    "sourceLabels": [
@@ -4738,6 +4642,10 @@
   "facesLeftOutAsSlivers": 0,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
+  "doubleSwingsReadAsCasements": 0,
+  "foldingScrapsDropped": 0,
+  "slidingPanelsReadAsWindows": 0,
+  "stripsThatAreNoSlidingPanels": 0,
   "windowsReadAsPartitions": 0,
   "openingsRejectedAsNotLeadingAnywhere": 4,
   "labelsOutsideRooms": [],

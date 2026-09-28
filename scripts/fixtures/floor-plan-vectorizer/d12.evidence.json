@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.11.0",
+ "exporterVersion": "app-evidence-0.12.0",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -1419,8 +1419,8 @@
     "swingTowardSourcePx": null
    },
    {
-    "kind": "door",
-    "operation": "sliding",
+    "kind": "window",
+    "operation": "fixed",
     "centerXRatio": 0.36049,
     "centerYRatio": 0.804311,
     "spanStart": {
@@ -1431,7 +1431,7 @@
      "xRatio": 0.36049,
      "yRatio": 0.909295
     },
-    "confidence": 0.55,
+    "confidence": 0.5,
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
@@ -1447,7 +1447,7 @@
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
-    "note": "staggered strokes between two wall ends",
+    "note": "strokes along the gap that are no sliding panels: a window",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    },
@@ -2749,15 +2749,15 @@
    "thicknessPx": 46.0,
    "thicknessMm": 298,
    "opening": {
-    "kind": "door",
-    "operation": "sliding",
+    "kind": "window",
+    "operation": "fixed",
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
-    "confidence": 0.55,
+    "confidence": 0.5,
     "hingeSourcePx": null,
     "swingTowardSourcePx": null,
-    "note": "staggered strokes between two wall ends",
+    "note": "strokes along the gap that are no sliding panels: a window",
     "widthMm": 2428,
     "between": [
      "room-9",
@@ -3667,8 +3667,8 @@
   "bars": 55,
   "gapsSeen": 91,
   "openings": {
-   "door": 9,
-   "window": 6,
+   "door": 8,
+   "window": 7,
    "open_passage": 1,
    "wall": 2
   },
@@ -3678,6 +3678,10 @@
   "facesLeftOutAsSlivers": 0,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
+  "doubleSwingsReadAsCasements": 0,
+  "foldingScrapsDropped": 0,
+  "slidingPanelsReadAsWindows": 0,
+  "stripsThatAreNoSlidingPanels": 1,
   "windowsReadAsPartitions": 0,
   "openingsRejectedAsNotLeadingAnywhere": 1,
   "labelsOutsideRooms": [],
