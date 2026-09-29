@@ -135,9 +135,10 @@ function parseRgb(value: string): Rgb {
 }
 
 async function expectRestrainedNavigationAccent(page: Page) {
-  const commandBar = page.getByTestId("editor-command-bar");
+  // From md, 2D | 3D sits in the canvas toolbar over the canvas, not in the bar (UX 4c).
+  const canvasToolbar = page.getByTestId("canvas-view-toolbar");
   const navigationItems = [
-    commandBar.getByRole("button", { name: "3D", exact: true }),
+    canvasToolbar.getByRole("button", { name: "3D", exact: true }),
     page.getByTestId("editor-design-steps").locator('[aria-current="step"]'),
     page.getByTestId("editor-rail-design"),
   ];
@@ -2151,7 +2152,7 @@ test.describe("Pro visual policy", () => {
     });
 
     await page
-      .getByTestId("editor-command-bar")
+      .getByTestId("canvas-view-toolbar")
       .getByRole("button", { name: "2D", exact: true })
       .click();
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
