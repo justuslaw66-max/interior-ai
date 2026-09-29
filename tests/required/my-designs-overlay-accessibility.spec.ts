@@ -1,7 +1,16 @@
 import crypto from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { expect, test, type Locator, type Page, type Request, type TestInfo } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Browser,
+  type BrowserContext,
+  type Locator,
+  type Page,
+  type Request,
+  type TestInfo,
+} from "@playwright/test";
 import { Pool } from "pg";
 
 // My designs is one page (audit findings MD1–MD4 and MD6). The editor's More → My designs saves
@@ -221,13 +230,15 @@ test.afterAll(async () => {
   await prisma.$disconnect();
 });
 
-// Where a test's time went, and what the database and the page were doing, printed when a test fails
-// or runs over 10 s. In CI, "empty, populated, at-the-limit and Pro states" has still run out of time
-// with the database limits above in place and none of them reached, and once failed with the Pro
-// design's card missing after the switch to the Pro user; the log said no more than that.
+// Where a test's time went, and what the database and the pages were doing, printed when a test fails
+// or runs over 10 s. It showed the switch to the Pro user racing the consumer's page (see
+// openSecondUserPage). It stays for the stalls not yet explained: runs that reached the 30 s limit with
+// nothing pending, and WebKit's "Rename and Share" failing the same way.
 const phases: Array<{ name: string; at: number }> = [];
 const pageEvents: Array<{ name: string; at: number }> = [];
-const openRequests = new Map<Request, number>();
+const openRequests = new Map<Request, { at: number; prefix: string }>();
+// The page the report describes: the test's own, or a second user's once it opens.
+let reportedPage: Page | undefined;
 function phase(name: string) {
   phases.push({ name, at: Date.now() });
 }
@@ -261,17 +272,12 @@ async function myDesignsShown(page: Page) {
   }
 }
 
-test.beforeEach(({ page }) => {
-  phases.length = 0;
-  pageEvents.length = 0;
-  openRequests.clear();
-  openDbCalls.clear();
-  slowestDbCalls = [];
-  phase("start");
-  const note = (name: string) => pageEvents.push({ name, at: Date.now() });
+/** Records a page's document requests, load events, errors and open requests for the report. */
+function watchPage(page: Page, prefix: string) {
+  const note = (name: string) => pageEvents.push({ name: `${prefix}${name}`, at: Date.now() });
   const isDocument = (request: Request) => request.resourceType() === "document";
   page.on("request", (request) => {
-    openRequests.set(request, Date.now());
+    openRequests.set(request, { at: Date.now(), prefix });
     if (isDocument(request)) note(`${request.method()} ${pathOf(request.url())} sent`);
   });
   page.on("requestfinished", (request) => openRequests.delete(request));
@@ -286,9 +292,26 @@ test.beforeEach(({ page }) => {
   page.on("load", () => note("load"));
   page.on("pageerror", (error) => note(`page error: ${error.message.split("\n")[0]}`));
   page.on("crash", () => note("page crashed"));
-});
+}
 
-test.afterEach(async ({ page }, testInfo) => {
+// A second user's page opens in a browser context of its own. Swapping the session cookie in the first
+// user's context raced the first user's page: every page asks /api/auth/session once it loads (the root
+// layout's SessionProvider), and Auth.js sets the session cookie again in each answer, so an answer that
+// landed after the swap signed the first user back in, and the Pro user's page showed the consumer's
+// designs. The context closes after the report has read its page.
+const secondUserContexts: BrowserContext[] = [];
+
+async function openSecondUserPage(browser: Browser, seed: Seed) {
+  const context = await browser.newContext();
+  secondUserContexts.push(context);
+  const page = await context.newPage();
+  watchPage(page, "second user: ");
+  reportedPage = page;
+  await openMyDesignsPage(page, seed);
+  return page;
+}
+
+async function reportSlowOrFailedTest(page: Page, testInfo: TestInfo) {
   const now = Date.now();
   const start = phases[0]?.at ?? now;
   const failed = testInfo.status !== testInfo.expectedStatus;
@@ -301,9 +324,29 @@ test.afterEach(async ({ page }, testInfo) => {
   console.info(`${label} database calls still open: ${dbOpen.join(" · ") || "none"}; slowest: ${dbSlowest.join(" · ") || "none"}`);
   if (!failed) return;
   const events = pageEvents.slice(-12).map(({ name, at }) => `${at - start} ms ${name}`);
-  const open = [...openRequests].map(([request, at]) => `${request.method()} ${pathOf(request.url())} since ${at - start} ms`);
+  const open = [...openRequests].map(([request, { at, prefix }]) =>
+    `${prefix}${request.method()} ${pathOf(request.url())} since ${at - start} ms`);
   console.info(`${label} page events: ${events.join(" · ") || "none"}; requests still open: ${open.join(" · ") || "none"}`);
   console.info(`${label} showed ${await myDesignsShown(page)}`);
+}
+
+test.beforeEach(({ page }) => {
+  phases.length = 0;
+  pageEvents.length = 0;
+  openRequests.clear();
+  openDbCalls.clear();
+  slowestDbCalls = [];
+  reportedPage = page;
+  phase("start");
+  watchPage(page, "");
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  try {
+    await reportSlowOrFailedTest(reportedPage ?? page, testInfo);
+  } finally {
+    await Promise.all(secondUserContexts.splice(0).map((context) => context.close()));
+  }
 });
 
 test("More → My designs saves first, stays in the editor when saving fails, and opens the page once saved", async ({ page }, testInfo) => {
@@ -360,7 +403,7 @@ test("guests get a sign-in prompt, and the editor offers them no My designs", as
   await expect(page.getByTestId("editor-command-overflow-load")).toHaveCount(0);
 });
 
-test("empty, populated, at-the-limit and Pro states", async ({ page }, testInfo) => {
+test("empty, populated, at-the-limit and Pro states", async ({ page, browser }, testInfo) => {
   phase("seed the consumer");
   const seed = await createSeed(testInfo, "consumer", []);
   phase("seed the Pro user");
@@ -388,11 +431,10 @@ test("empty, populated, at-the-limit and Pro states", async ({ page }, testInfo)
     await expect(page.getByTestId("my-designs-empty")).toHaveCount(0);
 
     phase("open the Pro user's page");
-    await page.context().clearCookies();
-    await openMyDesignsPage(page, pro);
+    const proPage = await openSecondUserPage(browser, pro);
     phase("check the Pro card");
-    await expect(card(page, pro.designIds[0]).root).toContainText("Pro Living Room");
-    await expect(page.getByTestId("my-designs-limit")).toHaveCount(0);
+    await expect(card(proPage, pro.designIds[0]).root).toContainText("Pro Living Room");
+    await expect(proPage.getByTestId("my-designs-limit")).toHaveCount(0);
   } finally {
     phase("clean up");
     await cleanupSeed(seed);
