@@ -2152,7 +2152,7 @@ test.describe("Pro visual policy", () => {
     expect(proTokens.canvas).toBe("#ffffff");
     expect(proTokens.panel).toBe("#ffffff");
     expect(proTokens.primary).toBe("#0b0d12");
-    expect(proTokens.accent).toBe("#2f6bff");
+    expect(proTokens.accent).toBe("#275fcb");
 
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toHaveAttribute("data-shadow-maps-enabled", "true");
