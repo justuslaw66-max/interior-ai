@@ -102,6 +102,7 @@ type FloorPlanState = StateSlice<
   | "planRoomCount"
   | "planItemCount"
   | "planOpeningCount"
+  | "roomIsDraft"
   | "activeFloorPlanTool"
   | "simplePlanControls"
   | "planGuidedActionsEnabled"

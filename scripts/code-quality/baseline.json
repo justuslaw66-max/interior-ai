@@ -125,7 +125,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 282,
+      "lines": 272,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -209,7 +209,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 464,
+      "lines": 427,
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
@@ -221,7 +221,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3711,
+      "lines": 3703,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -1575,11 +1575,11 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 234
+        "maximum": 221
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 25
+        "maximum": 21
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -1957,11 +1957,11 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 383
+        "maximum": 342
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 61
+        "maximum": 56
       }
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
@@ -1987,11 +1987,11 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3596
+        "maximum": 3587
       },
       "complexFunctions": {
         "count": 5,
-        "maximum": 249
+        "maximum": 247
       }
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -4777,7 +4777,7 @@
     "lib/useDesignPageSceneReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 226
+        "maximum": 225
       }
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {

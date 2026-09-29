@@ -94,6 +94,8 @@ export type DesignControlsPlanPanelProps = {
   planRoomCount: number;
   planItemCount: number;
   planOpeningCount: number;
+  /** The first visit's room, untouched (lib/design-page-template-furnishings.ts). */
+  roomIsDraft?: boolean;
   activeRoomName: string;
   activeRoomId: string;
   activeRoomType: RoomType;

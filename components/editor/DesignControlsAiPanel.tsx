@@ -7,6 +7,8 @@ import { STYLES, type AiLayoutProposal, type Style } from "@/lib/design-page-typ
 import type { RoomType } from "@/lib/room-types";
 import { formatDisplayArea, type DisplayUnit } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
+import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
+import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -23,6 +25,8 @@ type DesignControlsAiPanelProps = {
   /** The active room's polygon-aware floor area (lib/room-floor-area). */
   roomFloorAreaSqm: number;
   measurementUnit: DisplayUnit;
+  /** The first visit's room, untouched: its size is the default one (FR2). */
+  roomIsDraft?: boolean;
   activeRoomItemCount: number;
   aiLayoutProposal: AiLayoutProposal | null;
   onStyleChange: (style: Style) => void;
@@ -89,7 +93,7 @@ export default function DesignControlsAiPanel({
   roomWidth,
   roomDepth,
   roomFloorAreaSqm: roomArea,
-  measurementUnit,
+  measurementUnit, roomIsDraft = false,
   activeRoomItemCount,
   aiLayoutProposal,
   onStyleChange,
@@ -124,23 +128,9 @@ export default function DesignControlsAiPanel({
     proposalRequestedRoles.length - proposalMissingRoles.length
   );
   const selectedGoal = AI_LAYOUT_GOALS.find((goal) => goal.id === aiLayoutGoal) ?? AI_LAYOUT_GOALS[0];
-  const readinessChecks = [
-    {
-      label: "Living room",
-      ready: roomSupported,
-      detail: roomSupported ? "Supported" : "Living rooms first",
-    },
-    {
-      label: "Measured room",
-      ready: roomArea > 0,
-      detail: roomArea > 0 ? formatDisplayArea(roomArea, measurementUnit) : "Add dimensions",
-    },
-    {
-      label: "Must-haves",
-      ready: aiMustHaves.length > 0,
-      detail: aiMustHaves.length > 0 ? `${aiMustHaves.length} selected` : "Pick at least one",
-    },
-  ];
+  const readinessChecks = aiLayoutReadinessChecks({
+    roomSupported, roomArea, roomIsDraft, mustHaveCount: aiMustHaves.length, measurementUnit,
+  });
 
   const toggleAiMustHave = (label: string) => {
     setAiMustHaves((prev) =>
@@ -318,34 +308,7 @@ export default function DesignControlsAiPanel({
           Selected: {aiMustHaves.length > 0 ? aiMustHaves.join(", ") : "Choose at least one item"}
         </div>
 
-        <div
-          className={dark ? "designer-recessed mt-4 rounded-xl p-3" : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"}
-          data-testid="ai-layout-readiness"
-        >
-          <div className={dark ? "text-xs font-semibold uppercase tracking-wide text-neutral-400" : "text-xs font-semibold uppercase tracking-wide text-neutral-500"}>
-            Ready to generate
-          </div>
-          <div className="mt-2 grid gap-2">
-            {readinessChecks.map((check) => (
-              <div key={check.label} className="flex items-center justify-between gap-3 text-xs">
-                <span className={dark ? "text-neutral-200" : "text-neutral-800"}>{check.label}</span>
-                <span
-                  className={
-                    check.ready
-                      ? dark
-                        ? "rounded-full bg-emerald-500/20 px-2 py-0.5 font-semibold text-emerald-100"
-                        : "rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700"
-                      : dark
-                        ? "rounded-full bg-amber-500/20 px-2 py-0.5 font-semibold text-amber-100"
-                        : "rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-800"
-                  }
-                >
-                  {check.detail}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AiLayoutReadinessChecklist dark={dark} checks={readinessChecks} />
         <button id={GUEST_AI_LAYOUT_OPENER_ID}
           className={
             dark

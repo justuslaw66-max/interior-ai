@@ -1,4 +1,5 @@
 import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
+import { isUntouchedStarterRoom } from "@/lib/design-page-template-furnishings";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 export type BuildDesignPagePanelWorkspaceRegistrationInput = {
@@ -77,8 +78,8 @@ export function buildDesignPagePanelWorkspaceRegistration({
           documentRoom.derived.plan.designControlsPanelVisibleForLayout,
       },
       plan: {
-        roomConnectionChecklistItems:
-          planWorkspace.state.overlay.roomConnectionChecklistItems,
+        roomConnectionChecklistItems: planWorkspace.state.overlay.roomConnectionChecklistItems,
+        roomIsDraft: isUntouchedStarterRoom(coreShell.state.document.designSnapshot, planDocument.state.planOpenings),
         visiblePlanOpening:
           planWorkspace.state.inspector.visiblePlanOpening,
         visiblePlanOpeningRoomName:
