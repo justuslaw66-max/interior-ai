@@ -11,6 +11,7 @@ import {
 import type { ThreeEvent } from "@react-three/fiber";
 
 import { CATALOG_ITEMS } from "@/lib/catalog";
+import { announceUndoableAction, catalogAddAnnouncement } from "@/lib/editor-action-toast";
 import {
   buildCatalogFallbackPlacement,
   buildCatalogPlacementPreview as resolveCatalogPlacementPreview,
@@ -1195,19 +1196,10 @@ export function useDesignPageCatalogPlacement({
 
   const addCatalogItemToRoom = useCallback(
     (productId: string, variantId?: string, purchaseOptionId?: string) => {
-      if (placementAddMode === "auto") {
-        const placement = findSmartCatalogPlacement(
-          productId,
-          variantId,
-          purchaseOptionId
-        );
-        if (!placement) {
-          showToast("No open auto placement found in this room.");
-          return;
-        }
-        if (addCatalogPlacementToRoom(placement)) {
-          showToast(`Added to ${activeRoom?.name ?? "room"}`);
-        }
+      // Auto places it, with Undo (FU4); with no open spot, the preview lets the person choose one.
+      const smart = placementAddMode === "auto" ? findSmartCatalogPlacement(productId, variantId, purchaseOptionId) : null;
+      if (smart) {
+        if (addCatalogPlacementToRoom(smart)) announceUndoableAction(catalogAddAnnouncement(CATALOG_ITEMS[productId]?.title, activeRoom?.name));
         return;
       }
       const placement = buildCatalogPlacementPreview(
@@ -1225,7 +1217,7 @@ export function useDesignPageCatalogPlacement({
         ...placement,
         roomId: activeRoom?.id ?? getActiveRoomId(),
       });
-      showToast(`Previewing placement in ${activeRoom?.name ?? "room"}`);
+      showToast(placementAddMode === "auto" ? "No open spot here. Move it where you want it, then Add." : `Previewing placement in ${activeRoom?.name ?? "room"}`);
     },
     [
       activeRoom,
@@ -1239,23 +1231,20 @@ export function useDesignPageCatalogPlacement({
     ]
   );
 
+  // "Choose where it goes": the suggested spot, else a free one, as a preview to move and confirm.
   const autoPlaceCatalogItemInRoom = useCallback(
     (productId: string, variantId?: string, purchaseOptionId?: string) => {
-      const placement = findSmartCatalogPlacement(
-        productId,
-        variantId,
-        purchaseOptionId
-      );
+      const placement = findSmartCatalogPlacement(productId, variantId, purchaseOptionId) ?? buildCatalogPlacementPreview(productId, variantId, purchaseOptionId);
       if (!placement) {
-        showToast("No open auto placement found in this room.");
+        showToast("No clear placement found in this room. Move an item or choose another spot.");
         return;
       }
       setPendingPlacement(placement);
       setHoverPlacement(null);
-      showToast(`Auto placement ready in ${activeRoom?.name ?? "room"}`);
+      showToast(`Move it where you want it in ${activeRoom?.name ?? "the room"}, then Add.`);
     },
     [
-      activeRoom?.name,
+      activeRoom?.name, buildCatalogPlacementPreview,
       findSmartCatalogPlacement,
       setHoverPlacement,
       setPendingPlacement,
@@ -1903,9 +1892,8 @@ export function useDesignPageCatalogPlacement({
             placement.purchaseOptionId,
             targetRoom
           ) ?? placement;
-        if (!addCatalogPlacementToRoom(smartPlacement)) {
-          setPendingPlacement(smartPlacement);
-        }
+        if (addCatalogPlacementToRoom(smartPlacement)) announceUndoableAction(catalogAddAnnouncement(CATALOG_ITEMS[placement.productId]?.title, targetRoom?.name));
+        else setPendingPlacement(smartPlacement);
         return;
       }
       setPendingPlacement(placement);

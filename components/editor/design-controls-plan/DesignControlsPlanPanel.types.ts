@@ -58,7 +58,6 @@ export type DesignControlsPlanPanelProps = {
   canEdit: boolean;
   canEditPlanGeometry: boolean;
   showFloorPropertiesPanel?: boolean;
-  aiDesignEnabled?: boolean;
   viewMode: EditorViewMode;
   snapEnabled: boolean;
   newRoomType: RoomType;
@@ -150,7 +149,6 @@ export type DesignControlsPlanPanelProps = {
   onDrawFloorPlanRoom: () => void;
   onAddFloorPlanOpeningFromTool: (kind: RoomOpening2D["kind"]) => void;
   onGoFurnish: () => void;
-  onGoAiDesign: () => void;
   onGoShop: () => void;
   onGoView3D?: () => void;
   onApplyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;

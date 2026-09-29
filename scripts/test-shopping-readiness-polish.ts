@@ -14,6 +14,10 @@ const furnishSource = readFileSync(
   join(process.cwd(), "components/editor/DesignControlsFurnishPanel.tsx"),
   "utf8"
 );
+const furnishFooterSource = readFileSync(
+  join(process.cwd(), "components/editor/FurnishFooter.tsx"),
+  "utf8"
+);
 const shoppingSource = readFileSync(
   join(process.cwd(), "components/editor/ShoppingOverviewPanel.tsx"),
   "utf8"
@@ -62,21 +66,15 @@ assert.match(
   /notInCartCount/,
   "Shopping readiness should flag cart-ready items that are not included in checkout."
 );
-assert.match(
+// Furnish is products first (UX audit FU1): shopping readiness lives in Shop, and Furnish's foot
+// shows the room's products and total, on the way to Shop.
+assert.doesNotMatch(
   furnishSource,
-  /data-testid="shopping-readiness-detail"/,
-  "Room completeness should show a shopping-readiness detail card."
+  /shopping-readiness-detail|shopping-readiness-add-cart-ready|onReviewShoppingIssue/,
+  "Furnish should leave shopping readiness to Shop."
 );
-assert.match(
-  furnishSource,
-  /onReviewShoppingIssue\(blocker\.filter\)/,
-  "Room completeness blocker chips should open a filtered shopping review."
-);
-assert.match(
-  furnishSource,
-  /data-testid="shopping-readiness-add-cart-ready"/,
-  "Shopping readiness should expose a direct add-cart-ready action."
-);
+assert.match(furnishFooterSource, /formatSgd\(total\)/, "Furnish's room total should use the shared money format.");
+assert.match(furnishFooterSource, /data-testid="furnish-continue-to-shop"/, "Furnish's foot should lead on to Shop.");
 assert.match(
   shoppingSource,
   /data-testid="shopping-readiness-filters"/,
@@ -388,7 +386,7 @@ for (const relativePath of [
 const catalogCardSource = readSource("components/catalog/CatalogCard.tsx");
 assert.match(
   catalogCardSource,
-  /function CatalogCardHeading[\s\S]*?item\.priceAmount != null[\s\S]*?data-testid=\{`catalog-card-price-\$\{item\.id\}`\}[\s\S]*?formatSgd\(item\.priceAmount\)[\s\S]*?<CatalogCardHeading item=\{item\} \/>/,
+  /function CatalogCardPrice[\s\S]*?data-testid=\{`catalog-card-price-\$\{item\.id\}`\}[\s\S]*?item\.priceAmount != null \? formatSgd\(item\.priceAmount\)[\s\S]*?<CatalogCardPrice item=\{item\} \/>/,
   "Catalog cards should show the price when the catalog has one (UX audit FU2)."
 );
 

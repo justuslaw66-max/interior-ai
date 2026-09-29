@@ -384,11 +384,7 @@ export default function DesignControlsPanel({
   activeRoomCeilingVisible,
   activeRoomCeilingColor,
   stackedFloorView,
-  activeRoomShoppableCount,
-  activeRoomNeedsReviewCount,
-  activeRoomCategoryCounts,
   activeRoomShoppingSubtotal,
-  activeRoomPreviewNames,
   activeRoomShoppingItems,
   selectedPlacedItemId,
   activeRoomProductQuantities,
@@ -464,8 +460,6 @@ export default function DesignControlsPanel({
   onPreviewCatalogPlacementIntent,
   onCatalogDragStart,
   onCatalogDragEnd,
-  onAddActiveRoomCartReadyItems,
-  onReviewShoppingIssue,
   onSelectPlacedItem,
   onSelectedImportedFamilyChange,
   onSelectedImportedProductChange,
@@ -673,7 +667,6 @@ export default function DesignControlsPanel({
             isDesigner={isDesigner}
             canEdit={canEdit}
             canEditPlanGeometry={canEditPlanGeometry}
-            aiDesignEnabled={aiDesignEnabled}
             viewMode={viewMode}
             snapEnabled={snapEnabled}
             newRoomType={newRoomType}
@@ -764,7 +757,6 @@ export default function DesignControlsPanel({
             onDrawFloorPlanRoom={onDrawFloorPlanRoom}
             onAddFloorPlanOpeningFromTool={onAddFloorPlanOpeningFromTool}
             onGoFurnish={onGoFurnish}
-            onGoAiDesign={onGoAiDesign}
             onGoShop={onGoShop}
             onGoView3D={onGoView3D}
             onApplyPlanTemplate={onApplyPlanTemplate}
@@ -829,7 +821,7 @@ export default function DesignControlsPanel({
           />
         )}
         {(effectivePanelMode === "furnish" || effectivePanelMode === "ai") && (
-          <FurnishStepModes mode={effectivePanelMode} {...{ dark, aiDesignEnabled, onGoFurnish, onGoAiDesign, onOpenBuiltIns }} />
+          <FurnishStepModes mode={effectivePanelMode} {...{ dark, onGoFurnish, onOpenBuiltIns }} />
         )}
         {effectivePanelMode === "ai" && aiDesignEnabled && (
           <DesignControlsAiPanel
@@ -852,26 +844,16 @@ export default function DesignControlsPanel({
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
             dark={dark}
-            canEdit={canEdit}
-            {...{ activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
+            canEdit={canEdit} isDesigner={isDesigner}
+            {...{ aiDesignEnabled, onGoAiDesign, activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}
-            activeRoomItemCount={planItemCount}
-            activeRoomShoppableCount={activeRoomShoppableCount}
-            activeRoomNeedsReviewCount={activeRoomNeedsReviewCount}
-            activeRoomCategoryCounts={activeRoomCategoryCounts}
-            roomWidth={roomWidth}
-            roomDepth={roomDepth}
             activeRoomShoppingSubtotal={activeRoomShoppingSubtotal}
-            activeRoomPreviewNames={activeRoomPreviewNames}
             activeRoomShoppingItems={activeRoomShoppingItems}
             selectedPlacedItemId={selectedPlacedItemId}
             activeRoomProductQuantities={activeRoomProductQuantities}
             activeRoomVariantQuantities={activeRoomVariantQuantities}
             placementAddMode={placementAddMode}
-            budget={budget}
-            style={style}
-            roomCount={planRoomCount}
             catalogItems={catalogItems}
             selectedImportedFamilyKey={selectedImportedFamilyKey}
             selectedImportedProductId={selectedImportedProductId}
@@ -884,8 +866,6 @@ export default function DesignControlsPanel({
             onPreviewCatalogPlacementIntent={onPreviewCatalogPlacementIntent}
             onCatalogDragStart={onCatalogDragStart}
             onCatalogDragEnd={onCatalogDragEnd}
-            onAddActiveRoomCartReadyItems={onAddActiveRoomCartReadyItems}
-            onReviewShoppingIssue={onReviewShoppingIssue}
             onSelectPlacedItem={onSelectPlacedItem}
             onSelectRoom={onSelectRoom}
             onPlacementAddModeChange={onPlacementAddModeChange}

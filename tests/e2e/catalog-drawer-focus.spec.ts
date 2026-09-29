@@ -261,7 +261,11 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
     const cardOpener = firstPreview(page);
     const productTestId = await cardOpener.getAttribute("data-testid");
     const productId = productTestId?.replace("catalog-preview-", "") ?? "";
-    await page.getByTestId(`catalog-compare-toggle-${productId}`).click();
+    // Compare lives in the product's details.
+    await cardOpener.click();
+    await page.getByTestId(`catalog-compare-toggle-drawer-${productId}`).click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("catalog-item-drawer")).toBeHidden();
     const trayOpener = page.getByTestId(`catalog-compare-open-${productId}`);
     await trayOpener.focus();
     await trayOpener.press("Enter");

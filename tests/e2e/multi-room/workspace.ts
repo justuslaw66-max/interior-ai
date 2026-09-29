@@ -4,7 +4,6 @@ import {
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
   clickWithFallback,
-  expectInactiveOrHidden,
   getActiveRoomBodyProbe,
   getEmptyCanvasPoint,
 } from "./helpers";
@@ -36,96 +35,40 @@ export function registerWorkspaceTests() {
     await selectWorkspace(page, "furnish");
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
-    const catalogMode = page.getByTestId("furnish-mode-catalog");
-    const guidedMode = page.getByTestId("furnish-mode-guided");
     const fullCatalog = page.getByTestId("furnish-full-catalog");
     const catalogSearch = page.getByTestId("catalog-search-input");
 
-    await expect(catalogMode).toBeVisible();
-    await expect(guidedMode).toBeVisible();
-    await expect(catalogMode).toHaveAttribute("data-active", "true");
-    await expect(catalogMode).toHaveAttribute("aria-pressed", "true");
-    await expect(guidedMode).toHaveAttribute("aria-pressed", "false");
+    // Products first (FU1): the search with Suggest a layout beside it, the chips with All
+    // pressed, the products, and the room's foot. No guided mode, quick filters or room banner.
     await expect(fullCatalog).toBeVisible();
     await expect(catalogSearch).toBeVisible();
-    await expect(page.getByTestId("furnish-room-checklist")).not.toBeVisible();
-    await expect(page.getByText("Recommended for Living Room")).not.toBeVisible();
-    await expect(page.getByTestId("furnish-shopping-preview")).toBeVisible();
-    await expect(page.getByTestId("advanced-imported-models")).not.toHaveAttribute("open", "");
+    await expect(page.getByTestId("editor-workflow-ai")).toBeVisible();
+    await expect(page.getByTestId("furnish-mode-guided")).toHaveCount(0);
+    await expect(page.getByTestId("catalog-smart-filters")).toHaveCount(0);
+    await expect(page.getByTestId("furnish-footer")).toContainText("Living Room");
+    // "All 3D models" is Pro's (FU5).
+    await expect(page.getByTestId("advanced-imported-models")).toHaveCount(0);
+    await expect(page.getByTestId("catalog-memory-all")).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
 
+    // A category chip narrows the list, and search still finds products in every category.
+    const resultCount = page.getByTestId("catalog-focused-category-pill");
+    const allCount = await resultCount.textContent();
+    const coffeeTables = page.getByTestId("catalog-category-chip-coffee_table");
+    await clickWithFallback(coffeeTables);
+    await expect(coffeeTables).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByTestId("catalog-memory-all")).toHaveAttribute("aria-pressed", "false");
+    await expect(resultCount).not.toHaveText(allCount ?? "");
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
     await catalogSearch.fill("Sloane");
-    await clickWithFallback(guidedMode);
-    await expect(guidedMode).toHaveAttribute("data-active", "true");
-    await expect(guidedMode).toHaveAttribute("aria-pressed", "true");
-    await expect(fullCatalog).not.toBeVisible();
-    await expect(page.getByTestId("room-furnishing-completeness")).toBeVisible();
-    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
-    await expect(page.getByText("Recommended for Living Room")).toBeVisible();
-    await expect(page.getByTestId("furnish-recommended-category-coffee_table")).toBeVisible();
-
-    await clickWithFallback(catalogMode);
-    await expect(fullCatalog).toBeVisible();
-    await expect(catalogSearch).toHaveValue("Sloane");
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
     await catalogSearch.fill("");
 
-    await clickWithFallback(guidedMode);
-    await expect(page.getByTestId("furnish-checklist-category-sofa")).toBeVisible();
-    await clickWithFallback(page.getByTestId("furnish-checklist-category-sofa"));
-    await expect(catalogMode).toHaveAttribute("data-active", "true");
-    await expect(fullCatalog).toBeVisible();
-    await expect(catalogSearch).toBeFocused();
-    await expect(page.getByTestId("catalog-category-trigger")).toContainText("Sofa");
-
-    await clickWithFallback(guidedMode);
-    await clickWithFallback(page.getByTestId("furnish-recommended-category-coffee_table"));
-    await expect(fullCatalog).toBeVisible();
-    await expect(catalogSearch).toBeFocused();
-    await expect(page.getByTestId("catalog-room-context")).toBeVisible();
-    await expect(page.getByTestId("catalog-active-room-pill")).toContainText("Adding to Living Room");
-    const categoryTrigger = page.getByTestId("catalog-category-trigger");
-    await expect(categoryTrigger).toContainText("Coffee Table");
-    await clickWithFallback(categoryTrigger);
-    await expect(page.getByTestId("catalog-main-group-tables")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("catalog-category-option-coffee_table")).toBeVisible();
-    await expect(page.getByTestId("catalog-category-option-side_table")).toBeVisible();
-    await expect(page.getByTestId("catalog-category-option-dining_table")).toBeVisible();
-    await expect(page.getByTestId("catalog-category-option-dining_bench")).toBeVisible();
-    await clickWithFallback(page.getByTestId("catalog-category-all-tables"));
-    await expect(categoryTrigger).toContainText("All tables & dining");
-    await expect(page.getByTestId("catalog-room-context")).toContainText("All tables & dining");
-    await clickWithFallback(categoryTrigger);
-    await clickWithFallback(page.getByTestId("catalog-category-option-coffee_table"));
-    await expect(categoryTrigger).toContainText("Coffee Table");
-    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
-    const firstCatalogGuidance = page.locator('[data-testid^="catalog-guidance-"]').first();
-    if ((await firstCatalogGuidance.count()) > 0) {
-      await expect(firstCatalogGuidance).toContainText(/Fits this space|Check fit|Too large for room/);
-    }
-    await expect(page.getByTestId("catalog-smart-filters")).toBeVisible();
-    await expect(page.getByTestId("catalog-smart-filter-recommended")).toBeVisible();
-    await expect(page.getByTestId("catalog-smart-filter-fits")).toBeVisible();
-    await expect(page.getByTestId("catalog-smart-filter-cart_ready")).toBeVisible();
-    await expect(page.getByTestId("catalog-smart-filter-retailer_link")).toBeVisible();
-    await expect(page.getByTestId("catalog-smart-filter-needs_review")).toBeVisible();
-    await clickWithFallback(page.getByTestId("catalog-smart-filter-recommended"));
-    await expect(page.getByTestId("catalog-smart-filter-recommended")).toHaveAttribute("data-active", "true");
-    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
-    await clickWithFallback(page.getByTestId("catalog-smart-filter-clear"));
-    await expectInactiveOrHidden(page.getByTestId("catalog-smart-filter-recommended"));
-    const fitsSmartFilter = page.getByTestId("catalog-smart-filter-fits");
-    if ((await fitsSmartFilter.count()) > 0 && !(await fitsSmartFilter.isDisabled())) {
-      await clickWithFallback(fitsSmartFilter);
-      await expect(fitsSmartFilter).toHaveAttribute("data-active", "true");
-      const visibleFitGuidance = page.locator('[data-testid^="catalog-guidance-"]:visible').first();
-      if ((await visibleFitGuidance.count()) > 0) {
-        await expect(visibleFitGuidance).toContainText("Fits this space");
-      }
-      await clickWithFallback(page.getByTestId("catalog-smart-filter-clear"));
-      await expectInactiveOrHidden(fitsSmartFilter);
-    }
+    await clickWithFallback(page.getByTestId("catalog-memory-all"));
     await expect(page.getByTestId("catalog-memory-all")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("catalog-memory-favorites")).toBeVisible();
-    await expect(page.getByTestId("catalog-memory-recent")).toBeVisible();
+    await expect(page.getByTestId("catalog-memory-favorites")).toHaveText("Favourites (0)");
+    // Recent shows once a product was added.
+    await expect(page.getByTestId("catalog-memory-recent")).toHaveCount(0);
 
     const firstPreview = page.locator('[data-testid^="catalog-preview-"]').first();
     const firstPreviewTestId = await firstPreview.getAttribute("data-testid");
@@ -140,7 +83,7 @@ export function registerWorkspaceTests() {
       (node as HTMLElement).click();
     });
     await expect(favoriteToggle).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByTestId("catalog-memory-favorites")).toContainText("1");
+    await expect(page.getByTestId("catalog-memory-favorites")).toHaveText("Favourites (1)");
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("interior-ai:catalog-favorites")))
       .toContain(firstCatalogItemId);
@@ -158,7 +101,7 @@ export function registerWorkspaceTests() {
     if (await placementPreview.isVisible({ timeout: 1000 }).catch(() => false)) {
       await clickWithFallback(placementPreview.getByRole("button", { name: "Cancel" }));
     }
-    await expect(page.getByTestId("catalog-memory-recent")).toContainText("1");
+    await expect(page.getByTestId("catalog-memory-recent")).toBeVisible();
     await clickWithFallback(page.getByTestId("catalog-memory-recent"));
     await expect(page.getByTestId("catalog-memory-recent")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId(`catalog-preview-${firstCatalogItemId}`)).toBeVisible();
@@ -244,7 +187,7 @@ export function registerWorkspaceTests() {
     await expect(deleteButtons).toHaveCount(1);
   });
 
-  test("mobile Furnish exposes the catalog before guided recommendations", async ({ page }) => {
+  test("mobile Furnish shows the products first", async ({ page }) => {
     await clearBrowserStorageBeforeNextLoad(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/design");
@@ -253,27 +196,19 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await selectWorkspace(page, "furnish");
 
-    const catalogMode = page.getByTestId("furnish-mode-catalog");
-    const guidedMode = page.getByTestId("furnish-mode-guided");
     const catalogSearch = page.getByTestId("catalog-search-input");
-
-    await expect(catalogMode).toBeVisible();
-    await expect(guidedMode).toBeVisible();
-    await expect(catalogMode).toBeInViewport();
-    await expect(guidedMode).toBeInViewport();
     await expect(catalogSearch).toBeVisible();
-    await clickWithFallback(catalogMode);
-    await expect(catalogSearch).toBeFocused();
     await expect(catalogSearch).toBeInViewport();
-    await expect(page.getByTestId("furnish-room-checklist")).not.toBeVisible();
-
-    await clickWithFallback(guidedMode);
-    await expect(page.getByTestId("furnish-full-catalog")).not.toBeVisible();
-    await expect(page.getByTestId("room-furnishing-completeness")).toBeVisible();
-    await expect(page.getByTestId("furnish-room-checklist")).toBeVisible();
-
-    await clickWithFallback(catalogMode);
-    await expect(catalogSearch).toBeVisible();
+    await expect(page.getByTestId("catalog-category-chips")).toBeInViewport();
+    await expect(page.getByTestId("furnish-mode-guided")).toHaveCount(0);
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
+    const chipHeights = await page
+      .getByTestId("catalog-category-chips")
+      .getByRole("button")
+      .evaluateAll((chips) => chips.map((chip) => chip.getBoundingClientRect().height));
+    expect(Math.min(...chipHeights)).toBeGreaterThanOrEqual(40);
+    await catalogSearch.fill("Sloane");
+    await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
   });
 
   test("selected room dimensions use one unit-aware inspector", async ({ page }) => {

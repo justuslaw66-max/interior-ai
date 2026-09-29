@@ -37,8 +37,8 @@ test.describe("21. Selected Item Actions", () => {
 
     const selectedItemPanel = getSelectedItemPanel(page);
     await expect(selectedItemPanel).toBeVisible({ timeout: 10_000 });
-    const shoppingPreview = page.getByTestId("furnish-shopping-preview");
-    await expect(shoppingPreview).toContainText(
+    const roomList = page.getByTestId("furnish-in-this-room");
+    await expect(roomList).toContainText(
       "Hugg Nesting Square Coffee Table"
     );
 
@@ -62,9 +62,8 @@ test.describe("21. Selected Item Actions", () => {
 
     await expect(page.getByTestId("selected-item-panel")).toHaveCount(0);
     await selectEditorWorkspace(page, "editor-workflow-furnish");
-    await expect(shoppingPreview).toBeVisible();
-    await expect(shoppingPreview).toContainText(
-      "Add real catalogue items to build this room list."
-    );
+    // An empty room has no "In this room" list, and Furnish's foot says so.
+    await expect(roomList).toHaveCount(0);
+    await expect(page.getByTestId("furnish-room-total")).toHaveText("No products yet");
   });
 });

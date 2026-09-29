@@ -11,7 +11,7 @@ async function clickWithFallback(locator: Locator, timeout = 5000) {
   }
 }
 
-test("catalog group names remain readable in the narrow Furnish rail", async ({ page }) => {
+test("category chips stay readable in the narrow Furnish rail", async ({ page }) => {
   test.setTimeout(60_000);
   await page.addInitScript(() => {
     window.localStorage.clear();
@@ -24,16 +24,12 @@ test("catalog group names remain readable in the narrow Furnish rail", async ({ 
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20_000 });
   await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
 
-  const categoryTrigger = page.getByTestId("catalog-category-trigger");
-  await expect(categoryTrigger).toBeVisible();
-  await clickWithFallback(categoryTrigger);
-
-  const categoryPanel = page.getByTestId("catalog-category-panel");
-  await expect(categoryPanel).toBeVisible();
-
-  const labels = page.locator('[data-testid^="catalog-main-group-label-"]');
-  await expect(labels.first()).toBeVisible();
-  const clippedLabels = await labels.evaluateAll((nodes) =>
+  // One row of chips that scrolls sideways (FU1): no label is cut, and none wraps to a second line.
+  const chipRow = page.getByTestId("catalog-category-chips");
+  await expect(chipRow).toBeVisible();
+  const chips = chipRow.getByRole("button");
+  await expect(chips.first()).toBeVisible();
+  const clippedLabels = await chips.evaluateAll((nodes) =>
     nodes
       .filter(
         (node) =>
@@ -42,6 +38,14 @@ test("catalog group names remain readable in the narrow Furnish rail", async ({ 
       )
       .map((node) => node.textContent?.trim())
   );
-
   expect(clippedLabels).toEqual([]);
+  const rowTops = await chips.evaluateAll(
+    (nodes) => new Set(nodes.map((node) => Math.round(node.getBoundingClientRect().top))).size
+  );
+  expect(rowTops).toBe(1);
+
+  const sofas = chipRow.getByRole("button", { name: "Sofas", exact: true });
+  await clickWithFallback(sofas);
+  await expect(sofas).toHaveAttribute("aria-pressed", "true");
+  await expect(chipRow.getByRole("button", { name: "All", exact: true })).toHaveAttribute("aria-pressed", "false");
 });

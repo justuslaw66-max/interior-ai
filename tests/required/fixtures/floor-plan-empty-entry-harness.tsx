@@ -91,7 +91,6 @@ function buildEmptyPlanProps(
     onDrawFloorPlanRoom: noop,
     onAddFloorPlanOpeningFromTool: noop,
     onGoFurnish: noop,
-    onGoAiDesign: noop,
     onGoShop: noop,
     onApplyPlanTemplate: noop,
     onAddDesignerRoom: noop,

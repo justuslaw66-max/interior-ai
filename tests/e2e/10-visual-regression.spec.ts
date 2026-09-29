@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   getSelectedItemPanel,
   selectImportedFamilyByHint,
@@ -53,7 +54,7 @@ async function compareSwatchStrip(image: Buffer, snapshotName: string): Promise<
 test.describe("10. Visual Regression - Finish Swatches", () => {
   test("capture swatch strips for Kelsey, Jaron, and Madison", async ({ page }) => {
     test.setTimeout(120000);
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(1500);
 

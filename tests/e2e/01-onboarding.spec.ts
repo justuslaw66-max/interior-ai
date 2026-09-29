@@ -224,7 +224,7 @@ test.describe("1. Onboarding Activation Flow", () => {
     expect(catalogReady, "The catalog must be available after reload").toBe(
       true,
     );
-    await expect(page.getByTestId("furnish-shopping-preview")).toContainText(
+    await expect(page.getByTestId("furnish-in-this-room")).toContainText(
       "Madison Sofa",
     );
     await expect(page.getByTestId("sofa-nudge")).toBeHidden();

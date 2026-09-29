@@ -68,7 +68,7 @@ test.describe("100. Hugg Catalog Smoke", () => {
     const furnishBom = page.getByTestId("furnish-room-bom-list");
     await expect(furnishBom).toBeVisible({ timeout: 10000 });
     await expect(furnishBom.getByText(/Hugg Nesting Square Coffee Table/i)).toBeVisible();
-    await expect(furnishBom.getByText(/Black\s*·\s*Qty 1/i)).toBeVisible();
+    await expect(furnishBom.getByText(/^Black$/i)).toBeVisible();
 
     await openShopPanel(page);
 
