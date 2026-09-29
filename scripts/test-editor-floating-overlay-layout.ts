@@ -131,10 +131,10 @@ const designSceneCanvasSource = fs.readFileSync(
   ),
   "utf8"
 );
-const selectionInspectorSource = fs.readFileSync(
-  path.join(designPageComponentsPath, "DesignPageSelectionInspector.tsx"),
-  "utf8"
-);
+// The inspector's frame (placement and style) lives beside it, read first (UX 4d).
+const selectionInspectorSource = ["selectionInspectorPlacement.ts", "DesignPageSelectionInspector.tsx"]
+  .map((file) => fs.readFileSync(path.join(designPageComponentsPath, file), "utf8"))
+  .join("\n");
 const planManualQuickActionsSource = fs.readFileSync(
   path.join(designPageComponentsPath, "PlanManualQuickActions.tsx"),
   "utf8"
@@ -518,7 +518,7 @@ assert.match(
 
 assert.match(
   selectionInspectorSource,
-  /style=\{[\s\S]*right: configuration\.floatingRightPx,[\s\S]*top: configuration\.floatingTopPx,[\s\S]*width: configuration\.floatingWidthPx,[\s\S]*\}/,
+  /function inspectorFrame[\s\S]*?right: configuration\.floatingRightPx,[\s\S]*top: configuration\.floatingTopPx,[\s\S]*width: configuration\.floatingWidthPx,[\s\S]*style=\{frame\.style\}/,
   "Selection inspector should use dynamic stack-aware placement."
 );
 
@@ -734,7 +734,7 @@ const barOffsetsByHand = editorOverlayFiles.filter((file) =>
 assert.deepEqual(barOffsetsByHand, [], "Place what sits under the bar with top-bar-* from md, not a fixed offset.");
 // Phones too (UX 4d): the header is --editor-bar-h tall, and the canvas pills sit 12px under it.
 const phoneBarOffsetsByHand = editorOverlayFiles.filter((file) =>
-  /(?<![\w:-])top-(?:9|11|12|15)(?![\w-])/.test(fs.readFileSync(path.join(process.cwd(), file), "utf8"))
+  /(?<![\w:-])top-(?:9|11|12|15|23)(?![\w-])/.test(fs.readFileSync(path.join(process.cwd(), file), "utf8"))
 );
 assert.deepEqual(phoneBarOffsetsByHand, [], "Place what sits under the phone header with top-bar-* too.");
 

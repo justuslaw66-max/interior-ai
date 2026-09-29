@@ -7,7 +7,9 @@ import {
   nearestPhoneSheetSnap,
   nextPhoneSheetSnap,
   phoneSheetHeightPx,
+  setPhoneSheetInspectorSlot,
   setPhoneSheetState,
+  usePhoneSheetInspector,
   type PhoneSheetSnap,
 } from "@/lib/phone-step-sheet";
 
@@ -96,6 +98,11 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
     if (collapsed) onCollapsedChange?.(false);
   };
   const { sheetRef, consumeDragClick, handlers } = useSheetDrag(heightPx, viewportHeight, settle);
+  // A wall, door or window selected on the canvas shows its inspector here (AX2), opening a peeking sheet.
+  const inspecting = usePhoneSheetInspector().active;
+  useEffect(() => {
+    if (inspecting && collapsed) onCollapsedChange?.(false);
+  }, [inspecting, collapsed, onCollapsedChange]);
   useEffect(() => setPhoneSheetState({ heightPx, snap }), [heightPx, snap]);
   useEffect(() => () => setPhoneSheetState(null), []);
   const handleLabel = snap === "full" ? "Collapse panel" : "Expand panel";
@@ -119,12 +126,13 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
           <span aria-hidden="true" className="block h-[5px] w-9 rounded-full bg-neutral-300" />
         </Button>
       </div>
-      <div className="-mt-1.5 shrink-0 px-4 pb-2">
+      <div hidden={inspecting} className="-mt-1.5 shrink-0 px-4 pb-2">
         <h2 className="text-lg font-bold leading-6">{title}</h2>
         <p className={`truncate text-xs ${dark ? "designer-text-secondary" : "text-neutral-600"}`}>{subtitle}</p>
       </div>
       <div id={SHEET_BODY_ID} hidden={snap === "peek"} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3">
-        {children}
+        <div ref={setPhoneSheetInspectorSlot} data-testid="phone-sheet-inspector" hidden={!inspecting} />
+        <div hidden={inspecting} className="space-y-3">{children}</div>
       </div>
     </section>
   );

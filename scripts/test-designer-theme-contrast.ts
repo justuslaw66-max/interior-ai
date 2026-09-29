@@ -387,10 +387,10 @@ const viewportOverlaySource = fs.readFileSync(
   ),
   "utf8"
 );
-const selectionInspectorSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "DesignPageSelectionInspector.tsx"),
-  "utf8"
-);
+// The inspector's frame (placement and style) lives beside it, read first (UX 4d).
+const selectionInspectorSource = ["selectionInspectorPlacement.ts", "DesignPageSelectionInspector.tsx"]
+  .map((file) => fs.readFileSync(path.join(root, "components", "editor", "design-page", file), "utf8"))
+  .join("\n");
 const selectedItemPanelSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "SelectedItemPanel.tsx"),
   "utf8"
@@ -570,7 +570,7 @@ assert.match(
 );
 assert.match(
   selectionInspectorSource,
-  /data-testid="selection-inspector"[\s\S]*?designer-work-surface/,
+  /function inspectorFrame[\s\S]*?designer-work-surface[\s\S]*?data-testid="selection-inspector"/,
   "The Pro selection inspector should use the light work-surface semantic."
 );
 assert.match(

@@ -11,6 +11,7 @@ import {
   PHONE_SHEET_PEEK_PX,
   PHONE_STEP_BAR_PX,
   getPhoneSheetState,
+  isPhoneSheetInspectorSelection,
   nearestPhoneSheetSnap,
   nextPhoneSheetSnap,
   phoneSheetHeightPx,
@@ -96,10 +97,32 @@ const half = sheet(false);
 assert.match(half, /^<section data-testid="design-controls-panel" data-temporary-reveal="false" data-sheet-snap="half" aria-label="Furnish" style="height:388px" class="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] z-20 flex flex-col rounded-t-\[20px\]/);
 assert.match(half, /<div class="flex shrink-0 justify-center"><button type="button" class="[^"]*\bmin-h-11\b[^"]*\bh-11 w-24 touch-none px-0 py-0" data-testid="design-controls-panel-handle" aria-label="Expand panel" aria-expanded="false" aria-controls="design-controls-sheet-body" title="Expand panel">/);
 assert.match(half, /<h2 class="[^"]*">Furnish<\/h2>/);
-assert.match(half, /<div id="design-controls-sheet-body" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3"><p>Products<\/p><\/div>/);
+assert.match(half, /<div id="design-controls-sheet-body" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3"><div data-testid="phone-sheet-inspector"/);
 const peek = sheet(true);
 assert.match(peek, /data-sheet-snap="peek"[^>]*style="height:92px"/);
 assert.match(peek, /<div id="design-controls-sheet-body" hidden=""/, "Peek shows the title only.");
+
+// The inspector in the sheet (AX2): a wall, ceiling, door, window, fixed element or note; not a
+// product (the item panel) or a room on its own (the Plan panel's room section).
+const none = {
+  hasSelectedItem: false, hasVisiblePlanOpening: false, hasSelectedPlanFixedElement: false, hasSelectedPlanAnnotation: false,
+  hasSelectedPlanOverlay: false, surfaceInspectorIsWall: false, surfaceInspectorIsCeiling: false,
+};
+assert.equal(isPhoneSheetInspectorSelection(none), false, "A room alone stays in the Plan panel.");
+for (const key of ["hasVisiblePlanOpening", "hasSelectedPlanFixedElement", "hasSelectedPlanAnnotation", "hasSelectedPlanOverlay", "surfaceInspectorIsWall", "surfaceInspectorIsCeiling"] as const) {
+  assert.equal(isPhoneSheetInspectorSelection({ ...none, [key]: true }), true, key);
+}
+assert.equal(isPhoneSheetInspectorSelection({ ...none, surfaceInspectorIsWall: true, hasSelectedItem: true }), false, "Products keep their item panel.");
+assert.match(half, /<div data-testid="phone-sheet-inspector" hidden=""><\/div><div class="space-y-3"><p>Products<\/p><\/div>/, "The slot waits, hidden, above the step's content.");
+const inspectorSource = read("components/editor/design-page/DesignPageSelectionInspector.tsx");
+const placementSource = read("components/editor/design-page/selectionInspectorPlacement.ts");
+assert.match(placementSource, /const inSheet = !wide && Boolean\(sheet\.slot\) && isPhoneSheetInspectorSelection\(state\);/);
+assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot \};/, "In the sheet, it goes into the slot.");
+assert.match(inspectorSource, /const placement = useInspectorPlacement\(state, configuration\);/);
+assert.match(placementSource, /const clearClassName = placement\.inSheet \? `\$\{clear\} min-h-11` : clear;/, "Done is a 44px target.");
+assert.match(inspectorSource, /\{placement\.inSheet \? "Done" : "Clear"\}/, "Done deselects, in the sheet.");
+assert.match(inspectorSource, /if \(!placement\.shown\) return null;\s*return placement\.portalTarget \? createPortal\(inspector, placement\.portalTarget\) : inspector;/);
+assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
 
 // Wiring: the frame is the sheet below md, the column from md, and the phone header has no
 // sidebar toggle; the plan model and the Plan tip read the sheet.

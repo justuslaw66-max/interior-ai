@@ -145,7 +145,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 593,
+      "lines": 569,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -1621,11 +1621,11 @@
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 500
+        "maximum": 475
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 49
+        "maximum": 47
       }
     },
     "components/editor/design-page/DesignPageToasts.tsx": {

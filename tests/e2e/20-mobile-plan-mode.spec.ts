@@ -88,6 +88,37 @@ test("the phone's step sheet expands, peeks and comes back", async ({ page }) =>
   await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
 });
 
+// UX 4d (audit AX2): a door or window picked on a phone's plan shows its inspector in the sheet,
+// opening a peeking sheet, with Done to put the step's panel back.
+test("a phone shows the picked window's inspector in the step sheet", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await clearEditorStorage(page);
+  await openTemplatePlan(page);
+  await page.getByTestId("plan-guided-actions-toggle").click();
+  const sheet = page.getByTestId("design-controls-panel");
+  const slot = page.getByTestId("phone-sheet-inspector");
+  await page.getByTestId("design-controls-panel-handle").focus();
+  await page.keyboard.press("Control+b");
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
+  await expect(slot).toBeHidden();
+
+  await page.locator('[data-testid="plan-opening-kind-label"][data-opening-kind="window"]').first().click();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+  await expect(slot.getByTestId("selection-inspector")).toBeVisible();
+  await expect(slot.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
+  await expect(sheet.locator("h2")).toBeHidden();
+  await expect(page.getByTestId("selected-plan-opening-actions")).toBeHidden();
+  const done = slot.getByTestId("selection-inspector-clear");
+  await expect(done).toHaveText("Done");
+  expect((await done.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+
+  await done.click();
+  await expect(page.getByTestId("selection-inspector")).toHaveCount(0);
+  await expect(slot).toBeHidden();
+  await expect(sheet.locator("h2")).toBeVisible();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+});
+
 test.describe("20. Mobile Plan Mode", () => {
   for (const viewport of VIEWPORTS) {
     test(`consumer plan controls stay usable on ${viewport.name}`, async ({ page }) => {

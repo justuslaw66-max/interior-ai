@@ -21,10 +21,11 @@ import type { FixturePhotometricVerification } from "@/lib/catalog-schema";
 import type { PlacedFixtureLightState } from "@/lib/room-types";
 import { SelectedOpeningDimensions, type SelectedOpeningDimensionsActions as OpeningActions } from "./SelectedOpeningDimensions";
 import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
+import { inspectorFrame, useInspectorPlacement } from "./selectionInspectorPlacement";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
-type DesignPageSelectionInspectorProps = {
+export type DesignPageSelectionInspectorProps = {
   state: {
     summary: DesignPageSelectionInspectorSummary;
     selectedRoom: SelectedRoom | null;
@@ -105,31 +106,11 @@ export function DesignPageSelectionInspector({
       !state.surfaceInspectorIsWall &&
       !state.surfaceInspectorIsCeiling
   );
-  const docked = Boolean(
-    configuration.dockWhenPortalAvailable && configuration.portalTarget
-  );
+  const placement = useInspectorPlacement(state, configuration);
+  const frame = inspectorFrame(configuration, placement);
   const inspector = (
-    <div
-      data-testid="selection-inspector"
-      className={
-        configuration.dark
-          ? "designer-work-surface pointer-events-auto z-30 hidden shrink-0 rounded-lg p-3 text-xs md:block"
-          : "pointer-events-auto z-30 hidden shrink-0 rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
-      }
-      style={
-        docked
-          ? { position: "relative", width: `${configuration.dockedWidthPx}px` }
-          : {
-              position: "absolute",
-              right: configuration.floatingRightPx,
-              top: configuration.floatingTopPx,
-              width: configuration.floatingWidthPx,
-              maxHeight: `calc(100vh - ${configuration.floatingTopPx + 16}px)`,
-              overflowY: "auto",
-              overscrollBehavior: "contain",
-            }
-      }
-    >
+    <div data-testid="selection-inspector" data-in-sheet={placement.inSheet ? "true" : undefined}
+      className={frame.className} style={frame.style}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div
@@ -155,14 +136,10 @@ export function DesignPageSelectionInspector({
         <button
           type="button"
           data-testid="selection-inspector-clear"
-          className={
-            configuration.dark
-              ? "designer-work-control rounded-lg px-2 py-1 font-semibold"
-              : "rounded-lg border border-neutral-200 px-2 py-1 font-semibold text-neutral-600 hover:bg-neutral-50"
-          }
+          className={frame.clearClassName}
           onClick={actions.clearSelection}
         >
-          Clear
+          {placement.inSheet ? "Done" : "Clear"}
         </button>
       </div>
 
@@ -587,7 +564,6 @@ export function DesignPageSelectionInspector({
     </div>
   );
 
-  return docked && configuration.portalTarget
-    ? createPortal(inspector, configuration.portalTarget)
-    : inspector;
+  if (!placement.shown) return null;
+  return placement.portalTarget ? createPortal(inspector, placement.portalTarget) : inspector;
 }

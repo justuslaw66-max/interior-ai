@@ -66,9 +66,9 @@ function EvidenceConfirmation({
   onConfirm: NonNullable<FloorPlanPropertyEvidenceControlProps["onConfirm"]>;
 }) {
   return (
-    <div className="grid gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <select aria-label="Measurement evidence" className={`${controlClass} min-w-0 flex-1`} disabled={disabled}
+    <div className="grid grid-cols-1 gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <select aria-label="Measurement evidence" className={`${controlClass} min-w-0 grow basis-24`} disabled={disabled}
           value={selectedEvidence} onChange={(event) => setSelectedEvidence(event.currentTarget.value as FloorPlanConsumerMeasurementEvidenceV2)}>
           <option value="user_confirmed">I confirm this value</option>
           <option value="site_measured">Measured on site</option>
@@ -110,7 +110,7 @@ export default function FloorPlanPropertyEvidenceControl({
     : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] text-neutral-700";
 
   return (
-    <div className="mt-1.5 grid gap-1.5" data-testid={testId}>
+    <div className="mt-1.5 grid grid-cols-1 gap-1.5" data-testid={testId}>
       <EvidenceStatus evidence={evidence} dark={dark} testId={testId} assumedLabel={assumedLabel} assumedHelpText={assumedHelpText} />
       {editable && onConfirm ? (
         <EvidenceConfirmation

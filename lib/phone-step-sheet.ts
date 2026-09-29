@@ -88,3 +88,58 @@ export function resolvePhoneCanvasInsets({
   if (isClientPreview || viewportWidth <= 0 || viewportWidth >= 768) return { topPx: 0, bottomPx: 0 };
   return { topPx: PHONE_CANVAS_TOP_INSET_PX, bottomPx: PHONE_STEP_BAR_PX + (sheetOpen ? sheetHeightPx : 0) };
 }
+
+// The selection inspector's place in the sheet (UX 4d, audit AX2): the sheet offers a slot, and a
+// wall, ceiling, door, window, fixed element or note selected on a phone shows its inspector there
+// while the step panel steps aside.
+type PhoneSheetInspector = { slot: HTMLDivElement | null; active: boolean };
+const NO_INSPECTOR: PhoneSheetInspector = { slot: null, active: false };
+let inspector: PhoneSheetInspector = NO_INSPECTOR;
+const inspectorListeners = new Set<() => void>();
+
+function updateInspector(patch: Partial<PhoneSheetInspector>) {
+  const next = { ...inspector, ...patch };
+  if (next.slot === inspector.slot && next.active === inspector.active) return;
+  inspector = next;
+  inspectorListeners.forEach((listener) => listener());
+}
+
+export function setPhoneSheetInspectorSlot(slot: HTMLDivElement | null) {
+  updateInspector({ slot });
+}
+
+export function setPhoneSheetInspectorActive(active: boolean) {
+  updateInspector({ active });
+}
+
+export function usePhoneSheetInspector(): PhoneSheetInspector {
+  return useSyncExternalStore(
+    (onChange) => {
+      inspectorListeners.add(onChange);
+      return () => inspectorListeners.delete(onChange);
+    },
+    () => inspector,
+    () => NO_INSPECTOR
+  );
+}
+
+/** Selections the sheet shows the inspector for; rooms keep the Plan panel's own room section. */
+export function isPhoneSheetInspectorSelection(selection: {
+  hasSelectedItem: boolean;
+  hasVisiblePlanOpening: boolean;
+  hasSelectedPlanFixedElement: boolean;
+  hasSelectedPlanAnnotation: boolean;
+  hasSelectedPlanOverlay: boolean;
+  surfaceInspectorIsWall: boolean;
+  surfaceInspectorIsCeiling: boolean;
+}): boolean {
+  if (selection.hasSelectedItem) return false;
+  return (
+    selection.hasVisiblePlanOpening ||
+    selection.hasSelectedPlanFixedElement ||
+    selection.hasSelectedPlanAnnotation ||
+    selection.hasSelectedPlanOverlay ||
+    selection.surfaceInspectorIsWall ||
+    selection.surfaceInspectorIsCeiling
+  );
+}
