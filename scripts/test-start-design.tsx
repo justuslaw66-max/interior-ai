@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { createElement } from "react";
+import { createElement, type Dispatch, type SetStateAction } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StartDesignChooser, type StartDesignChooserProps } from "../components/editor/start/StartDesignChooser";
 import { START_UPLOAD_CHOICE_ID } from "../components/editor/start/UploadSignInDialog";
@@ -23,6 +23,8 @@ import {
   type StartChooserState,
   type UseDesignPageStartChooserInput,
 } from "../lib/useDesignPageStartChooser";
+import { answerFloorPlanUploadRequest, type FloorPlanUploadEntryInput } from "../lib/useFloorPlanUploadEntry";
+import type { FloorPlanUploadRequest } from "../lib/floor-plan-upload-request";
 
 // Start a new design (audit findings FR1, FR3, ST2, ST3, ST7, ST8): the start links, the template
 // cards, the chooser's markup, what each choice does, and how the editor wires it.
@@ -148,23 +150,41 @@ assert.match(waiting, /data-testid="start-choice-templates" class=/);
 assert.equal(waiting.match(/data-testid="start-template-[a-z_]+" aria-label="[^"]+" disabled=""/g)?.length, START_TEMPLATE_PREVIEW_COUNT);
 const signIn = render(chooserProps({ uploadSignIn: { open: true, onClose: noop, onSignIn: noop } }));
 assert.match(signIn, /data-testid="upload-sign-in-dialog"/);
-for (const text of ["Sign in to upload your floor plan", "Choose your file", "Check the walls", "Set scale", "Continue with Google", "Not now"]) {
+for (const text of [
+  "Sign in to upload your floor plan", "Choose your file", "PDF, JPG, PNG or WebP, up to 25 MB.", "Check the walls",
+  "Set scale", "Continue with Google", "Not now", "DXF and other CAD files need Pro.",
+]) {
   assert.ok(signIn.includes(text), `The sign-in dialog says "${text}".`);
 }
+// An Upload elsewhere in the editor (Plan, the address search) opens the dialog on its own.
+const signInAlone = render(chooserProps({ open: false, uploadSignIn: { open: true, onClose: noop, onSignIn: noop } }));
+assert.match(signInAlone, /data-testid="upload-sign-in-dialog"/);
+assert.doesNotMatch(signInAlone, /data-testid="start-design-chooser"/);
 
 // What each choice does.
-type Recorder = { input: UseDesignPageStartChooserInput; calls: string[]; setChooser: (next: StartChooserState) => void };
-function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}): Recorder {
+type Recorder = {
+  input: UseDesignPageStartChooserInput;
+  calls: string[];
+  setChooser: Dispatch<SetStateAction<StartChooserState>>;
+  last: () => StartChooserState | null;
+};
+const closedChooser: StartChooserState = { open: false, asNewDesign: false, signIn: false, signInOpenerId: null };
+function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}, chooser = closedChooser): Recorder {
   const calls: string[] = [];
+  let latest: StartChooserState | null = null;
   const record = (name: string) => () => {
     calls.push(name);
   };
   return {
     calls,
-    setChooser: (next) =>
-      calls.push(`chooser:${next.open ? "open" : "closed"}${next.asNewDesign ? "+new" : ""}${next.signIn ? "+signIn" : ""}`),
+    last: () => latest,
+    setChooser: (next) => {
+      const value = typeof next === "function" ? next(chooser) : next;
+      latest = value;
+      calls.push(`chooser:${value.open ? "open" : "closed"}${value.asNewDesign ? "+new" : ""}${value.signIn ? "+signIn" : ""}`);
+    },
     input: {
-      state: { isAuthenticated: true, designIsEmpty: true, localBackupHydrated: true, canEdit: true, ...state },
+      state: { isAuthenticated: true, sessionKnown: true, designIsEmpty: true, localBackupHydrated: true, canEdit: true, ...state },
       actions: {
         applyPlanTemplate: (template, options) => {
           const pack = options?.furnishingPackId ? `+${options.furnishingPackId}` : "";
@@ -182,6 +202,7 @@ function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}):
   };
 }
 const dispatched: string[] = [];
+const dispatchedDetails: unknown[] = [];
 Object.assign(globalThis, {
   window: {
     requestAnimationFrame: (callback: (time: number) => void) => {
@@ -190,15 +211,16 @@ Object.assign(globalThis, {
     },
     dispatchEvent: (event: Event) => {
       dispatched.push(event.type);
+      dispatchedDetails.push((event as CustomEvent).detail);
       return true;
     },
   },
 });
-const firstVisit: StartChooserState = { open: true, asNewDesign: false, signIn: false };
-const newDesign: StartChooserState = { open: true, asNewDesign: true, signIn: false };
+const firstVisit: StartChooserState = { open: true, asNewDesign: false, signIn: false, signInOpenerId: null };
+const newDesign: StartChooserState = { open: true, asNewDesign: true, signIn: false, signInOpenerId: null };
 type ChooserInputState = Partial<UseDesignPageStartChooserInput["state"]>;
 const choose = (chooser: StartChooserState, run: (props: StartDesignChooserProps) => void, state: ChooserInputState = {}) => {
-  const { input, calls, setChooser } = recorder(state);
+  const { input, calls, setChooser } = recorder(state, chooser);
   run(buildStartChooserProps(chooser, setChooser, input));
   return calls;
 };
@@ -228,17 +250,49 @@ assert.deepEqual(choose(newDesign, (props) => props.onChooseBlank()), ["chooser:
 assert.deepEqual(choose(newDesign, (props) => props.onSearchAddress()), ["chooser:closed", "newDesignTemplatePicker"]);
 // A design with content, reached without New design (a guest's upload link): the template flow asks.
 assert.deepEqual(choose(firstVisit, (props) => props.onChooseDraw(), { designIsEmpty: false }), ["chooser:closed", "apply:blank_room+then", "drawRoom"]);
-// Upload: guests sign in first (ST3); members get Plan and the upload window.
-assert.deepEqual(choose(firstVisit, (props) => props.onChooseUpload(), { isAuthenticated: false }), ["chooser:open+signIn"]);
+// Upload: guests sign in first (ST3), and focus comes back to the Upload card; members get Plan
+// and the upload window, recorded as an upload from Start a new design.
+const guestChoice = recorder({ isAuthenticated: false }, firstVisit);
+buildStartChooserProps(firstVisit, guestChoice.setChooser, guestChoice.input).onChooseUpload();
+assert.deepEqual(guestChoice.calls, ["chooser:open+signIn"]);
+assert.equal(guestChoice.last()?.signInOpenerId, START_UPLOAD_CHOICE_ID);
 assert.deepEqual(choose(firstVisit, (props) => props.onChooseUpload()), ["chooser:closed", "goPlan"]);
 assert.deepEqual(dispatched.splice(0), ["floor-plan-upload-requested"]);
+assert.deepEqual(dispatchedDetails.splice(0), [{ source: "start_chooser", openerId: START_UPLOAD_CHOICE_ID }]);
 const guestProps = buildStartChooserProps({ ...firstVisit, signIn: true }, noop, recorder({ isAuthenticated: false }).input);
 assert.equal(guestProps.uploadSignIn.open, true);
 assert.equal(guestProps.isAuthenticated, false);
 assert.equal(guestProps.ready, true);
 assert.equal(buildStartChooserProps(firstVisit, noop, recorder({ canEdit: false }).input).ready, false);
+assert.equal(
+  buildStartChooserProps(firstVisit, noop, recorder({ sessionKnown: false }).input).ready,
+  false,
+  "While the session loads a member looks like a guest, so the choices wait for it."
+);
 assert.deepEqual(choose({ ...firstVisit, signIn: true }, (props) => props.uploadSignIn.onClose()), ["chooser:open"]);
-assert.equal(buildStartChooserProps({ ...firstVisit, open: false, signIn: true }, noop, recorder().input).uploadSignIn.open, false);
+// The sign-in dialog also opens without the choices, for an Upload elsewhere in the editor.
+const aloneProps = buildStartChooserProps({ ...closedChooser, signIn: true, signInOpenerId: "plan-upload" }, noop, recorder().input);
+assert.equal(aloneProps.open, false);
+assert.equal(aloneProps.uploadSignIn.open, true);
+assert.equal(aloneProps.uploadSignIn.openerId, "plan-upload");
+
+// Every other Upload floor plan: guests are asked to sign in, focus going back to that Upload;
+// members in Plan get the upload window at once, with the Upload's own source.
+const entryCalls: string[] = [];
+const entryInput = (isAuthenticated: boolean): FloorPlanUploadEntryInput => ({
+  isAuthenticated,
+  sessionKnown: true,
+  goPlan: () => entryCalls.push("goPlan"),
+  askToSignIn: (request: FloorPlanUploadRequest) => entryCalls.push(`signIn:${request.source}:${request.openerId}`),
+});
+const planUpload: FloorPlanUploadRequest = { source: "plan_panel", openerId: "floor-plan-consumer-import-2d-action" };
+answerFloorPlanUploadRequest(planUpload, entryInput(false));
+assert.deepEqual(entryCalls.splice(0), ["signIn:plan_panel:floor-plan-consumer-import-2d-action"]);
+assert.deepEqual(dispatched.splice(0), []);
+answerFloorPlanUploadRequest({ source: "address_search", openerId: "floor-plan-address-upload-action" }, entryInput(true));
+assert.deepEqual(entryCalls.splice(0), [], "Plan is already open behind its own Upload.");
+assert.deepEqual(dispatched.splice(0), ["floor-plan-upload-requested"]);
+assert.deepEqual(dispatchedDetails.splice(0), [{ source: "address_search", openerId: "floor-plan-address-upload-action" }]);
 
 // `?start=`: once, and never over a design with content, except Upload, which opens a new one.
 const startWith = (start: Parameters<typeof applyStartParam>[0], state: ChooserInputState = {}) => {
@@ -255,6 +309,8 @@ for (const start of ["choose", "template", "draw", "blank"] as const) {
 }
 assert.deepEqual(startWith("upload", { designIsEmpty: false }), ["goPlan"]);
 assert.deepEqual(dispatched.splice(0), ["floor-plan-upload-requested"]);
+assert.deepEqual(dispatchedDetails.splice(0), [{ source: "start_link", openerId: null }]);
+// A guest's upload link shows the sign-in dialog over the choices, as in the mockup.
 assert.deepEqual(startWith("upload", { isAuthenticated: false }), ["chooser:open+signIn"]);
 // My designs' New design opens Start a new design as New design does, over any design.
 assert.deepEqual(startWith("new", { designIsEmpty: false }), ["chooser:open+new"]);
@@ -275,7 +331,14 @@ assert.match(
   "A link starts once, and opens Pricing once."
 );
 assert.match(chooserHook, /start: url\.searchParams\.has\("designId"\) \? null : start, pricing \}/, "Saved designs ignore ?start=.");
-assert.match(chooserHook, /signIn\("google", \{ callbackUrl: START_UPLOAD_CALLBACK_URL \}\)/);
+const uploadEntry = read("lib/useFloorPlanUploadEntry.ts");
+assert.match(uploadEntry, /signIn\("google", \{ callbackUrl: START_UPLOAD_CALLBACK_URL \}\)/);
+assert.match(
+  chooserHook,
+  /const ready = input\.state\.localBackupHydrated && input\.state\.canEdit && input\.state\.sessionKnown;/,
+  "?start= waits for the session, so a member back from signing in isn't asked to sign in again."
+);
+assert.match(uploadEntry, /if \(latest\.current\.sessionKnown\) answerFloorPlanUploadRequest\(request, latest\.current\);\s*else pending\.current = request;/);
 assert.match(chooserHook, /track\("launch_path_selected", \{ path, source \}\)/);
 assert.doesNotMatch(chooserHook, /path: "upload"/, "The upload window records uploads, once.");
 const registration = read("lib/useDesignPagePersistenceWorkspaceRegistration.ts");

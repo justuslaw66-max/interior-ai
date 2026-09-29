@@ -32,10 +32,10 @@ const planToolComponentsSource = fs.readFileSync(
   ),
   "utf8"
 );
-const consumerRoomSetupSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
-  "utf8"
-);
+// The room card and its start actions (a template, a measured room, Upload floor plan).
+const consumerRoomSetupSource = ["ConsumerRoomSetupCard.tsx", "RoomSetupStartActions.tsx"]
+  .map((file) => fs.readFileSync(path.join(process.cwd(), "components", "editor", file), "utf8"))
+  .join("\n");
 const consumerMeasurementPreferenceSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "ConsumerMeasurementPreferenceRegion.tsx"),
   "utf8"
@@ -220,7 +220,6 @@ assert.match(
 );
 
 const planToolSectionContracts = [
-  { section: "importFloorPlan", title: "Upload floor plan" },
   { section: "drawRoom", title: "Draw room" },
   { section: "openings", title: "Doors & windows" },
   { section: "templates", title: "Templates" },
@@ -290,7 +289,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
   "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 
@@ -351,8 +350,13 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /importFloorPlan: !isDesigner,[\s\S]*?drawRoom: !isDesigner,[\s\S]*?openings: !isDesigner,[\s\S]*?templates: !isDesigner/,
+  /drawRoom: !isDesigner,[\s\S]*?openings: !isDesigner,[\s\S]*?templates: !isDesigner/,
   "Consumer advanced plan sections should start collapsed while Pro retains the dense tool surface."
+);
+assert.doesNotMatch(
+  source,
+  /importFloorPlan/,
+  "Upload floor plan is one visible line under the room card (ST2), not a section that starts collapsed."
 );
 
 assert.match(
@@ -393,9 +397,14 @@ assert.match(
 );
 
 assert.match(
+  consumerRoomSetupSource,
+  /Have a floor plan\?[\s\S]*?id=\{FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\}[\s\S]*?data-testid="plan-tool-import-2d"[\s\S]*?onClick=\{actions\.uploadFloorPlan\}[\s\S]*?Upload floor plan/,
+  "Upload floor plan is one visible line under the room card (ST2)."
+);
+assert.match(
   source,
-  /testId: "plan-tool-import-2d"[\s\S]*?label: "Choose a file"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
-  "The import tile should invoke the working file-picker flow."
+  /uploadFloorPlan: \(\) =>\s*requestFloorPlanUpload\(\{ source: "plan_panel", openerId: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID \}\)/,
+  "Plan's Upload asks through the shared entry, so guests sign in first and the upload is recorded as Plan's."
 );
 
 assert.match(

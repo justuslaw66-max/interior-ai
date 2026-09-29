@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useFloorPlanUploadDialogLifecycle } from "./useFloorPlanUploadDialogLifecycle";
 import { FloorPlanUploadWorkspaceDialog } from "./FloorPlanUploadWorkspaceDialog";
@@ -19,6 +19,8 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
+import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
+import { floorPlanUploadFileProblem, floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import type { RoomType } from "@/lib/room-types";
 
 type TraceRoomTypeOption = {
@@ -78,32 +80,6 @@ type FloorPlanUploadPanelProps = {
   onClear: () => void;
 };
 
-const ACCEPTED_PLAN_FILE_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "application/pdf",
-  "application/dxf",
-  "application/x-dxf",
-  "application/ifc",
-  "application/x-ifc",
-  "application/step",
-  "application/x-step",
-  "application/dwg",
-  "application/x-dwg",
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".webp",
-  ".pdf",
-  ".dxf",
-  ".ifc",
-  ".ifcstep",
-  ".step",
-  ".stp",
-  ".dwg",
-].join(",");
-
 const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   id: FloorPlanDrawRoomMode;
   label: string;
@@ -131,6 +107,27 @@ const ANGLE_LOCK_TOOLS: Array<{
   { id: "forty_five", label: "45°" },
   { id: "free", label: "Free" },
 ];
+
+/**
+ * The file for the upload window: checked against what this plan can upload (audit finding ST4),
+ * so a refused type or size is said in the window instead of failing on the server.
+ */
+function useFloorPlanUploadChoice(identity: FloorPlanLifecycleIdentity, trainingBenchmarkOptIn: boolean) {
+  const [request, setRequest] = useState<{ file: File; trainingBenchmarkOptIn: boolean } | null>(null);
+  const [fileProblem, setFileProblem] = useState<string | null>(null);
+  const importCad = resolveEditorCapabilities(identity.subscriptionPlan).importCad;
+  const choose = (file: File) => {
+    const problem = floorPlanUploadFileProblem(file, importCad);
+    setFileProblem(problem);
+    if (!problem) setRequest({ file, trainingBenchmarkOptIn });
+  };
+  const forget = useCallback(() => {
+    setRequest(null);
+    setFileProblem(null);
+  }, []);
+  const signedIn = (identity.authScopeKey || "guest") !== "guest";
+  return { request, fileProblem, formats: floorPlanUploadFormats(importCad), signedIn, choose, forget };
+}
 
 export default function FloorPlanUploadPanel({
   lifecycleIdentity,
@@ -200,11 +197,9 @@ export default function FloorPlanUploadPanel({
   });
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [trainingBenchmarkOptIn, setTrainingBenchmarkOptIn] = useState(false);
-  const dialog = useFloorPlanUploadDialogLifecycle(lifecycleScopeKey);
-  const [autoImportRequest, setAutoImportRequest] = useState<{
-    file: File;
-    trainingBenchmarkOptIn: boolean;
-  } | null>(null);
+  const choice = useFloorPlanUploadChoice(lifecycleIdentity, trainingBenchmarkOptIn);
+  // A closed window forgets its file, so opening it again resumes that upload instead of sending it twice.
+  const dialog = useFloorPlanUploadDialogLifecycle(lifecycleScopeKey, choice.forget);
   const cardClass = dark
     ? "designer-raised rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-white p-3";
@@ -294,7 +289,7 @@ export default function FloorPlanUploadPanel({
         type="file"
         data-testid="floor-plan-upload-input"
         aria-label="Floor plan file"
-        accept={ACCEPTED_PLAN_FILE_TYPES}
+        accept={choice.formats.accept}
         className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
@@ -304,7 +299,7 @@ export default function FloorPlanUploadPanel({
           delete event.currentTarget.dataset.floorPlanWorkspaceOpener;
           event.target.value = "";
           if (file) {
-            setAutoImportRequest({ file, trainingBenchmarkOptIn });
+            choice.choose(file);
             if (!dialog.open) dialog.openWorkspace(openerId);
           }
         }}
@@ -354,11 +349,10 @@ export default function FloorPlanUploadPanel({
             className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
           >
             <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
-              Upload a floor-plan image, PDF, DXF, IFC, or DWG
+              Upload floor plan: {choice.formats.summary}
             </div>
             <div className={`${subtleClass} mt-1`}>
-              Your floor plan is read in a separate window and never
-              placed over the design you are currently editing.
+              It opens as a new design in Plan. The design you are editing stays as it is.
             </div>
           </div>
         )}
@@ -803,7 +797,7 @@ export default function FloorPlanUploadPanel({
               className={secondaryButtonClass}
               disabled={disabled}
               onClick={() => {
-                setAutoImportRequest(null);
+                choice.forget();
                 onClear();
               }}
             >
@@ -850,8 +844,9 @@ export default function FloorPlanUploadPanel({
         )}
       </div>
     </div>
-    <FloorPlanUploadWorkspaceDialog {...dialog} dark={dark} disabled={disabled} proMode={isDesigner}
-      buttonClass={buttonClass} subtleClass={subtleClass} request={autoImportRequest}
+    <FloorPlanUploadWorkspaceDialog {...dialog} disabled={disabled} proMode={isDesigner}
+      request={choice.request}
+      choose={{ signedIn: choice.signedIn, formats: choice.formats, fileProblem: choice.fileProblem, onFileDropped: choice.choose }}
       trainingBenchmarkOptIn={trainingBenchmarkOptIn} onClose={dialog.requestClose}
       onChooseFile={() => inputRef.current?.click()}
       onConfirmationOpenChange={dialog.setHistoryConfirmationOpen}

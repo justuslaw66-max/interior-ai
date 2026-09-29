@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { useUrlViewMode } from "@/lib/useUrlViewMode";
 import type { Style } from "@/lib/design-page-types";
 import type { DesignPageItemCartEntry } from "@/lib/design-page-item-cart";
 import type {
@@ -69,9 +69,7 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] =
     useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
-  const [viewMode, setViewMode] = useState<EditorViewMode>(
-    urlView === "2d" ? "2d" : "3d"
-  );
+  const [viewMode, setViewMode] = useUrlViewMode(urlView);
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
   const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);

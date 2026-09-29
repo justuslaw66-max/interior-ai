@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import { floorPlanImportResponseJson } from "./useConsumerFloorPlanImportSession";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type CreationInput = {
   activeJob: ConsumerFloorPlanImportJob | null;
@@ -30,7 +31,8 @@ export function useConsumerFloorPlanImportCreation({ activeJob, title, beginActi
       const id = typeof payload.id === "string" ? payload.id : null;
       if (!id) throw new Error("The new design ID is missing");
       onActiveJobIdChange?.(null);
-      router.push(`/design?designId=${encodeURIComponent(id)}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(activeJob.id)}`);
+      // The new design opens in Plan, in 2D, with a note on what to check (audit finding ST5).
+      router.push(buildDesignEditorUrl({ designId: id, view: "2d", floorPlanImportId: activeJob.id }));
     } catch (cause) {
       if (signal.aborted) return;
       setCreateError(userFacingErrorMessage(cause, "Unable to create the new design"));

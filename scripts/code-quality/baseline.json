@@ -125,7 +125,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 299,
+      "lines": 282,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -221,7 +221,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3725,
+      "lines": 3711,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -249,15 +249,15 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 683,
+      "lines": 673,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
-      "lines": 512,
+      "lines": 507,
       "limit": 250
     },
     "components/editor/FloorPlanUploadPanel.tsx": {
-      "lines": 861,
+      "lines": 856,
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
@@ -1575,7 +1575,7 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 253
+        "maximum": 234
       },
       "complexFunctions": {
         "count": 1,
@@ -1987,7 +1987,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3614
+        "maximum": 3596
       },
       "complexFunctions": {
         "count": 5,
@@ -2127,7 +2127,7 @@
     "components/editor/FloorPlanAddressSearch.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 210
+        "maximum": 208
       },
       "complexFunctions": {
         "count": 1,
@@ -2147,17 +2147,17 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 623
+        "maximum": 612
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 87
+        "maximum": 85
       }
     },
     "components/editor/FloorPlanImportHistory.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 471
+        "maximum": 465
       },
       "complexFunctions": {
         "count": 2,
@@ -2167,7 +2167,7 @@
     "components/editor/FloorPlanImportWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 163
+        "maximum": 131
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {
@@ -2191,7 +2191,7 @@
     "components/editor/FloorPlanUploadPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 727
+        "maximum": 725
       },
       "complexFunctions": {
         "count": 1,
@@ -4345,7 +4345,7 @@
     "lib/useDesignPageCoreShellBaseRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 134
+        "maximum": 132
       }
     },
     "lib/useDesignPageCoreShellRegistration.ts": {

@@ -30,10 +30,14 @@ import {
 } from "@/lib/surface-material-runtime";
 import { useSurfaceMaterialCatalog } from "@/lib/useSurfaceMaterialCatalog";
 import {
-  FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID, FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
+  FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
   FLOOR_PLAN_WORKSPACE_FALLBACK_ACTION_ID,
 } from "@/lib/floor-plan-upload-dialog-focus";
+import {
+  FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, floorPlanUploadRequestOf, requestFloorPlanUpload,
+} from "@/lib/floor-plan-upload-request";
 import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
+import { FloorPlanImportArrivalNote } from "./FloorPlanImportArrivalNote";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
@@ -291,7 +295,6 @@ export default function DesignControlsPlanPanel({
   const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
   const [collapsedPlanSections, setCollapsedPlanSections] = useState<Record<CollapsiblePlanSection, boolean>>(() => ({
     floorPlan: false,
-    importFloorPlan: !isDesigner,
     drawRoom: !isDesigner,
     openings: !isDesigner,
     templates: !isDesigner,
@@ -319,17 +322,15 @@ export default function DesignControlsPlanPanel({
     });
     setPlanStartMode("template");
   };
-  const openFloorPlanUploadPicker = (semanticOpenerId?: string) => {
-    openFloorPlanUploadWorkspace(
-      semanticOpenerId, isDesigner, () => setPlanStartMode("upload")
-    );
-  };
+  // Upload floor plan, from anywhere, once its entry has let it through (lib/floor-plan-upload-request.ts).
   useEffect(() => {
-    const handleUploadRequest = () =>
-      openFloorPlanUploadPicker(FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID);
-    window.addEventListener("floor-plan-upload-requested", handleUploadRequest);
+    const handleUploadRequest = (event: Event) => {
+      const { openerId, source } = floorPlanUploadRequestOf(event);
+      openFloorPlanUploadWorkspace(openerId ?? undefined, source, () => setPlanStartMode("upload"));
+    };
+    window.addEventListener(FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, handleUploadRequest);
     return () =>
-      window.removeEventListener("floor-plan-upload-requested", handleUploadRequest);
+      window.removeEventListener(FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, handleUploadRequest);
   });
   useEffect(() => {
     if (planStartMode !== "template") return;
@@ -2072,6 +2073,7 @@ export default function DesignControlsPlanPanel({
 
   return (
     <div className={dark ? "overflow-hidden px-2 pb-2" : undefined}>
+      <FloorPlanImportArrivalNote dark={dark} />
       {showRoomSetupWizard && (
         <div
           data-testid="plan-tool-palette"
@@ -2159,28 +2161,12 @@ export default function DesignControlsPlanPanel({
                   },
                   chooseTemplate: openTemplatePicker,
                   drawRoom: startDrawRoomSetup,
+                  uploadFloorPlan: () =>
+                    requestFloorPlanUpload({ source: "plan_panel", openerId: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID }),
                   addOpening: onAddFloorPlanOpeningFromTool,
                   continueToFurnish: onGoFurnish,
                 }}
               />
-
-              {renderPlanToolSection({
-                section: "importFloorPlan",
-                title: "Upload floor plan",
-                children: (
-                  <div className={planToolGridClass}>
-                    {renderPlanToolTile({
-                      id: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
-                      testId: "plan-tool-import-2d",
-                      icon: "upload",
-                      label: "Choose a file",
-                      active: planStartMode === "upload",
-                      disabled: !canEdit,
-                      onClick: () => openFloorPlanUploadPicker(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID),
-                    })}
-                  </div>
-                ),
-              })}
 
               {renderPlanToolSection({
                 section: "drawRoom",

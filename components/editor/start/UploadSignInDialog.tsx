@@ -1,21 +1,28 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   EditorDialog,
   EditorDialogButton,
 } from "@/components/editor/design-system/EditorDialog";
+import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
+import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 
 export const START_UPLOAD_CHOICE_ID = "start-choice-upload-action";
-const RETURN_FOCUS_IDS = [START_UPLOAD_CHOICE_ID] as const;
+
+// Guests can't have Pro, so the formats are the everyday ones, and CAD files need Pro.
+const GUEST_FORMATS = floorPlanUploadFormats(false);
 
 const STEPS = [
-  { title: "Choose your file", detail: "PDF, JPG, PNG or WebP, up to 25 MB." },
+  { title: "Choose your file", detail: `${GUEST_FORMATS.summary}.` },
   { title: "Check the walls", detail: "We trace the rooms. You fix anything we missed." },
   { title: "Set scale", detail: "Enter one real measurement so every size is right." },
 ] as const;
 
 export type UploadSignInDialogProps = {
   open: boolean;
+  /** The Upload that asked, which gets focus back; else Start a new design's Upload, else More. */
+  openerId?: string | null;
   onClose: () => void;
   onSignIn: () => void;
 };
@@ -24,7 +31,11 @@ export type UploadSignInDialogProps = {
  * Guests sign in before they choose a file (audit finding ST3), instead of losing the file to
  * "Auto-detection paused" after the upload is refused. Signing in comes back to the upload.
  */
-export function UploadSignInDialog({ open, onClose, onSignIn }: UploadSignInDialogProps) {
+export function UploadSignInDialog({ open, openerId, onClose, onSignIn }: UploadSignInDialogProps) {
+  const returnFocusIds = useMemo(
+    () => [...(openerId ? [openerId] : []), START_UPLOAD_CHOICE_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID],
+    [openerId]
+  );
   return (
     <EditorDialog
       open={open}
@@ -33,7 +44,7 @@ export function UploadSignInDialog({ open, onClose, onSignIn }: UploadSignInDial
       onClose={onClose}
       closeLabel="Close"
       testId="upload-sign-in-dialog"
-      returnFocusIds={RETURN_FOCUS_IDS}
+      returnFocusIds={returnFocusIds}
       forceLight
       panelClassName="max-w-[520px]"
     >
@@ -63,6 +74,9 @@ export function UploadSignInDialog({ open, onClose, onSignIn }: UploadSignInDial
           Not now
         </EditorDialogButton>
       </div>
+      <p className="mt-4 text-[13px] text-neutral-600" data-testid="upload-sign-in-cad-note">
+        {GUEST_FORMATS.cadNote}
+      </p>
     </EditorDialog>
   );
 }

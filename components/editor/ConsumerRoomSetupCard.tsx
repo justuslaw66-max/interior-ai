@@ -10,6 +10,7 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
 import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
+import { RoomSetupStartActions } from "@/components/editor/RoomSetupStartActions";
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
@@ -39,6 +40,7 @@ export type ConsumerRoomSetupCardProps = {
     createRoom: () => void;
     chooseTemplate: () => void;
     drawRoom: () => void;
+    uploadFloorPlan: () => void;
     addOpening: (kind: RoomOpening2D["kind"]) => void;
     continueToFurnish: () => void;
   };
@@ -274,26 +276,7 @@ export function ConsumerRoomSetupCard({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          data-testid="plan-start-template"
-          className={secondaryActionClass}
-          disabled={!canEdit}
-          onClick={actions.chooseTemplate}
-        >
-          Choose a template
-        </button>
-        <button
-          type="button"
-          data-testid="plan-start-draw"
-          className={secondaryActionClass}
-          disabled={!canEdit}
-          onClick={actions.drawRoom}
-        >
-          Draw measured room
-        </button>
-      </div>
+      <RoomSetupStartActions dark={dark} canEdit={canEdit} secondaryActionClass={secondaryActionClass} actions={actions} />
     </section>
   );
 }

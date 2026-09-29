@@ -138,8 +138,8 @@ const files = SOURCE_ROOTS.flatMap((directory) => sourceFiles(directory)).filter
 const texts = files.flatMap((file) => uiTextsOf(file));
 assert.ok(texts.length > 3000, `The guard must read the app's text; it found only ${texts.length} strings.`);
 assert.ok(
-  texts.some((item) => item.file === "components/editor/DesignControlsPlanPanel.tsx" && item.text === "Upload floor plan"),
-  "The guard must see the Plan panel's Upload floor plan section title."
+  texts.some((item) => item.file === "components/editor/RoomSetupStartActions.tsx" && item.text === "Upload floor plan"),
+  "The guard must see Plan's Upload floor plan, under the room card."
 );
 
 const violations = texts

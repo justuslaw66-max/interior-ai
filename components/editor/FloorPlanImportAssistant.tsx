@@ -26,6 +26,7 @@ import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-
 import { useConsumerFloorPlanImportActionScope } from "./useConsumerFloorPlanImportActionScope";
 import { useConsumerFloorPlanImportCreation } from "./useConsumerFloorPlanImportCreation";
 import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice";
+import { FloorPlanImportPausedNotice } from "./FloorPlanImportPausedNotice";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
@@ -435,19 +436,8 @@ export default function FloorPlanImportAssistant({
 
   if (state.kind === "error") {
     return (
-      <div className={dark ? "designer-recessed rounded-lg border border-amber-400/20 p-3" : "rounded-lg border border-amber-200 bg-amber-50 p-3"} data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
-        <div className="text-xs font-semibold">Auto-detection paused</div>
-        <p className={`mt-1 text-xs leading-4 ${subtle}`}>{state.message}</p>
-        {state.resumableJobId && !state.authenticationRequired ? (
-          <button
-            type="button" data-floor-plan-workspace-focus="primary"
-            className={`${control} mt-3 font-semibold`}
-            onClick={() => window.location.reload()}
-          >
-            Resume processing
-          </button>
-        ) : null}
-      </div>
+      <FloorPlanImportPausedNotice dark={dark} subtle={subtle} control={control} message={state.message}
+        authenticationRequired={Boolean(state.authenticationRequired)} resumableJobId={state.resumableJobId ?? null} />
     );
   }
 
@@ -546,7 +536,7 @@ export default function FloorPlanImportAssistant({
               : "Create design"}
         </button>
         <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
-          Opens in 2D Furnish. Your planning review does not grant source verification or construction approval.
+          Opens in Plan, in 2D, so you can check it before you furnish. Your planning review does not grant source verification or construction approval.
         </p>
         {createError ? (
           <p className="mt-2 text-[10px] leading-4 text-red-600">
