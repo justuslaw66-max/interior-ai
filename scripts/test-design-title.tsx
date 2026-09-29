@@ -94,7 +94,7 @@ const barProps = {
   onOpenPresentExport: noop,
   saveStatus: {
     kind: "saved", source: "cloud", label: "Saved", detail: "Just now", tone: "saved",
-    canRetry: false, lastSuccessfulSaveAt: null,
+    canRetry: false, lastSuccessfulSaveAt: null, cloudBacked: false,
   },
 } as unknown as BarProps;
 const bar = (props: Partial<BarProps>) => renderToStaticMarkup(createElement(EditorCommandBar, { ...barProps, ...props }));
@@ -115,6 +115,11 @@ assert.doesNotMatch(bar({ designTitle: "Tan flat" }), /editor-design-title/, "No
 // The status is a line under the name (UX 4c, 4d): its label, with the detail as the tooltip.
 assert.match(named, /<span class="min-w-0 truncate">Saved<\/span>/);
 assert.match(named, /data-testid="save-status"[^>]*title="Just now"/);
+// Save shows until the design's first save to the account; then the status says it all (Decision E).
+assert.match(named, /data-testid="save-design"/);
+const cloudBacked = bar({ designTitle: "Tan flat", onRenameDesign: noop, saveStatus: { ...barProps.saveStatus, cloudBacked: true } });
+assert.doesNotMatch(cloudBacked, /data-testid="save-design"/);
+assert.match(cloudBacked, /data-testid="save-status"/);
 // Two equal sides with the steps between them; the name side gives way first.
 assert.match(named, /class="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3"/);
 assert.match(named, /class="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2"/);

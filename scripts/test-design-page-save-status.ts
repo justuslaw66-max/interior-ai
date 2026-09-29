@@ -21,6 +21,7 @@ assert.deepEqual(getDesignPageSaveStatus(base), {
   tone: "pending",
   canRetry: false,
   lastSuccessfulSaveAt: null,
+  cloudBacked: false,
 });
 
 assert.equal(
@@ -55,8 +56,19 @@ assert.equal(
     isAuthenticated: true,
     lastLocalAutosaveAt: Date.now(),
   }).detail,
+  "Not in your account yet.",
+  "A design in the account saves itself: there's no Save to press."
+);
+assert.equal(
+  getDesignPageSaveStatus({ ...base, isAuthenticated: true, lastLocalAutosaveAt: Date.now() }).detail,
   "Not in your account yet. Save to keep it there."
 );
+
+// Decision E (UX phase 4): Save shows until the design's first save to the account, then only the
+// status. Guests and never-saved designs keep Save.
+assert.equal(getDesignPageSaveStatus({ ...base, isAuthenticated: true }).cloudBacked, false);
+assert.equal(getDesignPageSaveStatus({ ...base, designId: "design-1", isAuthenticated: true, lastDbSaveAt: Date.now() }).cloudBacked, true);
+assert.equal(getDesignPageSaveStatus({ ...base, designId: "design-1", isSaving: true }).cloudBacked, true);
 
 const successfulSaveAt = 1_721_344_000_000;
 assert.equal(
@@ -85,6 +97,7 @@ assert.deepEqual(
     tone: "error",
     canRetry: false,
     lastSuccessfulSaveAt: successfulSaveAt,
+    cloudBacked: true,
   }
 );
 

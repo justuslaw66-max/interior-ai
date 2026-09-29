@@ -9,6 +9,12 @@ export type EditorSaveStatus = {
   tone: "error" | "saving" | "saved" | "pending";
   canRetry: boolean;
   lastSuccessfulSaveAt: number | null;
+  /**
+   * The design lives in the account (it was saved there once), so it saves itself and the bar
+   * shows only the status, not Save (UX phase 4, Decision E). Guests and never-saved designs keep
+   * Save.
+   */
+  cloudBacked: boolean;
 };
 
 export type DesignPageSaveStatusInput = {
@@ -23,7 +29,7 @@ export type DesignPageSaveStatusInput = {
   hasCloudConflict: boolean;
 };
 
-type SaveStatusCase = Omit<EditorSaveStatus, "lastSuccessfulSaveAt">;
+type SaveStatusCase = Omit<EditorSaveStatus, "lastSuccessfulSaveAt" | "cloudBacked">;
 
 /**
  * What the bar says about saving (UX audit SX5): "Saving…", "Saved" (in the account), "Saved on
@@ -56,7 +62,7 @@ function describeSaveStatus(input: DesignPageSaveStatusInput): SaveStatusCase {
   if (lastLocalAutosaveAt) {
     return { kind: "saved", source: "local", label: "Saved on this device",
       detail: input.isAuthenticated
-        ? "Not in your account yet. Save to keep it there."
+        ? `Not in your account yet.${designId ? "" : " Save to keep it there."}`
         : `Saved ${formatTimeAgo(lastLocalAutosaveAt)}. Sign in to keep it in your account.`,
       tone: "saved", canRetry: false };
   }
@@ -70,7 +76,7 @@ export function getDesignPageSaveStatus(input: DesignPageSaveStatusInput): Edito
     status.kind === "saved"
       ? status.source === "cloud" ? input.lastDbSaveAt : input.lastLocalAutosaveAt
       : input.designId ? input.lastDbSaveAt ?? input.lastLocalAutosaveAt : input.lastLocalAutosaveAt;
-  return { ...status, lastSuccessfulSaveAt };
+  return { ...status, lastSuccessfulSaveAt, cloudBacked: Boolean(input.designId) };
 }
 
 /**

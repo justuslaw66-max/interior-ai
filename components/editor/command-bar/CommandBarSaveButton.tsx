@@ -6,15 +6,18 @@ import { GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
 type CommandBarSaveButtonProps = {
   dark: boolean;
   isSaving: boolean;
+  /** A design in the account saves itself: no Save (UX phase 4, Decision E). */
+  cloudBacked: boolean;
   onSave: () => void | Promise<void>;
 };
 
 /**
- * Save. Guests are asked to sign in first. Phones show a 44px icon (a spinner while saving) in the
+ * Save, until the design's first save to the account. Guests are asked to sign in first. Phones show a 44px icon (a spinner while saving) in the
  * header, as the PhonePlan mockup's plain icons (UX 4d); from md it's a 36px outline with its
  * label, as Share is the bar's one black action (UX 4c).
  */
-export function CommandBarSaveButton({ dark, isSaving, onSave }: CommandBarSaveButtonProps) {
+export function CommandBarSaveButton({ dark, isSaving, cloudBacked, onSave }: CommandBarSaveButtonProps) {
+  if (cloudBacked) return null;
   const label = isSaving ? "Saving…" : "Save";
   const Icon = isSaving ? LoaderCircle : Save;
   return (

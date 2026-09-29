@@ -388,9 +388,9 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
       await expectInspector("1600", "User confirmed");
 
-      await page.getByTestId("save-design").click();
+      // A design in the account saves itself, so the bar has no Save (Decision E): autosave sends it.
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       await expectCloudDesignReady(page, seed.designId);
-      // Autosave may have sent this state before the explicit Save click.
       await expect.poll(() => successfulWrites, { timeout: 30_000 }).toContainEqual(editedOpenings);
       await expectPersistedFingerprint(page, seed.designId, editedFingerprint);
       await expectCloudOpenings(editedOpenings);
@@ -453,9 +453,8 @@ test.describe("3. Save + Reload Persistence", () => {
       );
       await closePresentExport(page);
 
-      const saveButton = page.getByTestId("save-design");
-      await expect(saveButton).toBeVisible();
-      await saveButton.click();
+      // No Save on a design in the account (Decision E): autosave sends the view.
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       const saveStatus = page.getByTestId("save-status");
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
@@ -505,7 +504,7 @@ test.describe("3. Save + Reload Persistence", () => {
         "Persistence E2E View",
       );
       await closePresentExport(page);
-      await saveButton.click();
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });

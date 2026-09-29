@@ -200,7 +200,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
 
       <div className="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2">
         <CommandBarGetProButton dark={dark} accountReady={props.accountReady} canUpgrade={props.canUpgrade} onGetPro={props.onGetPro} />
-        <CommandBarSaveButton dark={dark} isSaving={props.isSaving ?? false} onSave={props.onSave} />
+        <CommandBarSaveButton dark={dark} isSaving={props.isSaving ?? false} cloudBacked={saveStatus.cloudBacked} onSave={props.onSave} />
         <CommandBarDownloadButton dark={dark} onDownload={props.onDownload} />
         <CommandBarShareButton dark={dark} isSharing={props.isSharing ?? false} onShare={props.onShare} />
         {wide ? moreMenu : null}
