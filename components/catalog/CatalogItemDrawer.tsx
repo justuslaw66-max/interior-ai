@@ -332,7 +332,7 @@ export default function CatalogItemDrawer({
             {selectedPurchaseOption ? (
               <div className="mt-2 text-xs text-neutral-600">
                 {selectedPurchaseOption.quantity > 1
-                  ? `Adds ${selectedPurchaseOption.quantity} chairs visually, but keeps one official Castlery set line in cart.`
+                  ? `Adds ${selectedPurchaseOption.quantity} chairs; the Shopping list keeps them as one Castlery set.`
                   : "Adds one chair and one single-chair purchase line."}
               </div>
             ) : null}

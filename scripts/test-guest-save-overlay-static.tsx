@@ -27,7 +27,9 @@ const workspaceSource = read(
 );
 const commandBarSource = readEditorCommandBarSource();
 const aiPanelSource = read("components/editor/DesignControlsAiPanel.tsx");
-const cartSource = read("components/CartSidebar.tsx");
+// Shop's Checkout here (UX phase 3c-2): its button, and the hook that asks a guest first.
+const checkoutButtonSource = read("components/editor/shop/ShoppingSummary.tsx");
+const checkoutSource = read("lib/useShoppingListBuy.ts");
 
 const noOp = () => undefined;
 const baseProps: GuestSavePromptDialogProps = {
@@ -141,10 +143,10 @@ assert.doesNotMatch(
 assert.match(commandBarSource, /id=\{GUEST_SAVE_OPENER_ID\}/);
 assert.match(commandBarSource, /id=\{GUEST_SHARE_OPENER_ID\}/);
 assert.match(aiPanelSource, /id=\{GUEST_AI_LAYOUT_OPENER_ID\}/);
-assert.match(cartSource, /id=\{GUEST_CHECKOUT_OPENER_ID\}/);
-assert.match(cartSource, /onGuestCapture\("checkout"/);
-assert.match(cartSource, /if \(busy \|\| checkoutLock\.active\(\)\) return;/);
-assert.match(cartSource, /await checkoutLock\.run\(async \(\) => \{/);
+assert.match(checkoutButtonSource, /id=\{GUEST_CHECKOUT_OPENER_ID\} type="button" data-testid="checkout-shopify"/);
+assert.match(checkoutSource, /openGuestPrompt\("checkout"/);
+assert.match(checkoutSource, /if \(busy \|\| checkoutLock\.active\(\)\) return;/);
+assert.match(checkoutSource, /await checkoutLock\.run\(async \(\) => \{/);
 
 function productionScopeKey(overrides: Partial<{
   pathname: string;

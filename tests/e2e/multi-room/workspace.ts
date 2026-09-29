@@ -120,10 +120,7 @@ export function registerWorkspaceTests() {
 
     await selectWorkspace(page, "shop");
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("Shopping overview")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId("shopping-checkout-readiness")).toBeVisible();
-    await expect(page.getByText("Retailer-link spend")).toBeVisible();
-    await expect(page.getByTestId("cart-checkout-readiness")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Shopping list", level: 1 })).toBeVisible({ timeout: 10000 });
 
     await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");

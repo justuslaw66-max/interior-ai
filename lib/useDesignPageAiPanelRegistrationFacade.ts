@@ -12,7 +12,6 @@ import {
   useDesignPagePanelActions,
   type DesignPagePanelActionAdapters,
   type DesignPagePanelActionsState,
-  type UseDesignPagePanelActionsInput,
 } from "@/lib/useDesignPagePanelActions";
 
 type AiLayoutActions = UseDesignPageAiLayoutParams["actions"];
@@ -28,20 +27,15 @@ export type UseDesignPageAiPanelRegistrationFacadeInput = {
   };
   actions: {
     layout: AiLayoutActions;
-    panel: Omit<
-      PanelActionAdapters,
-      "runAiLayout" | "regenerateAiLayout" | "commitItems" | "updateSelection"
-    >;
+    panel: Omit<PanelActionAdapters, "runAiLayout" | "regenerateAiLayout">;
     notes: {
       addItem: (productId: string, position: [number, number, number]) => void;
     };
-    selection: Pick<PanelActionAdapters, "updateSelection">;
   };
   configuration: UseDesignPageAiLayoutParams["configuration"];
   refs: {
     items: MutableRefObject<DesignItem[]>;
     layout: Omit<UseDesignPageAiLayoutParams["refs"], "getItems">;
-    panel: UseDesignPagePanelActionsInput["refs"];
   };
 };
 
@@ -69,7 +63,6 @@ export function useDesignPageAiPanelRegistrationFacade({
   refs: {
     items: itemsRef,
     layout: { createInstanceId, clampToRoom },
-    panel: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
   },
 }: UseDesignPageAiPanelRegistrationFacadeInput): DesignPageAiPanelRegistrationFacade {
   const layout = useDesignPageAiLayout({
@@ -85,13 +78,10 @@ export function useDesignPageAiPanelRegistrationFacade({
 
   const panel = useDesignPagePanelActions({
     state: state.panel,
-    refs: { selectedIds: selectedIdsRef, primaryId: primaryIdRef },
     actions: {
       ...actions.panel,
       runAiLayout: layout.actions.runAiLayout,
       regenerateAiLayout: layout.actions.regenerateAiLayout,
-      commitItems: actions.layout.commitItems,
-      updateSelection: actions.selection.updateSelection,
     },
   });
 

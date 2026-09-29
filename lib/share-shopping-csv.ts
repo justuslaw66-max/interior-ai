@@ -43,7 +43,7 @@ function formatCategory(value: string) {
 export function getCheckoutStatusLabel(row: ActiveRoomShoppingItem) {
   if (!row.hasValidCommerce) return "Needs review";
   if (row.commerceMode === "shopify") {
-    return row.includeInCheckout ? "Cart-ready" : "Not in cart";
+    return row.includeInCheckout ? "Checkout here" : "Left out of checkout";
   }
   if (row.commerceMode === "affiliate") return "Retailer link";
   return "Needs review";

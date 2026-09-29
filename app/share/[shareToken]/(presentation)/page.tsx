@@ -471,7 +471,7 @@ export default async function SharePage({
             <div>
               <h2 className="text-lg font-semibold text-neutral-950">Checkout readiness</h2>
               <div className="mt-1 text-sm text-neutral-600">
-                Clear buying paths for cart-ready products, retailer links, and items that need review.
+                Clear buying paths: products you can check out here, retailer links, and items that need review.
               </div>
             </div>
             <div className="text-right text-sm">
@@ -490,7 +490,7 @@ export default async function SharePage({
           >
             <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">
-                Cart-ready
+                Checkout here
               </div>
               <div className="mt-1 text-lg font-semibold text-neutral-950">
                 {checkoutReadyRows.length}
@@ -523,7 +523,7 @@ export default async function SharePage({
             </div>
             <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                Not in cart
+                Left out
               </div>
               <div className="mt-1 text-lg font-semibold text-neutral-950">
                 {notInCartRows.length}
@@ -537,7 +537,7 @@ export default async function SharePage({
             <div>
               <div className="text-sm font-semibold text-neutral-950">Live commerce checkout</div>
               <div className="mt-1 max-w-2xl text-xs leading-5 text-neutral-600">
-                Direct-checkout stock and prices are verified with the retailer before a cart is created.
+                Direct-checkout stock and prices are checked with the retailer before checkout.
                 External retailer items stay available through their individual links.
               </div>
             </div>

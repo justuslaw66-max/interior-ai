@@ -1617,10 +1617,11 @@ test.describe("Pro visual policy", () => {
 
     await nested.plansAction.press("Enter");
     plans = await expectPlansDialog(page);
-    const trayTrigger = page.getByTestId("selection-tray-trigger");
-    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
-    let newerDialog = page.getByTestId("selection-tray-dialog");
-    let newerClose = page.getByTestId("selection-tray-close");
+    // Download is the newer modal: its command-bar button stays in the (inert) editor behind Plans.
+    const downloadTrigger = page.getByTestId("editor-command-download");
+    await downloadTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    let newerDialog = page.getByTestId("download-dialog");
+    let newerClose = page.getByTestId("download-dialog-close");
     await expect(newerDialog).toHaveAttribute("role", "dialog");
     await expect(newerDialog).toHaveAttribute("aria-modal", "true");
     await expect(newerClose).toBeFocused();
@@ -1634,9 +1635,9 @@ test.describe("Pro visual policy", () => {
     await expect(plans.dialog).toBeVisible();
     await expect(plans.close).toBeFocused();
 
-    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
-    newerDialog = page.getByTestId("selection-tray-dialog");
-    newerClose = page.getByTestId("selection-tray-close");
+    await downloadTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    newerDialog = page.getByTestId("download-dialog");
+    newerClose = page.getByTestId("download-dialog-close");
     await expect(newerClose).toBeFocused();
     await plans.close.evaluate((element) => (element as HTMLButtonElement).click());
     await expectPlansClosed(page);
@@ -1977,31 +1978,32 @@ test.describe("Pro visual policy", () => {
     );
     let child = await expectShareFallbackTopmost(page, parent);
 
-    const trayTrigger = page.getByTestId("selection-tray-trigger");
-    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
-    let tray = page.getByTestId("selection-tray-dialog");
-    let trayClose = page.getByTestId("selection-tray-close");
-    await expect(trayClose).toBeFocused();
+    // Download is the newer modal: its command-bar button stays in the (inert) editor behind Share.
+    const downloadTrigger = page.getByTestId("editor-command-download");
+    await downloadTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    let download = page.getByTestId("download-dialog");
+    let downloadClose = page.getByTestId("download-dialog-close");
+    await expect(downloadClose).toBeFocused();
     await expect(child.fallback).toHaveAttribute("aria-hidden", "true");
     expect(await child.fallback.evaluate((element) => {
       if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
       return element.inert;
     })).toBe(true);
-    await trayClose.press("Escape");
-    await expect(tray).toHaveCount(0);
+    await downloadClose.press("Escape");
+    await expect(download).toHaveCount(0);
     await expect(child.close).toBeFocused();
 
-    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
-    tray = page.getByTestId("selection-tray-dialog");
-    trayClose = page.getByTestId("selection-tray-close");
-    await expect(trayClose).toBeFocused();
+    await downloadTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    download = page.getByTestId("download-dialog");
+    downloadClose = page.getByTestId("download-dialog-close");
+    await expect(downloadClose).toBeFocused();
     await page.getByTestId("share-done-button").evaluate((element) =>
       (element as HTMLButtonElement).click()
     );
     await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
-    await expect(trayClose).toBeFocused();
-    await trayClose.press("Escape");
-    await expect(tray).toHaveCount(0);
+    await expect(downloadClose).toBeFocused();
+    await downloadClose.press("Escape");
+    await expect(download).toHaveCount(0);
     await expect(parent).toBeVisible();
     await expect(page.getByTestId("create-share")).not.toBeFocused();
 

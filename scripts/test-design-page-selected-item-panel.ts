@@ -44,7 +44,7 @@ const modelVariantControlsSource = readSource(
 
 assert.match(
   workspaceSource,
-  /import\s+\{\s*DesignPagePanelRegion\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPagePanelRegion"/,
+  /import\s+\{\s*(?:CanvasBehindPage,\s*)?DesignPagePanelRegion\s*\}\s+from\s+"@\/components\/editor\/design-page\/DesignPagePanelRegion"/,
   "The workspace should import the fixed panel region.",
 );
 assert.match(

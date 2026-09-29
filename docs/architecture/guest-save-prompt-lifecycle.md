@@ -23,11 +23,13 @@ overlay left focus on the obscured Save, Generate layout, or Checkout here
 action and had no dialog semantics, topmost ownership, focus containment,
 Escape/backdrop/close policy, background isolation, or semantic return.
 
-The public catalog currently contains no Shopify-mapped line, so its visible
-Checkout here action remains correctly disabled and the no-variant behavior is
-unchanged. Focused checkout coverage bundles a test-only harness that mounts
-the actual `CartSidebar`, prompt controller, and dialog against an in-memory
-eligible Shopify catalog object. Normal click/Enter therefore reaches the real
+The public catalog currently contains no Shopify-mapped line. Since UX phase
+3c-2, Shop's Shopping list shows "Checkout here" only once a design has a
+product sold through Shopify (J, Q5, 27 Sep), keeping the `checkout-shopify`
+test id and the `guest-checkout-action` opener id. Focused checkout coverage
+bundles a test-only harness that mounts the actual `ShopStep` (the Shopping
+list), prompt controller, and dialog against an in-memory eligible Shopify
+catalog object. Normal click/Enter therefore reaches the real
 production handler, exact request body, and URL construction while the final
 boundary and navigation stay same-origin and synthetic. No production catalog
 mapping or eligibility branch is added and no merchant is contacted.

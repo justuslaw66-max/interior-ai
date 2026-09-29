@@ -13,7 +13,6 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { announceUndoableAction, catalogAddAnnouncement } from "@/lib/editor-action-toast";
 import {
-  buildCatalogFallbackPlacement,
   buildCatalogPlacementPreview as resolveCatalogPlacementPreview,
   buildCatalogSupportSurfaceHighlight,
   buildPendingCatalogPlacementScene,
@@ -1145,55 +1144,6 @@ export function useDesignPageCatalogPlacement({
     );
   }, [pendingCatalogBestVariantPlacement, setPendingPlacement, showToast]);
 
-  const addCatalogItemDirectlyToRoom = useCallback(
-    (productId: string, variantId?: string, purchaseOptionId?: string) => {
-      const placement = buildCatalogPlacementPreview(
-        productId,
-        variantId,
-        purchaseOptionId
-      );
-      if (placement) {
-        return addCatalogPlacementToRoom({
-          ...placement,
-          roomId: activeRoom?.id ?? getActiveRoomId(),
-        });
-      }
-
-      const fallback = buildCatalogFallbackPlacement({
-        productId,
-        variantId,
-        purchaseOptionId,
-        itemCount: getActiveItems().length,
-        surfaceItems: activeRoom?.items,
-        roomId: activeRoom?.id ?? getActiveRoomId(),
-        roomWidth,
-        roomDepth,
-        roomHeight:
-          activeRoom?.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight,
-        wallThickness,
-        clampToActiveRoom,
-        collides: catalogPlacementCollides,
-      });
-      if (!fallback) return false;
-      return addCatalogPlacementToRoom({
-        ...fallback,
-        roomId: activeRoom?.id ?? getActiveRoomId(),
-      });
-    },
-    [
-      activeRoom,
-      addCatalogPlacementToRoom,
-      buildCatalogPlacementPreview,
-      catalogPlacementCollides,
-      clampToActiveRoom,
-      getActiveItems,
-      getActiveRoomId,
-      roomDepth,
-      roomWidth,
-      wallThickness,
-    ]
-  );
-
   const addCatalogItemToRoom = useCallback(
     (productId: string, variantId?: string, purchaseOptionId?: string) => {
       // Auto places it, with Undo (FU4); with no open spot, the preview lets the person choose one.
@@ -2067,7 +2017,6 @@ export function useDesignPageCatalogPlacement({
       movePendingCatalogPlacementToBestRoom,
       switchPendingCatalogPlacementToBestOption,
       addCatalogPlacementToRoom,
-      addCatalogItemDirectlyToRoom,
       addCatalogItemToRoom,
       autoPlaceCatalogItemInRoom,
       previewCatalogPlacementIntent,

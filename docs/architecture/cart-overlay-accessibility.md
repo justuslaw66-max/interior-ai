@@ -1,5 +1,73 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## Re-pinned in UX phase 3c-2: the Cart gate owns the Shopping list — 2026-09-27
+
+The Selection Tray (`components/ItemCartDrawer.tsx`) is gone, with its cart
+state (`lib/design-page-item-cart.ts`, `itemCart` and `itemCartOpen` in the
+editor's core shell), its dialog-layer entry and its Add all / quantity
+actions: nothing added to it since products went straight into the room (UX
+audit FU7). Shop is one Shopping list, a page over the canvas (FU8; see
+`retailer-confirmation-lifecycle.md` for buying from it). The sections below
+are the history of CH-0015; their Tray rows describe code that no longer
+exists.
+
+CH-0015A's gate keeps its id (`ci.cart-overlay-accessibility`), its owner
+(`cart`, the development server), its files, package scripts and CI step, as
+the My designs and Retailer gates did (J, 27 Sep). It now pins the Shopping
+list in the real editor, opened on a design kept in this browser (three
+Castlery products in the Living Room, seeded as the local backup before the
+page loads):
+
+| Requirement | Test |
+|---|---|
+| `cart.shop-page-consumer` | Consumer Shop shows the Shopping list over an inert canvas and Furnish gives the editor back |
+| `cart.shop-page-pro` | Pro Shop hides the tool rail and removes by keyboard as Consumer does |
+| `cart.remove-focus-next` | Removing a product by keyboard moves focus to the next product's Remove |
+| `cart.remove-focus-previous` | Removing the last product in the list moves focus to the product before it |
+| `cart.remove-focus-heading` | Removing the only product moves focus to the Shopping list heading |
+| `cart.undo-focus` | Undo in the toast puts the product back and keeps keyboard focus on Shop |
+| `cart.pointer-remove-focus` | Removing with the pointer also leaves focus on the next product's Remove |
+| `cart.responsive-layout` | Desktop and 390x844 Shopping lists fit the screen with 44px actions and focus rings |
+
+Each runs in Chromium and WebKit (16 results), with no retries, skips or
+annotations. Opening the editor has its own 60-second fixture allowance; the
+checks keep the test's budget.
+
+### The contract
+
+- **Covered canvas.** While Shop shows, `CanvasBehindPage` makes the scene
+  region `inert` and `aria-hidden="true"`: nothing in it takes focus. Leaving
+  Shop (Furnish, Plan) gives it back. Pro's tool rail is not rendered in Shop.
+- **The page.** `ShoppingListPage` is a `section` named by its `h1`
+  ("Shopping list", `id="shopping-list-title"`, `tabindex="-1"`). Rows are in
+  reading order: each shop, then Checkout here, then Not sold online yet
+  (`shoppingListLines`). Each row's Remove is named "Remove <product> from the
+  design".
+- **Focus after Remove** (`useShoppingListFocus`). Remove takes its row, and
+  the focused button, off the page. Once the list shows the removal, focus
+  moves to the next product's Remove, else the one before it (nearest first,
+  skipping lines that went with a set), else the heading, which the empty state
+  ("Nothing to buy yet") sits under. A removal that didn't happen moves
+  nothing. Pointer removals move focus the same way, so it never falls to the
+  page body.
+- **Focus after a swap.** "Swap for cheaper" keeps the row. When the cheaper
+  product has no cheaper swap of its own, the Swap button goes, and focus moves
+  to the row's Remove.
+- **Undo.** Remove and swap are one history step each, announced in the
+  command bar's toast (`role="status"`) with Undo. Undo by keyboard puts the
+  product back and focuses the current step (Shop,
+  `id="editor-command-workspace-action"`).
+- **Layout.** From `lg` the summary is the column beside the list; on phones
+  the total and Buy sit at the foot of the list, above the step bar. No
+  sideways scroll at 390×844; Remove is 44px square below `md`; Buy is at least
+  44px tall; a keyboard move onto Remove shows its focus ring.
+
+The static prerequisite (`scripts/test-cart-overlay-static.tsx`) pins the
+reading order, the focus targets (on a fake page), the rendered page and the
+wiring, and that nothing of the Tray is left. `ci.pro-visual-policy`'s two
+supersession tests used the Tray as the newer modal; they now use Download,
+whose command-bar button stays in the inert editor behind Plans and Share.
+
 ## CH-0015I Floor Plan Upload full-screen modal lifecycle — 2026-08-12
 
 Status: **CH-0015I LOCALLY REMEDIATED; CH-0015 AWAITS THE EXACT-SOURCE

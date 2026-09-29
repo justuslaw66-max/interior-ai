@@ -15,6 +15,7 @@ import type { BuildDesignControlsPanelModelInput } from "@/lib/design-page-contr
 import type { BuildDesignPagePanelRegionAdapterInput } from "@/lib/design-page-panel-region-adapter";
 import type { BuildDesignPageSelectionPanelModelsInput } from "@/lib/design-page-selection-panel-model";
 import type { BuildDesignPageShoppingPanelModelInput } from "@/lib/design-page-shopping-panel-model";
+import type { RoomSnapshot } from "@/lib/room-types";
 
 type ControlsInput = BuildDesignControlsPanelModelInput;
 type ShoppingInput = BuildDesignPageShoppingPanelModelInput;
@@ -40,9 +41,9 @@ export type BuildDesignPagePanelRegistrationInput = {
   };
   state: {
     document: {
-      designId: ShoppingInput["state"]["cart"]["designId"];
-      plan: ShoppingInput["state"]["cart"]["plan"];
-      rooms: SelectionInput["item"]["state"]["document"]["rooms"];
+      designId: ShoppingInput["state"]["designId"];
+      plan: "free" | "pro";
+      rooms: RoomSnapshot[];
       activeRoomId: string;
       catalogRoomNavigationRevision: number;
       authenticated: boolean;
@@ -68,7 +69,6 @@ export type BuildDesignPagePanelRegistrationInput = {
       | "floorPlanQualityReport"
     >;
     shopping: {
-      readinessFilter: ShoppingInput["state"]["overview"]["activeFilter"];
       placementAddMode: ControlsInput["shopping"]["state"]["placementAddMode"];
     };
     ai: ControlsInput["ai"]["state"];
@@ -134,14 +134,9 @@ export type BuildDesignPagePanelRegistrationInput = {
       updateOpeningMetrics: ControlsInput["floorPlan"]["actions"]["onUpdateOpeningMetrics"];
     };
     shopping: {
-      setReadinessFilter: ShoppingInput["actions"]["overview"]["onFilterChange"];
-      swapItem: ShoppingInput["actions"]["overview"]["onSwapShoppingItem"];
-      previewReplacement: ShoppingInput["actions"]["overview"]["onPreviewReplacement"];
-      bulkSwap: ShoppingInput["actions"]["cart"]["onBulkSwap"];
-      showUpgrade: ShoppingInput["actions"]["cart"]["onShowUpgrade"];
-      openGuestPrompt: ShoppingInput["actions"]["cart"]["openGuestPrompt"];
+      commitItemsToRoom: ShoppingInput["actions"]["commitItemsToRoom"];
+      openGuestPrompt: ShoppingInput["actions"]["openGuestPrompt"];
       addImportedToRoom: ControlsInput["shopping"]["actions"]["onAddImportedToRoom"];
-      reviewIssue: ControlsInput["shopping"]["actions"]["onReviewShoppingIssue"];
     };
     cabinetry: {
       deleteSelected: SelectionInput["cabinet"]["actions"]["delete"];

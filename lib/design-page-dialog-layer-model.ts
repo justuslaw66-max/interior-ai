@@ -11,7 +11,6 @@ type TemplateChoice = Dialogs["planTemplateChoice"];
 type Placement = Dialogs["catalogPlacement"];
 type BetaFeedback = NonNullable<Overlays["betaFeedback"]>;
 type Cabinetry = Overlays["cabinetry"];
-type ItemCart = Overlays["itemCart"];
 
 type UpgradeModel = {
   open: boolean;
@@ -146,16 +145,6 @@ export type BuildDesignPageDialogLayerModelInput = {
     refs: { openedAt: Cabinetry["openedAtRef"] };
     actions: Pick<Cabinetry, "onSave" | "onPlaceInPlan" | "onDismiss">;
   };
-  cart: {
-    items: ItemCart["items"];
-    isOpen: ItemCart["isOpen"];
-    controlsPanelVisible: boolean;
-    onRemove: ItemCart["onRemove"];
-    onUpdateQty: ItemCart["onUpdateQty"];
-    onClear: ItemCart["onClear"];
-    onAddAllToRoom: ItemCart["onAddAllToRoom"];
-    onToggle: ItemCart["onToggle"];
-  };
 };
 
 /** Download reads the scene and export state that Present & export already carries. */
@@ -188,7 +177,6 @@ export function buildDesignPageDialogLayerModel({
   feedback,
   sharing,
   cabinetry,
-  cart,
 }: BuildDesignPageDialogLayerModelInput): BuildDesignPageDialogLayerAdapterInput {
   const { reason: guestSaveReason, ...guestSave } = persistence.guestSave;
   return {
@@ -288,18 +276,6 @@ export function buildDesignPageDialogLayerModel({
         ...cabinetry.configuration,
         openedAtRef: cabinetry.refs.openedAt,
         ...cabinetry.actions,
-      },
-      itemCart: {
-        items: cart.items,
-        onRemove: cart.onRemove,
-        onUpdateQty: cart.onUpdateQty,
-        onClear: cart.onClear,
-        onAddAllToRoom: cart.onAddAllToRoom,
-        isOpen: cart.isOpen,
-        onToggle: cart.onToggle,
-        triggerClassName: cart.controlsPanelVisible
-          ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
-          : "bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-4",
       },
     },
   };

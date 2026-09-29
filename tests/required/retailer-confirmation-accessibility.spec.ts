@@ -2,68 +2,94 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import path from "node:path";
 import type { RetailerFixtureInputs } from "./fixtures/retailer-confirmation-harness";
 
+// CH-0015G's Retailer gate, re-pinned in UX phase 3c-2: buying at a retailer from the Shopping list.
+// "Buy at <shop>" opens a shop's only product directly, or its buy list: one Open per product, each
+// click opening one tab (J's answer to Q2, 27 Sep). Tabs, tracking and shops are synthetic.
+
 type Entry = "pointer" | "keyboard";
 type UserKind = RetailerFixtureInputs["userKind"];
-type OpenRecord = {
+type TabRecord = {
   url: string;
   target: string | null;
   features: string | null;
-  time: number;
+  opener: string | null;
+  href: string | null;
+  blocked: boolean;
 };
 
 declare global {
   interface Window {
-    __retailerWindowOpens: OpenRecord[];
+    __retailerTabs: TabRecord[];
+    __retailerBlockTabs: boolean;
   }
 }
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
-const GLOBAL_ACTION_ID = "retailer-confirmation-global-action";
-const GROUP_ACTION_ID =
-  "retailer-confirmation-group-action-safe%20retailer--53-61-66-65-20-52-65-74-61-69-6c-65-72";
-const CART_FALLBACK_ID = "retailer-confirmation-cart-fallback-action";
-const SAFE_DESTINATION = "http://127.0.0.1:3000/synthetic-retailer/alpha";
+const DESIGN_ID = "ch0015g-synthetic-design";
+const SAFE_SHOP = "safe-retailer.test";
+const BUY_SAFE_ID = "shopping-buy-safe-retailer.test";
+const FALLBACK_ID = "editor-command-workspace-action";
+const OPENER_NOT_CLEARED = "opener-not-cleared";
+const BLOCKED_TAB = "Your browser blocked the new tab. Allow pop-ups for this site, then open the product again.";
+const PRODUCTS = {
+  alpha: { title: "Alpha Armchair", destination: "https://safe-retailer.test/alpha" },
+  beta: { title: "Beta Side Table", destination: "https://www.safe-retailer.test/beta" },
+  gamma: { title: "Gamma Floor Lamp", destination: "https://safe-retailer.test/gamma" },
+} as const;
 
 type SyntheticBoundaries = {
   payloads: Array<Record<string, unknown>>;
-  requestTimes: number[];
-  popupCount: number;
   failTracking: boolean;
   userKind: UserKind;
   reset: () => void;
 };
 
+const clickPayload = (key: string) => ({
+  designId: DESIGN_ID,
+  productId: `ch0015g-${key}-product`,
+  variantId: `ch0015g-${key}-variant`,
+});
+
 async function installSyntheticBoundaries(page: Page) {
   const boundaries: SyntheticBoundaries = {
     payloads: [],
-    requestTimes: [],
-    popupCount: 0,
     failTracking: false,
     userKind: "consumer",
     reset() {
       this.payloads.length = 0;
-      this.requestTimes.length = 0;
-      this.popupCount = 0;
       this.failTracking = false;
     },
   };
-  page.on("popup", () => { boundaries.popupCount += 1; });
-  await page.addInitScript(() => {
+  await page.addInitScript((openerSentinel) => {
     localStorage.clear();
     localStorage.setItem("interior-ai:beta-start-dismissed", "1");
     localStorage.setItem("scene_performance_mode", "lite");
-    window.__retailerWindowOpens = [];
+    window.__retailerTabs = [];
+    window.__retailerBlockTabs = false;
+    // A tab that records where the Shopping list sends it, instead of opening a real one.
     window.open = (url, target, features) => {
-      window.__retailerWindowOpens.push({
-        url: String(url),
+      const record: TabRecord = {
+        url: String(url ?? ""),
         target: target ?? null,
         features: features ?? null,
-        time: performance.now(),
-      });
-      return null;
+        opener: openerSentinel,
+        href: null,
+        blocked: window.__retailerBlockTabs,
+      };
+      window.__retailerTabs.push(record);
+      if (record.blocked) return null;
+      const tab = {
+        get opener(): string | null { return record.opener; },
+        set opener(value: string | null) { record.opener = value; },
+        location: {
+          get href() { return record.href ?? "about:blank"; },
+          set href(value: string) { record.href = String(value); },
+        },
+      };
+      return tab as unknown as Window;
     };
-  });
+  }, OPENER_NOT_CLEARED);
   await page.route("**/api/me", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -73,10 +99,7 @@ async function installSyntheticBoundaries(page: Page) {
     }),
   }));
   await page.route("**/api/track/click", (route) => {
-    boundaries.payloads.push(
-      route.request().postDataJSON() as Record<string, unknown>
-    );
-    boundaries.requestTimes.push(Date.now());
+    boundaries.payloads.push(route.request().postDataJSON() as Record<string, unknown>);
     if (boundaries.failTracking) return route.abort("failed");
     return route.fulfill({
       status: 200,
@@ -88,11 +111,6 @@ async function installSyntheticBoundaries(page: Page) {
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ accepted: true }),
-  }));
-  await page.route("**/synthetic-retailer/**", (route) => route.fulfill({
-    status: 200,
-    contentType: "text/html",
-    body: "<!doctype html><title>Safe retailer destination</title><p>Safe retailer destination</p>",
   }));
   return boundaries;
 }
@@ -111,27 +129,19 @@ async function inspectFixtureSetupBoundary(page: Page, harness: Locator) {
   expect(controllerType).toBe("function");
   await expect(page.locator("#retailer-confirmation-harness-root > main")).toHaveCount(1);
   await expect(page.getByRole("dialog", { includeHidden: true })).toHaveCount(0);
-  const cart = page.getByTestId("cart-panel");
-  if (await cart.count()) {
-    // This action is disabled only while Cart is busy, including the final tab delay.
-    await expect(cart.getByRole("button", { name: "Swap for cheaper", exact: true })).toBeEnabled();
-  }
   return true;
 }
 
 async function loadHarness(
   page: Page,
   boundaries: SyntheticBoundaries,
-  options: Partial<RetailerFixtureInputs> & {
-    viewport?: { width: number; height: number };
-  } = {}
+  options: Partial<RetailerFixtureInputs> & { viewport?: { width: number; height: number } } = {}
 ) {
   const harness = page.getByTestId("retailer-confirmation-harness");
   const mounted = await inspectFixtureSetupBoundary(page, harness);
   boundaries.reset();
   const fixture: RetailerFixtureInputs = {
     scenario: options.scenario ?? "ordinary",
-    tabs: options.tabs ?? 4,
     userKind: options.userKind ?? "consumer",
   };
   boundaries.userKind = fixture.userKind;
@@ -142,12 +152,12 @@ async function loadHarness(
       if (typeof window.__retailerResetFixture !== "function") {
         throw new Error("Mounted retailer fixture has no reset controller.");
       }
-      window.__retailerWindowOpens = [];
+      window.__retailerTabs = [];
+      window.__retailerBlockTabs = false;
       return window.__retailerResetFixture(inputs);
     }, fixture);
   } else {
     const query = new URLSearchParams({
-      "retailer-tabs": String(fixture.tabs),
       "retailer-scenario": fixture.scenario,
       "retailer-user": fixture.userKind,
     });
@@ -160,10 +170,9 @@ async function loadHarness(
   await expect(harness).toHaveCount(1);
   await expect(harness).toHaveAttribute("data-retailer-generation", String(generation));
   await expect(harness).toHaveAttribute("data-retailer-scenario", fixture.scenario);
-  await expect(harness).toHaveAttribute("data-retailer-tabs", String(fixture.tabs));
   await expect(harness).toHaveAttribute("data-retailer-user", fixture.userKind);
-  await expect(page.getByTestId("cart-panel")).toHaveCount(1);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-list-page")).toHaveCount(1);
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
 }
 
 async function activate(page: Page, action: Locator, entry: Entry) {
@@ -178,462 +187,439 @@ async function activate(page: Page, action: Locator, entry: Entry) {
   await page.keyboard.press("Enter");
 }
 
-async function readWindowOpens(page: Page) {
-  return page.evaluate(() => window.__retailerWindowOpens ?? []);
+async function readTabs(page: Page) {
+  return page.evaluate(() => window.__retailerTabs ?? []);
 }
 
-async function expectWindowOpenCount(page: Page, count: number) {
-  await expect.poll(async () => (await readWindowOpens(page)).length).toBe(count);
+async function expectTabCount(page: Page, count: number) {
+  await expect.poll(async () => (await readTabs(page)).length).toBe(count);
 }
 
-async function expectConfirmation(
-  page: Page,
-  name: string,
-  openerId: string
-) {
-  const dialog = page.getByRole("dialog", { name });
-  await expect(dialog).toHaveCount(1);
-  await expect(dialog).toBeVisible();
-  await expect(dialog).toHaveAttribute("aria-modal", "true");
-  await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
-  await expect(page.getByTestId("retailer-confirmation-close")).toBeFocused();
-  const background = await page.locator(`[id="${openerId}"]`).evaluate((element) => {
-    const owner = element.closest<HTMLElement>("[inert]");
-    return {
-      inert: Boolean(owner?.inert),
-      ariaHidden: owner?.getAttribute("aria-hidden"),
-    };
-  });
-  expect(background).toEqual({ inert: true, ariaHidden: "true" });
-  return dialog;
+/** The tab at this index has been sent to the retailer; returns where. */
+async function expectTabSent(page: Page, index: number) {
+  await expect.poll(async () => (await readTabs(page))[index]?.href ?? null).not.toBeNull();
+  return new URL((await readTabs(page))[index].href as string);
+}
+
+async function clickDetached(locator: Locator) {
+  await locator.evaluate((button) => (button as HTMLButtonElement).click());
 }
 
 async function expectFocusedId(page: Page, id: string) {
   await expect(page.locator(`[id="${id}"]`)).toBeFocused();
 }
 
-test("Global pointer lifecycle owns modal cancellation and exact-once continuation", async ({ page }) => {
+async function expectBuyList(page: Page, shop: string, openerId: string) {
+  const dialog = page.getByRole("dialog", { name: `Buy at ${shop}` });
+  await expect(dialog).toHaveCount(1);
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute("aria-modal", "true");
+  await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
+  await expect(page.getByTestId("shopping-buy-list-close")).toBeFocused();
+  const background = await page.locator(`[id="${openerId}"]`).evaluate((element) => {
+    const owner = element.closest<HTMLElement>("[inert]");
+    return { inert: Boolean(owner?.inert), ariaHidden: owner?.getAttribute("aria-hidden") };
+  });
+  expect(background).toEqual({ inert: true, ariaHidden: "true" });
+  return dialog;
+}
+
+const buyListRow = (dialog: Locator, instanceId: string) =>
+  dialog.locator(`[data-testid="shopping-buy-list-row"][data-instance-id="${instanceId}"]`);
+const listRow = (page: Page, instanceId: string) =>
+  page.locator(`[data-testid="shopping-list-row"][data-instance-id="${instanceId}"]`);
+
+test("Buy at a shop with several products opens its buy list and pointer dismissal returns focus to Buy", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4, userKind: "guest" });
-  const globalAction = page.getByTestId("checkout-affiliate");
-  await activate(page, globalAction, "pointer");
-  let dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  const close = page.getByTestId("retailer-confirmation-close");
-  const continueAction = page.getByTestId("retailer-confirmation-continue");
+  await loadHarness(page, boundaries, { userKind: "guest" });
+  const buy = page.getByTestId("shopping-buy");
+  await expect(buy).toHaveText("Buy at Safe Retailer");
+  await activate(page, buy, "pointer");
+  let dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await expect(dialog).toContainText("Open each product at Safe Retailer and add it to your cart there.");
+  await expect(dialog.getByTestId("shopping-buy-list-row")).toHaveCount(3);
+  const close = page.getByTestId("shopping-buy-list-close");
+  const done = page.getByTestId("shopping-buy-list-done");
   await close.press("Shift+Tab");
-  await expect(continueAction).toBeFocused();
-  await continueAction.press("Tab");
+  await expect(done).toBeFocused();
+  await done.press("Tab");
   await expect(close).toBeFocused();
   const ariaSnapshot = await page.locator("body").ariaSnapshot();
-  expect(ariaSnapshot).toContain('dialog "Buy external items"');
-  expect(ariaSnapshot).not.toContain("Swap for cheaper");
+  expect(ariaSnapshot).toContain('dialog "Buy at Safe Retailer"');
+  expect(ariaSnapshot).not.toContain('heading "Shopping list"');
 
-  await page.getByTestId("retailer-confirmation-cancel").click();
+  await done.click();
   await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GLOBAL_ACTION_ID);
-  expect(boundaries.payloads).toHaveLength(0);
-  expect(await readWindowOpens(page)).toHaveLength(0);
+  await expectFocusedId(page, BUY_SAFE_ID);
 
-  await globalAction.press("Enter");
-  dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.keyboard.press("Escape");
+  await buy.click();
+  dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await close.click();
   await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GLOBAL_ACTION_ID);
+  await expectFocusedId(page, BUY_SAFE_ID);
 
-  await globalAction.click();
-  dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+  await buy.click();
+  dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
   await dialog.click({ position: { x: 2, y: 2 } });
   await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GLOBAL_ACTION_ID);
+  await expectFocusedId(page, BUY_SAFE_ID);
+  expect(boundaries.payloads).toHaveLength(0);
+  expect(await readTabs(page)).toHaveLength(0);
+});
 
-  await globalAction.click();
-  dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-close").click();
+test("Buy and Open work from the keyboard and Escape returns focus to Buy", async ({ page }) => {
+  const boundaries = await installSyntheticBoundaries(page);
+  await loadHarness(page, boundaries);
+  const buy = page.getByTestId("shopping-buy");
+  await activate(page, buy, "keyboard");
+  let dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await page.keyboard.press("Tab");
+  const firstOpen = buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open");
+  await expect(firstOpen).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expectTabCount(page, 1);
+  await expectTabSent(page, 0);
+  await expect(buyListRow(dialog, "alpha-line")).toHaveAttribute("data-opened", "true");
+  await expect(firstOpen).toBeFocused();
+  await expect(dialog.getByTestId("shopping-buy-list-progress")).toHaveText("1 of 3 opened");
+  await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GLOBAL_ACTION_ID);
+  await expectFocusedId(page, BUY_SAFE_ID);
 
-  await globalAction.click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-continue").evaluate((button) => {
-    (button as HTMLButtonElement).click();
-    (button as HTMLButtonElement).click();
-  });
-  await expectWindowOpenCount(page, 4);
-  expect(boundaries.payloads).toHaveLength(4);
-  for (const payload of boundaries.payloads) {
-    expect(payload).toEqual({
-      designId: "ch0015g-synthetic-design",
-      productId: "ch0015g-alpha-product",
-      variantId: "ch0015g-alpha-variant",
-    });
-  }
-  const opens = await readWindowOpens(page);
-  for (const [index, record] of opens.entries()) {
-    const url = new URL(record.url);
-    expect(url.origin + url.pathname).toBe(SAFE_DESTINATION);
+  // Reopening keeps the person's place.
+  await page.keyboard.press("Enter");
+  dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await expect(dialog.getByTestId("shopping-buy-list-progress")).toHaveText("1 of 3 opened");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expectFocusedId(page, BUY_SAFE_ID);
+  expect(await readTabs(page)).toHaveLength(1);
+});
+
+test("Each Open opens one tracked tab for its product and ticks it", async ({ page }) => {
+  const boundaries = await installSyntheticBoundaries(page);
+  await loadHarness(page, boundaries);
+  await page.getByTestId("shopping-buy").click();
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  const progress = dialog.getByTestId("shopping-buy-list-progress");
+  await expect(progress).toHaveText("0 of 3 opened");
+  for (const [index, key] of (["alpha", "beta", "gamma"] as const).entries()) {
+    const row = buyListRow(dialog, `${key}-line`);
+    const open = row.getByTestId("shopping-buy-list-open");
+    await expect(open).toHaveAccessibleName(`Open ${PRODUCTS[key].title} at Safe Retailer`);
+    await expect(row).toHaveAttribute("data-opened", "false");
+    await open.click();
+    await expectTabCount(page, index + 1);
+    const url = await expectTabSent(page, index);
+    expect(url.origin + url.pathname).toBe(PRODUCTS[key].destination);
     expect(url.searchParams.get("clickKey")).toBe(`ch0015g-click-${index + 1}`);
     expect(url.searchParams.get("utm_source")).toBe("interior-ai");
     expect(url.searchParams.get("utm_medium")).toBe("affiliate");
-    expect(record.target).toBe("_blank");
-    expect(record.features).toBe("noopener,noreferrer");
+    await expect(row).toHaveAttribute("data-opened", "true");
+    await expect(open).toHaveAccessibleName(`Open ${PRODUCTS[key].title} at Safe Retailer again`);
+    await expect(progress).toHaveText(`${index + 1} of 3 opened`);
   }
-  for (let index = 1; index < boundaries.requestTimes.length; index += 1) {
-    expect(boundaries.requestTimes[index] - boundaries.requestTimes[index - 1])
-      .toBeGreaterThanOrEqual(300);
+  // Each tab opened blank at the click, with no way back to this page, then went to the retailer.
+  for (const tab of await readTabs(page)) {
+    expect(tab).toMatchObject({ url: "", target: "_blank", features: null, opener: null, blocked: false });
   }
+  expect(boundaries.payloads).toEqual(["alpha", "beta", "gamma"].map(clickPayload));
+
+  // Opening a product again is the person's choice: one more tab.
+  await buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open").click();
+  await expectTabCount(page, 4);
+  await expectTabSent(page, 3);
+  await expect(progress).toHaveText("3 of 3 opened");
 });
 
-test("Global keyboard lifecycle keeps tracking failure fail-open without duplicate windows", async ({ page }) => {
+test("A failed click record still opens the retailer's address", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  const globalAction = page.getByTestId("checkout-affiliate");
-  await activate(page, globalAction, "keyboard");
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+  await loadHarness(page, boundaries);
   boundaries.failTracking = true;
-  await page.getByTestId("retailer-confirmation-continue").click();
-  await expectWindowOpenCount(page, 4);
-  expect(boundaries.payloads).toHaveLength(4);
-  for (const record of await readWindowOpens(page)) {
-    expect(record.url).toBe(SAFE_DESTINATION);
-  }
+  await activate(page, page.getByTestId("shopping-buy"), "keyboard");
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await expectTabCount(page, 1);
+  const url = await expectTabSent(page, 0);
+  expect(url.toString()).toBe(PRODUCTS.alpha.destination);
+  expect(boundaries.payloads).toEqual([clickPayload("alpha")]);
+  await expect(buyListRow(dialog, "alpha-line")).toHaveAttribute("data-opened", "true");
+  await expect(dialog.getByTestId("shopping-buy-list-notice")).toHaveText("");
 });
 
-test("Retailer-group pointer lifecycle preserves same-tab first-link navigation", async ({ page }) => {
+test("A shop with one product opens it directly without the buy list", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  const groupAction = page.getByTestId(GROUP_ACTION_ID);
-  await activate(page, groupAction, "pointer");
-  let dialog = await expectConfirmation(page, "Buy from Safe Retailer", GROUP_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-cancel").click();
-  await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GROUP_ACTION_ID);
-
-  await groupAction.click();
-  dialog = await expectConfirmation(page, "Buy from Safe Retailer", GROUP_ACTION_ID);
-  const sameTab = page.getByTestId("retailer-confirmation-same-tab");
-  await sameTab.click();
-  await expect(sameTab).toHaveAttribute("aria-pressed", "true");
-  await Promise.all([
-    page.waitForURL("**/synthetic-retailer/alpha**"),
-    page.getByTestId("retailer-confirmation-continue").click(),
-  ]);
-  expect(boundaries.payloads).toHaveLength(1);
-  expect(boundaries.popupCount).toBe(0);
-  expect(page.url()).toContain("clickKey=ch0015g-click-1");
-  expect(page.url()).toContain("utm_source=interior-ai");
-  expect(page.url()).toContain("utm_medium=affiliate");
+  await loadHarness(page, boundaries, { scenario: "single" });
+  const buy = page.getByTestId("shopping-buy");
+  await expect(buy).toHaveText("Buy at Safe Retailer");
+  await activate(page, buy, "keyboard");
+  await expectTabCount(page, 1);
+  const url = await expectTabSent(page, 0);
+  expect(url.origin + url.pathname).toBe(PRODUCTS.alpha.destination);
+  expect(url.searchParams.get("clickKey")).toBe("ch0015g-click-1");
+  expect(boundaries.payloads).toEqual([clickPayload("alpha")]);
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
+  await expectFocusedId(page, BUY_SAFE_ID);
 });
 
-test("Retailer-group keyboard lifecycle restores replacements and the Cart fallback", async ({ page }) => {
+test("Nothing to buy offers the way back to Furnish and no Buy", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  let groupAction = page.getByTestId(GROUP_ACTION_ID);
-  await activate(page, groupAction, "keyboard");
-  await expectConfirmation(page, "Buy from Safe Retailer", GROUP_ACTION_ID);
-  await groupAction.evaluate((element, replacementId) => {
-    element.removeAttribute("id");
-    element.removeAttribute("data-testid");
-    const replacement = document.createElement("button");
-    replacement.id = replacementId;
-    replacement.dataset.testid = replacement.id;
-    replacement.textContent = "Replacement retailer group action";
-    element.parentElement?.append(replacement);
-  }, GROUP_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-cancel").click();
-  await expectFocusedId(page, GROUP_ACTION_ID);
-
-  await loadHarness(page, boundaries, { tabs: 4 });
-  groupAction = page.getByTestId(GROUP_ACTION_ID);
-  await groupAction.press("Enter");
-  await expectConfirmation(page, "Buy from Safe Retailer", GROUP_ACTION_ID);
-  await groupAction.evaluate((element) => {
-    element.removeAttribute("id");
-    element.removeAttribute("data-testid");
-    (element as HTMLButtonElement).disabled = true;
-  });
-  await page.getByTestId("retailer-confirmation-cancel").click();
-  await expectFocusedId(page, CART_FALLBACK_ID);
-
-  await loadHarness(page, boundaries, { tabs: 4 });
-  groupAction = page.getByTestId(GROUP_ACTION_ID);
-  await groupAction.click();
-  const firstGeneration = page.locator("[data-retailer-confirmation-generation]");
-  await expect(firstGeneration).toHaveAttribute("data-retailer-confirmation-generation", "1");
-  await page.getByTestId("checkout-affiliate").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
-  await expect(page.getByRole("dialog", { name: "Buy external items" })).toHaveCount(1);
-  await expect(firstGeneration).toHaveAttribute("data-retailer-confirmation-generation", "2");
-  await page.getByTestId("retailer-confirmation-continue").click();
-  await expectWindowOpenCount(page, 4);
-  expect(boundaries.payloads).toHaveLength(4);
+  await loadHarness(page, boundaries, { scenario: "zero" });
+  await expect(page.getByTestId("shopping-list-empty")).toContainText("Nothing to buy yet");
+  await expect(page.getByTestId("shopping-buy")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-summary")).toHaveCount(0);
+  await page.getByTestId("shopping-list-go-furnish").click();
+  await expect(page.getByTestId("retailer-confirmation-harness")).toHaveAttribute("data-retailer-furnish-requests", "1");
+  expect(await readTabs(page)).toHaveLength(0);
+  expect(boundaries.payloads).toHaveLength(0);
 });
 
-for (const { tabs, title } of [
-  { tabs: 0, title: "Counting zero tabs keeps checkout disabled" },
-  { tabs: 1, title: "Counting one tab opens directly without confirmation" },
-  { tabs: 3, title: "Counting three tabs opens directly without confirmation" },
-  { tabs: 4, title: "Counting four tabs opens confirmation and supports cancellation" },
-]) {
-  test(title, async ({ page }) => {
-    const boundaries = await installSyntheticBoundaries(page);
-    await loadHarness(page, boundaries, tabs === 0 ? { scenario: "zero", tabs } : { tabs });
-
-    if (tabs === 0) {
-      await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
-      return;
-    }
-
-    await page.getByTestId("checkout-affiliate").click();
-    if (tabs < 4) {
-      await expectWindowOpenCount(page, tabs);
-      await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-      return;
-    }
-
-    await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-    await page.getByTestId("retailer-confirmation-cancel").click();
-  });
-}
-
-test("Counting preserves bundle exclusion and missing-link behavior", async ({ page }) => {
+test("A product without a buy link is listed apart and never opened", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { scenario: "bundle", tabs: 7 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectWindowOpenCount(page, 1);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-
-  await loadHarness(page, boundaries, { scenario: "excluded" });
-  await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
-  expect(await readWindowOpens(page)).toHaveLength(0);
-
   await loadHarness(page, boundaries, { scenario: "missing-link" });
-  await page.getByTestId("checkout-affiliate").click();
-  await expect(page.getByTestId("cart-notice")).toContainText(
-    "No items in this group have buy links yet."
-  );
-  expect(await readWindowOpens(page)).toHaveLength(0);
-
+  const unavailable = page.locator('[data-testid="shopping-list-section"][data-section="unavailable"]');
+  await expect(unavailable.getByRole("heading", { level: 2 })).toHaveText("Not sold online yet");
+  await expect(unavailable).toContainText("No buy link yet");
+  await expect(unavailable.getByTestId("shopping-list-row")).toHaveCount(1);
+  await expect(unavailable).toContainText("Missing Link Stool");
+  const buy = page.getByTestId("shopping-buy");
+  await expect(buy).toHaveCount(1);
+  await expect(buy).toHaveText("Buy at Safe Retailer");
+  await buy.click();
+  await expectTabCount(page, 1);
+  const url = await expectTabSent(page, 0);
+  expect(url.origin + url.pathname).toBe(PRODUCTS.alpha.destination);
+  expect(boundaries.payloads).toEqual([clickPayload("alpha")]);
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
 });
 
-test("Counting preserves duplicate URLs without deduplication", async ({ page }) => {
+test("The buy list says how many to add and a set counts once", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { scenario: "duplicate", tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-continue").click();
-  await expectWindowOpenCount(page, 4);
-  expect(new Set((await readWindowOpens(page)).map(({ url }) => new URL(url).pathname)).size)
-    .toBe(1);
+  await loadHarness(page, boundaries, { scenario: "quantities" });
+  await expect(listRow(page, "alpha-line").getByTestId("shopping-list-row-quantity")).toHaveText("Qty 3");
+  await expect(listRow(page, "beta-line").getByTestId("shopping-list-row-detail")).toHaveText("Synthetic finish · Set of 2");
+  await expect(listRow(page, "beta-line").getByTestId("shopping-list-row-quantity")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-list-total")).toHaveText("S$1,670");
+  await page.getByTestId("shopping-buy").click();
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await expect(buyListRow(dialog, "alpha-line")).toContainText("Add 3 to your cart");
+  await expect(buyListRow(dialog, "beta-line")).toContainText("Add 1 to your cart");
+  await expect(buyListRow(dialog, "gamma-line")).toContainText("Add 1 to your cart");
+  // One tab per product, whatever the quantity; a set opens the set's own page.
+  await buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open").click();
+  await expectTabCount(page, 1);
+  expect((await expectTabSent(page, 0)).pathname).toBe("/alpha");
+  await buyListRow(dialog, "beta-line").getByTestId("shopping-buy-list-open").click();
+  await expectTabCount(page, 2);
+  expect((await expectTabSent(page, 1)).pathname).toBe("/beta-set-of-2");
+  expect(boundaries.payloads).toEqual([clickPayload("alpha"), clickPayload("beta")]);
 });
 
-test("Counting preserves unavailable affiliate and row-open behavior", async ({ page }) => {
+test("A shop's two spellings are one shop and each shop has its own Buy", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  const rowOpen = page.getByRole("button", { name: "Open", exact: true });
-  await expect(rowOpen).toHaveCount(1);
-  await rowOpen.click();
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-  await expectWindowOpenCount(page, 4);
+  await loadHarness(page, boundaries);
+  const sections = page.getByTestId("shopping-list-section");
+  await expect(sections).toHaveCount(1);
+  await expect(sections.first()).toHaveAttribute("data-section", SAFE_SHOP);
+  await expect(sections.first().getByRole("heading", { level: 2 })).toHaveText("Safe Retailer");
+  await expect(sections.first().getByTestId("shopping-list-row")).toHaveCount(3);
+  await expect(sections.first()).toContainText("Living Room");
+  await expect(sections.first()).toContainText("Bedroom");
+  await expect(page.getByTestId("shopping-buy")).toHaveCount(1);
 
-  await loadHarness(page, boundaries, { scenario: "unavailable", tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+  await loadHarness(page, boundaries, { scenario: "two-shops" });
+  await expect(sections).toHaveCount(2);
+  const buys = page.getByTestId("shopping-buy");
+  await expect(buys).toHaveText(["Buy at Safe Retailer", "Buy at Second Retailer"]);
+  await buys.nth(1).click();
+  await expectTabCount(page, 1);
+  expect((await expectTabSent(page, 0)).host).toBe("second-retailer.test");
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
+  await buys.nth(0).click();
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await expect(dialog.getByTestId("shopping-buy-list-row")).toHaveCount(2);
+  await expect(dialog).not.toContainText("Delta Rug");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expectFocusedId(page, BUY_SAFE_ID);
 });
 
-test("Scope route and unmount changes cancel stale continuation and restoration", async ({ page }) => {
+test("A blocked tab is explained and its product is not ticked", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  const globalAction = page.getByTestId("checkout-affiliate");
-  await globalAction.click();
-  const retailerDialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  const staleContinue = await page.getByTestId("retailer-confirmation-continue").elementHandle();
-  await page.getByTestId("retailer-fixture-scope-change").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
-  await expect(retailerDialog).toHaveCount(0);
-  await staleContinue?.evaluate((button) => (button as HTMLButtonElement).click());
-  await expect(page.locator(`[id="${GLOBAL_ACTION_ID}"]`)).not.toBeFocused();
-  await expect(page.locator(`[id="${CART_FALLBACK_ID}"]`)).not.toBeFocused();
+  await loadHarness(page, boundaries);
+  await page.evaluate(() => { window.__retailerBlockTabs = true; });
+  await page.getByTestId("shopping-buy").click();
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  const notice = dialog.getByTestId("shopping-buy-list-notice");
+  await expect(notice).toHaveAttribute("role", "status");
+  await expect(notice).toHaveText("");
+  await buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open").click();
+  await expectTabCount(page, 1);
+  await expect(notice).toHaveText(BLOCKED_TAB);
+  expect((await readTabs(page))[0]).toMatchObject({ blocked: true, href: null });
+  await expect(buyListRow(dialog, "alpha-line")).toHaveAttribute("data-opened", "false");
+  await expect(dialog.getByTestId("shopping-buy-list-progress")).toHaveText("0 of 3 opened");
   expect(boundaries.payloads).toHaveLength(0);
-  expect(await readWindowOpens(page)).toHaveLength(0);
 
-  await loadHarness(page, boundaries, { tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-fixture-unmount").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-  await expect(page.locator(`[id="${GLOBAL_ACTION_ID}"]`)).toHaveCount(0);
+  // Once pop-ups are allowed, opening it again works and the explanation goes.
+  await page.evaluate(() => { window.__retailerBlockTabs = false; });
+  await buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open").click();
+  await expectTabCount(page, 2);
+  await expectTabSent(page, 1);
+  await expect(buyListRow(dialog, "alpha-line")).toHaveAttribute("data-opened", "true");
+  await expect(notice).toHaveText("");
+  expect(boundaries.payloads).toEqual([clickPayload("alpha")]);
+});
+
+test("Design changes and unmount close the buy list without opening anything", async ({ page }) => {
+  const boundaries = await installSyntheticBoundaries(page);
+  await loadHarness(page, boundaries);
+  await page.getByTestId("shopping-buy").click();
+  let dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  // A product leaving the design leaves the open list too.
+  await clickDetached(page.getByTestId("retailer-fixture-remove-one"));
+  await expect(dialog.getByTestId("shopping-buy-list-row")).toHaveCount(2);
+  await expect(dialog.getByTestId("shopping-buy-list-progress")).toHaveText("0 of 2 opened");
+  // When the shop has nothing left, its list closes and focus goes to the current step.
+  const staleOpen = await dialog.getByTestId("shopping-buy-list-open").first().elementHandle();
+  await clickDetached(page.getByTestId("retailer-fixture-scope-change"));
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByTestId("shopping-buy")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-list-empty")).toHaveCount(1);
+  await expectFocusedId(page, FALLBACK_ID);
+  await staleOpen?.evaluate((button) => (button as HTMLButtonElement).click());
+  expect(await readTabs(page)).toHaveLength(0);
   expect(boundaries.payloads).toHaveLength(0);
 
-  await loadHarness(page, boundaries, { tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+  await loadHarness(page, boundaries);
+  await page.getByTestId("shopping-buy").click();
+  dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await clickDetached(page.getByTestId("retailer-fixture-unmount"));
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-list-page")).toHaveCount(0);
+  await expect(page.locator(`[id="${FALLBACK_ID}"]`)).not.toBeFocused();
+  expect(await readTabs(page)).toHaveLength(0);
+
+  await loadHarness(page, boundaries);
+  await page.getByTestId("shopping-buy").click();
+  await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+  await expect(page.getByTestId("shopping-buy-list")).toHaveCount(0);
+  expect(boundaries.payloads).toHaveLength(0);
 });
 
 test("A newer registered dialog supersedes dismissal and stale focus restoration", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  const retailerDialog = page.getByTestId("retailer-confirmation-dialog");
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-fixture-newer-opener").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
+  await loadHarness(page, boundaries);
+  await page.getByTestId("shopping-buy").click();
+  const buyList = page.getByTestId("shopping-buy-list");
+  await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+  await clickDetached(page.getByTestId("retailer-fixture-newer-opener"));
   const newerDialog = page.getByRole("dialog", { name: "Newer synthetic dialog" });
   await expect(newerDialog).toHaveCount(1);
   await expect(page.getByTestId("retailer-fixture-newer-close")).toBeFocused();
-  expect(await retailerDialog.evaluate((element) => {
+  expect(await buyList.evaluate((element) => {
     const owner = element.closest<HTMLElement>("[inert]");
     return { inert: Boolean(owner?.inert), ariaHidden: owner?.getAttribute("aria-hidden") };
   })).toEqual({ inert: true, ariaHidden: "true" });
   await page.keyboard.press("Escape");
   await expect(newerDialog).toHaveCount(0);
-  await expect(page.getByTestId("retailer-confirmation-close")).toBeFocused();
+  await expect(page.getByTestId("shopping-buy-list-close")).toBeFocused();
 
-  await page.getByTestId("retailer-fixture-newer-opener").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
+  await clickDetached(page.getByTestId("retailer-fixture-newer-opener"));
   await expect(newerDialog).toHaveCount(1);
-  await page.getByTestId("retailer-confirmation-close").evaluate((button) =>
-    (button as HTMLButtonElement).click()
-  );
-  await expect(retailerDialog).toHaveCount(0);
+  await clickDetached(page.getByTestId("shopping-buy-list-close"));
+  await expect(buyList).toHaveCount(0);
   await expect(page.getByTestId("retailer-fixture-newer-close")).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByTestId("retailer-fixture-newer-opener")).toBeFocused();
+  expect(await readTabs(page)).toHaveLength(0);
 });
 
-test("Guest Consumer and Pro receive the same affiliate confirmation contract", async ({ page }) => {
+test("Guest Consumer and Pro receive the same buy list", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
   for (const [index, userKind] of (["guest", "consumer", "pro"] as const).entries()) {
-    await loadHarness(page, boundaries, { tabs: 4, userKind });
-    await expect(page.getByTestId("retailer-confirmation-harness"))
-      .toHaveAttribute("data-retailer-user", userKind);
-    const action = page.getByTestId("checkout-affiliate");
-    await activate(page, action, index % 2 === 0 ? "pointer" : "keyboard");
-    const dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-    await page.getByTestId("retailer-confirmation-cancel").click();
+    await loadHarness(page, boundaries, { userKind });
+    await activate(page, page.getByTestId("shopping-buy"), index % 2 === 0 ? "pointer" : "keyboard");
+    const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
+    await expect(dialog.getByTestId("shopping-buy-list-row")).toHaveCount(3);
+    await buyListRow(dialog, "alpha-line").getByTestId("shopping-buy-list-open").click();
+    await expectTabCount(page, 1);
+    const url = await expectTabSent(page, 0);
+    expect(url.origin + url.pathname).toBe(PRODUCTS.alpha.destination);
+    expect(boundaries.payloads).toEqual([clickPayload("alpha")]);
+    await page.getByTestId("shopping-buy-list-done").click();
     await expect(dialog).toHaveCount(0);
-    await expectFocusedId(page, GLOBAL_ACTION_ID);
-    expect(boundaries.payloads).toHaveLength(0);
-    expect(await readWindowOpens(page)).toHaveLength(0);
+    await expectFocusedId(page, BUY_SAFE_ID);
   }
 });
 
-test("Desktop and 390x844 global and group prompts contain actions focus rings and IDs", async ({ page }) => {
+test("Desktop and 390x844 buy lists fit the screen with 44px actions and focus rings", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
-  await loadHarness(page, boundaries, { tabs: 4, viewport: MOBILE });
-  await page.getByTestId("checkout-affiliate").click();
-  let dialog = await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+  await loadHarness(page, boundaries, { viewport: MOBILE, userKind: "pro" });
+  await page.getByTestId("shopping-buy").click();
+  const dialog = await expectBuyList(page, "Safe Retailer", BUY_SAFE_ID);
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
-  await expect(page.getByTestId("retailer-confirmation-close")).toBeFocused();
+  await expect(page.getByTestId("shopping-buy-list-close")).toBeFocused();
   const geometry = await dialog.evaluate((element) => {
-    const overlayRect = element.getBoundingClientRect();
+    const box = (target: Element) => {
+      const rect = target.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, height: rect.height };
+    };
     const panel = element.firstElementChild as HTMLElement;
-    const panelRect = panel.getBoundingClientRect();
-    const actions = [...panel.querySelectorAll<HTMLElement>("button")].map((button) => {
-      const rect = button.getBoundingClientRect();
-      return {
-        id: button.id,
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-        height: rect.height,
-        boxShadow: getComputedStyle(button).boxShadow,
-      };
-    });
     return {
-      viewportWidth: innerWidth,
-      viewportHeight: innerHeight,
       documentWidth: document.documentElement.scrollWidth,
-      overlay: {
-        left: overlayRect.left,
-        right: overlayRect.right,
-        top: overlayRect.top,
-        bottom: overlayRect.bottom,
-      },
-      panel: {
-        left: panelRect.left,
-        right: panelRect.right,
-        top: panelRect.top,
-        bottom: panelRect.bottom,
-      },
-      actions,
+      overlay: box(element),
+      panel: box(panel),
+      actions: [...panel.querySelectorAll<HTMLElement>("button")].map((button) => ({
+        ...box(button),
+        testId: button.dataset.testid ?? "",
+        boxShadow: getComputedStyle(button).boxShadow,
+      })),
     };
   });
   expect(geometry.documentWidth).toBe(MOBILE.width);
-  expect(geometry.overlay).toEqual({
-    left: 0,
-    right: MOBILE.width,
-    top: 0,
-    bottom: MOBILE.height,
-  });
+  expect(geometry.overlay).toMatchObject({ left: 0, right: MOBILE.width, top: 0, bottom: MOBILE.height });
   expect(geometry.panel.left).toBeGreaterThanOrEqual(16);
   expect(geometry.panel.right).toBeLessThanOrEqual(MOBILE.width - 16);
   expect(geometry.panel.top).toBeGreaterThanOrEqual(16);
   expect(geometry.panel.bottom).toBeLessThanOrEqual(MOBILE.height - 16);
+  expect(geometry.actions.map(({ testId }) => testId)).toEqual([
+    "shopping-buy-list-close",
+    "shopping-buy-list-open",
+    "shopping-buy-list-open",
+    "shopping-buy-list-open",
+    "shopping-buy-list-done",
+  ]);
   for (const action of geometry.actions) {
     expect(action.left).toBeGreaterThanOrEqual(geometry.panel.left);
     expect(action.right).toBeLessThanOrEqual(geometry.panel.right);
-    expect(action.top).toBeGreaterThanOrEqual(geometry.panel.top);
-    expect(action.bottom).toBeLessThanOrEqual(geometry.panel.bottom);
     expect(action.height).toBeGreaterThanOrEqual(44);
   }
-  const closeGeometry = geometry.actions.find(({ id }) =>
-    id === "retailer-confirmation-close-action"
-  );
-  expect(closeGeometry?.boxShadow).not.toBe("none");
-  for (const id of [
-    "retailer-confirmation-dialog",
-    "retailer-confirmation-close-action",
-    "retailer-confirmation-same-tab-action",
-    "retailer-confirmation-cancel-action",
-    "retailer-confirmation-continue-action",
-  ]) {
-    await expect(page.locator(`#${id}`)).toHaveCount(1);
-  }
+  expect(geometry.actions[0].boxShadow).not.toBe("none");
+  await expect(page.locator('[id="shopping-buy-list-dialog"]')).toHaveCount(1);
+  await expect(page.locator(`[id="${BUY_SAFE_ID}"]`)).toHaveCount(1);
   await page.setViewportSize(DESKTOP);
-  await expect(page.getByTestId("retailer-confirmation-close")).toBeFocused();
+  await expect(page.getByTestId("shopping-buy-list-close")).toBeFocused();
   await page.setViewportSize(MOBILE);
-  await expect(page.getByTestId("retailer-confirmation-close")).toBeFocused();
-  await page.getByTestId("retailer-confirmation-cancel").click();
+  await expect(page.getByTestId("shopping-buy-list-close")).toBeFocused();
+  await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
+  await expectFocusedId(page, BUY_SAFE_ID);
 
-  await loadHarness(page, boundaries, {
-    tabs: 4,
-    scenario: "mixed-groups",
-    userKind: "pro",
-    viewport: MOBILE,
-  });
-  await page.getByTestId(GROUP_ACTION_ID).click();
-  dialog = await expectConfirmation(page, "Buy from Safe Retailer", GROUP_ACTION_ID);
-  await expect(page.getByTestId("retailer-confirmation-same-tab")).toBeVisible();
-  const groupGeometry = await dialog.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    const panelRect = element.firstElementChild?.getBoundingClientRect();
-    return {
-      documentWidth: document.documentElement.scrollWidth,
-      overlay: [rect.left, rect.top, rect.right, rect.bottom],
-      panel: panelRect
-        ? [panelRect.left, panelRect.top, panelRect.right, panelRect.bottom]
-        : null,
-    };
-  });
-  expect(groupGeometry.documentWidth).toBe(MOBILE.width);
-  expect(groupGeometry.overlay).toEqual([0, 0, MOBILE.width, MOBILE.height]);
-  expect(groupGeometry.panel).not.toBeNull();
-  expect(groupGeometry.panel?.[0]).toBeGreaterThanOrEqual(16);
-  expect(groupGeometry.panel?.[1]).toBeGreaterThanOrEqual(16);
-  expect(groupGeometry.panel?.[2]).toBeLessThanOrEqual(MOBILE.width - 16);
-  expect(groupGeometry.panel?.[3]).toBeLessThanOrEqual(MOBILE.height - 16);
-  await page.getByTestId("retailer-confirmation-cancel").click();
-  await expect(dialog).toHaveCount(0);
-  await expectFocusedId(page, GROUP_ACTION_ID);
+  // Two shops on a phone: both Buy buttons fit, 44px tall, with no sideways scroll.
+  await loadHarness(page, boundaries, { scenario: "two-shops", userKind: "pro", viewport: MOBILE });
+  const buys = await page.getByTestId("shopping-buy").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, height: rect.height };
+  }));
+  expect(buys).toHaveLength(2);
+  for (const buy of buys) {
+    expect(buy.left).toBeGreaterThanOrEqual(0);
+    expect(buy.right).toBeLessThanOrEqual(MOBILE.width);
+    expect(buy.height).toBeGreaterThanOrEqual(44);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(MOBILE.width);
 });

@@ -103,9 +103,7 @@ export function registerStartAndFloorTests() {
     await expect(page.getByTestId("floor-summary-panel")).toBeVisible();
   });
 
-  test("shop mode uses the left work panel and keeps the canvas clear", async ({
-    page,
-  }) => {
+  test("shop mode shows the Shopping list as one page over the canvas", async ({ page }) => {
     test.setTimeout(120000);
 
     await page.goto("/design");
@@ -117,11 +115,12 @@ export function registerStartAndFloorTests() {
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await clickWithFallback(page.getByTestId("editor-workflow-shop"));
 
+    // Shop is one page over the canvas at every width (UX audit FU8), below the command bar.
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("shopping-dock")).toBeVisible();
-    await expect(page.getByTestId("shopping-overview-panel")).toBeVisible();
+    const shop = page.getByTestId("shop-step");
+    await expect(shop).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Shopping list", level: 1 })).toBeVisible();
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
-    await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
 
     const overflow = await page.evaluate(
@@ -129,22 +128,17 @@ export function registerStartAndFloorTests() {
     );
     expect(overflow).toBeLessThanOrEqual(4);
 
-    const shoppingDockBox = await page.getByTestId("shopping-dock").boundingBox();
-    const trayTriggerBox = await page.getByTestId("selection-tray-trigger").boundingBox();
-    expect(shoppingDockBox).not.toBeNull();
-    expect(trayTriggerBox).not.toBeNull();
-    if (!shoppingDockBox || !trayTriggerBox) {
-      throw new Error("Shop dock and tray trigger should be measurable");
+    const shopBox = await shop.boundingBox();
+    const commandBarBox = await page.getByTestId("editor-command-bar").boundingBox();
+    const viewport = page.viewportSize();
+    expect(shopBox).not.toBeNull();
+    expect(commandBarBox).not.toBeNull();
+    if (!shopBox || !commandBarBox || !viewport) {
+      throw new Error("The Shop page and the command bar should be measurable");
     }
-    expect(shoppingDockBox.x).toBeLessThan(120);
-    expect(boxesOverlap(shoppingDockBox, trayTriggerBox)).toBe(false);
-
-    const roomNavigatorBox = await page.getByTestId("room-pan-navigator").boundingBox();
-    expect(roomNavigatorBox).not.toBeNull();
-    if (!roomNavigatorBox) {
-      throw new Error("Room navigator should be measurable");
-    }
-    expect(boxesOverlap(shoppingDockBox, roomNavigatorBox)).toBe(false);
+    expect(shopBox.x).toBeLessThanOrEqual(1);
+    expect(shopBox.width).toBeGreaterThanOrEqual(viewport.width - 2);
+    expect(boxesOverlap(shopBox, commandBarBox)).toBe(false);
   });
 
   test("floor panel creates floors with modes and toggles inactive floor visibility", async ({
