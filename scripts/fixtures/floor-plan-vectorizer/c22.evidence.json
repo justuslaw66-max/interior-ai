@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.13.0",
+ "exporterVersion": "app-evidence-0.14.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -4654,6 +4654,9 @@
   "openingsInSlantedWalls": 0,
   "slantedSidesWelded": 0,
   "slopedStrokes": 86,
+  "curvedWalls": 0,
+  "curvedSides": 0,
+  "panelPartitionsAsSlidingDoors": 0,
   "unsupportedWallPx": 1193,
   "thickAxisWallPx": 1193,
   "slantedWallPx": 0,
