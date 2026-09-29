@@ -132,7 +132,6 @@ export function useDesignPageViewportShellRegistration({
     state: {
       cart: { hoveredCartInstanceId },
       presentation: { showPresentModal, presentModeRoomId },
-      shopping: { shoppingReadinessFilter },
       surface: {
         activeSurfaceTarget,
         selectedWallSurfaceTarget,
@@ -146,7 +145,6 @@ export function useDesignPageViewportShellRegistration({
     },
     actions: {
       presentation: { setShowPresentModal, setPresentModeRoomId },
-      shopping: { setShoppingReadinessFilter },
       surface: surfaceStateActions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panel: { goPlan, goFurnish, goAiDesign, goShop },
@@ -201,7 +199,7 @@ export function useDesignPageViewportShellRegistration({
       },
       camera: { cameraView, savedViews },
       presentation: { showPresentModal, presentModeRoomId },
-      shopping: { shoppingReadinessFilter, hoveredCartInstanceId },
+      shopping: { hoveredCartInstanceId },
       surface: {
         activeSurfaceTarget,
         selectedWallSurfaceTarget,
@@ -244,7 +242,6 @@ export function useDesignPageViewportShellRegistration({
         resolveGroundPointFromClient,
       },
       presentation: { setShowPresentModal, setPresentModeRoomId },
-      shopping: { setShoppingReadinessFilter },
       surface: surfaceStateActions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panels: { goPlan, goFurnish, goAiDesign, goShop },

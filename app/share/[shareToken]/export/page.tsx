@@ -823,7 +823,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Checkout Readiness</h2>
           <div className="mt-1 text-sm text-gray-600">
-            {cartReadyCount} cart-ready • {retailerLinkCount} retailer link{retailerLinkCount === 1 ? "" : "s"} • {reviewCount} review item{reviewCount === 1 ? "" : "s"}
+            {cartReadyCount} to check out here • {retailerLinkCount} retailer link{retailerLinkCount === 1 ? "" : "s"} • {reviewCount} review item{reviewCount === 1 ? "" : "s"}
           </div>
         </div>
         <div className="text-right text-sm">

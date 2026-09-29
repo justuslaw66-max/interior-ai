@@ -44,7 +44,6 @@ function PanelModeProbe({ onRender }: { onRender: (steps: PanelModeSteps) => voi
       designPanelOpen: true,
       setDesignPanelOpen: record("setDesignPanelOpen"),
       setDesignPanelCollapsed: record("setDesignPanelCollapsed"),
-      setItemCartOpen: record("setItemCartOpen"),
     })
   );
   return null;
@@ -76,7 +75,6 @@ for (const [step, mode] of [
       `setEditorMode("${mode}")`,
       "setDesignPanelOpen(true)",
       "setDesignPanelCollapsed(false)",
-      "setItemCartOpen(false)",
     ],
     `${step} should open its panel, uncollapsed`
   );
@@ -86,7 +84,7 @@ for (const [step, mode] of [
   steps.goShop();
   assert.deepEqual(
     calls,
-    ['setEditorMode("buy")', "setDesignPanelOpen(false)", "setItemCartOpen(false)"],
+    ['setEditorMode("buy")', "setDesignPanelOpen(false)"],
     "Shop closes the controls panel"
   );
 }

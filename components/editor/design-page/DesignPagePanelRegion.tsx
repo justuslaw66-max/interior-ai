@@ -1,11 +1,7 @@
 "use client";
 
-import CartSidebar, {
-  type CartSidebarProps,
-} from "@/components/CartSidebar";
-import ShoppingOverviewPanel, {
-  type ShoppingOverviewPanelProps,
-} from "@/components/editor/ShoppingOverviewPanel";
+import type { ReactNode } from "react";
+import { ShopStep, type ShopStepProps } from "@/components/editor/shop/ShopStep";
 import {
   DesignControlsPanelAdapter,
   type DesignControlsPanelAdapterProps,
@@ -20,13 +16,8 @@ import {
 } from "@/components/editor/design-page/SelectedItemPanel";
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 
-export type DesignPageShoppingDockContract = {
-  overview: ShoppingOverviewPanelProps;
-  cart: CartSidebarProps;
-};
-
 export type DesignPagePanelRegionState = {
-  shopping: DesignPageShoppingDockContract | null;
+  shopping: ShopStepProps | null;
   selectedCabinet: SelectedCabinetPanelProps | null;
   selectedItem: SelectedItemPanelProps | null;
   controls: DesignControlsPanelAdapterProps | null;
@@ -47,6 +38,18 @@ export type DesignPagePanelRegionProps = {
   configuration: DesignPagePanelRegionConfiguration;
   actions: DesignPagePanelRegionActions;
 };
+
+/**
+ * Shop is a page over the canvas (UX audit FU8). While it covers the canvas, the canvas and its
+ * controls leave the tab order and the accessibility tree, so nobody tabs into what they can't see.
+ */
+export function CanvasBehindPage({ covered, children }: { covered: boolean; children: ReactNode }) {
+  return (
+    <div data-testid="canvas-behind-page" className="h-full w-full" inert={covered} aria-hidden={covered || undefined}>
+      {children}
+    </div>
+  );
+}
 
 function ClientPreviewExitAction({
   visible,
@@ -78,7 +81,7 @@ export function DesignPagePanelRegion({
   configuration,
   actions,
 }: DesignPagePanelRegionProps) {
-  const { designerTheme, isDesigner, isClientPreview } = configuration;
+  const { isClientPreview } = configuration;
 
   return (
     <>
@@ -89,44 +92,10 @@ export function DesignPagePanelRegion({
 
       {state.shopping ? (
         <div
-          data-testid="shopping-dock"
-          className={`absolute bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 top-auto z-20 w-auto max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] space-y-3 overflow-y-auto pb-3 pr-1 transition-opacity duration-300 md:bottom-auto md:right-auto md:top-15 md:w-[18.15rem] md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
-            isDesigner ? "md:left-20" : "md:left-4"
-          } ${
-            isClientPreview
-              ? "pointer-events-none opacity-0"
-              : "opacity-100"
-          }`}
-          aria-hidden={isClientPreview}
+          data-testid="shop-step"
+          className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-12 z-40 overflow-y-auto bg-[#fafaf9] md:bottom-0 md:top-9"
         >
-          <div
-            className={
-              designerTheme
-                ? "designer-dock rounded-xl p-3 text-neutral-100"
-                : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur"
-            }
-          >
-            <div
-              className={
-                designerTheme
-                  ? "text-lg font-semibold text-white"
-                  : "text-lg font-semibold text-neutral-950"
-              }
-            >
-              Shop
-            </div>
-            <div
-              className={
-                designerTheme
-                  ? "mt-1 text-xs text-neutral-400"
-                  : "mt-1 text-xs text-neutral-500"
-              }
-            >
-              Review shopping list and checkout readiness.
-            </div>
-          </div>
-          <ShoppingOverviewPanel {...state.shopping.overview} />
-          <CartSidebar {...state.shopping.cart} />
+          <ShopStep {...state.shopping} />
         </div>
       ) : null}
 

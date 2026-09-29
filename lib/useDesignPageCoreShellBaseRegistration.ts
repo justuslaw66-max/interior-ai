@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { useUrlViewMode } from "@/lib/useUrlViewMode";
 import type { Style } from "@/lib/design-page-types";
-import type { DesignPageItemCartEntry } from "@/lib/design-page-item-cart";
 import type {
   PricingLayoutVariant,
   UpgradeCtaVariant,
@@ -52,8 +51,6 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [showGrid, setShowGrid] = useState(false);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [clientPreview, setClientPreview] = useState(false);
-  const [itemCartOpen, setItemCartOpen] = useState(false);
-  const [itemCart, setItemCart] = useState<DesignPageItemCartEntry[]>([]);
 
   const importedModelsWorkspace = useDesignPageImportedModels();
   const {
@@ -69,9 +66,7 @@ export function useDesignPageCoreShellBaseRegistration() {
   const [placementPreferencesLoaded, setPlacementPreferencesLoaded] =
     useState(false);
   const [, bumpHistoryRevision] = useDesignPageHistoryRevision();
-  const [viewMode, setViewMode] = useState<EditorViewMode>(
-    urlView === "2d" ? "2d" : "3d"
-  );
+  const [viewMode, setViewMode] = useUrlViewMode(urlView);
   const [designPanelOpen, setDesignPanelOpen] = useState(true);
   const [designPanelCollapsed, setDesignPanelCollapsed] = useState(false);
   const [planFocusPanelRevealed, setPlanFocusPanelRevealed] = useState(false);
@@ -99,8 +94,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         viewMode,
       },
       panels: {
-        itemCartOpen,
-        itemCart,
         designPanelOpen,
         designPanelCollapsed,
         planFocusPanelRevealed,
@@ -138,8 +131,6 @@ export function useDesignPageCoreShellBaseRegistration() {
         bumpHistoryRevision,
       },
       panels: {
-        setItemCartOpen,
-        setItemCart,
         setDesignPanelOpen,
         setDesignPanelCollapsed,
         setPlanFocusPanelRevealed,

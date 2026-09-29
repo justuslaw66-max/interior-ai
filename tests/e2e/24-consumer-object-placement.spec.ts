@@ -56,11 +56,8 @@ async function expectFocusIndicatorInsideViewport(page: Page, locator: Locator) 
   expect(focusGeometry.bottom).toBeLessThanOrEqual(844);
 }
 
-async function setupConsumerItem(page: Page): Promise<{
-  panel: Locator;
-  beforePlacement: string;
-  afterPlacement: string;
-}> {
+/** A Free guest on a phone, with the Hugg table's details open and nothing placed yet. */
+async function openConsumerCatalogItem(page: Page): Promise<string> {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route("**/api/me", async (route) => {
     await route.fulfill({
@@ -100,7 +97,15 @@ async function setupConsumerItem(page: Page): Promise<{
     .toBeGreaterThan(0);
   const opened = await openCatalogPreview(page, TEST_ITEM_ID, "Hugg");
   expect(opened, "The deterministic Hugg fixture must be available").toBe(true);
-  const beforePlacement = await readFingerprint(page);
+  return readFingerprint(page);
+}
+
+async function setupConsumerItem(page: Page): Promise<{
+  panel: Locator;
+  beforePlacement: string;
+  afterPlacement: string;
+}> {
+  const beforePlacement = await openConsumerCatalogItem(page);
   await addCatalogDrawerItemToRoom(page);
   const afterPlacement = await readFingerprint(page);
 
@@ -134,6 +139,30 @@ test.describe("24. Consumer object placement", () => {
       "data-fingerprint",
       beforeRotation
     );
+  });
+
+  test("Add places the product at once, and the toast's Undo takes it out again", async ({ page }) => {
+    test.setTimeout(150_000);
+    const beforePlacement = await openConsumerCatalogItem(page);
+    // One step (audit finding FU4): no preview to confirm, and a toast with Undo.
+    await page.getByTestId("catalog-detail-add-to-room").click();
+    const toast = page.getByTestId("editor-action-toast");
+    await expect(toast).toContainText("added to the Living Room");
+    await expect(page.getByTestId("catalog-placement-confirm-panel")).toHaveCount(0);
+    await expect.poll(() => readFingerprint(page)).not.toBe(beforePlacement);
+    // Its card says it's in the room, and Furnish's "In this room" lists it (FU1).
+    await expect(page.getByTestId(`catalog-in-room-${TEST_ITEM_ID}`)).toHaveCount(1);
+    await expect(page.getByTestId("furnish-in-this-room")).toContainText("Hugg");
+    const undo = toast.getByTestId("editor-action-toast-undo");
+    await expectTouchTarget(undo, "Undo");
+    await undo.click();
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      beforePlacement
+    );
+    await expect(toast).toHaveCount(0);
+    await expect(page.getByTestId(`catalog-in-room-${TEST_ITEM_ID}`)).toHaveCount(0);
+    await expect(page.getByTestId("furnish-in-this-room")).toHaveCount(0);
   });
 
   test("placement is one keyboard-undoable Consumer edit", async ({ page }) => {

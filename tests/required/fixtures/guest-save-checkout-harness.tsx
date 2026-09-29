@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 
-import CartSidebar from "@/components/CartSidebar";
 import { GuestSavePromptDialog } from "@/components/editor/design-page/GuestSavePromptDialog";
+import { ShopStep } from "@/components/editor/shop/ShopStep";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import {
   GUEST_PROMPT_WORKFLOW_FALLBACK_ID,
@@ -45,6 +45,18 @@ CATALOG_ITEMS[fixtureProductId] = {
   },
 };
 
+const CHECKOUT_ROOMS = [{
+  id: "ch0015f-room",
+  name: "Living Room",
+  items: [{
+    instanceId: "ch0015f-shopify-line",
+    productId: fixtureProductId,
+    variantId: fixtureVariantId,
+    position: [0, 0, 0] as [number, number, number],
+    qty: 2,
+  }],
+}];
+
 function GuestSaveCheckoutHarness() {
   const guestPrompt = useGuestSavePromptController({
     scopeKey: "checkout-harness|guest",
@@ -62,25 +74,18 @@ function GuestSaveCheckoutHarness() {
       >
         Workspace
       </button>
-      <CartSidebar
-        items={[
-          {
-            instanceId: "ch0015f-shopify-line",
-            productId: fixtureProductId,
-            variantId: fixtureVariantId,
-            qty: 2,
-            includeInCheckout: true,
-          },
-        ]}
+      {/* Shop's Shopping list, with one product sold here through Shopify: "Checkout here". */}
+      <ShopStep
+        rooms={CHECKOUT_ROOMS}
+        style="modern"
         designId="ch0015f-checkout-design"
-        plan="free"
-        onRemove={() => undefined}
-        onSetQty={() => undefined}
-        onSetInclude={() => undefined}
-        onBulkSwap={() => undefined}
-        onShowUpgrade={() => undefined}
         isGuest={!authenticatedCheckout}
-        onGuestCapture={guestPrompt.open}
+        canEdit
+        actions={{
+          commitItemsToRoom: () => undefined,
+          openGuestPrompt: guestPrompt.open,
+          goFurnish: () => undefined,
+        }}
       />
       <GuestSavePromptDialog
         reason={session?.reason ?? null}

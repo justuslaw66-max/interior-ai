@@ -7,10 +7,12 @@ import {
 } from "@/lib/floor-plan-import-client";
 import FloorPlanImportAssistant from "./FloorPlanImportAssistant";
 import FloorPlanImportHistory from "./FloorPlanImportHistory";
+import { FloorPlanUploadChooseStep, type FloorPlanUploadChooseState } from "./FloorPlanUploadChooseStep";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 
 type FloorPlanImportWorkspaceProps = {
   request: { file: File; trainingBenchmarkOptIn: boolean } | null;
+  choose: FloorPlanUploadChooseState;
   trainingBenchmarkOptIn: boolean;
   dark: boolean; disabled: boolean; proMode: boolean;
   onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
@@ -30,7 +32,7 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
 const initialStoredJobId = () => typeof window === "undefined" ? null : readActiveFloorPlanImportId(window.localStorage);
 
 export default function FloorPlanImportWorkspace({
-  request,
+  request, choose,
   trainingBenchmarkOptIn,
   dark, disabled, proMode,
   onChooseFile, onHistoryConfirmationOpenChange,
@@ -74,6 +76,11 @@ export default function FloorPlanImportWorkspace({
       data-testid="floor-plan-import-workspace"
     >
       <main className="min-w-0">
+        {hasActiveImport && choose.fileProblem ? (
+          <p role="alert" className={`mb-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}>
+            {choose.fileProblem}
+          </p>
+        ) : null}
         {hasActiveImport ? (
           <FloorPlanImportAssistant
             key={reviewSession}
@@ -86,44 +93,7 @@ export default function FloorPlanImportWorkspace({
             onJobUpdate={recordJobUpdate}
           />
         ) : (
-          <div
-            className={
-              dark
-                ? "designer-recessed flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-white/10 p-6 text-center"
-                : "flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm"
-            }
-            data-testid="floor-plan-import-dialog-empty-state" data-floor-plan-workspace-state="empty"
-          >
-            <div
-              aria-hidden="true"
-              className={
-                dark
-                  ? "flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-2xl"
-                  : "flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-2xl"
-              }
-            >
-              ⌗
-            </div>
-            <h3 className="mt-4 text-lg font-semibold">
-              Start with a clear floor-plan file
-            </h3>
-            <p className={`mt-2 max-w-md text-sm leading-6 ${subtle}`}>
-              Upload an image, PDF, DXF, IFC, or DWG. We will detect the plan
-              and show it here at a readable size before creating anything.
-            </p>
-            <button
-              type="button" data-editor-dialog-initial-focus="true" data-floor-plan-workspace-focus="primary"
-              className={
-                dark
-                  ? "designer-control-active mt-5 rounded-lg border px-4 py-2.5 text-sm font-semibold"
-                  : "mt-5 rounded-lg bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-neutral-700"
-              }
-              disabled={disabled}
-              onClick={onChooseFile}
-            >
-              Choose a file
-            </button>
-          </div>
+          <FloorPlanUploadChooseStep {...choose} dark={dark} disabled={disabled} onChooseFile={onChooseFile} />
         )}
       </main>
       <details

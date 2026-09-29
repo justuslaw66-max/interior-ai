@@ -43,8 +43,8 @@ assert.match(
 );
 assert.match(
   registrationSource,
-  /previewReplacement:[\s\S]*?commerceOnboarding\.actions\.commerce\.previewShoppingReplacement[\s\S]*?bulkSwap: aiPanel\.actions\.layout\.bulkSwap/,
-  "Shopping and bulk-swap actions should remain connected to their feature owners."
+  /shopping: \{\s+commitItemsToRoom: itemDocument\.actions\.commitItemsToRoom,\s+openGuestPrompt: persistence\.actions\.persistence\.openGuestPrompt,/,
+  "Shop's edits should go through the item document, and its checkout through the guest prompt."
 );
 assert.match(
   registrationSource,

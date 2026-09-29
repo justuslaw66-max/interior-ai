@@ -10,12 +10,16 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
 import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
+import { RoomSetupStartActions } from "@/components/editor/RoomSetupStartActions";
+import { RoomSetupStatusBadge, roomSetupStatus } from "@/components/editor/RoomSetupStatusBadge";
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
   canEdit: boolean;
   canEditPlanGeometry: boolean;
   hasRooms: boolean;
+  /** The first visit's room, untouched: "Default size" instead of "Room ready" (FR2). */
+  roomIsDraft?: boolean;
   activeRoomName: string;
   newRoomType: RoomType;
   activeRoomPresetId: string;
@@ -39,6 +43,7 @@ export type ConsumerRoomSetupCardProps = {
     createRoom: () => void;
     chooseTemplate: () => void;
     drawRoom: () => void;
+    uploadFloorPlan: () => void;
     addOpening: (kind: RoomOpening2D["kind"]) => void;
     continueToFurnish: () => void;
   };
@@ -48,7 +53,7 @@ export function ConsumerRoomSetupCard({
   dark,
   canEdit,
   canEditPlanGeometry,
-  hasRooms,
+  hasRooms, roomIsDraft = false,
   activeRoomName,
   newRoomType,
   activeRoomPresetId,
@@ -111,20 +116,7 @@ export function ConsumerRoomSetupCard({
               : "Start with a safe rectangle, then adjust it to your measurements."}
           </p>
         </div>
-        <span
-          data-testid="room-setup-status"
-          className={
-            hasRooms
-              ? dark
-                ? "designer-status-ready rounded-full px-2 py-1 text-[11px] font-semibold"
-                : "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700"
-              : dark
-                ? "designer-status-warning rounded-full px-2 py-1 text-[11px] font-semibold"
-                : "rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700"
-          }
-        >
-          {hasRooms ? "Room ready" : "Needs a room"}
-        </span>
+        <RoomSetupStatusBadge dark={dark} status={roomSetupStatus(hasRooms, roomIsDraft)} />
       </div>
 
       {!hasRooms ? (
@@ -274,26 +266,7 @@ export function ConsumerRoomSetupCard({
         </div>
       )}
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          data-testid="plan-start-template"
-          className={secondaryActionClass}
-          disabled={!canEdit}
-          onClick={actions.chooseTemplate}
-        >
-          Choose a template
-        </button>
-        <button
-          type="button"
-          data-testid="plan-start-draw"
-          className={secondaryActionClass}
-          disabled={!canEdit}
-          onClick={actions.drawRoom}
-        >
-          Draw measured room
-        </button>
-      </div>
+      <RoomSetupStartActions dark={dark} canEdit={canEdit} secondaryActionClass={secondaryActionClass} actions={actions} />
     </section>
   );
 }

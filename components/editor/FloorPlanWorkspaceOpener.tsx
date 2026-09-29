@@ -28,7 +28,7 @@ export function FloorPlanWorkspaceOpener({
       onClick={() =>
         openFloorPlanUploadWorkspace(
           semanticId,
-          isDesigner,
+          isDesigner ? "pro_plan_tools" : "plan_panel",
           onSelectUploadMode
         )
       }

@@ -1,5 +1,6 @@
 import { expect, test } from "./fixtures";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -96,7 +97,7 @@ test.describe("153. Hamilton Sofa Bed", () => {
     await page.addInitScript(() => {
       window.localStorage.setItem("scene_performance_mode", "quality");
     });
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 20_000,

@@ -62,6 +62,11 @@ for (const relativePath of [
     .filter((name) => name.endsWith(".tsx"))
     .map((name) => `components/editor/command-bar/${name}`),
   "components/editor/design-page/DesignPageWorkspace.tsx",
+  // Upload floor plan: which files can be uploaded comes from `importCad` alone (ST4).
+  "components/editor/FloorPlanUploadPanel.tsx",
+  "components/editor/FloorPlanUploadChooseStep.tsx",
+  "components/editor/start/UploadSignInDialog.tsx",
+  "lib/floor-plan-upload-formats.ts",
   "lib/design-page-dialog-layer-model.ts",
   "lib/useDesignPageExport.ts",
   "lib/useDesignPageOnboarding.ts",
@@ -177,7 +182,6 @@ assert.match(
 for (const relativePath of [
   "components/ConfirmDialog.tsx",
   "components/CopyFallbackDialog.tsx",
-  "components/ItemCartDrawer.tsx",
   "components/editor/design-page/AiNotesDialog.tsx",
   "components/editor/design-page/PlanAnnotationDialog.tsx",
   "components/editor/design-page/PlansDialog.tsx",
@@ -185,6 +189,7 @@ for (const relativePath of [
   "components/editor/design-page/UpgradeDialog.tsx",
   "components/editor/design-page/PresentExportDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
+  "components/editor/shop/ShoppingBuyListDialog.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
@@ -192,13 +197,11 @@ for (const relativePath of [
     /EditorDialog/,
     `${relativePath} should use the shared accessible dialog primitive`
   );
-  if (relativePath !== "components/ItemCartDrawer.tsx") {
-    assert.doesNotMatch(
-      source,
-      /waitForEntryTransition/,
-      `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
-    );
-  }
+  assert.doesNotMatch(
+    source,
+    /waitForEntryTransition/,
+    `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
+  );
 }
 
 const presentExport = read(
@@ -307,8 +310,14 @@ const pdfRoute = read("app/api/export/pdf/route.ts");
 assert.match(pdfRoute, /select:\s*\{\s*plan:\s*true\s*\}/);
 assert.match(pdfRoute, /normalizeTierFromPlan\(dbUser\?\.plan\)/);
 
+// Furnish's "In this room" list is the keyboard path to a placed product.
 const furnishPanel = read(
-  "components/editor/DesignControlsFurnishPanel.tsx"
+  "components/editor/FurnishInThisRoom.tsx"
+);
+assert.match(
+  read("components/editor/DesignControlsFurnishPanel.tsx"),
+  /<FurnishInThisRoom[\s\S]*?onSelect=\{props\.onSelectPlacedItem\}/,
+  "Furnish must render the placed-item keyboard selector"
 );
 for (const required of [
   'data-testid="placed-item-selector"',

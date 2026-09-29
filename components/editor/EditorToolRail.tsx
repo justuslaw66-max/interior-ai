@@ -174,7 +174,7 @@ export default function EditorToolRail({
         dark={dark}
         label="Commerce shortcut"
         testId="editor-rail-cart"
-        title="Shopping list and cart"
+        title="Shopping list"
         onClick={onCart}
       >
         <CartIcon />

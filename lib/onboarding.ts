@@ -147,55 +147,6 @@ export function checkActivation(opts: {
 }
 
 /**
- * "Next best action" nudge based on current state
- * Context-aware hints to help users when stuck. Every nudge is about
- * furnishing a room, so a design without rooms gets none.
- */
-export function getNextBestActionNudge(opts: {
-  roomCount: number;
-  hasItems: boolean;
-  hasSofa: boolean;
-  hasRug: boolean;
-  hasCoffeeTable: boolean;
-  contentWarningCount: number;
-  cartCount: number;
-  mode: "design" | "adjust" | "buy" | "present";
-}): string | null {
-  const {
-    roomCount,
-    hasItems,
-    hasSofa,
-    hasRug,
-    hasCoffeeTable,
-    contentWarningCount,
-    cartCount,
-    mode,
-  } = opts;
-
-  if (mode === "present" || roomCount === 0) {
-    return null; // No nudges in present or before a room exists
-  }
-
-  if (mode === "design" || mode === "adjust") {
-    if (!hasItems) {
-      return "Choose a furnishing that fits how you use this room.";
-    }
-    if (hasSofa && !hasRug && !hasCoffeeTable) {
-      return "Add a rug or coffee table to complete the seating area.";
-    }
-    if (contentWarningCount > 2) {
-      return "Fix spacing issues to make the room feel open.";
-    }
-  }
-
-  if (mode === "buy" && cartCount === 0 && hasItems) {
-    return "Add a few items to compare prices.";
-  }
-
-  return null;
-}
-
-/**
  * Deduping helpers for event firing
  */
 export const EventDedup = {

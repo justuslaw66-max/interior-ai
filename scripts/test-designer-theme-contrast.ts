@@ -278,7 +278,6 @@ for (const relativePath of [
   "components/editor/DesignControlsFurnishPanel.tsx",
   "components/editor/DesignControlsPlanPanel.tsx",
   "components/editor/FloorPlanUploadPanel.tsx",
-  "components/editor/ShoppingOverviewPanel.tsx",
 ]) {
   const source = fs.readFileSync(path.join(root, relativePath), "utf8");
   assert.doesNotMatch(source, legacySurfacePattern, `${relativePath} should not restore the legacy blue-black Pro palette.`);
@@ -480,15 +479,13 @@ assert.match(
   /data-testid="selected-plan-opening-actions"[\s\S]{0,500}?designer-(?:dock|work-surface)/,
   "The Pro selected-opening toolbar should use an opaque semantic surface."
 );
-for (const [label, pattern] of [
-  ["shopping dock", /data-testid="shopping-dock"[\s\S]{0,1000}?designer-(?:dock|work-surface)/],
-] as const) {
-  assert.match(
-    designPagePanelRegionSource,
-    pattern,
-    `The Pro ${label} should use an opaque semantic surface in its owning panel region.`
-  );
-}
+// Shop is one light page over the canvas for everyone (audit finding FU8; J's Q6, 27 Sep), not a dock.
+assert.match(
+  designPagePanelRegionSource,
+  /data-testid="shop-step"[\s\S]{0,200}?bg-\[#fafaf9\]/,
+  "Shop should be an opaque page over the canvas."
+);
+assert.doesNotMatch(designPagePanelRegionSource, /shopping-dock/, "Shop should not come back as a dock.");
 assert.match(
   sceneReadyVeilSource,
   /data-testid="scene-ready-veil"[\s\S]{0,700}?backgroundColor:\s*configuration\.backgroundColor/,
