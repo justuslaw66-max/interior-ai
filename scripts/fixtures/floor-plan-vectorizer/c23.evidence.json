@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.12.0",
+ "exporterVersion": "app-evidence-0.13.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -1605,9 +1605,7 @@
    }
   ],
   "entrance": null,
-  "notes": [
-   "Some wall mass is slanted or curved; this version builds rooms from straight horizontal and vertical walls only."
-  ]
+  "notes": []
  },
  "wallEdges": [
   {
@@ -4006,7 +4004,15 @@
    "RC LEDGE AT 2ND STY",
    "RC LEDGE AT 2ND STY"
   ],
+  "diagonalWallsAdded": 0,
+  "gapsAcrossSlantedWallsDropped": 0,
+  "openingsInSlantedWalls": 0,
+  "slantedSidesWelded": 0,
+  "slopedStrokes": 14,
   "unsupportedWallPx": 22490,
+  "thickAxisWallPx": 19772,
+  "slantedWallPx": 0,
+  "otherWallPx": 2718,
   "workScale": 2,
   "skewDeg": 0.0,
   "pageCrop": null,
