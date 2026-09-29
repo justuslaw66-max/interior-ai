@@ -17,7 +17,7 @@
       "limit": 250
     },
     "app/admin/clicks/page.tsx": {
-      "lines": 378,
+      "lines": 372,
       "limit": 250
     },
     "app/admin/floor-plans/[id]/AddressBindingEditor.tsx": {
@@ -53,7 +53,7 @@
       "limit": 400
     },
     "app/admin/OperationsDashboard.tsx": {
-      "lines": 574,
+      "lines": 504,
       "limit": 250
     },
     "app/api/admin/catalog/[catalogItemId]/route.ts": {
@@ -713,7 +713,7 @@
     "app/admin/audit/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 588
+        "maximum": 582
       },
       "complexFunctions": {
         "count": 1,
@@ -730,34 +730,28 @@
         "maximum": 17
       }
     },
-    "app/admin/catalog/[catalogItemId]/commerce/CommerceEditor.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 110
-      }
-    },
     "app/admin/catalog/[catalogItemId]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 91
+        "maximum": 89
       }
     },
     "app/admin/catalog/inbox/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 183
+        "maximum": 178
       }
     },
     "app/admin/catalog/review/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 153
+        "maximum": 144
       }
     },
     "app/admin/clicks/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 335
+        "maximum": 322
       }
     },
     "app/admin/floor-plans/[id]/AddressBindingEditor.tsx": {
@@ -897,7 +891,7 @@
     "app/admin/floor-plans/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 137
+        "maximum": 127
       }
     },
     "app/admin/floor-plans/PingYiReviewJobButton.tsx": {
@@ -919,7 +913,7 @@
     "app/admin/imports/[id]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 185
+        "maximum": 181
       },
       "complexFunctions": {
         "count": 1,
@@ -929,7 +923,7 @@
     "app/admin/imports/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 102
+        "maximum": 101
       }
     },
     "app/admin/models/[id]/model-edit-form.tsx": {
@@ -1424,24 +1418,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 233
-      }
-    },
-    "components/admin/BulkImportsTable.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 164
-      }
-    },
-    "components/admin/PaywallPerformancePanel.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 136
-      }
-    },
-    "components/admin/RevenueFunnelPanel.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 70
       }
     },
     "components/admin/StagingSmokeEvidencePanel.tsx": {

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
+
+const SECTION = adminSection("/admin/imports");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 type ImportJobListItem = {
   id: string;
@@ -78,9 +84,7 @@ async function loadImportJobs(): Promise<ImportJobListResult> {
 
 export default async function AdminImportsPage() {
   const session = await auth();
-  if (!canAccessAdmin(session?.user?.email)) {
-    redirect("/");
-  }
+  if (!canAccessAdmin(session?.user?.email)) return null;
 
   const { jobs, errorMessage } = await loadImportJobs();
 
@@ -95,10 +99,11 @@ export default async function AdminImportsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Import Jobs</h1>
-        <p className="text-sm text-neutral-600">Intake-to-handoff job tracking for asset pipeline.</p>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Every model import, from the uploaded file to its catalog entry."
+      />
 
       {errorMessage && (
         <section className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
