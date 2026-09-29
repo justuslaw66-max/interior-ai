@@ -3,10 +3,15 @@
 import type { ComponentProps } from "react";
 
 import EditorToolRail from "@/components/editor/EditorToolRail";
+import { CanvasViewToolbar } from "@/components/editor/canvas/CanvasViewToolbar";
+import { KeyboardShortcutsButton, KeyboardShortcutsSheet } from "@/components/editor/canvas/KeyboardShortcutsSheet";
 import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
 import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
 import type { LeaveAtDesignLimitPrompt } from "@/lib/useLeaveForMyDesigns";
+import { resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
+import { isDesignControlsPanelMode } from "@/lib/useDesignPagePanelMode";
+import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
 type CommandBarProps = ComponentProps<typeof DesignPageEditorCommandBar>;
 type BetaStartProps = ComponentProps<typeof BetaStartPanel>;
@@ -44,6 +49,46 @@ export type DesignPageEditorChromeProps = {
   actions: DesignPageEditorChromeActions;
 };
 
+/**
+ * The canvas toolbar and the Keyboard shortcuts corner (UX 4c): over the canvas from md, not in
+ * Client Preview, and not in Shop, whose page covers the canvas.
+ */
+function CanvasControls({ state, configuration, actions }: DesignPageEditorChromeProps) {
+  const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
+  const bar = state.commandBar.commandBar;
+  const barActions = actions.commandBar.commandBar;
+  const dark = configuration.commandBar.dark;
+  const onCanvas = wide && !bar.isClientPreview && bar.editorMode !== "buy";
+  const leftInsetPx = resolveCanvasLeftInsetPx({
+    panelVisible: !bar.millworkActive && isDesignControlsPanelMode(bar.editorMode),
+    shopping: false,
+    collapsed: bar.designSidebarCollapsed,
+    isDesigner: bar.isDesigner,
+  });
+  return (
+    <>
+      {onCanvas ? (
+        <CanvasViewToolbar
+          dark={dark}
+          leftInsetPx={leftInsetPx}
+          viewMode={bar.viewMode}
+          onViewModeChange={barActions.onViewModeChange}
+          canFit={Boolean(state.commandBar.room) && bar.editorMode !== "present"}
+          onFit={actions.commandBar.room.onFitPlan}
+          canUndo={bar.canUndo}
+          canRedo={bar.canRedo}
+          undoName={bar.undoName}
+          redoName={bar.redoName}
+          onUndo={barActions.onUndo}
+          onRedo={barActions.onRedo}
+        />
+      ) : null}
+      {onCanvas ? <KeyboardShortcutsButton dark={dark} /> : null}
+      <KeyboardShortcutsSheet enabled={!bar.isClientPreview} isDesigner={bar.isDesigner} dark={dark} />
+    </>
+  );
+}
+
 export function DesignPageEditorChrome({
   state,
   configuration,
@@ -56,6 +101,7 @@ export function DesignPageEditorChrome({
         configuration={configuration.commandBar}
         actions={actions.commandBar}
       />
+      <CanvasControls state={state} configuration={configuration} actions={actions} />
       <LeaveAtDesignLimitDialog {...state.leaveAtDesignLimit} />
 
       {state.betaStart.visible ? (

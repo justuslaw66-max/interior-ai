@@ -217,7 +217,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 268,
+      "lines": 264,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -657,7 +657,7 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 440,
+      "lines": 433,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -1925,7 +1925,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 200
+        "maximum": 196
       },
       "complexFunctions": {
         "count": 1,
@@ -4485,7 +4485,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 32
+        "maximum": 26
       }
     },
     "lib/useDesignPagePlanQualityController.ts": {

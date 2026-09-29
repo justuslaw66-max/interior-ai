@@ -873,6 +873,7 @@ const COMMAND_PALETTE_ACTION_IDS = [
   "delete-item",
   "preset-presentation",
   "preset-technical",
+  "keyboard-shortcuts",
 ] as const;
 
 async function readEditorSnapshotFingerprint(page: Page): Promise<string> {

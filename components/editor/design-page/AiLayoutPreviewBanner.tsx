@@ -25,8 +25,8 @@ export function AiLayoutPreviewBanner({
       data-testid="ai-layout-preview-banner"
       className={
         configuration.dark
-          ? "designer-dock absolute left-1/2 top-36 z-30 md:top-bar-27 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm text-neutral-100"
-          : "absolute left-1/2 top-36 z-30 md:top-bar-27 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white/95 px-4 py-3 text-sm text-neutral-800 shadow-xl backdrop-blur"
+          ? "designer-dock absolute left-1/2 top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm text-neutral-100"
+          : "absolute left-1/2 top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white/95 px-4 py-3 text-sm text-neutral-800 shadow-xl backdrop-blur"
       }
     >
       <div className="min-w-0">

@@ -1,10 +1,8 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+// Undo, Redo and 2D/3D sit in the canvas toolbar from md (UX 4c), checked below.
 const CLOSED_CONTROL_TEST_IDS = [
   "editor-design-sidebar-toggle",
-  "command-undo",
-  "command-redo",
-  "editor-view-toggle",
   "editor-design-steps",
   "save-status",
   "save-design",
@@ -54,6 +52,27 @@ async function expectCompactToolbarGeometry(page: Page) {
   }
 }
 
+// The canvas toolbar: under the bar, clear of the step panel, 36px buttons and 32px view segments.
+async function expectCanvasToolbarGeometry(page: Page) {
+  const bar = await page.getByTestId("editor-command-bar").boundingBox();
+  const toolbar = page.getByTestId("canvas-view-toolbar");
+  await expect(toolbar).toBeVisible();
+  const box = await toolbar.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height + 8);
+  for (const testId of ["canvas-fit-view", "command-undo", "command-redo"]) {
+    await expect(toolbar.getByTestId(testId)).toHaveCSS("height", "36px");
+  }
+  await expect(toolbar.getByTestId("editor-view-2d")).toHaveCSS("height", "32px");
+  const panel = page.getByTestId("design-controls-panel");
+  if (await panel.isVisible()) {
+    const panelBox = await panel.boundingBox();
+    expect(box!.x, "The toolbar should clear the step panel").toBeGreaterThanOrEqual(panelBox!.x + panelBox!.width);
+  }
+  const viewport = page.viewportSize()!;
+  expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+}
+
 async function chooseStep(page: Page, testId: string) {
   const step = page.getByTestId(testId);
   await expect(step).toBeVisible();
@@ -93,6 +112,7 @@ test.describe("compact top toolbar", () => {
     });
 
     await expectCompactToolbarGeometry(page);
+    await expectCanvasToolbarGeometry(page);
     await expect(page.getByTestId("room-plan-status")).toBeVisible();
     await expect(page.getByTestId("room-plan-status")).toHaveCSS("height", "30px");
     // Wide screens show each step's number and name.
@@ -123,6 +143,7 @@ test.describe("compact top toolbar", () => {
 
     await page.setViewportSize({ width: 900, height: 800 });
     await expectCompactToolbarGeometry(page);
+    await expectCanvasToolbarGeometry(page);
     // Compact desktops keep the step names and drop the numbers.
     await expect(page.getByTestId("editor-workflow-furnish").getByText("2", { exact: true })).toBeHidden();
     await expect(page.getByTestId("editor-workflow-furnish").getByText("Furnish", { exact: true })).toBeVisible();
@@ -148,6 +169,7 @@ test.describe("compact top toolbar", () => {
       timeout: 30_000,
     });
     await expectCompactToolbarGeometry(page);
+    await expectCanvasToolbarGeometry(page);
     await expect(page.getByTestId("editor-command-bar")).toHaveClass(
       /bg-white\/95/,
     );

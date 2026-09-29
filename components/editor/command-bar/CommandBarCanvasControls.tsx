@@ -2,6 +2,7 @@
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { PanelLeft, Redo2, Undo2 } from "lucide-react";
+import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { CommandBarActionToast } from "./CommandBarActionToast";
 
 type CommandBarCanvasControlsProps = {
@@ -20,8 +21,12 @@ type CommandBarCanvasControlsProps = {
   onViewModeChange: (next: EditorViewMode) => void;
 };
 
-/** The sidebar toggle, undo, redo and the 2D/3D switch at the start of the editor command bar. */
+/**
+ * The sidebar toggle at the start of the editor command bar, and on phones undo, redo and the
+ * 2D/3D switch. From md those three are the canvas toolbar's (`CanvasViewToolbar`, UX 4c).
+ */
 export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
+  const canvasToolbar = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
   return (
     <>
       {props.sidebarToggleVisible ? (
@@ -31,12 +36,14 @@ export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
           onToggleDesignSidebar={props.onToggleDesignSidebar}
         />
       ) : null}
-      <HistoryButtons {...props} />
+      {canvasToolbar ? null : <HistoryButtons {...props} />}
       <CommandBarActionToast isClientPreview={props.isClientPreview} undoName={props.undoName} onUndo={props.onUndo} />
 
-      <div className="shrink-0">
-        <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={props.dark} />
-      </div>
+      {canvasToolbar ? null : (
+        <div className="shrink-0">
+          <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={props.dark} />
+        </div>
+      )}
     </>
   );
 }
@@ -80,7 +87,7 @@ function HistoryButtons({
   onUndo,
   onRedo,
 }: CommandBarCanvasControlsProps) {
-  const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-current disabled:cursor-not-allowed disabled:opacity-40 md:h-[30px] md:w-[30px] ${
+  const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-current disabled:cursor-not-allowed disabled:opacity-40 ${
     dark
       ? "designer-control"
       : "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"

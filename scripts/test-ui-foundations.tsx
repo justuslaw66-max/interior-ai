@@ -87,6 +87,8 @@ assert.match(primary, /\boutline-hidden\b/);
 assert.match(markup(<Button size="compact">More</Button>), /\bh-\[30px\][^"]*\bborder-neutral-300\b/);
 assert.match(markup(<Button variant="quiet" type="submit">Go</Button>), /^<button type="submit" class="[^"]*\bborder-transparent\b/);
 assert.match(markup(<Button variant="danger">Delete</Button>), /\bbg-red-600\b/);
+assert.match(markup(<Button variant="quiet" size="icon" aria-label="Undo">U</Button>), /\bh-9 w-9 shrink-0 rounded-lg p-0 border-transparent\b/);
+assert.match(markup(<Button size="round" aria-label="Keyboard shortcuts">?</Button>), /\bh-10 w-10 shrink-0 rounded-full p-0 border-neutral-300\b/);
 assert.equal(EditorDialogButton, Button, "Dialog actions are the shared Button.");
 assert.equal(
   buttonClassName({ variant: "primary", size: "compact", className: "w-full" }).split(" ").at(-1),

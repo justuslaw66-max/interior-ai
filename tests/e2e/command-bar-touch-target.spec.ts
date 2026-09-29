@@ -132,14 +132,20 @@ async function expectMobileHistoryGeometry(page: Page) {
   await expectNoHorizontalOverflow(page);
 }
 
+// From md, Undo and Redo leave the bar for the canvas toolbar, 36px each, under the bar (UX 4c).
 async function expectDesktopHistoryGeometry(page: Page) {
   const bar = page.getByTestId("editor-command-bar");
-  const undo = page.getByTestId("command-undo");
-  const redo = page.getByTestId("command-redo");
+  const toolbar = page.getByTestId("canvas-view-toolbar");
+  const undo = toolbar.getByTestId("command-undo");
+  const redo = toolbar.getByTestId("command-redo");
 
-  await expectSemanticTarget(undo, 30, "desktop Undo");
-  await expectSemanticTarget(redo, 30, "desktop Redo");
+  await expect(bar.getByTestId("command-undo")).toHaveCount(0);
+  await expect(bar.getByTestId("editor-view-toggle")).toHaveCount(0);
+  await expectSemanticTarget(undo, 36, "desktop Undo");
+  await expectSemanticTarget(redo, 36, "desktop Redo");
   await expect.poll(async () => (await bar.boundingBox())?.height).toBe(36);
+  const [barBox, toolbarBox] = await Promise.all([bar.boundingBox(), toolbar.boundingBox()]);
+  expect(toolbarBox!.y).toBeGreaterThanOrEqual(barBox!.y + barBox!.height + 8);
   await expect(page.getByTestId("save-status")).toHaveCSS("height", "30px");
   await expectNoHorizontalOverflow(page);
 }

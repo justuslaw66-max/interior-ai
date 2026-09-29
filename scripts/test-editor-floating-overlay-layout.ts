@@ -460,13 +460,13 @@ assert.match(
 
 assert.match(
   planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15 z-30 md:top-bar-6[\s\S]*-translate-x-1\/2/,
+  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15 z-30 md:top-bar-20[\s\S]*-translate-x-1\/2/,
   "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
 );
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-6[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 
@@ -645,10 +645,16 @@ assert.match(
   "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
 );
 
+// Phones keep Undo and Redo in the bar at 44px; from md they're the canvas toolbar's (UX 4c).
 assert.match(
   editorCommandBarSource,
-  /const commandHistoryButtonClass = `[^`]*\bmd:h-\[30px\] md:w-\[30px\]/,
-  "Undo and redo should share the 30px closed-control size on desktop."
+  /const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 (?![^`]*\bmd:h-)/,
+  "Undo and redo in the phone bar should be 44px, with no desktop size of their own."
+);
+assert.match(
+  editorCommandBarSource,
+  /const canvasToolbar = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\s\S]*?\{canvasToolbar \? null : <HistoryButtons \{\.\.\.props\} \/>\}[\s\S]*?\{canvasToolbar \? null : \(\s*<div className="shrink-0">\s*<EditorViewToggle/,
+  "From md, undo, redo and 2D/3D leave the bar for the canvas toolbar."
 );
 for (const historyTestId of ["command-undo", "command-redo"] as const) {
   assert.match(
@@ -707,8 +713,13 @@ assert.deepEqual(barOffsetsByHand, [], "Place what sits under the bar with top-b
 
 assert.match(
   editorViewToggleSource,
-  /h-\[26px\][\s\S]*h-\[30px\][\s\S]*p-0\.5/,
-  "The view selector should combine centered 26px buttons with a balanced 30px shell."
+  /grid h-\[30px\] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0\.5[\s\S]*inline-flex h-\[26px\] items-center/,
+  "The bar's view selector should combine centered 26px buttons with a balanced 30px shell."
+);
+assert.match(
+  editorViewToggleSource,
+  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
+  "The canvas toolbar's view selector should use the mockup's 32px segments."
 );
 
 assert.match(

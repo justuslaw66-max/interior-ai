@@ -11,7 +11,7 @@ import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBar
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
 import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
 import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
-import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
+import { LightingSettingsDrawer, useLightingSettingsOpen } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
@@ -109,11 +109,11 @@ export default function EditorCommandBar({
 }: EditorCommandBarProps) {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [lightingSettingsOpen, setLightingSettingsOpen] = useState(false);
+  const [lightingSettingsOpen, setLightingSettingsOpen] = useLightingSettingsOpen(viewMode);
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
-  const closeLightingSettings = useCallback(() => setLightingSettingsOpen(false), []);
+  const closeLightingSettings = useCallback(() => setLightingSettingsOpen(false), [setLightingSettingsOpen]);
   // More and Account close on a press outside them or on Escape, which hands focus back to their
   // button; arrow keys move through their items (AX5).
   useDismissibleMenu({ open: overflowOpen, containerRef: overflowRef, onDismiss: (byKeyboard) => {
@@ -143,10 +143,6 @@ export default function EditorCommandBar({
   const menuPanelClass = dark
     ? "designer-work-surface absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "absolute right-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
-  const handleViewModeChange = (next: EditorViewMode) => {
-    if (next !== "3d") setLightingSettingsOpen(false);
-    onViewModeChange(next);
-  };
 
   return (
     <div
@@ -174,7 +170,7 @@ export default function EditorCommandBar({
           onUndo={onUndo}
           onRedo={onRedo}
           viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
+          onViewModeChange={onViewModeChange}
         />
 
         <CommandBarStepTabs

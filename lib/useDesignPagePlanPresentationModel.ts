@@ -10,6 +10,7 @@ import {
   getExportReadinessScore,
 } from "@/lib/design-page-export-readiness";
 import { getPlan2DRoomFitBounds } from "@/lib/design-page-floor-plan-utils";
+import { resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
 import {
   buildHousePlan2D,
   type HouseRoomConnectionChecklistItem,
@@ -87,20 +88,12 @@ export function resolveDesignPageViewportLayout({
     floorPropertiesPanelEligible && !floatingFloorPropertiesPanelVisible;
   const primaryLeftPanelVisible =
     designControlsPanelVisible || shoppingPanelVisible;
-  const plan2DSafeAreaLeftPx =
-    primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768
-      ? shoppingPanelVisible
-        ? isDesigner
-          ? 398
-          : 318
-        : designPanelCollapsed
-          ? isDesigner
-            ? 128
-            : 88
-          : isDesigner
-            ? 398
-            : 318
-      : 0;
+  const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx({
+    panelVisible: primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768,
+    shopping: shoppingPanelVisible,
+    collapsed: designPanelCollapsed,
+    isDesigner,
+  });
   const selectionInspectorDockedWithPlanStack =
     floatingPlanOverlayStackVisible &&
     viewMode === "3d" &&
