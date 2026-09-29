@@ -116,7 +116,7 @@ assert.equal(isPhoneSheetInspectorSelection({ ...none, surfaceInspectorIsWall: t
 assert.match(half, /<div data-testid="phone-sheet-inspector" hidden=""><\/div><div class="space-y-3"><p>Products<\/p><\/div>/, "The slot waits, hidden, above the step's content.");
 const inspectorSource = read("components/editor/design-page/DesignPageSelectionInspector.tsx");
 const placementSource = read("components/editor/design-page/selectionInspectorPlacement.ts");
-assert.match(placementSource, /const inSheet = !wide && Boolean\(sheet\.slot\) && isPhoneSheetInspectorSelection\(state\);/);
+assert.match(placementSource, /const takesOver = isPhoneSheetInspectorSelection\(state\);\s*const inSheet = !wide && Boolean\(sheet\.slot\) && takesOver;/);
 assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot \};/, "In the sheet, it goes into the slot.");
 assert.match(inspectorSource, /const placement = useInspectorPlacement\(state, configuration\);/);
 assert.match(placementSource, /const clearClassName = placement\.inSheet \? `\$\{clear\} min-h-11` : clear;/, "Done is a 44px target.");

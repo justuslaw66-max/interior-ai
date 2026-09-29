@@ -653,7 +653,7 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 432,
+      "lines": 429,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -4473,7 +4473,7 @@
     "lib/useDesignPagePlanPresentationModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 220
+        "maximum": 216
       },
       "complexFunctions": {
         "count": 1,

@@ -633,13 +633,13 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /event\.metaKey \|\| event\.ctrlKey[\s\S]*?event\.key\.toLowerCase\(\) !== "b"[\s\S]*?onCollapsedChange\(!collapsed\)/,
+  /event\.metaKey \|\| event\.ctrlKey[\s\S]*?event\.key\.toLowerCase\(\) !== "b"[\s\S]*?onToggle\(\);[\s\S]*?const toggle = \(\) => \{[\s\S]*?if \(wide\) toggleStepPanel\(policy, props\.collapsed, onCollapsedChange\);\s*else onCollapsedChange\(!props\.collapsed\);/,
   "The design sidebar should expose a Codex-style Ctrl/Cmd+B toggle without intercepting text fields."
 );
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-design-sidebar-toggle"[\s\S]*?data-state=\{designSidebarCollapsed \? "collapsed" : "expanded"\}[\s\S]*?aria-expanded=\{!designSidebarCollapsed\}[\s\S]*?onClick=\{onToggleDesignSidebar\}[\s\S]*?<PanelLeft/,
+  /data-testid="editor-design-sidebar-toggle"[\s\S]*?data-state=\{designSidebarCollapsed \? "collapsed" : "expanded"\}[\s\S]*?aria-expanded=\{!designSidebarCollapsed\}[\s\S]*?onClick=\{\(\) => toggleStepPanel\(policy, storedCollapsed, setCollapsed\)\}[\s\S]*?<PanelLeft/,
   "The command bar should expose a compact Codex-style sidebar toggle in the top-left controls."
 );
 

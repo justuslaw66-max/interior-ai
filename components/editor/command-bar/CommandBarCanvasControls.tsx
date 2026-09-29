@@ -1,6 +1,8 @@
 "use client";
 
 import { PanelLeft } from "lucide-react";
+import { TABLET_MEDIA_QUERY, toggleStepPanel, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import { CommandBarActionToast } from "./CommandBarActionToast";
 
 type CommandBarCanvasControlsProps = {
@@ -34,11 +36,17 @@ export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
   );
 }
 
+/** On a tablet the panel may be collapsed for a right panel (UX 4d, AX11): the toggle shows it. */
 function DesignSidebarToggle({
   dark,
-  designSidebarCollapsed,
+  designSidebarCollapsed: storedCollapsed,
   onToggleDesignSidebar,
 }: Pick<CommandBarCanvasControlsProps, "dark" | "designSidebarCollapsed" | "onToggleDesignSidebar">) {
+  const policy = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), storedCollapsed);
+  const designSidebarCollapsed = policy.collapsed;
+  const setCollapsed = (next: boolean) => {
+    if (next !== storedCollapsed) onToggleDesignSidebar();
+  };
   return (
     <button
       type="button"
@@ -56,7 +64,7 @@ function DesignSidebarToggle({
           ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border"
           : "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
       }
-      onClick={onToggleDesignSidebar}
+      onClick={() => toggleStepPanel(policy, storedCollapsed, setCollapsed)}
     >
       <PanelLeft className="h-4 w-4" aria-hidden="true" />
     </button>

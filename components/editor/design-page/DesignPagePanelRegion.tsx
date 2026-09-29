@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { TABLET_ITEM_PANEL_INSET_PX, useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
 import { ShopStep, type ShopStepProps } from "@/components/editor/shop/ShopStep";
 import {
   DesignControlsPanelAdapter,
@@ -82,6 +83,8 @@ export function DesignPagePanelRegion({
   actions,
 }: DesignPagePanelRegionProps) {
   const { isClientPreview } = configuration;
+  // On a tablet the step panel steps aside for the item or cabinet panel (UX 4d, AX11).
+  useReportTabletRightPanel("item", !isClientPreview && Boolean(state.selectedItem || state.selectedCabinet), TABLET_ITEM_PANEL_INSET_PX);
 
   return (
     <>

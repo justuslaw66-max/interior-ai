@@ -11,6 +11,7 @@ import { DesignPageEditorCommandBar } from "@/components/editor/design-page/Desi
 import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
 import type { LeaveAtDesignLimitPrompt } from "@/lib/useLeaveForMyDesigns";
 import { resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
+import { TABLET_MEDIA_QUERY, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { isDesignControlsPanelMode } from "@/lib/useDesignPagePanelMode";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
@@ -62,10 +63,11 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
   const dark = configuration.commandBar.dark;
   const overCanvas = !bar.isClientPreview && bar.editorMode !== "buy";
   const onCanvas = wide && overCanvas;
+  const tablet = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), bar.designSidebarCollapsed);
   const leftInsetPx = resolveCanvasLeftInsetPx({
     panelVisible: !bar.millworkActive && isDesignControlsPanelMode(bar.editorMode),
     shopping: false,
-    collapsed: bar.designSidebarCollapsed,
+    collapsed: tablet.collapsed,
     isDesigner: bar.isDesigner,
   });
   return (

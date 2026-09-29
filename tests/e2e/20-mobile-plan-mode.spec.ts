@@ -1,5 +1,11 @@
 import { expect, test } from "./fixtures";
-import { chooseStartTemplate, selectEditorWorkspace } from "./variant-test-utils";
+import {
+  addCatalogCardItemToRoom,
+  chooseStartTemplate,
+  fillCatalogSearch,
+  selectEditorWorkspace,
+  waitForCatalogReady,
+} from "./variant-test-utils";
 
 const VIEWPORTS = [
   { name: "phone", width: 390, height: 844 },
@@ -159,6 +165,34 @@ test("a phone's sheet and Menu are made of 44px targets", async ({ page }) => {
   await expect(search).toBeVisible({ timeout: 20000 });
   await expect(search).toHaveCSS("font-size", "16px");
   expect(await smallTouchTargets(sheet), "Furnish").toEqual([]);
+});
+
+// UX 4d (AX11): on a tablet the step panel steps aside while a product's panel is open, the bar's
+// sidebar toggle holds it open beside the product, and it stays once the product is deselected.
+test("a tablet's step panel steps aside for a selected product", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 820, height: 1180 });
+  await clearEditorStorage(page);
+  await page.goto("/design", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  await expect.poll(() => waitForCatalogReady(page), { timeout: 45_000 }).toBeTruthy();
+  await expect.poll(() => fillCatalogSearch(page, "Dawson 3 Seater"), { timeout: 45_000 }).toBeTruthy();
+  await addCatalogCardItemToRoom(page, "sofa-real-castlery-dawson-3s");
+
+  const panel = page.getByTestId("design-controls-panel");
+  const toggle = page.getByTestId("editor-design-sidebar-toggle");
+  await expect(panel).toHaveCount(0);
+  await expect(page.getByTestId("design-controls-edge-reveal")).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByTestId("selected-item-panel")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("selected-item-panel")).toHaveCount(0);
+  await expect(panel).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
 });
 
 test.describe("20. Mobile Plan Mode", () => {

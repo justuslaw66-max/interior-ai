@@ -3,6 +3,7 @@
 import { PanelLeftOpen, Pin } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { isEditorShortcutTargetBlocked } from "@/lib/editor-shortcut-guard";
+import { TABLET_MEDIA_QUERY, toggleStepPanel, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { PhoneStepSheet } from "./PhoneStepSheet";
 
@@ -51,7 +52,7 @@ function useEdgePreview() {
 }
 
 /** Ctrl/⌘ B shows or hides the panel, but not while typing. */
-function usePanelToggleShortcut(collapsed: boolean, onCollapsedChange: ((collapsed: boolean) => void) | undefined, onToggle: () => void) {
+function usePanelToggleShortcut(onCollapsedChange: ((collapsed: boolean) => void) | undefined, onToggle: () => void) {
   useEffect(() => {
     if (!onCollapsedChange) return;
 
@@ -62,34 +63,42 @@ function usePanelToggleShortcut(collapsed: boolean, onCollapsedChange: ((collaps
       if (isEditorShortcutTargetBlocked(event.target)) return;
       event.preventDefault();
       onToggle();
-      onCollapsedChange(!collapsed);
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [collapsed, onCollapsedChange, onToggle]);
+  }, [onCollapsedChange, onToggle]);
 }
 
 /**
  * The step panel's frame. From md, a column beside the canvas: collapsed, a left-edge strip that
- * reveals it on hover, with Keep open to pin it. On phones, a sheet over the canvas (UX 4d), whose
- * peek is the collapsed state. Ctrl/⌘ B shows or hides it at every width.
+ * reveals it on hover, with Keep open to pin it; on tablets it also steps aside for a right panel
+ * (lib/tablet-panel-policy.ts). On phones, a sheet over the canvas (UX 4d), whose peek is the
+ * collapsed state. Ctrl/⌘ B shows or hides it at every width.
  */
 export function DesignControlsPanelFrame(props: DesignControlsPanelFrameProps) {
-  const { dark, collapsed, onCollapsedChange, title, subtitle, children } = props;
+  const { dark, onCollapsedChange, title, subtitle, children } = props;
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
+  const policy = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), props.collapsed);
+  const collapsed = wide ? policy.collapsed : props.collapsed;
   const preview = useEdgePreview();
   const { setEdgePreviewOpen } = preview;
-  usePanelToggleShortcut(collapsed, onCollapsedChange, () => setEdgePreviewOpen(false));
+  const toggle = () => {
+    setEdgePreviewOpen(false);
+    if (!onCollapsedChange) return;
+    if (wide) toggleStepPanel(policy, props.collapsed, onCollapsedChange);
+    else onCollapsedChange(!props.collapsed);
+  };
+  usePanelToggleShortcut(onCollapsedChange, toggle);
   const temporarilyRevealed = Boolean(collapsed && preview.edgePreviewOpen);
   const show = () => {
-    setEdgePreviewOpen(false);
-    onCollapsedChange?.(false);
+    if (collapsed) toggle();
+    else setEdgePreviewOpen(false);
   };
 
   if (!wide) {
     return (
-      <PhoneStepSheet dark={dark} title={title} subtitle={subtitle} collapsed={collapsed} onCollapsedChange={onCollapsedChange}>
+      <PhoneStepSheet dark={dark} title={title} subtitle={subtitle} collapsed={props.collapsed} onCollapsedChange={onCollapsedChange}>
         {children}
       </PhoneStepSheet>
     );
@@ -130,8 +139,8 @@ function PanelEdgeReveal({ dark, openEdgePreview, onShow }: { dark: boolean; ope
         title="Show design sidebar (Ctrl/⌘ B)"
         className={
           dark
-            ? "designer-work-control absolute left-1 top-4 flex h-9 w-9 items-center justify-center rounded-xl border opacity-0 shadow-xl transition-opacity focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
-            : "absolute left-1 top-4 flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-800 opacity-0 shadow-xl transition-opacity hover:bg-neutral-50 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
+            ? "designer-work-control absolute left-1 top-4 flex h-9 w-9 touch:h-11 touch:w-11 items-center justify-center rounded-xl border opacity-0 touch:opacity-100 shadow-xl transition-opacity focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
+            : "absolute left-1 top-4 flex h-9 w-9 touch:h-11 touch:w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-800 opacity-0 touch:opacity-100 shadow-xl transition-opacity hover:bg-neutral-50 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
         }
         onClick={onShow}
       >

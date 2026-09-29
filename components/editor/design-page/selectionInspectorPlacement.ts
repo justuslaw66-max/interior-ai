@@ -6,6 +6,7 @@ import {
   setPhoneSheetInspectorActive,
   usePhoneSheetInspector,
 } from "@/lib/phone-step-sheet";
+import { useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import type { DesignPageSelectionInspectorProps } from "./DesignPageSelectionInspector";
 
@@ -18,19 +19,22 @@ type InspectorConfiguration = Pick<
 /**
  * Where the inspector goes: from md, floating or docked in the Plan rail; on phones (UX 4d, audit
  * AX2), the step sheet for a wall, ceiling, door, window, fixed element or note, with Done to
- * deselect, and nowhere otherwise (rooms keep the Plan panel's room section).
+ * deselect, and nowhere otherwise (rooms keep the Plan panel's room section). Floating for one of
+ * those on a tablet, the step panel steps aside for it (AX11).
  */
 export function useInspectorPlacement(state: InspectorState, configuration: InspectorConfiguration) {
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
   const sheet = usePhoneSheetInspector();
-  const inSheet = !wide && Boolean(sheet.slot) && isPhoneSheetInspectorSelection(state);
+  const takesOver = isPhoneSheetInspectorSelection(state);
+  const inSheet = !wide && Boolean(sheet.slot) && takesOver;
+  const docked = Boolean(configuration.dockWhenPortalAvailable && configuration.portalTarget);
   useEffect(() => {
     if (!inSheet) return;
     setPhoneSheetInspectorActive(true);
     return () => setPhoneSheetInspectorActive(false);
   }, [inSheet]);
+  useReportTabletRightPanel("inspector", wide && !docked && takesOver, configuration.floatingWidthPx + configuration.floatingRightPx);
   if (inSheet) return { shown: true, inSheet, portalTarget: sheet.slot };
-  const docked = Boolean(configuration.dockWhenPortalAvailable && configuration.portalTarget);
   return { shown: wide, inSheet, portalTarget: docked ? configuration.portalTarget : null };
 }
 
