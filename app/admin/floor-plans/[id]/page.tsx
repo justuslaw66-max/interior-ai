@@ -1,34 +1,33 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import type { Metadata } from "next";
 import { canAccessAdmin } from "@/lib/admin";
+import { AdminPageHeader } from "../../AdminPageHeader";
+import { adminSection, adminTitle } from "../../admin-navigation";
+import { auth } from "../../admin-session";
 import FloorPlanReviewWorkspace from "./FloorPlanReviewWorkspace";
 import PingYiReviewSeedIntake from "./PingYiReviewSeedIntake";
 import SupplementarySourceEvidencePanel from "./SupplementarySourceEvidencePanel";
 
-export default async function AdminFloorPlanDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+type AdminFloorPlanDetailPageProps = { params: Promise<{ id: string }> };
+
+const SECTION = adminSection("/admin/floor-plans");
+
+export async function generateMetadata({ params }: AdminFloorPlanDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  return { title: adminTitle(`Floor-plan import ${id}`) };
+}
+
+export default async function AdminFloorPlanDetailPage({ params }: AdminFloorPlanDetailPageProps) {
   const session = await auth();
-  if (!canAccessAdmin(session?.user?.email)) redirect("/");
+  if (!canAccessAdmin(session?.user?.email)) return null;
   const { id } = await params;
 
   return (
     <main className="space-y-5 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-            Assisted floor-plan ingestion
-          </div>
-          <h1 className="mt-1 text-2xl font-semibold">Review import</h1>
-          <div className="mt-1 font-mono text-xs text-neutral-500">{id}</div>
-        </div>
-        <Link className="rounded-lg border px-3 py-2 text-sm font-medium" href="/admin/floor-plans">
-          Back to queue
-        </Link>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title, href: SECTION.href }, { title: id }]}
+        title="Review import"
+        description="Check the source, correct what the reader missed, then approve a revision."
+      />
       <details className="rounded-xl border bg-white p-4">
         <summary className="cursor-pointer text-sm font-semibold text-neutral-800">
           Additional source files (only if needed)
