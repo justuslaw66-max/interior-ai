@@ -8,13 +8,21 @@ import {
 } from "@/lib/phone-step-sheet";
 import { useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
-import type { DesignPageSelectionInspectorProps } from "./DesignPageSelectionInspector";
 
 type InspectorState = Parameters<typeof isPhoneSheetInspectorSelection>[0];
-type InspectorConfiguration = Pick<
-  DesignPageSelectionInspectorProps["configuration"],
-  "dark" | "dockWhenPortalAvailable" | "portalTarget" | "dockedWidthPx" | "floatingRightPx" | "floatingTopPx" | "floatingWidthPx"
->;
+/**
+ * The inspector's placement settings, spelled out here rather than picked from its props, so this
+ * file doesn't import the inspector that imports it (the design-page architecture check).
+ */
+type InspectorConfiguration = {
+  dark: boolean;
+  dockWhenPortalAvailable: boolean;
+  portalTarget: HTMLDivElement | null;
+  dockedWidthPx: number;
+  floatingRightPx: number;
+  floatingTopPx: number;
+  floatingWidthPx: number;
+};
 
 /**
  * Where the inspector goes: from md, floating or docked in the Plan rail; on phones (UX 4d, audit
