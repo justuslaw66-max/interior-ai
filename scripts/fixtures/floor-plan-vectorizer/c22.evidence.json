@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.12.0",
+ "exporterVersion": "app-evidence-0.13.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -4649,7 +4649,15 @@
   "windowsReadAsPartitions": 0,
   "openingsRejectedAsNotLeadingAnywhere": 4,
   "labelsOutsideRooms": [],
+  "diagonalWallsAdded": 0,
+  "gapsAcrossSlantedWallsDropped": 0,
+  "openingsInSlantedWalls": 0,
+  "slantedSidesWelded": 0,
+  "slopedStrokes": 86,
   "unsupportedWallPx": 1193,
+  "thickAxisWallPx": 1193,
+  "slantedWallPx": 0,
+  "otherWallPx": 0,
   "workScale": 2,
   "skewDeg": 0.0,
   "pageCrop": null,

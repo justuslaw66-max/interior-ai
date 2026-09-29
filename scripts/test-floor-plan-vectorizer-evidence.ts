@@ -137,7 +137,7 @@ async function failSoftPass(config: ConstructorParameters<typeof PythonFloorPlan
 
 async function main() {
   const summary: string[] = [];
-  for (const name of ["room4", "h1", "d12"]) {
+  for (const name of ["room4", "h1", "d12", "exec"]) {
     const { evidence, page, scale, document, issues } = await importFixture(name);
     assert.ok(scale, `${name}: the adapter's cross-checked solver accepts a scale from the vectorizer spans`);
     assert.ok(
