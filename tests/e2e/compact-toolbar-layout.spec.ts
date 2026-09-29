@@ -127,8 +127,8 @@ test.describe("compact top toolbar", () => {
 
     await expectCompactToolbarGeometry(page);
     await expectCanvasToolbarGeometry(page);
-    await expect(page.getByTestId("room-plan-status")).toBeVisible();
-    await expect(page.getByTestId("room-plan-status")).toHaveCSS("height", "30px");
+    // Room info left the bar (UX 4c): More shows it at every width.
+    await expect(page.getByTestId("room-plan-status")).toBeHidden();
     // Wide screens show each step's number and name.
     await expect(page.getByTestId("editor-workflow-furnish").getByText("2", { exact: true })).toBeVisible();
     await expect(page.getByTestId("editor-workflow-furnish").getByText("Furnish", { exact: true })).toBeVisible();
@@ -149,6 +149,7 @@ test.describe("compact top toolbar", () => {
     await expectMenuRowsStayComfortable(
       page.getByTestId("editor-command-overflow-menu"),
     );
+    await expect(page.getByTestId("editor-command-overflow-room-context")).toBeVisible();
     await page.keyboard.press("Escape");
     // Free guests get Get Pro beside Sign in, at the bar's 36px height.
     await expect(page.getByTestId("editor-command-get-pro")).toHaveCSS("height", "36px");

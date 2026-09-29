@@ -179,14 +179,8 @@ export default function EditorCommandBar({
           onViewModeChange={onViewModeChange}
         />
         <CommandBarProIndicator visible={isDesigner && !isClientPreview} />
-        {contextSlot ? (
-          <div
-            data-testid="editor-command-context"
-            className="pointer-events-auto hidden min-w-0 flex-1 items-center justify-center overflow-hidden min-[1800px]:flex"
-          >
-            {contextSlot}
-          </div>
-        ) : null}
+        {/* Room info left the bar for More (UX 4c); 4f makes it the Plan panel's room header. */}
+        {contextSlot ? <div data-testid="editor-command-context" hidden>{contextSlot}</div> : null}
       </div>
 
       <CommandBarStepTabs dark={dark} steps={steps} focusFallbackStepId={focusFallbackStepId} />
