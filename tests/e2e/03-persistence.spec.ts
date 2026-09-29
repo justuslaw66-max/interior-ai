@@ -461,7 +461,7 @@ test.describe("3. Save + Reload Persistence", () => {
         timeout: 30_000,
       });
       await expect(saveStatus).toHaveAttribute("data-source", "cloud");
-      await expect(saveStatus).toContainText("Cloud saved");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Saved\. Saved to your account /);
       expect(designCreateRequests).toBe(0);
       const savedFingerprint = await readStableFingerprint(page);
       expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
@@ -569,7 +569,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toHaveAttribute("data-status", "failed", {
         timeout: 30_000,
       });
-      await expect(saveStatus).toContainText("Cloud save failed");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Not saved\. /);
       await expect(page.getByTestId("save-status-retry")).toBeVisible();
       expect(rejectedWrite).toBe(true);
 
@@ -578,7 +578,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
-      await expect(saveStatus).toContainText("Cloud saved");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Saved\. Saved to your account /);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

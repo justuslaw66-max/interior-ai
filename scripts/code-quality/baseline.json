@@ -3234,16 +3234,6 @@
         "maximum": 22
       }
     },
-    "lib/design-page-save-status.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 99
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 18
-      }
-    },
     "lib/design-page-scene-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,

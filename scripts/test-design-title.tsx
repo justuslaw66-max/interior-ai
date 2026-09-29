@@ -93,7 +93,7 @@ const barProps = {
   showLoadDesign: true, onOpenMyDesigns: noop, onSave: noop, onRetrySaveStatus: noop,
   onOpenPresentExport: noop,
   saveStatus: {
-    kind: "saved", source: "cloud", label: "Cloud saved", detail: "Just now", tone: "saved",
+    kind: "saved", source: "cloud", label: "Saved", detail: "Just now", tone: "saved",
     canRetry: false, lastSuccessfulSaveAt: null,
   },
 } as unknown as BarProps;
@@ -110,7 +110,7 @@ assert.ok(
 );
 assert.doesNotMatch(bar({ designTitle: "Tan flat" }), /editor-design-title/, "No handler, no name button.");
 // The status keeps its label for xl and its detail for 2xl, so the name has room at 1280px.
-assert.match(named, /max-w-28 truncate font-semibold xl:inline">Cloud saved</);
+assert.match(named, /max-w-28 truncate font-semibold xl:inline">Saved</);
 assert.match(named, /max-w-36 truncate 2xl:inline">Just now</);
 // The groups size to their content; the room status needs 1800px beside the name.
 assert.match(named, /class="ml-auto flex shrink-0 items-center justify-end/);

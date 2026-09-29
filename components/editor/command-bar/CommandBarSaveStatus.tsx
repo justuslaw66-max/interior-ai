@@ -30,8 +30,9 @@ type CommandBarSaveStatusProps = {
 };
 
 /**
- * The command bar's save-status pill, with Retry when a save failed. Its label shows from `xl` and
- * its detail from `2xl`, so the bar keeps room for the design's name.
+ * The command bar's save-status pill, with Retry when a save failed. Its label ("Saving…", "Saved",
+ * "Saved on this device", "Not saved") shows from `xl` and its detail from `2xl`, so the bar keeps
+ * room for the design's name; the detail is also the tooltip.
  */
 export function CommandBarSaveStatus({
   dark,
@@ -50,8 +51,8 @@ export function CommandBarSaveStatus({
       }
       role="status"
       aria-live="polite"
-      aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
-      title={`${saveStatus.label}: ${saveStatus.detail}`}
+      aria-label={saveStatus.label ? `${saveStatus.label}. ${saveStatus.detail}` : saveStatus.detail}
+      title={saveStatus.detail}
       className={`hidden h-[30px] min-w-0 shrink-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
         saveStatus.canRetry ? "" : "lg:shrink"
       } ${getSaveStatusClassName(

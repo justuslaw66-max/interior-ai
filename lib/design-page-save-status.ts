@@ -23,104 +23,54 @@ export type DesignPageSaveStatusInput = {
   hasCloudConflict: boolean;
 };
 
-export function getDesignPageSaveStatus({
-  designId,
-  isAuthenticated,
-  isSaving,
-  lastCloudSaveError,
-  lastDbSaveAt,
-  lastLocalAutosaveAt,
-  lastLocalSaveError,
-  hasPendingCloudSnapshotChanges,
-  hasCloudConflict,
-}: DesignPageSaveStatusInput): EditorSaveStatus {
-  const lastSuccessfulSaveAt = designId
-    ? lastDbSaveAt ?? lastLocalAutosaveAt
-    : lastLocalAutosaveAt;
+type SaveStatusCase = Omit<EditorSaveStatus, "lastSuccessfulSaveAt">;
 
-  if (isSaving) {
-    return {
-      kind: "saving",
-      source: designId ? "cloud" : "local",
-      label: designId ? "Saving to cloud" : "Saving locally",
-      detail: designId ? "Syncing this design to your account." : "Writing a browser backup.",
-      tone: "saving",
-      canRetry: false,
-      lastSuccessfulSaveAt,
-    };
+/**
+ * What the bar says about saving (UX audit SX5): "Saving…", "Saved" (in the account), "Saved on
+ * this device" (guests, and designs not yet saved to the account) or "Not saved", with Retry when
+ * it can help. The detail is the tooltip. A design that hasn't saved anything yet says nothing.
+ * `kind` and `source` are the same as before; specs read them.
+ */
+function describeSaveStatus(input: DesignPageSaveStatusInput): SaveStatusCase {
+  const { designId, lastCloudSaveError, lastDbSaveAt, lastLocalAutosaveAt, lastLocalSaveError } = input;
+  if (input.isSaving) {
+    return { kind: "saving", source: designId ? "cloud" : "local", label: "Saving…",
+      detail: designId ? "Saving to your account." : "Saving on this device.", tone: "saving", canRetry: false };
   }
-
-  if (hasCloudConflict) {
-    return {
-      kind: "conflict",
-      source: "cloud",
-      label: "Save conflict",
-      detail: "Cloud changed in another session. Choose which copy to keep.",
-      tone: "error",
-      canRetry: false,
-      lastSuccessfulSaveAt,
-    };
+  if (input.hasCloudConflict) {
+    return { kind: "conflict", source: "cloud", label: "Not saved",
+      detail: "This design changed in another session. Choose which copy to keep.", tone: "error", canRetry: false };
   }
-
   if (lastCloudSaveError) {
-    return {
-      kind: "failed",
-      source: "cloud",
-      label: "Cloud save failed",
-      detail: lastLocalAutosaveAt
-        ? `Local backup ${formatTimeAgo(lastLocalAutosaveAt)}. ${lastCloudSaveError}`
-        : lastCloudSaveError,
-      tone: "error",
-      canRetry: isAuthenticated,
-      lastSuccessfulSaveAt,
-    };
+    const copy = lastLocalAutosaveAt ? ` A copy was saved on this device ${formatTimeAgo(lastLocalAutosaveAt)}.` : "";
+    return { kind: "failed", source: "cloud", label: "Not saved", detail: `${lastCloudSaveError}${copy}`,
+      tone: "error", canRetry: input.isAuthenticated };
   }
-
   if (lastLocalSaveError) {
-    return {
-      kind: "failed",
-      source: "local",
-      label: "Local backup failed",
-      detail: lastLocalSaveError,
-      tone: "error",
-      canRetry: true,
-      lastSuccessfulSaveAt,
-    };
+    return { kind: "failed", source: "local", label: "Not saved", detail: lastLocalSaveError, tone: "error", canRetry: true };
   }
-
-  if (designId && lastDbSaveAt && !hasPendingCloudSnapshotChanges) {
-    return {
-      kind: "saved",
-      source: "cloud",
-      label: "Cloud saved",
-      detail: formatTimeAgo(lastDbSaveAt),
-      tone: "saved",
-      canRetry: false,
-      lastSuccessfulSaveAt: lastDbSaveAt,
-    };
+  if (designId && lastDbSaveAt && !input.hasPendingCloudSnapshotChanges) {
+    return { kind: "saved", source: "cloud", label: "Saved",
+      detail: `Saved to your account ${formatTimeAgo(lastDbSaveAt)}.`, tone: "saved", canRetry: false };
   }
-
   if (lastLocalAutosaveAt) {
-    return {
-      kind: "saved",
-      source: "local",
-      label: "Local saved",
-      detail: isAuthenticated ? "Cloud save pending" : formatTimeAgo(lastLocalAutosaveAt),
-      tone: "saved",
-      canRetry: false,
-      lastSuccessfulSaveAt: lastLocalAutosaveAt,
-    };
+    return { kind: "saved", source: "local", label: "Saved on this device",
+      detail: input.isAuthenticated
+        ? "Not in your account yet. Save to keep it there."
+        : `Saved ${formatTimeAgo(lastLocalAutosaveAt)}. Sign in to keep it in your account.`,
+      tone: "saved", canRetry: false };
   }
+  return { kind: "pending", source: designId ? "cloud" : "local", label: "",
+    detail: "Your design saves after your next change.", tone: "pending", canRetry: false };
+}
 
-  return {
-    kind: "pending",
-    source: designId ? "cloud" : "local",
-    label: designId ? "Cloud save pending" : "Local backup pending",
-    detail: "Autosave will run after your next edit.",
-    tone: "pending",
-    canRetry: false,
-    lastSuccessfulSaveAt,
-  };
+export function getDesignPageSaveStatus(input: DesignPageSaveStatusInput): EditorSaveStatus {
+  const status = describeSaveStatus(input);
+  const lastSuccessfulSaveAt =
+    status.kind === "saved"
+      ? status.source === "cloud" ? input.lastDbSaveAt : input.lastLocalAutosaveAt
+      : input.designId ? input.lastDbSaveAt ?? input.lastLocalAutosaveAt : input.lastLocalAutosaveAt;
+  return { ...status, lastSuccessfulSaveAt };
 }
 
 /**
