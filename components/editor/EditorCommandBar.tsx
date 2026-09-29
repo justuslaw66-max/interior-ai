@@ -14,7 +14,8 @@ import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/com
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
 type EditorCommandBarProps = {
@@ -113,34 +114,16 @@ export default function EditorCommandBar({
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeLightingSettings = useCallback(() => setLightingSettingsOpen(false), []);
-
-  useEffect(() => {
-    if (!overflowOpen && !accountOpen) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) return;
-      const insideOverflow = overflowRef.current?.contains(target) ?? false;
-      const insideAccount = accountRef.current?.contains(target) ?? false;
-      if (!insideOverflow && !insideAccount) {
-        setOverflowOpen(false);
-        setAccountOpen(false);
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOverflowOpen(false);
-        setAccountOpen(false);
-      }
-    };
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("pointerdown", handlePointerDown);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [accountOpen, overflowOpen]);
+  // More and Account close on a press outside them or on Escape, which hands focus back to their
+  // button; arrow keys move through their items (AX5).
+  useDismissibleMenu({ open: overflowOpen, containerRef: overflowRef, onDismiss: (byKeyboard) => {
+    setOverflowOpen(false);
+    if (byKeyboard) moreButtonRef.current?.focus();
+  } });
+  useDismissibleMenu({ open: accountOpen, containerRef: accountRef, onDismiss: (byKeyboard) => {
+    setAccountOpen(false);
+    if (byKeyboard) accountRef.current?.querySelector<HTMLElement>('[data-testid="editor-command-account"]')?.focus();
+  } });
 
   // Built-ins and Suggest a layout open from inside Furnish, so Furnish stays current while either is open.
   const steps: CommandBarStep[] = [
