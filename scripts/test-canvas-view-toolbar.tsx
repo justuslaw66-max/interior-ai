@@ -163,7 +163,7 @@ for (const [isMac, mod] of [[true, "meta"], [false, "ctrl"]] as const) {
   }
 }
 assert.match(read("lib/useDesignPageCommandPalette.ts"), /\(event\.metaKey \|\| event\.ctrlKey\) \|\| event\.key\.toLowerCase\(\) !== "k"/, "⌘K or Ctrl+K opens the palette.");
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /\(event\.metaKey \|\| event\.ctrlKey\) \|\| event\.key\.toLowerCase\(\) !== "b"/, "⌘B or Ctrl+B shows or hides the panel.");
+assert.match(read("components/editor/DesignControlsPanelFrame.tsx"), /\(event\.metaKey \|\| event\.ctrlKey\) \|\| event\.key\.toLowerCase\(\) !== "b"/, "⌘B or Ctrl+B shows or hides the panel.");
 const selection = { canEdit: true, hasSelectedItem: false, selectedItemCount: 0, selectedPlanOverlayId: null, selectedPlanRoomId: "room-1", selectedZoneId: null, viewMode: "2d" as const };
 assert.deepEqual(resolveSelectedPlanKeyboardCommand({ ...selection, key: "Escape" }), { type: "clear-selection" }, "Esc deselects.");
 for (const event of eventsFor(chordsOf("general", "Keyboard shortcuts")[0])) {

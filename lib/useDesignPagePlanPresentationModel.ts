@@ -16,6 +16,7 @@ import {
   type HouseRoomConnectionChecklistItem,
 } from "@/lib/design-page-house-plan";
 import { resolveDesignPagePlanCanvasOverlaysState } from "@/lib/design-page-plan-canvas-overlays";
+import { resolvePhoneCanvasInsets, usePhoneSheetState } from "@/lib/phone-step-sheet";
 import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
@@ -53,6 +54,8 @@ export type ResolveDesignPageViewportLayoutInput = {
   floatingOverlayInspectorStackTopPx: number;
   floatingOverlayStackWidthPx: number;
   floatingOverlayStackGapPx: number;
+  /** The phone's step sheet, while it's open (UX 4d). */
+  phoneSheetHeightPx: number;
 };
 
 export function resolveDesignPageViewportLayout({
@@ -73,6 +76,7 @@ export function resolveDesignPageViewportLayout({
   floatingOverlayInspectorStackTopPx,
   floatingOverlayStackWidthPx,
   floatingOverlayStackGapPx,
+  phoneSheetHeightPx,
 }: ResolveDesignPageViewportLayoutInput) {
   const floorPropertiesPanelEligible =
     designControlsPanelVisible &&
@@ -116,13 +120,9 @@ export function resolveDesignPageViewportLayout({
           floatingFloorPropertiesPanelVisible ? 284 : 0
         )
       : 0;
-  const plan2DSafeAreaBottomPx =
-    designControlsPanelVisible &&
-    !isClientPreview &&
-    viewportWidth > 0 &&
-    viewportWidth < 768
-      ? 360
-      : 0;
+  const phoneInsets = resolvePhoneCanvasInsets({
+    viewportWidth, isClientPreview, sheetOpen: designControlsPanelVisible, sheetHeightPx: phoneSheetHeightPx,
+  });
 
   return {
     floorPropertiesPanelEligible,
@@ -137,7 +137,8 @@ export function resolveDesignPageViewportLayout({
     selectionInspectorTopPx,
     selectionInspectorWidthPx,
     plan2DSafeAreaRightPx,
-    plan2DSafeAreaBottomPx,
+    plan2DSafeAreaTopPx: phoneInsets.topPx,
+    plan2DSafeAreaBottomPx: phoneInsets.bottomPx,
   };
 }
 
@@ -223,6 +224,7 @@ export function useDesignPagePlanPresentationModel({
     floatingOverlayStackWidthPx,
     floatingOverlayStackGapPx,
   } = configuration;
+  const phoneSheetHeightPx = usePhoneSheetState().heightPx;
   const viewportLayout = resolveDesignPageViewportLayout({
     designControlsPanelVisible: layout.designControlsPanelVisible,
     designControlsPanelMode: layout.designControlsPanelMode,
@@ -242,6 +244,7 @@ export function useDesignPagePlanPresentationModel({
     floatingOverlayInspectorStackTopPx,
     floatingOverlayStackWidthPx,
     floatingOverlayStackGapPx,
+    phoneSheetHeightPx,
   });
   const plan2DFitBounds = useMemo(
     () =>
@@ -284,11 +287,7 @@ export function useDesignPagePlanPresentationModel({
     [exportReadinessItems]
   );
   const sceneBackgroundColor =
-    layout.viewMode === "3d"
-      ? presentation.showDesignerTheme
-        ? "#dedfdf"
-        : "#f4f2ed"
-      : "#ffffff";
+    layout.viewMode === "3d" ? (presentation.showDesignerTheme ? "#dedfdf" : "#f4f2ed") : "#ffffff";
   const effectivePlanLayers = presentation.simplePlanControls
     ? simplePlanLayers
     : presentation.planLayers;

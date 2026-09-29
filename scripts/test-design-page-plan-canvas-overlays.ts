@@ -332,22 +332,18 @@ assert.equal(
 );
 assert.match(overlaysSource, /aboveStepSheet: guidance\.aboveStepSheet/);
 const guidanceSource = readSource("components/editor/design-page/PlanCanvasGuidance.tsx");
-assert.match(
-  guidanceSource,
-  /PLACEMENT_ABOVE_STEP_SHEET = "bottom-\[calc\(64vh-3\.25rem-env\(safe-area-inset-bottom\)\)\] md:bottom-6"/
-);
+assert.match(guidanceSource, /PLACEMENT_ABOVE_STEP_SHEET = "bottom-2 md:bottom-6"/);
 assert.match(guidanceSource, /aboveStepSheet \? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6"/);
 assert.match(guidanceSource, /backdrop-blur \$\{placementClass\(state\.aboveStepSheet\)\}`\}/);
-// The tip's offset follows the sheet's tallest top (4.25rem + 64vh - 4rem) less the overlay box's
-// bottom inset (4rem), plus 0.5rem: change them together.
+// On phones the tip sits 0.5rem above the sheet's current height (UX 4d): the sheet sits on the
+// step bar, where the overlay box ends too; with the sheet at full there's no room for the tip.
+assert.match(guidanceSource, /if \(onSheet && sheet\.snap === "full"\) return null;/);
+assert.match(guidanceSource, /style=\{onSheet \? \{ bottom: `calc\(\$\{sheet\.heightPx \+ 8\}px \+ env\(safe-area-inset-bottom\)\)` \} : undefined\}/);
 assert.ok(
-  readSource("components/editor/DesignControlsPanel.tsx").includes(
-    "absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))]"
-  ) &&
-    readSource("components/editor/DesignControlsPanel.tsx").includes(
-      "max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))]"
-    ),
-  "The phone sheet's place and tallest height are what the tip's offset assumes."
+  readSource("components/editor/PhoneStepSheet.tsx").includes(
+    "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))]"
+  ),
+  "The phone sheet sits on the step bar, which is what the tip's offset assumes."
 );
 assert.ok(
   workspaceSource.includes("absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"),

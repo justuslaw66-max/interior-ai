@@ -20,3 +20,20 @@ export function resolveCanvasLeftInsetPx({
   if (!shopping && collapsed) return isDesigner ? 128 : 88;
   return isDesigner ? 398 : 318;
 }
+
+/**
+ * The 2D fit's insets for a canvas this wide: the side panels' from md, and on phones the
+ * header's, the pills' and the step sheet's (UX 4d), named as `resolvePlan2DViewFit` takes them.
+ */
+export function resolvePlanFitInsetsPx(
+  viewportWidthPx: number,
+  inset: { leftPx: number; rightPx: number; topPx: number; bottomPx: number }
+) {
+  const wide = viewportWidthPx >= 768;
+  return {
+    safeAreaLeftPx: wide ? Math.max(0, inset.leftPx) : 0,
+    safeAreaRightPx: wide ? Math.max(0, inset.rightPx) : 0,
+    safeAreaTopPx: wide ? 0 : Math.max(0, inset.topPx),
+    safeAreaBottomPx: wide ? 0 : Math.max(0, inset.bottomPx),
+  };
+}

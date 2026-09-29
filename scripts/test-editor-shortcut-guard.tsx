@@ -194,7 +194,7 @@ assert.match(
 assert.doesNotMatch(source("lib/useDesignPageSelectionKeyboard.ts"), /isDeleteShortcutTarget/);
 assert.match(source("lib/design-page-selection-keyboard-commands.ts"), /return isEditorShortcutTargetBlocked\(target\);/);
 assert.match(
-  source("components/editor/DesignControlsPanel.tsx"),
+  source("components/editor/DesignControlsPanelFrame.tsx"),
   /event\.key\.toLowerCase\(\) !== "b"[\s\S]{0,80}?if \(isEditorShortcutTargetBlocked\(event\.target\)\) return;/
 );
 assert.match(

@@ -1,6 +1,7 @@
 "use client";
 
 import type { PlanCanvasGuidance as PlanCanvasGuidanceState } from "@/lib/plan-canvas-guidance";
+import { usePhoneSheetState } from "@/lib/phone-step-sheet";
 
 export type PlanCanvasGuidancePrimaryAction = {
   label: string;
@@ -21,34 +22,33 @@ type PlanCanvasGuidanceProps = {
 };
 
 /**
- * Below 768px the open step panel is a sheet over the canvas whose top reaches at most 64vh + 0.25rem
- * above the page's bottom (DesignControlsPanel: 4.25rem up, at most 64vh − 4rem tall), while this
- * overlay's box ends 4rem above it (DesignPageWorkspace). So the tip sits 0.5rem above the tallest
- * sheet and its buttons never cover the sheet's. From 768px the panel is beside the canvas.
+ * Below 768px the open step panel is a sheet over the canvas, sitting on the step bar (UX 4d:
+ * PhoneStepSheet), while this overlay's box ends at the step bar too (DesignPageWorkspace). So the
+ * tip sits 0.5rem above the sheet's current height, and its buttons never cover the sheet's; with
+ * the sheet at full there's no canvas left for it. From 768px the panel is beside the canvas.
  */
-const PLACEMENT_ABOVE_STEP_SHEET = "bottom-[calc(64vh-3.25rem-env(safe-area-inset-bottom))] md:bottom-6";
+const PLACEMENT_ABOVE_STEP_SHEET = "bottom-2 md:bottom-6";
 const placementClass = (aboveStepSheet: boolean) =>
   aboveStepSheet ? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6";
 
+function toneClasses(tone: PlanCanvasGuidanceState["tone"]) {
+  if (tone === "blocked") return { accentClass: "bg-amber-500", labelClass: "bg-amber-50 text-amber-800" };
+  if (tone === "ready") return { accentClass: "bg-emerald-500", labelClass: "bg-emerald-50 text-emerald-800" };
+  return { accentClass: "bg-blue-500", labelClass: "bg-blue-50 text-blue-800" };
+}
+
 export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) {
-  const accentClass =
-    state.guidance.tone === "blocked"
-      ? "bg-amber-500"
-      : state.guidance.tone === "ready"
-        ? "bg-emerald-500"
-        : "bg-blue-500";
-  const labelClass =
-    state.guidance.tone === "blocked"
-      ? "bg-amber-50 text-amber-800"
-      : state.guidance.tone === "ready"
-        ? "bg-emerald-50 text-emerald-800"
-        : "bg-blue-50 text-blue-800";
+  const sheet = usePhoneSheetState();
+  const onSheet = state.aboveStepSheet && sheet.heightPx > 0;
+  if (onSheet && sheet.snap === "full") return null;
+  const { accentClass, labelClass } = toneClasses(state.guidance.tone);
 
   return (
     <div
       data-testid="plan-canvas-guidance"
       data-tone={state.guidance.tone}
       className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
+      style={onSheet ? { bottom: `calc(${sheet.heightPx + 8}px + env(safe-area-inset-bottom))` } : undefined}
       role={state.primaryAction ? "group" : "status"}
       aria-label={state.primaryAction ? state.guidance.title : undefined}
       aria-live="polite"

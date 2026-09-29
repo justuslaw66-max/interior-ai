@@ -257,7 +257,7 @@ for (const semanticClass of [
 }
 
 for (const [relativePath, semanticClass] of [
-  ["components/editor/DesignControlsPanel.tsx", "designer-dock"],
+  ["components/editor/DesignControlsPanelFrame.tsx", "designer-dock"],
   ["components/editor/EditorToolRail.tsx", "designer-tool-rail"],
   ["components/editor/FloorPropertiesPanel.tsx", "designer-dock"],
   ["components/editor/RoomPanNavigator.tsx", "designer-dock"],
@@ -316,7 +316,7 @@ const planPanelSource = fs.readFileSync(
   "utf8"
 );
 const designControlsSource = fs.readFileSync(
-  path.join(root, "components", "editor", "DesignControlsPanel.tsx"),
+  path.join(root, "components", "editor", "DesignControlsPanelFrame.tsx"),
   "utf8"
 );
 assert.match(designControlsSource, /panelShellClass = `\$\{dark \? "designer-dock/, "The design workspace should have one outer Pro dock.");

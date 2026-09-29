@@ -184,7 +184,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
         <CommandBarCanvasControls
           dark={dark}
           isClientPreview={isClientPreview}
-          sidebarToggleVisible={sidebarToggleVisible}
+          sidebarToggleVisible={sidebarToggleVisible && wide}
           designSidebarCollapsed={designSidebarCollapsed}
           onToggleDesignSidebar={onToggleDesignSidebar}
           undoName={props.undoName}

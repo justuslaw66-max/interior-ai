@@ -41,6 +41,53 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
   await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
 }
 
+// UX 4d: on phones the step panel is a sheet over the canvas, sitting on the step bar. Its handle is
+// a 44px button that expands it to full (8px under the canvas pills) and back to half; Ctrl/⌘ B or
+// a drag down leaves just its title (peek).
+test("the phone's step sheet expands, peeks and comes back", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await clearEditorStorage(page);
+  await page.goto("/design", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  const sheet = page.getByTestId("design-controls-panel");
+  const handle = page.getByTestId("design-controls-panel-handle");
+  const body = page.locator("#design-controls-sheet-body");
+  await expect(page.getByTestId("editor-design-sidebar-toggle")).toHaveCount(0);
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+  await expect(handle).toHaveAccessibleName("Expand panel");
+  await expect(handle).toHaveAttribute("aria-expanded", "false");
+  expect((await handle.boundingBox())?.height).toBe(44);
+  const half = await sheet.boundingBox();
+  expect(Math.round(half!.y + half!.height), "The sheet sits on the step bar").toBe(844 - 64);
+  expect(Math.round(half!.height)).toBe(388);
+
+  await handle.click();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "full");
+  await expect(handle).toHaveAccessibleName("Collapse panel");
+  await expect(handle).toHaveAttribute("aria-expanded", "true");
+  await expect.poll(async () => Math.round((await sheet.boundingBox())?.y ?? 0)).toBe(128);
+  const pills = await page.getByTestId("canvas-history-pill").boundingBox();
+  expect(pills!.y + pills!.height).toBeLessThanOrEqual(128);
+  await handle.click();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+
+  await handle.focus();
+  await page.keyboard.press("Control+b");
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
+  await expect(body).toBeHidden();
+  await expect.poll(async () => Math.round((await sheet.boundingBox())?.height ?? 0)).toBe(92);
+  await handle.click();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+  await expect(body).toBeVisible();
+
+  const box = (await handle.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + 320, { steps: 8 });
+  await page.mouse.up();
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
+});
+
 test.describe("20. Mobile Plan Mode", () => {
   for (const viewport of VIEWPORTS) {
     test(`consumer plan controls stay usable on ${viewport.name}`, async ({ page }) => {

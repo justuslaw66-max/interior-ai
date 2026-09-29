@@ -15,6 +15,7 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
+import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
@@ -66,6 +67,7 @@ export type DesignPageCameraNavigationConfiguration = {
   planFitBounds: PlanFitBounds;
   planSafeAreaLeftPx: number;
   planSafeAreaRightPx: number;
+  planSafeAreaTopPx: number;
   planSafeAreaBottomPx: number;
   floatingPlanOverlayStackVisible: boolean;
   floatingPlanOverlayStackWidthPx: number;
@@ -167,7 +169,7 @@ export function useDesignPageCameraNavigation({
     viewportSize,
     planFitBounds,
     planSafeAreaLeftPx,
-    planSafeAreaRightPx,
+    planSafeAreaRightPx, planSafeAreaTopPx,
     planSafeAreaBottomPx,
     floatingPlanOverlayStackVisible,
     floatingPlanOverlayStackWidthPx,
@@ -228,13 +230,14 @@ export function useDesignPageCameraNavigation({
     Math.max(planFitBounds.widthMeters, planFitBounds.depthMeters) *
       PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO
   );
+  const planFitInsets = useMemo(
+    () => ({ leftPx: planSafeAreaLeftPx, rightPx: planSafeAreaRightPx, topPx: planSafeAreaTopPx, bottomPx: planSafeAreaBottomPx }),
+    [planSafeAreaBottomPx, planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaTopPx]
+  );
   const plan2DWholeHomeViewFit = useMemo(() => {
     const viewportWidthPx = viewportSize.width;
     const viewportHeightPx = viewportSize.height;
-    const leftInsetPx = viewportWidthPx >= 768 ? planSafeAreaLeftPx : 0;
-    const rightInsetPx = viewportWidthPx >= 768 ? planSafeAreaRightPx : 0;
-    const bottomInsetPx = viewportWidthPx < 768 ? planSafeAreaBottomPx : 0;
-
+    const insets = resolvePlanFitInsetsPx(viewportWidthPx, planFitInsets);
     return resolvePlan2DViewFit({
       centerX: planFitBounds.centerX,
       centerZ: planFitBounds.centerZ,
@@ -242,9 +245,7 @@ export function useDesignPageCameraNavigation({
       paddingMeters: plan2DWholeHomeFitPaddingMeters,
       planDepthMeters: planFitBounds.depthMeters,
       planWidthMeters: planFitBounds.widthMeters,
-      safeAreaBottomPx: bottomInsetPx,
-      safeAreaLeftPx: leftInsetPx,
-      safeAreaRightPx: rightInsetPx,
+      ...insets,
       viewportHeightPx,
       viewportWidthPx,
       zoomScale: WHOLE_HOME_FIT_ZOOM_SCALE,
@@ -254,9 +255,7 @@ export function useDesignPageCameraNavigation({
     planFitBounds.centerZ,
     planFitBounds.depthMeters,
     planFitBounds.widthMeters,
-    planSafeAreaBottomPx,
-    planSafeAreaLeftPx,
-    planSafeAreaRightPx,
+    planFitInsets,
     plan2DWholeHomeFitPaddingMeters,
     viewportSize.height,
     viewportSize.width,
@@ -418,8 +417,8 @@ export function useDesignPageCameraNavigation({
       viewportWidthPx >= 768 && floatingPlanOverlayStackVisible
         ? floatingPlanOverlayStackWidthPx + 32
         : 0;
-    const topInsetPx = viewportWidthPx >= 768 ? EDITOR_BAR_HEIGHT_PX + 60 : 72;
-    const bottomInsetPx = viewportWidthPx < 768 ? 96 : 48;
+    const topInsetPx = viewportWidthPx >= 768 ? EDITOR_BAR_HEIGHT_PX + 60 : Math.max(72, planFitInsets.topPx);
+    const bottomInsetPx = viewportWidthPx < 768 ? Math.max(96, planFitInsets.bottomPx) : 48;
     const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
     const effectiveHeightPx = Math.max(260, viewportHeightPx - topInsetPx - bottomInsetPx);
     const aspect = Math.max(0.65, effectiveWidthPx / effectiveHeightPx);
@@ -511,6 +510,7 @@ export function useDesignPageCameraNavigation({
     planFitBounds.centerZ,
     planFitBounds.depthMeters,
     planFitBounds.widthMeters,
+    planFitInsets,
     planSafeAreaLeftPx,
     roomHeight,
     viewportSize.height,
@@ -598,9 +598,7 @@ export function useDesignPageCameraNavigation({
       const span = Math.max(widthMeters, depthMeters);
       const viewportWidthPx = canvas?.clientWidth ?? window.innerWidth;
       const viewportHeightPx = canvas?.clientHeight ?? window.innerHeight;
-      const leftInsetPx = viewportWidthPx >= 768 ? planSafeAreaLeftPx : 0;
-      const rightInsetPx = viewportWidthPx >= 768 ? planSafeAreaRightPx : 0;
-      const bottomInsetPx = viewportWidthPx < 768 ? planSafeAreaBottomPx : 0;
+      const insets = resolvePlanFitInsetsPx(viewportWidthPx, planFitInsets);
       const fitPaddingMeters = paddingMeters ?? plan2DWholeHomeFitPaddingMeters;
       const fitZoomScale = paddingMeters == null ? WHOLE_HOME_FIT_ZOOM_SCALE : 1;
       const fit = resolvePlan2DViewFit({
@@ -610,9 +608,7 @@ export function useDesignPageCameraNavigation({
         paddingMeters: fitPaddingMeters,
         planDepthMeters: depthMeters,
         planWidthMeters: widthMeters,
-        safeAreaBottomPx: bottomInsetPx,
-        safeAreaLeftPx: leftInsetPx,
-        safeAreaRightPx: rightInsetPx,
+        ...insets,
         viewportHeightPx,
         viewportWidthPx,
         zoomScale: fitZoomScale,
@@ -636,9 +632,7 @@ export function useDesignPageCameraNavigation({
       planFitBounds.centerZ,
       planFitBounds.depthMeters,
       planFitBounds.widthMeters,
-      planSafeAreaBottomPx,
-      planSafeAreaLeftPx,
-      planSafeAreaRightPx,
+      planFitInsets,
       plan2DWholeHomeFitPaddingMeters,
       roomHeight,
       updateCameraViewFromScene,

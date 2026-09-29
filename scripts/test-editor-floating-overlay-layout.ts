@@ -574,7 +574,11 @@ assert.match(
 );
 
 const designControlsPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPanel.tsx");
-const designControlsPanelSource = fs.readFileSync(designControlsPanelPath, "utf8");
+// The panel's frame (the desktop column, its edge strip and the phone sheet) is its own file.
+const designControlsPanelSource = [
+  designControlsPanelPath,
+  path.join(process.cwd(), "components", "editor", "DesignControlsPanelFrame.tsx"),
+].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 const editorCommandBarSource = readEditorCommandBarSource();
 const editorViewToggleSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "EditorViewToggle.tsx"),
@@ -593,14 +597,14 @@ const editorCamera2DSource = fs.readFileSync(editorCamera2DPath, "utf8");
 
 assert.match(
   designControlsPanelSource,
-  /md:w-\[18\.15rem\]/,
+  /absolute top-bar-2 z-20 w-\[18\.15rem\] space-y-3 pr-1/,
   "Main left design controls column should use the adjusted slimmer panel width."
 );
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-\[calc\(4\.25rem\+env\(safe-area-inset-bottom\)\)\] right-1 top-auto[\s\S]*?md:top-bar-2/,
-  "Main left design controls column should sit as close to the viewport edge as the right overlay stack, and just above the phone step bar."
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1";[\s\S]*?absolute top-bar-2 z-20/,
+  "Main left design controls column should sit as close to the viewport edge as the right overlay stack (phones get the step sheet, UX 4d)."
 );
 
 assert.match(
@@ -617,7 +621,7 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?\? "left-0 md:left-0"/,
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?\? "left-0"/,
   "The temporary sidebar should stay under the left-edge cursor instead of opening beside it."
 );
 
@@ -663,7 +667,7 @@ for (const historyTestId of ["command-undo", "command-redo"] as const) {
 
 // The phone header's controls are 44px targets (the PhonePlan mockup); from md the 56px bar's
 // are 36px (the TopBar mockup). More and Account show only from md, the Menu only below it.
-for (const controlTestId of ["editor-design-sidebar-toggle", "save-design", "editor-command-share"] as const) {
+for (const controlTestId of ["save-design", "editor-command-share"] as const) {
   assert.match(
     editorCommandBarSource,
     new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?"[^"]*\\bh-11 w-11\\b[^"]*\\bmd:h-9\\b`),
@@ -673,6 +677,8 @@ for (const controlTestId of ["editor-design-sidebar-toggle", "save-design", "edi
 assert.match(editorCommandBarSource, /if \(phone\) \{\s*return dark\s*\? "designer-control inline-flex h-11 w-11 /, "The phone's Menu is 44px.");
 assert.match(editorCommandBarSource, /return dark\s*\? "designer-control inline-flex h-9 w-9 [^"]*"\s*: "inline-flex h-9 w-9 /, "More is 36px.");
 assert.match(editorCommandBarSource, /data-testid="editor-command-account"[\s\S]{0,400}?"inline-flex h-9 w-9 /, "Account is 36px.");
+assert.match(editorCommandBarSource, /data-testid="editor-design-sidebar-toggle"[\s\S]{0,700}?: "inline-flex h-9 w-9 /, "The sidebar toggle is 36px, from md.");
+assert.match(editorCommandBarSource, /sidebarToggleVisible=\{sidebarToggleVisible && wide\}/, "Phones collapse and expand the step sheet from its handle.");
 for (const controlTestId of ["editor-command-get-pro", "editor-command-download"] as const) {
   assert.match(
     editorCommandBarSource,
@@ -711,6 +717,8 @@ assert.match(editorConfigurationSource, /export const EDITOR_BAR_HEIGHT_PX = 56;
 assert.match(globalsCss, /@utility top-bar-\* \{\s*top: calc\(var\(--editor-bar-h\) \+ --spacing\(--value\(integer\)\)\);\s*\}/);
 const editorOverlayFiles = [
   "components/editor/DesignControlsPanel.tsx",
+  "components/editor/DesignControlsPanelFrame.tsx",
+  "components/editor/PhoneStepSheet.tsx",
   "components/editor/EditorToolRail.tsx",
   "components/catalog/CatalogItemDrawer.tsx",
   ...fs

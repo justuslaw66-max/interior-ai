@@ -157,7 +157,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 545,
+      "lines": 541,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
@@ -205,7 +205,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 873,
+      "lines": 738,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -621,7 +621,7 @@
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
-      "lines": 1299,
+      "lines": 1293,
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
@@ -653,7 +653,7 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 433,
+      "lines": 432,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -1513,7 +1513,7 @@
     "components/editor/camera/EditorCamera2D.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 74
+        "maximum": 72
       }
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -1767,7 +1767,7 @@
     "components/editor/design-page/PlanCanvasGuidance.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 78
+        "maximum": 71
       }
     },
     "components/editor/design-page/PlanManualQuickActions.tsx": {
@@ -1895,11 +1895,11 @@
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 587
+        "maximum": 454
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 34
+        "maximum": 19
       }
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -4141,7 +4141,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1159
+        "maximum": 1151
       },
       "complexFunctions": {
         "count": 1,
@@ -4473,11 +4473,11 @@
     "lib/useDesignPagePlanPresentationModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 222
+        "maximum": 220
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 26
+        "maximum": 22
       }
     },
     "lib/useDesignPagePlanQualityController.ts": {
