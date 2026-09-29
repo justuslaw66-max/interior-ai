@@ -1921,11 +1921,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 175
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 19
+        "maximum": 126
       }
     },
     "components/editor/EditorToolRail.tsx": {

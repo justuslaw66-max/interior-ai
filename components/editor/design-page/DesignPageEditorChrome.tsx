@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import EditorToolRail from "@/components/editor/EditorToolRail";
 import { CanvasViewToolbar } from "@/components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsSheet } from "@/components/editor/canvas/KeyboardShortcutsSheet";
+import { PhoneCanvasPills } from "@/components/editor/canvas/PhoneCanvasPills";
 import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
 import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
@@ -50,15 +51,17 @@ export type DesignPageEditorChromeProps = {
 };
 
 /**
- * The canvas toolbar and the Keyboard shortcuts corner (UX 4c): over the canvas from md, not in
- * Client Preview, and not in Shop, whose page covers the canvas.
+ * The controls over the canvas, not in Client Preview and not in Shop, whose page covers the
+ * canvas: from md the canvas toolbar and the Keyboard shortcuts corner (UX 4c), and on phones two
+ * pills, 2D | 3D and Undo/Redo (UX 4d).
  */
 function CanvasControls({ state, configuration, actions }: DesignPageEditorChromeProps) {
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
   const bar = state.commandBar.commandBar;
   const barActions = actions.commandBar.commandBar;
   const dark = configuration.commandBar.dark;
-  const onCanvas = wide && !bar.isClientPreview && bar.editorMode !== "buy";
+  const overCanvas = !bar.isClientPreview && bar.editorMode !== "buy";
+  const onCanvas = wide && overCanvas;
   const leftInsetPx = resolveCanvasLeftInsetPx({
     panelVisible: !bar.millworkActive && isDesignControlsPanelMode(bar.editorMode),
     shopping: false,
@@ -75,6 +78,19 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
           onViewModeChange={barActions.onViewModeChange}
           canFit={Boolean(state.commandBar.room) && bar.editorMode !== "present"}
           onFit={actions.commandBar.room.onFitPlan}
+          canUndo={bar.canUndo}
+          canRedo={bar.canRedo}
+          undoName={bar.undoName}
+          redoName={bar.redoName}
+          onUndo={barActions.onUndo}
+          onRedo={barActions.onRedo}
+        />
+      ) : null}
+      {overCanvas && !wide ? (
+        <PhoneCanvasPills
+          dark={dark}
+          viewMode={bar.viewMode}
+          onViewModeChange={barActions.onViewModeChange}
           canUndo={bar.canUndo}
           canRedo={bar.canRedo}
           undoName={bar.undoName}

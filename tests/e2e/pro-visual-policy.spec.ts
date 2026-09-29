@@ -185,7 +185,8 @@ async function expectEditingCommandBarActive(page: Page) {
       COMMAND_BAR_FOCUSABLE_SELECTOR
     )
   ).toBeGreaterThan(0);
-  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveCount(1);
+  // More from md; on phones the Menu, which also holds the account (UX 4d).
+  await expect(page.getByRole("button", { name: /^(?:More|Menu)$/ })).toHaveCount(1);
   await expect(commandBar.getByRole("button", { name: "Save", exact: true })).toHaveCount(1);
 }
 
@@ -233,11 +234,12 @@ async function expectClientPreviewCommandBarExcluded(
   ).toBe(true);
   if (!verifyFullInteraction) return;
 
-  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^(?:More|Menu)$/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
   const bodySnapshot = await page.locator("body").ariaSnapshot();
   expect(bodySnapshot).toContain("Exit Presentation");
   expect(bodySnapshot).not.toContain('button "More"');
+  expect(bodySnapshot).not.toContain('button "Menu"');
   expect(bodySnapshot).not.toContain('button "Save"');
 
   await page.keyboard.press("Tab");
@@ -726,6 +728,30 @@ async function openPlansFromAccount(
   }
   await expect(accountMenu).toHaveCount(0);
   return account;
+}
+
+/** Phones (UX 4d): Pricing is in the Menu, with the account's items. */
+async function openPlansFromPhoneMenu(page: Page, activation: "keyboard" | "pointer") {
+  await page.waitForLoadState("networkidle");
+  const menu = page.getByTestId("editor-command-overflow");
+  await expect(menu).toHaveAccessibleName("Menu");
+  if (activation === "keyboard") {
+    await menu.focus();
+    await menu.press("Enter");
+  } else {
+    await menu.click();
+  }
+  const plansAction = page.getByTestId("editor-command-overflow-account").getByTestId("editor-command-view-plans");
+  await expect(plansAction).toBeVisible();
+  if (activation === "keyboard") {
+    await plansAction.focus();
+    await expect(plansAction).toBeFocused();
+    await plansAction.press("Enter");
+  } else {
+    await plansAction.click();
+  }
+  await expect(page.getByTestId("editor-command-overflow-menu")).toHaveCount(0);
+  return menu;
 }
 
 async function openUpgradeDialog(
@@ -1503,14 +1529,15 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
   });
 
-  test("gives Account keyboard entry semantic replacement and narrow Plans return", async ({
+  test("gives the phone Menu's Pricing keyboard entry semantic replacement and narrow Plans return", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const identity = await mockAuthenticatedPlan(page, "free");
     await page.goto("/design", { waitUntil: "domcontentloaded" });
     await identity.sessionReady;
-    const account = await openPlansFromAccount(page, "keyboard");
+    await expect(page.getByTestId("editor-command-account")).toHaveCount(0);
+    const menu = await openPlansFromPhoneMenu(page, "keyboard");
     let plans = await expectPlansDialog(page);
     const panel = plans.dialog.locator(":scope > div");
     await expect(panel).toHaveCount(1);
@@ -1536,28 +1563,31 @@ test.describe("Pro visual policy", () => {
     await page.keyboard.press("Tab");
     await expect(plans.close).toBeFocused();
 
-    await account.evaluate((element) => {
+    await menu.evaluate((element) => {
       const replacement = element.cloneNode(true);
       element.replaceWith(replacement);
     });
     await plans.close.press("Enter");
     await expectPlansClosed(page);
-    await expect(page.getByTestId("editor-command-account")).toBeFocused();
-
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await openPlansFromAccount(page, "keyboard");
-    plans = await expectPlansDialog(page);
-    await page.getByTestId("editor-command-account").evaluate((element) => element.remove());
-    await plans.close.press("Enter");
-    await expectPlansClosed(page);
     await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
 
     await page.reload({ waitUntil: "domcontentloaded" });
-    await openPlansFromAccount(page, "keyboard");
+    await openPlansFromPhoneMenu(page, "keyboard");
     plans = await expectPlansDialog(page);
     await plans.close.press("Escape");
     await expectPlansClosed(page);
-    await expect(page.getByTestId("editor-command-account")).toBeFocused();
+    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+
+    // From md, Account opens Pricing; without it, focus falls back to More.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    const account = await openPlansFromAccount(page, "keyboard");
+    plans = await expectPlansDialog(page);
+    await account.evaluate((element) => element.remove());
+    await plans.close.press("Enter");
+    await expectPlansClosed(page);
+    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+    await expect(page.getByTestId("editor-command-overflow")).toHaveAccessibleName("More");
   });
 
   test("gives Upgrade pointer entry exclusive nested Plans ownership", async ({

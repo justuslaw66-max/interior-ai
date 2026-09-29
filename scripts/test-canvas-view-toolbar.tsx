@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { CanvasViewToolbar, canvasToolbarLeft } from "../components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsList } from "../components/editor/canvas/KeyboardShortcutsSheet";
+import { PhoneCanvasPills } from "../components/editor/canvas/PhoneCanvasPills";
 import { handleUndoRedoKeyDown } from "../hooks/useUndoRedoHotkeys";
 import { resolveDesignPagePresentHotkey } from "../lib/design-page-presentation-hotkey";
 import {
@@ -23,7 +24,8 @@ import {
 } from "../lib/editor-shortcuts";
 
 // UX phase 4c: the canvas toolbar (2D | 3D, Fit, Undo, Redo over the canvas from md) and the
-// Keyboard shortcuts sheet, whose list must match what the editor's keys do.
+// Keyboard shortcuts sheet, whose list must match what the editor's keys do. UX phase 4d: on
+// phones, 2D | 3D and Undo/Redo are two pills over the canvas.
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
@@ -73,10 +75,22 @@ for (const [input, expected] of [
 }
 assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx\(\{/, "The 2D fit and the toolbar share one inset.");
 
-// Where the toolbar and the sheet live: over the canvas from md, not in Client Preview or Shop.
+// The phone's pills (UX 4d, the PhonePlan mockup): 2D | 3D top left, Undo and Redo top right, 12px
+// under the bar, with 44px targets that keep the controls' test ids.
+const pills = renderToStaticMarkup(<PhoneCanvasPills dark={false} viewMode="3d" onViewModeChange={noop} canUndo canRedo={false}
+  undoName="Remove Avery Armchair" redoName={null} onUndo={noop} onRedo={noop} />);
+assert.match(pills, /^<div data-testid="canvas-view-pill" class="absolute top-bar-3 z-40 [^"]*left-3"><div role="group" aria-label="Design view" data-testid="editor-view-toggle"/);
+assert.match(pills, /aria-label="3D" aria-pressed="true" data-testid="editor-view-3d" class="inline-flex h-11 w-12 [^"]*bg-neutral-900 text-white"/);
+assert.match(pills, /<div role="group" aria-label="History" data-testid="canvas-history-pill" class="absolute top-bar-3 z-40 [^"]*right-3">/);
+assert.match(pills, /<button type="button" data-testid="command-undo" aria-label="Undo Remove Avery Armchair" title="Undo &quot;Remove Avery Armchair&quot; \(Cmd\/Ctrl\+Z\)" class="inline-flex h-11 w-11 /);
+assert.match(pills, /data-testid="command-redo" aria-label="Redo" [^>]*disabled="">/);
+assert.doesNotMatch(pills, /outline-hidden|canvas-fit-view/, "The global focus outline shows; Fit is the toolbar's.");
+
+// Where the toolbar, the pills and the sheet live: over the canvas, not in Client Preview or Shop.
 const chrome = read("components/editor/design-page/DesignPageEditorChrome.tsx");
 assert.match(chrome, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);/);
-assert.match(chrome, /const onCanvas = wide && !bar\.isClientPreview && bar\.editorMode !== "buy";/);
+assert.match(chrome, /const overCanvas = !bar\.isClientPreview && bar\.editorMode !== "buy";\s*const onCanvas = wide && overCanvas;/);
+assert.match(chrome, /\{overCanvas && !wide \? \(\s*<PhoneCanvasPills/);
 assert.match(chrome, /\{onCanvas \? \(\s*<CanvasViewToolbar/);
 assert.match(chrome, /canFit=\{Boolean\(state\.commandBar\.room\) && bar\.editorMode !== "present"\}/);
 assert.match(chrome, /\{onCanvas \? <KeyboardShortcutsButton dark=\{dark\} \/> : null\}/);

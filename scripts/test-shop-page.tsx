@@ -162,7 +162,7 @@ assert.doesNotMatch(emptyWithSurfaces, /shopping-summary/);
 
 // Wiring: Shop replaces the dock with a page over the canvas, fed with every room.
 const region = read("components/editor/design-page/DesignPagePanelRegion.tsx");
-assert.match(region, /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-bar-0"/);
+assert.match(region, /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-bar-0 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0"/);
 assert.match(region, /<ShopStep \{\.\.\.state\.shopping\} \/>/);
 assert.doesNotMatch(region, /CartSidebar|ShoppingOverviewPanel|shopping-dock/);
 // While Shop covers the canvas, the canvas leaves the tab order and the accessibility tree, and

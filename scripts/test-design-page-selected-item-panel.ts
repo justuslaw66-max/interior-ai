@@ -247,8 +247,8 @@ assert.match(
 );
 assert.match(
   panelSource,
-  /max-h-\[calc\(100vh-8\.75rem-env\(safe-area-inset-bottom\)\)\][^"`]*overflow-y-auto[^"`]*md:max-h-\[calc\(100vh-var\(--editor-bar-h\)-2\.5rem\)\]/,
-  "The panel should preserve its bounded scrolling container, clear of the phone step bar.",
+  /right-4 top-bar-17 z-40 md:top-bar-6 w-\[320px\] max-h-\[calc\(100vh-12\.75rem-env\(safe-area-inset-bottom\)\)\][^"`]*overflow-y-auto[^"`]*md:max-h-\[calc\(100vh-var\(--editor-bar-h\)-2\.5rem\)\]/,
+  "The panel should preserve its bounded scrolling container: on phones under the canvas pills and clear of the step bar.",
 );
 assert.match(
   panelSource,

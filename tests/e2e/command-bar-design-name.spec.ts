@@ -73,14 +73,24 @@ test.describe("design name in the command bar", () => {
     await expect(page.getByTestId("editor-design-title")).toHaveText("Tan flat", { timeout: 30_000 });
   });
 
-  test("phones rename from More, and focus comes back to More", async ({ page }) => {
+  test("phones show the name in the header, rename from the Menu too, and focus comes back to the Menu", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 800 });
     await openGuestEditor(page);
     await expect(page.getByTestId("editor-design-title")).toBeVisible();
     await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.getByTestId("editor-design-title")).toBeHidden();
+    // The phone header (UX 4d): the name with the status under it, inside the 56px header.
+    const title = page.getByTestId("editor-design-title");
+    await expect(title).toBeVisible();
+    await expect(title).toHaveText("My Living Room");
+    const [titleBox, barBox] = await Promise.all([
+      title.boundingBox(),
+      page.getByTestId("editor-command-bar").boundingBox(),
+    ]);
+    expect(titleBox!.y).toBeGreaterThanOrEqual(barBox!.y);
+    expect(titleBox!.y + titleBox!.height).toBeLessThanOrEqual(barBox!.y + barBox!.height);
 
     const more = page.getByTestId("editor-command-overflow");
+    await expect(more).toHaveAccessibleName("Menu");
     await more.click();
     await page.getByTestId("editor-command-overflow-rename-design").click();
     const dialog = page.getByRole("dialog", { name: "Rename design" });

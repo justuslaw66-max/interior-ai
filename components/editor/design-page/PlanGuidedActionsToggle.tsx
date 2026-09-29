@@ -20,7 +20,7 @@ export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsTog
     "pointer-events-auto absolute z-30 flex items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
     state.compact
       ? "left-1/2 top-[7.5rem] translate-x-4 gap-1.5 px-2 py-1.5 md:top-bar-35"
-      : "left-1/2 top-15 -translate-x-1/2 gap-2 px-3 py-2 md:top-bar-20",
+      : "left-1/2 top-bar-17 -translate-x-1/2 gap-2 px-3 py-2 md:top-bar-20",
     state.enabled
       ? "border-neutral-300 bg-white/95 text-neutral-950 hover:border-neutral-400"
       : "border-neutral-200 bg-white/95 text-neutral-600 hover:border-neutral-300",

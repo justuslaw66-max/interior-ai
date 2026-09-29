@@ -103,23 +103,26 @@ assert.match(
   named,
   new RegExp(`id="${DESIGN_RENAME_OPENER_ID}"[^>]*data-testid="editor-design-title"[^>]*aria-haspopup="dialog"[^>]*aria-label="Rename design, Tan flat"`),
 );
-assert.match(named, /data-testid="editor-design-title"[^>]*class="-ml-1\.5 hidden h-6 [^"]*max-w-\[240px\][^"]*md:flex/);
+assert.match(named, /data-testid="editor-design-title"[^>]*class="-ml-1\.5 flex h-6 [^"]*max-w-full[^"]*text-\[15px\][^"]*md:max-w-\[240px\] md:text-sm/);
+// A static render is the phone header (UX 4d): the Menu, then the name with the status under it.
 assert.ok(
-  named.indexOf('data-testid="editor-design-title"') < named.indexOf('data-testid="command-undo"'),
-  "The name leads the bar, as in the mockups.",
+  named.indexOf('data-testid="editor-command-overflow"') < named.indexOf('data-testid="editor-design-title"') &&
+    named.indexOf('data-testid="editor-design-title"') < named.indexOf('data-testid="save-status"'),
+  "The name leads the bar after the Menu, as in the mockups.",
 );
+assert.doesNotMatch(named, /data-testid="command-undo"/, "Undo is over the canvas at every width.");
 assert.doesNotMatch(bar({ designTitle: "Tan flat" }), /editor-design-title/, "No handler, no name button.");
-// From md the status is a line under the name (UX 4c): its label, with the detail as the tooltip.
+// The status is a line under the name (UX 4c, 4d): its label, with the detail as the tooltip.
 assert.match(named, /<span class="min-w-0 truncate">Saved<\/span>/);
 assert.match(named, /data-testid="save-status"[^>]*title="Just now"/);
 // Two equal sides with the steps between them; the name side gives way first.
-assert.match(named, /class="flex min-w-0 items-center gap-1 md:flex-1 md:basis-0 md:gap-3"/);
-assert.match(named, /class="ml-auto flex shrink-0 items-center justify-end gap-0\.5 md:ml-0 md:min-w-max md:flex-1 md:basis-0 md:gap-2"/);
+assert.match(named, /class="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3"/);
+assert.match(named, /class="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2"/);
 
-// On phones Rename design is in More, and the dialog then hands focus back to More.
+// Phones also have Rename design in the Menu, and the dialog then hands focus back to the Menu.
 type MoreProps = ComponentProps<typeof CommandBarMoreMenu>;
 const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
-  dark: false, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
+  dark: false, phone: true, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
   open: true, onToggle: noop, onClose: noop, menuButtonClass: "item", menuPanelClass: "panel",
   lightingSettingsOpen: false, showLoadDesign: true, isDesigner: false, isClientPreview: false,
   presentModeActive: false, lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,

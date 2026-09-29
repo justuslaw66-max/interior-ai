@@ -460,13 +460,13 @@ assert.match(
 
 assert.match(
   planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15 z-30 md:top-bar-20[\s\S]*-translate-x-1\/2/,
+  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-bar-17 z-30 md:top-bar-20[\s\S]*-translate-x-1\/2/,
   "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
 );
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-bar-17 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 
@@ -536,7 +536,7 @@ assert.match(
 
 assert.match(
   panelRegionSource,
-  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-bar-0"/,
+  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-bar-0 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0"/,
   "Shop should be one page over the canvas at every width, from the command bar to the phone's step bar (UX audit FU8)."
 );
 
@@ -641,42 +641,38 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-\(--editor-bar-h\)/,
-  "The editor command bar should contain 44px mobile history targets and be --editor-bar-h (56px) tall from md."
+  /data-testid="editor-command-bar"[\s\S]{0,300}?absolute left-0 right-0 top-0 z-50 flex h-\(--editor-bar-h\) items-center gap-1 [^`]*px-1 [^`]*md:gap-4 md:px-4 md:backdrop-blur/,
+  "The editor command bar is --editor-bar-h (56px) tall at every width: the phone header and the desktop bar (UX 4c, 4d)."
 );
 
-// Phones keep Undo and Redo in the bar at 44px; from md they're the canvas toolbar's (UX 4c).
-assert.match(
-  editorCommandBarSource,
-  /const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 (?![^`]*\bmd:h-)/,
-  "Undo and redo in the phone bar should be 44px, with no desktop size of their own."
+// Undo, Redo and 2D/3D sit over the canvas at every width: the toolbar from md (UX 4c), the
+// phone's pills below it (UX 4d, 44px targets).
+assert.doesNotMatch(editorCommandBarSource, /data-testid="command-(?:undo|redo)"|<EditorViewToggle/, "The bar holds no history or view controls.");
+const phoneCanvasPillsSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "canvas", "PhoneCanvasPills.tsx"),
+  "utf8"
 );
-assert.match(
-  editorCommandBarSource,
-  /const canvasToolbar = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\s\S]*?\{canvasToolbar \? null : <HistoryButtons \{\.\.\.props\} \/>\}[\s\S]*?\{canvasToolbar \? null : \(\s*<div className="shrink-0">\s*<EditorViewToggle/,
-  "From md, undo, redo and 2D/3D leave the bar for the canvas toolbar."
-);
+assert.match(phoneCanvasPillsSource, /const historyClass = `inline-flex h-11 w-11 shrink-0 (?![^`]*\bmd:)/, "The phone's Undo and Redo are 44px.");
 for (const historyTestId of ["command-undo", "command-redo"] as const) {
   assert.match(
-    editorCommandBarSource,
-    new RegExp(`data-testid="${historyTestId}"[^>]*?className=\\{commandHistoryButtonClass\\}`),
-    `${historyTestId} should use the shared history-control size.`
+    phoneCanvasPillsSource,
+    new RegExp(`data-testid="${historyTestId}"[^>]*?className=\\{historyClass\\}`),
+    `${historyTestId} should use the pill's history-control size.`
   );
 }
 
-// The 56px bar's controls are 36px from md (the TopBar mockup); phones keep 30px until 4d.
-for (const controlTestId of [
-  "editor-design-sidebar-toggle",
-  "save-design",
-  "editor-command-overflow",
-  "editor-command-account",
-] as const) {
+// The phone header's controls are 44px targets (the PhonePlan mockup); from md the 56px bar's
+// are 36px (the TopBar mockup). More and Account show only from md, the Menu only below it.
+for (const controlTestId of ["editor-design-sidebar-toggle", "save-design", "editor-command-share"] as const) {
   assert.match(
     editorCommandBarSource,
-    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?h-\\[30px\\][^"]*\\bmd:h-9\\b`),
-    `${controlTestId} should be 30px on phones and 36px from md.`
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?"[^"]*\\bh-11 w-11\\b[^"]*\\bmd:h-9\\b`),
+    `${controlTestId} should be 44px on phones and 36px from md.`
   );
 }
+assert.match(editorCommandBarSource, /if \(phone\) \{\s*return dark\s*\? "designer-control inline-flex h-11 w-11 /, "The phone's Menu is 44px.");
+assert.match(editorCommandBarSource, /return dark\s*\? "designer-control inline-flex h-9 w-9 [^"]*"\s*: "inline-flex h-9 w-9 /, "More is 36px.");
+assert.match(editorCommandBarSource, /data-testid="editor-command-account"[\s\S]{0,400}?"inline-flex h-9 w-9 /, "Account is 36px.");
 for (const controlTestId of ["editor-command-get-pro", "editor-command-download"] as const) {
   assert.match(
     editorCommandBarSource,
@@ -686,12 +682,12 @@ for (const controlTestId of ["editor-command-get-pro", "editor-command-download"
 }
 assert.match(
   editorCommandBarSource,
-  /<div className="hidden min-w-0 flex-col justify-center gap-0\.5 md:flex">\s*<CommandBarDesignTitle [^>]*\/>\s*<CommandBarSaveStatus [^>]*\/>\s*<\/div>/,
-  "From md the save status is a line under the design's name."
+  /<div className="ml-1\.5 flex min-w-0 flex-1 flex-col justify-center gap-0\.5 md:ml-0 md:flex-initial">\s*<CommandBarDesignTitle [^>]*\/>\s*<CommandBarSaveStatus [^>]*\/>\s*<\/div>/,
+  "At every width the save status is a line under the design's name."
 );
 assert.match(
   editorCommandBarSource,
-  /md:flex-1 md:basis-0 md:gap-3">[\s\S]*?<\/div>\s*<CommandBarStepTabs [^>]*\/>\s*<div className="ml-auto flex shrink-0 items-center justify-end gap-0\.5 md:ml-0 md:min-w-max md:flex-1 md:basis-0 md:gap-2">/,
+  /<div className="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3">[\s\S]*?<\/div>\s*<CommandBarStepTabs [^>]*\/>\s*<div className="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2">/,
   "From md the steps sit in the centre of the bar, between two equal sides."
 );
 
@@ -703,7 +699,7 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /md:h-\(--editor-bar-h\) md:gap-4 md:backdrop-blur/,
+  /md:gap-4 md:px-4 md:backdrop-blur/,
   "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
 );
 
@@ -728,11 +724,21 @@ const barOffsetsByHand = editorOverlayFiles.filter((file) =>
   )
 );
 assert.deepEqual(barOffsetsByHand, [], "Place what sits under the bar with top-bar-* from md, not a fixed offset.");
+// Phones too (UX 4d): the header is --editor-bar-h tall, and the canvas pills sit 12px under it.
+const phoneBarOffsetsByHand = editorOverlayFiles.filter((file) =>
+  /(?<![\w:-])top-(?:9|11|12|15)(?![\w-])/.test(fs.readFileSync(path.join(process.cwd(), file), "utf8"))
+);
+assert.deepEqual(phoneBarOffsetsByHand, [], "Place what sits under the phone header with top-bar-* too.");
 
 assert.match(
   editorViewToggleSource,
   /grid h-\[30px\] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0\.5[\s\S]*inline-flex h-\[26px\] items-center/,
-  "The bar's view selector should combine centered 26px buttons with a balanced 30px shell."
+  "Present & export's view selector should combine centered 26px buttons with a balanced 30px shell."
+);
+assert.match(
+  editorViewToggleSource,
+  /const PILL_SEGMENT_CLASS =\s*"inline-flex h-11 w-12 items-center justify-center rounded-\[9px\] text-sm font-bold leading-none";/,
+  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d)."
 );
 assert.match(
   editorViewToggleSource,

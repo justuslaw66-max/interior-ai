@@ -8,14 +8,24 @@ type EditorViewToggleProps = {
   value: EditorViewMode;
   onChange: (next: EditorViewMode) => void;
   dark?: boolean;
-  /** `canvas`: the canvas toolbar's 32px segments (UX 4c); `bar`: the phone bar's 30px pill. */
-  variant?: "bar" | "canvas";
+  /**
+   * `canvas`: the canvas toolbar's 32px segments (UX 4c); `pill`: the phone's 44px segments over
+   * the canvas (UX 4d); `bar`: a 30px pill (Present & export's saved views).
+   */
+  variant?: "bar" | "canvas" | "pill";
 };
 
 const CANVAS_SEGMENT_CLASS =
   "inline-flex h-8 items-center justify-center rounded-[7px] px-3.5 text-[13px] font-bold leading-none";
+const PILL_SEGMENT_CLASS =
+  "inline-flex h-11 w-12 items-center justify-center rounded-[9px] text-sm font-bold leading-none";
 
-function toggleClasses(dark: boolean, variant: "bar" | "canvas") {
+function toggleClasses(dark: boolean, variant: "bar" | "canvas" | "pill") {
+  if (variant === "pill") return {
+    shell: "grid grid-cols-2 gap-0.5",
+    inactive: `${PILL_SEGMENT_CLASS} ${dark ? "designer-work-control" : "text-neutral-700 hover:bg-neutral-100"}`,
+    active: `${PILL_SEGMENT_CLASS} ${dark ? "designer-work-control-active" : "bg-neutral-900 text-white"}`,
+  };
   if (variant === "canvas") return {
     shell: dark ? "designer-work-surface grid grid-cols-2 gap-0.5 rounded-[9px] p-0.5" : "grid grid-cols-2 gap-0.5 rounded-[9px] bg-neutral-100 p-0.5",
     inactive: `${CANVAS_SEGMENT_CLASS} ${dark ? "designer-work-control" : "text-neutral-700 hover:bg-white"}`,

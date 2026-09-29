@@ -147,8 +147,8 @@ assert.ok(
 );
 assert.deepEqual(
   saveStatusDisplayTokens,
-  ["hidden", "md:flex"].sort(),
-  "Save status should stay hidden below the desktop breakpoint and render from md upward."
+  ["flex"],
+  "The save status is a line under the design's name at every width, phones included (UX 4d)."
 );
 assert.deepEqual(
   saveStatusHeightTokens,

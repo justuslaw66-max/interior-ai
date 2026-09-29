@@ -11,8 +11,9 @@ type CommandBarDesignTitleProps = {
 
 /**
  * The design's name, which opens Rename design (audit finding F, as in the mockups), with the
- * save status under it. From md, now that undo, redo and 2D/3D sit over the canvas (UX 4c); on
- * phones Rename design is in More. Long names are cut short, with the full name in the tooltip.
+ * save status under it, at every width: undo, redo and 2D/3D sit over the canvas (UX 4c, 4d).
+ * Phones also keep Rename design in the Menu. Long names are cut short, with the full name in
+ * the tooltip.
  */
 export function CommandBarDesignTitle({ dark, title, onRename }: CommandBarDesignTitleProps) {
   if (!title || !onRename) return null;
@@ -24,7 +25,7 @@ export function CommandBarDesignTitle({ dark, title, onRename }: CommandBarDesig
       aria-haspopup="dialog"
       aria-label={`Rename design, ${title}`}
       title={title}
-      className={`-ml-1.5 hidden h-6 min-w-0 max-w-[240px] items-center gap-1.5 rounded-md px-1.5 text-sm font-bold leading-none md:flex ${
+      className={`-ml-1.5 flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-[15px] font-bold leading-none md:max-w-[240px] md:text-sm ${
         dark ? "hover:bg-white/10" : "text-neutral-900 hover:bg-neutral-100"
       }`}
       onClick={onRename}

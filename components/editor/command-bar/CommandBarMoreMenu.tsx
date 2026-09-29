@@ -1,11 +1,13 @@
 "use client";
 
-import { Ellipsis } from "lucide-react";
 import type { ReactNode, RefObject } from "react";
-import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
+import { CommandBarMenuTrigger } from "./CommandBarMenuTrigger";
 
 type CommandBarMoreMenuProps = {
   dark: boolean;
+  /** Phones: the Menu at the start of the bar, ending with the account's items (UX 4d). */
+  phone: boolean;
+  accountSlot?: ReactNode;
   containerRef: RefObject<HTMLDivElement | null>;
   buttonRef: RefObject<HTMLButtonElement | null>;
   open: boolean;
@@ -36,31 +38,13 @@ type CommandBarMoreMenuProps = {
   onRenameDesign?: () => void;
 };
 
-/** The command bar's More button and menu. */
+/** The command bar's More button and menu; on phones, the Menu (UX 4d). */
 export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
-  const { dark, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
+  const { dark, phone, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <button
-        ref={buttonRef}
-        id={CLIENT_PREVIEW_FALLBACK_ACTION_ID}
-        type="button"
-        data-testid="editor-command-overflow"
-        aria-label="More"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={
-          lightingSettingsOpen ? "lighting-settings-drawer" : undefined
-        }
-        className={
-          dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-bold leading-none md:h-9 md:w-9"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:h-9 md:w-9"
-        }
-        onClick={onToggle}
-      >
-        <Ellipsis className="h-4 w-4" aria-hidden="true" />
-      </button>
+      <CommandBarMenuTrigger dark={dark} phone={phone} buttonRef={buttonRef} open={open}
+        lightingSettingsOpen={lightingSettingsOpen} onToggle={onToggle} />
       {open && (
         <div
           data-testid="editor-command-overflow-menu"
@@ -71,6 +55,11 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
           <MoreMenuModeItems {...props} />
           <MoreMenuViewItems {...props} />
           <MoreMenuFooter {...props} />
+          {phone && props.accountSlot ? (
+            <div data-testid="editor-command-overflow-account" className="mt-1 border-t border-neutral-200 pt-1">
+              {props.accountSlot}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

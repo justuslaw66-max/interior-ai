@@ -51,7 +51,7 @@ export function DesignPageToasts({
         <div
           data-testid="collision-toast" data-tone={ruleTone}
           aria-hidden="true"
-          className="pointer-events-none fixed top-11 left-1/2 md:top-bar-16 z-50 -translate-x-1/2 animate-fade-in"
+          className="pointer-events-none fixed top-bar-17 left-1/2 md:top-bar-16 z-50 -translate-x-1/2 animate-fade-in"
         >
           <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS[ruleTone]}`}>
             {ruleMessage}

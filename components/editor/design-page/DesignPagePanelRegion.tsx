@@ -93,7 +93,7 @@ export function DesignPagePanelRegion({
       {state.shopping ? (
         <div
           data-testid="shop-step"
-          className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-12 z-40 overflow-y-auto bg-[#fafaf9] md:bottom-0 md:top-bar-0"
+          className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-bar-0 z-40 overflow-y-auto bg-[#fafaf9] md:bottom-0"
         >
           <ShopStep {...state.shopping} />
         </div>

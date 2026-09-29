@@ -17,7 +17,8 @@ type CommandBarSaveStatusProps = {
 };
 
 /**
- * The save status, a line under the design's name from md (UX 4c, the approved TopBar mockup):
+ * The save status, a line under the design's name at every width (UX 4c and 4d, the approved
+ * TopBar and PhonePlan mockups):
  * "Saving…", "✓ Saved", "Saved on this device" or "Not saved" with Retry. The detail is the
  * tooltip and part of what a screen reader hears; a design that hasn't saved yet says nothing.
  */
@@ -41,7 +42,7 @@ export function CommandBarSaveStatus({
       aria-live="polite"
       aria-label={saveStatus.label ? `${saveStatus.label}. ${saveStatus.detail}` : saveStatus.detail}
       title={saveStatus.detail}
-      className={`hidden h-4 min-w-0 items-center gap-1 text-xs leading-none md:flex ${getSaveStatusClassName(saveStatus, dark)}`}
+      className={`flex h-4 min-w-0 items-center gap-1 text-xs leading-none ${getSaveStatusClassName(saveStatus, dark)}`}
     >
       {savedToAccount ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
       <span className="min-w-0 truncate">{saveStatus.label}</span>

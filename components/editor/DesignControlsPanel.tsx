@@ -564,7 +564,7 @@ export default function DesignControlsPanel({
     return (
       <div
         data-testid="design-controls-edge-reveal"
-        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-9 z-40 w-8 md:bottom-0 md:top-bar-2 md:w-4"
+        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-bar-17 z-40 w-8 md:bottom-0 md:top-bar-2 md:w-4"
         onMouseEnter={openEdgePreview}
       >
         <div
