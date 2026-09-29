@@ -155,7 +155,7 @@ export default function EditorCommandBar({
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm transition-opacity duration-300 sm:px-4 md:h-9 md:gap-2 md:backdrop-blur ${
+      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm transition-opacity duration-300 sm:px-4 md:h-(--editor-bar-h) md:gap-2 md:backdrop-blur ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >

@@ -213,7 +213,7 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-11/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-bar-2/,
   "Floating overlay stack should align with the left plan panel top edge."
 );
 
@@ -454,19 +454,19 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-11[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-bar-2[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
   "Floating plan overlays should stay inside a fixed, right-anchored scroll rail."
 );
 
 assert.match(
   planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15[\s\S]*-translate-x-1\/2/,
+  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15 z-30 md:top-bar-6[\s\S]*-translate-x-1\/2/,
   "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
 );
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-6[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 
@@ -536,7 +536,7 @@ assert.match(
 
 assert.match(
   panelRegionSource,
-  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-9"/,
+  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-bar-0"/,
   "Shop should be one page over the canvas at every width, from the command bar to the phone's step bar (UX audit FU8)."
 );
 
@@ -599,7 +599,7 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-\[calc\(4\.25rem\+env\(safe-area-inset-bottom\)\)\] right-1 top-auto[\s\S]*?md:top-11/,
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-\[calc\(4\.25rem\+env\(safe-area-inset-bottom\)\)\] right-1 top-auto[\s\S]*?md:top-bar-2/,
   "Main left design controls column should sit as close to the viewport edge as the right overlay stack, and just above the phone step bar."
 );
 
@@ -641,7 +641,7 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-9/,
+  /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-\(--editor-bar-h\)/,
   "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
 );
 
@@ -680,9 +680,30 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /md:h-9 md:gap-2 md:backdrop-blur/,
+  /md:h-\(--editor-bar-h\) md:gap-2 md:backdrop-blur/,
   "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
 );
+
+// One bar height from md (UX 4c): the bar is --editor-bar-h tall, and what sits under it is placed
+// from it with top-bar-* (0.5rem under the bar is top-bar-2), so the bar can grow in one place.
+const globalsCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+assert.match(globalsCss, /:root \{[\s\S]*?--editor-bar-h: 2\.25rem;[\s\S]*?\}/);
+assert.match(globalsCss, /@utility top-bar-\* \{\s*top: calc\(var\(--editor-bar-h\) \+ --spacing\(--value\(integer\)\)\);\s*\}/);
+const editorOverlayFiles = [
+  "components/editor/DesignControlsPanel.tsx",
+  "components/editor/EditorToolRail.tsx",
+  "components/catalog/CatalogItemDrawer.tsx",
+  ...fs
+    .readdirSync(path.join(process.cwd(), "components/editor/design-page"))
+    .filter((name) => name.endsWith(".tsx"))
+    .map((name) => `components/editor/design-page/${name}`),
+];
+const barOffsetsByHand = editorOverlayFiles.filter((file) =>
+  /(?<![\w-])md:(?:top-(?:9|11|15|23|36)|max-h-\[calc\(100vh-4\.75rem\)\])(?![\w-])/.test(
+    fs.readFileSync(path.join(process.cwd(), file), "utf8")
+  )
+);
+assert.deepEqual(barOffsetsByHand, [], "Place what sits under the bar with top-bar-* from md, not a fixed offset.");
 
 assert.match(
   editorViewToggleSource,

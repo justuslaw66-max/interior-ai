@@ -558,13 +558,13 @@ export default function DesignControlsPanel({
     : isDesigner
       ? "left-1 md:left-20"
       : "left-1 md:left-1";
-  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-11 md:w-[18.15rem] ${panelLeftClass}`;
+  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-bar-2 md:w-[18.15rem] ${panelLeftClass}`;
 
   if (collapsed && !temporarilyRevealed) {
     return (
       <div
         data-testid="design-controls-edge-reveal"
-        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-9 z-40 w-8 md:bottom-0 md:top-11 md:w-4"
+        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-9 z-40 w-8 md:bottom-0 md:top-bar-2 md:w-4"
         onMouseEnter={openEdgePreview}
       >
         <div
@@ -600,7 +600,7 @@ export default function DesignControlsPanel({
     <div
       data-testid="design-controls-panel"
       data-temporary-reveal={temporarilyRevealed ? "true" : "false"}
-      className={`${panelShellClass} max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] overflow-y-auto pb-3 md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
+      className={`${panelShellClass} max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] overflow-y-auto pb-3 md:max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] md:pb-4 ${
         temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
       }`}
       onMouseEnter={cancelEdgePreviewClose}
