@@ -231,7 +231,6 @@ assertSourceOrder(
     "hoveredCartInstanceId, setHoveredCartInstanceId",
     "showPresentModal, setShowPresentModal",
     "presentModeRoomId, setPresentModeRoomId",
-    "shoppingReadinessFilter, setShoppingReadinessFilter",
     "useDesignPageSurfaceStateController()",
     "editorMode, setEditorMode",
     "guidedPlanStartMode, setGuidedPlanStartMode",

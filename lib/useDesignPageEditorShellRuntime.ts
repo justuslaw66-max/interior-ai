@@ -10,7 +10,6 @@ import {
   type DesignPagePlanMetricUpdate,
 } from "@/lib/design-page-editor-shell-metrics";
 import type { DesignPagePlanDebugMetrics } from "@/lib/useDesignPageQaReadModel";
-import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import {
   useDesignPagePanelMode,
   type DesignPageEditorMode,
@@ -26,7 +25,6 @@ export type UseDesignPageEditorShellRuntimeInput = {
   actions: {
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
     setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
-    setItemCartOpen: Dispatch<SetStateAction<boolean>>;
     diagnostics: {
       setPlanDebugMetrics: Dispatch<
         SetStateAction<DesignPagePlanDebugMetrics>
@@ -49,7 +47,6 @@ export function useDesignPageEditorShellRuntime({
   const {
     setDesignPanelOpen,
     setDesignPanelCollapsed,
-    setItemCartOpen,
   } = actions;
   const {
     setPlanDebugMetrics,
@@ -61,8 +58,6 @@ export function useDesignPageEditorShellRuntime({
   const [showPresentModal, setShowPresentModal] = useState(false);
   const [presentModeRoomId, setPresentModeRoomId] =
     useState<string | null>(null);
-  const [shoppingReadinessFilter, setShoppingReadinessFilter] =
-    useState<ShoppingReadinessFilter>("all");
   const surfaceState = useDesignPageSurfaceStateController();
   const [editorMode, setEditorMode] =
     useState<DesignPageEditorMode>(
@@ -76,7 +71,6 @@ export function useDesignPageEditorShellRuntime({
     designPanelOpen: state.designPanelOpen,
     setDesignPanelOpen,
     setDesignPanelCollapsed,
-    setItemCartOpen,
   });
 
   useEffect(() => {
@@ -134,7 +128,6 @@ export function useDesignPageEditorShellRuntime({
     state: {
       cart: { hoveredCartInstanceId },
       presentation: { showPresentModal, presentModeRoomId },
-      shopping: { shoppingReadinessFilter },
       surface: surfaceState.state,
       editor: { editorMode, guidedPlanStartMode },
       panel: {
@@ -145,7 +138,6 @@ export function useDesignPageEditorShellRuntime({
     actions: {
       cart: { setHoveredCartInstanceId },
       presentation: { setShowPresentModal, setPresentModeRoomId },
-      shopping: { setShoppingReadinessFilter },
       surface: surfaceState.actions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panel: {

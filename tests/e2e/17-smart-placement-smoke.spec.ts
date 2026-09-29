@@ -3,8 +3,11 @@ import { expect, test } from "./fixtures";
 import { storedToSnapshot, type StoredDesign } from "../../lib/room-persistence";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import {
+  chooseNewDesign,
+  chooseStartTemplate,
   getSelectedItemPanel,
   openCatalogPreview,
+  openDesignAsPro,
   waitForCatalogReady,
 } from "./variant-test-utils";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
@@ -31,6 +34,8 @@ async function readPersistedFingerprint(page: Page): Promise<string> {
 }
 
 async function startCatalogPlacement(page: Page, productId: string) {
+  // Pro keeps the placement preview (J, 27 Sep): Add opens it at the default spot, which leaves room
+  // for the best-room hint. Consumers' "Choose where it goes" starts at the suggested spot instead.
   const previewAddButton = page.getByTestId("catalog-detail-add-to-room");
   if (await previewAddButton.isVisible().catch(() => false)) {
     await previewAddButton.click({ force: true, noWaitAfter: true });
@@ -58,20 +63,19 @@ test.describe("17. Smart Placement Smoke", () => {
       window.sessionStorage.clear();
       window.localStorage.setItem(clearSentinel, "1");
     });
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
 
-    const betaStartTemplate = page.getByTestId("beta-start-template");
-    if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await betaStartTemplate.click();
-    } else {
-      const planStartTemplate = page.getByTestId("plan-start-template");
-      await expect(planStartTemplate).toBeVisible({ timeout: 5000 });
-      await planStartTemplate.click();
-    }
-    await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
-    await page.getByTestId("apply-furnished-template-studio").click();
+    // Pro's Plan panel has no Beta start or template shortcut: the furnished studio comes from
+    // New design, in More, as in 26-phase14-product-flow.
+    const startChooser = page.getByTestId("start-design-chooser");
+    await expect(async () => {
+      if (await startChooser.isVisible().catch(() => false)) return;
+      await chooseNewDesign(page);
+      await expect(startChooser).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
+    await chooseStartTemplate(page, "studio", { furnished: true });
     await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
@@ -161,7 +165,7 @@ test.describe("17. Smart Placement Smoke", () => {
       restoredCatalogReady,
       "Catalog controls must reopen for the restored target room",
     ).toBe(true);
-    await expect(page.getByTestId("furnish-shopping-preview")).toContainText(
+    await expect(page.getByTestId("furnish-in-this-room")).toContainText(
       "Madison Sofa",
       { timeout: 30_000 },
     );

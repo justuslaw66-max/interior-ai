@@ -2,7 +2,7 @@
  * One name per concept in the words people read (UX audit 2026-09-23, phase 2).
  * scripts/test-ui-glossary.ts fails when user-facing text uses a retired term,
  * a US spelling (D4: UK spelling), or three dots instead of "…".
- * Terms a later phase restructures (Tray, Download, Level, Surfaces, …) stay
+ * Terms a later phase restructures (Download, Level, Surfaces, …) stay
  * in LATER_PHASE_UI_TERMS until that phase lands; they are not enforced yet.
  */
 export type UiGlossaryEntry = {
@@ -48,11 +48,16 @@ export const UI_GLOSSARY: readonly UiGlossaryEntry[] = [
   { concept: "Account", use: "Sign in, Sign out, My designs", retire: ["main menu", "dashboard", "login", "log in"] },
   { concept: "Units", use: "Units (selector), Size (inputs)", retire: ["display units", "measurement unit", "starting size"] },
   { concept: "Orders", use: "plain order-placed copy", retire: ["authoritative"] },
+  {
+    concept: "Buying (UX 3c-2)",
+    use: "Shopping list; Buy at <shop>; Checkout here",
+    retire: ["cart", "carts", "cart-ready", "selection tray", "shopping overview"],
+  },
 ];
 
 /** Restructured by phase 3 or 4; listed so nobody mistakes them for approved names. */
 export const LATER_PHASE_UI_TERMS: readonly string[] = [
-  "Tray", "cart", "Shopping overview", "Export / Present & Export (→ Download)", "Presentation mode (→ Preview)",
+  "Export / Present & Export (→ Download)", "Presentation mode (→ Preview)",
   "1F / Add floor (→ Level)", "Tiles (→ Surfaces)", "Clear (four meanings)", "furniture / items (→ products)",
 ];
 

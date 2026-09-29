@@ -2,6 +2,7 @@
 
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { PanelLeft, Redo2, Undo2 } from "lucide-react";
+import { CommandBarActionToast } from "./CommandBarActionToast";
 
 type CommandBarCanvasControlsProps = {
   dark: boolean;
@@ -31,6 +32,7 @@ export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
         />
       ) : null}
       <HistoryButtons {...props} />
+      <CommandBarActionToast isClientPreview={props.isClientPreview} undoName={props.undoName} onUndo={props.onUndo} />
 
       <div className="shrink-0">
         <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={props.dark} />

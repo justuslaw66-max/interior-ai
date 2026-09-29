@@ -137,7 +137,6 @@ export type UseDesignPagePresentationQaFacadeInput = {
       setUpgradeOpen: ChromeActions["dialogs"]["setUpgradeOpen"];
       setDesignPanelOpen: ChromeActions["editor"]["setDesignPanelOpen"];
       setDesignPanelCollapsed: ChromeActions["editor"]["setDesignPanelCollapsed"];
-      setItemCartOpen: ChromeActions["editor"]["setItemCartOpen"];
       setClientPreview: ChromeActions["editor"]["setClientPreview"];
       setUrlMode: ChromeActions["editor"]["setUrlMode"];
     };
@@ -436,7 +435,7 @@ export function useDesignPagePresentationQaFacade({
       },
       history: { undo: actions.history.undo, redo: actions.history.redo },
       editor: { setMode: actions.shell.setEditorMode, setDesignPanelOpen: actions.shell.setDesignPanelOpen,
-        setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed, setItemCartOpen: actions.shell.setItemCartOpen,
+        setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
         setClientPreview: actions.shell.setClientPreview, setUrlMode: actions.shell.setUrlMode },
       dialogs: {
         ...actions.dialogs, openDesignRename: designRename.openRename,

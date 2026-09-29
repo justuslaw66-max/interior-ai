@@ -1,4 +1,5 @@
 import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
+import { isUntouchedStarterRoom } from "@/lib/design-page-template-furnishings";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 export type BuildDesignPagePanelWorkspaceRegistrationInput = {
@@ -28,7 +29,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
   const { importedModels } = base.boundaries;
   const { planDocument, floorPlanDocument, surfaceState } =
     viewportShell.boundaries;
-  const { documentRoom, sceneRoomRead } = documentSelection.boundaries;
+  const { documentRoom, sceneRoomRead, itemDocument } = documentSelection.boundaries;
   const { selectionInspection, planWorkspace, surfaceWorkspace, underlay } =
     planAuthoring.boundaries;
   const { tracing } = editorInteraction.boundaries;
@@ -77,8 +78,8 @@ export function buildDesignPagePanelWorkspaceRegistration({
           documentRoom.derived.plan.designControlsPanelVisibleForLayout,
       },
       plan: {
-        roomConnectionChecklistItems:
-          planWorkspace.state.overlay.roomConnectionChecklistItems,
+        roomConnectionChecklistItems: planWorkspace.state.overlay.roomConnectionChecklistItems,
+        roomIsDraft: isUntouchedStarterRoom(coreShell.state.document.designSnapshot, planDocument.state.planOpenings),
         visiblePlanOpening:
           planWorkspace.state.inspector.visiblePlanOpening,
         visiblePlanOpeningRoomName:
@@ -92,7 +93,6 @@ export function buildDesignPagePanelWorkspaceRegistration({
         floorPlanQualityReport: planWorkspace.state.quality.report,
       },
       shopping: {
-        readinessFilter: viewportShell.state.shopping.shoppingReadinessFilter,
         placementAddMode: base.state.editor.placementAddMode,
       },
       ai: { aiLayoutProposal: coreShell.state.placement.pendingAiLayoutProposal },
@@ -177,17 +177,10 @@ export function buildDesignPagePanelWorkspaceRegistration({
           planWorkspace.actions.overlay.handleUpdateOpeningMetrics2D,
       },
       shopping: {
-        setReadinessFilter:
-          viewportShell.actions.shopping.setShoppingReadinessFilter,
-        swapItem: documentSelection.actions.shopping.swapItem,
-        previewReplacement:
-          commerceOnboarding.actions.commerce.previewShoppingReplacement,
-        bulkSwap: aiPanel.actions.layout.bulkSwap,
-        showUpgrade: () => base.actions.dialogs.setShowUpgrade(true),
+        commitItemsToRoom: itemDocument.actions.commitItemsToRoom,
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
         addImportedToRoom:
           commerceOnboarding.actions.commerce.addSelectedImportedToRoom,
-        reviewIssue: documentSelection.actions.shopping.reviewIssue,
       },
       cabinetry: {
         deleteSelected:

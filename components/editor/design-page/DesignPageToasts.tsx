@@ -5,7 +5,6 @@ import {
 
 export type DesignPageToastsProps = {
   ruleMessage: string | null;
-  nudgeMessage: string | null;
   shareCopied: boolean;
   shareErrorMessage: string | null;
 };
@@ -14,7 +13,6 @@ const TOAST = "rounded-lg px-4 py-3 text-sm font-semibold shadow-lg";
 
 export function DesignPageToasts({
   ruleMessage,
-  nudgeMessage,
   shareCopied,
   shareErrorMessage,
 }: DesignPageToastsProps) {
@@ -57,15 +55,6 @@ export function DesignPageToasts({
         >
           <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS[ruleTone]}`}>
             {ruleMessage}
-          </div>
-        </div>
-      )}
-
-      {/* Onboarding/Nudge Toast */}
-      {nudgeMessage && (
-        <div data-testid="sofa-nudge" className="fixed top-23 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
-          <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS.tip}`}>
-            {nudgeMessage}
           </div>
         </div>
       )}

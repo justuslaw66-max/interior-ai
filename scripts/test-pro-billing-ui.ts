@@ -45,6 +45,13 @@ assert.match(success, /MAX_ATTEMPTS = 20/);
 assert.match(success, /checkout_success_viewed/);
 assert.doesNotMatch(success, /upgrade_checkout_completed|verified:\s*true/);
 
+// UX audit PR7: the page says it's checking until the account shows Pro, and cancel returns to
+// the editor, where the design is waiting.
+assert.match(success, /checking: \{ heading: "Checking your payment…"/);
+assert.match(success, /<h1 className="text-2xl font-semibold">\{copy\.heading\}<\/h1>/);
+assert.doesNotMatch(read("app/billing/success/page.tsx"), /Payment received|<h1/, "The success page's heading follows the check.");
+assert.match(read("app/billing/cancel/page.tsx"), /href="\/design"[\s\S]*?Back to editor/);
+
 const successPageTracking = read("app/billing/success/CheckoutCompletedTracking.tsx");
 assert.match(successPageTracking, /checkout_success_viewed/);
 assert.doesNotMatch(successPageTracking, /upgrade_checkout_completed/);

@@ -63,9 +63,6 @@ for (const historyLabel of [
   "Centre item",
   "Snap item to wall",
   "Nudge item",
-  "Change quantity",
-  "Include in checkout",
-  "Exclude from checkout",
 ]) {
   assert.match(
     controllerSource,
@@ -74,6 +71,8 @@ for (const historyLabel of [
   );
 }
 
+// The Shop dock's quantity, checkout and cart-ready edits went with it (UX 3c-2).
+assert.doesNotMatch(controllerSource, /Change quantity|Include in checkout|Exclude from checkout|cart-ready/);
 assert.match(controllerSource, /track\("editor_item_rotated"/);
 assert.match(controllerSource, /editor_item_transform_rejected/);
 assert.match(controllerSource, /selectionType: "single"/);

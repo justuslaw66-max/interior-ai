@@ -33,6 +33,10 @@ const COPY_FUNCTIONS = /(?:Label|Copy|Text|Message|Title|Description|Hint|Captio
 const ALLOWED = new Map<string, string>([
   ["app/share/[shareToken]/(presentation)/page.tsx|Drag to look around • Make a copy to edit", "an instruction, not the retired \"Copy to edit\" button"],
   ["components/SharePageActions.tsx|- Interior AI design preview", "the product name Interior AI, then \"design preview\""],
+  // The buy list sends people to a shop's website, where they add products to that shop's own cart.
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Add to your cart", "the retailer's own cart, on its website"],
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Add 1 to your cart", "the retailer's own cart, on its website"],
+  ["components/editor/shop/ShoppingBuyListDialog.tsx|Open each product at and add it to your cart there.", "the retailer's own cart, on its website"],
 ]);
 
 type UiText = { file: string; line: number; text: string };
@@ -138,8 +142,8 @@ const files = SOURCE_ROOTS.flatMap((directory) => sourceFiles(directory)).filter
 const texts = files.flatMap((file) => uiTextsOf(file));
 assert.ok(texts.length > 3000, `The guard must read the app's text; it found only ${texts.length} strings.`);
 assert.ok(
-  texts.some((item) => item.file === "components/editor/DesignControlsPlanPanel.tsx" && item.text === "Upload floor plan"),
-  "The guard must see the Plan panel's Upload floor plan section title."
+  texts.some((item) => item.file === "components/editor/RoomSetupStartActions.tsx" && item.text === "Upload floor plan"),
+  "The guard must see Plan's Upload floor plan, under the room card."
 );
 
 const violations = texts

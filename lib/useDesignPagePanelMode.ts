@@ -9,7 +9,6 @@ type UseDesignPagePanelModeParams = {
   designPanelOpen: boolean;
   setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
   setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
-  setItemCartOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 export function resolveDesignControlsPanelMode(
@@ -30,7 +29,6 @@ export function useDesignPagePanelMode({
   designPanelOpen,
   setDesignPanelOpen,
   setDesignPanelCollapsed,
-  setItemCartOpen,
 }: UseDesignPagePanelModeParams) {
   const designControlsPanelMode = resolveDesignControlsPanelMode(editorMode);
   const designControlsPanelVisible = isDesignControlsPanelMode(editorMode) && designPanelOpen;
@@ -42,9 +40,8 @@ export function useDesignPagePanelMode({
       setEditorMode(mode);
       setDesignPanelOpen(true);
       setDesignPanelCollapsed(false);
-      setItemCartOpen(false);
     },
-    [setDesignPanelCollapsed, setDesignPanelOpen, setEditorMode, setItemCartOpen]
+    [setDesignPanelCollapsed, setDesignPanelOpen, setEditorMode]
   );
   const goPlan = useCallback(() => openStepPanel("design"), [openStepPanel]);
   const goFurnish = useCallback(() => openStepPanel("adjust"), [openStepPanel]);
@@ -53,8 +50,7 @@ export function useDesignPagePanelMode({
   const goShop = useCallback(() => {
     setEditorMode("buy");
     setDesignPanelOpen(false);
-    setItemCartOpen(false);
-  }, [setDesignPanelOpen, setEditorMode, setItemCartOpen]);
+  }, [setDesignPanelOpen, setEditorMode]);
 
   // A closed panel never reopens collapsed.
   useEffect(() => {

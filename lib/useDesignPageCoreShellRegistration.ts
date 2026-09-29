@@ -92,7 +92,6 @@ export function useDesignPageCoreShellRegistration({
         setPlacementPreferencesLoaded,
       },
       panels: {
-        setItemCartOpen,
         setDesignPanelOpen,
         setDesignPanelCollapsed,
       },
@@ -108,7 +107,6 @@ export function useDesignPageCoreShellRegistration({
     actions: {
       setDesignPanelOpen,
       setDesignPanelCollapsed,
-      setItemCartOpen,
     },
     configuration,
   });

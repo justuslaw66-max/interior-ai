@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
+import type { CatalogCategoryChoice } from "@/lib/catalog/category-chips";
 import type { CatalogFilterState, CatalogTopCategory } from "@/lib/catalog/view-builders";
 
 type CatalogCategoryNavigationState = {
-  selectedByRoom: Record<string, CatalogTopCategory>;
+  selectedByRoom: Record<string, CatalogCategoryChoice>;
   revision: number;
 };
 
@@ -39,14 +40,14 @@ export function clearInapplicableCatalogFilters(
 
 export function useCatalogCategoryNavigation(
   roomKey: string,
-  defaultCategory: CatalogTopCategory
+  defaultCategory: CatalogCategoryChoice
 ) {
   const [navigation, setNavigation] = useState<CatalogCategoryNavigationState>({
     selectedByRoom: {},
     revision: 0,
   });
   const activeCategory = navigation.selectedByRoom[roomKey] ?? defaultCategory;
-  const selectCategory = (category: CatalogTopCategory) => {
+  const selectCategory = (category: CatalogCategoryChoice) => {
     setNavigation((previous) => {
       if ((previous.selectedByRoom[roomKey] ?? defaultCategory) === category) return previous;
       return {

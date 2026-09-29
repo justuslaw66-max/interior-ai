@@ -1,5 +1,49 @@
 # Required-test truthfulness
 
+## UX phase 3c-2 Cart owner re-pin — 2026-09-27
+
+The Selection Tray is gone, and `ci.cart-overlay-accessibility` now owns the
+Shopping list in the real editor (J, 27 Sep). It keeps its id, its `cart`
+development-server owner, its config, spec and static prerequisite paths, its
+two-script package closure (SHA-256
+`cc8a751cbca29e97536938dab1525cb17ee1cc8dad18174564d58d4dae1703fb`) and its
+stable-checks step. The spec seeds a design as the browser's local backup
+before the page loads, so no database or catalogue search is involved.
+
+Eight identities run once in Chromium and WebKit (16 results), with the same
+zero retry, skip, annotation, flake, filter, shard, focus and timeout rules.
+They cover the inert, hidden canvas behind Shop for Consumer and Pro, focus
+after removing a product (next, previous, the heading, and by pointer), Undo
+from the toast, and desktop and 390×844 layout with 44px actions and focus
+rings. `ci.pro-visual-policy` keeps its identities; its two supersession tests
+open Download instead of the Tray as the newer modal. Gate and source counts
+are unchanged.
+
+## UX phase 3c-2 Retailer owner re-pin — 2026-09-27
+
+Shop is one Shopping list (audit findings FU7 and FU8), and the Cart's
+multi-tab retailer confirmation is gone. `ci.retailer-confirmation-accessibility`
+keeps its id, its `retailer` development-server owner, its config, spec,
+harness, static prerequisite and builder paths, its two-script package closure
+(SHA-256 `808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836`)
+and its stable-checks step. It now owns Shop's buy list: "Buy at <shop>" opens
+a shop's only product directly, or that shop's buy list, where each Open opens
+exactly one tab (J, Q2, 27 Sep).
+
+Fourteen identities run once in Chromium and WebKit (28 results), with the
+same zero retry, skip, annotation, flake, filter, shard, focus and timeout
+rules. They cover pointer and keyboard entry and dismissal, one tracked tab per
+Open, fail-open tracking, the direct single-product path, the empty list,
+missing links, quantities and sets, grouping by website, blocked tabs, design
+changes, unmount and route change, newer-dialog ownership, Guest/Consumer/Pro
+parity, and 390×844 containment. The harness mounts the real `ShopStep` with
+synthetic products on reserved `.test` hosts and a recording `window.open`, so
+no merchant is contacted. The Guest Save owner's checkout harness mounts
+`ShopStep` too, with the same `checkout-shopify` and `guest-checkout-action`
+ids. Gate and source counts are unchanged: every changed source is an explicit
+gate source, and `.tsx` tests sit outside the script-test inventory. The
+section on CH-0015G below records the retired Cart confirmation.
+
 ## Post-cleanup sealed-evidence validation ownership — 2026-08-28
 
 The production-certification state/worktree owner and deterministic simulation

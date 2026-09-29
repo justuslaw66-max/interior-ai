@@ -1,6 +1,7 @@
 import { test, expect } from "./fixtures";
 import type { Page } from "@playwright/test";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -35,7 +36,7 @@ function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
 }
 
 async function addMadisonProduct(page: Page, productId: string) {
-  await page.goto("/design");
+  await openDesignAsPro(page);
   await page.waitForLoadState("domcontentloaded");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
