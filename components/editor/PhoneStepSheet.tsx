@@ -111,6 +111,7 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
     <section
       ref={sheetRef}
       data-testid="design-controls-panel"
+      data-touch-area
       data-temporary-reveal="false"
       data-sheet-snap={snap}
       aria-label={title}

@@ -109,7 +109,7 @@ export function DesignPageSelectionInspector({
   const placement = useInspectorPlacement(state, configuration);
   const frame = inspectorFrame(configuration, placement);
   const inspector = (
-    <div data-testid="selection-inspector" data-in-sheet={placement.inSheet ? "true" : undefined}
+    <div data-testid="selection-inspector" data-touch-area data-in-sheet={placement.inSheet ? "true" : undefined}
       className={frame.className} style={frame.style}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

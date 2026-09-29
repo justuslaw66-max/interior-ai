@@ -117,6 +117,7 @@ const typescriptGuardFiles = [
   "test-ui-foundations.tsx",
   "test-canvas-view-toolbar.tsx",
   "test-phone-step-sheet.tsx",
+  "test-touch-targets.tsx",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];

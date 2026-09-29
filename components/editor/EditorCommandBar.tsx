@@ -93,7 +93,8 @@ function commandBarMenuClasses(dark: boolean, wide: boolean) {
   const menuButtonClass = dark
     ? "designer-work-control flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold"
     : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
-  const menuPanelClass = `absolute ${wide ? "right-0" : "left-0"} ${dark
+  // A menu taller than the screen (a short phone, a 44px row per item) scrolls inside itself.
+  const menuPanelClass = `absolute max-h-[calc(100dvh-4.5rem)] overflow-y-auto ${wide ? "right-0" : "left-0"} ${dark
     ? "designer-work-surface top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl"}`;
   return { menuButtonClass, menuPanelClass };

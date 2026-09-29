@@ -83,7 +83,7 @@ export function SelectedCabinetPanel({
           aria-hidden={isClientPreview}
         >
           <div
-            data-testid="selected-cabinet-panel"
+            data-testid="selected-cabinet-panel" data-touch-area
             className={
               showDesignerTheme
                 ? "designer-panel designer-panel-strong w-full rounded-xl p-4"

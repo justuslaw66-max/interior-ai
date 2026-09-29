@@ -24,10 +24,10 @@ export type CanvasViewToolbarProps = {
 /**
  * The toolbar's centre: the middle of the canvas right of the step panel, as in the mockup, but
  * never so far right that a right panel (the item panel, 340px at right-4) would cover Undo and
- * Redo, and never over the step panel. Half the toolbar is about 120px.
+ * Redo, and never over the step panel. Half the toolbar is about 120px, 131px on touch screens.
  */
 export function canvasToolbarLeft(leftInsetPx: number): string {
-  return `clamp(${leftInsetPx + 136}px, calc(50% + ${leftInsetPx / 2}px), calc(100% - 484px))`;
+  return `clamp(${leftInsetPx + 144}px, calc(50% + ${leftInsetPx / 2}px), calc(100% - 496px))`;
 }
 
 const TOOLBAR_CLASS =

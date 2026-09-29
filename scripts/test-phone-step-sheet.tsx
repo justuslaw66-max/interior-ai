@@ -94,7 +94,7 @@ const sheet = (collapsed: boolean) =>
     </PhoneStepSheet>
   );
 const half = sheet(false);
-assert.match(half, /^<section data-testid="design-controls-panel" data-temporary-reveal="false" data-sheet-snap="half" aria-label="Furnish" style="height:388px" class="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] z-20 flex flex-col rounded-t-\[20px\]/);
+assert.match(half, /^<section data-testid="design-controls-panel" data-touch-area="true" data-temporary-reveal="false" data-sheet-snap="half" aria-label="Furnish" style="height:388px" class="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] z-20 flex flex-col rounded-t-\[20px\]/);
 assert.match(half, /<div class="flex shrink-0 justify-center"><button type="button" class="[^"]*\bmin-h-11\b[^"]*\bh-11 w-24 touch-none px-0 py-0" data-testid="design-controls-panel-handle" aria-label="Expand panel" aria-expanded="false" aria-controls="design-controls-sheet-body" title="Expand panel">/);
 assert.match(half, /<h2 class="[^"]*">Furnish<\/h2>/);
 assert.match(half, /<div id="design-controls-sheet-body" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3"><div data-testid="phone-sheet-inspector"/);

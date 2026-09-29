@@ -30,7 +30,7 @@ export function SelectedPlanOpeningActions({
 }: SelectedPlanOpeningActionsProps) {
   return (
     <div
-      data-testid="selected-plan-opening-actions"
+      data-testid="selected-plan-opening-actions" data-touch-area
       className={
         configuration.dark
           ? "designer-work-surface absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs md:flex"

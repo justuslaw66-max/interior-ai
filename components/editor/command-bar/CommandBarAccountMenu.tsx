@@ -69,7 +69,7 @@ function AccountMenuPanel(props: CommandBarAccountMenuProps) {
   const { dark, menuPanelClass } = props;
   return (
     <div
-      data-testid="editor-command-account-menu"
+      data-testid="editor-command-account-menu" data-touch-area
       role="menu"
       className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
     >

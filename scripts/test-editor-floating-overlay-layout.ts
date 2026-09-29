@@ -750,7 +750,7 @@ assert.match(
 );
 assert.match(
   editorViewToggleSource,
-  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
+  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 touch:h-11 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
   "The canvas toolbar's view selector should use the mockup's 32px segments."
 );
 

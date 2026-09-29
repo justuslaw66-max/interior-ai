@@ -66,7 +66,7 @@ function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props
       data-testid={`catalog-favorite-toggle-${item.id}`}
       aria-pressed={isFavorite}
       aria-label={isFavorite ? `Remove ${item.title} from Favourites` : `Save ${item.title} to Favourites`}
-      className={`absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
+      className={`absolute right-1.5 top-1.5 flex h-8 w-8 touch:h-11 touch:w-11 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
     >
       <Heart className={isFavorite ? "h-4 w-4 fill-current text-rose-600" : "h-4 w-4"} aria-hidden="true" />
     </button>
@@ -105,7 +105,7 @@ export default function CatalogCard(props: Props) {
         <button
           ref={previewRef}
           type="button"
-          data-testid={`catalog-preview-${item.id}`}
+          data-testid={`catalog-preview-${item.id}`} data-touch-exempt
           {...getCatalogDrawerFocusAttributes({ productId: item.id, action: "details", source: "product-card" })}
           className={`rounded text-left text-[13px] font-semibold leading-[17px] text-neutral-900 ${FOCUS_RING}`}
           onClick={(event) => props.onPreview(event.currentTarget)}

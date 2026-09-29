@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { chooseStartTemplate } from "./variant-test-utils";
+import { chooseStartTemplate, selectEditorWorkspace } from "./variant-test-utils";
 
 const VIEWPORTS = [
   { name: "phone", width: 390, height: 844 },
@@ -11,6 +11,22 @@ async function clearEditorStorage(page: import("@playwright/test").Page) {
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
+}
+
+// UX 4d (AX1): the visible buttons, selects and text fields in a phone's sheet or Menu that are
+// under 44px tall (a product card's name is exempt: the card's height is fixed).
+async function smallTouchTargets(scope: import("@playwright/test").Locator) {
+  return scope.evaluate((root) =>
+    [...root.querySelectorAll<HTMLElement>(
+      'button, select, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"])'
+    )]
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return box.width > 0 && box.height > 0 && !element.closest("[hidden]") && !element.hasAttribute("data-touch-exempt") &&
+          getComputedStyle(element).visibility !== "hidden" && box.height < 43.5;
+      })
+      .map((element) => `${element.dataset.testid ?? element.getAttribute("aria-label") ?? element.textContent?.trim().slice(0, 24)}: ${Math.round(element.getBoundingClientRect().height)}px`)
+  );
 }
 
 async function openTemplatePlan(page: import("@playwright/test").Page) {
@@ -108,6 +124,7 @@ test("a phone shows the picked window's inspector in the step sheet", async ({ p
   await expect(slot.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
   await expect(sheet.locator("h2")).toBeHidden();
   await expect(page.getByTestId("selected-plan-opening-actions")).toBeHidden();
+  expect(await smallTouchTargets(sheet), "The inspector's controls are 44px targets.").toEqual([]);
   const done = slot.getByTestId("selection-inspector-clear");
   await expect(done).toHaveText("Done");
   expect((await done.boundingBox())?.height).toBeGreaterThanOrEqual(44);
@@ -117,6 +134,31 @@ test("a phone shows the picked window's inspector in the step sheet", async ({ p
   await expect(slot).toBeHidden();
   await expect(sheet.locator("h2")).toBeVisible();
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+});
+
+// UX 4d (AX1): on a phone the sheet's and the Menu's controls are 44px targets, and fields use 16px
+// text, so iOS doesn't zoom in when one takes focus.
+test("a phone's sheet and Menu are made of 44px targets", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await clearEditorStorage(page);
+  await page.goto("/design", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  const sheet = page.getByTestId("design-controls-panel");
+  await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
+  expect(await smallTouchTargets(sheet), "Plan").toEqual([]);
+
+  await page.getByTestId("editor-command-overflow").click();
+  const menu = page.getByTestId("editor-command-overflow-menu");
+  await expect(menu).toBeVisible();
+  expect(await smallTouchTargets(menu), "Menu").toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+
+  await selectEditorWorkspace(page, "editor-workflow-furnish");
+  const search = page.getByTestId("catalog-search-input");
+  await expect(search).toBeVisible({ timeout: 20000 });
+  await expect(search).toHaveCSS("font-size", "16px");
+  expect(await smallTouchTargets(sheet), "Furnish").toEqual([]);
 });
 
 test.describe("20. Mobile Plan Mode", () => {
@@ -148,6 +190,13 @@ test.describe("20. Mobile Plan Mode", () => {
 
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "false");
       await expect(page.getByTestId("plan-manual-quick-actions")).toBeVisible();
+      // Tips sits under the quick actions (UX 4d), and on a phone every one is a 44px target.
+      const [quickBox, tipsBox] = await Promise.all([
+        page.getByTestId("plan-manual-quick-actions").boundingBox(),
+        page.getByTestId("plan-guided-actions-toggle").boundingBox(),
+      ]);
+      expect(tipsBox!.y).toBeGreaterThanOrEqual(quickBox!.y + quickBox!.height);
+      const minTarget = viewport.name === "phone" ? 44 : 36;
 
       for (const testId of [
         "manual-plan-action-select",
@@ -158,8 +207,8 @@ test.describe("20. Mobile Plan Mode", () => {
       ]) {
         const box = await page.getByTestId(testId).boundingBox();
         expect(box, `${testId} should be measurable`).not.toBeNull();
-        expect(box?.width ?? 0, `${testId} should be finger-friendly`).toBeGreaterThanOrEqual(36);
-        expect(box?.height ?? 0, `${testId} should be finger-friendly`).toBeGreaterThanOrEqual(36);
+        expect(box?.width ?? 0, `${testId} should be finger-friendly`).toBeGreaterThanOrEqual(minTarget);
+        expect(box?.height ?? 0, `${testId} should be finger-friendly`).toBeGreaterThanOrEqual(minTarget);
       }
 
       const overflow = await page.evaluate(

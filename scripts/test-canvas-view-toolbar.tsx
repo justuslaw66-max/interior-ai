@@ -48,7 +48,7 @@ const toolbarProps = {
 };
 const toolbar = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} />);
 assert.match(toolbar, /^<div role="group" aria-label="Canvas controls" data-testid="canvas-view-toolbar" class="absolute top-bar-4 z-40 flex -translate-x-1\/2 /);
-assert.match(toolbar, /style="left:clamp\(454px, calc\(50% \+ 159px\), calc\(100% - 484px\)\)"/);
+assert.match(toolbar, /style="left:clamp\(462px, calc\(50% \+ 159px\), calc\(100% - 496px\)\)"/);
 const order = ["editor-view-toggle", "editor-view-2d", "editor-view-3d", "canvas-fit-view", "command-undo", "command-redo"];
 const positions = order.map((testId) => toolbar.indexOf(`data-testid="${testId}"`));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "2D | 3D, then Fit, Undo and Redo.");
@@ -62,7 +62,7 @@ const unfit = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} canFit={
 assert.match(unfit, /data-testid="canvas-fit-view"[^>]*disabled=""/, "Fit waits for a room.");
 
 // Centred on the canvas right of the step panel, but clear of a 340px right panel and the step panel.
-assert.equal(canvasToolbarLeft(0), "clamp(136px, calc(50% + 0px), calc(100% - 484px))");
+assert.equal(canvasToolbarLeft(0), "clamp(144px, calc(50% + 0px), calc(100% - 496px))");
 for (const [input, expected] of [
   [{ panelVisible: false, shopping: false, collapsed: false, isDesigner: false }, 0],
   [{ panelVisible: true, shopping: false, collapsed: false, isDesigner: false }, 318],

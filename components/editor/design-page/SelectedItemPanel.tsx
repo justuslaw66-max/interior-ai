@@ -185,7 +185,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
       aria-hidden={isClientPreview}
     >
       <section
-        data-testid="selected-item-panel"
+        data-testid="selected-item-panel" data-touch-area
         aria-label="Selected product"
         className={
           dark

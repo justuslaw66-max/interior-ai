@@ -45,7 +45,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
 
   return (
     <div
-      data-testid="plan-canvas-guidance"
+      data-testid="plan-canvas-guidance" data-touch-area
       data-tone={state.guidance.tone}
       className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
       style={onSheet ? { bottom: `calc(${sheet.heightPx + 8}px + env(safe-area-inset-bottom))` } : undefined}

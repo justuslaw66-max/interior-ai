@@ -16,7 +16,7 @@ type EditorViewToggleProps = {
 };
 
 const CANVAS_SEGMENT_CLASS =
-  "inline-flex h-8 items-center justify-center rounded-[7px] px-3.5 text-[13px] font-bold leading-none";
+  "inline-flex h-8 touch:h-11 items-center justify-center rounded-[7px] px-3.5 text-[13px] font-bold leading-none";
 const PILL_SEGMENT_CLASS =
   "inline-flex h-11 w-12 items-center justify-center rounded-[9px] text-sm font-bold leading-none";
 

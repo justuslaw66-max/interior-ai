@@ -14,6 +14,14 @@
    (UX audit 2026-09-23, SX3). Nothing sets the attribute yet. */
 @custom-variant dark (&:where([data-color-scheme="dark"], [data-color-scheme="dark"] *));
 
+/* Touch (UX 4d, audit AX1): phones, and screens whose main pointer is a finger. touch:min-h-11
+   makes a control a 44px target there and leaves the desktop's dense sizes alone. */
+@custom-variant touch {
+  @media (width < 48rem), (pointer: coarse) {
+    @slot;
+  }
+}
+
 :root {
   --bg-canvas: #ffffff;
   --bg-panel: #ffffff;
@@ -108,6 +116,29 @@
   :focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
+  }
+}
+
+/* Touch targets (UX 4d, audit AX1): on phones and touch screens, every button, field and select in a
+   touch area (the phone's sheet, the menus, the panels over the canvas) is at least 44px tall. In
+   the utilities layer, so it outranks their dense sizes; data-touch-exempt leaves a control alone
+   (a product card's name: the card's height is fixed). */
+@layer utilities {
+  @media (width < 48rem), (pointer: coarse) {
+    [data-touch-area]
+      :is(button, select, [role="switch"], input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"])):not([data-touch-exempt]) {
+      min-height: 2.75rem;
+    }
+  }
+}
+
+/* Fields use 16px text on phones (UX 4d, audit AX1), so iOS doesn't zoom the page in when one takes
+   focus. Outside the layers, so it outranks the text-size utilities (not inline styles). */
+@media (width < 48rem) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]),
+  select,
+  textarea {
+    font-size: 1rem;
   }
 }
 

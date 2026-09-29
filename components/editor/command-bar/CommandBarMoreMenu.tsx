@@ -47,7 +47,7 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
         lightingSettingsOpen={lightingSettingsOpen} onToggle={onToggle} />
       {open && (
         <div
-          data-testid="editor-command-overflow-menu"
+          data-testid="editor-command-overflow-menu" data-touch-area
           role="menu"
           className={props.menuPanelClass}
         >
