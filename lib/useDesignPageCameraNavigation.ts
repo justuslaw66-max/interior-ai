@@ -14,7 +14,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
-import { resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
+import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
@@ -418,7 +418,7 @@ export function useDesignPageCameraNavigation({
       viewportWidthPx >= 768 && floatingPlanOverlayStackVisible
         ? floatingPlanOverlayStackWidthPx + 32
         : 0;
-    const topInsetPx = viewportWidthPx >= 768 ? 96 : 72;
+    const topInsetPx = viewportWidthPx >= 768 ? EDITOR_BAR_HEIGHT_PX + 60 : 72;
     const bottomInsetPx = viewportWidthPx < 768 ? 96 : 48;
     const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
     const effectiveHeightPx = Math.max(260, viewportHeightPx - topInsetPx - bottomInsetPx);

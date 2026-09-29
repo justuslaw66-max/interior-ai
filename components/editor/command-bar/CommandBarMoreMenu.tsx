@@ -54,13 +54,12 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
         }
         className={
           dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none lg:w-auto lg:px-3"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 lg:w-auto lg:px-3"
+            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-bold leading-none md:h-9 md:w-9"
+            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:h-9 md:w-9"
         }
         onClick={onToggle}
       >
-        <Ellipsis className="h-4 w-4 lg:hidden" aria-hidden="true" />
-        <span className="hidden lg:inline">More</span>
+        <Ellipsis className="h-4 w-4" aria-hidden="true" />
       </button>
       {open && (
         <div
@@ -113,7 +112,7 @@ function MoreMenuDesignItems({
       )}
       {onRenameDesign ? (
         <button type="button" role="menuitem" data-testid="editor-command-overflow-rename-design"
-          className={`${menuButtonClass} xl:hidden`}
+          className={`${menuButtonClass} md:hidden`}
           onClick={() => {
             // Rename design hands focus back to More when the bar has no design name.
             buttonRef.current?.focus();

@@ -31,8 +31,9 @@
   --foreground: var(--text-primary);
   --font-geist-sans: Arial, Helvetica, sans-serif;
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  /* The editor's command bar from md (UX 4c). What sits under it is placed from it (top-bar-*). */
-  --editor-bar-h: 2.25rem;
+  /* The editor's command bar from md (UX 4c, 56px as in the TopBar mockup). What sits under it is
+     placed from it (top-bar-*), and so is lib/design-page-editor-configuration's EDITOR_BAR_HEIGHT_PX. */
+  --editor-bar-h: 3.5rem;
 }
 
 /* top-bar-2 is 0.5rem under the editor's command bar, top-bar-6 1.5rem, and so on. */

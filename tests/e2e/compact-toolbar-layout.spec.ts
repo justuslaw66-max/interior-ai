@@ -1,15 +1,15 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// Undo, Redo and 2D/3D sit in the canvas toolbar from md (UX 4c), checked below.
-const CLOSED_CONTROL_TEST_IDS = [
+// The 56px bar (UX 4c, the approved TopBar mockup): its controls are 36px and its steps a 44px
+// segmented control in the centre. Undo, Redo and 2D/3D sit in the canvas toolbar, checked below.
+const BAR_CONTROL_TEST_IDS = [
   "editor-design-sidebar-toggle",
-  "editor-design-steps",
-  "save-status",
   "save-design",
   "editor-command-overflow",
   // Both tests run as guests, whose account corner is Sign in.
   "editor-command-sign-in",
 ] as const;
+const BAR_HEIGHT = 56;
 
 async function mockProPlan(page: Page) {
   await page.route("**/api/me", async (route) => {
@@ -26,19 +26,21 @@ async function expectCompactToolbarGeometry(page: Page) {
   await expect(commandBar).toBeVisible({ timeout: 30_000 });
   await expect
     .poll(async () => (await commandBar.boundingBox())?.height)
-    .toBe(36);
+    .toBe(BAR_HEIGHT);
 
   const barBounds = await commandBar.boundingBox();
   expect(barBounds).not.toBeNull();
   const expectedCenterY = barBounds!.y + barBounds!.height / 2;
 
-  for (const testId of CLOSED_CONTROL_TEST_IDS) {
+  for (const [testId, height] of [
+    ...BAR_CONTROL_TEST_IDS.map((testId) => [testId, 36] as const),
+    ["editor-design-steps", 44] as const,
+  ]) {
     const control = page.getByTestId(testId);
     await expect(control, `${testId} should remain visible`).toBeVisible();
     const bounds = await control.boundingBox();
     expect(bounds, `${testId} should have measurable bounds`).not.toBeNull();
-    expect(bounds!.height, `${testId} should be approximately 30px high`).toBeGreaterThanOrEqual(29);
-    expect(bounds!.height, `${testId} should be approximately 30px high`).toBeLessThanOrEqual(31);
+    expect(Math.round(bounds!.height), `${testId} should be ${height}px high`).toBe(height);
     expect(
       Math.abs(bounds!.y + bounds!.height / 2 - expectedCenterY),
       `${testId} should stay vertically centered`,
@@ -50,6 +52,18 @@ async function expectCompactToolbarGeometry(page: Page) {
     );
     expect(clipped, `${testId} should not clip its label or icon`).toBe(false);
   }
+
+  // The save status is a line under the design's name, inside the bar.
+  const status = page.getByTestId("save-status");
+  await expect(status).toBeVisible();
+  const statusBounds = await status.boundingBox();
+  expect(statusBounds!.y).toBeGreaterThanOrEqual(barBounds!.y);
+  expect(statusBounds!.y + statusBounds!.height).toBeLessThanOrEqual(barBounds!.y + barBounds!.height);
+
+  // The steps sit in the middle of the bar, give or take what a crowded side takes from its half.
+  const steps = await page.getByTestId("editor-design-steps").boundingBox();
+  const stepsCentre = steps!.x + steps!.width / 2;
+  expect(Math.abs(stepsCentre - (barBounds!.x + barBounds!.width / 2))).toBeLessThanOrEqual(barBounds!.width / 4);
 }
 
 // The canvas toolbar: under the bar, clear of the step panel, 36px buttons and 32px view segments.
@@ -136,10 +150,11 @@ test.describe("compact top toolbar", () => {
       page.getByTestId("editor-command-overflow-menu"),
     );
     await page.keyboard.press("Escape");
-    // Free guests get Get Pro beside Sign in, at the bar's 30px height.
-    await expect(page.getByTestId("editor-command-get-pro")).toHaveCSS("height", "30px");
-    // Wide screens lead the bar with the design's name.
-    await expect(page.getByTestId("editor-design-title")).toHaveCSS("height", "30px");
+    // Free guests get Get Pro beside Sign in, at the bar's 36px height.
+    await expect(page.getByTestId("editor-command-get-pro")).toHaveCSS("height", "36px");
+    // The bar leads with Interior AI, then the design's name with its status under it.
+    await expect(page.getByTestId("editor-command-home")).toHaveText("Interior AI");
+    await expect(page.getByTestId("editor-design-title")).toHaveCSS("height", "24px");
 
     await page.setViewportSize({ width: 900, height: 800 });
     await expectCompactToolbarGeometry(page);

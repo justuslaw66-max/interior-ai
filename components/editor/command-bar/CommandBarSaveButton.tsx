@@ -12,7 +12,8 @@ type CommandBarSaveButtonProps = {
 /**
  * Save. Guests are asked to sign in first. Phones show only the icon (a spinner while saving), so
  * Share, More and Account still fit beside the Pro indicator; the label shows from `sm` up. Below
- * 390px even that is too wide, so the Pro indicator hides there (the dark Pro theme stays).
+ * 390px even that is too wide, so the Pro indicator hides there (the dark Pro theme stays). An
+ * outline, as Share is the bar's one black action (UX 4c); 36px from md.
  */
 export function CommandBarSaveButton({ dark, isSaving, onSave }: CommandBarSaveButtonProps) {
   const label = isSaving ? "Saving…" : "Save";
@@ -24,8 +25,8 @@ export function CommandBarSaveButton({ dark, isSaving, onSave }: CommandBarSaveB
       aria-label={label}
       className={
         dark
-          ? "designer-primary-action inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg text-sm font-semibold leading-none disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-sm font-semibold leading-none text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4"
+          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-bold leading-none disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4 md:h-9"
+          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4 md:h-9"
       }
       onClick={onSave}
       disabled={isSaving}

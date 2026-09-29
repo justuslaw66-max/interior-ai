@@ -36,7 +36,7 @@ type CommandBarAccountMenuProps = {
 export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
   const { dark, containerRef, open, onToggle } = props;
   if (!props.accountReady) {
-    return <span aria-hidden="true" data-testid="editor-command-account-pending" className="h-[30px] w-[30px] shrink-0" />;
+    return <span aria-hidden="true" data-testid="editor-command-account-pending" className="h-[30px] w-[30px] shrink-0 md:h-9 md:w-9" />;
   }
   if (!props.isAuthed) return <CommandBarSignInButton dark={dark} />;
   const initial = props.accountName?.trim().charAt(0).toUpperCase();
@@ -50,8 +50,8 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
         aria-expanded={open}
         className={
           dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border text-sm font-semibold leading-none"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-200"
+            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border text-sm font-bold leading-none md:h-9 md:w-9"
+            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-200 md:h-9 md:w-9"
         }
         onClick={onToggle}
       >
@@ -141,8 +141,8 @@ function CommandBarSignInButton({ dark }: { dark: boolean }) {
       aria-label="Sign in"
       className={
         dark
-          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none lg:w-auto lg:px-3"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 lg:w-auto lg:px-3"
+          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-bold leading-none md:h-9 md:w-9 lg:w-auto lg:px-3.5"
+          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:h-9 md:w-9 lg:w-auto lg:px-3.5"
       }
       onClick={signInWithReturn}
     >

@@ -6,7 +6,9 @@ import { CommandBarCanvasControls } from "@/components/editor/command-bar/Comman
 import { CommandBarDesignTitle } from "@/components/editor/command-bar/CommandBarDesignTitle";
 import { CommandBarDownloadButton } from "@/components/editor/command-bar/CommandBarDownloadButton";
 import { CommandBarGetProButton } from "@/components/editor/command-bar/CommandBarGetProButton";
+import { CommandBarHomeLink } from "@/components/editor/command-bar/CommandBarHomeLink";
 import { CommandBarMoreMenu } from "@/components/editor/command-bar/CommandBarMoreMenu";
+import { CommandBarProIndicator } from "@/components/editor/command-bar/CommandBarProIndicator";
 import { CommandBarSaveButton } from "@/components/editor/command-bar/CommandBarSaveButton";
 import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBarSaveStatus";
 import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
@@ -151,12 +153,16 @@ export default function EditorCommandBar({
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm transition-opacity duration-300 sm:px-4 md:h-(--editor-bar-h) md:gap-2 md:backdrop-blur ${
+      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm transition-opacity duration-300 sm:px-4 md:h-(--editor-bar-h) md:gap-4 md:backdrop-blur ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
-      <div className="flex min-w-0 items-center gap-1 md:gap-1.5">
-        <CommandBarDesignTitle dark={dark} title={designTitle} onRename={onRenameDesign} />
+      <div className="flex min-w-0 items-center gap-1 md:flex-1 md:basis-0 md:gap-3">
+        <CommandBarHomeLink dark={dark} myDesignsAvailable={showLoadDesign} onOpenMyDesigns={onOpenMyDesigns} />
+        <div className="hidden min-w-0 flex-col justify-center gap-0.5 md:flex">
+          <CommandBarDesignTitle dark={dark} title={designTitle} onRename={onRenameDesign} />
+          <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
+        </div>
         <CommandBarCanvasControls
           dark={dark}
           isClientPreview={isClientPreview}
@@ -172,43 +178,24 @@ export default function EditorCommandBar({
           viewMode={viewMode}
           onViewModeChange={onViewModeChange}
         />
-
-        <CommandBarStepTabs
-          dark={dark}
-          steps={steps}
-          focusFallbackStepId={focusFallbackStepId}
-        />
-
-        {isDesigner && !isClientPreview ? (
-          <span
-            data-testid="pro-mode-indicator"
-            role="status"
-            aria-label="Pro tools on"
-            className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700 max-[390px]:hidden"
-          >
-            <span className="lg:hidden">Pro</span>
-            <span className="hidden lg:inline">Pro tools</span>
-          </span>
-        ) : null}
-      </div>
-
-      <div className="pointer-events-none hidden min-w-0 flex-1 items-center justify-center min-[1800px]:flex">
+        <CommandBarProIndicator visible={isDesigner && !isClientPreview} />
         {contextSlot ? (
           <div
             data-testid="editor-command-context"
-            className="pointer-events-auto flex min-w-0 max-w-full items-center justify-center overflow-hidden"
+            className="pointer-events-auto hidden min-w-0 flex-1 items-center justify-center overflow-hidden min-[1800px]:flex"
           >
             {contextSlot}
           </div>
         ) : null}
       </div>
 
-      <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 md:gap-1.5">
+      <CommandBarStepTabs dark={dark} steps={steps} focusFallbackStepId={focusFallbackStepId} />
+
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-0.5 md:ml-0 md:min-w-max md:flex-1 md:basis-0 md:gap-2">
         <CommandBarGetProButton dark={dark} accountReady={accountReady} canUpgrade={canUpgrade} onGetPro={onGetPro} />
-        <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
         <CommandBarSaveButton dark={dark} isSaving={isSaving} onSave={onSave} />
-        <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
         <CommandBarDownloadButton dark={dark} onDownload={onDownload} />
+        <CommandBarShareButton dark={dark} isSharing={isSharing} onShare={onShare} />
         <CommandBarMoreMenu
           dark={dark}
           containerRef={overflowRef}

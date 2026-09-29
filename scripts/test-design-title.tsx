@@ -103,20 +103,20 @@ assert.match(
   named,
   new RegExp(`id="${DESIGN_RENAME_OPENER_ID}"[^>]*data-testid="editor-design-title"[^>]*aria-haspopup="dialog"[^>]*aria-label="Rename design, Tan flat"`),
 );
-assert.match(named, /data-testid="editor-design-title"[^>]*class="hidden [^"]*max-w-\[200px\][^"]*xl:flex/);
+assert.match(named, /data-testid="editor-design-title"[^>]*class="-ml-1\.5 hidden h-6 [^"]*max-w-\[240px\][^"]*md:flex/);
 assert.ok(
   named.indexOf('data-testid="editor-design-title"') < named.indexOf('data-testid="command-undo"'),
   "The name leads the bar, as in the mockups.",
 );
 assert.doesNotMatch(bar({ designTitle: "Tan flat" }), /editor-design-title/, "No handler, no name button.");
-// The status keeps its label for xl and its detail for 2xl, so the name has room at 1280px.
-assert.match(named, /max-w-28 truncate font-semibold xl:inline">Saved</);
-assert.match(named, /max-w-36 truncate 2xl:inline">Just now</);
-// The groups size to their content; the room status needs 1800px beside the name.
-assert.match(named, /class="ml-auto flex shrink-0 items-center justify-end/);
-assert.match(named, /hidden min-w-0 flex-1 items-center justify-center min-\[1800px\]:flex/);
+// From md the status is a line under the name (UX 4c): its label, with the detail as the tooltip.
+assert.match(named, /<span class="min-w-0 truncate">Saved<\/span>/);
+assert.match(named, /data-testid="save-status"[^>]*title="Just now"/);
+// Two equal sides with the steps between them; the name side gives way first.
+assert.match(named, /class="flex min-w-0 items-center gap-1 md:flex-1 md:basis-0 md:gap-3"/);
+assert.match(named, /class="ml-auto flex shrink-0 items-center justify-end gap-0\.5 md:ml-0 md:min-w-max md:flex-1 md:basis-0 md:gap-2"/);
 
-// Below xl, Rename design is in More, and the dialog then hands focus back to More.
+// On phones Rename design is in More, and the dialog then hands focus back to More.
 type MoreProps = ComponentProps<typeof CommandBarMoreMenu>;
 const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
   dark: false, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
@@ -126,7 +126,7 @@ const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
   onToggleDesignerMode: noop, onToggleClientPreview: noop, onOpenPresentExport: noop, onExport: noop,
   onOpenLightingSettings: noop, onCloseLightingSettings: noop, onFeedback: noop, onRenameDesign: noop,
 } satisfies MoreProps));
-assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item xl:hidden"[^>]*>Rename design</);
+assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item md:hidden"[^>]*>Rename design</);
 assert.deepEqual(DESIGN_RENAME_RETURN_FOCUS_IDS, [DESIGN_RENAME_OPENER_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID]);
 
 // The dialog: the current name to edit, the API's length limit, and no empty names.

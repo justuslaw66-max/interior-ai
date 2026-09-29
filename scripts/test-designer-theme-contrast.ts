@@ -293,7 +293,11 @@ assert.match(
 );
 assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
 assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");
-assert.match(commandBarSource, /designer-status-(?:ready|blocked|info|pending)/, "Save states should use semantic Pro statuses.");
+assert.match(
+  commandBarSource,
+  /if \(saveStatus\.tone === "error"\) return dark \? "text-red-300" : "text-red-700";[\s\S]*?return dark \? "text-emerald-300" : "text-success";/,
+  "The save status line keeps red for Not saved and green for Saved, in both themes (UX 4c)."
+);
 
 const legacySurfacePattern = /#(?:10131a|12151d|151820|1b2030)/i;
 for (const relativePath of [

@@ -1,3 +1,5 @@
+export { EDITOR_BAR_HEIGHT_PX } from "@/lib/design-page-editor-configuration";
+
 /**
  * How far the step panel reaches into the canvas from the left, from md: the 2D fit keeps the
  * plan clear of it, and the canvas toolbar centres itself on the rest (UX 4c). Pro's panel sits

@@ -9,8 +9,8 @@ import {
 import { getE2EBaseUrl } from "./release-environment";
 import { waitForEditorHydration } from "./variant-test-utils";
 
-// The design's name (audit finding F): in the bar from 1280px, renamed in one undoable step, kept
-// on this device for guests and saved to the design row, which My designs lists, when signed in.
+// The design's name (audit finding F): in the bar from md (UX 4c), renamed in one undoable step,
+// kept on this device for guests and saved to the design row, which My designs lists, when signed in.
 
 const DESKTOP = { width: 1440, height: 900 };
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
@@ -73,9 +73,11 @@ test.describe("design name in the command bar", () => {
     await expect(page.getByTestId("editor-design-title")).toHaveText("Tan flat", { timeout: 30_000 });
   });
 
-  test("below 1280px Rename design is in More, and focus comes back to More", async ({ page }) => {
+  test("phones rename from More, and focus comes back to More", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 800 });
     await openGuestEditor(page);
+    await expect(page.getByTestId("editor-design-title")).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.getByTestId("editor-design-title")).toBeHidden();
 
     const more = page.getByTestId("editor-command-overflow");

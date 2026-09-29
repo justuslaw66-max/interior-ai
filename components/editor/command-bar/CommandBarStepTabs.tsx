@@ -63,27 +63,28 @@ export function CommandBarStepTabs({ dark, steps, focusFallbackStepId }: Command
   );
 }
 
-// Phones: a bar fixed to the bottom of the screen. Tablets and up: a segmented control in the bar.
+// Phones: a bar fixed to the bottom of the screen. From md: the centre of the bar, as a segmented
+// control of 36px steps with the current one black (UX 4c, the approved TopBar mockup).
 function stepNavClass(dark: boolean) {
   const shape =
-    "fixed inset-x-0 bottom-0 z-50 grid h-[calc(4rem+env(safe-area-inset-bottom))] grid-cols-3 gap-1 border-t p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] md:static md:inline-flex md:h-[30px] md:shrink-0 md:items-center md:gap-0.5 md:rounded-lg md:p-0.5";
+    "fixed inset-x-0 bottom-0 z-50 grid h-[calc(4rem+env(safe-area-inset-bottom))] grid-cols-3 gap-1 border-t p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] md:static md:inline-flex md:h-11 md:shrink-0 md:items-center md:gap-1 md:rounded-xl md:p-1";
   return `${shape} ${dark ? "designer-control md:border" : "border-neutral-200 bg-neutral-100 md:border-0"}`;
 }
 
 function stepButtonClass(active: boolean, dark: boolean) {
   const shape =
-    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold leading-none md:h-[26px] md:flex-row md:gap-1.5 md:rounded-md md:px-2 md:text-sm lg:px-2.5";
+    "flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold leading-none md:h-9 md:flex-row md:gap-2 md:rounded-[9px] md:px-3 md:text-sm md:font-bold xl:pl-2.5 xl:pr-4";
   if (dark) return `${shape} ${active ? "designer-control-active" : "designer-work-control"}`;
   return `${shape} ${
     active
-      ? "bg-white text-neutral-950 shadow-sm"
-      : "text-neutral-600 hover:bg-white/70 hover:text-neutral-900"
+      ? "bg-white text-neutral-950 shadow-sm md:bg-neutral-900 md:text-white md:shadow-none"
+      : "text-neutral-600 hover:bg-white/70 hover:text-neutral-900 md:text-neutral-700"
   }`;
 }
 
-// Wide screens show each step's number beside its name.
+// From xl each step shows its number beside its name.
 function stepNumberClass(active: boolean, dark: boolean) {
-  const shape = "hidden h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold lg:inline-flex";
+  const shape = "hidden h-5 w-5 items-center justify-center rounded-full text-xs font-bold xl:inline-flex";
   if (dark) return `${shape} ${active ? "bg-white text-neutral-950" : "bg-white/20"}`;
-  return `${shape} ${active ? "bg-neutral-900 text-white" : "bg-neutral-300 text-neutral-700"}`;
+  return `${shape} ${active ? "bg-neutral-900 text-white md:bg-white md:text-neutral-900" : "bg-neutral-300 text-neutral-700 md:bg-neutral-200"}`;
 }

@@ -219,7 +219,7 @@ assert.match(
 
 assert.match(
   editorConfigurationSource,
-  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 304;/,
+  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX \+ 268;/,
   "Selection inspector should dock beneath the floating room navigator."
 );
 
@@ -397,7 +397,7 @@ assert.match(
 
 assert.match(
   planAuthoringRegistrationSource,
-  /reviewPanelTopPx: 56,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
+  /reviewPanelTopPx: EDITOR_BAR_HEIGHT_PX \+ 20,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
   "Plan authoring should configure the review panel against the shared overlay row."
 );
 
@@ -506,7 +506,7 @@ assert.match(
 
 assert.match(
   planPresentationSource,
-  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: 140;/,
+  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: EDITOR_BAR_HEIGHT_PX \+ 104;/,
   "The plan presentation model should place the selection inspector below the navigator or plan review panel."
 );
 
@@ -642,7 +642,7 @@ assert.match(
 assert.match(
   editorCommandBarSource,
   /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-\(--editor-bar-h\)/,
-  "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
+  "The editor command bar should contain 44px mobile history targets and be --editor-bar-h (56px) tall from md."
 );
 
 // Phones keep Undo and Redo in the bar at 44px; from md they're the canvas toolbar's (UX 4c).
@@ -664,36 +664,54 @@ for (const historyTestId of ["command-undo", "command-redo"] as const) {
   );
 }
 
+// The 56px bar's controls are 36px from md (the TopBar mockup); phones keep 30px until 4d.
 for (const controlTestId of [
   "editor-design-sidebar-toggle",
-  "save-status",
   "save-design",
   "editor-command-overflow",
   "editor-command-account",
 ] as const) {
   assert.match(
     editorCommandBarSource,
-    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?h-\\[30px\\]`),
-    `${controlTestId} should use the shared 30px closed-control height.`
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?h-\\[30px\\][^"]*\\bmd:h-9\\b`),
+    `${controlTestId} should be 30px on phones and 36px from md.`
   );
 }
+for (const controlTestId of ["editor-command-get-pro", "editor-command-download"] as const) {
+  assert.match(
+    editorCommandBarSource,
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,600}?"hidden h-9 `),
+    `${controlTestId} should be 36px where it shows.`
+  );
+}
+assert.match(
+  editorCommandBarSource,
+  /<div className="hidden min-w-0 flex-col justify-center gap-0\.5 md:flex">\s*<CommandBarDesignTitle [^>]*\/>\s*<CommandBarSaveStatus [^>]*\/>\s*<\/div>/,
+  "From md the save status is a line under the design's name."
+);
+assert.match(
+  editorCommandBarSource,
+  /md:flex-1 md:basis-0 md:gap-3">[\s\S]*?<\/div>\s*<CommandBarStepTabs [^>]*\/>\s*<div className="ml-auto flex shrink-0 items-center justify-end gap-0\.5 md:ml-0 md:min-w-max md:flex-1 md:basis-0 md:gap-2">/,
+  "From md the steps sit in the centre of the bar, between two equal sides."
+);
 
 // The steps sit in the bar from tablet width up; phones get them as a bar along the bottom.
 assert.match(
   editorCommandBarSource,
-  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-\[30px\]/,
-  "The design steps should use the shared 30px closed-control height in the bar and a bottom bar on phones."
+  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-11 [^"]*md:rounded-xl md:p-1/,
+  "The design steps should be the mockup's 44px segmented control of 36px steps in the bar, and a bottom bar on phones."
 );
 assert.match(
   editorCommandBarSource,
-  /md:h-\(--editor-bar-h\) md:gap-2 md:backdrop-blur/,
+  /md:h-\(--editor-bar-h\) md:gap-4 md:backdrop-blur/,
   "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
 );
 
 // One bar height from md (UX 4c): the bar is --editor-bar-h tall, and what sits under it is placed
 // from it with top-bar-* (0.5rem under the bar is top-bar-2), so the bar can grow in one place.
 const globalsCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
-assert.match(globalsCss, /:root \{[\s\S]*?--editor-bar-h: 2\.25rem;[\s\S]*?\}/);
+assert.match(globalsCss, /:root \{[\s\S]*?--editor-bar-h: 3\.5rem;[\s\S]*?\}/);
+assert.match(editorConfigurationSource, /export const EDITOR_BAR_HEIGHT_PX = 56;/, "The TypeScript bar height matches --editor-bar-h.");
 assert.match(globalsCss, /@utility top-bar-\* \{\s*top: calc\(var\(--editor-bar-h\) \+ --spacing\(--value\(integer\)\)\);\s*\}/);
 const editorOverlayFiles = [
   "components/editor/DesignControlsPanel.tsx",

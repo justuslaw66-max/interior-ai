@@ -67,8 +67,8 @@ function DesignSidebarToggle({
       title="Toggle design sidebar (Ctrl/⌘ B)"
       className={
         dark
-          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
+          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border md:h-9 md:w-9 md:rounded-lg"
+          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950 md:h-9 md:w-9 md:rounded-lg"
       }
       onClick={onToggleDesignSidebar}
     >

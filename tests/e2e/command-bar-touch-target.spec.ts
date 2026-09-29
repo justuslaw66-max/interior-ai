@@ -143,10 +143,11 @@ async function expectDesktopHistoryGeometry(page: Page) {
   await expect(bar.getByTestId("editor-view-toggle")).toHaveCount(0);
   await expectSemanticTarget(undo, 36, "desktop Undo");
   await expectSemanticTarget(redo, 36, "desktop Redo");
-  await expect.poll(async () => (await bar.boundingBox())?.height).toBe(36);
+  await expect.poll(async () => (await bar.boundingBox())?.height).toBe(56);
   const [barBox, toolbarBox] = await Promise.all([bar.boundingBox(), toolbar.boundingBox()]);
   expect(toolbarBox!.y).toBeGreaterThanOrEqual(barBox!.y + barBox!.height + 8);
-  await expect(page.getByTestId("save-status")).toHaveCSS("height", "30px");
+  // The save status is a 16px line under the design's name (UX 4c).
+  await expect(page.getByTestId("save-status")).toHaveCSS("height", "16px");
   await expectNoHorizontalOverflow(page);
 }
 

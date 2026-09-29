@@ -84,7 +84,7 @@ assert.equal(calls.length, 2, "The upgrade dialog should open at most once a ses
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const commandBar = readEditorCommandBarSource();
-assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"designer-control hidden h-\[30px\][^"]*md:inline-flex/,
+assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"designer-control hidden h-9 w-9 [^"]*md:inline-flex/,
   "Download sits in the bar from tablet width up.");
 assert.match(commandBar, /data-testid="editor-command-overflow-download"\s*className=\{`\$\{menuButtonClass\} md:hidden`\}/,
   "Phones reach Download through More.");

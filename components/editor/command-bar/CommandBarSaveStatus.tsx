@@ -1,26 +1,13 @@
 "use client";
 
+import { Check } from "lucide-react";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 
-function getSaveStatusClassName(tone: EditorSaveStatus["tone"], dark: boolean) {
-  if (dark) {
-    if (tone === "error") return "designer-status-blocked";
-    if (tone === "saving") return "designer-status-info";
-    if (tone === "saved") return "designer-status-ready";
-    return "designer-status-pending";
-  }
-
-  if (tone === "error") return "border-red-200 bg-red-50 text-red-800";
-  if (tone === "saving") return "border-blue-200 bg-blue-50 text-blue-800";
-  if (tone === "saved") return "border-emerald-200 bg-emerald-50 text-emerald-800";
-  return "border-neutral-200 bg-white text-neutral-700";
-}
-
-function getSaveStatusDotClassName(tone: EditorSaveStatus["tone"]) {
-  if (tone === "error") return "bg-red-500";
-  if (tone === "saving") return "bg-blue-500";
-  if (tone === "saved") return "bg-emerald-500";
-  return "bg-neutral-400";
+/** "Saved" (to the account) is the one green line; the others are muted, and "Not saved" red. */
+function getSaveStatusClassName(saveStatus: EditorSaveStatus, dark: boolean) {
+  if (saveStatus.tone === "error") return dark ? "text-red-300" : "text-red-700";
+  if (saveStatus.tone === "saved" && saveStatus.source === "cloud") return dark ? "text-emerald-300" : "text-success";
+  return dark ? "text-neutral-300" : "text-ink-muted";
 }
 
 type CommandBarSaveStatusProps = {
@@ -30,15 +17,16 @@ type CommandBarSaveStatusProps = {
 };
 
 /**
- * The command bar's save-status pill, with Retry when a save failed. Its label ("Saving…", "Saved",
- * "Saved on this device", "Not saved") shows from `xl` and its detail from `2xl`, so the bar keeps
- * room for the design's name; the detail is also the tooltip.
+ * The save status, a line under the design's name from md (UX 4c, the approved TopBar mockup):
+ * "Saving…", "✓ Saved", "Saved on this device" or "Not saved" with Retry. The detail is the
+ * tooltip and part of what a screen reader hears; a design that hasn't saved yet says nothing.
  */
 export function CommandBarSaveStatus({
   dark,
   saveStatus,
   onRetrySaveStatus,
 }: CommandBarSaveStatusProps) {
+  const savedToAccount = saveStatus.tone === "saved" && saveStatus.source === "cloud";
   return (
     <div
       data-testid="save-status"
@@ -53,34 +41,15 @@ export function CommandBarSaveStatus({
       aria-live="polite"
       aria-label={saveStatus.label ? `${saveStatus.label}. ${saveStatus.detail}` : saveStatus.detail}
       title={saveStatus.detail}
-      className={`hidden h-[30px] min-w-0 shrink-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
-        saveStatus.canRetry ? "" : "lg:shrink"
-      } ${getSaveStatusClassName(
-        saveStatus.tone,
-        dark
-      )}`}
+      className={`hidden h-4 min-w-0 items-center gap-1 text-xs leading-none md:flex ${getSaveStatusClassName(saveStatus, dark)}`}
     >
-      <span
-        className={`h-2.5 w-2.5 shrink-0 rounded-full ${getSaveStatusDotClassName(saveStatus.tone)} ${
-          saveStatus.tone === "saving" ? "animate-pulse" : ""
-        }`}
-        aria-hidden="true"
-      />
-      <span className="hidden min-w-0 max-w-28 truncate font-semibold xl:inline">
-        {saveStatus.label}
-      </span>
-      <span className="hidden min-w-0 max-w-36 truncate 2xl:inline">
-        {saveStatus.detail}
-      </span>
+      {savedToAccount ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
+      <span className="min-w-0 truncate">{saveStatus.label}</span>
       {saveStatus.canRetry ? (
         <button
           type="button"
           data-testid="save-status-retry"
-          className={
-            dark
-              ? "hidden shrink-0 rounded-full border border-white/20 px-2 py-0.5 font-semibold text-white hover:bg-white/10 xl:inline-flex"
-              : "hidden shrink-0 rounded-full border border-current/20 bg-white/70 px-2 py-0.5 font-semibold hover:bg-white xl:inline-flex"
-          }
+          className="shrink-0 font-semibold underline underline-offset-2 hover:no-underline"
           onClick={onRetrySaveStatus}
         >
           Retry

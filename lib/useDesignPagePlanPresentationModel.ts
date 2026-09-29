@@ -10,7 +10,7 @@ import {
   getExportReadinessScore,
 } from "@/lib/design-page-export-readiness";
 import { getPlan2DRoomFitBounds } from "@/lib/design-page-floor-plan-utils";
-import { resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
+import { EDITOR_BAR_HEIGHT_PX, resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
 import {
   buildHousePlan2D,
   type HouseRoomConnectionChecklistItem,
@@ -105,7 +105,7 @@ export function resolveDesignPageViewportLayout({
     ? floatingOverlayInspectorStackTopPx
     : planQualityReviewVisible
       ? planQualityReviewReservedBottomPx + floatingOverlayStackGapPx
-      : 140;
+      : EDITOR_BAR_HEIGHT_PX + 104;
   const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail
     ? floatingOverlayStackWidthPx
     : 288;
