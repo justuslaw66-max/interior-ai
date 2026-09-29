@@ -37,7 +37,7 @@ export function FurnishFooter({ roomName, productCount, total, onGoShop }: Furni
         type="button"
         data-testid="furnish-continue-to-shop"
         onClick={onGoShop}
-        className="mt-2.5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-neutral-900 text-sm font-bold text-white hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+        className="mt-2.5 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-neutral-900 text-sm font-bold text-white hover:bg-neutral-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
       >
         Continue to Shop
         <ArrowRight className="h-4 w-4" aria-hidden="true" />

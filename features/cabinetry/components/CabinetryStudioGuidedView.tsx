@@ -414,7 +414,7 @@ export function CabinetryStudioGuidedView({
                   data-testid="cabinet-mobile-preview-toggle"
                   aria-expanded={mobilePreviewOpen}
                   aria-controls="cabinet-mobile-preview"
-                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
                   onClick={() => setMobilePreviewOpen((open) => !open)}
                 >
                   <span>{mobilePreviewOpen ? "Hide 3D preview" : "View 3D preview"}</span>
@@ -473,7 +473,7 @@ export function CabinetryStudioGuidedView({
                       <input
                         data-testid="cabinet-template-search"
                         aria-label="Search built-in templates"
-                        className="h-12 w-full rounded-2xl border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10"
+                        className="h-12 w-full rounded-2xl border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-hidden transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10"
                         type="search"
                         value={templateQuery}
                         placeholder="Search wardrobe, media wall, drawers…"
@@ -628,7 +628,7 @@ export function CabinetryStudioGuidedView({
                         </span>
                         <button
                           type="button"
-                          className="rounded-lg bg-amber-900 px-3 py-2 text-xs font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2"
+                          className="rounded-lg bg-amber-900 px-3 py-2 text-xs font-semibold text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2"
                           onClick={restoreDeletedTemplate}
                         >
                           Undo delete
@@ -984,7 +984,7 @@ export function CabinetryStudioGuidedView({
                                     ? 0.125
                                     : toProjectMeasurementValue(10)
                                 }
-                                className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 pr-10 text-sm font-medium normal-case tracking-normal text-neutral-900 outline-none focus:border-neutral-900"
+                                className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 pr-10 text-sm font-medium normal-case tracking-normal text-neutral-900 focus:border-neutral-900"
                                 value={mountingHeightDraft}
                                 onChange={(event) => setMountingHeightDraft(event.target.value)}
                               />
@@ -1655,7 +1655,7 @@ export function CabinetryStudioGuidedView({
                       <button
                         type="button"
                         data-testid="cabinet-reset-style-section"
-                        className="shrink-0 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-neutral-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="shrink-0 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-neutral-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
                         onClick={resetStyleSection}
                       >
                         Reset style

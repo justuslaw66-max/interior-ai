@@ -47,7 +47,7 @@ export function AiLayoutPreviewBanner({
         <button
           type="button"
           data-testid="ai-layout-preview-apply"
-          className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800"
           onClick={actions.apply}
         >
           Apply

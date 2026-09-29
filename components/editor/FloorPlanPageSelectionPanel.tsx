@@ -96,7 +96,7 @@ export default function FloorPlanPageSelectionPanel({
         type="button" data-floor-plan-workspace-focus={
           selectedPageNumber === null ? "primary" : undefined
         }
-        className="mt-3 w-full rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        className="mt-3 w-full rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
         disabled={
           disabled ||
           submitting ||

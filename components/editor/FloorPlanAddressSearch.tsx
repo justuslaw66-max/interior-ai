@@ -205,7 +205,7 @@ export default function FloorPlanAddressSearch({
           />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button type="button" className={control} onClick={cancelPendingApplication}>Cancel</button>
-            <button type="button" className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white" disabled={applicationDisabled} onClick={confirmPendingApplication}>
+            <button type="button" className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white" disabled={applicationDisabled} onClick={confirmPendingApplication}>
               Use selected reviewed layout
             </button>
           </div>

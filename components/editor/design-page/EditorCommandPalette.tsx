@@ -76,8 +76,8 @@ export function EditorCommandPalette({
         placeholder="Search commands"
         className={
           designerTheme
-            ? "h-12 w-full border-b border-white/10 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
-            : "h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+            ? "h-12 w-full border-b border-white/10 bg-transparent px-4 text-sm font-semibold outline-hidden placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+            : "h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-hidden placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
         }
       />
       <div className="max-h-[min(460px,60vh)] overflow-y-auto p-2">
@@ -94,8 +94,8 @@ export function EditorCommandPalette({
               disabled={!action.enabled}
               className={
                 designerTheme
-                  ? "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
-                  : "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  ? "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-hidden hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  : "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
               }
               onClick={() => onRunAction(action)}
             >

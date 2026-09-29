@@ -24,7 +24,7 @@ type Props = {
   onHoverEnd?: () => void;
 };
 
-const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900";
+const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900";
 
 function CatalogCardImage({ item, inRoom }: Pick<Props, "item" | "inRoom">) {
   return (

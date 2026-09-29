@@ -220,7 +220,7 @@ export function DesignPageEditorCommandBar({
               data-testid="editor-command-overflow-view-toggle"
               className={
                 configuration.dark
-                  ? "rounded-lg bg-blue-500 px-2 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                  ? "rounded-lg bg-blue-600 px-2 py-2 text-xs font-semibold text-white disabled:opacity-50"
                   : "rounded-lg bg-neutral-950 px-2 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
               }
               disabled={state.commandBar.editorMode === "present"}
@@ -290,7 +290,7 @@ export function DesignPageEditorCommandBar({
                   className={
                     active
                       ? configuration.dark
-                        ? "rounded-lg bg-blue-500 px-2 py-1.5 text-xs font-semibold text-white"
+                        ? "rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white"
                         : "rounded-lg bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
                       : configuration.dark
                         ? "rounded-lg px-2 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"

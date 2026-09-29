@@ -23,7 +23,7 @@ export default function ModelDownloadCell({ modelUrl }: { modelUrl: string }) {
       href={modelUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+      className="inline-block px-3 py-1 bg-neutral-900 text-white text-xs rounded hover:bg-neutral-800"
     >
       Download
     </a>

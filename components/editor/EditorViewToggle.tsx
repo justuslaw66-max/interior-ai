@@ -17,7 +17,7 @@ export default function EditorViewToggle({ value, onChange, dark = false }: Edit
 
   const active = dark
     ? "designer-work-control-active inline-flex h-[26px] items-center justify-center rounded-full px-2 text-sm font-semibold leading-none sm:px-4"
-    : "inline-flex h-[26px] items-center justify-center rounded-full bg-emerald-500 px-2 text-sm font-semibold leading-none text-white shadow-sm sm:px-4";
+    : "inline-flex h-[26px] items-center justify-center rounded-full bg-neutral-900 px-2 text-sm font-semibold leading-none text-white shadow-sm sm:px-4";
 
   return (
     <div

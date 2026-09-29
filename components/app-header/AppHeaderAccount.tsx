@@ -12,7 +12,7 @@ export type AppHeaderAccountInfo = {
   planLabel: string;
 };
 
-const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
 /** Sign in for guests; for members, their initial and a menu with the plan and Sign out. */
 export function AppHeaderAccount({ account }: { account: AppHeaderAccountInfo | null }) {

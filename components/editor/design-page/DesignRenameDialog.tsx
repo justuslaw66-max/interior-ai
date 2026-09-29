@@ -74,7 +74,7 @@ export function DesignRenameDialog({
           data-testid="design-rename-input"
           data-editor-dialog-initial-focus="true"
           maxLength={DESIGN_TITLE_MAX_LENGTH}
-          className={`mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
+          className={`mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
             dark ? "designer-recessed" : "border-neutral-200 bg-white text-neutral-950"
           }`}
           value={value}

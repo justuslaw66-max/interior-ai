@@ -33,7 +33,7 @@ export default function FloorPlanAddressFields({
 }: FloorPlanAddressFieldsProps) {
   const inputClass = dark
     ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500"
-    : "rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+    : "rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-hidden placeholder:text-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
 
   return (

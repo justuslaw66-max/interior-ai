@@ -3,7 +3,7 @@ import { AppHeaderAccount, type AppHeaderAccountInfo } from "@/components/app-he
 import { PRICING_HREF } from "@/lib/start-design-link";
 
 const NAV_LINK =
-  "flex h-10 items-center whitespace-nowrap rounded-lg px-2 text-sm font-bold text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 sm:px-3";
+  "flex h-10 items-center whitespace-nowrap rounded-lg px-2 text-sm font-bold text-neutral-900 outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 sm:px-3";
 
 type AppHeaderProps = {
   /** The page this header sits on, marked as the current one. */
@@ -22,7 +22,7 @@ export function AppHeader({ current, account }: AppHeaderProps) {
     <header data-testid="app-header"
       className="flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b border-neutral-200 bg-white px-4 py-3 sm:px-8">
       <Link href="/" data-testid="app-header-home"
-        className="-ml-2 flex h-10 items-center whitespace-nowrap rounded-lg px-2 text-base font-bold text-neutral-950 outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 sm:text-lg">
+        className="-ml-2 flex h-10 items-center whitespace-nowrap rounded-lg px-2 text-base font-bold text-neutral-950 outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 sm:text-lg">
         Interior AI
       </Link>
       <nav aria-label="Main" className="flex items-center gap-0.5 sm:gap-3">

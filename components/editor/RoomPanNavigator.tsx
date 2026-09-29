@@ -328,7 +328,7 @@ export default function RoomPanNavigator({
                         ? "bg-blue-600 text-white"
                         : "bg-red-600 text-white"
                       : isActive
-                        ? "bg-green-600 text-white"
+                        ? "bg-green-700 text-white"
                         : "bg-neutral-700 text-white"
                   }`}
                 >

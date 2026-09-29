@@ -49,9 +49,11 @@ const consumerTokens = {
   "bg-panel-hover": "#f6f7fb",
   "text-primary": "#0b0d12",
   "text-secondary": "#4b5568",
-  "text-muted": "#7b8496",
-  accent: "#2f6bff",
-  danger: "#e5484d",
+  "text-muted": "#636363",
+  accent: "#275fcb",
+  focus: "#275fcb",
+  success: "#20553f",
+  danger: "#dc2626",
 } as const;
 
 for (const [name, expected] of Object.entries(consumerTokens)) {
@@ -61,6 +63,27 @@ for (const [name, expected] of Object.entries(consumerTokens)) {
     `Consumer token --${name} should remain unchanged.`
   );
 }
+
+// Consumer text tokens are read on white: muted text, the accent and danger need 4.5:1 (AX7),
+// and the focus ring and success fills 3:1 against the page.
+for (const name of ["text-primary", "text-secondary", "text-muted", "accent", "danger", "success"] as const) {
+  const ratio = contrastRatio(readConsumerHexToken(name), readConsumerHexToken("bg-panel"));
+  assert.ok(ratio >= 4.5, `Consumer --${name} on white is ${ratio.toFixed(2)}:1; expected at least 4.5:1.`);
+}
+assert.ok(
+  contrastRatio(readConsumerHexToken("focus"), readConsumerHexToken("bg-canvas")) >= 3,
+  "The consumer focus ring should reach 3:1 against the page."
+);
+assert.match(
+  css,
+  /@layer base \{\s*:focus-visible \{\s*outline: 2px solid var\(--focus\);\s*outline-offset: 2px;/,
+  "Every control should get one 2px focus ring from the base layer (AX6)."
+);
+assert.match(
+  css,
+  /@layer utilities \{\s*\.text-neutral-400 \{/,
+  "The darker neutral text sits in the utilities layer, so hover and disabled variants still apply."
+);
 
 const exactDesignerTokens = {
   "bg-canvas": "#dedfdf",

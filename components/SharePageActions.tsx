@@ -130,7 +130,7 @@ export default function SharePageActions({ shareToken, title }: SharePageActions
             unauthenticatedChildren="Sign in to make a copy"
             data-testid="share-copy-to-edit"
             data-share-touch-target="true"
-            className="inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow outline-offset-2 hover:bg-emerald-700 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex min-h-11 items-center rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white shadow outline-offset-2 hover:bg-neutral-800 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Make a copy
           </DuplicateDesignButton>

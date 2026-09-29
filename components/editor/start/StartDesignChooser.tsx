@@ -71,14 +71,14 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
     <div
       ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="start-design-title"
       data-testid="start-design-chooser" data-editor-dialog-state="mounting"
-      className="fixed inset-0 z-[60] overflow-y-auto bg-[#fafaf9] text-neutral-950 outline-none"
+      className="fixed inset-0 z-[60] overflow-y-auto bg-[#fafaf9] text-neutral-950 outline-hidden"
     >
       <div ref={panelRef} tabIndex={-1} data-editor-dialog-state="mounting"
-        className="mx-auto w-full max-w-[1120px] px-4 pb-12 pt-6 outline-none sm:px-8 md:pt-10">
+        className="mx-auto w-full max-w-[1120px] px-4 pb-12 pt-6 outline-hidden sm:px-8 md:pt-10">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 id="start-design-title" tabIndex={-1} data-editor-dialog-initial-focus="true"
-              className="text-[26px] font-bold leading-8 tracking-tight outline-none md:text-[30px] md:leading-9">
+              className="text-[26px] font-bold leading-8 tracking-tight outline-hidden md:text-[30px] md:leading-9">
               Start a new design
             </h1>
             <p className="mt-2 text-base leading-[22px] text-neutral-600">
@@ -86,7 +86,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
             </p>
           </div>
           <button ref={closeButtonRef} type="button" aria-label="Close" data-testid="start-design-close"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-700 outline-none hover:bg-neutral-200/60 focus-visible:ring-2 focus-visible:ring-blue-600"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-700 outline-hidden hover:bg-neutral-200/60 focus-visible:ring-2 focus-visible:ring-blue-600"
             onClick={requestClose}>
             <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
           </button>

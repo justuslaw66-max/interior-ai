@@ -69,7 +69,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
                   type="button"
                   data-testid="plan-canvas-guidance-action"
                   aria-label={state.primaryAction.ariaLabel}
-                  className="pointer-events-auto rounded-lg bg-neutral-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                  className="pointer-events-auto rounded-lg bg-neutral-950 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-neutral-800 focus:outline-hidden focus:ring-2 focus:ring-neutral-900/20"
                   onClick={(event) => {
                     event.stopPropagation();
                     state.primaryAction?.onClick();
@@ -89,7 +89,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
                   type="button"
                   data-testid="plan-canvas-guidance-dismiss"
                   aria-label="Hide plan tip"
-                  className="pointer-events-auto rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
+                  className="pointer-events-auto rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 focus:outline-hidden focus:ring-2 focus:ring-neutral-900/20"
                   onClick={(event) => {
                     event.stopPropagation();
                     actions.dismiss();

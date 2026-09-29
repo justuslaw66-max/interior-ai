@@ -64,8 +64,8 @@ export function OpeningKindControl({
     ? "text-[11px] font-medium text-neutral-300"
     : "text-[11px] font-medium text-gray-600";
   const controlClass = dark
-    ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100 outline-none focus:border-blue-300"
-    : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 outline-none focus:border-teal-500";
+    ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100 focus:border-blue-300"
+    : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 focus:border-teal-500";
 
   const selectKind = (newKind: RoomOpening2D["kind"]) => {
     const plan = planDesignPageOpeningKindMutation(opening, newKind);

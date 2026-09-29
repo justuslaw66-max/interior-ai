@@ -13,7 +13,7 @@ type FurnishInThisRoomProps = {
 };
 
 const ROW_CLASS =
-  "flex min-h-11 w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-10";
+  "flex min-h-11 w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-10";
 
 function PlacedItemRow({
   item,

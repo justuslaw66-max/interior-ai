@@ -466,7 +466,7 @@ export default function DraggableFloatingPanel({
           <div className="absolute -left-7 top-0 flex w-5 flex-col items-center gap-1">
             <button
               type="button"
-              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Dock panel to right"
               title="Dock to right"
               onClick={() => {
@@ -479,7 +479,7 @@ export default function DraggableFloatingPanel({
             </button>
             <button
               type="button"
-              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-label="Reset panel position"
               title="Reset panel position"
               onClick={() => {
@@ -493,7 +493,7 @@ export default function DraggableFloatingPanel({
             <div className="relative">
               <button
                 type="button"
-                className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
                 aria-label="Panel position presets"
                 title="Panel presets"
                 data-testid={`floating-panel-presets-${storageKey ?? panelId}`}

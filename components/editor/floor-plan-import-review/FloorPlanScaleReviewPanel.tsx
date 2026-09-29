@@ -144,7 +144,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
         ) : null}
         <button
           type="button"
-          className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
           disabled={!canApply}
           onClick={apply}
         >

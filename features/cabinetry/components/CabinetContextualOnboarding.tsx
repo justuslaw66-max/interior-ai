@@ -32,7 +32,7 @@ export function CabinetContextualOnboarding({
       <button
         type="button"
         data-testid={testIdFor(step, "show")}
-        className="justify-self-start text-xs font-semibold text-blue-700 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+        className="justify-self-start text-xs font-semibold text-blue-700 underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
         onClick={onShow}
       >
         Show me how
@@ -66,7 +66,7 @@ export function CabinetContextualOnboarding({
           type="button"
           data-testid={testIdFor(step, "dismiss")}
           aria-label="Dismiss first-use built-ins help"
-          className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+          className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-blue-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
           onClick={onDismiss}
         >
           Got it

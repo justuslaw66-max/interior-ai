@@ -353,7 +353,7 @@ export function CabinetShelfMarkerHandles({
             disabled={fieldDisabled}
             data-shelf-id={shelf.id}
             data-testid={`cabinet-shelf-marker-${shelf.id}`}
-            className={`pointer-events-auto absolute inset-x-6 flex h-11 translate-y-1/2 cursor-ns-resize items-center rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-45 ${
+            className={`pointer-events-auto absolute inset-x-6 flex h-11 translate-y-1/2 cursor-ns-resize items-center rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-45 ${
               drag ? "text-white" : "text-slate-50"
             }`}
             style={{
@@ -380,7 +380,7 @@ export function CabinetShelfMarkerHandles({
               aria-hidden="true"
               className={`relative ml-auto inline-flex min-h-8 items-center whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold tabular-nums shadow-lg backdrop-blur transition-colors ${
                 drag
-                  ? "border-sky-200 bg-sky-500 text-white"
+                  ? "border-sky-200 bg-sky-700 text-white"
                   : "border-white/20 bg-slate-950/90 text-slate-50 hover:border-sky-300 hover:bg-slate-900"
               }`}
             >

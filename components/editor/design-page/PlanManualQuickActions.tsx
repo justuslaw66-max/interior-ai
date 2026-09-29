@@ -33,7 +33,7 @@ type PlanManualQuickActionsProps = {
 
 const manualPlanQuickActionButtonClass = (active: boolean, disabled = false) =>
   [
-    "group relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-neutral-900/20",
+    "group relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-hidden focus:ring-2 focus:ring-neutral-900/20",
     active
       ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
