@@ -5,6 +5,8 @@ import type { ComponentProps } from "react";
 import EditorToolRail from "@/components/editor/EditorToolRail";
 import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
+import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
+import type { LeaveAtDesignLimitPrompt } from "@/lib/useLeaveForMyDesigns";
 
 type CommandBarProps = ComponentProps<typeof DesignPageEditorCommandBar>;
 type BetaStartProps = ComponentProps<typeof BetaStartPanel>;
@@ -13,6 +15,8 @@ type ToolRailActionKey = Extract<keyof ToolRailProps, `on${string}`>;
 
 export type DesignPageEditorChromeState = {
   commandBar: CommandBarProps["state"];
+  /** Leaving for My designs when the Free plan's designs are full asks first (Q7). */
+  leaveAtDesignLimit: LeaveAtDesignLimitPrompt;
   betaStart: {
     visible: boolean;
     panel: BetaStartProps["state"];
@@ -52,6 +56,7 @@ export function DesignPageEditorChrome({
         configuration={configuration.commandBar}
         actions={actions.commandBar}
       />
+      <LeaveAtDesignLimitDialog {...state.leaveAtDesignLimit} />
 
       {state.betaStart.visible ? (
         <BetaStartPanel

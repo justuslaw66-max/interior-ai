@@ -8,6 +8,7 @@ import { AppHeader } from "../components/app-header/AppHeader";
 import { MyDesignCardView } from "../components/my-designs/MyDesignCardView";
 import { MyDesignsSignedOut } from "../components/my-designs/MyDesignsSignedOut";
 import { MyDesignsView } from "../components/my-designs/MyDesignsView";
+import { LeaveAtDesignLimitDialog } from "../components/editor/design-page/LeaveAtDesignLimitDialog";
 import { ShareDesignDialog } from "../components/my-designs/ShareDesignDialog";
 import { MY_DESIGNS_NEW_DESIGN_ID, myDesignsReturnFocusIds } from "../components/my-designs/useMyDesignsPageState";
 import {
@@ -199,26 +200,53 @@ const pageState = read("components/my-designs/useMyDesignsPageState.ts");
 assert.match(pageState, /await state\.actions\.remove\(dialog\.card\);\s*state\.markRemoved\(dialog\.card\.id\);\s*state\.setDialog\(null\);/,
   "The deleted card leaves before its dialog closes, so focus skips its button.");
 
-// The editor's More → My designs opens this page (MD1). A cloud design's latest edits are saved
-// first; a failed save keeps the editor open. The editor's own My designs dialog is gone.
-const cloud = { designId: "d1", hasPendingCloudSnapshotChanges: false, isSaving: false, lastCloudSaveError: null };
+// The editor's More → My designs opens this page (MD1). The design is saved first: a cloud design's
+// latest edits, and a signed-in user's design never saved to their account once it holds more than
+// the untouched first room (Q7); a guest's design stays in this browser's backup. A failed save keeps
+// the editor open. When the Free plan's designs are full, the editor asks whether to leave anyway.
+const cloud = {
+  designId: "d1", isAuthenticated: true, hasPendingCloudSnapshotChanges: false, isSaving: false,
+  lastCloudSaveError: null, designHasContent: true,
+};
 assert.equal(needsSaveBeforeLeaving(cloud), false, "Nothing to save.");
 assert.equal(needsSaveBeforeLeaving({ ...cloud, hasPendingCloudSnapshotChanges: true }), true);
 assert.equal(needsSaveBeforeLeaving({ ...cloud, isSaving: true }), true);
 assert.equal(needsSaveBeforeLeaving({ ...cloud, lastCloudSaveError: "Offline" }), true);
-assert.equal(needsSaveBeforeLeaving({ ...cloud, designId: null, hasPendingCloudSnapshotChanges: true }), false,
-  "A design never saved to the cloud stays in this browser's backup.");
+const neverSaved = { ...cloud, designId: null };
+assert.equal(needsSaveBeforeLeaving(neverSaved), true, "A signed-in user's never-saved design is saved to My designs.");
+assert.equal(needsSaveBeforeLeaving({ ...neverSaved, designHasContent: false }), false, "The untouched first room isn't.");
+assert.equal(needsSaveBeforeLeaving({ ...neverSaved, isAuthenticated: false }), false,
+  "A guest's design stays in this browser's backup.");
+const leaveSave = read("lib/useDesignPageLeaveSave.ts");
+assert.match(leaveSave, /const designHasContent = shouldConfirmPlanTemplateReplacement\(current\.designSnapshot, openings\);/,
+  "Content is what a template asks about before replacing: products, rooms, a changed room or added openings.");
+assert.match(leaveSave,
+  /if \(!needsSaveBeforeLeaving\(\{ \.\.\.current, designHasContent \}\)\) return "leave";\s*const savedFingerprint = current\.currentStoredDesignFingerprint;\s*let atDesignLimit = false;\s*current\.leaveSaves\.current \+= 1;\s*const savedId = await current\s*\.saveDesignToCloud\(\{ onDesignLimit: \(\) => \{ atDesignLimit = true; \} \}\)\s*\.finally\(\(\) => \{ current\.leaveSaves\.current -= 1; \}\);\s*if \(atDesignLimit\) return "design-limit";\s*return savedId !== null && latestFingerprintRef\.current === savedFingerprint \? "leave" : "stay";/,
+  "A failed save, or edits made while it saved, keep the editor open; full designs ask.");
 const persistenceSource = read("lib/useDesignPagePersistence.ts");
-assert.match(persistenceSource,
-  /const saveBeforeLeaving = useCallback\(async \(\) => \{\s*if \(!needsSaveBeforeLeaving\(\{ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError \}\)\) return true;\s*const savedFingerprint = currentStoredDesignFingerprint;\s*leaveSavesRef\.current \+= 1;\s*const saved = \(await saveDesignToCloud\(\)\.finally\(\(\) => \{ leaveSavesRef\.current -= 1; \}\)\) !== null;\s*return saved && latestFingerprintRef\.current === savedFingerprint;/,
-  "A failed save, or edits made while it saved, keep the editor open.");
+assert.match(persistenceSource, /const saveBeforeLeaving = useDesignPageLeaveSave\(\{[\s\S]*?leaveSaves: leaveSavesRef,\s*\}\);/);
 // An autosave that started during the leave-save would supersede it: the leave-save would report
 // nothing saved and keep the editor open with the design saved (CI's first run of the gate).
 assert.match(persistenceSource, /const timer = setTimeout\(async \(\) => \{\s*if \(leaveSavesRef\.current > 0\) return;/,
   "Autosave waits while leaving saves.");
+assert.match(read("lib/useDesignPageExplicitCloudSaveController.ts"),
+  /if \(atDesignLimit && options\.onDesignLimit\) \{\s*options\.onDesignLimit\(\);\s*\} else \{/,
+  "Leaving handles the design limit itself instead of opening Upgrade.");
+assert.match(read("lib/useLeaveForMyDesigns.ts"),
+  /const outcome = await saveBeforeLeaving\(\);\s*if \(outcome === "leave"\) myDesigns\(\);\s*if \(outcome === "design-limit"\) setAskingAtDesignLimit\(true\);/);
 const chrome = read("lib/useDesignPageEditorChromeController.ts");
-assert.match(chrome, /async function openMyDesigns\([^)]*\) \{\s*if \(await actions\.persistence\.saveBeforeLeaving\(\)\) actions\.navigation\.myDesigns\(\);\s*\}/);
-assert.match(chrome, /onOpenMyDesigns: \(\) => void openMyDesigns\(actions\),/);
+assert.match(chrome,
+  /const leave = useLeaveForMyDesigns\(\{ saveBeforeLeaving: actions\.persistence\.saveBeforeLeaving, myDesigns: actions\.navigation\.myDesigns \}\);/);
+assert.match(chrome, /onOpenMyDesigns: \(\) => void leave\.openMyDesigns\(\),/);
+assert.match(chrome, /leaveAtDesignLimit: leave\.prompt,/);
+assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"),
+  /<LeaveAtDesignLimitDialog \{\.\.\.state\.leaveAtDesignLimit\} \/>/);
+assert.equal(render(createElement(LeaveAtDesignLimitDialog, { open: false, onLeave: noop, onStay: noop })), "");
+const limitDialog = render(createElement(LeaveAtDesignLimitDialog, { open: true, onLeave: noop, onStay: noop }));
+assert.match(limitDialog, />Your designs are full</);
+assert.match(limitDialog,
+  /The Free plan keeps 20 designs, so this one can(&#x27;|')t be saved to your account\. If you leave, it stays on this device until you open another design\./);
+assert.match(limitDialog, />Cancel<[\s\S]*>Leave without saving</);
 assert.match(read("lib/useDesignPagePresentationWorkspaceRegistration.ts"),
   /myDesigns: \(\) => base\.derived\.navigation\.router\.push\("\/dashboard"\),/);
 assert.match(read("components/editor/command-bar/CommandBarMoreMenu.tsx"),

@@ -11,6 +11,8 @@ import type {
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 import { PLANS_GET_PRO_OPENER_ID } from "@/lib/plans-dialog-focus";
+import type { LeaveForMyDesignsOutcome } from "@/lib/design-page-save-status";
+import { useLeaveForMyDesigns } from "@/lib/useLeaveForMyDesigns";
 
 type CommandBarActions = DesignPageEditorChromeActions["commandBar"]["commandBar"];
 type RoomActions = DesignPageEditorChromeActions["commandBar"]["room"];
@@ -71,8 +73,8 @@ export type UseDesignPageEditorChromeControllerInput = {
       openPortal: () => void | Promise<unknown>;
     };
     persistence: {
-      /** Saves a cloud design's latest edits; false when that failed or the design changed meanwhile. */
-      saveBeforeLeaving: () => Promise<boolean>;
+      /** Saves the design before leaving for My designs, and says whether to leave, stay or ask. */
+      saveBeforeLeaving: () => Promise<LeaveForMyDesignsOutcome>;
       saveDesignToCloud: () => Promise<string | null | undefined>;
       /** Saves a design that isn't in the cloud yet, then creates and copies its share link. */
       shareDesign: () => Promise<void>;
@@ -95,20 +97,13 @@ export type UseDesignPageEditorChromeControllerInput = {
   };
 };
 
-type ChromeActions = UseDesignPageEditorChromeControllerInput["actions"];
-
-// My designs is its own page (MD1). A cloud design's latest edits are saved first; if that
-// fails, the editor stays open and shows the failed save. Edits made while it saved keep it open too.
-async function openMyDesigns(actions: Pick<ChromeActions, "persistence" | "navigation">) {
-  if (await actions.persistence.saveBeforeLeaving()) actions.navigation.myDesigns();
-}
-
 export function useDesignPageEditorChromeController({
   state,
   configuration,
   actions,
 }: UseDesignPageEditorChromeControllerInput): DesignPageEditorChromeProps {
   const commandState = state.commandBar.commandBar;
+  const leave = useLeaveForMyDesigns({ saveBeforeLeaving: actions.persistence.saveBeforeLeaving, myDesigns: actions.navigation.myDesigns });
 
   const togglePresentMode = () => {
     if (commandState.editorMode === "present") {
@@ -190,7 +185,7 @@ export function useDesignPageEditorChromeController({
 
   return {
     state: {
-      commandBar: state.commandBar,
+      commandBar: state.commandBar, leaveAtDesignLimit: leave.prompt,
       betaStart: {
         visible: !commandState.isClientPreview && state.betaStart.visible && !state.designPanelOpen,
         panel: state.betaStart.panel,
@@ -216,9 +211,8 @@ export function useDesignPageEditorChromeController({
           onToggleClientPreview: toggleClientPreview,
           onViewPlans: openPlans, onGetPro: getPro,
           onNewPlan: actions.dialogs.openNewPlan, onRenameDesign: actions.dialogs.openDesignRename,
-          onManageBilling: manageBilling,
-          onFeedback: openFeedback,
-          onOpenMyDesigns: () => void openMyDesigns(actions),
+          onManageBilling: manageBilling, onFeedback: openFeedback,
+          onOpenMyDesigns: () => void leave.openMyDesigns(),
           onSave: save,
           onShare: share,
           onDownload: openDownload,

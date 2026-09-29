@@ -74,14 +74,22 @@ export function getDesignPageSaveStatus(input: DesignPageSaveStatusInput): Edito
 }
 
 /**
- * Leaving the editor for My designs saves a cloud design's latest edits first: changes autosave
- * hasn't sent, a save still on its way, or one that failed. A design never saved to the cloud
- * stays in this browser's backup, as it does whenever the editor closes.
+ * Leaving the editor for My designs saves the design first. A cloud design: its latest edits
+ * (changes autosave hasn't sent, a save still on its way, or one that failed). A signed-in user's
+ * design that was never saved to their account, once it holds more than the untouched first room
+ * (UX phase 4, Q7): otherwise it stays only in this browser's backup, which the next design opened
+ * replaces. A guest's design stays in the backup.
  */
 export function needsSaveBeforeLeaving(input: Pick<
   DesignPageSaveStatusInput,
-  "designId" | "hasPendingCloudSnapshotChanges" | "isSaving" | "lastCloudSaveError"
->) {
-  return Boolean(input.designId) &&
-    (input.hasPendingCloudSnapshotChanges || input.isSaving || Boolean(input.lastCloudSaveError));
+  "designId" | "isAuthenticated" | "hasPendingCloudSnapshotChanges" | "isSaving" | "lastCloudSaveError"
+> & { designHasContent: boolean }) {
+  if (!input.designId) return input.isAuthenticated && input.designHasContent;
+  return input.hasPendingCloudSnapshotChanges || input.isSaving || Boolean(input.lastCloudSaveError);
 }
+
+/**
+ * What leaving for My designs does after that save: go, stay in the editor (the save failed, or the
+ * design changed while it saved), or ask, because the Free plan's designs are full.
+ */
+export type LeaveForMyDesignsOutcome = "leave" | "stay" | "design-limit";
