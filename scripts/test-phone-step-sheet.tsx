@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { resolvePlan2DViewFit } from "../components/editor/camera/EditorCamera2D";
 import { PhoneStepSheet } from "../components/editor/PhoneStepSheet";
-import { resolvePlanFitInsetsPx } from "../lib/editor-canvas-insets";
+import { resolvePlanFitInsetsPx, WIDE_PLAN_TOP_INSET_PX } from "../lib/editor-canvas-insets";
 import {
   PHONE_CANVAS_TOP_INSET_PX,
   PHONE_SHEET_PEEK_PX,
@@ -66,8 +66,11 @@ assert.deepEqual(resolvePhoneCanvasInsets({ viewportWidth: 1024, isClientPreview
 assert.deepEqual(resolvePlanFitInsetsPx(390, { leftPx: 318, rightPx: 344, topPx: 128, bottomPx: 452 }), {
   safeAreaLeftPx: 0, safeAreaRightPx: 0, safeAreaTopPx: 128, safeAreaBottomPx: 452,
 });
+// From md the plan is framed under the bar, the canvas toolbar and Plan's tools row (56 + 128px),
+// so the room's size chips at its top edge aren't under the tools.
+assert.equal(WIDE_PLAN_TOP_INSET_PX, 184);
 assert.deepEqual(resolvePlanFitInsetsPx(1280, { leftPx: 318, rightPx: 344, topPx: 128, bottomPx: 452 }), {
-  safeAreaLeftPx: 318, safeAreaRightPx: 344, safeAreaTopPx: 0, safeAreaBottomPx: 0,
+  safeAreaLeftPx: 318, safeAreaRightPx: 344, safeAreaTopPx: 184, safeAreaBottomPx: 0,
 });
 
 // The 2D fit keeps the plan in the band between them: a top inset shrinks the fit's height and
