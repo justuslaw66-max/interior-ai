@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.16.0"
+VERSION = "app-evidence-0.17.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -549,6 +549,10 @@ def drop_stacked_cells(m, cells, base):
 
 DEBUG_HATCH = None
 LEAF_RULE = True
+WIDE_STROKE_PASSAGE = os.environ.get("AE_WIDE_STROKE_PASSAGE", "1") != "0"   # "one stroke from jamb to jamb" up to 4 m (3.6 m before round 19: p03's balcony door is 3.7 m at the pseudo scale)
+STROKE_PASSAGE_MM = float(os.environ.get("AE_STROKE_PASSAGE", 4000 if WIDE_STROKE_PASSAGE else 3600))
+THRESHOLD_DOOR = os.environ.get("AE_THRESHOLD_DOOR", "1") != "0"   # a gap with only the wall's face lines across it and a swing drawn from a jamb is a door, not a window
+SWING_SEARCH = os.environ.get("AE_SWING_SEARCH", "1") != "0"   # the pale / dashed swing arc looked for a leaf's thickness in from the jamb and over more radii, with its leaf
 PALE_PEN_MIN = 70        # darkest tenth of a piece's ink paler than this grey: furniture pen (None = rule off)
 HATCH_INK_MIN = 0.0    # 0 = off. 0.03 removes headboard / sofa-back false walls on d12 but loses the d12 service yard and d11 ledge (2026-09-21)
 
@@ -958,8 +962,9 @@ def _across(k, o, c, x):
         hi += 1
     return hi - lo + 1
 
-def _ink_cover(gray, k, pts, thr, text=None):
-    """share of the sample points with ink within 2 px, and the share lying in wall mass or lettering"""
+def _ink_cover(gray, k, pts, thr, text=None, with_skip=False):
+    """share of the sample points with ink within 2 px, and the share lying in wall mass or lettering (with_skip: and the
+    share under lettering, which tells nothing either way)"""
     H, W = gray.shape; ink = hit = tot = skipped = 0
     for x, y in pts:
         xi, yi = int(round(x)), int(round(y))
@@ -973,6 +978,8 @@ def _ink_cover(gray, k, pts, thr, text=None):
             hit += 1
         elif gray[yi - 2:yi + 3, xi - 2:xi + 3].min() < thr:
             ink += 1
+    if with_skip:
+        return (ink / tot if tot else 0.0), (hit / tot if tot else 0.0), skipped / max(1, len(pts))
     if skipped > 0.4 * max(1, len(pts)):
         return 0.0, 1.0
     return (ink / tot if tot else 0.0), (hit / tot if tot else 1.0)
@@ -1088,21 +1095,61 @@ def drawn_door(m, k, g, T):
         cu, cv_ = (a_["cx"], a_["cy"]) if o == "h" else (a_["cy"], a_["cx"])
         if min(abs(cu - a), abs(cu - b)) <= 0.35 * L and abs(cv_ - c) <= 0.35 * L and 0.6 * L <= a_["r"] <= 1.4 * L:
             return None
-    for hinge, j, along in (("start", a, 1.0), ("end", b, -1.0)):
+    # The search: the hinge sits on the jamb, or a leaf's thickness in from it (the leaf drawn as a thin rectangle standing
+    # on the jamb, its hinge on the rectangle's far rail - p05), and the radius is the leaf's length, 0.65 - 1.15 of the gap
+    # (the main leaf of an unequal double door is about 0.7 of it).  Three radii on the jamb itself before round 19.
+    offsets = (0.0, -0.05, 0.05, -0.1, 0.1) if SWING_SEARCH else (0.0,)
+    radii = np.arange(0.65, 1.151, 0.05) if SWING_SEARCH else (0.85, 0.95, 1.05)
+    for hinge, j0, along in (("start", a, 1.0), ("end", b, -1.0)):
         for sgn in (-1, 1):
             if ctrl[sgn] > 0.25:
                 continue
-            for r in (0.85 * L, 0.95 * L, 1.05 * L):
-                pts = [P(j + along * r * math.cos(th), c + sgn * half + sgn * r * math.sin(th)) for th in np.radians(np.linspace(10, 82, 36))]
-                cv, ht = _ink_cover(gray, k, pts, thr, text)
-                mid_cv, _mh = _ink_cover(gray, k, pts[12:24], thr, text)    # an L of two straight lines covers the ends of an arc, not its middle
-                if mid_cv < 0.35:
-                    continue
-                # the leaf: a line from the hinge out to the arc's far end
-                leaf = [P(j, c + sgn * half + sgn * r * t) for t in np.linspace(0.2, 0.9, 12)]
-                lv, lh = _ink_cover(gray, k, leaf, thr, text)
-                sc = cv + 0.3 * lv
-                if cv >= 0.5 and cv >= ctrl[sgn] + 0.3 and ht <= 0.15 and (best is None or sc > best[-1]):
+            for off in offsets:
+                j = j0 + along * off * L
+                for rf in radii:
+                    if SWING_SEARCH and off + float(rf) > 1.1:
+                        continue                             # a leaf is no longer than its opening: the arc lands at the far jamb or short of it (h2)
+                    r = float(rf) * L
+                    pts = [P(j + along * r * math.cos(th), c + sgn * half + sgn * r * math.sin(th)) for th in np.radians(np.linspace(10, 82, 36))]
+                    cv, ht = _ink_cover(gray, k, pts, thr, text)
+                    # an L of two straight lines covers the ends of an arc, not its middle - unless the middle lies under
+                    # the room's label (a small bathroom, p05's BATH 1): then the leaf must vouch for it
+                    mid_cv, _mh, mid_skip = _ink_cover(gray, k, pts[12:24], thr, text, with_skip=True)
+                    mid_under_text = SWING_SEARCH and mid_skip > 0.4
+                    # the leaf: a line from the hinge out to the arc's far end (on the hinge, or a leaf's thickness either side of it)
+                    lv = 0.0
+                    for loff in ((0.0, -0.05, 0.05, -0.1, 0.1) if SWING_SEARCH else (0.0,)):
+                        leaf = [P(j + along * loff * L, c + sgn * half + sgn * r * t) for t in np.linspace(0.2, 0.9, 12)]
+                        lv_ = _ink_cover(gray, k, leaf, thr, text)[0]
+                        if SWING_SEARCH and lv_ >= 0.6:
+                            # the leaf ends where the arc starts; a line that runs on past it is the edge of a wardrobe
+                            # or a counter standing against the jamb (d12), or the jamb wall's own face, not a leaf
+                            on_ = [P(j + along * loff * L, c + sgn * half + sgn * r * t) for t in np.linspace(1.12, 1.5, 10)]
+                            if _ink_cover(gray, k, on_, thr, text, with_skip=True)[0] > 0.2:
+                                lv_ = 0.0
+                        lv = max(lv, lv_)
+                    # (a dash-dot arc, p05's entrance, can leave the middle third nearly bare: with its leaf drawn solid a
+                    #  middle of 0.15 will do)
+                    if mid_cv < 0.35 and not mid_under_text and not (SWING_SEARCH and lv >= 0.8 and mid_cv >= 0.15):
+                        continue
+                    sc = cv + 0.3 * lv
+                    # (an arc read off the jamb, a dashed one, or one under the label, is taken only with its leaf drawn: a
+                    #  chair back or a basin rim can cover a quarter circle, but not with a straight line from its centre
+                    #  to the wall; with a solid leaf a dashed arc needs to cover only 0.4)
+                    if SWING_SEARCH and (off != 0.0 or cv < 0.7 or mid_under_text) and lv < 0.6:
+                        continue
+                    need = 0.4 if (SWING_SEARCH and lv >= 0.8) else 0.5
+                    if not (cv >= need and cv >= ctrl[sgn] + 0.3 and ht <= 0.15 and (best is None or sc > best[-1])):
+                        continue
+                    if SWING_SEARCH:
+                        # an arc is ink at its radius and paper on either side of it; a bed's folded corner or a wardrobe's
+                        # edge across the square covers the middle third at every radius (d12, c22)
+                        ring = []
+                        for rr in (r * 0.9, r * 1.1):
+                            pr = [P(j + along * rr * math.cos(th), c + sgn * half + sgn * rr * math.sin(th)) for th in np.radians(np.linspace(30, 62, 12))]
+                            ring.append(_ink_cover(gray, k, pr, thr, text, with_skip=True)[0])
+                        if max(ring) > 0.35:
+                            continue
                     best = ("swing", hinge, sgn, sc)
     return best
 
@@ -1354,6 +1401,14 @@ def classify_gaps(m, k, gaps):
                           for t in m.get("texts", []))
             if leaf and one_side and shelter and 600 <= L * mm <= 1300 and (hi_ - lo_) * mm >= 150:
                 out.append(dict(g, kind="door", operation="swing", hinge="unknown", swing_side=0, confidence=0.55, why="a closed leaf drawn across the opening, against one face of the wall")); continue
+            # Only the wall's own face lines run across the gap (a threshold drawn at both faces, p05's entrance), nothing
+            # in the thickness: no window band - a door's width with a swing drawn from a jamb is a door
+            on_faces = all(min(abs(l["c"] - lo_), abs(l["c"] - hi_)) <= 0.25 * T for l in inside)   # (a threshold drawn as a double line, 5 px in from the face, is on the face)
+            if THRESHOLD_DOOR and on_faces and 550 <= L * mm <= 1500 and (_end_face(k, o, c, a - 2, T) or _end_face(k, o, c, b_ + 1, T)):
+                dd = drawn_door(m, k, g, T)
+                if dd and dd[0] == "swing":
+                    m["_threshold_doors"] = m.get("_threshold_doors", 0) + 1
+                    out.append(dict(g, kind="door", operation="swing", hinge=dd[1], swing_side=dd[2], leaf_px=float(L), confidence=0.7, why="a swing drawn from a jamb, the threshold at both faces")); continue
             out.append(dict(g, kind="window", operation="fixed", hinge="none", swing_side=0, confidence=0.85 if len(inside) >= 3 else 0.7, strokes=len(inside))); continue
         # sliding doors: two or more PANELS (each a thin rectangle: two strokes of one length, a panel's thickness apart),
         # staggered across the wall line and between them covering the gap
@@ -1405,9 +1460,12 @@ def classify_gaps(m, k, gaps):
             if dd and dd[0] == "folding":
                 out.append(dict(g, kind="door", operation="folding", hinge="unknown", swing_side=dd[2], confidence=0.7, why="dashed V from the two jambs")); continue
             if dd and dd[0] == "swing":
+                m["_drawn_swings"] = m.get("_drawn_swings", 0) + 1
                 out.append(dict(g, kind="door", operation="swing", hinge=dd[1], swing_side=dd[2], leaf_px=float(L), confidence=0.7, why="pale or dashed swing arc")); continue
-        if len(inside) == 1 and L * mm <= 3600 and one_end and abs(inside[0]["c"] - c) <= band:
-            out.append(dict(g, kind="open_passage", operation="open", hinge="none", swing_side=0, confidence=0.55, why="one stroke from jamb to jamb")); continue
+        if len(inside) == 1 and L * mm <= STROKE_PASSAGE_MM and one_end and abs(inside[0]["c"] - c) <= band:
+            # (wider than 3.6 m - p03's balcony door - only between two rooms, decided once the rooms are made: a stroke
+            #  between two wall ends in the page's margin is no doorway)
+            out.append(dict(g, kind="open_passage", operation="open", hinge="none", swing_side=0, confidence=0.55, wide_stroke=bool(L * mm > 3600), why="one stroke from jamb to jamb")); continue
         if ends_ok and 550 <= L * mm <= PASSAGE_MAX_MM:
             # (wider than 1.5 m - the doorless opening between exec's study and its living room - only once the rooms are
             #  made, and only between two different named indoor rooms)
@@ -2733,6 +2791,8 @@ def scale_estimate(m, edges, mm_per_source_px):
 # ----------------------------------------------------------------------------------------------- slanted walls (round 15)
 
 SLANT_MIN_DEG = 5.0                                           # a stroke or wall this far off level / plumb is slanted
+GENTLE_SLOPE = os.environ.get("AE_GENTLE_SLOPE", "1") != "0"   # sloped strokes are read down to 2 degrees off level / plumb (p03's balcony parapet, 3.5 degrees)
+GENTLE_SLOPE_DEG = float(os.environ.get("AE_GENTLE_SLOPE_DEG", 2.0))
 DIAG_WALLS = os.environ.get("AE_DIAG_WALLS", "1") != "0"      # slanted grey bands and slanted stroke pairs are wall mass
 SLOPED_RAILS = os.environ.get("AE_SLOPED_RAILS", "1") != "0"  # long sloped strokes close outdoor spaces, as level / plumb ones do
 SLOPED_MIN_MM = float(os.environ.get("AE_SLOPED_MIN", 150))     # the shortest sloped stroke read from the work image
@@ -2837,6 +2897,71 @@ def side_on_curve(a, b, curves, tol):
     return None
 
 
+def _walk_branch(bm):
+    """The pixels of a skeleton branch (a path with two ends) in order from one end; None for a loop or a knot."""
+    ys, xs = np.nonzero(bm)
+    if len(xs) < 2:
+        return None
+    pts = set(zip(xs.tolist(), ys.tolist()))
+    def nbrs(p_):
+        return [(p_[0] + dx, p_[1] + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if (dx or dy) and (p_[0] + dx, p_[1] + dy) in pts]
+    ends = [p_ for p_ in pts if len(nbrs(p_)) == 1]
+    if len(ends) != 2:
+        return None
+    path = [ends[0]]; seen = {ends[0]}
+    while True:
+        nx_ = [q for q in nbrs(path[-1]) if q not in seen]
+        if not nx_:
+            break
+        # (prefer a 4-neighbour: the skeleton's diagonal shortcuts skip a pixel)
+        nx_.sort(key=lambda q: abs(q[0] - path[-1][0]) + abs(q[1] - path[-1][1]))
+        path.append(nx_[0]); seen.add(nx_[0])
+    return path if len(path) >= 0.8 * len(pts) else None
+
+
+def gentle_strokes(m, gray, k=None):
+    """Strokes only a few degrees off level or plumb (p03's balcony parapet, 3.5 degrees), which stage 1 does not keep
+    (not level) and sloped_strokes does not see (its level / plumb ink is taken out with a kernel a slope's runs pass).
+    Read apart, so that sloped_strokes' own output stays as it was: the level / plumb ink is taken out with a kernel
+    longer than a gentle slope's pixel runs, every skeleton branch is walked from one end and simplified to a polyline
+    (a corner is no junction of the skeleton: the parapet runs on into the balcony's plumb edge), and each straight run
+    2 - 5 degrees off is a stroke.  Marked gentle: they close outdoor spaces (the outdoor-label pass) and nothing else."""
+    mm = pseudo_scale(m); H, W = gray.shape
+    ink = (gray < min(235, int(m.get("ink_threshold", 180)) + 20)).astype(np.uint8)
+    for t in m["texts"] + m.get("unread_text", []):
+        x, y, w, h = [int(v) for v in t["box"]]
+        ink[max(0, y - 2):y + h + 3, max(0, x - 2):x + w + 3] = 0
+    L0 = max(int(round(300.0 / mm)), int(round(4.0 / math.tan(math.radians(GENTLE_SLOPE_DEG)))))
+    axis_ = cv2.bitwise_or(cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones((1, L0), np.uint8)), cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones((L0, 1), np.uint8)))
+    sl = ink & (1 - axis_)
+    if k is not None:
+        sl[k > 0] = 0
+    min_len = 300.0 / mm                                      # (as long as the level / plumb railings the outdoor pass draws)
+    from skimage.morphology import skeletonize
+    sk = skeletonize(sl > 0).astype(np.uint8)
+    nb = cv2.filter2D(sk, -1, np.ones((3, 3), np.float32), borderType=cv2.BORDER_CONSTANT) - sk
+    junc = ((sk > 0) & (nb >= 3)).astype(np.uint8)
+    br = sk & (1 - cv2.dilate(junc, np.ones((3, 3), np.uint8)))
+    n_, lab_, st_, _ = cv2.connectedComponentsWithStats(br, connectivity=8)
+    out = []
+    for i in range(1, n_):
+        x, y, w, h, area = st_[i]
+        if area < min_len:
+            continue
+        path = _walk_branch(lab_[y:y + h, x:x + w] == i)
+        if path is None or len(path) < min_len:
+            continue
+        poly = cv2.approxPolyDP(np.array(path, np.int32).reshape(-1, 1, 2), 2.5, False).reshape(-1, 2)
+        for (x0_, y0_), (x1_, y1_) in zip(poly[:-1], poly[1:]):
+            ln_ = math.hypot(float(x1_ - x0_), float(y1_ - y0_))
+            ang_ = math.degrees(math.atan2(float(y1_ - y0_), float(x1_ - x0_))) % 180.0
+            if ln_ >= min_len and GENTLE_SLOPE_DEG <= _off_axis(ang_) < SLANT_MIN_DEG:
+                p_, q_ = (float(x0_ + x), float(y0_ + y)), (float(x1_ + x), float(y1_ + y))
+                u_ = ((q_[0] - p_[0]) / ln_, (q_[1] - p_[1]) / ln_)
+                out.append({"p": p_, "q": q_, "u": u_, "ang": ang_, "len": ln_, "w": 2.0, "gentle": True})
+    return out
+
+
 def sloped_strokes(m, gray, k=None):
     """Straight strokes at an angle that stage 1 left out of its model: it keeps level and plumb lines, and as `diagonals`
     only some of the rest (a gentle slope - p02's balcony parapet - and one face of a thin 45-degree partition are in
@@ -2848,6 +2973,8 @@ def sloped_strokes(m, gray, k=None):
     m["_sloped"] = out
     if gray is None or gray.shape[:2] != (m["size"][1], m["size"][0]):
         return out
+    if GENTLE_SLOPE:
+        out.extend(gentle_strokes(m, gray, k))                # (read apart, marked gentle: they close outdoor spaces and nothing else)
     mm = pseudo_scale(m); H, W = gray.shape
     ink = (gray < min(235, int(m.get("ink_threshold", 180)) + 20)).astype(np.uint8)
     for t in m["texts"] + m.get("unread_text", []):
@@ -3006,7 +3133,7 @@ def slanted_thin_walls(m, gray, k):
             ang = math.degrees(math.atan2(b_[1] - a_[1], b_[0] - a_[0])) % 180.0
             if _off_axis(ang) >= SLANT_MIN_DEG:
                 segs.append({"p": tuple(a_), "q": tuple(b_), "u": ((b_[0] - a_[0]) / L, (b_[1] - a_[1]) / L), "ang": ang, "len": L, "w": 1.0})
-    segs += [s_ for s_ in sloped_strokes(m, gray, k) if s_["w"] * mm <= 60]
+    segs += [s_ for s_ in sloped_strokes(m, gray, k) if s_["w"] * mm <= 60 and not s_.get("gentle")]
     thr = min(235, int(m.get("ink_threshold", 180)) + 20)
     for i, j, dist, t0, t1 in _seg_pairs(segs, mm):
         a, b = segs[i], segs[j]; u = a["u"]; n = (-u[1], u[0])
@@ -3180,7 +3307,7 @@ def rotated_view(m, k, theta, parts):
     strokes = []
     for d_ in m.get("diagonals", []):
         strokes += [(a_, b_) for a_, b_ in zip(d_, d_[1:])]
-    strokes += [(s_["p"], s_["q"]) for s_ in m.get("_sloped", [])]
+    strokes += [(s_["p"], s_["q"]) for s_ in m.get("_sloped", []) if not s_.get("gentle")]
     lines = []
     for a_, b_ in strokes:
         (x0, y0), (x1, y1) = P(*a_), P(*b_)
@@ -3393,16 +3520,31 @@ def build(m, gray=None):
                     cv2.line(closed2, (int(a_[0]), int(a_[1])), (int(b_[0]), int(b_[1])), 255, 3)
             if SLOPED_RAILS:                                 # (and the sloped strokes stage 1 kept in neither list)
                 for s_ in m.get("_sloped", []):
-                    if s_["len"] * mm < 300:                 # (as long as the level / plumb railings drawn here)
+                    if s_["len"] * mm < 300 or s_.get("gentle"):   # (as long as the level / plumb railings drawn here)
                         continue
                     cv2.line(closed2, (int(round(s_["p"][0])), int(round(s_["p"][1]))), (int(round(s_["q"][0])), int(round(s_["q"][1]))), 255, 3)
             if CURVED_RAILS:                                 # a curved parapet (h1's balcony), traced by stage 1 as a curve
                 for a_ in curve_arcs(m):
                     cv2.polylines(closed2, [np.array(curve_polyline(a_), np.int32).reshape(-1, 1, 2)], False, 255, 3)
-            for r_ in room_outlines(m, closed2):
-                if any(at(r_, l) for l in wanted) and not any((r_["comp"] & q["comp"]).sum() > 0.2 * r_["comp"].sum() for q in inner) and r_["area_px"] * mm * mm <= 60e6:
-                    r_["outdoor"] = True
-                    inner.append(r_)
+            def take_outdoor(closed_mask, labels_):
+                found_ = []
+                for r_ in room_outlines(m, closed_mask):
+                    if any(at(r_, l) for l in labels_) and not any((r_["comp"] & q["comp"]).sum() > 0.2 * r_["comp"].sum() for q in inner) and r_["area_px"] * mm * mm <= 60e6:
+                        r_["outdoor"] = True
+                        inner.append(r_); found_.append(r_)
+                return found_
+            take_outdoor(closed2, wanted)
+            # a label still outside every room: once more with the gentle slopes drawn (p03's balcony parapet, 3.5
+            # degrees off level) - only then, so that a space that closes without them keeps its outline
+            left_ = [l for l in wanted if not any(at(r_, l) for r_ in inner)]
+            gentle_ = [s_ for s_ in m.get("_sloped", []) if s_.get("gentle")] if (SLOPED_RAILS and GENTLE_SLOPE) else []
+            if left_ and gentle_:
+                closed3 = closed2.copy()
+                for s_ in gentle_:
+                    cv2.line(closed3, (int(round(s_["p"][0])), int(round(s_["p"][1]))), (int(round(s_["q"][0])), int(round(s_["q"][1]))), 255, 3)
+                if take_outdoor(closed3, left_):
+                    closed2 = closed3                        # (the strokes that closed it count as its boundary below)
+                    m["_gentle_closed"] = m.get("_gentle_closed", 0) + 1
         m["_withheld_rooms"] = 0; m["_welds"] = 0
         thin = close_openings(m, k, ops, thin=True)
         if wanted:
@@ -3490,13 +3632,16 @@ def build(m, gray=None):
     # open to the living room) does not make two rooms: the passage belongs to the room it is open to.
     # A doorway wider than 1.5 m, a sliding partition read from two strokes: only between two named rooms.  Decided first,
     # and the rooms made again without the ones that fail, so that everything after is judged on the rooms it was before.
-    tentative = [g for g in openings if g.get("wide") or g.get("from_strokes")]
+    tentative = [g for g in openings if g.get("wide") or g.get("from_strokes") or g.get("wide_stroke")]
     if tentative:
         settle(rooms, openings)                              # (which two rooms each opening joins, read as it is read below)
         drop = []
         for g in tentative:
             bt = g.get("between", [None, None])
-            if not (None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1])):
+            if g.get("wide_stroke"):
+                if None in bt or bt[0] == bt[1]:
+                    drop.append(g)
+            elif not (None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1])):
                 drop.append(g)
         if drop:
             kept_ = []
@@ -3555,6 +3700,10 @@ def build(m, gray=None):
     panel_pairs = wide_passages = 0
     for g in openings:
         bt = g.get("between", [None, None])
+        if g.get("wide_stroke"):                             # a single-stroke doorway wider than 3.6 m: only between two rooms
+            if None in bt or bt[0] == bt[1]:
+                bad.append(g)
+            continue
         if g.get("from_strokes") or g.get("wide"):          # a sliding partition read from two strokes, a doorway wider than 1.5 m: only between two named indoor rooms
             if None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
                 if g.get("from_strokes"):
@@ -3837,7 +3986,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
