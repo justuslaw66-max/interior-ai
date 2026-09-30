@@ -2306,7 +2306,9 @@ test.describe("Pro visual policy", () => {
   }) => {
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    // The first check waits as long as the page's first load can take: the indicator can be on
+    // screen while the page is still busy preparing the 3D room and can't answer the check.
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: 30_000 });
     await dismissBlockingPrompt(page);
     await expectEditingCommandBarActive(page);
 
