@@ -115,6 +115,9 @@ for (const required of [
   "hasExternalEditorModal()",
   'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
   "...(options.returnFocusId ? [options.returnFocusId] : [])",
+  // The opener first among the return targets (UX 4d): Rename design from the Menu returns there.
+  "if (opener?.id && semanticIds.includes(opener.id)) {",
+  "semanticIds.unshift(opener.id);",
   ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",

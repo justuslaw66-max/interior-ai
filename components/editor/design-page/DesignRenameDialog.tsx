@@ -25,8 +25,8 @@ export type DesignRenameDialogProps = {
 
 /**
  * Rename design (audit finding F). The name shows in the command bar and in My designs, and
- * renaming is one step that Undo reverses. Focus goes back to the design's name, or to More
- * below `xl`, where Rename design lives.
+ * renaming is one step that Undo reverses. Focus goes back to where it was opened: the design's
+ * name, or the Menu (UX 4d; the dialog puts its opener first among its return targets).
  */
 export function DesignRenameDialog({
   open,

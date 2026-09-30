@@ -103,7 +103,7 @@ function MoreMenuDesignItems({
         <button type="button" role="menuitem" data-testid="editor-command-overflow-rename-design"
           className={`${menuButtonClass} md:hidden`}
           onClick={() => {
-            // Rename design hands focus back to More when the bar has no design name.
+            // Rename design from the Menu hands focus back to the Menu (the dialog's opener).
             buttonRef.current?.focus();
             onClose();
             onRenameDesign();
