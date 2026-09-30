@@ -197,7 +197,7 @@ for (const marker of overlayOrder) {
 }
 assert.match(
   overlaysSource,
-  /return \(\s*<>[\s\S]*<PlanManualQuickActions[\s\S]*<DesignToolsRestoreButton[\s\S]*<\/\>\s*\);/,
+  /return \(\s*<>\s*<PlanCanvasTools state=\{state\} actions=\{actions\} \/>[\s\S]*<DesignToolsRestoreButton[\s\S]*<\/\>\s*\);/,
   "The overlay composition should remain wrapper-free."
 );
 

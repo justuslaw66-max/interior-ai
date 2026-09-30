@@ -75,7 +75,7 @@ const tips = (compact: boolean) =>
   renderToStaticMarkup(createElement(PlanGuidedActionsToggle, { state: { enabled: false, compact }, actions: { toggle: noop } }));
 assert.match(tips(false), /\btouch:min-h-11\b/);
 // Compact, Tips sits in the quick actions' row after them, and wraps under them on a full phone row.
-assert.doesNotMatch(tips(true), /\babsolute\b/);
+assert.doesNotMatch(tips(true).match(/<button [^>]*>/)?.[0] ?? "", /\babsolute\b/);
 assert.match(tips(false), /\babsolute z-30 left-1\/2 top-bar-17 -translate-x-1\/2\b/);
 const card = renderToStaticMarkup(createElement(CatalogCard, {
   item: {

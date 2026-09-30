@@ -150,28 +150,46 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
     </Button>
   );
 
-  // The same elements for the sheet and the column, the step's content always the body's second child.
+  // The same elements for the sheet and the column: the step's content keeps its place in the tree.
   return (
-    <section
-      ref={sheet ? sheetRef : undefined}
-      data-testid="design-controls-panel"
-      data-touch-area={sheet ? true : undefined}
-      data-temporary-reveal={column?.temporarilyRevealed ? "true" : "false"}
-      data-sheet-snap={sheet ? snap : undefined}
-      aria-label={sheet ? title : undefined}
-      style={sheet ? { height: heightPx } : undefined}
-      className={column ? column.className : `absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none ${
-        dark ? "designer-dock" : "bg-white text-neutral-900"
-      }`}
-      onMouseEnter={column?.onMouseEnter}
-      onMouseLeave={column?.onMouseLeave}
-    >
+    <section ref={sheet ? sheetRef : undefined} data-testid="design-controls-panel" {...panelShellProps(column, { dark, title, snap, heightPx })}>
       {column ? column.header : <SheetTop dark={dark} title={title} subtitle={subtitle} inspecting={inspecting} handle={handle} />}
-      <div id={sheet ? SHEET_BODY_ID : undefined} hidden={sheet && snap === "peek"}
-        className={sheet ? "min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3" : "space-y-3"}>
-        <div ref={sheet ? setPhoneSheetInspectorSlot : undefined} data-testid="phone-sheet-inspector" hidden={!inspecting} />
-        <div hidden={inspecting} className="space-y-3">{children}</div>
-      </div>
+      <StepPanelBody sheet={sheet} peek={snap === "peek"} inspecting={inspecting}>
+        {children}
+      </StepPanelBody>
     </section>
+  );
+}
+
+/** The column's place and look, or the sheet's: its snap, name, height and look. */
+function panelShellProps(column: StepPanelColumn | null, sheet: { dark: boolean; title: string; snap: PhoneSheetSnap; heightPx: number }) {
+  if (column) {
+    return {
+      "data-temporary-reveal": column.temporarilyRevealed ? "true" : "false",
+      className: column.className,
+      onMouseEnter: column.onMouseEnter,
+      onMouseLeave: column.onMouseLeave,
+    };
+  }
+  return {
+    "data-touch-area": true,
+    "data-temporary-reveal": "false",
+    "data-sheet-snap": sheet.snap,
+    "aria-label": sheet.title,
+    style: { height: sheet.heightPx },
+    className: `absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none ${
+      sheet.dark ? "designer-dock" : "bg-white text-neutral-900"
+    }`,
+  };
+}
+
+/** The body: the inspector's slot (phones), then the step's content. */
+function StepPanelBody({ sheet, peek, inspecting, children }: { sheet: boolean; peek: boolean; inspecting: boolean; children: ReactNode }) {
+  return (
+    <div id={sheet ? SHEET_BODY_ID : undefined} hidden={sheet && peek}
+      className={sheet ? "min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3" : "space-y-3"}>
+      <div ref={sheet ? setPhoneSheetInspectorSlot : undefined} data-testid="phone-sheet-inspector" hidden={!inspecting} />
+      <div hidden={inspecting} className="space-y-3">{children}</div>
+    </div>
   );
 }

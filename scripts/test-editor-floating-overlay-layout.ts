@@ -463,7 +463,11 @@ assert.match(
   /data-testid="plan-canvas-tool-row"\s+className="pointer-events-none absolute left-1\/2 top-bar-17 z-30 flex w-max max-w-\[calc\(100vw-2rem\)\] -translate-x-1\/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"\s*>\s*\{quickActions\}\s*\{tips\}/,
   "Manual plan quick actions, with Tips after them in one row, are centred near the top of the canvas (UX 4d)."
 );
-assert.doesNotMatch(planManualQuickActionsSource, /\babsolute\b/, "The quick actions sit in the row, which places them.");
+assert.match(
+  planManualQuickActionsSource,
+  /data-testid="plan-manual-quick-actions"\s+className="pointer-events-auto flex flex-wrap items-center/,
+  "The quick actions sit in the row, which places them."
+);
 
 assert.match(
   planGuidedActionsToggleSource,
@@ -616,8 +620,13 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /data-temporary-reveal=\{temporarilyRevealed \? "true" : "false"\}[\s\S]*?onMouseEnter=\{cancelEdgePreviewClose\}[\s\S]*?onMouseLeave=\{\(\) => \{[\s\S]*?scheduleEdgePreviewClose\(\)[\s\S]*?data-testid="design-controls-sidebar-toggle"[\s\S]*?Keep open/,
+  /temporarilyRevealed,\s*header: <PanelColumnHeader [\s\S]*?onMouseEnter: cancelEdgePreviewClose,\s*onMouseLeave: \(\) => \{\s*if \(temporarilyRevealed\) scheduleEdgePreviewClose\(\);[\s\S]*?data-testid="design-controls-sidebar-toggle"[\s\S]*?Keep open/,
   "The edge-revealed sidebar should dismiss on pointer exit and support pinning itself open."
+);
+// The column is drawn by the phone sheet's component (UX 4d), which takes its reveal and pointer handlers.
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components/editor/PhoneStepSheet.tsx"), "utf8"),
+  /"data-temporary-reveal": column\.temporarilyRevealed \? "true" : "false",[\s\S]*?onMouseEnter: column\.onMouseEnter,\s*onMouseLeave: column\.onMouseLeave,/
 );
 
 assert.match(

@@ -1600,12 +1600,6 @@
         "maximum": 34
       }
     },
-    "components/editor/design-page/DesignPagePlanCanvasOverlays.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 66
-      }
-    },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
       "overlongFunctions": {
         "count": 2,
