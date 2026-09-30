@@ -1,4 +1,4 @@
-import type { SurfaceMaterial } from "./surface-material-schema";
+import type { SurfaceMaterial, SurfaceTextureFace } from "./surface-material-schema";
 
 export type SurfaceMaterialRenderRecord = {
   surface_material: Pick<
@@ -61,7 +61,7 @@ export type SurfaceMaterialCatalogRecord = SurfaceMaterialRenderRecord & {
   commerce: SurfaceMaterialCatalogMetadata["commerce"];
 };
 
-export type SurfaceMaterialRenderTuple = readonly [
+export type SurfaceMaterialRenderBaseTuple = readonly [
   supplier: string,
   brand: string | null,
   materialId: string,
@@ -93,6 +93,13 @@ export type SurfaceMaterialRenderTuple = readonly [
   availablePatternLayouts: SurfaceMaterial["rendering"]["available_pattern_layouts"] | null,
   publishStatus: SurfaceMaterial["import_governance"]["publish_status"],
   publishBlockers: string[],
+];
+
+/** The trailing fields are emitted only for materials with physical-scale image data. */
+export type SurfaceMaterialRenderTuple = readonly [
+  ...SurfaceMaterialRenderBaseTuple,
+  imagePhysicalSizeMm?: { width: number; height: number } | null,
+  faces?: SurfaceTextureFace[] | null,
 ];
 
 export type SurfaceMaterialRenderInfo = SurfaceMaterialRenderRecord;
