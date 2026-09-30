@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.14.0",
+ "exporterVersion": "app-evidence-0.15.0",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -247,19 +247,27 @@
       "yRatio": 0.522648
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.522648
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
+      "yRatio": 0.691642
+     },
+     {
+      "xRatio": 0.487563,
+      "yRatio": 0.691642
+     },
+     {
+      "xRatio": 0.487563,
       "yRatio": 0.759239
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.843785
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.921892
      },
      {
@@ -363,11 +371,11 @@
     "evidenceKind": "vectorizer",
     "points": [
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.120101
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.411757
      },
      {
@@ -419,11 +427,11 @@
       "yRatio": 0.411757
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.411757
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.120101
      },
      {
@@ -459,19 +467,19 @@
       "yRatio": 0.921892
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.921892
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.843785
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.759239
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.487563,
       "yRatio": 0.691642
      }
     ]
@@ -555,11 +563,11 @@
       "yRatio": 0.691642
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.691642
      },
      {
-      "xRatio": 0.483353,
+      "xRatio": 0.481217,
       "yRatio": 0.522648
      },
      {
@@ -2028,7 +2036,7 @@
      933.4497533908755
     ],
     [
-     1340.8207780637822,
+     1334.8960990011935,
      933.4497533908755
     ]
    ],
@@ -2041,28 +2049,62 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1334.8960990011935,
      933.4497533908755
     ],
     [
-     1340.8207780637822,
-     1356.0
+     1334.8960990011935,
+     1235.2725591715975
     ]
    ],
-   "thicknessPx": 44.36,
-   "thicknessMm": 287,
+   "thicknessPx": 56.21,
+   "thicknessMm": 364,
    "opening": null
   },
   {
    "id": "e17",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1334.8960990011935,
+     1235.2725591715975
+    ],
+    [
+     1352.5,
+     1235.2725591715975
+    ]
+   ],
+   "thicknessPx": 21.0,
+   "thicknessMm": 136,
+   "opening": null
+  },
+  {
+   "id": "e18",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1352.5,
+     1235.2725591715975
+    ],
+    [
+     1352.5,
+     1356.0
+    ]
+   ],
+   "thicknessPx": 21.0,
+   "thicknessMm": 136,
+   "opening": null
+  },
+  {
+   "id": "e19",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1352.5,
      1356.0
     ],
     [
-     1340.8207780637822,
+     1352.5,
      1507.0
     ]
    ],
@@ -2086,28 +2128,28 @@
    }
   },
   {
-   "id": "e18",
+   "id": "e20",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1352.5,
      1507.0
     ],
     [
-     1340.8207780637822,
+     1352.5,
      1646.5
     ]
    ],
-   "thicknessPx": 44.36,
-   "thicknessMm": 287,
+   "thicknessPx": 21.0,
+   "thicknessMm": 136,
    "opening": null
   },
   {
-   "id": "e19",
+   "id": "e21",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1352.5,
      1646.5
     ],
     [
@@ -2120,7 +2162,7 @@
    "opening": null
   },
   {
-   "id": "e20",
+   "id": "e22",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2137,7 +2179,7 @@
    "opening": null
   },
   {
-   "id": "e21",
+   "id": "e23",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2154,7 +2196,7 @@
    "opening": null
   },
   {
-   "id": "e22",
+   "id": "e24",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2192,7 +2234,7 @@
    }
   },
   {
-   "id": "e23",
+   "id": "e25",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2209,7 +2251,7 @@
    "opening": null
   },
   {
-   "id": "e24",
+   "id": "e26",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2226,7 +2268,7 @@
    "opening": null
   },
   {
-   "id": "e25",
+   "id": "e27",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2264,7 +2306,7 @@
    }
   },
   {
-   "id": "e26",
+   "id": "e28",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2281,7 +2323,7 @@
    "opening": null
   },
   {
-   "id": "e27",
+   "id": "e29",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2298,7 +2340,7 @@
    "opening": null
   },
   {
-   "id": "e28",
+   "id": "e30",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2315,7 +2357,7 @@
    "opening": null
   },
   {
-   "id": "e29",
+   "id": "e31",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2332,7 +2374,7 @@
    "opening": null
   },
   {
-   "id": "e30",
+   "id": "e32",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2349,7 +2391,7 @@
    "opening": null
   },
   {
-   "id": "e31",
+   "id": "e33",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2381,7 +2423,7 @@
    }
   },
   {
-   "id": "e32",
+   "id": "e34",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2398,7 +2440,7 @@
    "opening": null
   },
   {
-   "id": "e33",
+   "id": "e35",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2415,7 +2457,7 @@
    "opening": null
   },
   {
-   "id": "e34",
+   "id": "e36",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2432,7 +2474,7 @@
    "opening": null
   },
   {
-   "id": "e35",
+   "id": "e37",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2449,7 +2491,7 @@
    "opening": null
   },
   {
-   "id": "e36",
+   "id": "e38",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2481,7 +2523,7 @@
    }
   },
   {
-   "id": "e37",
+   "id": "e39",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2498,28 +2540,28 @@
    "opening": null
   },
   {
-   "id": "e38",
+   "id": "e40",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1334.8960990011935,
      214.5
     ],
     [
-     1340.8207780637822,
+     1334.8960990011935,
      735.3978723404256
     ]
    ],
-   "thicknessPx": 20.36,
-   "thicknessMm": 132,
+   "thicknessPx": 32.21,
+   "thicknessMm": 209,
    "opening": null
   },
   {
-   "id": "e39",
+   "id": "e41",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1334.8960990011935,
      735.3978723404256
     ],
     [
@@ -2532,7 +2574,7 @@
    "opening": null
   },
   {
-   "id": "e40",
+   "id": "e42",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2549,7 +2591,7 @@
    "opening": null
   },
   {
-   "id": "e41",
+   "id": "e43",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2566,7 +2608,7 @@
    "opening": null
   },
   {
-   "id": "e42",
+   "id": "e44",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2598,7 +2640,7 @@
    }
   },
   {
-   "id": "e43",
+   "id": "e45",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2606,7 +2648,7 @@
      214.5
     ],
     [
-     1340.8207780637822,
+     1334.8960990011935,
      214.5
     ]
    ],
@@ -2615,7 +2657,7 @@
    "opening": null
   },
   {
-   "id": "e44",
+   "id": "e46",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2632,7 +2674,7 @@
    "opening": null
   },
   {
-   "id": "e45",
+   "id": "e47",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2640,7 +2682,7 @@
      735.3978723404256
     ],
     [
-     1340.8207780637822,
+     1334.8960990011935,
      735.3978723404256
     ]
    ],
@@ -2649,11 +2691,11 @@
    "opening": null
   },
   {
-   "id": "e46",
+   "id": "e48",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     1334.8960990011935,
      214.5
     ],
     [
@@ -2666,7 +2708,7 @@
    "opening": null
   },
   {
-   "id": "e47",
+   "id": "e49",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2698,7 +2740,7 @@
    }
   },
   {
-   "id": "e48",
+   "id": "e50",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2715,7 +2757,7 @@
    "opening": null
   },
   {
-   "id": "e49",
+   "id": "e51",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2732,7 +2774,7 @@
    "opening": null
   },
   {
-   "id": "e50",
+   "id": "e52",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2764,7 +2806,7 @@
    }
   },
   {
-   "id": "e51",
+   "id": "e53",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2781,7 +2823,7 @@
    "opening": null
   },
   {
-   "id": "e52",
+   "id": "e54",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2789,7 +2831,7 @@
      1646.5
     ],
     [
-     1340.8207780637822,
+     1352.5,
      1646.5
     ]
    ],
@@ -2798,28 +2840,11 @@
    "opening": null
   },
   {
-   "id": "e53",
+   "id": "e55",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
-     1356.0
-    ],
-    [
-     1340.8207780637822,
-     1235.2725591715975
-    ]
-   ],
-   "thicknessPx": 2.36,
-   "thicknessMm": 15,
-   "opening": null
-  },
-  {
-   "id": "e54",
-   "kind": "wall_centerline",
-   "sourcePx": [
-    [
-     1340.8207780637822,
+     1352.5,
      1235.2725591715975
     ],
     [
@@ -2832,7 +2857,7 @@
    "opening": null
   },
   {
-   "id": "e55",
+   "id": "e56",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2849,7 +2874,7 @@
    "opening": null
   },
   {
-   "id": "e56",
+   "id": "e57",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2866,7 +2891,7 @@
    "opening": null
   },
   {
-   "id": "e57",
+   "id": "e58",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2883,7 +2908,7 @@
    "opening": null
   },
   {
-   "id": "e58",
+   "id": "e59",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2900,7 +2925,7 @@
    "opening": null
   },
   {
-   "id": "e59",
+   "id": "e60",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2917,7 +2942,7 @@
    "opening": null
   },
   {
-   "id": "e60",
+   "id": "e61",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2934,24 +2959,24 @@
    "opening": null
   },
   {
-   "id": "e61",
+   "id": "e62",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     1340.8207780637822,
+     993.4666781174853,
      1235.2725591715975
     ],
     [
-     1340.8207780637822,
-     933.4497533908755
+     1334.8960990011935,
+     1235.2725591715975
     ]
    ],
-   "thicknessPx": 91.64,
-   "thicknessMm": 593,
+   "thicknessPx": 26.55,
+   "thicknessMm": 172,
    "opening": null
   },
   {
-   "id": "e62",
+   "id": "e63",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2968,7 +2993,7 @@
    "opening": null
   },
   {
-   "id": "e63",
+   "id": "e64",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3000,7 +3025,7 @@
    }
   },
   {
-   "id": "e64",
+   "id": "e65",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3032,7 +3057,7 @@
    }
   },
   {
-   "id": "e65",
+   "id": "e66",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3049,7 +3074,7 @@
    "opening": null
   },
   {
-   "id": "e66",
+   "id": "e67",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3066,7 +3091,7 @@
    "opening": null
   },
   {
-   "id": "e67",
+   "id": "e68",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3152,19 +3177,27 @@
      "y": 933.4497533908755
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 933.4497533908755
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
+     "y": 1235.2725591715975
+    },
+    {
+     "x": 1352.5,
+     "y": 1235.2725591715975
+    },
+    {
+     "x": 1352.5,
      "y": 1356.0
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1507.0
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1646.5
     },
     {
@@ -3232,9 +3265,11 @@
     "e25",
     "e26",
     "e27",
-    "e28"
+    "e28",
+    "e29",
+    "e30"
    ],
-   "areaM2": 44.77,
+   "areaM2": 44.64,
    "sourceLabels": [
     "LIVING/DINING",
     "KITCHEN"
@@ -3297,18 +3332,18 @@
     }
    ],
    "edgeIds": [
-    "e29",
-    "e30",
     "e31",
     "e32",
+    "e33",
+    "e34",
     "e12",
     "e11",
     "e10",
-    "e33",
-    "e34",
     "e35",
     "e36",
-    "e37"
+    "e37",
+    "e38",
+    "e39"
    ],
    "areaM2": 16.41,
    "sourceLabels": [
@@ -3323,11 +3358,11 @@
    "confidence": 0.9,
    "sourcePoints": [
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 214.5
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 735.3978723404256
     },
     {
@@ -3356,16 +3391,16 @@
     }
    ],
    "edgeIds": [
-    "e38",
-    "e39",
-    "e6",
-    "e5",
     "e40",
     "e41",
+    "e6",
+    "e5",
     "e42",
-    "e43"
+    "e43",
+    "e44",
+    "e45"
    ],
-   "areaM2": 11.09,
+   "areaM2": 11.22,
    "sourceLabels": [
     "BEDROOM"
    ]
@@ -3394,11 +3429,11 @@
      "y": 735.3978723404256
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 735.3978723404256
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 214.5
     },
     {
@@ -3411,16 +3446,16 @@
     }
    ],
    "edgeIds": [
-    "e34",
-    "e44",
-    "e8",
-    "e45",
-    "e38",
+    "e36",
     "e46",
+    "e8",
     "e47",
-    "e48"
+    "e40",
+    "e48",
+    "e49",
+    "e50"
    ],
-   "areaM2": 10.73,
+   "areaM2": 10.6,
    "sourceLabels": [
     "BEDROOM"
    ]
@@ -3449,33 +3484,33 @@
      "y": 1646.5
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1646.5
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1507.0
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1356.0
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1352.5,
      "y": 1235.2725591715975
     }
    ],
    "edgeIds": [
-    "e49",
-    "e50",
     "e51",
     "e52",
-    "e18",
-    "e17",
     "e53",
-    "e54"
+    "e54",
+    "e20",
+    "e19",
+    "e18",
+    "e55"
    ],
-   "areaM2": 5.99,
+   "areaM2": 6.19,
    "sourceLabels": [
     "SERVICE YARD"
    ]
@@ -3513,12 +3548,12 @@
     }
    ],
    "edgeIds": [
-    "e32",
-    "e31",
-    "e55",
+    "e34",
+    "e33",
     "e56",
     "e57",
-    "e58"
+    "e58",
+    "e59"
    ],
    "areaM2": 5.08,
    "sourceLabels": [
@@ -3558,12 +3593,12 @@
     }
    ],
    "edgeIds": [
+    "e28",
+    "e27",
     "e26",
-    "e25",
-    "e24",
-    "e59",
     "e60",
-    "e27"
+    "e61",
+    "e29"
    ],
    "areaM2": 4.4,
    "sourceLabels": [
@@ -3586,11 +3621,11 @@
      "y": 1235.2725591715975
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 1235.2725591715975
     },
     {
-     "x": 1340.8207780637822,
+     "x": 1334.8960990011935,
      "y": 933.4497533908755
     },
     {
@@ -3603,14 +3638,14 @@
     }
    ],
    "edgeIds": [
-    "e58",
-    "e54",
-    "e61",
+    "e59",
+    "e62",
+    "e16",
     "e15",
     "e14",
     "e13"
    ],
-   "areaM2": 4.4,
+   "areaM2": 4.32,
    "sourceLabels": [
     "BATH/WC"
    ]
@@ -3648,12 +3683,12 @@
     }
    ],
    "edgeIds": [
-    "e62",
     "e63",
     "e64",
     "e65",
     "e66",
-    "e67"
+    "e67",
+    "e68"
    ],
    "areaM2": 3.54,
    "sourceLabels": [
@@ -3691,6 +3726,11 @@
   "curvedWalls": 0,
   "curvedSides": 0,
   "panelPartitionsAsSlidingDoors": 0,
+  "foldingDoorsOnTheirPartition": 0,
+  "wallGapsOnTheirStrokes": 0,
+  "sidesSplitAtThicknessChanges": 3,
+  "sidesWeldedOntoTheWall": 0,
+  "jambChamfersDropped": 0,
   "unsupportedWallPx": 17407,
   "thickAxisWallPx": 17407,
   "slantedWallPx": 0,

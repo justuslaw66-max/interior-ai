@@ -7,7 +7,8 @@ Run by `PythonFloorPlanVectorizerProvider` (`lib/floor-plan-imports/vectorizer-e
 
 Off unless `FLOOR_PLAN_VECTORIZER_ENABLED=1`. Other settings: `FLOOR_PLAN_VECTORIZER_DIR` (default
 `<cwd>/services/floorplan-vectorizer`), `FLOOR_PLAN_VECTORIZER_PYTHON` (default `python3`),
-`FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000, 10 s – 15 min), `FLOOR_PLAN_VECTORIZER_MAX_PAGES` (default 1).
+`FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000, 10 s – 15 min), `FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS` (the least
+`app_evidence.py` gets after `floorplan_vectorize.py`, default 60000, 10 s – 5 min), `FLOOR_PLAN_VECTORIZER_MAX_PAGES` (default 1).
 
 ## Setting up and checking, in three steps
 
