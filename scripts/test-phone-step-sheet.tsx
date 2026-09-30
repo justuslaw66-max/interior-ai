@@ -101,6 +101,18 @@ assert.match(half, /<div id="design-controls-sheet-body" class="min-h-0 flex-1 s
 const peek = sheet(true);
 assert.match(peek, /data-sheet-snap="peek"[^>]*style="height:92px"/);
 assert.match(peek, /<div id="design-controls-sheet-body" hidden=""/, "Peek shows the title only.");
+// Hydration: the first render takes a phone's height whatever the window is, as the server does, so
+// the sheet's height matches the server's HTML (the window suite failed on a mismatch, 30 Sep).
+const globals = globalThis as { window?: unknown };
+globals.window = { innerHeight: 1000, addEventListener: noop, removeEventListener: noop };
+try {
+  assert.match(sheet(false), /data-sheet-snap="half"[^>]*style="height:388px"/, "The first render ignores the window's height.");
+} finally {
+  delete globals.window;
+}
+const sheetSource = read("components/editor/PhoneStepSheet.tsx");
+assert.match(sheetSource, /useSyncExternalStore\(subscribeToResize, \(\) => window\.innerHeight, \(\) => SERVER_VIEWPORT_HEIGHT_PX\)/);
+assert.doesNotMatch(sheetSource, /typeof window/, "No render reads the window before hydration.");
 
 // The inspector in the sheet (AX2): a wall, ceiling, door, window, fixed element or note; not a
 // product (the item panel) or a room on its own (the Plan panel's room section).

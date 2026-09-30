@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type PointerEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   PHONE_SHEET_PEEK_PX,
@@ -25,15 +25,18 @@ type PhoneStepSheetProps = {
 
 const SHEET_BODY_ID = "design-controls-sheet-body";
 
+/**
+ * The viewport's height. While the server renders and the page hydrates it's a phone's (844px), so
+ * the two agree; the real height follows straight after. Reading `window` in the first render made
+ * the sheet's height differ from the server's, a hydration error (the window suite, 30 Sep).
+ */
+const SERVER_VIEWPORT_HEIGHT_PX = 844;
+function subscribeToResize(onChange: () => void) {
+  window.addEventListener("resize", onChange);
+  return () => window.removeEventListener("resize", onChange);
+}
 function useViewportHeight() {
-  const [height, setHeight] = useState(() => (typeof window === "undefined" ? 844 : window.innerHeight));
-  useEffect(() => {
-    const update = () => setHeight(window.innerHeight);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-  return height;
+  return useSyncExternalStore(subscribeToResize, () => window.innerHeight, () => SERVER_VIEWPORT_HEIGHT_PX);
 }
 
 type SheetDrag = { startY: number; moved: boolean; heightPx: number };
