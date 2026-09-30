@@ -40,11 +40,15 @@ export function floorPlanVectorizerRuntimeConfiguration(
   environment: Readonly<Record<string, string | undefined>> = process.env
 ) {
   const timeout = Number.parseInt(environment.FLOOR_PLAN_VECTORIZER_TIMEOUT_MS ?? "", 10);
+  const exportFloor = Number.parseInt(environment.FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS ?? "", 10);
   return Object.freeze({
     enabled: environment.FLOOR_PLAN_VECTORIZER_ENABLED === "1",
     pythonPath: environment.FLOOR_PLAN_VECTORIZER_PYTHON || "python3",
     directory: environment.FLOOR_PLAN_VECTORIZER_DIR || DEFAULT_VECTORIZER_DIRECTORY,
     timeoutMs: Number.isFinite(timeout) ? Math.max(10_000, Math.min(timeout, 900_000)) : 420_000,
+    // The exporter always gets at least this long, whatever the tracer left of the page's budget: a page
+    // whose trace took the whole budget would otherwise lose its result in the last, short step.
+    exportFloorMs: Number.isFinite(exportFloor) ? Math.max(10_000, Math.min(exportFloor, 300_000)) : 60_000,
   });
 }
 
@@ -117,7 +121,10 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
       await runProcess(
         this.config.pythonPath,
         [`${this.config.directory}/app_evidence.py`, `${base}.json`, `${base}.evidence.json`],
-        { timeoutMs: Math.max(10_000, options.timeoutMs - (Date.now() - started)), signal: options.signal }
+        {
+          timeoutMs: Math.max(this.config.exportFloorMs, options.timeoutMs - (Date.now() - started)),
+          signal: options.signal,
+        }
       );
       return parseFloorPlanVectorizerEvidence(
         JSON.parse(await readFile(`${base}.evidence.json`, "utf8"))

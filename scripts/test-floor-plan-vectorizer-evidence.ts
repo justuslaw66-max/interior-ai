@@ -41,6 +41,11 @@ assert.equal(
   floorPlanVectorizerRuntimeConfiguration({ FLOOR_PLAN_VECTORIZER_TIMEOUT_MS: "5" }).timeoutMs,
   10_000
 );
+assert.equal(floorPlanVectorizerRuntimeConfiguration({}).exportFloorMs, 60_000);
+assert.equal(
+  floorPlanVectorizerRuntimeConfiguration({ FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS: "999999" }).exportFloorMs,
+  300_000
+);
 
 // Hinge end and handing follow the direction of the hosting wall.
 const hinged = { hingeSourcePx: { x: 0, y: 0 }, swingTowardSourcePx: { x: 0, y: 5 } };
@@ -292,7 +297,26 @@ async function main() {
         ),
         /exceeded 400 ms/
       );
-      summary.push("provider: stand-in programs run, evidence parsed, temporary folder removed, slow program killed");
+      // The exporter keeps its floor when the tracer used the page's whole budget: a 400 ms page budget, a tracer
+      // that takes most of it and an exporter that needs a second still return the evidence.
+      writeFileSync(
+        path.join(directory, "floorplan_vectorize.py"),
+        "import sys, time\ntime.sleep(0.3)\nopen(sys.argv[2] + '.json', 'w').write('{}')\n"
+      );
+      writeFileSync(
+        path.join(directory, "app_evidence.py"),
+        `import sys, shutil, time\ntime.sleep(1)\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`
+      );
+      const floored = await new PythonFloorPlanVectorizerProvider({ ...config, exportFloorMs: 10_000 }).analyzePage(
+        { pageNumber: 1, widthPx: 828, heightPx: 957, mimeType: "image/png", bytes: new Uint8Array([1, 2, 3]) },
+        { timeoutMs: 400 }
+      );
+      assert.equal(floored.rooms.length > 0, true, "the exporter ran within its own floor");
+      writeFileSync(
+        path.join(directory, "app_evidence.py"),
+        `import sys, shutil\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`
+      );
+      summary.push("provider: stand-in programs run, evidence parsed, temporary folder removed, slow program killed, exporter floor kept");
 
       // Without the runtime the import goes on: a missing interpreter, or a program that stops with a message
       // (no OpenCV, no tesseract), leaves the page exactly as the other sources made it and records why.
