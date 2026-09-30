@@ -134,11 +134,16 @@ async function setLivingEastWallAngle(
 
 const THREE_DEGREES_TO_RADIANS = Math.PI / 180;
 
+// The canvas's view controls and the room focus pill float over the top of the 3D view (UX 4c),
+// where the selected piece's top edge can run; the render is measured without them.
+const HIDE_CANVAS_CONTROLS =
+  '[data-testid="canvas-view-toolbar"], [data-testid="active-room-focus-toolbar"] { visibility: hidden !important; }';
+
 async function wallPanelDiagonalMetrics(
   page: Page,
   suppliedBounds?: PixelBounds
 ) {
-  const screenshot = await page.screenshot();
+  const screenshot = await page.screenshot({ style: HIDE_CANVAS_CONTROLS });
   const { data, info } = await sharp(screenshot)
     .removeAlpha()
     .raw()
