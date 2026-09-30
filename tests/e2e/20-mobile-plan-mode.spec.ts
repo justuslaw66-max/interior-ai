@@ -105,6 +105,9 @@ test("the phone's step sheet expands, peeks and comes back", async ({ page }) =>
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
   await expect(body).toBeVisible();
 
+  // The sheet grows back over 200ms; the handle is measured once it's settled at half, or the
+  // press lands on the title below the moving handle and nothing is dragged.
+  await expect.poll(async () => Math.round((await sheet.boundingBox())?.height ?? 0)).toBe(388);
   const box = (await handle.boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
@@ -123,6 +126,8 @@ test("a phone shows the picked door's inspector in the step sheet", async ({ pag
   await page.getByTestId("plan-guided-actions-toggle").click();
   const sheet = page.getByTestId("design-controls-panel");
   const slot = page.getByTestId("phone-sheet-inspector");
+  // The sheet's own title, not a heading in the step's content (the room check has one too).
+  const title = sheet.getByRole("heading", { name: "Plan", exact: true, level: 2, includeHidden: true });
   await page.getByTestId("design-controls-panel-handle").focus();
   await page.keyboard.press("Control+b");
   await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
@@ -132,7 +137,7 @@ test("a phone shows the picked door's inspector in the step sheet", async ({ pag
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
   await expect(slot.getByTestId("selection-inspector")).toBeVisible();
   await expect(slot.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
-  await expect(sheet.locator("h2")).toBeHidden();
+  await expect(title).toBeHidden();
   await expect(page.getByTestId("selected-plan-opening-actions")).toBeHidden();
   expect(await smallTouchTargets(sheet), "The inspector's controls are 44px targets.").toEqual([]);
   const done = slot.getByTestId("selection-inspector-clear");
@@ -142,7 +147,7 @@ test("a phone shows the picked door's inspector in the step sheet", async ({ pag
   await done.click();
   await expect(page.getByTestId("selection-inspector")).toHaveCount(0);
   await expect(slot).toBeHidden();
-  await expect(sheet.locator("h2")).toBeVisible();
+  await expect(title).toBeVisible();
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
 });
 
