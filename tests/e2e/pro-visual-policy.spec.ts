@@ -23,6 +23,12 @@ const RECOMMENDED_CABINET_TEMPLATES = [
 
 const CABINET_VIEWS = ["perspective", "front", "side", "top"] as const;
 
+// The first check after a page load that needs the page's own code (the Pro indicator, the
+// upgrade prompt) waits as long as that load can take: the page can still be preparing the 3D room
+// and hydrating 5s in. In one run the Plans-return test's upgrade prompt wasn't there at 5s (the
+// editor hadn't hydrated), in another the Client Preview test's indicator came just after 5s.
+const FIRST_LOAD_TIMEOUT_MS = 30_000;
+
 async function mockPlan(page: Page, plan: "free" | "pro") {
   await page.unroute("**/api/me");
   await page.route("**/api/me", async (route) => {
@@ -1762,7 +1768,7 @@ test.describe("Pro visual policy", () => {
 
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     const account = page.getByTestId("editor-command-account");
     await account.click();
     await expect(page.getByTestId("editor-command-manage-billing")).toBeVisible();
@@ -1779,7 +1785,7 @@ test.describe("Pro visual policy", () => {
     await mockPlan(page, "free");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
-    await expect(page.getByTestId("upgrade-dialog")).toBeVisible();
+    await expect(page.getByTestId("upgrade-dialog")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
     // Guests sign in from the bar; they have no Account menu.
@@ -2217,7 +2223,7 @@ test.describe("Pro visual policy", () => {
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
     await openCustomMillworkStudioFromWorkspace(page, {
       accessLevel: "pro",
@@ -2306,9 +2312,7 @@ test.describe("Pro visual policy", () => {
   }) => {
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    // The first check waits as long as the page's first load can take: the indicator can be on
-    // screen while the page is still busy preparing the 3D room and can't answer the check.
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await dismissBlockingPrompt(page);
     await expectEditingCommandBarActive(page);
 
@@ -2665,7 +2669,7 @@ test.describe("Pro visual policy", () => {
   }) => {
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await dismissBlockingPrompt(page);
 
     const more = page.getByTestId("editor-command-overflow");
