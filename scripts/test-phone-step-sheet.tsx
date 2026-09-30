@@ -101,6 +101,17 @@ for (const orientation of ["normal", "rotated"] as const) {
   close(onScreen(fit({ top: 0, bottom: 0, left: 318, right: 0 }, orientation)).rightPx, 159, `${orientation}: a left panel moves it right`);
 }
 
+// Under the canvas tools a two-room home (9 × 4 m) on a 1280 × 720 laptop, with the step panel and
+// the plan review open, is drawn at about 56px a metre (no longer turned to fill the height), and
+// the plan's first tier of context labels (one "Shared wall", two "Add door here") starts at 50.
+const laptop = resolvePlan2DViewFit({
+  centerX: 0, centerZ: 0, paddingMeters: 3.2, planDepthMeters: 4, planWidthMeters: 9, viewportHeightPx: 720, viewportWidthPx: 1280,
+  zoomScale: 1.1, ...resolvePlanFitInsetsPx(1280, { leftPx: 318, rightPx: 344, topPx: 0, bottomPx: 0 }),
+});
+assert.equal(laptop.orientation, "normal");
+assert.ok(laptop.zoom >= 50 && laptop.zoom < 56, `The laptop's two-room home is drawn at ${laptop.zoom}px a metre.`);
+assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /if \(planZoom < 50\) return \{ maxAdjacency: 0, maxDoorways: 0,/);
+
 // The sheet: a region named for the step, a handle that's a button with its state, and a body
 // that's hidden while the sheet only peeks.
 const sheet = (collapsed: boolean) =>
