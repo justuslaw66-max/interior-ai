@@ -74,19 +74,32 @@ assert.deepEqual(resolvePlanFitInsetsPx(1280, { leftPx: 318, rightPx: 344, topPx
 });
 
 // The 2D fit keeps the plan in the band between them: a top inset shrinks the fit's height and
-// moves the plan down by half of it, a bottom inset moves it up.
-const fit = (top: number, bottom: number) =>
+// moves the plan down by half of it, a bottom inset moves it up, and a left inset moves it right.
+// Where the plan's centre (0, 0) lands, in px from the canvas's centre, seen through the fit's
+// camera (looking down, `up` is screen-up and screen-right is up × down).
+type Insets = { top: number; bottom: number; left?: number; right?: number };
+const fit = ({ top, bottom, left = 0, right = 0 }: Insets, fitOrientation: "normal" | "rotated" = "normal") =>
   resolvePlan2DViewFit({
-    centerX: 0, centerZ: 0, fitOrientation: "normal", paddingMeters: 1, planDepthMeters: 6, planWidthMeters: 4,
-    safeAreaBottomPx: bottom, safeAreaLeftPx: 0, safeAreaRightPx: 0, safeAreaTopPx: top,
+    centerX: 0, centerZ: 0, fitOrientation, paddingMeters: 1, planDepthMeters: 6, planWidthMeters: 4,
+    safeAreaBottomPx: bottom, safeAreaLeftPx: left, safeAreaRightPx: right, safeAreaTopPx: top,
     viewportHeightPx: 844, viewportWidthPx: 390,
   });
-const open = fit(0, 0);
-const framed = fit(128, 452);
+const onScreen = (view: ReturnType<typeof fit>) => {
+  const [upX, , upZ] = view.up;
+  const [rightX, rightZ] = [-upZ, upX];
+  const [dx, dz] = [-view.offsetX, -view.offsetZ];
+  return { downPx: -(dx * upX + dz * upZ) * view.zoom, rightPx: (dx * rightX + dz * rightZ) * view.zoom };
+};
+const close = (actual: number, expected: number, message: string) => assert.ok(Math.abs(actual - expected) < 1e-6, `${message}: ${actual} ≠ ${expected}`);
+const open = fit({ top: 0, bottom: 0 });
+const framed = fit({ top: 128, bottom: 452 });
 assert.ok(framed.zoom < open.zoom, "Less height to fit in, so the plan is drawn smaller.");
-assert.equal(fit(100, 100).offsetZ, 0, "Equal insets keep the plan centred.");
-assert.ok(fit(0, 200).offsetZ < 0 && fit(200, 0).offsetZ > 0, "The top and bottom insets move the plan opposite ways.");
-assert.equal(framed.offsetZ, (128 - 452) / framed.zoom / 2);
+for (const orientation of ["normal", "rotated"] as const) {
+  close(onScreen(fit({ top: 100, bottom: 100 }, orientation)).downPx, 0, `${orientation}: equal insets keep the plan centred`);
+  close(onScreen(fit({ top: 184, bottom: 0 }, orientation)).downPx, 92, `${orientation}: a top inset moves the plan down by half of it`);
+  close(onScreen(fit({ top: 128, bottom: 452 }, orientation)).downPx, -162, `${orientation}: the sheet moves it up, between the pills and the sheet`);
+  close(onScreen(fit({ top: 0, bottom: 0, left: 318, right: 0 }, orientation)).rightPx, 159, `${orientation}: a left panel moves it right`);
+}
 
 // The sheet: a region named for the step, a handle that's a button with its state, and a body
 // that's hidden while the sheet only peeks.

@@ -24,6 +24,12 @@ type Plan2DViewFit = {
   zoom: number;
 };
 
+/**
+ * The 2D camera that fits the plan in the band the insets leave, centred in it. The camera moves
+ * by half the insets' difference: right by (right − left) / 2 and up the screen by (top − bottom)
+ * / 2, so the plan lands right of a left panel and under a top inset. Screen-up is −z (`up`
+ * [0, 0, −1]), or +x when rotated; screen-right is +x, or +z when rotated.
+ */
 export function resolvePlan2DViewFit(params: {
   centerX: number;
   centerZ: number;
@@ -88,7 +94,7 @@ export function resolvePlan2DViewFit(params: {
     fitPlanDepthMeters: params.planDepthMeters,
     fitPlanWidthMeters: params.planWidthMeters,
     offsetX: params.centerX + screenOffsetX,
-    offsetZ: params.centerZ + screenOffsetY,
+    offsetZ: params.centerZ - screenOffsetY,
     orientation,
     up: [0, 0, -1],
     zoom,
