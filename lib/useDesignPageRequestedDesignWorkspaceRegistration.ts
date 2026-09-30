@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
 import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 import type { DesignPageCloudLoadResult } from "@/lib/design-page-types";
@@ -116,20 +116,4 @@ export function useDesignPageRequestedDesignWorkspaceRegistration({
     router,
     searchParams,
   ]);
-
-  const openSavedDesign = useCallback(
-    (designId: string) => {
-      persistence.actions.persistence.closeMyDesigns();
-      router.push(buildDesignEditorUrl({ designId, context: searchParams }));
-    },
-    [persistence.actions.persistence, router, searchParams]
-  );
-
-  return {
-    actions: { openSavedDesign },
-  };
 }
-
-export type DesignPageRequestedDesignWorkspaceRegistration = ReturnType<
-  typeof useDesignPageRequestedDesignWorkspaceRegistration
->;

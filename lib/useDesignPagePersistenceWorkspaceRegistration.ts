@@ -89,6 +89,7 @@ function buildStartChooserInput(
   return {
     state: {
       isAuthenticated: Boolean(base.state.identity.session?.user),
+      sessionKnown: base.state.identity.sessionStatus !== "loading",
       localBackupHydrated: snapshotDocument.state.localBackupHydrated,
       canEdit: coreShell.derived.access.canEdit,
       designIsEmpty: !shouldConfirmPlanTemplateReplacement(
@@ -104,9 +105,9 @@ function buildStartChooserInput(
         goPlan();
       },
       openNewDesignTemplatePicker: persistence.actions.newPlan.openNewPlanPicker,
-      closeMyDesigns: persistence.actions.persistence.closeMyDesigns,
       goPlan,
       drawRoom: documentSelection.actions.betaStart.startDrawRoom,
+      openPricing: () => base.actions.dialogs.setShowPlans(true),
     },
   };
 }

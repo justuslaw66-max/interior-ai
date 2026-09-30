@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/server-analytics";
-import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
+import { buildDesignUpdatePayload, withStoredDesignRename } from "@/lib/design-route-payload";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
@@ -131,7 +131,7 @@ export async function PUT(
     if (!updatePayload.ok) {
       throw new ApiBoundaryError(updatePayload.status, "BAD_REQUEST", updatePayload.error);
     }
-    const updateData = updatePayload.value;
+    const updateData = withStoredDesignRename(updatePayload.value, design.snapshot);
     if (updateData.items) updateData.items = updateData.items as Prisma.InputJsonValue;
     if (updateData.zones) updateData.zones = updateData.zones as Prisma.InputJsonValue;
     if (updateData.savedViews) updateData.savedViews = updateData.savedViews as Prisma.InputJsonValue;

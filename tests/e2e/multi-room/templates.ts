@@ -359,14 +359,12 @@ export function registerTemplateTests() {
     await page.getByTestId("editor-workflow-ai").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("furnish-step-back-to-products")).toBeVisible();
     await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("aria-current", "step");
-    await expect(page.getByText("Layout brief")).toBeVisible();
-    await expect(page.getByTestId("ai-layout-goals")).toBeVisible();
-    await expect(page.getByTestId("ai-layout-goal-balanced")).toHaveAttribute("data-active", "true");
-    await page.getByTestId("ai-layout-goal-media").click();
-    await expect(page.getByTestId("ai-layout-goal-media")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("ai-layout-readiness")).toContainText("Ready to generate");
-    await expect(page.getByTestId("ai-layout-readiness")).toContainText("Living rooms first");
-    await expect(page.getByText("AI layout supports living rooms first")).toBeVisible();
+    // The bedroom is active: Suggest a layout says first that it works in living rooms, and shows
+    // no brief to fill in (ST14).
+    await expect(page.getByTestId("ai-layout-room-limit")).toContainText("works in living rooms for now");
+    await expect(page.getByTestId("ai-layout-room-limit")).toContainText("Bedroom");
+    await expect(page.getByTestId("ai-layout-goals")).toHaveCount(0);
+    await expect(page.locator("#guest-ai-layout-action")).toHaveCount(0);
     await page.getByTestId("editor-workflow-plan").click({ timeout: 10_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 

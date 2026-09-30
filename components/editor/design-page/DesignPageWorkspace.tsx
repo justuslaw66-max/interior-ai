@@ -4,7 +4,7 @@ import { DesignPageEditorChrome } from "@/components/editor/design-page/DesignPa
 import { DesignPageDialogLayer } from "@/components/editor/design-page/DesignPageDialogLayer";
 import { LocalBackupRecoveryDialog } from "@/components/editor/design-page/LocalBackupRecoveryDialog";
 import { CloudSaveConflictDialog } from "@/components/editor/design-page/CloudSaveConflictDialog";
-import { DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
+import { CanvasBehindPage, DesignPagePanelRegion } from "@/components/editor/design-page/DesignPagePanelRegion";
 import { DesignPagePresentationQaLayer } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import { DesignPageSceneRegion } from "@/components/editor/design-page/DesignPageSceneRegion";
 import { useDesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
@@ -83,7 +83,6 @@ export function DesignPageWorkspace() {
       brief: { mode },
       dialogs: { showPlans, plansOpenerId, feedbackOpen, downloadOpen, showUpgrade },
       paywall: { upgradeReason, upgradeCtaVariant, pricingLayoutVariant },
-      panels: { itemCartOpen, itemCart },
       editor: { viewMode },
     },
     derived: { navigation: { router, pathname, searchParams } },
@@ -116,9 +115,7 @@ export function DesignPageWorkspace() {
     },
   } = documentSelectionRegistration;
   const documentRoomModel = documentRoomRegistration.derived.room;
-  const documentPlanModel = documentRoomRegistration.derived.plan;
   const { activeRoom } = documentRoomModel;
-  const { designControlsPanelVisibleForLayout } = documentPlanModel;
 
   const presentationBackupRegistration =
     useDesignPagePresentationBackupRegistrationFacade({
@@ -224,13 +221,12 @@ export function DesignPageWorkspace() {
         planAuthoring: planAuthoringRegistration,
       },
     });
-  const requestedDesignWorkspaceRegistration =
-    useDesignPageRequestedDesignWorkspaceRegistration({
-      boundaries: {
-        coreShell: coreShellRegistration,
-        persistence: persistenceWorkspaceRegistration,
-      },
-    });
+  useDesignPageRequestedDesignWorkspaceRegistration({
+    boundaries: {
+      coreShell: coreShellRegistration,
+      persistence: persistenceWorkspaceRegistration,
+    },
+  });
   const persistenceState = persistenceWorkspaceRegistration.state.persistence;
   const newPlanState = persistenceWorkspaceRegistration.state.newPlan;
   const persistenceActions =
@@ -250,8 +246,6 @@ export function DesignPageWorkspace() {
   });
   const { aiPanel: aiPanelRegistration } =
     aiWorkspaceRegistration.boundaries;
-  const { panel: panelController } = aiPanelRegistration.boundaries;
-  const { actions: panelActions } = panelController;
   const {
     state: { notes: aiNotesState },
     actions: {
@@ -322,20 +316,6 @@ export function DesignPageWorkspace() {
         placement: placementWorkspaceRegistration,
       },
     });
-  const {
-    state: {
-      onboarding: { nextBestActionNudge },
-    },
-    actions: {
-      commerce: {
-        removeFromCart,
-        updateCartQty,
-        clearCart,
-        addAllToRoom,
-      },
-    },
-  } = commerceOnboardingRegistration;
-
   const cabinetryRegistration = useDesignPageCabinetryWorkspaceRegistration({
     boundaries: {
       coreShell: coreShellRegistration,
@@ -417,19 +397,6 @@ export function DesignPageWorkspace() {
     },
     persistence: { startChooser: persistenceWorkspaceRegistration.state.startChooser,
       guestSave: { reason: persistenceState.guestPrompt?.reason ?? null, busy: persistenceState.guestPromptPrimaryBusy, lifecycleScopeKey: persistenceState.guestPromptScopeKey, onCancel: () => { if (persistenceState.guestPrompt) persistenceActions.cancelGuestPrompt(persistenceState.guestPrompt); }, onContinueWithoutSaving: () => { if (persistenceState.guestPrompt) persistenceActions.handleGuestPromptNotNow(persistenceState.guestPrompt); }, onSaveAndContinue: () => persistenceState.guestPrompt ? persistenceActions.handleGuestSaveAndContinue(persistenceState.guestPrompt) : undefined },
-      myDesigns: {
-        data: { open: persistenceState.showMyDesigns, designs: persistenceState.myDesigns, loading: persistenceState.loadingDesigns, allDesignIds: persistenceState.allSavedDesignIds,
-          selectedDesignIds: persistenceState.selectedSavedDesignIds, selectedDesignCount: persistenceState.selectedSavedDesignCount,
-          allDesignsSelected: persistenceState.allSavedDesignsSelected, deletingDesignIds: persistenceState.deletingDesignIds,
-          pendingDeleteDesign: persistenceState.pendingDeleteDesign },
-        actions: { onClose: persistenceActions.closeMyDesigns, onOpenTemplates: newPlanActions.openNewPlanPicker,
-          onToggleAll: persistenceActions.toggleAllSavedDesignSelection,
-          onToggleSelection: persistenceActions.toggleSavedDesignSelection,
-          onLoadDesign: requestedDesignWorkspaceRegistration.actions.openSavedDesign,
-          onRequestDelete: persistenceActions.requestDeleteSavedDesigns,
-          onCancelDelete: persistenceActions.cancelDeleteSavedDesigns,
-          onConfirmDelete: persistenceActions.handleDeleteSavedDesign },
-      },
       templateChoice: {
         data: { open: Boolean(pendingPlanTemplateReplacement), templateLabel: pendingPlanTemplateReplacement?.template.label ?? "this floor plan",
           busy: newPlanState.startingNewPlan, errorMessage: newPlanState.newPlanStartError },
@@ -468,7 +435,7 @@ export function DesignPageWorkspace() {
     },
     feedback: {
       beta: { open: feedbackOpen, context: betaFeedbackContext, onOpenChange: setFeedbackOpen },
-      toasts: { ruleMessage: ruleToast, nudgeMessage: nextBestActionNudge,
+      toasts: { ruleMessage: ruleToast,
         shareCopied: persistenceState.shareSuccessToast, shareErrorMessage: persistenceState.shareErrorToast },
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
@@ -482,15 +449,12 @@ export function DesignPageWorkspace() {
       refs: { openedAt: cabinetryStudioOpenedAtRef },
       actions: { onSave: handleSaveCabinetDefinition, onPlaceInPlan: handlePlaceCabinetInPlan, onDismiss: dismissCabinetryStudio },
     },
-    cart: { items: itemCart, isOpen: itemCartOpen, controlsPanelVisible: designControlsPanelVisibleForLayout,
-      onRemove: removeFromCart, onUpdateQty: updateCartQty, onClear: clearCart,
-      onAddAllToRoom: addAllToRoom, onToggle: panelActions.toggleItemCart },
   }));
   return (
     <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
       <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
-        <DesignPageSceneRegion {...sceneRegionModel} />
+        <CanvasBehindPage covered={panelRegionModel.state.shopping !== null}><DesignPageSceneRegion {...sceneRegionModel} /></CanvasBehindPage>
         <DesignPageEditorChrome {...editorChromeModel} />
         {viewMode === "2d" &&
         editorMode === "adjust" &&

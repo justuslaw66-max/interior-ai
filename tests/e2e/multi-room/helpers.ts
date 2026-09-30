@@ -59,11 +59,6 @@ export async function clearBrowserStorageBeforeNextLoad(page: Page) {
   });
 }
 
-export async function expectInactiveOrHidden(locator: Locator) {
-  if ((await locator.count()) === 0) return;
-  await expect(locator).toHaveAttribute("data-active", "false");
-}
-
 export async function expectPlan2DProjectionHealthy(page: Page) {
   const sceneCanvas = page.getByTestId("scene-canvas").first();
   await expect(sceneCanvas).toHaveAttribute("data-plan-2d-camera-valid", "true", {

@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   ensureItemSelectedForVariants,
   selectImportedFamilyByHint,
@@ -99,7 +100,7 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
 
   test("Jaron and Madison variant swatches are selectable in editor", async ({ page }) => {
     test.setTimeout(120_000);
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     const ready = await waitForCatalogReady(page);
     if (!ready) {

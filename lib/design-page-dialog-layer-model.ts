@@ -7,12 +7,10 @@ type Dialogs = BuildDesignPageDialogLayerAdapterInput["dialogs"];
 type Overlays = BuildDesignPageDialogLayerAdapterInput["overlays"];
 type UpgradeState = Dialogs["upgrade"]["state"];
 type PlansState = Dialogs["plans"]["state"];
-type MyDesigns = Dialogs["myDesigns"];
 type TemplateChoice = Dialogs["planTemplateChoice"];
 type Placement = Dialogs["catalogPlacement"];
 type BetaFeedback = NonNullable<Overlays["betaFeedback"]>;
 type Cabinetry = Overlays["cabinetry"];
-type ItemCart = Overlays["itemCart"];
 
 type UpgradeModel = {
   open: boolean;
@@ -33,31 +31,6 @@ type PlansModel = {
   yearlyLabel: PlansState["yearlyLabel"];
   yearlyEffectiveMonthlyLabel: PlansState["yearlyEffectiveMonthlyLabel"];
 };
-
-type MyDesignsData = Pick<
-  MyDesigns,
-  | "open"
-  | "designs"
-  | "loading"
-  | "allDesignIds"
-  | "selectedDesignIds"
-  | "selectedDesignCount"
-  | "allDesignsSelected"
-  | "deletingDesignIds"
-  | "pendingDeleteDesign"
->;
-
-type MyDesignsActions = Pick<
-  MyDesigns,
-  | "onClose"
-  | "onOpenTemplates"
-  | "onToggleAll"
-  | "onToggleSelection"
-  | "onLoadDesign"
-  | "onRequestDelete"
-  | "onCancelDelete"
-  | "onConfirmDelete"
->;
 
 type TemplateChoiceData = Pick<
   TemplateChoice,
@@ -103,7 +76,6 @@ export type BuildDesignPageDialogLayerModelInput = {
     guestSave: Dialogs["guestSave"] & {
       reason: BuildDesignPageDialogLayerAdapterInput["state"]["guestSaveReason"];
     };
-    myDesigns: { data: MyDesignsData; actions: MyDesignsActions };
     templateChoice: {
       data: TemplateChoiceData;
       actions: TemplateChoiceActions;
@@ -173,16 +145,6 @@ export type BuildDesignPageDialogLayerModelInput = {
     refs: { openedAt: Cabinetry["openedAtRef"] };
     actions: Pick<Cabinetry, "onSave" | "onPlaceInPlan" | "onDismiss">;
   };
-  cart: {
-    items: ItemCart["items"];
-    isOpen: ItemCart["isOpen"];
-    controlsPanelVisible: boolean;
-    onRemove: ItemCart["onRemove"];
-    onUpdateQty: ItemCart["onUpdateQty"];
-    onClear: ItemCart["onClear"];
-    onAddAllToRoom: ItemCart["onAddAllToRoom"];
-    onToggle: ItemCart["onToggle"];
-  };
 };
 
 /** Download reads the scene and export state that Present & export already carries. */
@@ -215,7 +177,6 @@ export function buildDesignPageDialogLayerModel({
   feedback,
   sharing,
   cabinetry,
-  cart,
 }: BuildDesignPageDialogLayerModelInput): BuildDesignPageDialogLayerAdapterInput {
   const { reason: guestSaveReason, ...guestSave } = persistence.guestSave;
   return {
@@ -268,11 +229,6 @@ export function buildDesignPageDialogLayerModel({
       },
       presentExport: presentation.presentExport,
       download: buildDownloadDialog(access, presentation),
-      myDesigns: {
-        ...persistence.myDesigns.data,
-        designerTheme: access.designerTheme,
-        ...persistence.myDesigns.actions,
-      },
       designRename: editing.designRename,
       roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
         onValueChange: editing.roomRename.onValueChange, onCancel: editing.roomRename.onCancel, onSave: editing.roomRename.onSave },
@@ -320,18 +276,6 @@ export function buildDesignPageDialogLayerModel({
         ...cabinetry.configuration,
         openedAtRef: cabinetry.refs.openedAt,
         ...cabinetry.actions,
-      },
-      itemCart: {
-        items: cart.items,
-        onRemove: cart.onRemove,
-        onUpdateQty: cart.onUpdateQty,
-        onClear: cart.onClear,
-        onAddAllToRoom: cart.onAddAllToRoom,
-        isOpen: cart.isOpen,
-        onToggle: cart.onToggle,
-        triggerClassName: cart.controlsPanelVisible
-          ? "bottom-[calc(64vh+1.25rem)] right-4 md:bottom-4"
-          : "bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-4",
       },
     },
   };

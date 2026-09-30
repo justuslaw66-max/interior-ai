@@ -4,6 +4,7 @@ import {
   resolveConfiguredVisualDimsMm,
 } from "../../lib/design-page-config-resolvers";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -106,7 +107,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
   test("Seb Lift Top Large appears in catalog with details, swatch, and open state controls", async ({ page }) => {
     test.setTimeout(120000);
 
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
@@ -170,7 +171,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
   test("Seb selected item links Small, Large, and With storage models like Castlery SG", async ({ page }) => {
     test.setTimeout(120000);
 
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });

@@ -146,11 +146,10 @@ export function useDesignPageSceneReadModel({
     setSelectedPlanRoomId((currentRoomId) =>
       currentRoomId && !roomIds.has(currentRoomId) ? null : currentRoomId
     );
-  }, [
-    designSnapshot.activeRoomId,
-    housePlanRooms,
-    setSelectedPlanRoomId,
-  ]);
+  }, [designSnapshot.activeRoomId, housePlanRooms, setSelectedPlanRoomId]);
+  // Plan draws the selected room in focus. With nothing selected, a plan's only room stays in focus,
+  // so it keeps its sizes and its door and window labels (after Escape, say).
+  const planFocusRoomId = selectedPlanRoomId ?? (housePlanRooms.length === 1 ? housePlanRooms[0].id : null);
 
   const houseRoomById = useMemo(
     () => new Map(housePlanRooms.map((room) => [room.id, room])),
@@ -291,7 +290,7 @@ export function useDesignPageSceneReadModel({
       hasWholeHousePlan,
       sceneHousePlanRooms3D,
       houseRoomById,
-      selectedPlanRoomContext,
+      selectedPlanRoomContext, planFocusRoomId,
       roomSnapshotById,
       sceneRoomItems,
       aiLayoutPreviewFootprints,

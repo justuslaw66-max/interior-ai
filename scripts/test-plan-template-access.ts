@@ -32,10 +32,10 @@ const planToolComponentsSource = fs.readFileSync(
   ),
   "utf8"
 );
-const consumerRoomSetupSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
-  "utf8"
-);
+// The room card and its start actions (a template, a measured room, Upload floor plan).
+const consumerRoomSetupSource = ["ConsumerRoomSetupCard.tsx", "RoomSetupStartActions.tsx"]
+  .map((file) => fs.readFileSync(path.join(process.cwd(), "components", "editor", file), "utf8"))
+  .join("\n");
 const consumerMeasurementPreferenceSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "ConsumerMeasurementPreferenceRegion.tsx"),
   "utf8"
@@ -164,14 +164,10 @@ const templateFurnishingsPath = path.join(
   "design-page-template-furnishings.ts"
 );
 const templateFurnishingsSource = fs.readFileSync(templateFurnishingsPath, "utf8");
-const myDesignsDialogPath = path.join(
-  process.cwd(),
-  "components",
-  "editor",
-  "design-page",
-  "MyDesignsDialog.tsx"
+const myDesignsViewSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "my-designs", "MyDesignsView.tsx"),
+  "utf8"
 );
-const myDesignsDialogSource = fs.readFileSync(myDesignsDialogPath, "utf8");
 const planTemplateChoiceDialogPath = path.join(
   process.cwd(),
   "components",
@@ -224,7 +220,6 @@ assert.match(
 );
 
 const planToolSectionContracts = [
-  { section: "importFloorPlan", title: "Upload floor plan" },
   { section: "drawRoom", title: "Draw room" },
   { section: "openings", title: "Doors & windows" },
   { section: "templates", title: "Templates" },
@@ -294,7 +289,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
   "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 
@@ -355,8 +350,13 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /importFloorPlan: !isDesigner,[\s\S]*?drawRoom: !isDesigner,[\s\S]*?openings: !isDesigner,[\s\S]*?templates: !isDesigner/,
+  /drawRoom: !isDesigner,[\s\S]*?openings: !isDesigner,[\s\S]*?templates: !isDesigner/,
   "Consumer advanced plan sections should start collapsed while Pro retains the dense tool surface."
+);
+assert.doesNotMatch(
+  source,
+  /importFloorPlan/,
+  "Upload floor plan is one visible line under the room card (ST2), not a section that starts collapsed."
 );
 
 assert.match(
@@ -397,9 +397,14 @@ assert.match(
 );
 
 assert.match(
+  consumerRoomSetupSource,
+  /Have a floor plan\?[\s\S]*?id=\{FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\}[\s\S]*?data-testid="plan-tool-import-2d"[\s\S]*?onClick=\{actions\.uploadFloorPlan\}[\s\S]*?Upload floor plan/,
+  "Upload floor plan is one visible line under the room card (ST2)."
+);
+assert.match(
   source,
-  /testId: "plan-tool-import-2d"[\s\S]*?label: "Choose a file"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
-  "The import tile should invoke the working file-picker flow."
+  /uploadFloorPlan: \(\) =>\s*requestFloorPlanUpload\(\{ source: "plan_panel", openerId: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID \}\)/,
+  "Plan's Upload asks through the shared entry, so guests sign in first and the upload is recorded as Plan's."
 );
 
 assert.match(
@@ -722,7 +727,7 @@ assert.match(
 
 assert.match(
   newPlanControllerSource,
-  /export function useDesignPageNewPlanController\(\{\s*state: \{ isAuthenticated, pendingReplacement \},\s*actions: \{[\s\S]*?closeMyDesigns,[\s\S]*?showToast,[\s\S]*?\},\s*\}: UseDesignPageNewPlanControllerInput\)/,
+  /export function useDesignPageNewPlanController\(\{\s*state: \{ isAuthenticated, pendingReplacement \},\s*actions: \{[\s\S]*?setGuidedPlanStartMode,[\s\S]*?showToast,[\s\S]*?\},\s*\}: UseDesignPageNewPlanControllerInput\)/,
   "The new-plan hook should consume its explicit grouped contract."
 );
 
@@ -754,13 +759,13 @@ assert.match(
 );
 assert.match(
   persistenceNewPlanFacadeSource,
-  /closeMyDesigns: persistence\.actions\.closeMyDesigns[\s\S]*?preserveCurrentDesign: persistence\.actions\.preserveCurrentDesign[\s\S]*?detachCurrentDesignForNewDraft:\s*persistence\.actions\.detachCurrentDesignForNewDraft/,
-  "The facade should wire persistence-owned close, preserve, and detach actions into the new-plan controller."
+  /preserveCurrentDesign: persistence\.actions\.preserveCurrentDesign[\s\S]*?detachCurrentDesignForNewDraft:\s*persistence\.actions\.detachCurrentDesignForNewDraft/,
+  "The facade should wire persistence-owned preserve and detach actions into the new-plan controller."
 );
 
 assert.match(
   newPlanControllerSource,
-  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*closeMyDesigns\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a template"\);\s*\},/,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a template"\);\s*\},/,
   "The controller-owned New plan action should retain explicit choice intent before opening the template workflow."
 );
 
@@ -794,12 +799,11 @@ assert.match(
 );
 
 assert.match(
-  myDesignsDialogSource,
-  /data-testid="load-designs-template-shortcut"[\s\S]*?Saved designs are listed here\. Templates open in Plan[\s\S]*?data-testid="load-designs-open-templates"[\s\S]*?onClick=\{onOpenTemplates\}/,
-  "The Load modal should explain the saved-design/template distinction and expose a direct template shortcut."
+  myDesignsViewSource,
+  /<Link href=\{NEW_DESIGN_HREF\}[^>]*data-testid="my-designs-new-design"/,
+  "My designs' New design opens Start a new design, with its templates, in the editor."
 );
 
-const openNewPlanPickerAction = () => undefined;
 const cancelPlanChoice = () => undefined;
 const replaceCurrentPlan = () => undefined;
 const saveCurrentAndStartNew = () => undefined;
@@ -816,7 +820,6 @@ const dialogModel = buildDesignPageDialogLayerModel({
       onContinueWithoutSaving: noop,
       onSaveAndContinue: noop,
     },
-    myDesigns: { data: {}, actions: { onOpenTemplates: openNewPlanPickerAction } },
     templateChoice: {
       data: { open: true, templateLabel: "Studio", busy: false, errorMessage: null },
       actions: { onCancel: cancelPlanChoice, onReplaceCurrent: replaceCurrentPlan,
@@ -832,12 +835,12 @@ const dialogModel = buildDesignPageDialogLayerModel({
   cabinetry: { state: {}, access: {}, configuration: {}, refs: {}, actions: {} },
   cart: {},
 } as unknown as Parameters<typeof buildDesignPageDialogLayerModel>[0]);
-assert.strictEqual(dialogModel.dialogs.myDesigns.onOpenTemplates, openNewPlanPickerAction);
 assert.match(
   dialogLayerSource,
-  /<MyDesignsDialog[\s\S]*?\{\.\.\.dialogs\.myDesigns\}[\s\S]*?onOpenTemplates=\{openMyDesignTemplates\}[\s\S]*?\/>[\s\S]*?<PlanTemplateChoiceDialog\s+\{\.\.\.dialogs\.planTemplateChoice\}\s*\/>/,
-  "The dialog layer should own My Designs before the plan-template choice dialog."
+  /<PlanTemplateChoiceDialog\s+\{\.\.\.dialogs\.planTemplateChoice\}\s*\/>/,
+  "The dialog layer should own the plan-template choice dialog."
 );
+assert.doesNotMatch(dialogLayerSource, /MyDesignsDialog/, "My designs is a page, not an editor dialog.");
 
 assert.match(
   executeNewPlanSource,
@@ -971,8 +974,8 @@ assert.match(
 
 assert.match(
   betaSmokeSource,
-  /load-designs-template-shortcut[\s\S]*?load-designs-open-templates[\s\S]*?start-design-chooser[\s\S]*?start-template-studio[\s\S]*?load-design-\$\{seed\.designId\}/,
-  "The blocking beta smoke should prove the Load modal shortcut opens Start a new design before loading saved designs."
+  /my-designs-new-design[\s\S]*?start-design-chooser[\s\S]*?start-template-studio[\s\S]*?loadSavedDesign\(page, seed\.designId\)/,
+  "The blocking beta smoke should prove My designs' New design opens Start a new design before loading a saved design."
 );
 
 assert.match(

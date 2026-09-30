@@ -1,12 +1,8 @@
 "use client";
 
-import { lazy, Suspense, useState } from "react";
 import BetaFeedbackWidget, {
   type BetaFeedbackWidgetProps,
 } from "@/components/BetaFeedbackWidget";
-import ItemCartDrawer, {
-  type ItemCartDrawerProps,
-} from "@/components/ItemCartDrawer";
 import {
   AiNotesDialog,
   type AiNotesDialogProps,
@@ -36,7 +32,6 @@ import {
   GuestSavePromptDialog,
   type GuestSavePromptDialogProps,
 } from "@/components/editor/design-page/GuestSavePromptDialog";
-import type { MyDesignsDialogProps } from "@/components/editor/design-page/MyDesignsDialog";
 import {
   PlanAnnotationDialog,
   type PlanAnnotationDialogProps,
@@ -67,11 +62,6 @@ import {
 } from "@/components/editor/design-page/UpgradeDialog";
 import { StartDesignChooser, type StartDesignChooserProps } from "@/components/editor/start/StartDesignChooser";
 
-const MyDesignsDialog = lazy(async () => {
-  const dialogModule = await import("@/components/editor/design-page/MyDesignsDialog");
-  return { default: dialogModule.MyDesignsDialog };
-});
-
 export type DesignPageDialogLayerDialogs = {
   upgrade: UpgradeDialogProps;
   guestSave: GuestSavePromptDialogProps;
@@ -79,7 +69,6 @@ export type DesignPageDialogLayerDialogs = {
   aiNotes: AiNotesDialogProps;
   presentExport: PresentExportDialogProps;
   download: DownloadDialogProps;
-  myDesigns: MyDesignsDialogProps;
   designRename: DesignRenameDialogProps;
   roomRename: RoomRenameDialogProps;
   planAnnotation: PlanAnnotationDialogProps;
@@ -98,7 +87,6 @@ export type DesignPageDialogLayerOverlays = {
   };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
-  itemCart: ItemCartDrawerProps;
 };
 
 export type DesignPageDialogLayerProps = {
@@ -122,17 +110,7 @@ function getShareFallbackLayerState(
 }
 
 export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLayerProps) {
-  const [myDesignsMounted, setMyDesignsMounted] = useState(false);
   const shareFallback = getShareFallbackLayerState(dialogs, overlays);
-  const closeMyDesigns = () => { setMyDesignsMounted(true); dialogs.myDesigns.onClose(); };
-  const openMyDesignTemplates = () => {
-    setMyDesignsMounted(false);
-    dialogs.myDesigns.onOpenTemplates();
-  };
-  const loadMyDesign = (designId: string) => {
-    setMyDesignsMounted(false);
-    return dialogs.myDesigns.onLoadDesign(designId);
-  };
 
   return (
     <>
@@ -148,16 +126,6 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
           shareFallbackOpen: shareFallback.open,
         }}
       />
-      {dialogs.myDesigns.open || myDesignsMounted ? (
-        <Suspense fallback={null}>
-          <MyDesignsDialog
-            {...dialogs.myDesigns}
-            onClose={closeMyDesigns}
-            onOpenTemplates={openMyDesignTemplates}
-            onLoadDesign={loadMyDesign}
-          />
-        </Suspense>
-      ) : null}
       <DesignRenameDialog {...dialogs.designRename} />
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
@@ -176,7 +144,6 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       />
       <DesignValidationFeedback {...overlays.validation} />
       <CabinetryStudioOverlay {...overlays.cabinetry} />
-      <ItemCartDrawer {...overlays.itemCart} />
     </>
   );
 }

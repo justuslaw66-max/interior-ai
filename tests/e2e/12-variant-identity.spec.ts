@@ -4,6 +4,7 @@ import {
   addCatalogDrawerItemToRoom,
   openCatalogPreview as openCatalogPreviewShared,
   openShopPanel,
+  shoppingListRow,
 } from "./variant-test-utils";
 
 async function openCatalogPreview(page: Page, searchTerm: string, productId: string) {
@@ -126,31 +127,24 @@ test.describe("12. Variant Identity", () => {
     await addCatalogDrawerItemToRoom(page);
 
     await openShopPanel(page);
-    const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
-    if (await autoFillButton.isVisible().catch(() => false)) {
-      await autoFillButton.click();
-    }
 
     const selectedVariantToken = /Seagull/i.test(selectedVariantText)
       ? /Seagull/i
       : /Beach Linen/i;
-    const cartRow = page
-      .locator('[data-testid="cart-item"]')
-      .filter({ hasText: /Dawson Swivel Armchair/i })
-      .first();
-    const cartRowVisible = await expect(cartRow)
+    const shoppingRow = shoppingListRow(page, /Dawson Swivel Armchair/i);
+    const shoppingRowVisible = await expect(shoppingRow)
       .toBeVisible({ timeout: 10000 })
       .then(() => true)
       .catch(() => false);
-    if (!cartRowVisible) {
+    if (!shoppingRowVisible) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping strict cart variant assertion because Dawson cart row was not present in this runtime",
+        description: "Skipping strict Shopping list variant assertion because the Dawson row was not present in this runtime",
       });
       return;
     }
     await expect(
-      cartRow.locator('[data-testid="cart-item-variant-label"]')
+      shoppingRow.getByTestId("shopping-list-row-detail")
     ).toContainText(selectedVariantToken);
   });
 

@@ -1,19 +1,13 @@
 import { getSurfaceMaterialById } from "./catalog-registry";
-import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
+import type { PersistedPlanOpening, RoomFloorPattern, RoomSnapshot } from "./room-types";
 import {
-  getDefaultWallSurfaceSettings,
-  getWallFaceLabel,
-  getWallFaceSurfaceSettings,
-  normalizeFloorSurfaceSettings,
-} from "./surface-settings";
-import { getRoomSnapshotFloorAreaSqm } from "./room-floor-area";
-import { buildRoomWallFinishQuantities } from "./surface-material-wall-panels";
-import type {
-  PersistedPlanOpening,
-  RoomFloorPattern,
-  RoomSnapshot,
-  RoomSurfaceAssignments,
-} from "./room-types";
+  buildRoomSurfaceAreaRows,
+  getRoomSurfaceAssignments,
+  type SurfaceAreaRow,
+} from "./surface-material-areas";
+import type { SurfaceMaterial } from "./surface-material-schema";
+
+export { getRoomSurfaceAssignments };
 
 export type SurfaceMaterialBomRow = {
   roomId: string;
@@ -57,196 +51,62 @@ export type SurfaceMaterialBomRow = {
   floorJointColor: string;
 };
 
-const FLOORING_WASTE_FACTOR = 0.1;
-
-function roundSquareMeters(value: number): number {
-  return Math.round(value * 100) / 100;
+/** A measured surface with its material's catalogue record: supplier, price, status and links. */
+function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMaterialBomRow {
+  const pricePerSqm = material.commerce.price_per_sqm;
+  const amount = typeof pricePerSqm?.amount === "number" ? pricePerSqm.amount : null;
+  const blockers = material.import_governance.publish_blockers ?? [];
+  const { settings } = area;
+  return {
+    roomId: area.roomId,
+    roomName: area.roomName,
+    floorLabel: area.floorLabel,
+    surface: area.surface,
+    surfaceLabel: area.surfaceLabel,
+    surfaceAreaSqm: area.surfaceAreaSqm,
+    wallFaceId: area.wallFaceId,
+    wallPanelId: area.wallPanelId,
+    materialId: material.surface_material.material_id,
+    materialName: material.surface_material.product_name,
+    supplier: material.surface_material.brand ?? material.surface_material.supplier,
+    brand: material.surface_material.brand,
+    materialFamily: material.surface_material.material_family,
+    category: "surface_material",
+    roomAreaSqm: area.roomAreaSqm,
+    orderAreaSqm: area.orderAreaSqm,
+    wasteFactor: area.wasteFactor,
+    quantitySqm: area.orderAreaSqm,
+    status: material.import_governance.publish_status ?? "unknown",
+    purchaseMode: material.commerce.purchase_mode,
+    sampleRequestUrl: material.commerce.sample_request_url ?? material.source.sample_request_url ?? null,
+    sourceUrl: material.source.source_url,
+    pricePerSqmCurrency: pricePerSqm?.currency ?? material.source.currency ?? null,
+    pricePerSqmAmount: amount,
+    lineTotal: amount === null ? null : amount * area.orderAreaSqm,
+    publishBlockers: blockers,
+    reviewNote: blockers.length > 0 ? blockers.join("; ") : null,
+    pattern: settings.pattern,
+    rotationDeg: settings.rotationDeg,
+    scale: settings.scale,
+    patternOffset: settings.offset,
+    jointSizeMm: settings.jointSizeMm,
+    jointColor: settings.jointColor,
+    floorPattern: settings.pattern,
+    floorRotationDeg: settings.rotationDeg,
+    floorScale: settings.scale,
+    floorPatternOffset: settings.offset,
+    floorJointSizeMm: settings.jointSizeMm,
+    floorJointColor: settings.jointColor,
+  };
 }
 
-export function getRoomSurfaceAssignments(room: RoomSnapshot): RoomSurfaceAssignments | undefined {
-  return room.surfaces ?? room.surfaceFinishes;
-}
-
+/** The design's floor and wall finishes, with 10% extra for cuts; unknown materials are left out. */
 export function buildRoomSurfaceMaterialBomRows(
   rooms: RoomSnapshot[],
   planOpenings: readonly PersistedPlanOpening[] = []
 ): SurfaceMaterialBomRow[] {
-  const wallFinishQuantities = buildRoomWallFinishQuantities(rooms, planOpenings);
-
-  return rooms.flatMap((room, roomIndex) => {
-    const surfaces = getRoomSurfaceAssignments(room);
-    const rows: SurfaceMaterialBomRow[] = [];
-    const wallFinish = wallFinishQuantities[roomIndex];
-
-    const makeRow = ({
-      materialId,
-      surface,
-      surfaceLabel,
-      surfaceAreaSqm,
-      wallFaceId = null,
-      wallPanelId = null,
-      settings,
-    }: {
-      materialId: string | null | undefined;
-      surface: SurfaceMaterialBomRow["surface"];
-      surfaceLabel: string;
-      surfaceAreaSqm: number;
-      wallFaceId?: string | null;
-      wallPanelId?: string | null;
-      settings: {
-        pattern: RoomFloorPattern;
-        rotationDeg: number;
-        scale: number;
-        offset: { x: number; y: number };
-        jointSizeMm: number;
-        jointColor: string;
-      };
-    }): SurfaceMaterialBomRow | null => {
-      const normalizedMaterialId = String(materialId ?? "").trim();
-      if (!normalizedMaterialId) return null;
-      const material = getSurfaceMaterialById(normalizedMaterialId);
-      if (!material) return null;
-
-      const roomAreaSqm = roundSquareMeters(getRoomSnapshotFloorAreaSqm(room));
-      const roundedSurfaceAreaSqm = roundSquareMeters(surfaceAreaSqm);
-      const orderAreaSqm = roundSquareMeters(roundedSurfaceAreaSqm * (1 + FLOORING_WASTE_FACTOR));
-      const pricePerSqm = material.commerce.price_per_sqm;
-      const amount = typeof pricePerSqm?.amount === "number" ? pricePerSqm.amount : null;
-      const lineTotal = amount === null ? null : amount * orderAreaSqm;
-      const publishStatus = material.import_governance.publish_status ?? "unknown";
-      const blockers = material.import_governance.publish_blockers ?? [];
-
-      return {
-        roomId: room.id,
-        roomName: room.name,
-        floorLabel: room.floorLabel,
-        surface,
-        surfaceLabel,
-        surfaceAreaSqm: roundedSurfaceAreaSqm,
-        wallFaceId,
-        wallPanelId,
-        materialId: material.surface_material.material_id,
-        materialName: material.surface_material.product_name,
-        supplier: material.surface_material.brand ?? material.surface_material.supplier,
-        brand: material.surface_material.brand,
-        materialFamily: material.surface_material.material_family,
-        category: "surface_material",
-        roomAreaSqm,
-        orderAreaSqm,
-        wasteFactor: FLOORING_WASTE_FACTOR,
-        quantitySqm: orderAreaSqm,
-        status: publishStatus,
-        purchaseMode: material.commerce.purchase_mode,
-        sampleRequestUrl: material.commerce.sample_request_url ?? material.source.sample_request_url ?? null,
-        sourceUrl: material.source.source_url,
-        pricePerSqmCurrency: pricePerSqm?.currency ?? material.source.currency ?? null,
-        pricePerSqmAmount: amount,
-        lineTotal,
-        publishBlockers: blockers,
-        reviewNote: blockers.length > 0 ? blockers.join("; ") : null,
-        pattern: settings.pattern,
-        rotationDeg: settings.rotationDeg,
-        scale: settings.scale,
-        patternOffset: settings.offset,
-        jointSizeMm: settings.jointSizeMm,
-        jointColor: settings.jointColor,
-        floorPattern: settings.pattern,
-        floorRotationDeg: settings.rotationDeg,
-        floorScale: settings.scale,
-        floorPatternOffset: settings.offset,
-        floorJointSizeMm: settings.jointSizeMm,
-        floorJointColor: settings.jointColor,
-      };
-    };
-
-    const floorSettings = normalizeFloorSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const floorRow = makeRow({
-      materialId: surfaces?.floorMaterialId ?? surfaces?.floor?.materialId,
-      surface: "floor",
-      surfaceLabel: "Floor",
-      surfaceAreaSqm: getRoomSnapshotFloorAreaSqm(room),
-      settings: {
-        pattern: floorSettings.floorPattern,
-        rotationDeg: floorSettings.floorRotationDeg,
-        scale: floorSettings.floorScale,
-        offset: floorSettings.floorPatternOffset,
-        jointSizeMm: floorSettings.floorJointSizeMm,
-        jointColor: floorSettings.floorJointColor,
-      },
-    });
-    if (floorRow) rows.push(floorRow);
-
-    const wallDefaultSettings = getDefaultWallSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const faceIds = [...wallFinish.faceAreaSqmById.keys()];
-    const wallDefaultRow = makeRow({
-      materialId: wallDefaultSettings.materialId,
-      surface: "walls",
-      surfaceLabel: faceIds.length > 0 ? "Remaining walls" : "All walls",
-      surfaceAreaSqm: wallFinish.remainingWallAreaSqm,
-      settings: {
-        pattern: wallDefaultSettings.pattern,
-        rotationDeg: wallDefaultSettings.rotationDeg,
-        scale: wallDefaultSettings.scale,
-        offset: wallDefaultSettings.offset,
-        jointSizeMm: wallDefaultSettings.jointSizeMm,
-        jointColor: wallDefaultSettings.jointColor,
-      },
-    });
-    if (wallDefaultRow) rows.push(wallDefaultRow);
-
-    faceIds.forEach((faceId) => {
-      const faceSettings = getWallFaceSurfaceSettings(
-        surfaces,
-        faceId,
-        normalizeFloorRotationDeg,
-        clampFloorPatternScale
-      );
-      const faceRow = makeRow({
-        materialId: faceSettings.materialId,
-        surface: "selected_wall",
-        surfaceLabel: getWallFaceLabel(faceId),
-        surfaceAreaSqm: wallFinish.faceAreaSqmById.get(faceId) ?? 0,
-        wallFaceId: faceId,
-        settings: {
-          pattern: faceSettings.pattern,
-          rotationDeg: faceSettings.rotationDeg,
-          scale: faceSettings.scale,
-          offset: faceSettings.offset,
-          jointSizeMm: faceSettings.jointSizeMm,
-          jointColor: faceSettings.jointColor,
-        },
-      });
-      if (faceRow) rows.push(faceRow);
-    });
-
-    wallFinish.assignedPanels.forEach((panel) => {
-      const panelRow = makeRow({
-        materialId: panel.settings.materialId,
-        surface: "selected_wall",
-        surfaceLabel: panel.surfaceLabel,
-        surfaceAreaSqm: panel.areaSqm,
-        wallFaceId: panel.faceId,
-        wallPanelId: panel.panelId,
-        settings: {
-          pattern: panel.settings.pattern,
-          rotationDeg: panel.settings.rotationDeg,
-          scale: panel.settings.scale,
-          offset: panel.settings.offset,
-          jointSizeMm: panel.settings.jointSizeMm,
-          jointColor: panel.settings.jointColor,
-        },
-      });
-      if (panelRow) rows.push(panelRow);
-    });
-
-    return rows;
+  return buildRoomSurfaceAreaRows(rooms, planOpenings).flatMap((area) => {
+    const material = getSurfaceMaterialById(area.materialId);
+    return material ? [toBomRow(area, material)] : [];
   });
 }

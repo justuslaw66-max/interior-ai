@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import { GLB_CALIBRATION_BY_PRODUCT_ID } from "../../lib/design-page-calibration";
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   getSelectedItemPanel,
   selectImportedFamilyByHint,
@@ -117,7 +118,7 @@ test.describe("145. Sloane Dining Table Product Info", () => {
   test("selected item exposes Sloane model and length controls with the verified Grey Oak swatch", async ({ page }) => {
     test.setTimeout(120000);
 
-    await page.goto("/design");
+    await openDesignAsPro(page);
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 

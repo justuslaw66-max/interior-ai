@@ -12,6 +12,7 @@ import {
 } from "@/lib/floor-plan-consumer-search";
 import { fetchFloorPlanBrowsePage } from "@/lib/floor-plan-directory-client";
 import { FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID } from "@/lib/floor-plan-upload-dialog-focus";
+import { requestFloorPlanUpload } from "@/lib/floor-plan-upload-request";
 import FloorPlanAddressFields from "./FloorPlanAddressFields";
 import FloorPlanSelectionContext from "./FloorPlanSelectionContext";
 import FloorPlanCatalogResultList from "./FloorPlanCatalogResultList";
@@ -109,10 +110,8 @@ export default function FloorPlanAddressSearch({
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
     : "rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-700";
 
-  const requestUpload = () => {
-    window.dispatchEvent(new Event("floor-plan-upload-requested"));
-    document.getElementById("floor-plan-upload")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  const requestUpload = () =>
+    requestFloorPlanUpload({ source: "address_search", openerId: FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID });
   return (
     <section
       className={`${dark ? "designer-recessed rounded-xl border border-white/10 p-3" : "rounded-xl border border-blue-100 bg-blue-50/70 p-3"} ph-no-capture`}

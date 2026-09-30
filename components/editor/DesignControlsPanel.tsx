@@ -28,7 +28,6 @@ import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly"
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
-import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { DesignSelectionContext } from "@/lib/design-page-selection-context";
 import type { RoomFloorPattern, RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { FloorSurfacePatch, NormalizedSurfaceSettings, SurfaceSettingsPatch } from "@/lib/surface-settings";
@@ -117,7 +116,7 @@ export type DesignControlsPanelProps = {
   visiblePlanOpeningMaxHeightMeters: number;
   planRoomCount: number;
   planItemCount: number;
-  planOpeningCount: number;
+  planOpeningCount: number; roomIsDraft: boolean;
   activeRoomName: string;
   activeRoomId: string;
   catalogRoomNavigationRevision: number;
@@ -252,8 +251,6 @@ export type DesignControlsPanelProps = {
   onPreviewCatalogPlacementIntent?: (productId: string | null, variantId?: string) => void;
   onCatalogDragStart?: (productId: string, variantId?: string) => void;
   onCatalogDragEnd?: () => void;
-  onAddActiveRoomCartReadyItems: () => void;
-  onReviewShoppingIssue: (filter: ShoppingReadinessFilter) => void;
   onSelectPlacedItem: (instanceId: string) => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
@@ -340,7 +337,7 @@ export default function DesignControlsPanel({
   visiblePlanOpeningMaxHeightMeters,
   planRoomCount,
   planItemCount,
-  planOpeningCount,
+  planOpeningCount, roomIsDraft,
   activeRoomName,
   activeRoomId,
   catalogRoomNavigationRevision,
@@ -384,11 +381,7 @@ export default function DesignControlsPanel({
   activeRoomCeilingVisible,
   activeRoomCeilingColor,
   stackedFloorView,
-  activeRoomShoppableCount,
-  activeRoomNeedsReviewCount,
-  activeRoomCategoryCounts,
   activeRoomShoppingSubtotal,
-  activeRoomPreviewNames,
   activeRoomShoppingItems,
   selectedPlacedItemId,
   activeRoomProductQuantities,
@@ -464,8 +457,6 @@ export default function DesignControlsPanel({
   onPreviewCatalogPlacementIntent,
   onCatalogDragStart,
   onCatalogDragEnd,
-  onAddActiveRoomCartReadyItems,
-  onReviewShoppingIssue,
   onSelectPlacedItem,
   onSelectedImportedFamilyChange,
   onSelectedImportedProductChange,
@@ -673,7 +664,6 @@ export default function DesignControlsPanel({
             isDesigner={isDesigner}
             canEdit={canEdit}
             canEditPlanGeometry={canEditPlanGeometry}
-            aiDesignEnabled={aiDesignEnabled}
             viewMode={viewMode}
             snapEnabled={snapEnabled}
             newRoomType={newRoomType}
@@ -708,7 +698,7 @@ export default function DesignControlsPanel({
             visiblePlanOpeningMaxHeightMeters={visiblePlanOpeningMaxHeightMeters}
             planRoomCount={planRoomCount}
             planItemCount={planItemCount}
-            planOpeningCount={planOpeningCount}
+            planOpeningCount={planOpeningCount} roomIsDraft={roomIsDraft}
             activeRoomName={activeRoomName}
             activeRoomId={activeRoomId}
             activeRoomType={activeRoomType}
@@ -764,7 +754,6 @@ export default function DesignControlsPanel({
             onDrawFloorPlanRoom={onDrawFloorPlanRoom}
             onAddFloorPlanOpeningFromTool={onAddFloorPlanOpeningFromTool}
             onGoFurnish={onGoFurnish}
-            onGoAiDesign={onGoAiDesign}
             onGoShop={onGoShop}
             onGoView3D={onGoView3D}
             onApplyPlanTemplate={onApplyPlanTemplate}
@@ -829,14 +818,14 @@ export default function DesignControlsPanel({
           />
         )}
         {(effectivePanelMode === "furnish" || effectivePanelMode === "ai") && (
-          <FurnishStepModes mode={effectivePanelMode} {...{ dark, aiDesignEnabled, onGoFurnish, onGoAiDesign, onOpenBuiltIns }} />
+          <FurnishStepModes mode={effectivePanelMode} {...{ dark, onGoFurnish, onOpenBuiltIns }} />
         )}
         {effectivePanelMode === "ai" && aiDesignEnabled && (
           <DesignControlsAiPanel
             dark={dark}
             style={style}
             budget={budget}
-            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit }}
+            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit, roomIsDraft }}
             roomFloorAreaSqm={getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId)}
             activeRoomItemCount={planItemCount}
             aiLayoutProposal={aiLayoutProposal}
@@ -852,26 +841,16 @@ export default function DesignControlsPanel({
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
             dark={dark}
-            canEdit={canEdit}
-            {...{ activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
+            canEdit={canEdit} isDesigner={isDesigner}
+            {...{ aiDesignEnabled, onGoAiDesign, activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}
-            activeRoomItemCount={planItemCount}
-            activeRoomShoppableCount={activeRoomShoppableCount}
-            activeRoomNeedsReviewCount={activeRoomNeedsReviewCount}
-            activeRoomCategoryCounts={activeRoomCategoryCounts}
-            roomWidth={roomWidth}
-            roomDepth={roomDepth}
             activeRoomShoppingSubtotal={activeRoomShoppingSubtotal}
-            activeRoomPreviewNames={activeRoomPreviewNames}
             activeRoomShoppingItems={activeRoomShoppingItems}
             selectedPlacedItemId={selectedPlacedItemId}
             activeRoomProductQuantities={activeRoomProductQuantities}
             activeRoomVariantQuantities={activeRoomVariantQuantities}
             placementAddMode={placementAddMode}
-            budget={budget}
-            style={style}
-            roomCount={planRoomCount}
             catalogItems={catalogItems}
             selectedImportedFamilyKey={selectedImportedFamilyKey}
             selectedImportedProductId={selectedImportedProductId}
@@ -884,8 +863,6 @@ export default function DesignControlsPanel({
             onPreviewCatalogPlacementIntent={onPreviewCatalogPlacementIntent}
             onCatalogDragStart={onCatalogDragStart}
             onCatalogDragEnd={onCatalogDragEnd}
-            onAddActiveRoomCartReadyItems={onAddActiveRoomCartReadyItems}
-            onReviewShoppingIssue={onReviewShoppingIssue}
             onSelectPlacedItem={onSelectPlacedItem}
             onSelectRoom={onSelectRoom}
             onPlacementAddModeChange={onPlacementAddModeChange}

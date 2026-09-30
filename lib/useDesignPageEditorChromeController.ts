@@ -40,6 +40,8 @@ export type UseDesignPageEditorChromeControllerInput = {
       shop: CommandBarActions["onShop"];
       changeViewMode: CommandBarActions["onViewModeChange"];
       fitPlan: NonNullable<RoomActions["onFitPlan"]>;
+      /** Goes to the My designs page. */
+      myDesigns: () => void;
     };
     history: {
       undo: CommandBarActions["onUndo"];
@@ -49,7 +51,6 @@ export type UseDesignPageEditorChromeControllerInput = {
       setMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
       setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
       setDesignPanelCollapsed: Dispatch<SetStateAction<boolean>>;
-      setItemCartOpen: Dispatch<SetStateAction<boolean>>;
       setClientPreview: Dispatch<SetStateAction<boolean>>;
       setUrlMode: (mode: "designer" | "homeowner") => void;
     };
@@ -70,7 +71,8 @@ export type UseDesignPageEditorChromeControllerInput = {
       openPortal: () => void | Promise<unknown>;
     };
     persistence: {
-      toggleMyDesigns: CommandBarActions["onToggleLoadDesign"];
+      /** Saves a cloud design's latest edits; false when that failed or the design changed meanwhile. */
+      saveBeforeLeaving: () => Promise<boolean>;
       saveDesignToCloud: () => Promise<string | null | undefined>;
       /** Saves a design that isn't in the cloud yet, then creates and copies its share link. */
       shareDesign: () => Promise<void>;
@@ -92,6 +94,14 @@ export type UseDesignPageEditorChromeControllerInput = {
     showToast: (message: string) => void;
   };
 };
+
+type ChromeActions = UseDesignPageEditorChromeControllerInput["actions"];
+
+// My designs is its own page (MD1). A cloud design's latest edits are saved first; if that
+// fails, the editor stays open and shows the failed save. Edits made while it saved keep it open too.
+async function openMyDesigns(actions: Pick<ChromeActions, "persistence" | "navigation">) {
+  if (await actions.persistence.saveBeforeLeaving()) actions.navigation.myDesigns();
+}
 
 export function useDesignPageEditorChromeController({
   state,
@@ -176,7 +186,6 @@ export function useDesignPageEditorChromeController({
 
   const openCart = () => {
     actions.editor.setMode("buy");
-    actions.editor.setItemCartOpen(false);
   };
 
   return {
@@ -186,7 +195,7 @@ export function useDesignPageEditorChromeController({
         visible: !commandState.isClientPreview && state.betaStart.visible && !state.designPanelOpen,
         panel: state.betaStart.panel,
       },
-      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner, mode: commandState.editorMode },
+      toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner && commandState.editorMode !== "buy", mode: commandState.editorMode },
     },
     configuration: {
       commandBar: configuration.commandBar,
@@ -209,7 +218,7 @@ export function useDesignPageEditorChromeController({
           onNewPlan: actions.dialogs.openNewPlan, onRenameDesign: actions.dialogs.openDesignRename,
           onManageBilling: manageBilling,
           onFeedback: openFeedback,
-          onToggleLoadDesign: actions.persistence.toggleMyDesigns,
+          onOpenMyDesigns: () => void openMyDesigns(actions),
           onSave: save,
           onShare: share,
           onDownload: openDownload,

@@ -25,10 +25,10 @@ export function registerUploadTests() {
       const planView = page.getByRole("button", { name: "2D", exact: true });
       await planView.click();
       await expect(planView).toHaveAttribute("aria-pressed", "true");
-      await page.getByTestId("plan-tool-section-importFloorPlan")
-        .getByRole("button", { name: "Upload floor plan", exact: true }).click();
+      // One visible Upload floor plan under the room card (ST2); members get the upload window.
       await page.getByTestId("plan-tool-import-2d").click();
-      await expect(page.getByTestId("floor-plan-upload-empty-state")).toBeVisible();
+      await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toBeVisible();
+      await expect(page.getByTestId("floor-plan-upload-new-design-note")).toBeVisible();
       const createdResponse = page.waitForResponse((response) =>
         response.request().method() === "POST" &&
         new URL(response.url()).pathname === "/api/floor-plan-imports");

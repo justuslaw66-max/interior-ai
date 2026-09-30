@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { readJsonRequest } from "@/lib/api-boundary";
+import { FREE_PLAN_DESIGN_LIMIT, freePlanDesignLimitReachedMessage } from "@/lib/design-limits";
 import { compileCandidateFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/validation";
 import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
@@ -415,11 +416,8 @@ export async function POST(
     });
     if (user?.plan !== "pro") {
       const designCount = await prisma.design.count({ where: { userId } });
-      if (designCount >= 20) {
-        return NextResponse.json(
-          { error: "Free beta limit reached (max 20 designs). Upgrade to create more." },
-          { status: 403 }
-        );
+      if (designCount >= FREE_PLAN_DESIGN_LIMIT) {
+        return NextResponse.json({ error: freePlanDesignLimitReachedMessage() }, { status: 403 });
       }
     }
 

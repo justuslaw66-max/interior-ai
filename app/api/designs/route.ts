@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { config } from "@/lib/config";
 import { parseDesignCreatePayload } from "@/lib/design-route-payload";
+import { FREE_PLAN_DESIGN_LIMIT, freePlanDesignLimitReachedMessage } from "@/lib/design-limits";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
 import {
@@ -105,11 +106,11 @@ export async function POST(req: Request) {
       const count = await prisma.design.count({
         where: { userId },
       });
-      if (count >= 20) {
+      if (count >= FREE_PLAN_DESIGN_LIMIT) {
         throw new ApiBoundaryError(
           403,
           "FORBIDDEN",
-          "Free beta limit reached (max 20 designs). Upgrade to create more."
+          freePlanDesignLimitReachedMessage()
         );
       }
     }

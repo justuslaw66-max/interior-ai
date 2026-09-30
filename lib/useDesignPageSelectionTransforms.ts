@@ -54,11 +54,6 @@ export type DesignPageSelectionTransformState = {
   selectedItemPlanningDimensionsMm: DimensionsMm | null;
   selectedItemDeleteLabel: string;
   activeRoom: RoomSnapshot | null;
-  activeRoomShoppingItems: Array<{
-    instanceId: string;
-    commerceMode: string;
-    hasValidCommerce: boolean;
-  }>;
   rotationInputValue: string;
 };
 
@@ -180,7 +175,6 @@ export function useDesignPageSelectionTransforms({
     selectedItemPlanningDimensionsMm,
     selectedItemDeleteLabel,
     activeRoom,
-    activeRoomShoppingItems,
     rotationInputValue,
   } = state;
   const {
@@ -1114,62 +1108,6 @@ export function useDesignPageSelectionTransforms({
     [moveSelectedItemToPosition, selectedItem]
   );
 
-  const setSelectedItemQuantity = useCallback(
-    (instanceId: string, quantity: number) => {
-      commitItems(
-        (previousItems) =>
-          previousItems.map((item) =>
-            item.instanceId === instanceId ? { ...item, qty: quantity } : item
-          ),
-        "Change quantity"
-      );
-    },
-    [commitItems]
-  );
-
-  const setShoppingItemInclude = useCallback(
-    (instanceId: string, includeInCheckout: boolean) => {
-      commitItems(
-        (previousItems) =>
-          previousItems.map((item) =>
-            item.instanceId === instanceId ? { ...item, includeInCheckout } : item
-          ),
-        includeInCheckout ? "Include in checkout" : "Exclude from checkout"
-      );
-      showToast(includeInCheckout ? "Added to checkout" : "Excluded from checkout");
-    },
-    [commitItems, showToast]
-  );
-
-  const addActiveRoomCartReadyItems = useCallback(() => {
-    const readyInstanceIds = new Set(
-      activeRoomShoppingItems
-        .filter((item) => item.commerceMode === "shopify" && item.hasValidCommerce)
-        .map((item) => item.instanceId)
-    );
-    if (readyInstanceIds.size === 0) {
-      showToast("No cart-ready checkout items in this room yet.");
-      return;
-    }
-
-    let changedCount = 0;
-    commitItems(
-      (previousItems) =>
-        previousItems.map((item) => {
-          if (!readyInstanceIds.has(item.instanceId)) return item;
-          if (item.includeInCheckout ?? true) return item;
-          changedCount += 1;
-          return { ...item, includeInCheckout: true };
-        }),
-      "Add room cart-ready items"
-    );
-    showToast(
-      changedCount > 0
-        ? `${changedCount} cart-ready item${changedCount === 1 ? "" : "s"} added to checkout.`
-        : "All cart-ready items in this room are already included."
-    );
-  }, [activeRoomShoppingItems, commitItems, showToast]);
-
   const selectProductVariant = useCallback(
     (variantId: string) => {
       if (!selectedItem) return;
@@ -1201,9 +1139,6 @@ export function useDesignPageSelectionTransforms({
       moveSelectedItemToRoom,
       moveSelectedItemToPosition,
       nudgeSelectedItem,
-      setSelectedItemQuantity,
-      setShoppingItemInclude,
-      addActiveRoomCartReadyItems,
       selectProductVariant,
     },
   };

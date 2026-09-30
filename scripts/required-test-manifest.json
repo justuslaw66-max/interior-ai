@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 318,
-      "expectedPathSha256": "98d14c73e435673e4e0c127fe7e9d318f1e842bf6502581c917b467b8543879d"
+      "expectedFileCount": 317,
+      "expectedPathSha256": "47b4fe9ad805c1233f91e76eb35ece64deeb0611481534d5430e12165bc924c2"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 108,
-      "expectedPathSha256": "b8b06728f88af83464b7fb7348a967f8eaeb46c7835f64f3bd8eef5a6380ceb9"
+      "expectedFileCount": 109,
+      "expectedPathSha256": "a3672e4fe0d419ce7fea8e9c7b0a7e5c57ba1e829eece35e35a5322cd53ccdc2"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -872,7 +872,7 @@
     },
     {
       "id": "ci.cart-overlay-accessibility",
-      "invariant": "The Selection Tray owns one modal drawer lifecycle with no closed accessibility-active controls and deterministic focus entry, containment, Escape, backdrop, return, replacement, supersession, responsive, Consumer, and Pro behavior in Chromium and WebKit.",
+      "invariant": "The Shopping list is one page over an inert, hidden canvas for Consumer and Pro; removing a product by keyboard or pointer moves focus to the next product's Remove, the one before it, or the heading; Undo restores the product with focus on the current step; and desktop and 390x844 layouts fit with 44px actions and focus rings, in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:cart-overlay-accessibility-required",
@@ -888,44 +888,44 @@
       ],
       "requiredTests": [
         {
-          "id": "cart.consumer-lifecycle",
+          "id": "cart.shop-page-consumer",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "consumer empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+          "title": "Consumer Shop shows the Shopping list over an inert canvas and Furnish gives the editor back"
         },
         {
-          "id": "cart.pro-lifecycle",
+          "id": "cart.shop-page-pro",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "pro empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+          "title": "Pro Shop hides the tool rail and removes by keyboard as Consumer does"
         },
         {
-          "id": "cart.semantic-opener-replacement",
+          "id": "cart.remove-focus-next",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "cart restoration resolves the current semantic replacement opener"
+          "title": "Removing a product by keyboard moves focus to the next product's Remove"
         },
         {
-          "id": "cart.missing-opener",
+          "id": "cart.remove-focus-previous",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "cart restoration ignores a missing and disabled opener"
+          "title": "Removing the last product in the list moves focus to the product before it"
         },
         {
-          "id": "cart.newer-modal",
+          "id": "cart.remove-focus-heading",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "a newer modal supersedes cart Escape and focus restoration"
+          "title": "Removing the only product moves focus to the Shopping list heading"
         },
         {
-          "id": "cart.owned-dialog",
+          "id": "cart.undo-focus",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "an owned dialog keeps initial focus and cannot steal focus when the cart closes"
+          "title": "Undo in the toast puts the product back and keeps keyboard focus on Shop"
         },
         {
-          "id": "cart.responsive-lifecycle",
+          "id": "cart.pointer-remove-focus",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "responsive cart retains modal ownership without overflow or clipped focus"
+          "title": "Removing with the pointer also leaves focus on the next product's Remove"
         },
         {
-          "id": "cart.route-unmount",
+          "id": "cart.responsive-layout",
           "file": "tests/required/cart-overlay-accessibility.spec.ts",
-          "title": "route replacement cancels cart focus restoration"
+          "title": "Desktop and 390x844 Shopping lists fit the screen with 44px actions and focus rings"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],
@@ -946,7 +946,7 @@
     },
     {
       "id": "ci.retailer-confirmation-accessibility",
-      "invariant": "Retailer multi-tab confirmation owns one typed, generation-bound modal lifecycle across global and retailer-group actions while preserving exact affiliate counting, tracking, opening, cancellation, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
+      "invariant": "Buying at a retailer from the Shopping list owns one buy list per shop: a shop's only product opens directly, and every Open opens exactly one tab, blank at the click and then sent to the tracked, fail-open address, while preserving grouping by website, quantities and sets, missing links, blocked tabs, design changes, unmount, newer-dialog ownership, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:retailer-confirmation-accessibility-required",
@@ -965,64 +965,59 @@
       ],
       "requiredTests": [
         {
-          "id": "retailer-confirmation.global-pointer-lifecycle",
+          "id": "retailer-confirmation.buy-list-pointer-lifecycle",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Global pointer lifecycle owns modal cancellation and exact-once continuation"
+          "title": "Buy at a shop with several products opens its buy list and pointer dismissal returns focus to Buy"
         },
         {
-          "id": "retailer-confirmation.global-keyboard-fail-open",
+          "id": "retailer-confirmation.buy-list-keyboard-lifecycle",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Global keyboard lifecycle keeps tracking failure fail-open without duplicate windows"
+          "title": "Buy and Open work from the keyboard and Escape returns focus to Buy"
         },
         {
-          "id": "retailer-confirmation.group-pointer-same-tab",
+          "id": "retailer-confirmation.open-one-tab-per-click",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Retailer-group pointer lifecycle preserves same-tab first-link navigation"
+          "title": "Each Open opens one tracked tab for its product and ticks it"
         },
         {
-          "id": "retailer-confirmation.group-keyboard-restoration",
+          "id": "retailer-confirmation.tracking-fail-open",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
+          "title": "A failed click record still opens the retailer's address"
         },
         {
-          "id": "retailer-confirmation.count-zero",
+          "id": "retailer-confirmation.single-product-direct",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting zero tabs keeps checkout disabled"
+          "title": "A shop with one product opens it directly without the buy list"
         },
         {
-          "id": "retailer-confirmation.count-one",
+          "id": "retailer-confirmation.nothing-to-buy",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting one tab opens directly without confirmation"
+          "title": "Nothing to buy offers the way back to Furnish and no Buy"
         },
         {
-          "id": "retailer-confirmation.count-three",
+          "id": "retailer-confirmation.missing-link",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting three tabs opens directly without confirmation"
+          "title": "A product without a buy link is listed apart and never opened"
         },
         {
-          "id": "retailer-confirmation.count-four",
+          "id": "retailer-confirmation.quantities-and-sets",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting four tabs opens confirmation and supports cancellation"
+          "title": "The buy list says how many to add and a set counts once"
         },
         {
-          "id": "retailer-confirmation.count-bundle-exclusion-missing",
+          "id": "retailer-confirmation.shops-by-website",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves bundle exclusion and missing-link behavior"
+          "title": "A shop's two spellings are one shop and each shop has its own Buy"
         },
         {
-          "id": "retailer-confirmation.count-duplicate",
+          "id": "retailer-confirmation.blocked-tab",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves duplicate URLs without deduplication"
-        },
-        {
-          "id": "retailer-confirmation.count-unavailable-row",
-          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting preserves unavailable affiliate and row-open behavior"
+          "title": "A blocked tab is explained and its product is not ticked"
         },
         {
           "id": "retailer-confirmation.scope-route-unmount",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Scope route and unmount changes cancel stale continuation and restoration"
+          "title": "Design changes and unmount close the buy list without opening anything"
         },
         {
           "id": "retailer-confirmation.newer-dialog",
@@ -1032,12 +1027,12 @@
         {
           "id": "retailer-confirmation.audience-parity",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Guest Consumer and Pro receive the same affiliate confirmation contract"
+          "title": "Guest Consumer and Pro receive the same buy list"
         },
         {
           "id": "retailer-confirmation.responsive-visual",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Desktop and 390x844 global and group prompts contain actions focus rings and IDs"
+          "title": "Desktop and 390x844 buy lists fit the screen with 44px actions and focus rings"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],
@@ -1142,63 +1137,63 @@
     },
     {
       "id": "ci.my-designs-overlay-accessibility",
-      "invariant": "My Designs owns one modal parent lifecycle while its nested single and bulk delete confirmation exclusively owns the topmost dialog, conceals the mounted parent, invokes each mutation once, and restores focus by current semantic identity across Consumer, Pro, responsive, replacement, failure, supersession, and unmount paths in Chromium and WebKit.",
+      "invariant": "My designs is one page: the editor's More → My designs saves the open cloud design first, stays in the editor when that save fails, and opens the page once saved; on the page each card's menu and its Rename, Share and Delete dialogs own focus while open, hide the page behind them, invoke each mutation once, and return focus to the card's More button (after a delete, to the next card's) across Consumer, Pro, guest, empty, at-limit, failure and phone paths in Chromium and WebKit.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:my-designs-overlay-accessibility-required",
       "packageScript": "test:my-designs-overlay-accessibility-required",
-      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "a0f941f3c13cf76f469164bc1f0562ec045124e0c2e4f0ccbf5b98f9d9d6159e" },
-      "packagePrerequisites": ["test:my-designs-overlay-static"],
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "54ab0cec35a922ae146a41a624b1387e23c826378aa398ae544190545c5ec00f" },
+      "packagePrerequisites": ["test:my-designs-page"],
       "requiredEnvironment": {
         "APP_ENV": "development",
         "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
       },
       "runner": "playwright",
       "requiredSources": [
-        "scripts/test-my-designs-overlay-static.tsx",
+        "scripts/test-my-designs-page.tsx",
         "tests/required/my-designs-overlay-accessibility.spec.ts",
         "playwright.my-designs-overlay.config.ts"
       ],
       "requiredTests": [
         {
-          "id": "my-designs.consumer-parent-lifecycle",
+          "id": "my-designs.editor-entry",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "consumer parent pointer lifecycle owns semantics, containment, dismissal, return, and lazy entry"
+          "title": "More → My designs saves first, stays in the editor when saving fails, and opens the page once saved"
         },
         {
-          "id": "my-designs.pro-keyboard-narrow",
+          "id": "my-designs.guest-prompt",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "pro keyboard and narrow lifecycle preserves backdrop return without overflow or clipped focus"
+          "title": "guests get a sign-in prompt, and the editor offers them no My designs"
         },
         {
           "id": "my-designs.content-states",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "loading, empty, and populated states retain one parent owner"
+          "title": "empty, populated, at-the-limit and Pro states"
+        },
+        {
+          "id": "my-designs.card-menu",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "a card's menu opens from the keyboard, Escape returns focus to its button, and one menu opens at a time"
         },
         {
           "id": "my-designs.single-delete",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "single delete cancel and success conceal the parent and restore a current semantic target"
+          "title": "delete asks first, Escape keeps the design, and confirming deletes once and focuses the next card"
         },
         {
           "id": "my-designs.single-delete-failure",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "failed single delete invokes once and restores the surviving delete action"
+          "title": "a failed delete calls once, keeps the card, says why, and returns focus to its button"
         },
         {
-          "id": "my-designs.bulk-delete",
+          "id": "my-designs.rename-share",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "bulk delete cancel, busy guard, and success invoke once per target and focus the surviving row"
+          "title": "Rename and Share hide the page, keep focus inside, and return it to the card's button"
         },
         {
-          "id": "my-designs.current-design-delete",
+          "id": "my-designs.narrow",
           "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "deleting the loaded final design preserves detach semantics and focuses the empty parent hierarchy"
-        },
-        {
-          "id": "my-designs.supersession-unmount",
-          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
-          "title": "semantic replacement, newer owned dialog, reopen, and route unmount suppress stale restoration"
+          "title": "on a phone the page fits, and the card menu and Delete dialog stay on screen"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],
@@ -1266,6 +1261,11 @@
           "id": "floor-plan-upload.pro-keyboard",
           "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
           "title": "pro keyboard desktop preserves backdrop, close, and opener return"
+        },
+        {
+          "id": "floor-plan-upload.guest-sign-in",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "guests sign in before choosing a file, and focus returns to Plan's Upload"
         },
         {
           "id": "floor-plan-upload.mobile",

@@ -9,6 +9,7 @@ import CatalogItemGallery from "./CatalogItemGallery";
 import CatalogItemFinishPicker from "./CatalogItemFinishPicker";
 import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
+import { CatalogItemDrawerAddSection } from "./CatalogItemDrawerAddSection";
 import LazyImage from "@/components/common/LazyImage";
 import { useCatalogDrawerFocusRestoration, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
 
@@ -35,6 +36,9 @@ type Props = {
   roomVariantQuantity?: number;
   onClose: () => void;
   onAdd: (id: string, variantId?: string, purchaseOptionId?: string) => void;
+  /** Consumers: Add places the product; this opens the preview instead (FU4). */
+  placesDirectly?: boolean;
+  onChooseSpot?: (id: string, variantId?: string, purchaseOptionId?: string) => void;
   onToggleCompare: (id: string) => void;
   onPreviewRelated: (id: string) => void;
   onSetFinish: (finishId: string, finish: CatalogDetailView["finishOptions"][number]) => void;
@@ -54,7 +58,7 @@ export default function CatalogItemDrawer({
   roomProductQuantity = 0,
   roomVariantQuantity = 0,
   onClose,
-  onAdd,
+  onAdd, placesDirectly = false, onChooseSpot,
   onToggleCompare,
   onPreviewRelated,
   onSetFinish,
@@ -328,7 +332,7 @@ export default function CatalogItemDrawer({
             {selectedPurchaseOption ? (
               <div className="mt-2 text-xs text-neutral-600">
                 {selectedPurchaseOption.quantity > 1
-                  ? `Adds ${selectedPurchaseOption.quantity} chairs visually, but keeps one official Castlery set line in cart.`
+                  ? `Adds ${selectedPurchaseOption.quantity} chairs; the Shopping list keeps them as one Castlery set.`
                   : "Adds one chair and one single-chair purchase line."}
               </div>
             ) : null}
@@ -460,55 +464,11 @@ export default function CatalogItemDrawer({
         </div>
       </div>
 
-      <div className="border-t border-neutral-100 bg-white px-4 pb-4 pt-3">
-        <div className="mb-2 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
-          <span className="font-semibold text-neutral-900">Ready to preview:</span> {selectedFinishLabel} ·{" "}
-          {selectedPurchaseOption?.label ?? "Single"} · {dimsCmLabel} · {activeRoomLabel}
-          {selectedOptionPrice ? (
-            <span className="ml-1 font-semibold text-neutral-900">
-              {selectedOptionPrice}
-              {selectedOptionCompareAt ? (
-                <span className="ml-1 font-medium text-neutral-400 line-through">{selectedOptionCompareAt}</span>
-              ) : null}
-            </span>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          onClick={() => onAdd(detail.id, detail.variantId, selectedPurchaseOption?.id)}
-          data-testid="catalog-detail-add-to-room"
-          className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
-        >
-          {addQuantity > 1 ? `Add set of ${addQuantity} to ${activeRoomLabel}` : `Add to ${activeRoomLabel}`}
-        </button>
-        <div className="mt-2 text-center text-[11px] text-neutral-500">
-          Next: confirm the placement ghost before it becomes part of the room.
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {selectedRetailerUrl ? (
-            <a
-              href={selectedRetailerUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-lg border border-neutral-200 px-3 py-2 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-            >
-              Retailer link
-            </a>
-          ) : (
-            <div className="rounded-lg border border-neutral-100 px-3 py-2 text-center text-xs text-neutral-400">
-              No retailer link
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => onToggleCompare(detail.id)}
-            className="rounded-lg border border-neutral-200 px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-            data-testid={`catalog-compare-toggle-drawer-${detail.id}`}
-          >
-            {isCompared ? "Remove compare" : "Compare"}
-          </button>
-        </div>
-      </div>
+      <CatalogItemDrawerAddSection productId={detail.id} variantId={detail.variantId}
+        purchaseOptionId={selectedPurchaseOption?.id} addQuantity={addQuantity}
+        summary={{ finishLabel: selectedFinishLabel, optionLabel: selectedPurchaseOption?.label ?? "Single", dimsLabel: dimsCmLabel, roomLabel: activeRoomLabel, price: selectedOptionPrice, compareAt: selectedOptionCompareAt }}
+        retailerUrl={selectedRetailerUrl} isCompared={isCompared} placesDirectly={placesDirectly}
+        onAdd={onAdd} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} />
       </aside>
     </>,
     document.body

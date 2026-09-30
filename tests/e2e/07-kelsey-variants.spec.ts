@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
 import {
+  openDesignAsPro,
   addImportedProductIfReady,
   ensureItemSelectedForVariants,
   findImportedProductValue,
@@ -11,7 +12,7 @@ import {
 
 test.describe('7. Kelsey Marble Variant Integration', () => {
   test('Kelsey 160 appears in imported furniture dropdown', async ({ page }) => {
-    await page.goto('/design');
+    await openDesignAsPro(page);
     await page.waitForLoadState('domcontentloaded');
     const ready = await waitForCatalogReady(page);
     expect(ready, 'catalog controls must be available for the required Kelsey gate').toBeTruthy();
@@ -76,7 +77,7 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
   });
 
   test('Kelsey 160 Dark Walnut swatch is clickable when scene is ready', async ({ page }) => {
-    await page.goto('/design');
+    await openDesignAsPro(page);
     await page.waitForLoadState('domcontentloaded');
     const ready = await waitForCatalogReady(page);
     expect(ready, 'catalog controls must be available for the required Kelsey gate').toBeTruthy();

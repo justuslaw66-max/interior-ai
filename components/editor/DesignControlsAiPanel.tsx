@@ -7,6 +7,9 @@ import { STYLES, type AiLayoutProposal, type Style } from "@/lib/design-page-typ
 import type { RoomType } from "@/lib/room-types";
 import { formatDisplayArea, type DisplayUnit } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
+import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
+import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
+import { AiLayoutRoomLimit } from "./AiLayoutRoomLimit";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -23,6 +26,8 @@ type DesignControlsAiPanelProps = {
   /** The active room's polygon-aware floor area (lib/room-floor-area). */
   roomFloorAreaSqm: number;
   measurementUnit: DisplayUnit;
+  /** The first visit's room, untouched: its size is the default one (FR2). */
+  roomIsDraft?: boolean;
   activeRoomItemCount: number;
   aiLayoutProposal: AiLayoutProposal | null;
   onStyleChange: (style: Style) => void;
@@ -89,7 +94,7 @@ export default function DesignControlsAiPanel({
   roomWidth,
   roomDepth,
   roomFloorAreaSqm: roomArea,
-  measurementUnit,
+  measurementUnit, roomIsDraft = false,
   activeRoomItemCount,
   aiLayoutProposal,
   onStyleChange,
@@ -124,23 +129,12 @@ export default function DesignControlsAiPanel({
     proposalRequestedRoles.length - proposalMissingRoles.length
   );
   const selectedGoal = AI_LAYOUT_GOALS.find((goal) => goal.id === aiLayoutGoal) ?? AI_LAYOUT_GOALS[0];
-  const readinessChecks = [
-    {
-      label: "Living room",
-      ready: roomSupported,
-      detail: roomSupported ? "Supported" : "Living rooms first",
-    },
-    {
-      label: "Measured room",
-      ready: roomArea > 0,
-      detail: roomArea > 0 ? formatDisplayArea(roomArea, measurementUnit) : "Add dimensions",
-    },
-    {
-      label: "Must-haves",
-      ready: aiMustHaves.length > 0,
-      detail: aiMustHaves.length > 0 ? `${aiMustHaves.length} selected` : "Pick at least one",
-    },
-  ];
+  const readinessChecks = aiLayoutReadinessChecks({
+    roomSupported, roomArea, roomIsDraft, mustHaveCount: aiMustHaves.length, measurementUnit,
+  });
+  const roomSummary = `${activeRoomTypeLabel} · ${roomSizeLabel} · ${formatDisplayArea(roomArea, measurementUnit)}`;
+  // ST14: in a room it can't lay out yet, the limit comes first, with no brief to fill in.
+  if (!roomSupported) return <AiLayoutRoomLimit roomName={activeRoomName} roomSummary={roomSummary} />;
 
   const toggleAiMustHave = (label: string) => {
     setAiMustHaves((prev) =>
@@ -177,28 +171,11 @@ export default function DesignControlsAiPanel({
               <div className={dark ? "truncate text-sm font-semibold text-neutral-100" : "truncate text-sm font-semibold text-neutral-900"}>
                 {activeRoomName}
               </div>
-              <div className={`mt-1 text-xs ${mutedClass}`}>
-                {activeRoomTypeLabel} · {roomSizeLabel} · {formatDisplayArea(roomArea, measurementUnit)}
-              </div>
+              <div className={`mt-1 text-xs ${mutedClass}`}>{roomSummary}</div>
             </div>
             <div className={dark ? "shrink-0 rounded-lg bg-white/10 px-2 py-1 text-xs text-neutral-200" : "shrink-0 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-700"}>
               {activeRoomItemCount} placed
             </div>
-          </div>
-          <div
-            className={
-              roomSupported
-                ? dark
-                  ? "mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100"
-                  : "mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700"
-                : dark
-                  ? "mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-100"
-                  : "mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
-            }
-          >
-            {roomSupported
-              ? "AI layout ready for this room"
-              : "AI layout supports living rooms first"}
           </div>
           <div className={`mt-3 grid grid-cols-3 gap-2 text-center text-xs ${mutedClass}`}>
             <div>
@@ -318,34 +295,7 @@ export default function DesignControlsAiPanel({
           Selected: {aiMustHaves.length > 0 ? aiMustHaves.join(", ") : "Choose at least one item"}
         </div>
 
-        <div
-          className={dark ? "designer-recessed mt-4 rounded-xl p-3" : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"}
-          data-testid="ai-layout-readiness"
-        >
-          <div className={dark ? "text-xs font-semibold uppercase tracking-wide text-neutral-400" : "text-xs font-semibold uppercase tracking-wide text-neutral-500"}>
-            Ready to generate
-          </div>
-          <div className="mt-2 grid gap-2">
-            {readinessChecks.map((check) => (
-              <div key={check.label} className="flex items-center justify-between gap-3 text-xs">
-                <span className={dark ? "text-neutral-200" : "text-neutral-800"}>{check.label}</span>
-                <span
-                  className={
-                    check.ready
-                      ? dark
-                        ? "rounded-full bg-emerald-500/20 px-2 py-0.5 font-semibold text-emerald-100"
-                        : "rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700"
-                      : dark
-                        ? "rounded-full bg-amber-500/20 px-2 py-0.5 font-semibold text-amber-100"
-                        : "rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-amber-800"
-                  }
-                >
-                  {check.detail}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AiLayoutReadinessChecklist dark={dark} checks={readinessChecks} />
         <button id={GUEST_AI_LAYOUT_OPENER_ID}
           className={
             dark
@@ -360,9 +310,7 @@ export default function DesignControlsAiPanel({
         <div className={dark ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
           {briefReady
             ? "Review the result before saving, exporting, or shopping."
-            : roomSupported
-              ? "Add room dimensions and at least one must-have before generating."
-              : "Switch to a living room to get a suggested layout."}
+            : "Add room dimensions and at least one must-have before generating."}
         </div>
       </div>
       {aiLayoutProposal && (

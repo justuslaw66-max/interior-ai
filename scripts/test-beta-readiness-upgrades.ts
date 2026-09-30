@@ -12,7 +12,6 @@ import { buildBetaFeedbackTriage } from "../lib/beta-feedback-triage";
 import { buildBetaLaunchReadinessSummary } from "../lib/beta-launch-readiness";
 import { buildDesignPageBetaFeedbackContext } from "../lib/design-page-beta-feedback";
 import { buildFirstRunActivationState } from "../lib/first-run-activation";
-import { getNextBestActionNudge } from "../lib/onboarding";
 import {
   getPrimaryPlacementRecommendation,
   rankPlacementRecommendations,
@@ -491,31 +490,12 @@ assert.match(
   /state\.saveStatusKind === "saved" && state\.saveStatusSource === "cloud"/,
   "Only a cloud save completes save_design; the local autosave on load is not the user saving."
 );
-const emptyRoomNudgeInput = {
-  hasItems: false,
-  hasSofa: false,
-  hasRug: false,
-  hasCoffeeTable: false,
-  contentWarningCount: 0,
-  cartCount: 0,
-  mode: "design" as const,
-};
-assert.equal(
-  getNextBestActionNudge({ ...emptyRoomNudgeInput, roomCount: 1 }),
-  "Choose a furnishing that fits how you use this room.",
-  "an unfurnished room should still get the furnishing nudge."
-);
-for (const mode of ["design", "adjust", "buy"] as const) {
-  assert.equal(
-    getNextBestActionNudge({ ...emptyRoomNudgeInput, mode, roomCount: 0 }),
-    null,
-    `a design with no rooms must not show room-dependent nudges in ${mode} mode.`
-  );
-}
-assert.match(
+// FR4: no timed "next best action" nudge. It interrupted people who were only reading, up to
+// twice a session; Furnish's own layout now says what comes next.
+assert.doesNotMatch(
   designPageOnboardingSource,
-  /getNextBestActionNudge\(\{[\s\S]*?roomCount: state\.designRoomCount,/,
-  "the stall nudge should know how many rooms the design has."
+  /stall|getNextBestActionNudge|nextBestActionNudge/,
+  "the stall nudge is gone (UX audit FR4)."
 );
 assert.match(
   designPageSource,

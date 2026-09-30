@@ -86,6 +86,9 @@ async function openEditorCommandOverflow(page: Page) {
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
   const accountMenu = page.getByTestId("editor-command-account-menu");
+  // The Account button waits for the session, like Sign out below; after a reload the page can
+  // be busy loading the room's 3D models for a few seconds.
+  await expect(accountButton).toBeVisible({ timeout: 30000 });
   await clickVisibleControl(accountButton);
   await expect(accountMenu).toBeVisible();
   await expect(page.getByTestId("editor-command-sign-out")).toBeVisible({ timeout: 30000 });
@@ -95,36 +98,18 @@ async function openMyDesigns(page: Page) {
   await openEditorCommandOverflow(page);
   const loadDesigns = page.getByTestId("editor-command-overflow-load");
   await clickVisibleControl(loadDesigns);
+  // My designs is its own page (MD1).
+  await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+  await expect(page.getByTestId("my-designs-page")).toBeVisible({ timeout: 30_000 });
 }
 
 async function loadSavedDesign(page: Page, designId: string) {
-  const modal = page.getByTestId("load-designs-modal");
-  const savedDesign = page.getByTestId(`load-design-${designId}`);
-
   await openMyDesigns(page);
-  await expect(modal).toBeVisible();
-  const appearedOnFirstLoad = await savedDesign
-    .waitFor({ state: "visible", timeout: 15_000 })
-    .then(
-      () => true,
-      () => false,
-    );
-
-  if (!appearedOnFirstLoad) {
-    // A cold dev-server compilation can remount the editor after the first
-    // design-list response. Reopening repeats the real UI fetch after that
-    // remount instead of bypassing the My Designs workflow.
-    if (await modal.isVisible()) {
-      await clickVisibleControl(modal.getByRole("button", { name: "✕" }));
-      await expect(modal).toBeHidden();
-    }
-    await openMyDesigns(page);
-    await expect(modal).toBeVisible();
-    await expect(savedDesign).toBeVisible({ timeout: 30_000 });
-  }
-
+  const savedDesign = page.getByTestId(`my-design-open-${designId}`);
+  await expect(savedDesign).toBeVisible({ timeout: 30_000 });
   await clickVisibleControl(savedDesign);
-  await expect(modal).toBeHidden();
+  await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`), { timeout: 30_000 });
+  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
 }
 
 async function getPublicApiDesignProjection(
@@ -337,19 +322,14 @@ test.describe("00. Beta Smoke Gate", () => {
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+      // My designs' New design opens Start a new design in the editor.
       await openMyDesigns(page);
-      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await expect(page.getByTestId("load-designs-template-shortcut")).toBeVisible();
-      await clickVisibleControl(page.getByTestId("load-designs-open-templates"));
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
-      await expect(page.getByTestId("start-design-chooser")).toBeVisible();
+      await clickVisibleControl(page.getByTestId("my-designs-new-design"));
+      await expect(page.getByTestId("start-design-chooser")).toBeVisible({ timeout: 30_000 });
       await expect(page.getByTestId("start-template-studio")).toBeVisible();
       await clickVisibleControl(page.getByTestId("start-design-close"));
       await expect(page.getByTestId("start-design-chooser")).toBeHidden();
-      await openMyDesigns(page);
-      await expect(page.getByTestId("load-designs-modal")).toBeVisible();
-      await clickVisibleControl(page.getByTestId(`load-design-${seed.designId}`));
-      await expect(page.getByTestId("load-designs-modal")).toBeHidden();
+      await loadSavedDesign(page, seed.designId);
       const loadedEditorFingerprint = await getStableFingerprint(
         page.getByTestId("qa-editor-snapshot-fingerprint")
       );
@@ -421,7 +401,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await expect(shareViewer).toBeVisible({ timeout: 60000 });
       await expect(shareViewer).toHaveAttribute("data-ready", "true", { timeout: 60000 });
       await expect(page.getByTestId("share-room-list")).toContainText("Living Room");
-      await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Cart-ready|Retailer link/i);
+      await expect(page.getByTestId("share-checkout-readiness")).toContainText(/Checkout here|Retailer link/i);
       await expect(page.getByTestId("share-copy-link")).toBeVisible();
       await expect(page.getByTestId("share-download-pdf")).toHaveAttribute(
         "href",
@@ -604,6 +584,10 @@ test.describe("00. Beta Smoke Gate", () => {
         await expect(scenePerformance).toHaveAttribute("data-effective-mode", "lite");
         await expect(scenePerformance).toHaveAttribute("data-render-quality", "lite");
       }
+      // Close More before Shop: the step below is clicked through the DOM, which doesn't close it
+      // the way a press outside does, and the Shopping list's Buy buttons sit under it.
+      await page.keyboard.press("Escape");
+      await expect(page.getByTestId("editor-command-overflow-menu")).toBeHidden();
 
       let retailerClickPayload: Record<string, unknown> = {};
       await page.route("**/api/track/click", async (route) => {
@@ -614,18 +598,29 @@ test.describe("00. Beta Smoke Gate", () => {
           body: JSON.stringify({ clickKey: "beta-smoke-click" }),
         });
       });
+      await page.context().route("https://www.castlery.com/**", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "text/html",
+          body: "<!doctype html><title>Retailer</title><p>Retailer</p>",
+        });
+      });
       await page.getByTestId("editor-workflow-shop").first().evaluate((button) => {
         (button as HTMLButtonElement).click();
       });
-      await expect(page.getByTestId("cart-panel")).toBeVisible();
-      await expect(page.getByTestId("cart-checkout-readiness")).toContainText(/included line/i);
-      await expect(page.getByTestId("checkout-affiliate")).toContainText(/Open retailer links/);
-      const firstRetailerOpen = page.getByRole("button", { name: /^Open$/ }).first();
-      await firstRetailerOpen.scrollIntoViewIfNeeded();
+      // Shop is the Shopping list: Buy at Castlery opens its buy list, where each Open opens one tab.
+      await expect(page.getByTestId("shopping-list-page")).toBeVisible();
+      const buyAtCastlery = page.locator('[data-testid="shopping-buy"][data-retailer="castlery.com"]');
+      await expect(buyAtCastlery).toHaveText("Buy at Castlery");
+      await buyAtCastlery.click();
+      const buyList = page.getByRole("dialog", { name: "Buy at Castlery" });
+      await expect(buyList).toBeVisible();
+      const firstRetailerOpen = buyList.getByTestId("shopping-buy-list-open").first();
       const retailerPopupPromise = page.waitForEvent("popup");
       await firstRetailerOpen.click();
       const retailerPopup = await retailerPopupPromise;
-      await retailerPopup.waitForLoadState("domcontentloaded", { timeout: 10000 }).catch(() => undefined);
+      await retailerPopup.waitForURL(/clickKey=beta-smoke-click/, { timeout: 10000 });
+      await expect(buyList.getByTestId("shopping-buy-list-progress")).toContainText(/^1 of \d+ opened$/);
       expect(retailerClickPayload?.designId).toBe(seed.designId);
       expect(retailerClickPayload?.productId).toBe("armchair-real-castlery-avery-performance-armchair");
       expect(typeof retailerClickPayload?.variantId).toBe("string");
@@ -634,6 +629,8 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(retailerPopup.url()).toContain("clickKey=beta-smoke-click");
       expect(retailerPopup.url()).toContain("utm_source=interior-ai");
       await retailerPopup.close();
+      await buyList.getByTestId("shopping-buy-list-done").click();
+      await expect(buyList).toHaveCount(0);
 
       let checkoutPayload: unknown = null;
       await page.route("**/api/stripe/checkout", async (route) => {

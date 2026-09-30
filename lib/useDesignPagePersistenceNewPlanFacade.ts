@@ -12,7 +12,6 @@ import {
 
 type NewPlanFacadeActions = Omit<
   DesignPageNewPlanControllerActions,
-  | "closeMyDesigns"
   | "preserveCurrentDesign"
   | "detachCurrentDesignForNewDraft"
 >;
@@ -49,7 +48,6 @@ export function useDesignPagePersistenceNewPlanFacade({
     },
     actions: {
       ...actions.newPlan,
-      closeMyDesigns: persistence.actions.closeMyDesigns,
       preserveCurrentDesign: persistence.actions.preserveCurrentDesign,
       detachCurrentDesignForNewDraft:
         persistence.actions.detachCurrentDesignForNewDraft,

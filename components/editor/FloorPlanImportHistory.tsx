@@ -8,6 +8,7 @@ import {
 import type { ConsumerFloorPlanImportJob, ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
 import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type FloorPlanImportHistoryProps = {
   dark?: boolean;
@@ -418,13 +419,7 @@ export default function FloorPlanImportHistory({
                     className={secondary}
                     disabled={disabled || busy}
                     onClick={() =>
-                      router.push(
-                        `/design?designId=${encodeURIComponent(
-                          job.appliedDesignId!
-                        )}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(
-                          job.id
-                        )}`
-                      )
+                      router.push(buildDesignEditorUrl({ designId: job.appliedDesignId!, view: "2d" }))
                     }
                   >
                     Open design

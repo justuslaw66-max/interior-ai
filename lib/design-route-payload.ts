@@ -158,6 +158,19 @@ export function parseDesignClaimPayload(body: unknown): DesignPayloadResult<Pars
   };
 }
 
+/**
+ * A rename from My designs sends only the title. The stored design keeps its own name (the one
+ * the shared page shows), so the new title goes there too and the two stay in step.
+ */
+export function withStoredDesignRename(
+  updateData: Record<string, unknown>,
+  storedSnapshot: unknown
+): Record<string, unknown> {
+  if (typeof updateData.title !== "string" || updateData.snapshot !== undefined) return updateData;
+  if (!storedSnapshot || typeof storedSnapshot !== "object" || Array.isArray(storedSnapshot)) return updateData;
+  return { ...updateData, snapshot: { ...storedSnapshot, title: updateData.title } };
+}
+
 export function buildDesignUpdatePayload(body: unknown): DesignPayloadResult<Record<string, unknown>> {
   const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const {

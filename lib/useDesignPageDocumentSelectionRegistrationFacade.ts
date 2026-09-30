@@ -118,8 +118,6 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
       room: {
         setDesignPanelOpen: base.actions.panels.setDesignPanelOpen,
         setEditorMode: editorShell.actions.editor.setEditorMode,
-        setShoppingReadinessFilter:
-          editorShell.actions.shopping.setShoppingReadinessFilter,
         goPlan: editorShell.actions.panel.goPlan,
         goFurnish: editorShell.actions.panel.goFurnish,
         goShop: editorShell.actions.panel.goShop,
@@ -188,17 +186,7 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
     },
   });
 
-  const shopping = useDesignPageShoppingCatalogRuntime({
-    actions: {
-      document: { commitItems: itemDocument.actions.commitItems },
-      shopping: {
-        setReadinessFilter:
-          editorShell.actions.shopping.setShoppingReadinessFilter,
-        goShop: editorShell.actions.panel.goShop,
-      },
-      feedback: { showToast: showRuleToast },
-    },
-  });
+  useDesignPageShoppingCatalogRuntime();
 
   const historyShortcuts = useDesignPageHistoryShortcuts({
     state: { isClientPreview },
@@ -238,7 +226,6 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
     actions: {
       betaStart: betaStart.actions,
       setSelectedZoneId,
-      shopping: shopping.actions,
       history: historyShortcuts.actions,
     },
   };

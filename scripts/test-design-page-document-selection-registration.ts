@@ -52,7 +52,7 @@ assertSourceOrder(
     "useDesignPageItemSelectionController({",
     "useDesignPageLateBoundRef(",
     "useDesignPageItemDocumentController({",
-    "useDesignPageShoppingCatalogRuntime({",
+    "useDesignPageShoppingCatalogRuntime(",
     "useDesignPageHistoryShortcuts({",
   ],
   "Document registration should preserve its established hook order"
@@ -95,7 +95,7 @@ for (const movedOwner of [
   "useDesignPageSceneRoomReadRegistration({",
   "useDesignPageItemSelectionController({",
   "useDesignPageItemDocumentController({",
-  "useDesignPageShoppingCatalogRuntime({",
+  "useDesignPageShoppingCatalogRuntime(",
   "useDesignPageHistoryShortcuts({",
   "useDesignPagePresentationExportRuntime({",
   "useDesignPageLocalBackupHydration({",

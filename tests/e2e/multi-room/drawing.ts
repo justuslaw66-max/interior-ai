@@ -2,7 +2,6 @@ import { test, expect } from "../fixtures";
 import {
   chooseDrawFromScratch,
   chooseTemplateStart,
-  clickWithFallback,
   expectDrawPointCount,
   expectPlan2DProjectionHealthy,
   isDrawPointCountVisible,
@@ -414,10 +413,6 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
 
     await page.getByTestId("editor-workflow-furnish").click({ timeout: 5_000, noWaitAfter: true });
-    const catalogMode = page.getByTestId("furnish-mode-catalog");
-    if (await catalogMode.isVisible().catch(() => false)) {
-      await clickWithFallback(catalogMode);
-    }
     await expect(page.locator('[data-testid^="catalog-preview-"]').first()).toBeVisible();
     const firstPreview = page.locator('[data-testid^="catalog-preview-"]').first();
     const firstPreviewTestId = await firstPreview.getAttribute("data-testid");
@@ -427,7 +422,9 @@ export function registerDrawingTests() {
       throw new Error("Catalog preview did not expose a product id");
     }
 
-    await page.getByTestId(`catalog-add-${firstCatalogItemId}`).click();
+    // Consumers' Add places the product at once (FU4); the preview comes from "Choose where it goes".
+    await firstPreview.click();
+    await page.getByTestId("catalog-detail-choose-spot").click();
     await expect(page.getByTestId("catalog-placement-confirm-panel")).toBeVisible();
     await expect(page.getByTestId("catalog-placement-target-room")).toContainText("Bedroom");
 

@@ -39,13 +39,6 @@ async function openFurnishPanel(page: Page): Promise<void> {
 
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const catalogMode = page.locator('[data-testid="furnish-mode-catalog"]:visible').first();
-  if (await catalogMode.isVisible().catch(() => false)) {
-    await clickButtonWithDomFallback(catalogMode);
-  }
-
-  if (await searchInput.isVisible().catch(() => false)) return;
-
   const legacyCatalogToggle = page.locator('[data-testid="furnish-full-catalog-toggle"]:visible').first();
   if (await legacyCatalogToggle.isVisible().catch(() => false)) {
     await legacyCatalogToggle.click();
@@ -159,14 +152,35 @@ export async function selectEditorWorkspace(
   await clickButtonWithDomFallback(item);
 }
 
+/**
+ * "All 3D models", the imported-model picker, is Pro's (UX audit FU5): specs that pick from it open
+ * the design as a Pro user.
+ */
+export async function openDesignAsPro(page: Page): Promise<void> {
+  await page.route("**/api/me", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ plan: "pro", source: "playwright" }),
+    });
+  });
+  await page.goto("/design?mode=designer");
+}
+
+/** Shop: the Shopping list, one page over the canvas (UX audit FU8). */
 export async function openShopPanel(page: Page): Promise<void> {
   const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
   if (await visibleCartRailButton.isVisible().catch(() => false)) {
     await visibleCartRailButton.click();
-    return;
+  } else {
+    await selectEditorWorkspace(page, "editor-workflow-shop");
   }
+  await expect(page.getByTestId("shopping-list-page")).toBeVisible({ timeout: 20_000 });
+}
 
-  await selectEditorWorkspace(page, "editor-workflow-shop");
+/** The Shopping list's row for a placed product, found by the product's name. */
+export function shoppingListRow(page: Page, name: RegExp): Locator {
+  return page.getByTestId("shopping-list-row").filter({ hasText: name }).first();
 }
 
 function getCatalogSearchInput(page: Page): Locator {
@@ -368,15 +382,23 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
   return true;
 }
 
+/**
+ * Finishes an Add: consumers' Add places the product at once and says so in a toast with Undo
+ * (audit finding FU4); Pro's preview, or a consumer's preview when no open spot was found, is
+ * confirmed here. True once the product is in the room.
+ */
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
-  const visible = await expect(confirmButton)
+  const placedToast = page.getByTestId("editor-action-toast");
+  const visible = await expect(confirmButton.or(placedToast).first())
     .toBeVisible({ timeout: 20000 })
     .then(() => true)
     .catch(() => false);
   if (!visible) return false;
 
-  await confirmButton.click({ noWaitAfter: true });
+  if (!(await placedToast.isVisible().catch(() => false))) {
+    await confirmButton.click({ noWaitAfter: true });
+  }
   await page.waitForTimeout(600);
   return true;
 }
@@ -395,11 +417,7 @@ export async function addCatalogCardItemToRoom(
   const exactAddButton = page.getByTestId(`catalog-add-${productId}`).first();
   const addButton =
     productTitle && (await exactAddButton.count()) === 0
-      ? page
-          .getByText(productTitle, { exact: true })
-          .first()
-          .locator("xpath=ancestor::div[.//button[@aria-label='Add item']][1]")
-          .getByRole("button", { name: "Add item" })
+      ? page.getByRole("button", { name: `Add ${productTitle} to the ` }).first()
       : exactAddButton;
   const selectedItemPanel = getSelectedItemPanel(page);
   const confirmButton = page.getByTestId("catalog-placement-confirm");

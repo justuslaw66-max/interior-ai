@@ -84,7 +84,8 @@ const instrumentation: Array<[string, string[]]> = [
   ["lib/useDesignPageExplicitCloudSaveController.ts", ["project_saved", "project_save_failed"]],
   ["lib/useDesignPagePersistence.ts", ["design_shared"]],
   ["lib/useDesignPageLocalBackupHydration.ts", ["project_recovered"]],
-  ["components/CartSidebar.tsx", ["shopping_list_opened", "product_purchase_clicked"]],
+  ["lib/useShoppingListBuy.ts", ["shopping_list_opened"]],
+  ["lib/shopping-list-buy.ts", ["product_purchase_clicked"]],
 ];
 for (const [path, events] of instrumentation) {
   const source = readFileSync(join(process.cwd(), path), "utf8");

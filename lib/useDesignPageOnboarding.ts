@@ -15,7 +15,6 @@ import {
 import {
   checkActivation,
   EventDedup,
-  getNextBestActionNudge,
   isOnboardingEligible,
   type OnboardingState,
 } from "@/lib/onboarding";
@@ -230,9 +229,6 @@ export function useDesignPageOnboarding({
     lastInteractionAtMs: Date.now(),
     dismissedHints: {},
   }));
-  const [nextBestActionNudge, setNextBestActionNudge] = useState<string | null>(
-    null
-  );
 
   const onboardingStartedAtRef = useRef<number | null>(null);
   const firstItemTrackedRef = useRef(false);
@@ -240,10 +236,6 @@ export function useDesignPageOnboarding({
   const thirdItemTrackedRef = useRef(false);
   const firstSofaHandledRef = useRef(false);
   const ghostTimerRef = useRef<number | null>(null);
-  const nudgeShownCountRef = useRef(0);
-  const [initialActionTime] = useState(() => Date.now());
-  const lastActionTimeRef = useRef<number>(initialActionTime);
-  const stallDetectionTimerRef = useRef<number | null>(null);
   const eventDedupRef = useRef(EventDedup.createSession());
   const firstRunActivationTrackedStepsRef = useRef<
     Map<string, Set<FirstRunActivationStepId>>
@@ -556,77 +548,6 @@ export function useDesignPageOnboarding({
     state.zones,
   ]);
 
-  useEffect(() => {
-    if (
-      !onboardingState.enabled ||
-      state.editorMode === "present" ||
-      state.isClientPreview
-    ) {
-      return;
-    }
-
-    if (stallDetectionTimerRef.current) {
-      window.clearTimeout(stallDetectionTimerRef.current);
-    }
-
-    const stallThresholdMs = 13000;
-    stallDetectionTimerRef.current = window.setTimeout(() => {
-      const timeSinceLastAction = Date.now() - lastActionTimeRef.current;
-
-      if (timeSinceLastAction >= stallThresholdMs && nudgeShownCountRef.current < 2) {
-        const sofaItem = state.items.find((item) => {
-          const catalogItem = CATALOG_ITEMS[item.productId];
-          return catalogItem
-            ? mapToTopCategory(catalogItem.category, catalogItem) === "sofa"
-            : false;
-        });
-        const hasCategory = (category: string) =>
-          state.items.some((item) => CATALOG_ITEMS[item.productId]?.category === category);
-        const nudgeText = getNextBestActionNudge({
-          roomCount: state.designRoomCount,
-          hasItems: state.items.length > 0,
-          hasSofa: Boolean(sofaItem),
-          hasRug: hasCategory("rug"),
-          hasCoffeeTable: hasCategory("coffee_table"),
-          contentWarningCount: state.constraintResults.filter(
-            (result) => result.level === "warn" || result.level === "error"
-          ).length,
-          cartCount: state.items.filter((item) => item.includeInCheckout).length,
-          mode: state.editorMode === "ai" ? "design" : state.editorMode,
-        });
-
-        if (nudgeText) {
-          setNextBestActionNudge(nudgeText);
-          nudgeShownCountRef.current += 1;
-
-          window.setTimeout(() => {
-            setNextBestActionNudge(null);
-          }, 5000);
-
-          track("stall_nudge_shown", {
-            design_id: state.designId,
-            nudge_text: nudgeText,
-            nudge_count: nudgeShownCountRef.current,
-          });
-        }
-      }
-    }, stallThresholdMs);
-
-    return () => {
-      if (stallDetectionTimerRef.current) {
-        window.clearTimeout(stallDetectionTimerRef.current);
-      }
-    };
-  }, [
-    onboardingState.enabled,
-    state.constraintResults,
-    state.designId,
-    state.designRoomCount,
-    state.editorMode,
-    state.isClientPreview,
-    state.items,
-  ]);
-
   const firstRunActivationState = useMemo(
     () =>
       buildFirstRunActivationState({
@@ -749,7 +670,6 @@ export function useDesignPageOnboarding({
   return {
     state: {
       firstRunActivationState,
-      nextBestActionNudge,
     },
   };
 }

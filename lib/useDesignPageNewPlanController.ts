@@ -12,7 +12,6 @@ export type DesignPageNewPlanControllerState = {
 };
 
 export type DesignPageNewPlanControllerActions = {
-  closeMyDesigns: () => void;
   setGuidedPlanStartMode: (mode: "template") => void;
   goPlan: () => void;
   setViewMode: (mode: "2d") => void;
@@ -102,7 +101,6 @@ export async function executeSaveCurrentAndStartNewPlan({
 export function useDesignPageNewPlanController({
   state: { isAuthenticated, pendingReplacement },
   actions: {
-    closeMyDesigns,
     setGuidedPlanStartMode,
     goPlan,
     setViewMode,
@@ -125,7 +123,6 @@ export function useDesignPageNewPlanController({
 
   const openNewPlanPicker = useCallback(() => {
     requestPlanChoiceForNextTemplate();
-    closeMyDesigns();
     setGuidedPlanStartMode("template");
     goPlan();
     setViewMode("2d");
@@ -133,7 +130,6 @@ export function useDesignPageNewPlanController({
     setDesignPanelCollapsed(false);
     showToast("Search by address or choose a template");
   }, [
-    closeMyDesigns,
     goPlan,
     requestPlanChoiceForNextTemplate,
     setDesignPanelCollapsed,

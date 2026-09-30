@@ -61,7 +61,6 @@ export function buildDesignPageDialogLayerAdapter({
             dialogs.presentExport.configuration.open && !isClientPreview,
         },
       },
-      myDesigns: dialogs.myDesigns,
       designRename: dialogs.designRename,
       roomRename: dialogs.roomRename,
       planAnnotation: dialogs.planAnnotation,
@@ -78,7 +77,6 @@ export function buildDesignPageDialogLayerAdapter({
         hidden: overlays.validation.hidden || isClientPreview,
       },
       cabinetry: overlays.cabinetry,
-      itemCart: overlays.itemCart,
     },
   };
 }

@@ -133,7 +133,7 @@
     "test:guest-save-overlay-accessibility-required": "env APP_ENV=development PLAYWRIGHT_USE_PRODUCTION_SERVER=1 node scripts/required-test-truthfulness.mjs run ci.guest-save-overlay-accessibility",
     "test:floor-plan-upload-accessibility-static": "node scripts/build-floor-plan-upload-browser-fixture.mjs && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-floor-plan-upload-accessibility-static.ts",
     "test:floor-plan-upload-accessibility-required": "env APP_ENV=development PLAYWRIGHT_USE_PRODUCTION_SERVER=1 node scripts/required-test-truthfulness.mjs run ci.floor-plan-upload-accessibility",
-    "test:my-designs-overlay-static": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-my-designs-overlay-static.tsx",
+    "test:my-designs-page": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-my-designs-page.tsx",
     "test:my-designs-overlay-accessibility-required": "env APP_ENV=development PLAYWRIGHT_USE_PRODUCTION_SERVER=1 node scripts/required-test-truthfulness.mjs run ci.my-designs-overlay-accessibility",
     "test:e2e:smart-placement": "playwright test tests/e2e/17-smart-placement-smoke.spec.ts",
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",

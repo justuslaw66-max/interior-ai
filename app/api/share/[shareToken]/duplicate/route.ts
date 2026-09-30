@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
+import { FREE_PLAN_DESIGN_LIMIT, freePlanDesignLimitReachedMessage } from "@/lib/design-limits";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { prisma } from "@/lib/prisma";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
@@ -34,9 +35,9 @@ export async function POST(
   }
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { plan: true } });
-  if (user?.plan !== "pro" && await prisma.design.count({ where: { userId } }) >= 20) {
+  if (user?.plan !== "pro" && await prisma.design.count({ where: { userId } }) >= FREE_PLAN_DESIGN_LIMIT) {
     return NextResponse.json(
-      { error: "Free beta limit reached (max 20 designs). Upgrade to create more." },
+      { error: freePlanDesignLimitReachedMessage() },
       { status: 403 }
     );
   }

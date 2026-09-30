@@ -3,7 +3,6 @@
 import { Ellipsis } from "lucide-react";
 import type { ReactNode, RefObject } from "react";
 import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
-import { MY_DESIGNS_COMMAND_ACTION_ID } from "@/lib/my-designs-command-focus";
 
 type CommandBarMoreMenuProps = {
   dark: boolean;
@@ -21,7 +20,8 @@ type CommandBarMoreMenuProps = {
   presentModeActive: boolean;
   lightingAvailable: boolean;
   overflowSlot?: ReactNode;
-  onToggleLoadDesign: () => void;
+  /** Goes to the My designs page, saving the design's latest edits first. */
+  onOpenMyDesigns: () => void;
   onNewPlan: () => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
@@ -81,7 +81,7 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
 // New design and My designs come first: both move to another design. Rename design and, on
 // phones, Download follow.
 function MoreMenuDesignItems({
-  menuButtonClass, buttonRef, onClose, showLoadDesign, onNewPlan, onToggleLoadDesign, onDownload, onRenameDesign,
+  menuButtonClass, buttonRef, onClose, showLoadDesign, onNewPlan, onOpenMyDesigns, onDownload, onRenameDesign,
 }: CommandBarMoreMenuProps) {
   return (
     <>
@@ -99,9 +99,14 @@ function MoreMenuDesignItems({
       </button>
       {showLoadDesign && (
         <button
-          type="button" role="menuitem" id={MY_DESIGNS_COMMAND_ACTION_ID} data-testid="editor-command-overflow-load"
+          type="button" role="menuitem" data-testid="editor-command-overflow-load"
           className={menuButtonClass}
-          onClick={() => { onClose(); onToggleLoadDesign(); }}
+          onClick={() => {
+            // If saving first fails, the editor stays open, with focus on More.
+            buttonRef.current?.focus();
+            onClose();
+            onOpenMyDesigns();
+          }}
         >
           My designs
         </button>
