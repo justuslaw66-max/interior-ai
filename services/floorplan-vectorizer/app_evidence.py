@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.13.0"
+VERSION = "app-evidence-0.14.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -1078,6 +1078,8 @@ def drawn_door(m, k, g, T):
     # the quarter arc - only where the tracer found no arc: a traced arc near a jamb belongs to a door already dealt with
     # (or refused), and the swing of the door next to this gap must not be read as this gap's own
     for a_ in m.get("arcs", []):                              # an arc the tracer found at this gap was judged already
+        if CURVE_NOSWING and a_.get("from") == "curve":
+            continue
         cu, cv_ = (a_["cx"], a_["cy"]) if o == "h" else (a_["cy"], a_["cx"])
         if min(abs(cu - a), abs(cu - b)) <= 0.35 * L and abs(cv_ - c) <= 0.35 * L and 0.6 * L <= a_["r"] <= 1.4 * L:
             return None
@@ -1172,6 +1174,8 @@ def classify_gaps(m, k, gaps):
         tj = [t_ for t_ in (_across(k, g["o"], g["c"], g["a"] - 2), _across(k, g["o"], g["c"], g["b"] + 1)) if 0 < t_ <= 2.6 * T]
         band = max(T, 0.5 * (g["c_hi"] - g["c_lo"]) + 0.6 * T, 0.5 * max(tj) + 3 if tj else 0)
         for i, a_ in enumerate(arcs):
+            if CURVE_NOSWING and a_.get("from") == "curve":
+                continue                                     # a curved parapet is no door, however wide the gap beside it
             hx, hy = (a_["cx"], a_["cy"]) if o == "h" else (a_["cy"], a_["cx"])
             if abs(hy - c) > band + 0.4 * T:
                 continue
@@ -1501,17 +1505,17 @@ def close_openings(m, k, openings, thin=False):
     return closed
 
 
-def _simplify(pts, step_lim, spur_lim, far_lim=0.0):
+def _simplify(pts, step_lim, spur_lim, far_lim=0.0, protect=None):
     """Take the small steps (a column standing a little proud of its wall) and the stubs (a wall end standing in the room) out
     of a room outline.  The outline is handled as a ring of LINES (corners are where neighbours cross), so taking a side out
-    can never bend the sides that stay."""
+    can never bend the sides that stay.  A side protect(a, b) says yes to (one that follows a curve) is never taken out."""
     P = [tuple(map(float, p)) for p in pts]
     P = [p for i, p in enumerate(P) if math.hypot(p[0] - P[i - 1][0], p[1] - P[i - 1][1]) > 0.5]
     lines = []
     for i in range(len(P)):
         a, b = P[i], P[(i + 1) % len(P)]
         L = math.hypot(b[0] - a[0], b[1] - a[1])
-        lines.append({"p": a, "u": ((b[0] - a[0]) / L, (b[1] - a[1]) / L)})
+        lines.append({"p": a, "u": ((b[0] - a[0]) / L, (b[1] - a[1]) / L), "keep": bool(protect and protect(a, b))})
     def cross(l1, l2):
         den = l1["u"][0] * l2["u"][1] - l1["u"][1] * l2["u"][0]
         if abs(den) < 1e-9:
@@ -1526,6 +1530,8 @@ def _simplify(pts, step_lim, spur_lim, far_lim=0.0):
             V = verts(ls)
             for i in range(len(ls)):
                 j = (i + 1) % len(ls)
+                if ls[i]["keep"] or ls[j]["keep"]:
+                    continue
                 if abs(ls[i]["u"][0] * ls[j]["u"][1] - ls[i]["u"][1] * ls[j]["u"][0]) < 0.03:
                     Li = _len(V, i, len(ls)); Lj = _len(V, j, len(ls))
                     keep, drop = (i, j) if Li >= Lj else (j, i)
@@ -1549,7 +1555,7 @@ def _simplify(pts, step_lim, spur_lim, far_lim=0.0):
         V = verts(lines)
         best = None
         for i in range(n):
-            if id(lines[i]) in kept:
+            if id(lines[i]) in kept or lines[i]["keep"]:
                 continue
             L = _len(V, i, n)
             a, b = lines[i - 1], lines[(i + 1) % n]
@@ -1572,6 +1578,9 @@ def _simplify(pts, step_lim, spur_lim, far_lim=0.0):
             drop = {(i - 1) % n, i, (i + 1) % n}
         else:
             drop = {i, (i + 1) % n} if L1 > L2 else {(i - 1) % n, i}
+        if any(lines[j]["keep"] for j in drop):             # a step beside a curve stays: the curve's chain is not to be bent
+            kept.add(id(lines[i]))
+            continue
         cand = merge_parallel([l for j, l in enumerate(lines) if j not in drop])
         if far_lim and len(cand) >= 3:
             # every corner a removal leaves is one of the old corners, or within the size of the step it took out; two
@@ -1615,6 +1624,7 @@ STRAIGHTEN_ABS = float(os.environ.get("AE_STRAIGHTEN_ABS", 0))   # a side is mad
 def room_outlines(m, closed):
     """free floor enclosed by walls -> one outline per room, along the FACES of its walls (working pixels)"""
     T = float(m["wall_thickness_px"]); mm = pseudo_scale(m)
+    curves = curve_arcs(m) if CURVE_SIDES else []; ctol = max(3.0, 0.25 * T)
     H, W = closed.shape
     wall = cv2.dilate(closed, np.ones((3, 3), np.uint8))     # a one-pixel slit between two wall pieces is not a way out
     free = (wall == 0).astype(np.uint8)
@@ -1633,10 +1643,11 @@ def room_outlines(m, closed):
         poly = cv2.approxPolyDP(c, max(1.5, 0.12 * T), True)[:, 0, :].astype(float)
         # straighten: nearly horizontal / vertical sides become exactly so
         pts = [list(p) for p in poly]; n_ = len(pts)
+        on = [side_on_curve(pts[j], pts[(j + 1) % n_], curves, ctol) for j in range(n_)]   # sides that follow a traced curve
         for j in range(n_):
             a, b = pts[j], pts[(j + 1) % n_]
             dx, dy = b[0] - a[0], b[1] - a[1]
-            if math.hypot(dx, dy) < 0.35 * T:
+            if math.hypot(dx, dy) < 0.35 * T or on[j] is not None:
                 continue
             # (with an absolute limit as well: a long gentle slope - p02's balcony parapet, 8 degrees over 3 m - drops by
             #  far more than any wall face that is level and was only drawn a pixel off)
@@ -1645,10 +1656,43 @@ def room_outlines(m, closed):
                 v = (a[1] + b[1]) / 2.0; a[1] = b[1] = v
             elif abs(dx) <= 0.14 * abs(dy) and abs(dx) <= lim:
                 v = (a[0] + b[0]) / 2.0; a[0] = b[0] = v
-        pts = _simplify(pts, step_lim=160.0 / mm, spur_lim=450.0 / mm, far_lim=3.0 * T + 3.0)
+        if CURVE_REFIT and any(on) and not all(on):
+            pts = refit_curve_sides(pts, on, T)
+        prot = (lambda a, b: side_on_curve(a, b, curves, ctol) is not None) if curves else None
+        pts = _simplify(pts, step_lim=160.0 / mm, spur_lim=450.0 / mm, far_lim=3.0 * T + 3.0, protect=prot)
         if len(pts) >= 3:
-            rooms.append({"face": pts, "comp": comp, "area_px": float(area)})
+            r_ = {"face": pts, "comp": comp, "area_px": float(area)}
+            if curves:
+                r_["on_curve"] = [side_on_curve(pts[j], pts[(j + 1) % len(pts)], curves, ctol) is not None for j in range(len(pts))]
+            rooms.append(r_)
     return rooms
+
+
+def refit_curve_sides(pts, on, T):
+    """The polygon approximation of a room's outline follows a curved wall as a few long chords (each up to 0.12 T off
+    the curve).  Every run of sides that lie on one traced curve is laid on that curve instead: the fitted circle,
+    at the radius the face was found at, in steps of CURVE_STEP_DEG (the ends where the run's own ends were)."""
+    n_ = len(pts)
+    k0 = next(j for j in range(n_) if on[j] is None)
+    pts = pts[k0:] + pts[:k0]; on = on[k0:] + on[:k0]
+    out = []; j = 0
+    while j < n_:
+        if on[j] is None:
+            out.append(pts[j]); j += 1; continue
+        a_ = on[j]; j2 = j
+        while j2 < n_ and on[j2] is a_:
+            j2 += 1
+        verts = [pts[q] for q in range(j, j2)] + [pts[j2 % n_]]
+        rad = float(np.median([math.hypot(v[0] - a_["cx"], v[1] - a_["cy"]) for v in verts]))
+        ang = [math.degrees(math.atan2(v[1] - a_["cy"], v[0] - a_["cx"])) for v in (verts[0], verts[-1])]
+        d = (ang[1] - ang[0]) % 360.0
+        if d > 180.0:
+            d -= 360.0                                       # the run walks the curve either way: the shorter sweep is its own
+        steps = max(1, int(math.ceil(abs(d) / CURVE_STEP_DEG)))
+        chain = [[a_["cx"] + rad * math.cos(math.radians(ang[0] + d * i / steps)), a_["cy"] + rad * math.sin(math.radians(ang[0] + d * i / steps))] for i in range(steps + 1)]
+        out.extend(chain[:-1])                               # the run's last vertex is the next side's first
+        j = j2
+    return out
 
 
 def centre_lines(m, closed, rooms):
@@ -1683,6 +1727,8 @@ def centre_lines(m, closed, rooms):
             if L < 1.5 * t:
                 t = min(t, max(T, L))                        # a short return: the ray runs ALONG the wall it belongs to
             sides.append({"a": a, "b": b, "u": (ux, uy), "n": (nx, ny), "t": min(t, 4.0 * T), "L": L})
+            if r.get("on_curve") and r["on_curve"][i]:
+                sides[-1]["curve"] = True
         r["sides"] = sides
     mm = pseudo_scale(m)
     for r in rooms:
@@ -1847,7 +1893,7 @@ def weld_slanted_sides(rooms, wallb, T, mm):
     the two outlines would cross.  As for level / plumb walls, the centre-line is half way between the two faces - one
     line, in one direction, for every side that looks at that wall."""
     H, W = wallb.shape
-    diag = [(ri, s_) for ri, r in enumerate(rooms) for s_ in r["sides"] if "axis" not in s_ and s_["L"] >= 1.5]
+    diag = [(ri, s_) for ri, r in enumerate(rooms) for s_ in r["sides"] if "axis" not in s_ and not s_.get("curve") and s_["L"] >= 1.5]
     if len(diag) < 2:
         return 0
     parent = list(range(len(diag)))
@@ -1952,7 +1998,7 @@ def _legal_outline(r, T):
         drop = None
         for i in range(n):                                   # neighbours on one line
             a, b = sides[i - 1], sides[i]
-            if abs(a["u"][0] * b["u"][1] - a["u"][1] * b["u"][0]) > 0.03:
+            if a.get("curve") or b.get("curve") or abs(a["u"][0] * b["u"][1] - a["u"][1] * b["u"][0]) > 0.03:
                 continue
             (pa, ua), (pb, _ub) = _side_line(a), _side_line(b)
             if abs((pb[0] - pa[0]) * -ua[1] + (pb[1] - pa[1]) * ua[0]) > 1.5:
@@ -2262,6 +2308,99 @@ PAIR_OVERLAP_MM = float(os.environ.get("AE_PAIR_OVERLAP", 150))   # two strokes 
 def _off_axis(ang):
     a = ang % 90.0
     return min(a, 90.0 - a)
+
+
+# ----------------------------------------------------------------------------------------------- curved walls (round 15b)
+# Stage 1 hands over a long, large-radius curve that is no door swing (a curved balcony parapet, a bay) as an entry of
+# `arcs` with from = "curve": centre, radius, start angle and span, one per drawn line (a double-line parapet is two).
+
+CURVED_RAILS = os.environ.get("AE_CURVED_RAILS", "1") != "0"   # curves close outdoor spaces, as level / plumb / sloped strokes do
+CURVE_NOSWING = os.environ.get("AE_CURVE_NOSWING", "1") != "0"  # a curve is never the swing of a door
+CURVE_SIDES = os.environ.get("AE_CURVE_SIDES", "1") != "0"      # a room side that follows a curve stays a chain of short lines
+CURVE_REFIT = os.environ.get("AE_CURVE_REFIT", "1") != "0"      # ... and the chain is laid on the fitted circle at an even step
+CURVE_MIN_MM = float(os.environ.get("AE_CURVE_MIN", 1000))      # the shortest curve that closes a space
+CURVE_STEP_DEG = float(os.environ.get("AE_CURVE_STEP", 4.0))    # the chain's step, in degrees of arc (4: sin > 0.03, the "one line" test)
+
+
+def curve_arcs(m):
+    """the curves stage 1 traced, long enough to close a space with"""
+    mm = pseudo_scale(m)
+    return [a_ for a_ in m.get("arcs", []) if a_.get("from") == "curve" and math.radians(a_["span"]) * a_["r"] * mm >= CURVE_MIN_MM]
+
+
+def curve_polyline(a_, step_deg=1.0, r=None):
+    """points along an arc, start to end, at most step_deg apart (the ends exact)"""
+    r = a_["r"] if r is None else r
+    n = max(1, int(math.ceil(a_["span"] / step_deg)))
+    return [(a_["cx"] + r * math.cos(math.radians(a_["start"] + a_["span"] * i / n)), a_["cy"] + r * math.sin(math.radians(a_["start"] + a_["span"] * i / n))) for i in range(n + 1)]
+
+
+def _on_curve(p, a_, tol):
+    """p lies on the arc a_: at its radius (within tol) and inside its sweep (a little over the ends)"""
+    d = math.hypot(p[0] - a_["cx"], p[1] - a_["cy"])
+    if abs(d - a_["r"]) > tol:
+        return False
+    ang = (math.degrees(math.atan2(p[1] - a_["cy"], p[0] - a_["cx"])) - a_["start"]) % 360.0
+    slack = math.degrees(tol / max(1.0, a_["r"]))
+    return ang <= a_["span"] + slack or ang >= 360.0 - slack
+
+
+PANEL_PARTITION = os.environ.get("AE_PANEL_PARTITION", "1") != "0"   # two staggered panel outlines joined into a partition by stage 1: a sliding door onto a balcony
+
+
+def panel_partitions(m, k):
+    """Stage 1 rebuilds thin walls drawn as two parallel lines as partition rectangles (partition_network), and joins
+    rectangles that lie in one line.  The two panels of a sliding door onto a balcony are drawn as exactly that: two thin
+    rectangles end to end in the wall's line, staggered, so a closing stroke stands inside the run and one outline runs
+    on past the other's end to the jamb.  Such a partition is read again as a sliding door from wall to wall; whether it
+    really leads onto an outdoor space is decided once the rooms are known (else it stays the wall it was)."""
+    out = []
+    T = float(m["wall_thickness_px"]); mm = pseudo_scale(m); H, W = k.shape
+    plines = [l for l in m["lines"] if l.get("role") == "partition"]
+    for p in m.get("partitions", []):
+        o = o_ = p["o"]; c0, c1, a, b = p["c0"], p["c1"], p["a"], p["b"]; L = b - a
+        if p.get("fill") or (c1 - c0) * mm > 100 or L * mm < 1200:
+            continue
+        po = "v" if o == "h" else "h"
+        # a stroke across the rectangle well inside its run (where one panel ends and the next begins), no longer than the rectangle is thick
+        inner = [l for l in m["lines"] if l["o"] == po and a + 0.15 * L <= l["c"] <= b - 0.15 * L and l["a"] <= c0 + 2.5 and l["b"] >= c1 - 2.5 and (l["b"] - l["a"]) <= (c1 - c0) + 6]
+        if not inner:
+            continue
+        # one of the two long outlines runs on past the rectangle's end by a panel's overlap or more
+        longs = [l for l in plines if l["o"] == o and c0 - 1.5 <= l["c"] <= c1 + 1.5 and min(l["b"], b) - max(l["a"], a) >= 0.8 * L]
+        if max([max(0.0, l["b"] - b, a - l["a"]) for l in longs] or [0.0]) * mm < 300:
+            continue
+        A, B = min([a] + [l["a"] for l in longs]), max([b] + [l["b"] for l in longs])
+        # from wall to wall: the run must stop at wall mass at both ends, close by
+        c = (c0 + c1) / 2.0
+        img = (k > 0) if o == "h" else (k > 0).T
+        row = img[int(round(c))]
+        def mass_at(x, step):
+            x = int(round(x))
+            for d_ in range(0, int(1.5 * T)):
+                xx = x + step * d_
+                if not (0 <= xx < len(row)):
+                    return None
+                if row[xx]:
+                    return xx
+            return None
+        ea, eb = mass_at(A - 1, -1), mass_at(B + 1, 1)
+        if ea is None or eb is None:
+            continue
+        A, B = float(ea + 1), float(eb)
+        out.append({"o": o, "c": c, "a": A, "b": B, "lo": float(c0), "hi": float(c1), "lo_thin": float(c0), "hi_thin": float(c1), "c_lo": c, "c_hi": c, "jamb": [0, 0],
+                    "kind": "door", "operation": "sliding", "hinge": "none", "swing_side": 0, "panels": True, "confidence": 0.55, "from_partition": True,
+                    "why": "two staggered panel outlines that stage 1 joined into a partition: the sliding door onto a balcony"})
+    return out
+
+
+def side_on_curve(a, b, curves, tol):
+    """the curve a side from a to b lies on (both ends and the middle), or None"""
+    mid = ((a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0)
+    for a_ in curves:
+        if _on_curve(a, a_, tol) and _on_curve(b, a_, tol) and _on_curve(mid, a_, tol):
+            return a_
+    return None
 
 
 def sloped_strokes(m, gray, k=None):
@@ -2736,6 +2875,13 @@ def build(m, gray=None):
     m["_slant_parts"] = slant_parts; m["_nonaxis"] = nonaxis_mask
     more_s, unhosted = slanted_gaps(m, k, unhosted, T)
     openings = openings + more_s
+    if PANEL_PARTITION:
+        same_line = lambda h_, g: h_["o"] == g["o"] and abs(h_["c"] - g["c"]) <= 1.5 * T
+        for g in panel_partitions(m, k):
+            if any(same_line(h_, g) and min(h_["b"], g["b"]) - max(h_["a"], g["a"]) > 0.3 * (g["b"] - g["a"]) for h_ in openings):
+                continue                                     # an opening was found there already
+            # the piece beside the panels that was read on its own (the threshold stroke past the shorter panel) is part of the door
+            openings = [h_ for h_ in openings if not (same_line(h_, g) and min(h_["b"], g["b"]) - max(h_["a"], g["a"]) >= 0.5 * (h_["b"] - h_["a"]))] + [g]
     labels = room_labels(m, k)
     OUTDOOR = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK")
     def make_rooms(ops):
@@ -2764,6 +2910,9 @@ def build(m, gray=None):
                     if s_["len"] * mm < 300:                 # (as long as the level / plumb railings drawn here)
                         continue
                     cv2.line(closed2, (int(round(s_["p"][0])), int(round(s_["p"][1]))), (int(round(s_["q"][0])), int(round(s_["q"][1]))), 255, 3)
+            if CURVED_RAILS:                                 # a curved parapet (h1's balcony), traced by stage 1 as a curve
+                for a_ in curve_arcs(m):
+                    cv2.polylines(closed2, [np.array(curve_polyline(a_), np.int32).reshape(-1, 1, 2)], False, 255, 3)
             for r_ in room_outlines(m, closed2):
                 if any(at(r_, l) for l in wanted) and not any((r_["comp"] & q["comp"]).sum() > 0.2 * r_["comp"].sum() for q in inner) and r_["area_px"] * mm * mm <= 60e6:
                     r_["outdoor"] = True
@@ -2884,12 +3033,18 @@ def build(m, gray=None):
                 n_tot += 1
                 n_hit += 1 if max([b_ - a_ for a_, b_ in _runs(line > 0)] or [0]) >= 0.5 * T else 0
         return n_tot > 0 and n_hit >= 0.6 * n_tot
-    bad = []; partitions = 0; narrow_swings = 0; casements = 0; scraps = 0; slide_windows = 0; not_panels = 0
+    bad = []; partitions = 0; narrow_swings = 0; casements = 0; scraps = 0; slide_windows = 0; not_panels = 0; panel_doors = 0
     def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
         labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
         return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
     for g in openings:
         bt = g.get("between", [None, None])
+        if g.get("from_partition"):                          # a partition read as the two panels of a sliding door: only onto a balcony
+            if None not in bt and bt[0] != bt[1] and (indoor(bt[0]) != indoor(bt[1])) and all(rooms[i_]["labels"] for i_ in bt):
+                panel_doors += 1
+            else:
+                g.update(kind="wall", operation=None, panels=None, confidence=0.45, why="a partition"); partitions += 1
+            continue
         if g["kind"] == "open_passage" and walled_up(g):       # (folding and sliding doors are also read ACROSS a traced wall: not those)
             bad.append(g); continue
         # A swing narrower than any door (the narrowest on the plans seen is a 570 mm shelter door) is the leaf of a
@@ -2950,7 +3105,7 @@ def build(m, gray=None):
         openings = [g for g in openings if not any(g is d_ for d_ in bad)]
         closed, rooms = make_rooms(openings)
         settle(rooms, openings)
-    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings; m["_casements"] = casements; m["_fold_scraps"] = scraps; m["_slide_windows"] = slide_windows; m["_not_panels"] = not_panels
+    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings; m["_casements"] = casements; m["_fold_scraps"] = scraps; m["_slide_windows"] = slide_windows; m["_not_panels"] = not_panels; m["_panel_doors"] = panel_doors
     # A face under 1.5 m2 that carries no label is not a room: the inside of a shaft, the strip behind a wardrobe
     # drawn against a wall, a notch between a column and a cupboard.  The smallest named space on any plan seen is a
     # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
@@ -3135,6 +3290,9 @@ def build(m, gray=None):
     notes = []
     if slanted_px > 4 * T * T:
         notes.append("Some walls are slanted: the rooms follow them, but doors and windows in a slanted wall are not read yet.")
+    curve_sides = sum(1 for r_ in rooms for s_ in r_.get("sides", []) if s_.get("curve"))
+    if curve_sides:
+        notes.append("A curved wall is exported as a chain of short straight walls: the rooms follow it, but doors and windows in a curved wall are not read yet.")
     if estimated:
         notes.append("No written dimensions: the scale is an estimate from door leaves taken as %d mm and must be confirmed." % int((m.get("scale_source") or {}).get("assumed_leaf_mm", 850)))
     out = {
@@ -3153,7 +3311,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
