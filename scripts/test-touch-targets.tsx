@@ -74,7 +74,9 @@ for (const tag of quickButtons) assert.match(tag, /\bh-10 w-10 touch:h-11 touch:
 const tips = (compact: boolean) =>
   renderToStaticMarkup(createElement(PlanGuidedActionsToggle, { state: { enabled: false, compact }, actions: { toggle: noop } }));
 assert.match(tips(false), /\btouch:min-h-11\b/);
-assert.match(tips(true), /\bleft-1\/2 top-bar-32 translate-x-4\b/, "Beside the quick actions, Tips sits under them on phones.");
+// Compact, Tips sits in the quick actions' row after them, and wraps under them on a full phone row.
+assert.doesNotMatch(tips(true), /\babsolute\b/);
+assert.match(tips(false), /\babsolute z-30 left-1\/2 top-bar-17 -translate-x-1\/2\b/);
 const card = renderToStaticMarkup(createElement(CatalogCard, {
   item: {
     id: "winora", variantId: "sand", variantLabel: "Sand", title: "Winora Armchair", brand: "Castlery", category: "Arm Chair",

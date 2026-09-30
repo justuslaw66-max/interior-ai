@@ -459,10 +459,11 @@ assert.match(
 );
 
 assert.match(
-  planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-bar-17 z-30 md:top-bar-20[\s\S]*-translate-x-1\/2/,
-  "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
+  fs.readFileSync(path.join(designPageComponentsPath, "DesignPagePlanCanvasOverlays.tsx"), "utf8"),
+  /data-testid="plan-canvas-tool-row"\s+className="pointer-events-none absolute left-1\/2 top-bar-17 z-30 flex w-max max-w-\[calc\(100vw-2rem\)\] -translate-x-1\/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"\s*>\s*\{quickActions\}\s*\{tips\}/,
+  "Manual plan quick actions, with Tips after them in one row, are centred near the top of the canvas (UX 4d)."
 );
+assert.doesNotMatch(planManualQuickActionsSource, /\babsolute\b/, "The quick actions sit in the row, which places them.");
 
 assert.match(
   planGuidedActionsToggleSource,
