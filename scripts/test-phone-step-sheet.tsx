@@ -139,7 +139,22 @@ assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"
 // Wiring: the frame is the sheet below md, the column from md, and the phone header has no
 // sidebar toggle; the plan model and the Plan tip read the sheet.
 const frame = read("components/editor/DesignControlsPanelFrame.tsx");
-assert.match(frame, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\s\S]*?if \(!wide\) \{\s*return \(\s*<PhoneStepSheet /);
+assert.match(frame, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\s\S]*?const column = wide\s*\? panelColumn\(/);
+// One component draws the sheet and the column (UX 4d), so crossing md (a phone turned sideways,
+// hydrating on a desktop) keeps the step's content mounted: an open product's details survived.
+assert.equal(frame.match(/<PhoneStepSheet /g)?.length, 1, "The frame renders one PhoneStepSheet, for both.");
+assert.match(frame, /<PhoneStepSheet dark=\{dark\} title=\{title\} subtitle=\{subtitle\} collapsed=\{props\.collapsed\} onCollapsedChange=\{onCollapsedChange\} column=\{column\}>/);
+const columnPanel = renderToStaticMarkup(
+  <PhoneStepSheet dark={false} title="Furnish" subtitle="x" collapsed={false}
+    column={{ className: "absolute top-bar-2 z-20", temporarilyRevealed: false, header: <div>Furnish</div>, onMouseEnter: noop, onMouseLeave: noop }}>
+    <p>Products</p>
+  </PhoneStepSheet>
+);
+assert.equal(
+  columnPanel,
+  '<section data-testid="design-controls-panel" data-temporary-reveal="false" class="absolute top-bar-2 z-20"><div>Furnish</div><div class="space-y-3"><div data-testid="phone-sheet-inspector" hidden=""></div><div class="space-y-3"><p>Products</p></div></div></section>',
+  "The column: its header, then the same body as the sheet's, with the step's content in the same place."
+);
 assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsPanelFrame\s+dark=\{dark\}/);
 const model = read("lib/useDesignPagePlanPresentationModel.ts");
 assert.match(model, /const phoneSheetHeightPx = usePhoneSheetState\(\)\.heightPx;/);

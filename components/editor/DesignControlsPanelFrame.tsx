@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { isEditorShortcutTargetBlocked } from "@/lib/editor-shortcut-guard";
 import { TABLET_MEDIA_QUERY, toggleStepPanel, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
-import { PhoneStepSheet } from "./PhoneStepSheet";
+import { PhoneStepSheet, type StepPanelColumn } from "./PhoneStepSheet";
 
 type DesignControlsPanelFrameProps = {
   dark: boolean;
@@ -96,24 +96,17 @@ export function DesignControlsPanelFrame(props: DesignControlsPanelFrameProps) {
     else setEdgePreviewOpen(false);
   };
 
-  if (!wide) {
-    return (
-      <PhoneStepSheet dark={dark} title={title} subtitle={subtitle} collapsed={props.collapsed} onCollapsedChange={onCollapsedChange}>
-        {children}
-      </PhoneStepSheet>
-    );
-  }
-  if (collapsed && !temporarilyRevealed) {
+  if (wide && collapsed && !temporarilyRevealed) {
     return <PanelEdgeReveal dark={dark} openEdgePreview={preview.openEdgePreview} onShow={show} />;
   }
+  // One component for the phone's sheet and the column, so crossing md keeps the step's content.
+  const column = wide
+    ? panelColumn({ ...props, temporarilyRevealed, cancelEdgePreviewClose: preview.cancelEdgePreviewClose, scheduleEdgePreviewClose: preview.scheduleEdgePreviewClose, onKeepOpen: show })
+    : null;
   return (
-    <PanelColumn
-      {...props}
-      temporarilyRevealed={temporarilyRevealed}
-      cancelEdgePreviewClose={preview.cancelEdgePreviewClose}
-      scheduleEdgePreviewClose={preview.scheduleEdgePreviewClose}
-      onKeepOpen={show}
-    />
+    <PhoneStepSheet dark={dark} title={title} subtitle={subtitle} collapsed={props.collapsed} onCollapsedChange={onCollapsedChange} column={column}>
+      {children}
+    </PhoneStepSheet>
   );
 }
 
@@ -150,36 +143,32 @@ function PanelEdgeReveal({ dark, openEdgePreview, onShow }: { dark: boolean; ope
   );
 }
 
-type PanelColumnProps = DesignControlsPanelFrameProps & {
+type PanelColumnProps = Omit<DesignControlsPanelFrameProps, "children"> & {
   temporarilyRevealed: boolean;
   cancelEdgePreviewClose: () => void;
   scheduleEdgePreviewClose: () => void;
   onKeepOpen: () => void;
 };
 
-function PanelColumn({ dark, isDesigner, title, subtitle, children, temporarilyRevealed, cancelEdgePreviewClose, scheduleEdgePreviewClose, onKeepOpen }: PanelColumnProps) {
+/** The column from md: its place and look, and its header (the step's title and Keep open). */
+function panelColumn({ dark, isDesigner, title, subtitle, temporarilyRevealed, cancelEdgePreviewClose, scheduleEdgePreviewClose, onKeepOpen }: PanelColumnProps): StepPanelColumn {
   const panelLeftClass = temporarilyRevealed
     ? "left-0"
     : isDesigner
       ? "left-20"
       : "left-1";
   const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute top-bar-2 z-20 w-[18.15rem] space-y-3 pr-1 ${panelLeftClass}`;
-  return (
-    <div
-      data-testid="design-controls-panel"
-      data-temporary-reveal={temporarilyRevealed ? "true" : "false"}
-      className={`${panelShellClass} max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] overflow-y-auto pb-4 ${
-        temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
-      }`}
-      onMouseEnter={cancelEdgePreviewClose}
-      onMouseLeave={() => {
-        if (temporarilyRevealed) scheduleEdgePreviewClose();
-      }}
-    >
-      <PanelColumnHeader dark={dark} title={title} subtitle={subtitle} temporarilyRevealed={temporarilyRevealed} onKeepOpen={onKeepOpen} />
-      {children}
-    </div>
-  );
+  return {
+    className: `${panelShellClass} max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] overflow-y-auto pb-4 ${
+      temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
+    }`,
+    temporarilyRevealed,
+    header: <PanelColumnHeader dark={dark} title={title} subtitle={subtitle} temporarilyRevealed={temporarilyRevealed} onKeepOpen={onKeepOpen} />,
+    onMouseEnter: cancelEdgePreviewClose,
+    onMouseLeave: () => {
+      if (temporarilyRevealed) scheduleEdgePreviewClose();
+    },
+  };
 }
 
 function PanelColumnHeader({ dark, title, subtitle, temporarilyRevealed, onKeepOpen }: {
