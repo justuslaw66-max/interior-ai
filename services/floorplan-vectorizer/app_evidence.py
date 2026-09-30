@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.14.0"
+VERSION = "app-evidence-0.15.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -1144,8 +1144,69 @@ def _line_broken_over(m, k, g, u0, u1, band, T):
             return float(np.median(vals)) if vals else 255.0
         d_over, d_left, d_right = darkest(over), darkest(left), darkest(right)
         if d_over - max(d_left, d_right) >= 40 and max(d_left, d_right) < thr:
-            return True
-    return False
+            return l
+    return None
+
+
+FOLD_IN_PARTITION = os.environ.get("AE_FOLD_PARTITION", "1") != "0"   # a folding door hung in a partition is as thick as the partition
+
+
+def partition_band(m, o, stroke, u0, u1, T):
+    """The band (lo, hi across the gap) of the partition the stroke belongs to: stage 1's partition rectangle holding the
+    stroke, else the stroke and its parallel twin within a partition's thickness.  None when there is neither."""
+    c = stroke["c"]
+    for p in m.get("partitions", []):
+        if p["o"] == o and p["c0"] - 1.5 <= c <= p["c1"] + 1.5 and p["a"] <= u1 and p["b"] >= u0:
+            return float(p["c0"]), float(p["c1"])
+    twins = [l for l in m["lines"] if l["o"] == o and l is not stroke and l.get("role") not in ("dimension", "extension", "door-leaf")
+             and 2.0 <= abs(l["c"] - c) <= 0.7 * T and min(l["b"], u1) - max(l["a"], u0) >= 0.5 * (u1 - u0)]
+    if twins:
+        t_ = min(twins, key=lambda l: abs(l["c"] - c))
+        return float(min(c, t_["c"])) - 1.0, float(max(c, t_["c"])) + 1.0
+    return None
+
+
+WALL_BAND = os.environ.get("AE_WALL_BAND", "1") != "0"   # a gap closed as wall by the strokes drawn along it is as thick as those strokes
+WALL_BAND_RATIO = float(os.environ.get("AE_WALL_BAND_RATIO", 1.5))   # ... when the jambs' band is thicker than that by more than this
+
+
+def strokes_band(m, g, T):
+    """The band of the wall drawn ALONG a gap (a partition in outline, the panels of a screen): stage 1's partition
+    rectangle over the gap, else the two outermost strokes running the length of the gap inside its band.  None when
+    there is neither."""
+    o, a, b_ = g["o"], g["a"], g["b"]; L = b_ - a
+    lo, hi = g.get("lo", g["c"] - 0.5 * T), g.get("hi", g["c"] + 0.5 * T)
+    for p in m.get("partitions", []):
+        if p["o"] == o and lo - 0.5 * T <= p["c0"] and p["c1"] <= hi + 0.5 * T and min(p["b"], b_) - max(p["a"], a) >= 0.8 * L:
+            return float(p["c0"]) - 1.0, float(p["c1"]) + 1.0
+    inside = [l for l in m["lines"] if l["o"] == o and l.get("role") not in ("dimension", "extension", "door-leaf")
+              and lo - 0.5 * T <= l["c"] <= hi + 0.5 * T and min(l["b"], b_) - max(l["a"], a) >= 0.8 * L]
+    if len(inside) >= 2:
+        cs = [l["c"] for l in inside]
+        return float(min(cs)) - 1.0, float(max(cs)) + 1.0
+    return None
+
+
+def wall_gaps_take_their_strokes_band(m, openings, T):
+    """A gap's band (lo / hi, across it) comes from the wall runs at its two ENDS - the cross walls, or a post.  A gap that
+    is closed as wall because of the strokes drawn along it (a partition drawn in outline between two named rooms: h1's
+    study wall, 84 mm, hung between a 300 mm post and the outer wall) was being filled as thick as those ends, and both
+    rooms then measured the partition at the post's thickness and stood their faces on the slab.  Such a gap is as thick
+    as its strokes.  Returns the number of gaps changed."""
+    changed = 0
+    for g in openings:
+        if g["kind"] != "wall" or g.get("frame") or g.get("_stroke_band"):
+            continue
+        band = strokes_band(m, g, T)
+        if band is None:
+            continue
+        w0, w1 = g.get("hi_thin", g["hi"]) - g.get("lo_thin", g["lo"]), band[1] - band[0]
+        if w1 < 2.0 or w0 <= WALL_BAND_RATIO * w1:
+            continue
+        g["_stroke_band"] = True
+        g.update(lo=band[0], hi=band[1], lo_thin=band[0], hi_thin=band[1], c=0.5 * (band[0] + band[1]), c_lo=0.5 * (band[0] + band[1]), c_hi=0.5 * (band[0] + band[1]))
+        changed += 1
+    return changed
 
 
 def _panels_in_wall(part, g, c, L, mm):
@@ -1241,18 +1302,27 @@ def classify_gaps(m, k, gaps):
                 if not (abs(v - c) <= band + T and u[0] >= a - 0.6 * T and u[1] <= b_ + 0.6 * T):
                     continue
                 if (u[1] - u[0]) >= 0.25 * L:
-                    part_fold = (s_, max(a, u[0]), min(b_, u[1]))
-                elif 250 <= (u[1] - u[0]) * mm <= 1300 and _line_broken_over(m, k, g, u[0], u[1], band, T):
-                    # A bathroom folding door 400-900 mm wide hung in a long partition (exec, h1): the V is narrow against
-                    # the gap, but one of the partition's strokes stops at its jambs.  The folded corner of a bed is a V
-                    # too, drawn against the bedside strip - its edge lines run straight through.
-                    part_fold = (s_, max(a, u[0]), min(b_, u[1]))
+                    part_fold = (s_, max(a, u[0]), min(b_, u[1]), None)
+                else:
+                    broken = _line_broken_over(m, k, g, u[0], u[1], band, T) if 250 <= (u[1] - u[0]) * mm <= 1300 else None
+                    if broken is not None:
+                        # A bathroom folding door 400-900 mm wide hung in a long partition (exec, h1): the V is narrow against
+                        # the gap, but one of the partition's strokes stops at its jambs.  The folded corner of a bed is a V
+                        # too, drawn against the bedside strip - its edge lines run straight through.
+                        part_fold = (s_, max(a, u[0]), min(b_, u[1]), broken)
         if part_fold is not None:
-            s_, u0, u1 = part_fold; s_["_hosted"] = True
-            out.append(dict(g, a=u0, b=u1, kind="door", operation="folding", hinge="unknown", swing_side=0, confidence=0.75))
+            s_, u0, u1, broken = part_fold; s_["_hosted"] = True
+            # The gap's band came from the walls at its two ends (the room's cross walls), not from the partition the door
+            # hangs in; the door, and the wall on either side of it, are as thick as that partition and sit on its line.
+            # Otherwise the whole partition is closed as a slab as thick as the cross walls, and both rooms measure it so.
+            band_ = partition_band(m, o, broken, a, b_, T) if (FOLD_IN_PARTITION and broken is not None) else None
+            gb = dict(g, lo=band_[0], hi=band_[1], lo_thin=band_[0], hi_thin=band_[1], c=0.5 * (band_[0] + band_[1]), c_lo=0.5 * (band_[0] + band_[1]), c_hi=0.5 * (band_[0] + band_[1])) if band_ else g
+            if band_:
+                m["_fold_partition"] = m.get("_fold_partition", 0) + 1
+            out.append(dict(gb, a=u0, b=u1, kind="door", operation="folding", hinge="unknown", swing_side=0, confidence=0.75))
             for r0, r1 in ((a, u0), (u1, b_)):
                 if r1 - r0 > 3:
-                    out.append(dict(g, a=r0, b=r1, kind="wall", operation=None, confidence=0.5, why="beside a folding door"))
+                    out.append(dict(gb, a=r0, b=r1, kind="wall", operation=None, confidence=0.5, why="beside a folding door"))
             continue
         # strokes drawn in the gap, inside the thickness of the wall
         inband = [l for l in lines if l["o"] == o and abs(l["c"] - c) <= band + 0.5 * T and l["a"] >= a - 0.6 * T and l["b"] <= b_ + 0.6 * T and l.get("role") != "door-leaf"]
@@ -1505,10 +1575,19 @@ def close_openings(m, k, openings, thin=False):
     return closed
 
 
+CHAMFER = os.environ.get("AE_CHAMFER", "1") != "0"     # a scrap of a side across a corner between two level / plumb sides: the corner is where they cross
+CHAMFER_T = float(os.environ.get("AE_CHAMFER_T", 0.6))  # ... when the scrap is shorter than this many T
+CHAMFER_FAR = float(os.environ.get("AE_CHAMFER_FAR", 1.0))   # ... and its corners land this many T or more from its face ends (or its neighbours cross)
+CHAMFER_JAMB = float(os.environ.get("AE_CHAMFER_JAMB", 1.0))  # ... and it stands within this many T of an opening's jamb
+
+
 def _simplify(pts, step_lim, spur_lim, far_lim=0.0, protect=None):
     """Take the small steps (a column standing a little proud of its wall) and the stubs (a wall end standing in the room) out
     of a room outline.  The outline is handled as a ring of LINES (corners are where neighbours cross), so taking a side out
-    can never bend the sides that stay.  A side protect(a, b) says yes to (one that follows a curve) is never taken out."""
+    can never bend the sides that stay.  A side protect(a, b) says yes to (one that follows a curve) is never taken out.
+    (Round 16 tried taking chamfers - a scrap of a side across a corner - out here as well: on the outline plans that
+    unmasks the steps the scraps sat between, and the step rule then moves whole walls; left to _legal_outline, which
+    takes out only the chamfers that do harm.)"""
     P = [tuple(map(float, p)) for p in pts]
     P = [p for i, p in enumerate(P) if math.hypot(p[0] - P[i - 1][0], p[1] - P[i - 1][1]) > 0.5]
     lines = []
@@ -1695,6 +1774,199 @@ def refit_curve_sides(pts, on, T):
     return out
 
 
+TWIN_WELD = os.environ.get("AE_TWIN_WELD", "1") != "0"      # a side on a stroke a wall's width from a wall is welded onto that wall
+TWIN_THIN = float(os.environ.get("AE_TWIN_THIN", 0.25))      # ... when what it measured behind itself is at most this many T
+SPLIT_T = os.environ.get("AE_SPLIT_T", "1") != "0"           # a room side is split where the wall behind it changes thickness
+SPLIT_T_RATIO = float(os.environ.get("AE_SPLIT_T_RATIO", 1.5))   # ... by more than this factor
+SPLIT_T_RUN = float(os.environ.get("AE_SPLIT_T_RUN", 1.5))       # ... over a stretch at least this many T long
+SPLIT_T_OTHER = os.environ.get("AE_SPLIT_T_OTHER", "1") != "0"   # ... and only where a different room looks at the thicker part
+
+
+def _ray_t(wallb, px, py, nx, ny, T):
+    """the thickness of wall mass behind the face point (px, py) along the outward normal, in px (None: no wall there)"""
+    H, W = wallb.shape
+    t, started = 0, False
+    for s_ in range(-2, int(4.5 * T)):
+        x, y = int(round(px + nx * s_)), int(round(py + ny * s_))
+        if not (0 <= x < W and 0 <= y < H):
+            break
+        if wallb[y, x]:
+            started = True; t += 1
+        elif started or s_ > 4:
+            break
+    return t if started else None
+
+
+def split_sides_at_thickness_changes(sides, wallb, T, orient, ops):
+    """One room side runs along a 100 mm partition and then along the 300 mm structural wall of the ledge next door as ONE
+    side with ONE thickness (the median of what its rays saw), so the app draws the thick part 100 mm thin - and the room
+    on the other side of the thick part, which measured 300, gets its own line a wall's width away (two walls where the
+    drawing has one).  The thickness is sampled every half T along the side; a stretch at least SPLIT_T_RUN T long whose
+    thickness differs from its neighbours' by more than SPLIT_T_RATIO becomes a side of its own, and the two parts are
+    joined by a short side across the wall (from the one centre-line to the other, inside the thicker part's band).
+    Level / plumb sides only; a side on a curve is never split."""
+    out = []
+    for s_ in sides:
+        L = s_["L"]
+        if s_.get("curve") or L < 2.0 * SPLIT_T_RUN * T or not (abs(s_["u"][0]) < 1e-6 or abs(s_["u"][1]) < 1e-6):
+            out.append(s_); continue
+        step = max(2.0, 0.5 * T)
+        n_ = int(L / step)
+        if n_ < 4:
+            out.append(s_); continue
+        ux, uy = s_["u"]; nx, ny = s_["n"]; a = s_["a"]
+        pos = [(k_ + 0.5) * L / n_ for k_ in range(n_)]
+        ts = [_ray_t(wallb, a[0] + ux * q, a[1] + uy * q, nx, ny, T) for q in pos]
+        # what an opening's closing box reads is the box, not the wall: those samples take their neighbours' reading
+        ax = 0 if abs(ux) < 1e-6 else 1; al = 1 - ax; face = a[ax]
+        o = "v" if ax == 0 else "h"
+        for g in ops:
+            if g["kind"] == "wall" or g.get("frame") or g["o"] != o or not (g["lo"] - 2.0 <= face <= g["hi"] + 2.0):
+                continue
+            for k_, q in enumerate(pos):
+                if g["a"] - 1.0 <= a[al] + (uy if ax == 0 else ux) * q <= g["b"] + 1.0:
+                    ts[k_] = None
+        ts = [None if (t is not None and t >= 4.0 * T) else t for t in ts]   # (a ray that ran to its end ran ALONG a wall)
+        if all(t is None for t in ts):
+            out.append(s_); continue
+        for k_ in range(n_):                                 # a sample with no wall takes its neighbour's reading
+            if ts[k_] is None:
+                ts[k_] = next((ts[j] for j in list(range(k_ - 1, -1, -1)) + list(range(k_ + 1, n_)) if ts[j] is not None), 0)
+        # runs of one thickness: a sample joins the run while it is within the ratio of the run's median
+        runs = []                                            # [start, end) sample indexes
+        for k_ in range(n_):
+            if runs:
+                med = float(np.median(ts[runs[-1][0]:runs[-1][1]]))
+                if max(ts[k_], med) <= SPLIT_T_RATIO * max(1.0, min(ts[k_], med)):
+                    runs[-1][1] = k_ + 1; continue
+            runs.append([k_, k_ + 1])
+        # a run shorter than SPLIT_T_RUN T joins the neighbour whose thickness is nearer its own
+        # ... and a run shorter than it is thick is the flank of a wall running away from the face (the rays run along
+        # it), not a thicker stretch of this wall
+        min_n = max(2, int(math.ceil(SPLIT_T_RUN * T / (L / n_))))
+        def small(j):
+            cnt = runs[j][1] - runs[j][0]
+            return cnt < min_n or cnt * (L / n_) < float(np.median(ts[runs[j][0]:runs[j][1]]))
+        changed = True
+        while changed and len(runs) > 1:
+            changed = False
+            small_ = [j for j in range(len(runs)) if small(j)]
+            if not small_:
+                break
+            k_ = min(small_, key=lambda j: runs[j][1] - runs[j][0])
+            med = float(np.median(ts[runs[k_][0]:runs[k_][1]]))
+            cand = [j for j in (k_ - 1, k_ + 1) if 0 <= j < len(runs)]
+            j = min(cand, key=lambda q: abs(float(np.median(ts[runs[q][0]:runs[q][1]])) - med))
+            lo_, hi_ = min(runs[k_][0], runs[j][0]), max(runs[k_][1], runs[j][1])
+            runs = [r_ for q, r_ in enumerate(runs) if q not in (k_, j)]
+            runs.insert(min(k_, j), [lo_, hi_]); changed = True
+        # neighbours that ended up within the ratio of each other are one run again
+        k_ = 0
+        while k_ + 1 < len(runs):
+            m1 = float(np.median(ts[runs[k_][0]:runs[k_][1]])); m2 = float(np.median(ts[runs[k_ + 1][0]:runs[k_ + 1][1]]))
+            if max(m1, m2) <= SPLIT_T_RATIO * max(1.0, min(m1, m2)):
+                runs[k_][1] = runs[k_ + 1][1]; del runs[k_ + 1]
+            else:
+                k_ += 1
+        if len(runs) < 2:
+            out.append(s_); continue
+        if os.environ.get("AE_LOG_SPLIT"):
+            print("SPLIT side %s-%s t %s runs %s" % ([round(v) for v in s_["a"]], [round(v) for v in s_["b"]], ts, [(r_[0], r_[1], round(float(np.median(ts[r_[0]:r_[1]])), 1)) for r_ in runs]))
+        cuts = [0.5 * (pos[r_[1] - 1] + pos[r_[1]]) for r_ in runs[:-1]]   # along the side, from a
+        bounds = [0.0] + cuts + [L]
+        parts = []
+        for r_, (q0, q1) in zip(runs, zip(bounds, bounds[1:])):
+            t = float(np.median(ts[r_[0]:r_[1]]))
+            if q1 - q0 < 1.5 * t:
+                t = min(t, max(T, q1 - q0))
+            pa = [a[0] + ux * q0, a[1] + uy * q0]; pb = [a[0] + ux * q1, a[1] + uy * q1]
+            parts.append(dict(s_, a=pa, b=pb, L=q1 - q0, t=min(t, 4.0 * T), split=True, whole=s_))
+        for j, part in enumerate(parts):
+            if j:
+                prev = parts[j - 1]
+                # the joint: a side across the wall at the cut, from the thinner part's centre-line out to the thicker
+                # part's (it lies inside the thicker part's band, and is as thick as the thinner part)
+                d_ = 1.0 if prev["t"] <= part["t"] else -1.0
+                ju = (d_ * nx, d_ * ny)
+                jn = (ju[1], -ju[0]) if orient > 0 else (-ju[1], ju[0])
+                out.append({"a": list(part["a"]), "b": list(part["a"]), "u": ju, "n": jn, "t": max(2.0, min(prev["t"], part["t"])),
+                            "L": 0.5 * abs(part["t"] - prev["t"]), "joint": True, "whole": s_})
+            out.append(part)
+    return out
+
+
+PAIR_STRIPS = os.environ.get("AE_PAIR_STRIPS", "1") != "0"   # two faces of one wall: the wall between them read at several places, not one
+
+
+def _wall_between(s_, q, wallb, T, ops=()):
+    """Is there wall between the two faces?  Read across at the middle of the two sides' common stretch - or, when an
+    opening's closing box stands there (a window in the wall reads as wall; h1's bedroom | ledge wall has the ledge's
+    window at the middle of the stretch, and the wall itself is beside it), at the nearest place along the stretch
+    outside every opening.  PAIR_STRIPS off: always the middle (the old test)."""
+    lo_, hi_ = max(s_["lo"], q["lo"]), min(s_["hi"], q["hi"])
+    c0, c1 = sorted((int(round(s_["face"])), int(round(q["face"]))))
+    ax = s_["axis"]; o = "v" if ax == 0 else "h"
+    def in_opening(u):
+        return any(g["kind"] != "wall" and not g.get("frame") and g["o"] == o and g["a"] - 1 <= u <= g["b"] + 1
+                   and min(g["hi"], c1) - max(g["lo"], c0) > 0 for g in ops)
+    u = 0.5 * (lo_ + hi_)
+    if PAIR_STRIPS and c1 - c0 <= 1.6 * T and in_opening(u):   # (only for faces a wall's width apart: the twin class)
+        free = [lo_ + f_ * (hi_ - lo_) for f_ in (0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9) if not in_opening(lo_ + f_ * (hi_ - lo_))]
+        if free:
+            u = free[0]
+    strip = wallb[int(u), c0:c1 + 1] if ax == 0 else wallb[c0:c1 + 1, int(u)]
+    return bool(strip.size) and strip.mean() >= 0.7
+
+
+def _faces_each_other(s_, q, wallb, mm, T, ops=()):
+    """the test two sides must pass to be the two faces of one wall (as in centre_lines' pairing)"""
+    if q["axis"] != s_["axis"] or q["sgn"] == s_["sgn"]:
+        return False
+    d = (q["face"] - s_["face"]) * s_["sgn"]
+    ov = min(s_["hi"], q["hi"]) - max(s_["lo"], q["lo"])
+    if not (1.0 < d <= 650.0 / mm) or ov < 0.3 * min(s_["hi"] - s_["lo"], q["hi"] - q["lo"]) or ov < 3:
+        return False
+    return _wall_between(s_, q, wallb, T, ops)
+
+
+def unsplit_without_partner(rooms, wallb, T, mm, ops=()):
+    """A thicker part of a split side stays only if another room looks at it from the other side of the wall (the
+    ledge's own side along its 300 mm wall, where the bedroom's side runs on from a 100 mm partition): a stretch of
+    wall that is thicker to this room alone is a post or a strip against the wall, and the side stays one side with
+    the one thickness its rays measured.  Returns the number of splits kept."""
+    every = [(ri, s_) for ri, r in enumerate(rooms) for s_ in r["sides"] if "axis" in s_ and not s_.get("joint")]
+    kept = 0
+    for ri, r in enumerate(rooms):
+        groups = {}
+        for s_ in r["sides"]:
+            if s_.get("whole") is not None:
+                groups.setdefault(id(s_["whole"]), []).append(s_)
+        undo = set()
+        for gid, members in groups.items():
+            parts = [s_ for s_ in members if s_.get("split")]
+            thin = min(p_["t"] for p_ in parts)
+            partners = [{qi for qi, q in every if qi != ri and _faces_each_other(p_, q, wallb, mm, T, ops)} for p_ in parts]
+            thin_rooms = set().union(*[pr for p_, pr in zip(parts, partners) if p_["t"] <= SPLIT_T_RATIO * thin])
+            for p_, pr in zip(parts, partners):
+                # a thicker part stays only where a room of its own looks at it - a different room from the one(s)
+                # behind the thin part: the wall behind the side changed, not only its thickness
+                if p_["t"] > SPLIT_T_RATIO * thin and (not pr or (SPLIT_T_OTHER and pr & thin_rooms)):
+                    undo.add(gid); break
+            if gid not in undo:
+                kept += 1
+        if undo:
+            sides = []; done = set()
+            for s_ in r["sides"]:
+                w = s_.get("whole")
+                if w is not None and id(w) in undo:
+                    if id(w) not in done:
+                        sides.append(w); done.add(id(w))
+                    continue
+                sides.append(s_)
+            r["sides"] = sides
+    return kept
+
+
 def centre_lines(m, closed, rooms):
     """every side of a room outline moved out by half the thickness of the wall behind it; shared walls then coincide"""
     T = float(m["wall_thickness_px"]); H, W = closed.shape
@@ -1729,6 +2001,8 @@ def centre_lines(m, closed, rooms):
             sides.append({"a": a, "b": b, "u": (ux, uy), "n": (nx, ny), "t": min(t, 4.0 * T), "L": L})
             if r.get("on_curve") and r["on_curve"][i]:
                 sides[-1]["curve"] = True
+        if SPLIT_T:
+            sides = split_sides_at_thickness_changes(sides, wallb, T, area2, m.get("_ops", []))
         r["sides"] = sides
     mm = pseudo_scale(m)
     for r in rooms:
@@ -1737,9 +2011,17 @@ def centre_lines(m, closed, rooms):
                 if abs(s_["u"][axis]) < 1e-6:                # axis 0: x constant (a vertical side); axis 1: y constant
                     s_["axis"] = axis; s_["face"] = s_["a"][axis]; s_["sgn"] = 1.0 if s_["n"][axis] > 0 else -1.0
                     s_["lo"], s_["hi"] = sorted((s_["a"][1 - axis], s_["b"][1 - axis]))
+                    if s_.get("joint"):
+                        s_["coord"] = s_["face"]             # (a joint between two parts of one side stands AT the cut)
+                    w = s_.get("whole")
+                    if w is not None and "axis" not in w:
+                        w["axis"] = axis; w["face"] = w["a"][axis]; w["sgn"] = s_["sgn"]; w["lo"], w["hi"] = sorted((w["a"][1 - axis], w["b"][1 - axis]))
+    ops = m.get("_ops", [])
+    if SPLIT_T:
+        m["_splits"] = m.get("_splits", 0) + unsplit_without_partner(rooms, wallb, T, mm, ops)
     # Two rooms looking at the SAME wall from its two sides: the centre-line is half way between their two faces, whatever
     # each of them measured by itself.
-    flat = [s_ for r in rooms for s_ in r["sides"] if "axis" in s_]
+    flat = [s_ for r in rooms for s_ in r["sides"] if "axis" in s_ and not s_.get("joint")]
     parent = list(range(len(flat)))
     def find(i):
         while parent[i] != i:
@@ -1753,12 +2035,39 @@ def centre_lines(m, closed, rooms):
                 continue
             d = (q["face"] - s_["face"]) * s_["sgn"]
             ov = min(s_["hi"], q["hi"]) - max(s_["lo"], q["lo"])
+            # (a part of a split side faces q as its whole side does: the whole is what the wall is measured on)
+            whole_ok = ov >= 3 and (s_.get("whole") is not None or q.get("whole") is not None) and \
+                _faces_each_other(s_.get("whole") or s_, q.get("whole") or q, wallb, mm, T, ops)
+            if whole_ok:
+                pairs.append((i, j, ov, 0.5 * (s_["face"] + q["face"])))
+                parent[find(i)] = find(j)
+                continue
             if not (1.0 < d <= 650.0 / mm) or ov < 0.3 * min(s_["hi"] - s_["lo"], q["hi"] - q["lo"]) or ov < 3:
+                if os.environ.get("AE_LOG_PAIR") and 1.0 < d <= 650.0 / mm and ov > 0:
+                    bx = [float(v) for v in os.environ["AE_LOG_PAIR"].split(",")]
+                    mid_ = 0.5 * (max(s_["lo"], q["lo"]) + min(s_["hi"], q["hi"])); pt = (s_["face"], mid_) if s_["axis"] == 0 else (mid_, s_["face"])
+                    if bx[0] <= pt[0] <= bx[2] and bx[1] <= pt[1] <= bx[3]:
+                        print("PAIR axis %d faces %.1f/%.1f d %.1f ov %.0f (%.0f/%.0f) -> too little overlap" % (s_["axis"], s_["face"], q["face"], d, ov, s_["hi"] - s_["lo"], q["hi"] - q["lo"]))
                 continue
             mid = 0.5 * (max(s_["lo"], q["lo"]) + min(s_["hi"], q["hi"]))
             c0, c1 = sorted((int(round(s_["face"])), int(round(q["face"]))))
             strip = wallb[int(mid), c0:c1 + 1] if s_["axis"] == 0 else wallb[c0:c1 + 1, int(mid)]
-            if strip.size and strip.mean() >= 0.7:
+            ok = _wall_between(s_, q, wallb, T, ops)
+            if not ok and TWIN_WELD and d <= 1.6 * T:
+                # A side standing on a stroke a wall's width from a real wall (the headboard of a bed drawn against the
+                # wall, the front of a counter) with paper between: the room ends at the wall, and its side goes on
+                # the wall's own centre-line, as thick as the wall.
+                thin, thick = (s_, q) if s_["t"] <= q["t"] else (q, s_)
+                if thin["t"] <= TWIN_THIN * T and thick["t"] >= 0.5 * T and thick["t"] <= d:
+                    thin["twin_of"] = thick
+                    pairs.append((i, j, ov, thick["face"] + thick["sgn"] * thick["t"] / 2.0))
+                    parent[find(i)] = find(j); ok = None
+            if os.environ.get("AE_LOG_PAIR"):
+                bx = [float(v) for v in os.environ["AE_LOG_PAIR"].split(",")]
+                pt = (s_["face"], mid) if s_["axis"] == 0 else (mid, s_["face"])
+                if bx[0] <= pt[0] <= bx[2] and bx[1] <= pt[1] <= bx[3]:
+                    print("PAIR axis %d faces %.1f/%.1f d %.1f ov %.0f (%.0f/%.0f) strip %.2f -> %s" % (s_["axis"], s_["face"], q["face"], d, ov, s_["hi"] - s_["lo"], q["hi"] - q["lo"], strip.mean() if strip.size else -1, ok))
+            if ok:
                 pairs.append((i, j, ov, 0.5 * (s_["face"] + q["face"])))
                 parent[find(i)] = find(j)
     # every side gets a first centre-line: half way to the room on the other side where there is one, else half its own
@@ -1790,17 +2099,43 @@ def centre_lines(m, closed, rooms):
         if os.environ.get("AE_LOG_SIDES") and abs(s_["face"] - float(os.environ["AE_LOG_SIDES"])) < 6:
             print("side axis %d face %.1f lo %.0f hi %.0f measured t %.1f coord %.1f -> t %.1f" % (s_["axis"], s_["face"], s_["lo"], s_["hi"], s_["t"], s_["coord"], 2.0 * abs(s_["coord"] - s_["face"])))
         s_["t"] = max(2.0, min(4.0 * T, 2.0 * abs(s_["coord"] - s_["face"])))
+    for s_ in flat:                                          # (a side welded onto a wall it stood a stroke away from: as thick as that wall)
+        if s_.get("twin_of") is not None:
+            s_["t"] = s_["twin_of"]["t"]; m["_twin_welds"] = m.get("_twin_welds", 0) + 1
     if DIAG_WELD:
         m["_welds"] = m.get("_welds", 0) + weld_slanted_sides(rooms, wallb, T, mm)
+    for r in rooms:                                          # the joints of split sides, now that the parts' lines are settled
+        sides = r["sides"]; n = len(sides); keep = []
+        for i, s_ in enumerate(sides):
+            if not s_.get("joint"):
+                keep.append(s_); continue
+            prev, nxt = sides[i - 1], sides[(i + 1) % n]
+            if "coord" not in prev or "coord" not in nxt or prev.get("axis") != nxt.get("axis"):
+                keep.append(s_); continue
+            d_ = nxt["coord"] - prev["coord"]
+            if abs(d_) < 0.5:
+                continue                                     # (the two parts ended up on one line: no joint)
+            ax = prev["axis"]; s_["u"] = (math.copysign(1.0, d_), 0.0) if ax == 0 else (0.0, math.copysign(1.0, d_))
+            s_["L"] = abs(d_); s_["t"] = max(2.0, min(prev["t"], nxt["t"]))
+            keep.append(s_)
+        r["sides"] = keep
     kept = []
     for r in rooms:
-        if _legal_outline(r, T):
+        if os.environ.get("AE_LOG_FACES"):
+            bx = [float(v) for v in os.environ["AE_LOG_FACES"].split(",")]
+            if any(bx[0] <= p[0] <= bx[2] and bx[1] <= p[1] <= bx[3] for p in r["face"]):
+                print("FACE", [(round(p[0]), round(p[1])) for p in r["face"]])
+                print("SIDES", [(s_.get("axis"), round(s_.get("coord", -1), 1), round(s_["t"], 1), round(s_["L"])) for s_ in r["sides"]])
+        ok = _legal_outline(r, T, m)
+        if os.environ.get("AE_LOG_FACES") and any(bx[0] <= p[0] <= bx[2] and bx[1] <= p[1] <= bx[3] for p in r["face"]):
+            print("PTS", ok, [(round(p[0]), round(p[1])) for p in r.get("pts", [])], "stubs", len(r.get("stubs", [])))
+        if ok:
             kept.append(r)
         elif os.environ.get("AE_LOG_ROOMS"):
             xs_ = [p[0] for p in r["face"]]; ys_ = [p[1] for p in r["face"]]
             print("room withheld (no legal outline): face bbox %d,%d %dx%d, %d sides" % (min(xs_), min(ys_), max(xs_) - min(xs_), max(ys_) - min(ys_), len(r["face"])))
     rooms[:] = kept
-    _settle_crossings(rooms, T, 650.0 / mm)
+    _settle_crossings(rooms, T, 650.0 / mm, m)
     # What is still not legal for the app does not leave this program: the smaller (or the stroke-closed outdoor) room of
     # a crossing pair, and any room whose own outline uses a wall twice, is withheld and counted.
     dropped = 0
@@ -1821,6 +2156,11 @@ def centre_lines(m, closed, rooms):
                            _pt_seg(q["pts"][j], r["pts"][i], r["pts"][(i + 1) % n]), _pt_seg(q["pts"][(j + 1) % m_], r["pts"][i], r["pts"][(i + 1) % n])) > 0.75 * max(1.0, float(m.get("work_scale", 1) or 1))
                        for i in range(n) for j in range(m_)):
                     worst = r if (r.get("outdoor") and not q.get("outdoor")) or (bool(r.get("outdoor")) == bool(q.get("outdoor")) and r["area_px"] <= q["area_px"]) else q
+                    if os.environ.get("AE_LOG_ROOMS"):
+                        for i in range(n):
+                            for j in range(m_):
+                                if _proper_cross(r["pts"][i], r["pts"][(i + 1) % n], q["pts"][j], q["pts"][(j + 1) % m_]):
+                                    print("   cross: %s-%s x %s-%s" % ([round(v) for v in r["pts"][i]], [round(v) for v in r["pts"][(i + 1) % n]], [round(v) for v in q["pts"][j]], [round(v) for v in q["pts"][(j + 1) % m_]]))
                     break
             if worst is not None:
                 break
@@ -1842,7 +2182,28 @@ def _pt_seg(p, s_, e):
     return math.hypot(p[0] - s_[0] - t * (e[0] - s_[0]), p[1] - s_[1] - t * (e[1] - s_[1]))
 
 
-def _settle_crossings(rooms, T, reach):
+def _move_cut(q, j, u, T, m=None):
+    """Move the cut at the near end of split part j of room q to u (along the part), if that end is within the part's own
+    thickness of u; the joint and the part beyond it follow.  Returns whether anything moved."""
+    sides = q["sides"]; n = len(sides); sj = sides[j]; al = 1 - sj["axis"]
+    for end, k_ in ((0, (j - 1) % n), (1, (j + 1) % n)):
+        pt = sj["a"] if end == 0 else sj["b"]
+        if abs(pt[al] - u) > sj["t"] + 2.0 or abs(pt[al] - u) < 0.5:
+            continue
+        jn = sides[k_]; other = sides[(k_ - 1) % n] if end == 0 else sides[(k_ + 1) % n]
+        if not jn.get("joint") or not other.get("split") or other.get("axis") != sj["axis"]:
+            continue
+        pt[al] = u
+        opt = other["b"] if end == 0 else other["a"]
+        opt[al] = u
+        jn["a"][al] = jn["b"][al] = u; jn["face"] = jn["coord"] = u
+        for s_ in (sj, other):
+            s_["lo"], s_["hi"] = sorted((s_["a"][al], s_["b"][al])); s_["L"] = s_["hi"] - s_["lo"]
+        return _legal_outline(q, T, m)
+    return False
+
+
+def _settle_crossings(rooms, T, reach, m=None):
     """Walls of two rooms may meet only at corners.  Where a side of one room runs a little way THROUGH a wall line of
     another (its own end wall was measured on a different line than the neighbour's), its end wall is moved onto the
     neighbour's line: both rooms are looking at the same wall."""
@@ -1869,9 +2230,15 @@ def _settle_crossings(rooms, T, reach):
                             continue
                         nb = r["sides"][(i - 1) % n] if end == 0 else r["sides"][(i + 1) % n]
                         small = r.get("outdoor") or r["area_px"] <= q["area_px"]
+                        # The crossed side is the thick part of a side split where the wall behind it changes thickness,
+                        # and the change is where THIS room's wall meets it (the thick mass begins with that wall's flank):
+                        # the split moves onto this wall's centre-line, so that the thin part meets it at the corner.
+                        if sj.get("split") and _move_cut(q, j, r["sides"][i]["coord"], T, m):
+                            moved = True
+                            break
                         if nb.get("axis") == ax and small:
                             nb["coord"] = sj["coord"]; nb["t"] = sj["t"]
-                            if _legal_outline(r, T):
+                            if _legal_outline(r, T, m):
                                 moved = True
                             break
                     if moved:
@@ -1885,7 +2252,6 @@ def _settle_crossings(rooms, T, reach):
 
 
 DIAG_WELD = os.environ.get("AE_DIAG_WELD", "1") != "0"    # two rooms looking at one slanted wall share its centre-line
-
 
 def weld_slanted_sides(rooms, wallb, T, mm):
     """Two rooms looking at the SAME slanted wall from its two sides (exec's kitchen and service balcony): each would put
@@ -1984,7 +2350,20 @@ def _proper_cross(a, b, c, d):
     return (o1 > 1e-6) != (o2 > 1e-6) and (o3 > 1e-6) != (o4 > 1e-6) and min(abs(o1), abs(o2), abs(o3), abs(o4)) > 1e-6
 
 
-def _legal_outline(r, T):
+def _at_jamb(m, b, T):
+    """the scrap side b stands at the jamb of an opening: one end of a door / window / passage found on a level or plumb
+    line lies within a wall's thickness of the scrap"""
+    for g in m.get("_ops", []):
+        if g["kind"] == "wall" or g.get("frame"):
+            continue
+        for u in (g["a"], g["b"]):
+            q = (u, g["c"]) if g["o"] == "h" else (g["c"], u)
+            if min(math.hypot(q[0] - b["a"][0], q[1] - b["a"][1]), math.hypot(q[0] - b["b"][0], q[1] - b["b"][1])) <= CHAMFER_JAMB * T:
+                return True
+    return False
+
+
+def _legal_outline(r, T, m=None):
     """The app's rules for a room loop: no wall used twice, no side crossing another.  A wall stub standing in the room comes
     out of the centre-line outline as a walk out and back along one line: the stub is taken out of the loop (and kept as
     r['stubs']).  Sides turned inside out by the offset (a post narrower than its wall is thick) are taken out likewise."""
@@ -2026,6 +2405,27 @@ def _legal_outline(r, T):
                     drop = {i, short} if abs(La - Lb) > 1.5 else {(i - 1) % n, i, (i + 1) % n}
                 else:
                     drop = {i}
+                break
+        if drop is None and CHAMFER:
+            # a chamfer: a scrap of a side across the corner between two level / plumb sides that meet at a right angle
+            # (the free floor's contour cuts a corner where a door's closing box meets the wall it is hung in).  Its own
+            # centre-line meets its neighbours' far out (a spike a wall thick at exec's kitchen door post) or a hair past
+            # them (the neighbours then cross and one of them is thrown out): the two walls meet at their corner instead.
+            for i in range(n):
+                a, b, c_ = sides[i - 1], sides[i], sides[(i + 1) % n]
+                if n <= 4 or b.get("curve") or b["L"] > CHAMFER_T * T or "axis" not in a or "axis" not in c_ or a["axis"] == c_["axis"]:
+                    continue
+                # only where it does harm: its centre-line corners thrown more than a wall's thickness from its own face
+                # ends, or its two neighbours' centre-lines already crossing each other
+                far = max(math.hypot(poly[i][0] - b["a"][0], poly[i][1] - b["a"][1]), math.hypot(poly[(i + 1) % n][0] - b["b"][0], poly[(i + 1) % n][1] - b["b"][1])) > CHAMFER_FAR * T
+                if not (far or _proper_cross(poly[i - 1], poly[i], poly[(i + 1) % n], poly[(i + 2) % n])):
+                    continue
+                if m is None or not _at_jamb(m, b, T):
+                    continue
+                if os.environ.get("AE_LOG_CHAMFER"):
+                    print("CHAMFER drop side %d L %.1f far %s corners %s face %s" % (i, b["L"], far, [(round(poly[i][0]), round(poly[i][1])), (round(poly[(i + 1) % n][0]), round(poly[(i + 1) % n][1]))], [(round(b["a"][0]), round(b["a"][1])), (round(b["b"][0]), round(b["b"][1]))]))
+                m["_chamfers"] = m.get("_chamfers", 0) + 1
+                drop = {i}
                 break
         if drop is None:
             # a scrap of a side at the end of a slanted wall two rooms share (the corner of the face, cut off at an acute
@@ -2885,6 +3285,8 @@ def build(m, gray=None):
     labels = room_labels(m, k)
     OUTDOOR = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK")
     def make_rooms(ops):
+        if WALL_BAND:
+            m["_wall_band"] = m.get("_wall_band", 0) + wall_gaps_take_their_strokes_band(m, ops, T)
         closed_ = close_openings(m, k, ops, thin=bool(os.environ.get("AE_THIN_CLOSE")))
         if os.environ.get("AE_DUMP_CLOSED"):
             cv2.imwrite(os.environ["AE_DUMP_CLOSED"], closed_)
@@ -2921,6 +3323,7 @@ def build(m, gray=None):
         thin = close_openings(m, k, ops, thin=True)
         if wanted:
             thin = cv2.bitwise_or(thin, cv2.bitwise_and(closed2, cv2.bitwise_not(closed_)))   # the strokes that closed the outdoor rooms
+        m["_ops"] = ops
         rooms_ = attach_openings(m, centre_lines(m, thin, inner), ops)
         m["_withheld_rooms_last"] = m.pop("_withheld_rooms", 0)
         tol = 2.0 * max(1.0, float(m.get("work_scale", 1) or 1))
@@ -3237,10 +3640,10 @@ def build(m, gray=None):
     if os.environ.get("AE_LOG_OPEN"):
         _k = k_len
         for g in openings:
-            if g["kind"] == "wall":
+            if g["kind"] == "wall" and os.environ.get("AE_LOG_OPEN") != "2":
                 continue
             p0, p1 = gap_pts(g)
-            rec = {"kind": g["kind"], "op": g["operation"], "handing": g.get("handing"), "o": g["o"] if not g.get("frame") else "%s@%.1f" % (g["o"], g["frame"]["theta"]), "src": [S(*p0), S(*p1)],
+            rec = {"kind": g["kind"], "band": [round(g.get("lo", 0)), round(g.get("hi", 0)), round(g.get("lo_thin", 0)), round(g.get("hi_thin", 0))], "op": g["operation"], "handing": g.get("handing"), "o": g["o"] if not g.get("frame") else "%s@%.1f" % (g["o"], g["frame"]["theta"]), "src": [S(*p0), S(*p1)],
                    "L_mm": round((g["b"] - g["a"]) * scale_work) if scale_work else None,
                    "radii_mm": [round(m["arcs"][i]["r"] * scale_work) for i in g.get("arcs", [])] if scale_work else None,
                    "between": [(rooms[b_]["labels"][0]["label"] if rooms[b_]["labels"] else "?") if b_ is not None else "OUT" for b_ in g.get("between", [None, None])],
@@ -3311,7 +3714,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
