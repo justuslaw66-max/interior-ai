@@ -64,8 +64,16 @@ async function clickPanelAt(page: Page, x: number, y: number) {
 async function scanLivingEastPanels(page: Page) {
   const hits = new Map<string, Array<{ x: number; y: number }>>();
   const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
+  // The room focus pill sits over the 3D view under the canvas's view controls (UX 4c), across
+  // the scan's first row: a click there would press "Focus room" and move the camera mid-scan.
+  const focusPill = await page.getByTestId("active-room-focus-toolbar").boundingBox();
+  const onFocusPill = (x: number, y: number) =>
+    Boolean(focusPill) &&
+    x >= focusPill!.x - 4 && x <= focusPill!.x + focusPill!.width + 4 &&
+    y >= focusPill!.y - 4 && y <= focusPill!.y + focusPill!.height + 4;
   for (const y of [160, 200, 240, 280, 320, 360]) {
     for (let x = 300; x <= 900; x += 30) {
+      if (onFocusPill(x, y)) continue;
       await page.mouse.click(x, y);
       await page.waitForTimeout(40);
       if ((await selectedInspector.count()) === 0) continue;

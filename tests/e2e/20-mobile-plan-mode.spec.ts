@@ -5,6 +5,7 @@ import {
   fillCatalogSearch,
   selectEditorWorkspace,
   waitForCatalogReady,
+  waitForEditorHydration,
 } from "./variant-test-utils";
 
 const VIEWPORTS = [
@@ -71,6 +72,8 @@ test("the phone's step sheet expands, peeks and comes back", async ({ page }) =>
   await clearEditorStorage(page);
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  // The server's sheet shows before the page hydrates; a press before that goes nowhere.
+  await waitForEditorHydration(page);
   const sheet = page.getByTestId("design-controls-panel");
   const handle = page.getByTestId("design-controls-panel-handle");
   const body = page.locator("#design-controls-sheet-body");
@@ -111,8 +114,9 @@ test("the phone's step sheet expands, peeks and comes back", async ({ page }) =>
 });
 
 // UX 4d (audit AX2): a door or window picked on a phone's plan shows its inspector in the sheet,
-// opening a peeking sheet, with Done to put the step's panel back.
-test("a phone shows the picked window's inspector in the step sheet", async ({ page }) => {
+// opening a peeking sheet, with Done to put the step's panel back. The door: at a phone's zoom the
+// living room's window label sits under the room's Depth chip, both at the west wall's middle.
+test("a phone shows the picked door's inspector in the step sheet", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await clearEditorStorage(page);
   await openTemplatePlan(page);
@@ -124,7 +128,7 @@ test("a phone shows the picked window's inspector in the step sheet", async ({ p
   await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
   await expect(slot).toBeHidden();
 
-  await page.locator('[data-testid="plan-opening-kind-label"][data-opening-kind="window"]').first().click();
+  await page.locator('[data-testid="plan-opening-kind-label"][data-opening-kind="door"]').first().click();
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
   await expect(slot.getByTestId("selection-inspector")).toBeVisible();
   await expect(slot.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
@@ -149,6 +153,7 @@ test("a phone's sheet and Menu are made of 44px targets", async ({ page }) => {
   await clearEditorStorage(page);
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
+  await waitForEditorHydration(page);
   const sheet = page.getByTestId("design-controls-panel");
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
   expect(await smallTouchTargets(sheet), "Plan").toEqual([]);
@@ -224,12 +229,15 @@ test.describe("20. Mobile Plan Mode", () => {
 
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("data-enabled", "false");
       await expect(page.getByTestId("plan-manual-quick-actions")).toBeVisible();
-      // Tips sits under the quick actions (UX 4d), and on a phone every one is a 44px target.
+      // Tips sits in the quick actions' row, after them (under them when the row is full), never
+      // over them (UX 4d); on a phone every one is a 44px target.
       const [quickBox, tipsBox] = await Promise.all([
         page.getByTestId("plan-manual-quick-actions").boundingBox(),
         page.getByTestId("plan-guided-actions-toggle").boundingBox(),
       ]);
-      expect(tipsBox!.y).toBeGreaterThanOrEqual(quickBox!.y + quickBox!.height);
+      const besideQuickActions = tipsBox!.x >= quickBox!.x + quickBox!.width;
+      const underQuickActions = tipsBox!.y >= quickBox!.y + quickBox!.height;
+      expect(besideQuickActions || underQuickActions, "Tips doesn't cover the quick actions.").toBe(true);
       const minTarget = viewport.name === "phone" ? 44 : 36;
 
       for (const testId of [
