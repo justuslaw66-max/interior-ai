@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.15.0"
+VERSION = "app-evidence-0.16.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -288,6 +288,11 @@ FOLD_MIN_MM = float(os.environ.get("AE_FOLD_MIN", 150))             # no folding
 PANELS_IN_WALL = os.environ.get("AE_PANELS_IN_WALL", "1") != "0"    # "staggered strokes" must be panels in the wall, else a window
 SLIDE_OUT_MIN_MM = float(os.environ.get("AE_SLIDE_OUT_MIN", 2400))  # a sliding "door" to the outside narrower than this is a window (0 = off)
 MEET_AT_OPENING = os.environ.get("AE_MEET", "1") != "0"             # two rooms whose sides miss each other by a wall's width meet at their opening
+DIM_SCRAPS = os.environ.get("AE_DIM_SCRAPS", "1") != "0"           # a stroke in line with a dimension line, and a partition cut from one, are that line's own scraps
+PASSAGE_WIDE = os.environ.get("AE_PASSAGE_WIDE", "1") != "0"       # two wall ends facing each other up to 2 m apart are a doorway (else 1.5 m)
+PASSAGE_MAX_MM = float(os.environ.get("AE_PASSAGE_MAX", 2000 if PASSAGE_WIDE else 1500))
+PANEL_PAIR = os.environ.get("AE_PANEL_PAIR", "1") != "0"           # two staggered strokes a panel's width apart along a long gap: a sliding partition, kept only between two named rooms
+PANEL_PAIR_COVER = float(os.environ.get("AE_PANEL_PAIR_COVER", 0.7))   # ... together running along at least this share of the gap
 
 
 def leaked_channels(m, ink, free, n, lab, maxdt):
@@ -1246,7 +1251,7 @@ def classify_gaps(m, k, gaps):
                     ends = [a_["start"], a_["start"] + a_["span"]]
                     if any(abs(((e - want + 180) % 360) - 180) <= 12 for e in ends) or abs(a_["span"] - 90) > 1:
                         cand.append((abs(a_["r"] - L) + abs(hx - end), gi, i, sgn))
-    door_of = {}
+    door_of = {}; pairs = []
     for err, gi, i, sgn in sorted(cand):
         g = gaps[gi]; L = g["b"] - g["a"]; r = arcs[i]["r"]
         if i in used_arcs:
@@ -1371,6 +1376,24 @@ def classify_gaps(m, k, gaps):
                 tipped and g.get("on_wall_line"):
             out.append(dict(g, kind="door", operation="sliding", hinge="none", swing_side=0, confidence=0.55, why="staggered strokes between two wall ends",
                             panels=_panels_in_wall(part, g, c, L, mm))); continue
+        # A sliding partition between a bedroom and the living room (the 2-room flat's bedroom wall, d13): a gap of two
+        # metres or more between a post and a wall, with two thin strokes a panel's width apart and staggered along it,
+        # covering most of it - the panels, slid open at one end.  Whether it is a door is decided once the rooms are
+        # made: only between two different named indoor rooms (else the gap stays open, as before).
+        if PANEL_PAIR and L * mm >= 1800 and tipped:
+            near = [l for l in part if abs(l["c"] - c) <= 1.0 * T]
+            pair = None
+            for i_, l1 in enumerate(near):
+                for l2 in near[i_ + 1:]:
+                    if 15 <= abs(l1["c"] - l2["c"]) * mm <= 100 and (abs(l1["a"] - l2["a"]) >= 0.08 * L or abs(l1["b"] - l2["b"]) >= 0.08 * L):
+                        cv_ = np.zeros(max(1, int(L)), bool)
+                        for l in (l1, l2):
+                            cv_[max(0, int(l["a"] - a)):max(0, int(l["b"] - a))] = True
+                        if cv_.mean() >= PANEL_PAIR_COVER and (pair is None or cv_.mean() > pair[0]):
+                            pair = (float(cv_.mean()), l1, l2)
+            if pair is not None:                             # (a candidate only: added at the end where nothing else was read in the gap)
+                pairs.append(dict(g, kind="door", operation="sliding", hinge="none", swing_side=0, confidence=0.5, panels=True, from_strokes=True,
+                                  why="two staggered strokes a panel's width apart along a long gap: a sliding partition"))
         ends_ok = _end_face(k, o, c, a - 2, T) and _end_face(k, o, c, b_ + 1, T)
         if L * mm <= 500:
             if _end_face(k, o, c, a - 2, T) or _end_face(k, o, c, b_ + 1, T):
@@ -1385,8 +1408,11 @@ def classify_gaps(m, k, gaps):
                 out.append(dict(g, kind="door", operation="swing", hinge=dd[1], swing_side=dd[2], leaf_px=float(L), confidence=0.7, why="pale or dashed swing arc")); continue
         if len(inside) == 1 and L * mm <= 3600 and one_end and abs(inside[0]["c"] - c) <= band:
             out.append(dict(g, kind="open_passage", operation="open", hinge="none", swing_side=0, confidence=0.55, why="one stroke from jamb to jamb")); continue
-        if ends_ok and 550 <= L * mm <= 1500:
-            out.append(dict(g, kind="open_passage", operation="open", hinge="none", swing_side=0, confidence=0.4, why="two wall ends facing each other a door's width apart")); continue
+        if ends_ok and 550 <= L * mm <= PASSAGE_MAX_MM:
+            # (wider than 1.5 m - the doorless opening between exec's study and its living room - only once the rooms are
+            #  made, and only between two different named indoor rooms)
+            out.append(dict(g, kind="open_passage", operation="open", hinge="none", swing_side=0, confidence=0.4, wide=bool(L * mm > 1500),
+                            why="two wall ends facing each other a door's width apart")); continue
     rank = {"door": 0, "window": 1, "open_passage": 2, "wall": 3}
     out.sort(key=lambda g: (rank[g["kind"]], -g["confidence"]))
     kept = []
@@ -1394,6 +1420,14 @@ def classify_gaps(m, k, gaps):
         clash = any(h["o"] == g["o"] and abs(h["c"] - g["c"]) <= (3.0 if h["kind"] == g["kind"] == "door" else 1.5) * T and min(h["b"], g["b"]) - max(h["a"], g["a"]) > 0.3 * min(h["b"] - h["a"], g["b"] - g["a"]) for h in kept)
         if not clash:
             kept.append(g)
+    for g in pairs:                                         # the sliding-partition candidates, where the gap got nothing else
+        same = lambda h: h["o"] == g["o"] and abs(h["c"] - g["c"]) <= 1.5 * T
+        ov = lambda h: min(h["b"], g["b"]) - max(h["a"], g["a"])
+        if any(same(h) and (h["kind"] == "door" or ov(h) > 0.3 * (g["b"] - g["a"])) for h in kept):
+            continue
+        # a window or wall piece read on a part of the gap (the strokes beside the shorter panel) is part of the partition
+        g["displaced"] = [h for h in kept if same(h) and ov(h) >= 0.5 * (h["b"] - h["a"])]      # (put back if the door is not kept)
+        kept = [h for h in kept if not (same(h) and ov(h) >= 0.5 * (h["b"] - h["a"]))] + [g]
     # a folding door drawn across a wall that was traced straight through it
     for s_ in m.get("free_symbols", []):
         if s_.get("type") != "bifold" or s_.get("_hosted"):
@@ -3239,8 +3273,58 @@ def wall_mass(m, gray=None):
     return k, outline_style
 
 
+def dimension_scraps(m):
+    """A dimension line drawn INSIDE a room (h1's store: the shelter's 3000 beside a line from wall to wall) comes out of
+    stage 1 in pieces, and the piece beside its own number carries no role, while the tick at its end became a 76 mm
+    "partition".  A stroke in line with a dimension line (same axis, same place within a pixel, ends within two walls'
+    thickness of it) is that line's own scrap, and so is a partition standing on it."""
+    T = float(m["wall_thickness_px"])
+    dims = [l for l in m["lines"] if l.get("role") == "dimension"]
+    k = wall_mask(m); H, W = k.shape
+    def beside_wall(l):                                       # wall mass alongside the stroke (a window's strokes on the outer wall, under the dimension chain)
+        hit = tot = 0
+        for u in np.linspace(l["a"], l["b"], 7):
+            for d_ in (-1.5 * T, -0.8 * T, 0.8 * T, 1.5 * T):
+                x, y = (u, l["c"] + d_) if l["o"] == "h" else (l["c"] + d_, u)
+                x, y = int(round(x)), int(round(y))
+                if 0 <= x < W and 0 <= y < H:
+                    tot += 1; hit += 1 if k[y, x] else 0
+        return tot > 0 and hit >= 0.4 * tot
+    def wall_to_wall(l):                                      # the stroke runs from wall face to wall face (the line drawn across a room)
+        ok = 0
+        for u, sgn in ((l["a"], -1), (l["b"], 1)):
+            for d_ in np.linspace(0.1 * T, 0.6 * T, 6):
+                x, y = (u + sgn * d_, l["c"]) if l["o"] == "h" else (l["c"], u + sgn * d_)
+                x, y = int(round(x)), int(round(y))
+                if 0 <= x < W and 0 <= y < H and k[y, x]:
+                    ok += 1; break
+        return ok == 2
+    n_lines = n_parts = 0
+    changed = True
+    while changed:                                            # (a scrap next to a scrap)
+        changed = False
+        for l in m["lines"]:
+            if l.get("role") or l.get("dash"):
+                continue
+            for d in dims:
+                if d["o"] == l["o"] and abs(d["c"] - l["c"]) <= 1.0 and max(l["a"], d["a"]) - min(l["b"], d["b"]) <= 2.0 * T and not beside_wall(l) and wall_to_wall(l):
+                    l["role"] = "dimension"; dims.append(l); n_lines += 1; changed = True
+                    break
+    keep = []
+    for p in m.get("partitions", []):
+        on = any(d["o"] == p["o"] and (abs(d["c"] - p["c0"]) <= 1.0 or abs(d["c"] - p["c1"]) <= 1.0) and max(p["a"], d["a"]) - min(p["b"], d["b"]) <= 2.0 * T for d in dims)
+        if on and (p["b"] - p["a"]) <= 2.0 * T:
+            n_parts += 1
+        else:
+            keep.append(p)
+    m["partitions"] = keep
+    m["_dim_scraps"] = n_lines + n_parts
+
+
 def build(m, gray=None):
     T = float(m["wall_thickness_px"]); S = ToSource(m)
+    if DIM_SCRAPS:
+        dimension_scraps(m)
     W, H = m["size"]
     scale_work = m.get("mm_per_px"); mm = pseudo_scale(m)
     estimated = bool((m.get("scale_source") or {}).get("estimated"))
@@ -3356,31 +3440,14 @@ def build(m, gray=None):
         for g2 in openings:
             if g1 is g2 or g1.get("frame") or g2.get("frame") or g1["o"] != g2["o"] or abs(g1["c"] - g2["c"]) > T or g1["kind"] == "wall" or g2["kind"] == "wall":
                 continue
+            if g1.get("wide") or g1.get("from_strokes") or g2.get("wide") or g2.get("from_strokes"):
+                continue                                     # (a tentative opening trims nothing: it may not stay)
             d_ = g2["a"] - g1["b"]
             if 0 < d_ <= max(3.0, 0.15 * T):
                 if g1["b"] - g1["a"] >= g2["b"] - g2["a"]:
                     g1["b"] = g2["a"]
                 else:
                     g2["a"] = g1["b"]
-    closed, rooms = make_rooms(openings)
-    # A doorway without a door between a NAMED room and a space without a name (the passage in front of the bedroom doors,
-    # open to the living room) does not make two rooms: the passage belongs to the room it is open to.
-    dissolve = []
-    for g in openings:
-        sides = [r_ for r_ in rooms if any(me["opening"] is g for me in r_["meta"])]
-        if g["kind"] == "open_passage" and g.get("confidence", 1) <= 0.45:       # (a threshold stroke from jamb to jamb IS a doorway)
-            if len(sides) == 2 and sum(1 for r_ in sides if not r_["labels"]) == 1:
-                dissolve.append(g)
-        elif g.get("operation") == "sliding":
-            # sliding panels in front of a nameless strip no deeper than a wardrobe: a cupboard front, not a door between rooms
-            for r_ in sides:
-                if not r_["labels"] and len(sides) == 2:
-                    depth = 2.0 * float(cv2.distanceTransform(r_["comp"], cv2.DIST_L2, 3).max()) * mm
-                    if depth <= 850:
-                        dissolve.append(g); break
-    if dissolve:
-        openings = [g for g in openings if not any(g is d_ for d_ in dissolve)]
-        closed, rooms = make_rooms(openings)
     def settle(rooms_, ops):
         for r_ in rooms_:
             n_ = len(r_["pts"])
@@ -3413,6 +3480,54 @@ def build(m, gray=None):
                         break
                 sides.append(found)
             g["between"] = sides
+    def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
+        labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
+        return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
+    COUNTERS = ("_splits", "_twin_welds", "_chamfers", "_welds", "_withheld_rooms_last")   # (per build; _wall_band marks the gaps it banded and is not counted twice)
+    snap = {k_: m.get(k_) for k_ in COUNTERS}
+    closed, rooms = make_rooms(openings)
+    # A doorway without a door between a NAMED room and a space without a name (the passage in front of the bedroom doors,
+    # open to the living room) does not make two rooms: the passage belongs to the room it is open to.
+    # A doorway wider than 1.5 m, a sliding partition read from two strokes: only between two named rooms.  Decided first,
+    # and the rooms made again without the ones that fail, so that everything after is judged on the rooms it was before.
+    tentative = [g for g in openings if g.get("wide") or g.get("from_strokes")]
+    if tentative:
+        settle(rooms, openings)                              # (which two rooms each opening joins, read as it is read below)
+        drop = []
+        for g in tentative:
+            bt = g.get("between", [None, None])
+            if not (None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1])):
+                drop.append(g)
+        if drop:
+            kept_ = []
+            for g in openings:                               # (the pieces a dropped partition displaced go back in its place)
+                if any(g is d_ for d_ in drop):
+                    kept_.extend(g.get("displaced", []) if g.get("from_strokes") else [])
+                else:
+                    kept_.append(g)
+            openings = kept_
+            for k_, v_ in snap.items():                      # as if the tentative openings had never been there
+                if v_ is None:
+                    m.pop(k_, None)
+                else:
+                    m[k_] = v_
+            closed, rooms = make_rooms(openings)
+    dissolve = []
+    for g in openings:
+        sides = [r_ for r_ in rooms if any(me["opening"] is g for me in r_["meta"])]
+        if g["kind"] == "open_passage" and g.get("confidence", 1) <= 0.45:       # (a threshold stroke from jamb to jamb IS a doorway)
+            if len(sides) == 2 and sum(1 for r_ in sides if not r_["labels"]) == 1:
+                dissolve.append(g)
+        elif g.get("operation") == "sliding":
+            # sliding panels in front of a nameless strip no deeper than a wardrobe: a cupboard front, not a door between rooms
+            for r_ in sides:
+                if not r_["labels"] and len(sides) == 2:
+                    depth = 2.0 * float(cv2.distanceTransform(r_["comp"], cv2.DIST_L2, 3).max()) * mm
+                    if depth <= 850:
+                        dissolve.append(g); break
+    if dissolve:
+        openings = [g for g in openings if not any(g is d_ for d_ in dissolve)]
+        closed, rooms = make_rooms(openings)
     settle(rooms, openings)
     # An opening leads somewhere.  One with solid wall standing right behind it (a cupboard against the outer wall), or a
     # window or doorless gap with the same room on both sides (a notch around furniture), is not an opening.
@@ -3437,11 +3552,18 @@ def build(m, gray=None):
                 n_hit += 1 if max([b_ - a_ for a_, b_ in _runs(line > 0)] or [0]) >= 0.5 * T else 0
         return n_tot > 0 and n_hit >= 0.6 * n_tot
     bad = []; partitions = 0; narrow_swings = 0; casements = 0; scraps = 0; slide_windows = 0; not_panels = 0; panel_doors = 0
-    def indoor(i_):                                          # a named room that is not a balcony, ledge, yard or the like
-        labs_ = [l["label"].upper() for l in rooms[i_]["labels"]]
-        return bool(labs_) and not any(w_ in l for l in labs_ for w_ in OUTDOOR_WORDS)
+    panel_pairs = wide_passages = 0
     for g in openings:
         bt = g.get("between", [None, None])
+        if g.get("from_strokes") or g.get("wide"):          # a sliding partition read from two strokes, a doorway wider than 1.5 m: only between two named indoor rooms
+            if None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1]):
+                if g.get("from_strokes"):
+                    panel_pairs += 1
+                else:
+                    wide_passages += 1
+            else:
+                bad.append(g)
+            continue
         if g.get("from_partition"):                          # a partition read as the two panels of a sliding door: only onto a balcony
             if None not in bt and bt[0] != bt[1] and (indoor(bt[0]) != indoor(bt[1])) and all(rooms[i_]["labels"] for i_ in bt):
                 panel_doors += 1
@@ -3505,10 +3627,11 @@ def build(m, gray=None):
         elif (bt[0] is None) != (bt[1] is None) and g["kind"] != "window" and g.get("operation") != "swing" and blocked(g, -1 if bt[0] is None else 1):
             bad.append(g)
     if bad or partitions:
-        openings = [g for g in openings if not any(g is d_ for d_ in bad)]
+        back = [h for g in bad if g.get("from_strokes") for h in g.get("displaced", [])]
+        openings = [g for g in openings if not any(g is d_ for d_ in bad)] + back
         closed, rooms = make_rooms(openings)
         settle(rooms, openings)
-    m["_openings_rejected"] = len(bad); m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings; m["_casements"] = casements; m["_fold_scraps"] = scraps; m["_slide_windows"] = slide_windows; m["_not_panels"] = not_panels; m["_panel_doors"] = panel_doors
+    m["_openings_rejected"] = len(bad); m["_panel_pairs"] = panel_pairs; m["_wide_passages"] = wide_passages; m["_partitions"] = partitions; m["_narrow_swings"] = narrow_swings; m["_casements"] = casements; m["_fold_scraps"] = scraps; m["_slide_windows"] = slide_windows; m["_not_panels"] = not_panels; m["_panel_doors"] = panel_doors
     # A face under 1.5 m2 that carries no label is not a room: the inside of a shaft, the strip behind a wardrobe
     # drawn against a wall, a notch between a column and a cupboard.  The smallest named space on any plan seen is a
     # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
@@ -3714,7 +3837,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": len(m.get("_sloped", [])), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
