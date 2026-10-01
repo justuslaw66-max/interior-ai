@@ -309,7 +309,7 @@ test.describe("Flooring surface materials", () => {
     await expect(surfacesPanel).toHaveAttribute("data-surface-target", "ceiling");
     const selectionInspectorSurface = page.getByTestId("selection-inspector-floor-settings");
     await expect(selectionInspectorSurface).toHaveAttribute("data-surface-target", "ceiling");
-    await expect(selectionInspectorSurface).toContainText("Ceiling settings");
+    await expect(selectionInspectorSurface.getByTestId("surface-inspector-heading")).toHaveText("Ceiling");
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeHidden();
     await expect(page.getByTestId("wall-paint-panel")).toBeVisible();
     await expect(page.getByTestId("wall-paint-family-filter")).toBeVisible();
@@ -364,7 +364,7 @@ test.describe("Flooring surface materials", () => {
 
     const selectionInspectorSurface = page.getByTestId("selection-inspector-floor-settings");
     await expect(selectionInspectorSurface).toHaveAttribute("data-surface-target", "ceiling");
-    await expect(selectionInspectorSurface).toContainText("Ceiling settings");
+    await expect(selectionInspectorSurface.getByTestId("surface-inspector-heading")).toHaveText("Ceiling");
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeHidden();
   });
 

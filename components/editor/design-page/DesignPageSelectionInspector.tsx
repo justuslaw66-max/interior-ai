@@ -339,7 +339,7 @@ export function DesignPageSelectionInspector({
       {state.surfaceInspector ? (
         <SelectedSurfaceInspector
           state={state.surfaceInspector}
-          configuration={{ dark: configuration.dark }}
+          configuration={{ dark: configuration.dark, pro: configuration.proMode }}
           actions={actions.surfaceInspector}
         />
       ) : null}

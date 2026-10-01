@@ -23,6 +23,15 @@ type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
   cameraHandleCenter: { x: number; y: number };
 };
 
+
+/** Opens the surface inspector's "Adjust pattern" if it's closed (it is for consumers). */
+async function openAdjustPattern(page: Page) {
+  const adjust = page.getByTestId("surface-adjust-pattern");
+  await expect(adjust).toBeVisible();
+  if ((await adjust.getAttribute("open")) === null) await adjust.locator("summary").click();
+  await expect(adjust).toHaveAttribute("open", "");
+}
+
 async function frameLivingEastWall(page: Page) {
   const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
@@ -895,6 +904,8 @@ test.describe("Studio canonical wall panels", () => {
     await page.getByRole("button", { name: "Change material" }).click();
     await page.getByText("Anima Beige", { exact: true }).first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
+    // Grout sits in "Adjust pattern", closed for consumers (UX audit ED5, phase 4f).
+    await openAdjustPattern(page);
     const wallGrout = page.getByTestId("selection-inspector-wall-grout");
     await expect(wallGrout).toBeVisible();
     await wallGrout.getByTestId("wall-surface-joint-size-5").click();

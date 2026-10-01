@@ -193,7 +193,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
-      "lines": 906,
+      "lines": 274,
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -1852,12 +1852,12 @@
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
       "overlongFunctions": {
-        "count": 3,
-        "maximum": 641
+        "count": 1,
+        "maximum": 86
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 47
+        "maximum": 20
       }
     },
     "components/editor/design-page/UpgradeDialog.tsx": {
