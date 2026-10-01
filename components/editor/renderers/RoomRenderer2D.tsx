@@ -3619,7 +3619,7 @@ export default function RoomRenderer2D({
                     raycast={() => null}
                   />
                   <Html
-                    zIndexRange={[20, 0]}
+                    zIndexRange={[19, 0]}
                     position={[0, 0.022, widthDimensionZ]}
                     center
                     transform={false}
@@ -3698,7 +3698,7 @@ export default function RoomRenderer2D({
                     )}
                   </Html>
                   <Html
-                    zIndexRange={[20, 0]}
+                    zIndexRange={[19, 0]}
                     position={[depthDimensionX, 0.022, 0]}
                     center
                     transform={false}
@@ -4858,7 +4858,7 @@ export default function RoomRenderer2D({
             ))}
             {selectedOverlayId !== seg.id && seg.roomId === activeRoomId && (
               <Html
-                zIndexRange={[10, 0]}
+                zIndexRange={[20, 0]}
                 position={seg.identityLabelPosition}
                 center
                 transform={false}

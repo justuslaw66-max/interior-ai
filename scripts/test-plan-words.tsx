@@ -97,4 +97,20 @@ assert.match(renderer, /const compactContextLabelStyle = \{ \.\.\.CANVAS_CHIP, b
 assert.doesNotMatch(renderer, /scale\(\$\{contextLabelScale\}\)|contextLabelScale/, "Labels no longer shrink with the zoom.");
 assert.match(renderer, /if \(planZoom < 50\) return \{ maxAdjacency: 0, maxDoorways: 0, scale: 0\.48 \};/, "Zoomed far out, the context labels hide.");
 
+// A door's or window's label sits above the room's Width and Depth chips (J, 30 Sep): on a phone
+// both can sit at a wall's middle, an opening is picked only on the canvas, and the room's size is
+// in the sheet too. The label's layer tops out where the chips' did (20: no higher, so the phone's
+// step sheet, z-20 and later in the page, stays above both); the chips drop to 19.
+const htmlTopBefore = (testId: string) => {
+  const start = renderer.indexOf(`data-testid="${testId}"`);
+  const html = renderer.lastIndexOf("<Html", start);
+  const range = /zIndexRange=\{\[(\d+), (\d+)\]\}/.exec(renderer.slice(html, start));
+  assert.ok(range, `${testId} sits in an <Html> with a z-index range.`);
+  return Number(range[1]);
+};
+assert.equal(htmlTopBefore("plan-opening-kind-label"), 20);
+for (const testId of ["active-room-dimension-width", "active-room-dimension-depth", "active-room-dimension-editor-width", "active-room-dimension-editor-depth"]) {
+  assert.ok(htmlTopBefore(testId) < htmlTopBefore("plan-opening-kind-label"), `${testId} sits under the openings' labels.`);
+}
+
 console.log("Plan words (levels, Surfaces, Deselect) and the canvas chip checks passed");
