@@ -217,6 +217,7 @@ function buildViewportPlanControlState(
       pendingZoneType: zone.state.pendingZoneType,
       selectedZone: zone.state.selectedZone,
       isClientPreview: coreShell.derived.access.isClientPreview,
+      zoneTools: coreShell.derived.access.isDesigner,
     },
   };
 }

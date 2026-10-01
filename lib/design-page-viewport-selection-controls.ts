@@ -19,6 +19,8 @@ export type DesignPageViewportSelectionControlsState = {
   multiSelection: {
     count: number;
     zoneType: ZoneMin["type"];
+    /** Zone type and Create zone are Pro's (UX 4g, FU6); Align is everyone's. */
+    zoneTools: boolean;
   } | null;
   selectedZone: {
     id: string;
@@ -36,6 +38,8 @@ export type DesignPageViewportSelectionControlsInput = {
   pendingZoneType: ZoneMin["type"];
   selectedZone: Pick<ZoneMin, "id" | "type"> | null;
   isClientPreview: boolean;
+  /** Pro: zones can be made, selected and arranged. Consumers never see a zone toolbar. */
+  zoneTools: boolean;
 };
 
 export function resolveDesignPageViewportSelectionControlsState({
@@ -48,6 +52,7 @@ export function resolveDesignPageViewportSelectionControlsState({
   pendingZoneType,
   selectedZone,
   isClientPreview,
+  zoneTools,
 }: DesignPageViewportSelectionControlsInput): DesignPageViewportSelectionControlsState {
   return {
     floorStack:
@@ -70,10 +75,11 @@ export function resolveDesignPageViewportSelectionControlsState({
         ? {
             count: selectedCount,
             zoneType: pendingZoneType,
+            zoneTools,
           }
         : null,
     selectedZone:
-      selectedZone && !isClientPreview
+      selectedZone && !isClientPreview && zoneTools
         ? {
             id: selectedZone.id,
             label: getZoneLabel(selectedZone.type),

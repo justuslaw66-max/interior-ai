@@ -311,7 +311,6 @@ export function DesignPageWorkspace() {
       boundaries: {
         coreShell: coreShellRegistration,
         documentSelection: documentSelectionRegistration,
-        editorInteraction: editorInteractionRegistration,
         persistence: persistenceWorkspaceRegistration,
         placement: placementWorkspaceRegistration,
       },

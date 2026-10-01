@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { canAutoCreateSeatingZoneForEditor } from "../lib/design-page-zone-orchestration";
 import { parseDesignPagePlacementAddMode } from "../lib/design-page-editor-client-preferences";
 
 const root = process.cwd();
@@ -77,7 +76,6 @@ for (const contractName of [
 
 for (const inlineOwner of [
   "createZoneFromSelection",
-  "autoCreateSeatingZone",
   "autoLayoutZone",
   "rotateZone",
   "ungroupZone",
@@ -97,7 +95,6 @@ for (const inlineOwner of [
 
 for (const helperName of [
   "buildManualZoneFromSelection",
-  "buildAutoSeatingZone",
   "buildAutoLayoutZoneItems",
   "buildRotatedZoneItems",
   "buildPlanZones2D",
@@ -137,70 +134,17 @@ assert.match(
   "Manual creation should reconcile auto zones, persist active-room zones, and preserve history/select ordering."
 );
 
-for (const fixture of [
-  {
-    editorMode: "design",
-    source: "editor",
-    isClientPreview: false,
-    expected: true,
-  },
-  {
-    editorMode: "adjust",
-    source: "editor",
-    isClientPreview: false,
-    expected: false,
-  },
-  {
-    editorMode: "adjust",
-    source: "onboarding_post_placement",
-    isClientPreview: false,
-    expected: true,
-  },
-  {
-    editorMode: "ai",
-    source: "onboarding_post_placement",
-    isClientPreview: false,
-    expected: false,
-  },
-  {
-    editorMode: "adjust",
-    source: "onboarding_post_placement",
-    isClientPreview: true,
-    expected: false,
-  },
-] as const) {
-  assert.equal(
-    canAutoCreateSeatingZoneForEditor(fixture),
-    fixture.expected,
-    `${fixture.source} should ${fixture.expected ? "be allowed" : "be blocked"} in ${fixture.editorMode}${fixture.isClientPreview ? " client preview" : " mode"}.`
-  );
-}
-assert.match(
-  controllerSource,
-  /canAutoCreateSeatingZoneForEditor\(\{[\s\S]*?editorMode,[\s\S]*?isClientPreview,[\s\S]*?source: request\.source/,
-  "The controller should enforce the shared source-aware editor-mode policy."
-);
-assert.ok(
-  normalizedController.includes(
-    "if (seatingZoneAutoDisabledRef.current) return false;"
-  ),
-  "Automatic seating-zone creation should preserve the user opt-out gate."
-);
-assert.match(
-  controllerSource,
-  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?runHistoryTransaction\("Create seating area", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
-  "Automatic creation should reconcile auto zones and preserve its active-room update, history, and selection behavior."
-);
-assert.match(
-  controllerSource,
-  /track\("seating_zone_auto_created",\s*\{\s*zoneId: next\.zoneId,\s*trigger: "first_sofa",\s*\}\);/,
-  "The controller should preserve the existing first-sofa zone analytics payload."
-);
+// UX 4g (FU6): the first sofa makes no zone; the onboarding step advances without one. The
+// automatic seating zone, its opt-out and its undo join are gone; automatic zones stay (placement reads them).
+assert.doesNotMatch(controllerSource, /autoCreateSeatingZone|buildAutoSeatingZone|canAutoCreateSeatingZone|seatingZoneAutoDisabled|seating_zone_auto/);
+assert.doesNotMatch(orchestrationSource, /AutoSeatingZone|canAutoCreateSeatingZone/);
 assert.match(
   onboardingSource,
-  /const seatingZoneReady = autoCreateSeatingZone\(sofaItem, \{\s*source: "onboarding_post_placement",\s*\}\);\s*if \(!seatingZoneReady\) return;\s*firstSofaHandledRef\.current = true;[\s\S]*?track\("seating_zone_auto_created",\s*\{\s*design_id: state\.designId,\s*isGuest: state\.isGuest,\s*timeSinceStartMs:/,
-  "Onboarding should use the explicit post-placement source and latch only after the controller accepts the request."
+  /if \(!sofaItem \|\| firstSofaHandledRef\.current\) return;\s*\/\/[^\n]*\n\s*firstSofaHandledRef\.current = true;/,
+  "The first sofa advances onboarding without creating a zone."
 );
+assert.doesNotMatch(onboardingSource, /autoCreateSeatingZone|seating_zone_auto_created/);
+assert.doesNotMatch(commerceOnboardingSource, /autoCreateSeatingZone|editorInteraction/, "Onboarding no longer needs the zone controller.");
 
 for (const historyLabel of [
   "Rotate zone",
@@ -229,30 +173,19 @@ assert.match(
   "Rotation failures should remain isolated and reported."
 );
 
-assert.match(
-  clientLifecycleSource,
-  /localStorage\.getItem\([\s\S]*?"seating_zone_auto_disabled"[\s\S]*?seatingZoneAutoDisabled\.current = seatingDisabled === "1"/,
-  "The client lifecycle should continue to hydrate the seating-zone disable preference."
-);
+assert.doesNotMatch(clientLifecycleSource, /seating_zone_auto_disabled|seatingZoneAutoDisabled/);
 assert.equal(parseDesignPagePlacementAddMode("preview"), "preview");
 assert.equal(parseDesignPagePlacementAddMode("auto"), "auto");
 assert.equal(parseDesignPagePlacementAddMode("manual"), null);
 assert.equal(parseDesignPagePlacementAddMode(null), null);
 assert.match(
   controllerSource,
-  /seatingZoneAutoDisabledRef\.current = true;[\s\S]*?localStorage\.setItem\("seating_zone_auto_disabled", "1"\)/,
-  "Ungrouping a seating zone should continue to persist the auto-create opt-out."
-);
-assert.match(
-  controllerSource,
   /runHistoryTransaction\("Ungroup zone", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);[\s\S]*?setSelectedZoneId\(null\);/,
   "Ungroup should persist active-room zones and preserve history/selection ordering."
 );
 assert.ok(
-  normalizedEditorInteractionRegistration.includes(
-    "seatingZoneAutoDisabled: coreShell.refs.seatingZoneAutoDisabledRef"
-  ),
-  "Editor interaction should pass the core shell's hydrated disable ref into the controller."
+  !normalizedEditorInteractionRegistration.includes("seatingZoneAutoDisabled"),
+  "Editor interaction no longer passes a seating-zone opt-out."
 );
 
 assert.match(
@@ -284,13 +217,13 @@ assert.match(
 );
 assert.equal(
   controllerSource.match(/reconcileZonesForItems\(/g)?.length,
-  3,
-  "Normalization and both creation paths should share one zone reconciler."
+  2,
+  "Normalization and Create zone should share one zone reconciler."
 );
 assert.equal(
-  [controllerSource, readSource("lib/design-page-seating-zone-history.ts")].join("\n").match(/updateActiveRoomZones\(/g)?.length,
-  5,
-  "Every zone write path (normalisation, both creation paths, ungrouping, and the placement-joined seating zone) should use the shared active-room updater."
+  controllerSource.match(/updateActiveRoomZones\(/g)?.length,
+  3,
+  "Every zone write path (normalisation, Create zone and ungrouping) should use the shared active-room updater."
 );
 assert.doesNotMatch(
   controllerSource,
@@ -309,11 +242,6 @@ assert.match(
 );
 
 for (const { pattern, description } of [
-  {
-    pattern:
-      /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?actions:\s*\{[\s\S]*?autoCreateSeatingZone:[\s\S]*?editorInteraction\.boundaries\.zone\.actions\.autoCreateSeatingZone[\s\S]*?clampToRoom: documentRoom\.actions\.room\.clampToActiveRoom/,
-    description: "onboarding auto-create action",
-  },
   { pattern: /zones:\s*planZones2D/, description: "2D plan zones" },
   {
     pattern:
@@ -322,11 +250,7 @@ for (const { pattern, description } of [
   },
 ] as const) {
   assert.match(
-    description === "onboarding auto-create action"
-      ? commerceOnboardingSource
-      : description === "2D plan zones"
-        ? sceneRegionWorkspaceRegistrationSource
-        : viewportWorkspaceRegistrationSource,
+    description === "2D plan zones" ? sceneRegionWorkspaceRegistrationSource : viewportWorkspaceRegistrationSource,
     description === "2D plan zones"
       ? /zones:\s*zone\.state\.planZones2D/
       : description === "manual zone action boundary"

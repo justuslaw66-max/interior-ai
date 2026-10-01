@@ -7,6 +7,8 @@ type MultiSelectionToolbarProps = {
   state: {
     count: number;
     zoneType: ZoneMin["type"];
+    /** Pro only (UX 4g, FU6): zone type and Create zone. */
+    zoneTools?: boolean;
   };
   configuration: {
     dark: boolean;
@@ -19,6 +21,31 @@ type MultiSelectionToolbarProps = {
     clear: () => void;
   };
 };
+
+/** Pro's zone type and Create zone (UX 4g, FU6); consumers align a group but make no zones. */
+function ZoneCreateControls({ state, configuration, actions, buttonClass }: MultiSelectionToolbarProps & { buttonClass: string }) {
+  return (
+    <>
+      <select
+        className={
+          configuration.dark
+            ? "rounded-full border bg-transparent px-2 py-1 text-xs"
+            : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900"
+        }
+        value={state.zoneType}
+        onChange={(event) => actions.changeZoneType(event.currentTarget.value as ZoneMin["type"])}
+      >
+        <option value="seating">Seating</option>
+        <option value="reading">Reading</option>
+        <option value="tv">TV</option>
+        <option value="dining">Dining</option>
+      </select>
+      <button className={buttonClass} onClick={actions.createZone}>
+        Create zone
+      </button>
+    </>
+  );
+}
 
 export function MultiSelectionToolbar({
   state,
@@ -53,25 +80,7 @@ export function MultiSelectionToolbar({
         <button className={buttonClass} onClick={actions.alignZ}>
           Align Z centre
         </button>
-        <select
-          className={
-            configuration.dark
-              ? "rounded-full border bg-transparent px-2 py-1 text-xs"
-              : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900"
-          }
-          value={state.zoneType}
-          onChange={(event) =>
-            actions.changeZoneType(event.currentTarget.value as ZoneMin["type"])
-          }
-        >
-          <option value="seating">Seating</option>
-          <option value="reading">Reading</option>
-          <option value="tv">TV</option>
-          <option value="dining">Dining</option>
-        </select>
-        <button className={buttonClass} onClick={actions.createZone}>
-          Create zone
-        </button>
+        {state.zoneTools ? <ZoneCreateControls state={state} configuration={configuration} actions={actions} buttonClass={buttonClass} /> : null}
         <button type="button" className={`${buttonClass} grid h-8 w-8 place-items-center p-0 touch:h-11 touch:w-11`}
           aria-label={`Deselect ${state.count} products`} title={`Deselect ${state.count} products`} onClick={actions.clear}>
           <X className="h-4 w-4" aria-hidden="true" />

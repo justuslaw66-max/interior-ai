@@ -237,8 +237,8 @@ export function buildDesignPageSceneRegionAdapter({
           pulse: scene.gridPulse,
           coverage: editor.viewMode === "2d" ? "workspace" : "local",
         },
-        zonesVisible:
-          !editor.isClientPreview && editor.editorMode !== "present",
+        zonesVisible: !editor.isClientPreview && editor.editorMode !== "present",
+        zoneOutlinesAlways: editor.isDesigner,
         activeRoomOffset: room.activePlanOffset,
         activeRoomId: room.guidanceActiveId,
       },

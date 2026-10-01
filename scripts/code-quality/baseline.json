@@ -153,7 +153,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 503,
+      "lines": 502,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -641,7 +641,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 675,
+      "lines": 658,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -1637,7 +1637,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 469
+        "maximum": 468
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -4169,7 +4169,7 @@
     "lib/useDesignPageCommerceOnboardingRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 76
+        "maximum": 73
       }
     },
     "lib/useDesignPageCoreShellBaseRegistration.ts": {
@@ -4181,7 +4181,7 @@
     "lib/useDesignPageCoreShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 247
+        "maximum": 244
       }
     },
     "lib/useDesignPageCrossRoomItemTransfer.ts": {
@@ -4227,13 +4227,13 @@
     "lib/useDesignPageEditorClientLifecycle.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 73
+        "maximum": 68
       }
     },
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 149
+        "maximum": 144
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
@@ -4351,7 +4351,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 464
+        "maximum": 452
       }
     },
     "lib/useDesignPagePanelActions.ts": {
@@ -4703,7 +4703,7 @@
     "lib/useDesignPageZoneController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 287
+        "maximum": 221
       }
     },
     "lib/useFloorManager.ts": {
