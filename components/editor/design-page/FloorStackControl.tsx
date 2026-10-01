@@ -33,7 +33,7 @@ export function FloorStackControl({
           : "absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-neutral-200 bg-white/90 p-1 shadow-xl backdrop-blur md:flex"
       }
       data-testid="floor-stack-control"
-      aria-label="Floor stack"
+      aria-label="Levels"
     >
       {state.floors
         .slice()

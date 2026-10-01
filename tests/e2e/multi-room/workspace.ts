@@ -355,8 +355,8 @@ export function registerWorkspaceTests() {
     await expect(floorPanel).toBeVisible();
     await expect(selection).toBeVisible();
 
-    await page.getByRole("button", { name: "Expand floor panel" }).click();
-    await expect(page.getByRole("button", { name: "Collapse floor panel" })).toBeVisible();
+    await page.getByRole("button", { name: "Expand Levels" }).click();
+    await expect(page.getByRole("button", { name: "Collapse Levels" })).toBeVisible();
 
     const expandedBoxes = await Promise.all([
       navigator.boundingBox(),
@@ -367,9 +367,9 @@ export function registerWorkspaceTests() {
     expect(expandedBoxes[0]!.y + expandedBoxes[0]!.height).toBeLessThanOrEqual(expandedBoxes[1]!.y);
     expect(expandedBoxes[1]!.y + expandedBoxes[1]!.height).toBeLessThanOrEqual(expandedBoxes[2]!.y);
 
-    await page.getByRole("button", { name: "Collapse floor panel" }).click();
+    await page.getByRole("button", { name: "Collapse Levels" }).click();
     await page.getByRole("button", { name: "Collapse navigator" }).click();
-    await expect(page.getByRole("button", { name: "Expand floor panel" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Expand Levels" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Expand navigator" })).toBeVisible();
 
     const collapsedBoxes = await Promise.all([

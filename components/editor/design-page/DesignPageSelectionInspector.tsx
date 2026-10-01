@@ -230,7 +230,7 @@ export function DesignPageSelectionInspector({
             }
           >
             <MeasurementField
-              label="Floor wall height"
+              label="Wall height"
               valueMm={state.activeRoomHeightMm}
               unit={state.measurementUnit}
               minMm={ROOM_DIMENSION_DEFAULTS.minRoomHeight * 1000}
@@ -243,7 +243,7 @@ export function DesignPageSelectionInspector({
               testId="selection-inspector-floor-wall-height"
               hint={`Applies to ${state.activeFloorRoomCount} room${
                 state.activeFloorRoomCount === 1 ? "" : "s"
-              } on this floor.`}
+              } on this level.`}
               onCommit={actions.commitActiveFloorWallHeightMm}
             />
             <FloorPlanPropertyEvidenceControl
@@ -280,7 +280,7 @@ export function DesignPageSelectionInspector({
               }
               onClick={() => actions.room.editFloor(state.selectedRoom!.id)}
             >
-              Floor
+              Surfaces
             </button>
             <button
               type="button"

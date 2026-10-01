@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import type { ZoneMin } from "@/lib/room-types";
 
 type MultiSelectionToolbarProps = {
@@ -71,8 +72,9 @@ export function MultiSelectionToolbar({
         <button className={buttonClass} onClick={actions.createZone}>
           Create zone
         </button>
-        <button className={buttonClass} onClick={actions.clear}>
-          Clear
+        <button type="button" className={`${buttonClass} grid h-8 w-8 place-items-center p-0 touch:h-11 touch:w-11`}
+          aria-label={`Deselect ${state.count} products`} title={`Deselect ${state.count} products`} onClick={actions.clear}>
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
     </div>

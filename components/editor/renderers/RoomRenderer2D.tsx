@@ -3480,7 +3480,7 @@ export default function RoomRenderer2D({
                       Move
                     </button>
                     {[
-                      { id: "floor", label: "Floor", action: onEditFloor },
+                      { id: "floor", label: "Surfaces", action: onEditFloor },
                       { id: "fit", label: "Fit", action: onFitRoom },
                       { id: "rename", label: "Name", action: onRenameRoom },
                       { id: "duplicate", label: "Copy", action: onDuplicateRoom },
@@ -3489,8 +3489,8 @@ export default function RoomRenderer2D({
                       <button
                         key={tool.id}
                         type="button"
-                        aria-label={`${tool.label} room`}
-                        title={`${tool.label} room`}
+                        aria-label={tool.id === "floor" ? "Room surfaces" : `${tool.label} room`}
+                        title={tool.id === "floor" ? "Room surfaces" : `${tool.label} room`}
                         data-testid={`selected-room-${tool.id}`}
                         disabled={!tool.action}
                         onClick={(event) => {

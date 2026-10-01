@@ -121,6 +121,7 @@ const typescriptGuardFiles = [
   "test-tablet-panels.tsx",
   "test-share-page.tsx",
   "test-pro-plan-display.tsx",
+  "test-plan-words.tsx",
   "test-item-panel-in-plan.tsx",
 ];
 

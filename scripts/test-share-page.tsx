@@ -63,7 +63,7 @@ assert.deepEqual(
   ]
 );
 const twoFloors = buildSharePageRooms([room("living", "Living Room"), room("bedroom", "Bedroom", 2)], list);
-assert.deepEqual(twoFloors.map((entry) => entry.floorLabel), ["Floor 1", "Floor 2"]);
+assert.deepEqual(twoFloors.map((entry) => entry.floorLabel), ["Level 1", "Level 2"]);
 assert.equal(sharePageSummary(2, list), "2 rooms · 4 products · S$2,000");
 assert.equal(sharePageSummary(1, { ...list, total: 0, productCount: 0 }), "1 room · 0 products");
 

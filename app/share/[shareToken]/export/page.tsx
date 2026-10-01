@@ -5,10 +5,8 @@ import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapsh
 import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
-import {
-  summarizeShoppingRooms,
-  summarizeWholeHomeShopping,
-} from "@/lib/room-shopping";
+import { summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
+import { storeyDisplayLabel, storeyLevelLabel } from "@/lib/storey-labels";
 import {
   buildCheckoutReadinessRows,
   buildShoppingCsvRows,
@@ -434,7 +432,7 @@ function buildPlanDiagramFloors(
   for (const room of housePlan.rooms) {
     const sourceRoom = roomSnapshotsById.get(room.id);
     const floorLevel = sourceRoom?.floorLevel ?? room.floorLevel ?? 1;
-    const floorLabel = sourceRoom?.floorLabel ?? room.floorLabel ?? `Floor ${floorLevel}`;
+    const floorLabel = storeyDisplayLabel(sourceRoom?.floorLabel ?? room.floorLabel ?? storeyLevelLabel(floorLevel));
     const floorKey = String(floorLevel);
     const points = getHouseRoomPlanPolygon(room);
     const bounds = getPlanPointsBounds(points);

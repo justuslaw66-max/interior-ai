@@ -1,6 +1,7 @@
 import { formatSgd } from "@/lib/money-format";
 import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import { storeyDisplayLabel, storeyLevelLabel } from "@/lib/storey-labels";
 import {
   buildCheckoutReadinessRows,
   buildShareCheckoutLines,
@@ -45,7 +46,7 @@ function countLabel(count: number, one: string, many: string) {
 }
 
 function floorLabelFor(room: RoomSnapshot) {
-  return room.floorLabel ?? `Floor ${room.floorLevel ?? 1}`;
+  return storeyDisplayLabel(room.floorLabel ?? storeyLevelLabel(room.floorLevel ?? 1));
 }
 
 export function buildSharePageRooms(rooms: readonly RoomSnapshot[], shopping: ShoppingList): SharePageRoom[] {

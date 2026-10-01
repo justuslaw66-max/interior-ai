@@ -1288,7 +1288,7 @@ export default function DesignControlsPlanPanel({
     ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 disabled:opacity-50"
     : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
   const activeFloorLabel =
-    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
+    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
   const activeRoomPerimeter = Math.max(0, (roomWidth + roomDepth) * 2);
   const activeRoomAspectRatio = roomWidth > 0 && roomDepth > 0 ? roomWidth / roomDepth : 0;
@@ -2796,7 +2796,7 @@ export default function DesignControlsPlanPanel({
         <div data-testid="floor-summary-panel" className={progressCardClass}>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className={titleClass}>Floor</div>
+              <div className={titleClass}>Levels</div>
               <div className={progressMetaClass}>
                 {activeFloorLabel} · {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"}
               </div>

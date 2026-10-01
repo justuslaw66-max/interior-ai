@@ -645,7 +645,7 @@ test.describe("Studio canonical wall panels", () => {
       .toBe(true);
 
     const floorPanel = page.getByTestId("coohom-floor-panel");
-    await floorPanel.getByRole("button", { name: "Expand floor panel" }).click();
+    await floorPanel.getByRole("button", { name: "Expand Levels" }).click();
     await floorPanel.locator("summary", { hasText: "Opacity" }).click();
     await floorPanel
       .locator("label")

@@ -16,6 +16,7 @@ import {
   type NormalizedSurfaceSettings,
 } from "@/lib/surface-settings";
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
+import { storeyDisplayLabel } from "@/lib/storey-labels";
 import {
   formatSurfaceMaterialValue,
   type SurfaceRoomSummary,
@@ -33,7 +34,7 @@ export function buildSurfaceRoomSummaries(
   return rooms.map((room, index) => ({
     id: room.id,
     name: room.name,
-    floorLabel: room.floorLabel,
+    floorLabel: room.floorLabel ? storeyDisplayLabel(room.floorLabel) : undefined,
     roomType: room.roomType,
     width: room.geometry.width,
     depth: room.geometry.depth,
