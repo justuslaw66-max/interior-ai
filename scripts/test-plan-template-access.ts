@@ -521,7 +521,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="selected-room-floor-finish"[\s\S]*?data-testid="plan-change-floor-finish"[\s\S]*?setRoomFinishPanelOpen/,
+  /<RoomSurfaceRows rows=\{roomSurfaceRowsOf\(activeSurfaceSummaryRows, activeRoomId\)\} disabled=\{!canEdit\} onOpen=\{openRoomSurface\}/,
   "Selected-room controls should expose a visible shortcut for changing floor finish."
 );
 

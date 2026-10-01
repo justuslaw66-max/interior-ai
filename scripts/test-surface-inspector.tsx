@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { RoomSurfaceRows, roomSurfaceRowsOf } from "../components/editor/design-controls-plan/RoomSurfaceRows";
+import { SurfaceBrowserHeader, type SurfaceBrowserHeaderProps } from "../components/editor/design-controls-plan/SurfaceBrowserHeader";
 import {
   SelectedSurfaceInspector,
   type SelectedSurfaceInspectorActions,
@@ -94,4 +96,49 @@ for (const file of ["SelectedSurfaceInspector", "SurfacePatternControls", "Surfa
   assert.ok(lines <= 300, `${file}.tsx stays small (${lines} lines).`);
 }
 
-console.log("Surface inspector (heading, Change…, Apply, Adjust pattern) checks passed");
+// UX phase 4f (audit ED8): a room's Floor, Walls and Ceiling rows open the picker for that surface.
+const summary = (target: "floor" | "walls" | "selected_wall" | "ceiling", materialName: string, roomId = "living") => ({ target, materialName, room: { id: roomId } });
+assert.deepEqual(
+  roomSurfaceRowsOf([summary("floor", "Natural oak"), summary("walls", "Spanish Red"), summary("ceiling", "Cloud White"), summary("floor", "Tile", "bed")], "living"),
+  [
+    { target: "floor", label: "Floor", value: "Natural oak" },
+    { target: "walls", label: "Walls", value: "Spanish Red" },
+    { target: "ceiling", label: "Ceiling", value: "Cloud White" },
+  ]
+);
+assert.equal(roomSurfaceRowsOf([summary("walls", "Spanish Red"), summary("selected_wall", "Anima Beige")], "living")[1].value, "Mixed");
+assert.equal(roomSurfaceRowsOf([summary("selected_wall", "Anima Beige"), summary("selected_wall", "Anima Beige")], "living")[1].value, "Anima Beige");
+assert.deepEqual(roomSurfaceRowsOf([], "living").map((row) => row.value), ["Starter finish", "Plain walls", "No ceiling paint"]);
+const rowsMarkup = renderToStaticMarkup(
+  createElement(RoomSurfaceRows, { rows: roomSurfaceRowsOf([], "living"), openTarget: "walls", disabled: false, onOpen: () => {} })
+);
+assert.match(rowsMarkup, /<ul data-testid="room-surface-rows" aria-label="Surfaces"/);
+for (const target of ["floor", "walls", "ceiling"]) {
+  assert.match(rowsMarkup, new RegExp(`data-testid="room-surface-row-${target}" aria-expanded="${target === "walls"}"[^>]*class="[^"]*min-h-11`));
+}
+
+const header = (pro: boolean) =>
+  renderToStaticMarkup(
+    createElement(SurfaceBrowserHeader, {
+      pro, targetLabel: "Walls", displayName: "Spanish Red", target: "walls", selectedWallFaceId: null, tab: "tiles",
+      brush: { active: false, disabled: false, status: "", onToggle: () => {} },
+      secondaryActionClass: "", metaClass: "", onBack: () => {}, onOpenSummary: () => {}, onTargetChange: () => {}, onTabChange: () => {},
+    } satisfies SurfaceBrowserHeaderProps)
+  );
+const consumerHeader = header(false);
+assert.match(consumerHeader, /data-testid="surfaces-back" aria-label="Back to the room"/);
+assert.match(consumerHeader, /Walls · Spanish Red/);
+assert.doesNotMatch(consumerHeader, /surface-brush-toggle|surface-summary-open|surface-target-bar|surfaces-tab-/, "Consumers pick for one surface.");
+const proHeader = header(true);
+for (const id of ["surface-brush-toggle", "surface-summary-open", "surface-target-bar", "surface-target-selected-wall", "surfaces-tab-tiles", "surfaces-tab-rooms"]) {
+  assert.match(proHeader, new RegExp(`data-testid="${id}"`), `Pro keeps ${id}.`);
+}
+assert.match(proHeader, /data-testid="surfaces-tab-tiles"[^>]*>Materials<\/button>/, "Tiles is Materials.");
+
+const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
+assert.match(planPanel, /const openRoomSurface = \(target: RoomSurfaceTarget\) => \{\s+onSurfaceTargetChange\(target\); setSurfaceTab\("tiles"\); setWallSurfaceMode\("paint"\); setRoomFinishPanelOpen\(true\); setPlanSectionCollapsed\("selectedRoom", false\);/);
+assert.match(planPanel, /<SurfaceBrowserHeader\s+pro=\{isDesigner\}[\s\S]*?onBack=\{\(\) => setRoomFinishPanelOpen\(false\)\}/);
+assert.match(planPanel, /\{ id: "materials" as const, label: "Materials" \}/);
+assert.doesNotMatch(planPanel, /data-testid="selected-room-floor-finish"|"Change floor"/);
+
+console.log("Surface inspector and Surfaces rows (ED5, ED8) checks passed");

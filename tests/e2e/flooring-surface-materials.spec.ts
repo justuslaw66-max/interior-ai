@@ -263,6 +263,8 @@ test.describe("Flooring surface materials", () => {
   test("apply all uses the selected wall paint instead of the custom default", async ({ page }) => {
     test.setTimeout(90000);
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
@@ -285,6 +287,8 @@ test.describe("Flooring surface materials", () => {
   test("ceiling target can use the paint colour picker", async ({ page }) => {
     test.setTimeout(90000);
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
@@ -330,6 +334,8 @@ test.describe("Flooring surface materials", () => {
     test.setTimeout(90000);
     await page.setViewportSize({ width: 1600, height: 1000 });
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     const sceneCanvas = page.locator('[data-testid="scene-canvas"]:visible').first();
