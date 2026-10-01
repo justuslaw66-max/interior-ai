@@ -7,6 +7,7 @@ import { buildSharePageRooms } from "../lib/public-share-page-model";
 import type { RoomSnapshot } from "../lib/room-types";
 import { storeyDisplayLabel, storeyLevelLabel } from "../lib/storey-labels";
 import { buildSurfaceRoomSummaries } from "../components/editor/design-controls-plan/surfaceSummaryRows";
+import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "../components/editor/renderers/canvasChipStyle";
 
 // UX phase 4f (audit ED7): the Plan's words. Storeys read "Level 1" and "Basement 1": the saved
 // "1F", "B1" and "3F Copy" are mapped when shown, never rewritten. The canvas's Floor chip is
@@ -70,4 +71,30 @@ for (const file of ["components/editor/design-page/MultiSelectionToolbar.tsx", "
   assert.doesNotMatch(read(file), />\s*Clear\s*</, `${file} no longer says Clear.`);
 }
 
-console.log("Plan words (levels, Surfaces, Deselect) checks passed");
+// One chip style on the 2D canvas (ED7): 12px bold and at least 24px tall; pressable chips off the
+// walls 32px; every pressable chip 44px on touch; context labels hide when zoomed out, never shrink.
+assert.deepEqual(CANVAS_CHIP_TEXT, { fontSize: 12, fontWeight: 700, lineHeight: "16px" });
+assert.equal(CANVAS_CHIP.minHeight, 24);
+assert.equal(CANVAS_CHIP_BUTTON.minHeight, 32);
+assert.equal(CANVAS_CHIP_TOUCH_CLASS, "touch:min-h-11 touch:min-w-11");
+const blockOf = (testId: string) => {
+  const start = renderer.indexOf(`data-testid="${testId}"`);
+  assert.ok(start >= 0, testId);
+  return renderer.slice(start, renderer.indexOf("</", start));
+};
+for (const testId of ["plan-opening-kind-label", "active-room-dimension-width", "active-room-dimension-depth", "room-doorway-suggestion"]) {
+  const block = blockOf(testId);
+  assert.match(block, /className=\{CANVAS_CHIP_TOUCH_CLASS\}/, `${testId} is 44px on touch.`);
+  assert.match(block, /\.\.\.CANVAS_CHIP(?:_BUTTON)?,/, `${testId} uses the chip style.`);
+  assert.doesNotMatch(block, /fontSize: (?:[0-9]|1[01]),/, `${testId} has no text under 12px.`);
+}
+for (const testId of ["house-room-2d-label", "active-room-measurement-hud"]) {
+  assert.match(blockOf(testId), /\.\.\.CANVAS_CHIP_TEXT,/);
+  assert.doesNotMatch(blockOf(testId), /fontSize: (?:[0-9]|1[01])\b/);
+}
+assert.match(renderer, /data-testid=\{`selected-room-\$\{tool\.id\}`\}\s+className=\{CANVAS_CHIP_TOUCH_CLASS\}[\s\S]*?\.\.\.CANVAS_CHIP_BUTTON,/);
+assert.match(renderer, /const compactContextLabelStyle = \{ \.\.\.CANVAS_CHIP, borderRadius: 999 \} as const;/);
+assert.doesNotMatch(renderer, /scale\(\$\{contextLabelScale\}\)|contextLabelScale/, "Labels no longer shrink with the zoom.");
+assert.match(renderer, /if \(planZoom < 50\) return \{ maxAdjacency: 0, maxDoorways: 0, scale: 0\.48 \};/, "Zoomed far out, the context labels hide.");
+
+console.log("Plan words (levels, Surfaces, Deselect) and the canvas chip checks passed");
