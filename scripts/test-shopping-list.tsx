@@ -4,10 +4,16 @@ import type { DesignItem } from "../lib/room-types";
 import {
   buildShoppingList,
   cheaperSwapFor,
+  planSwapAll,
+  pricierSwapFor,
   productCountLabel,
   retailerCheckoutNote,
   retailerDisplayName,
   retailerSite,
+  shoppingListLines,
+  swapAllMessage,
+  swapAllStep,
+  withSwapAllApplied,
   type ShoppingListRoom,
 } from "../lib/shopping-list";
 
@@ -129,5 +135,49 @@ assert.equal(retailerSite("https://www.castlery.com/sg/products/x"), "castlery.c
 assert.equal(retailerSite("https://shop.example.com/a"), "shop.example.com");
 assert.equal(retailerSite("not a url"), null);
 assert.equal(retailerSite(null), null);
+
+// Pro's "Swap all" (UX 4h, J's Q2 (a)): exactly the products that offer "Swap for cheaper", every
+// one of them, and the same rule the other way; sets, products bought as a set and locked products stay.
+const rooms = [living, dining];
+const cheaperAll = planSwapAll({ rooms, style: "modern", direction: "cheaper", catalogItems: catalog });
+assert.deepEqual(
+  cheaperAll.map((change) => [change.instanceId, change.to.id]),
+  shoppingListLines(list).filter((line) => line.cheaperSwap).map((line) => [line.instanceId, line.cheaperSwap?.productId]),
+  "Swap all for cheaper swaps what Swap for cheaper offers, line by line."
+);
+assert.ok(cheaperAll.length > 0, "The fixture has something to swap.");
+const pricierAll = planSwapAll({ rooms, style: "modern", direction: "pricier", catalogItems: catalog });
+for (const change of pricierAll) {
+  const placed = rooms.flatMap((room) => room.items).find((entry) => entry.instanceId === change.instanceId);
+  assert.ok(placed && hint(change.to.id) > hint(placed.productId), `${change.to.id} costs more`);
+  assert.equal(pricierSwapFor(placed.productId, "modern", catalog)?.productId, change.to.id);
+}
+const asSet = { ...living, items: living.items.map((entry) => ({ ...entry, purchaseOptionId: "set-of-2" })) } as ShoppingListRoom;
+assert.deepEqual(planSwapAll({ rooms: [asSet], style: "modern", direction: "cheaper", catalogItems: catalog }), [], "Products bought as a set stay.");
+const lockedId = cheaperAll[0].instanceId;
+const withLock = rooms.map((room) => ({
+  ...room,
+  items: room.items.map((entry) => (entry.instanceId === lockedId ? { ...entry, locked: true } : entry)),
+})) as ShoppingListRoom[];
+assert.deepEqual(
+  planSwapAll({ rooms: withLock, style: "modern", direction: "cheaper", catalogItems: catalog }).map((change) => change.instanceId),
+  cheaperAll.map((change) => change.instanceId).filter((instanceId) => instanceId !== lockedId),
+  "A locked product stays, as AI Notes' bulk swap leaves it."
+);
+
+// Applying it: one room at a time, each change where the product stands, in its default variant.
+const livingAfter = withSwapAllApplied(living.items, "living", cheaperAll);
+for (const entry of livingAfter) {
+  const change = cheaperAll.find((candidate) => candidate.instanceId === entry.instanceId);
+  const before = living.items.find((candidate) => candidate.instanceId === entry.instanceId);
+  assert.equal(entry.productId, change ? change.to.id : before?.productId);
+  if (change) assert.equal(entry.variantId, catalog[change.to.id].defaultVariantId);
+  assert.deepEqual(entry.position, before?.position, "Where it stands.");
+}
+assert.deepEqual(withSwapAllApplied(living.items, "elsewhere", cheaperAll), living.items);
+assert.equal(swapAllStep("cheaper"), "Swap all for cheaper");
+assert.equal(swapAllStep("pricier"), "Swap all for pricier");
+assert.equal(swapAllMessage(6), "6 products swapped");
+assert.equal(swapAllMessage(1), "1 product swapped");
 
 console.log("Shopping list checks passed.");
