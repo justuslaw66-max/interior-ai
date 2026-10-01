@@ -637,7 +637,7 @@ export default function CatalogPanel({
         }
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
-        placesDirectly={directAdd} onChooseSpot={onAutoPlaceInRoom}
+        placesDirectly={directAdd} onChooseSpot={onAutoPlaceInRoom} favourite={selectedDetail ? { title: selectedDetail.title, isFavorite: favoriteIds.includes(selectedDetail.id), onToggle: () => toggleFavorite(selectedDetail.id) } : undefined}
         focusRestoration={focusRestoration}
         onClose={closeCatalogDrawer}
         configurationOptions={selectedConfigurationOptions}
