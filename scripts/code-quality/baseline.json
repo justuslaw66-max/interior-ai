@@ -137,7 +137,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 339,
+      "lines": 337,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -169,7 +169,7 @@
       "limit": 250
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
-      "lines": 466,
+      "lines": 440,
       "limit": 250
     },
     "components/editor/design-page/PresentExportDialog.tsx": {
@@ -1593,7 +1593,7 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 244
+        "maximum": 242
       },
       "complexFunctions": {
         "count": 1,
@@ -1723,11 +1723,11 @@
     "components/editor/design-page/LightingSettingsControls.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 355
+        "maximum": 332
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 18
+        "maximum": 17
       }
     },
     "components/editor/design-page/LightingSettingsDrawer.tsx": {
