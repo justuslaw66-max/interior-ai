@@ -737,7 +737,7 @@
         {
           "id": "visual.plans-account-keyboard-narrow",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+          "title": "gives the phone Menu's Pricing keyboard entry semantic replacement and narrow Plans return"
         },
         {
           "id": "visual.plans-upgrade-pointer",
