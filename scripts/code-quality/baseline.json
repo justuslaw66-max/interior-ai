@@ -85,7 +85,7 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1464,
+      "lines": 1396,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
@@ -1387,11 +1387,11 @@
     "app/share/[shareToken]/export/page.tsx": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 507
+        "maximum": 491
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 42
+        "maximum": 41
       }
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
@@ -2290,12 +2290,6 @@
         "maximum": 129
       }
     },
-    "components/PDFDownloadButton.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 120
-      }
-    },
     "components/ReadOnlyViewer.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -2382,12 +2376,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 63
-      }
-    },
-    "components/UpgradeModal.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 87
       }
     },
     "features/cabinetry/automation.ts": {

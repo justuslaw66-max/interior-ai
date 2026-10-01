@@ -10,14 +10,21 @@ const root = path.resolve(__dirname, "..");
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(root, relativePath), "utf8");
 
-const pdfButton = read("components/PDFDownloadButton.tsx");
-assert.match(pdfButton, /fetch\("\/api\/stripe\/checkout"/);
-assert.match(pdfButton, /JSON\.stringify\(\{ interval: "monthly" \}\)/);
-assert.doesNotMatch(pdfButton, /\/api\/stripe\/checkout-pro/);
-
-const upgradeModal = read("components/UpgradeModal.tsx");
-assert.match(upgradeModal, /PRO_PLAN_PRICING\.monthly\.label/);
-assert.doesNotMatch(upgradeModal, /\$29\/month/);
+// UX audit SX8 (phase 4e): a shared design's export page offers one Download PDF, the server's
+// PDF, watermarked when the owner is on Free. Viewers can't remove the owner's watermark, so the
+// page has no upgrade, checkout or pricing; the old Pro-gated button and its modal are gone.
+for (const removed of ["components/PDFDownloadButton.tsx", "components/UpgradeModal.tsx", "app/share/[shareToken]/export/PrintButton.tsx"]) {
+  assert.equal(fs.existsSync(path.join(root, removed)), false, `${removed} is retired (SX8).`);
+}
+const exportPage = read("app/share/[shareToken]/export/page.tsx");
+const pdfLink = read("app/share/[shareToken]/export/PdfDownloadLink.tsx");
+assert.equal(exportPage.match(/\/export\/pdf`/g)?.length ?? 0, 0, "The page itself links no PDF; PdfDownloadLink does.");
+assert.equal(exportPage.match(/<PdfDownloadLink\b/g)?.length, 1, "One Download PDF.");
+assert.match(pdfLink, /href=\{`\/share\/\$\{shareToken\}\/export\/pdf`\}[\s\S]*?data-testid="share-export-pdf-download"[\s\S]*?>\s*Download PDF\s*</);
+assert.match(pdfLink, /\{watermarked \? \([\s\S]*?Includes an Interior AI watermark\./);
+for (const source of [exportPage, pdfLink]) {
+  assert.doesNotMatch(source, /\/api\/stripe|\/pricing|Upgrade|window\.print|Pro upgrade|\(Pro\)/, "No upsell on a shared export.");
+}
 
 const commandBar = readEditorCommandBarSource();
 assert.match(commandBar, /data-testid="editor-command-manage-billing"/);

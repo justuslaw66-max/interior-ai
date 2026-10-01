@@ -22,15 +22,11 @@ import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import { getPlanRoomFloorAreaSqm, getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
-import {
-  getExportCapabilities,
-  getPlanDisplayName,
-  type UserPlan,
-} from "@/lib/export-capabilities";
+import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import Link from "next/link";
 import { ExportWatermark } from "@/components/ExportWatermark";
 import ExportTracking from "./ExportTracking";
-import PrintButton from "./PrintButton";
+import { PdfDownloadLink } from "./PdfDownloadLink";
 import PlanSvgDownload from "./PlanSvgDownload";
 import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
@@ -907,54 +903,6 @@ function PresentationViewSchedule({ rows }: { rows: PresentationViewRow[] }) {
   );
 }
 
-function ExportAccessSummary({
-  capabilities,
-  userPlan,
-}: {
-  capabilities: ReturnType<typeof getExportCapabilities>;
-  userPlan: UserPlan;
-}) {
-  const planLabel = getPlanDisplayName(userPlan);
-
-  return (
-    <section className="avoid-break mb-10 rounded-lg border bg-gray-50 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Export Access</h2>
-          <div className="mt-1 text-sm text-gray-600">Current plan: {planLabel}</div>
-        </div>
-        <div
-          className={
-            capabilities.watermark
-              ? "rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800"
-              : "rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
-          }
-        >
-          {capabilities.watermark ? "Watermarked preview" : "Clean export"}
-        </div>
-      </div>
-      <div className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
-        <div className="rounded-lg bg-white p-3">
-          <div className="font-semibold text-gray-900">Print preview</div>
-          <div className="mt-1 text-xs text-gray-600">
-            {capabilities.watermark ? "Available with watermark" : "Available without watermark"}
-          </div>
-        </div>
-        <div className="rounded-lg bg-white p-3">
-          <div className="font-semibold text-gray-900">Clean PDF</div>
-          <div className="mt-1 text-xs text-gray-600">
-            {capabilities.pdfDownload ? "Included" : "Pro upgrade"}
-          </div>
-        </div>
-        <div className="rounded-lg bg-white p-3">
-          <div className="font-semibold text-gray-900">Shopping CSV</div>
-          <div className="mt-1 text-xs text-gray-600">Included for handoff</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default async function ExportPage({
   params,
 }: {
@@ -1120,22 +1068,15 @@ export default async function ExportPage({
               </Link>
             </div>
             <div className="flex flex-wrap items-start justify-end gap-2">
-              <PrintButton
-                shareToken={shareToken}
-                designId={design.id}
-                capabilities={capabilities}
-              />
-              <a
-                href={`/share/${shareToken}/export/pdf`}
-                data-testid="share-export-pdf-download"
-                className="rounded-lg border border-neutral-300 bg-neutral-950 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
-              >
-                {capabilities.watermark ? "Download watermarked PDF" : "Download clean PDF"}
-              </a>
               <ShoppingCsvDownload
                 rows={shoppingCsvRows}
                 title={publicDesign.title}
                 shareToken={shareToken}
+              />
+              <PdfDownloadLink
+                shareToken={shareToken}
+                designId={design.id}
+                watermarked={capabilities.watermark}
               />
             </div>
           </div>
@@ -1151,8 +1092,8 @@ export default async function ExportPage({
             <h1 className="mb-3 text-4xl font-bold text-gray-900">{publicDesign.title}</h1>
             <div className="grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
               <div>Prepared by: Interior AI</div>
-              <div>Style: {publicDesign.style ?? "Not specified"}</div>
-              <div>Budget: {publicDesign.budget ?? "Not specified"}</div>
+              {publicDesign.style ? <div>Style: {publicDesign.style}</div> : null}
+              {publicDesign.budget ? <div>Budget: {publicDesign.budget}</div> : null}
               <div data-testid="export-handoff-id">Handoff ID: {handoffFidelitySummary.fingerprint}</div>
             </div>
           </div>
@@ -1192,13 +1133,6 @@ export default async function ExportPage({
             </div>
             <div className="no-print mt-4 flex flex-wrap gap-2">
               <a
-                href={`/share/${shareToken}/export/pdf`}
-                data-testid="export-package-pdf-action"
-                className="rounded-lg bg-gray-950 px-3 py-2 text-sm font-semibold text-white hover:bg-gray-800"
-              >
-                Open PDF download
-              </a>
-              <a
                 href="#shopping-list"
                 data-testid="export-package-shopping-action"
                 className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50"
@@ -1214,8 +1148,6 @@ export default async function ExportPage({
               </a>
             </div>
           </section>
-
-          <ExportAccessSummary capabilities={capabilities} userPlan={userPlan} />
 
           {/* Overview */}
           <section className="avoid-break mb-10">
