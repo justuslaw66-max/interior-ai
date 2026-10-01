@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.17.0",
+ "exporterVersion": "app-evidence-0.18.0",
  "page": {
   "widthPx": 1440,
   "heightPx": 1424,
@@ -813,6 +813,14 @@
      },
      {
       "xRatio": 0.740167,
+      "yRatio": 0.553722
+     },
+     {
+      "xRatio": 0.740167,
+      "yRatio": 0.529143
+     },
+     {
+      "xRatio": 0.740167,
       "yRatio": 0.499953
      },
      {
@@ -853,6 +861,14 @@
      },
      {
       "xRatio": 0.732292,
+      "yRatio": 0.629213
+     },
+     {
+      "xRatio": 0.732292,
+      "yRatio": 0.596208
+     },
+     {
+      "xRatio": 0.732292,
       "yRatio": 0.577598
      }
     ]
@@ -866,6 +882,10 @@
      {
       "xRatio": 0.740167,
       "yRatio": 0.499953
+     },
+     {
+      "xRatio": 0.740167,
+      "yRatio": 0.529143
      },
      {
       "xRatio": 0.740167,
@@ -2522,8 +2542,8 @@
     "swingTowardSourcePx": null
    },
    {
-    "kind": "open_passage",
-    "operation": "open",
+    "kind": "window",
+    "operation": "fixed",
     "centerXRatio": 0.53125,
     "centerYRatio": 0.764747,
     "spanStart": {
@@ -2550,7 +2570,7 @@
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
-    "note": "one stroke from jamb to jamb",
+    "note": "a doorway from a named room straight out of the flat, or onto a ledge: a window",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    },
@@ -2650,6 +2670,72 @@
     "swingSide": 0,
     "handing": "unknown",
     "note": "a band of parallel strokes",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.731661,
+    "centerYRatio": 0.544242,
+    "spanStart": {
+     "xRatio": 0.731661,
+     "yRatio": 0.529143
+    },
+    "spanEnd": {
+     "xRatio": 0.731661,
+     "yRatio": 0.55934
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      1053.5912194527755,
+      753.5
+     ],
+     [
+      1053.5912194527755,
+      796.5
+     ]
+    ],
+    "widthMm": 613,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "glass drawn in a thin wall (dashed)",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.731661,
+    "centerYRatio": 0.612711,
+    "spanStart": {
+     "xRatio": 0.731661,
+     "yRatio": 0.596208
+    },
+    "spanEnd": {
+     "xRatio": 0.731661,
+     "yRatio": 0.629213
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      1053.5912194527755,
+      849.0
+     ],
+     [
+      1053.5912194527755,
+      896.0
+     ]
+    ],
+    "widthMm": 670,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "glass drawn in a thin wall (dashed)",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    },
@@ -3218,15 +3304,15 @@
    "thicknessPx": 5.0,
    "thicknessMm": 71,
    "opening": {
-    "kind": "open_passage",
-    "operation": "open",
+    "kind": "window",
+    "operation": "fixed",
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
     "confidence": 0.55,
     "hingeSourcePx": null,
     "swingTowardSourcePx": null,
-    "note": "one stroke from jamb to jamb",
+    "note": "a doorway from a named room straight out of the flat, or onto a ledge: a window",
     "widthMm": 3064,
     "between": [
      "room-1",
@@ -4930,7 +5016,7 @@
     ],
     [
      1065.8403284671533,
-     711.9331160692594
+     788.5
     ]
    ],
    "thicknessPx": 33.18,
@@ -4939,6 +5025,55 @@
   },
   {
    "id": "e106",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     1065.8403284671533,
+     788.5
+    ],
+    [
+     1065.8403284671533,
+     753.5
+    ]
+   ],
+   "thicknessPx": 7.64,
+   "thicknessMm": 109,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "glass drawn in a thin wall (dashed)",
+    "widthMm": 613,
+    "between": [
+     "room-10",
+     "room-12"
+    ]
+   }
+  },
+  {
+   "id": "e107",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1065.8403284671533,
+     753.5
+    ],
+    [
+     1065.8403284671533,
+     711.9331160692594
+    ]
+   ],
+   "thicknessPx": 33.18,
+   "thicknessMm": 473,
+   "opening": null
+  },
+  {
+   "id": "e108",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4955,7 +5090,7 @@
    "opening": null
   },
   {
-   "id": "e107",
+   "id": "e109",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4972,7 +5107,7 @@
    "opening": null
   },
   {
-   "id": "e108",
+   "id": "e110",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4989,12 +5124,61 @@
    "opening": null
   },
   {
-   "id": "e109",
+   "id": "e111",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      1054.5,
      934.1693887074196
+    ],
+    [
+     1054.5,
+     896.0
+    ]
+   ],
+   "thicknessPx": 10.0,
+   "thicknessMm": 143,
+   "opening": null
+  },
+  {
+   "id": "e112",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     1054.5,
+     896.0
+    ],
+    [
+     1054.5,
+     849.0
+    ]
+   ],
+   "thicknessPx": 7.64,
+   "thicknessMm": 109,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "glass drawn in a thin wall (dashed)",
+    "widthMm": 670,
+    "between": [
+     "room-11",
+     "outside"
+    ]
+   }
+  },
+  {
+   "id": "e113",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1054.5,
+     849.0
     ],
     [
      1054.5,
@@ -5006,7 +5190,7 @@
    "opening": null
   },
   {
-   "id": "e110",
+   "id": "e114",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5023,24 +5207,7 @@
    "opening": null
   },
   {
-   "id": "e111",
-   "kind": "wall_centerline",
-   "sourcePx": [
-    [
-     1065.8403284671533,
-     711.9331160692594
-    ],
-    [
-     1065.8403284671533,
-     788.5
-    ]
-   ],
-   "thicknessPx": 23.32,
-   "thicknessMm": 332,
-   "opening": null
-  },
-  {
-   "id": "e112",
+   "id": "e115",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5057,7 +5224,7 @@
    "opening": null
   },
   {
-   "id": "e113",
+   "id": "e116",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5074,7 +5241,7 @@
    "opening": null
   },
   {
-   "id": "e114",
+   "id": "e117",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -5112,7 +5279,7 @@
    }
   },
   {
-   "id": "e115",
+   "id": "e118",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5129,7 +5296,7 @@
    "opening": null
   },
   {
-   "id": "e116",
+   "id": "e119",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5893,6 +6060,14 @@
     },
     {
      "x": 1065.8403284671533,
+     "y": 788.5
+    },
+    {
+     "x": 1065.8403284671533,
+     "y": 753.5
+    },
+    {
+     "x": 1065.8403284671533,
      "y": 711.9331160692594
     },
     {
@@ -5909,6 +6084,8 @@
     "e104",
     "e105",
     "e106",
+    "e107",
+    "e108",
     "e34",
     "e33"
    ],
@@ -5946,16 +6123,26 @@
     },
     {
      "x": 1054.5,
+     "y": 896.0
+    },
+    {
+     "x": 1054.5,
+     "y": 849.0
+    },
+    {
+     "x": 1054.5,
      "y": 822.5
     }
    ],
    "edgeIds": [
-    "e107",
+    "e109",
     "e81",
     "e80",
-    "e108",
-    "e109",
-    "e110"
+    "e110",
+    "e111",
+    "e112",
+    "e113",
+    "e114"
    ],
    "areaM2": 4.01,
    "sourceLabels": [
@@ -5972,6 +6159,10 @@
     {
      "x": 1065.8403284671533,
      "y": 711.9331160692594
+    },
+    {
+     "x": 1065.8403284671533,
+     "y": 753.5
     },
     {
      "x": 1065.8403284671533,
@@ -6003,14 +6194,15 @@
     }
    ],
    "edgeIds": [
-    "e111",
-    "e112",
-    "e113",
-    "e114",
+    "e107",
+    "e106",
     "e115",
+    "e116",
+    "e117",
+    "e118",
     "e37",
     "e36",
-    "e116"
+    "e119"
    ],
    "areaM2": 2.77,
    "sourceLabels": []
@@ -6021,8 +6213,8 @@
   "gapsSeen": 199,
   "openings": {
    "door": 12,
-   "window": 14,
-   "open_passage": 3,
+   "window": 17,
+   "open_passage": 2,
    "wall": 15
   },
   "doorSwingsWithoutGap": 6,
@@ -6060,6 +6252,10 @@
   "thresholdDoors": 0,
   "gentleSlopedStrokes": 4,
   "outdoorSpacesClosedByGentleSlopes": 0,
+  "glassInThinWalls": 2,
+  "glassBandsBetweenTwoRooms": 1,
+  "doorwaysToTheOutsideReadAsWindows": 1,
+  "cornersWelded": 0,
   "unsupportedWallPx": 49749,
   "thickAxisWallPx": 2983,
   "slantedWallPx": 44398,

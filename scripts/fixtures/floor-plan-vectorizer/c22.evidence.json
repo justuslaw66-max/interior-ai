@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.17.0",
+ "exporterVersion": "app-evidence-0.18.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -1575,8 +1575,8 @@
     "swingTowardSourcePx": null
    },
    {
-    "kind": "open_passage",
-    "operation": "open",
+    "kind": "window",
+    "operation": "fixed",
     "centerXRatio": 0.798278,
     "centerYRatio": 0.548839,
     "spanStart": {
@@ -1603,7 +1603,7 @@
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
-    "note": "one stroke from jamb to jamb",
+    "note": "a doorway from a named room straight out of the flat, or onto a ledge: a window",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    },
@@ -3320,15 +3320,15 @@
    "thicknessPx": 15.5,
    "thicknessMm": 175,
    "opening": {
-    "kind": "open_passage",
-    "operation": "open",
+    "kind": "window",
+    "operation": "fixed",
     "hinge": "none",
     "swingSide": 0,
     "handing": "unknown",
     "confidence": 0.55,
     "hingeSourcePx": null,
     "swingTowardSourcePx": null,
-    "note": "one stroke from jamb to jamb",
+    "note": "a doorway from a named room straight out of the flat, or onto a ledge: a window",
     "widthMm": 734,
     "between": [
      "room-7",
@@ -4632,8 +4632,8 @@
   "gapsSeen": 115,
   "openings": {
    "door": 10,
-   "window": 10,
-   "open_passage": 2,
+   "window": 11,
+   "open_passage": 1,
    "wall": 4
   },
   "doorSwingsWithoutGap": 1,
@@ -4669,6 +4669,10 @@
   "thresholdDoors": 0,
   "gentleSlopedStrokes": 9,
   "outdoorSpacesClosedByGentleSlopes": 0,
+  "glassInThinWalls": 0,
+  "glassBandsBetweenTwoRooms": 0,
+  "doorwaysToTheOutsideReadAsWindows": 1,
+  "cornersWelded": 0,
   "unsupportedWallPx": 1193,
   "thickAxisWallPx": 1193,
   "slantedWallPx": 0,
