@@ -1,6 +1,27 @@
 import { buildDesignPagePanelRegistration } from "@/lib/design-page-panel-registration";
 import { isUntouchedStarterRoom } from "@/lib/design-page-template-furnishings";
+import { withSelectedItemLight } from "@/lib/design-page-selection-panel-model";
+import { resolveProductFixtureLight, withFixtureLightPatch } from "@/lib/product-fixture-light";
+import type { PlacedFixtureLightState } from "@/lib/room-types";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
+
+type PanelSources = DesignPagePresentationWorkspaceRegistration["boundaries"]["aiWorkspace"]["boundaries"];
+type LightSources = {
+  coreShell: PanelSources["coreShell"];
+  placementSelection: DesignPagePresentationWorkspaceRegistration["boundaries"]["selection"]["boundaries"]["selection"];
+  selectionInspection: PanelSources["planAuthoring"]["boundaries"]["selectionInspection"];
+  itemDocument: PanelSources["documentSelection"]["boundaries"]["itemDocument"];
+};
+
+/** A lamp's light, with its controls in the item panel (UX 4f; Pro's, as they were in Plan). */
+function withProductLight<Region extends Parameters<typeof withSelectedItemLight>[0]>(region: Region, sources: LightSources): Region {
+  const selectedItem = sources.placementSelection.state.selection.selectedItem;
+  const light = resolveProductFixtureLight({ item: selectedItem, product: sources.selectionInspection.derived.selectedProduct,
+    designSnapshot: sources.coreShell.state.document.designSnapshot, isDesigner: sources.coreShell.derived.access.isDesigner });
+  return withSelectedItemLight(region, light, (patch: PlacedFixtureLightState) => {
+    if (selectedItem) sources.itemDocument.actions.commitItems((items) => withFixtureLightPatch(items, selectedItem.instanceId, patch), "Change fixture lighting");
+  });
+}
 
 export type BuildDesignPagePanelWorkspaceRegistrationInput = {
   boundaries: {
@@ -200,7 +221,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
     configuration: {},
     refs: {},
     actions: {},
-    regions: { panel: region },
+    regions: { panel: withProductLight(region, { coreShell, placementSelection, selectionInspection, itemDocument }) },
   };
 }
 

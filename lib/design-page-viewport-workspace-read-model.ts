@@ -2,10 +2,8 @@ import { projectDesignPageViewportOpening } from "@/lib/design-page-opening-view
 import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
 import { getActiveSurfaceRoomFloorAreaSqm } from "@/components/editor/design-controls-plan/surfaceSummaryRows";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
-import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
-import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
-import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 import { resolveVectorFurnitureDimensions } from "@/lib/floor-plan-vector-export-source";
+import { showsItemPanel } from "@/lib/item-panel-steps";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 type ViewportState = BuildDesignPageViewportRegionAdapterInput["state"];
@@ -68,39 +66,6 @@ export type BuildDesignPageViewportWorkspaceReadModelInput = {
 type ViewportReadModelSources =
   BuildDesignPageViewportWorkspaceReadModelInput["sources"];
 
-function resolveSelectedFixtureLight({
-  coreShell,
-  itemSelection,
-  selectionInspection,
-}: ViewportReadModelSources): ViewportState["selectionInspector"]["selectedFixtureLight"] {
-  const selectedItem = itemSelection.state.selectedItem;
-  if (!coreShell.derived.access.isDesigner || !selectedItem) return null;
-
-  const photometrics = resolveFixturePhotometrics(
-    selectedItem,
-    selectionInspection.derived.selectedProduct
-  );
-  if (!photometrics) return null;
-
-  const lightingSettings = resolveDesignLightingSettings(
-    coreShell.state.document.designSnapshot
-  );
-  return {
-    isOn:
-      selectedItem.fixtureLight?.isOn ??
-      LIGHTING_PRESETS[lightingSettings.preset].fixtureDefaultOn,
-    dimmer: selectedItem.fixtureLight?.dimmer ?? 1,
-    cctKelvin:
-      selectedItem.fixtureLight?.cctKelvin ?? photometrics.cctKelvin,
-    beamAngleDeg:
-      selectedItem.fixtureLight?.beamAngleDeg ?? photometrics.beamAngleDeg,
-    beamAdjustable: photometrics.emitterType === "spot",
-    luminousFluxLumens: photometrics.luminousFluxLumens,
-    dimmable: photometrics.dimmable,
-    verification: photometrics.verification,
-  };
-}
-
 function buildSelectionInspectorState(
   sources: ViewportReadModelSources
 ): Pick<ViewportState, "selectionInspector"> {
@@ -126,7 +91,6 @@ function buildSelectionInspectorState(
       activeFloorRoomCount:
         documentRoom.derived.floor.activeFloorRoomCount,
       designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
-      selectedFixtureLight: resolveSelectedFixtureLight(sources),
     },
   };
 }
@@ -144,9 +108,10 @@ function buildViewportPanelState(
 
   return {
     visibility: {
+      // Plan's rail steps aside while a product's item panel shows (UX 4f).
       rail:
-        planWorkspace.derived.floatingPlanOverlayStackVisible ||
-        importedWallEditing.state.available,
+        (planWorkspace.derived.floatingPlanOverlayStackVisible || importedWallEditing.state.available) &&
+        !(sources.selectionInspection.derived.selectedProduct && showsItemPanel(sources.viewportShell.state.editor.editorMode)),
       sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil,
       selectionInspector: inspector.floatingSelectionInspectorVisible,
       planQuality: quality.reviewPanelVisible,

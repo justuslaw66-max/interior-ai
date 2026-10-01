@@ -23,9 +23,11 @@ const readSource = (relativePath: string) =>
 const workspaceSource = readSource(
   "components/editor/design-page/DesignPageWorkspace.tsx",
 );
-const panelSource = readSource(
+// The panel's header ("Selected", Lock, Deselect) is its own file (UX 4f).
+const panelSource = [
   "components/editor/design-page/SelectedItemPanel.tsx",
-);
+  "components/editor/design-page/SelectedItemPanelHeader.tsx",
+].map(readSource).join("\n");
 const detailsPanelSource = readSource(
   "components/editor/SelectedItemDetailsPanel.tsx",
 );
@@ -182,14 +184,21 @@ assert.strictEqual(
   selectionModels.selectedItem,
   "client preview should keep the Adjust-mode panel mounted for its leaf-level aria and opacity policy.",
 );
-assert.equal(
-  buildDesignPagePanelRegionAdapter({
-    ...panelModelInput,
-    state: { ...panelModelInput.state, editorMode: "design" },
-  }).state.selectedItem,
-  null,
-  "the pure panel adapter should gate selected-item composition to Adjust mode.",
-);
+// Products show the one item panel in Plan, Furnish and Suggest a layout (UX 4f); not in Shop or Present.
+for (const editorMode of ["design", "ai"] as const) {
+  assert.strictEqual(
+    buildDesignPagePanelRegionAdapter({ ...panelModelInput, state: { ...panelModelInput.state, editorMode } }).state.selectedItem,
+    selectionModels.selectedItem,
+    `the item panel shows in ${editorMode} mode.`,
+  );
+}
+for (const editorMode of ["buy", "present"] as const) {
+  assert.equal(
+    buildDesignPagePanelRegionAdapter({ ...panelModelInput, state: { ...panelModelInput.state, editorMode } }).state.selectedItem,
+    null,
+    `the pure panel adapter keeps the item panel out of ${editorMode} mode.`,
+  );
+}
 
 for (const callbackName of ["onToggleLock", "onRemove", "onDeselect", "onViewProduct", "onDuplicate"] as const) {
   assert.match(

@@ -145,7 +145,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 569,
+      "lines": 351,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -190,10 +190,6 @@
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
       "lines": 769,
-      "limit": 250
-    },
-    "components/editor/design-page/SelectedItemPanel.tsx": {
-      "lines": 260,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -685,7 +681,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 405,
+      "lines": 401,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -1615,11 +1611,11 @@
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 475
+        "maximum": 275
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 47
+        "maximum": 34
       }
     },
     "components/editor/design-page/DesignPageToasts.tsx": {
@@ -3223,13 +3219,13 @@
     "lib/design-page-viewport-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 195
+        "maximum": 193
       }
     },
     "lib/design-page-viewport-workspace-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 193
+        "maximum": 164
       }
     },
     "lib/design-page-zone-layout.ts": {

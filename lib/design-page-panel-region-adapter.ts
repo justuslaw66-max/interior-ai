@@ -1,3 +1,4 @@
+import { showsItemPanel } from "@/lib/item-panel-steps";
 import type {
   DesignPagePanelRegionProps,
   DesignPagePanelRegionState,
@@ -40,10 +41,7 @@ export function buildDesignPagePanelRegionAdapter({
         state.editorMode === "adjust" && state.hasSelectedCabinet
           ? panels.selectedCabinet
           : null,
-      selectedItem:
-        state.editorMode === "adjust" && state.hasSelectedProduct
-          ? panels.selectedItem
-          : null,
+      selectedItem: showsItemPanel(state.editorMode) && state.hasSelectedProduct ? panels.selectedItem : null,
       controls: state.controlsVisible ? panels.controls : null,
     },
     configuration,
