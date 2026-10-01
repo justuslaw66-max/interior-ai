@@ -166,9 +166,9 @@ function fitIntent(
   placedInRoom: readonly PlacedFootprint[],
   keepSpot: boolean
 ) {
-  const size = productFootprint(product, rotationOf(intent, product));
+  const rotationY = rotationOf(intent, product);
   const footprint = fitTemplateFurnishing(
-    { category: intent.category, x: intent.x, z: intent.z, ...size },
+    { category: intent.category, x: intent.x, z: intent.z, rotationY, ...productFootprint(product, rotationY) },
     placedInRoom,
     { width: room.geometry.width, depth: room.geometry.depth, wallThickness: room.geometry.wallThickness ?? 0.12 },
     keepSpot

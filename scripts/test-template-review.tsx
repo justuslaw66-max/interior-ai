@@ -23,6 +23,7 @@ import {
 } from "../lib/room-connection-checklist";
 import { buildRoomHealthSummary, resolveDesignPageRoomHealthReviewTarget } from "../lib/room-health-summary";
 import { BLANK_ROOM_TEMPLATE } from "../lib/start-design";
+import { SINGLE_ROOM_TEMPLATES } from "../lib/single-room-templates";
 import { fitTemplateFurnishing } from "../lib/template-furnishing-layout";
 
 // UX phase 4g (audit ST9): the templates pass their own review. Every template, Empty and with
@@ -37,6 +38,7 @@ const read = (path: string) => readFileSync(join(root, path), "utf8");
 // and sideboards come only from the imported catalogue, so they stand in here at the size of a
 // large one; the packs fit each piece to whatever size it gets.
 const LARGE: Partial<Record<HousePlanTemplateFurnishingIntent["category"], [number, number]>> = {
+  bed: [1.9, 2.2],
   sofa: [2.2, 0.95],
   floor_lamp: [0.45, 0.45],
   dining_bench: [1.5, 0.4],
@@ -84,7 +86,7 @@ function review(template: HousePlanTemplate, furnishingPackId?: HousePlanTemplat
   }
 }
 
-const templates = [...HOUSE_PLAN_TEMPLATES, BLANK_ROOM_TEMPLATE];
+const templates = [...HOUSE_PLAN_TEMPLATES, ...SINGLE_ROOM_TEMPLATES, BLANK_ROOM_TEMPLATE];
 assert.equal(HOUSE_PLAN_TEMPLATES.length, 13);
 for (const template of templates) {
   review(template);
@@ -183,4 +185,4 @@ for (const file of ["components/editor/DesignControlsPlanPanel.tsx", "lib/useDes
   assert.doesNotMatch(read(file), /item\.status !== "connected"/, `${file} counts blockers with isConnectionBlocker.`);
 }
 
-console.log("Template review checks passed: 13 templates and Blank room, Empty and furnished.");
+console.log("Template review checks passed: 13 templates, the one-room Living room and Bedroom, and Blank room, Empty and furnished.");

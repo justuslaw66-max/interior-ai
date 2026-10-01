@@ -4,18 +4,22 @@ import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 
 // A template pack's furniture, fitted to the products it gets (UX phase 4g, audit ST9). The packs
 // give each piece a spot for a mid-sized product; the catalogue decides the real size. Each piece
-// stays inside its room, a sofa, TV console or sideboard has its back to a wall, the coffee table
-// is in front of the sofa, a floor lamp or side table stands beside it, nothing overlaps, and
-// nothing stops just short of a wall.
+// stays inside its room, a sofa, bed, TV console or sideboard has its back to a wall, the coffee
+// table is in front of the sofa, a floor lamp or side table stands beside the sofa (or the bed),
+// nothing overlaps, and nothing stops just short of a wall.
 
 type Category = HousePlanTemplateFurnishingIntent["category"];
-export type PlacedFootprint = { category: Category; x: number; z: number; w: number; d: number };
+/** A piece's spot and footprint; at rotation 0 its back is to the north (−z). */
+export type PlacedFootprint = { category: Category; x: number; z: number; w: number; d: number; rotationY?: number };
+
+/** A piece facing north or south has its back on a north or south wall. */
+const backToNorthOrSouth = (piece: PlacedFootprint) => Math.abs(Math.cos(piece.rotationY ?? 0)) >= Math.abs(Math.sin(piece.rotationY ?? 0));
 export type FurnishingRoom = { width: number; depth: number; wallThickness: number };
 
 /** Clear of a wall: closer than this and a piece is either against the wall or in the way. */
 export const TEMPLATE_FURNITURE_CLEAR_OF_WALL_METERS = 0.35;
 const GAP_METERS = 0.05;
-const AGAINST_WALL: ReadonlySet<Category> = new Set(["sofa", "tv_console", "sideboard"]);
+const AGAINST_WALL: ReadonlySet<Category> = new Set(["sofa", "bed", "tv_console", "sideboard"]);
 const BESIDE_SOFA: ReadonlySet<Category> = new Set(["floor_lamp", "side_table"]);
 const COFFEE_TABLE_GAP_METERS = 0.45;
 /** Within this of its spot against the wall a piece is against it, not "tight" (the plan review agrees). */
@@ -42,13 +46,12 @@ function inside(piece: PlacedFootprint, room: FurnishingRoom): PlacedFootprint {
   return { ...piece, x: clamp(piece.x, limit.x), z: clamp(piece.z, limit.z) };
 }
 
-/** Against the nearer wall (a sofa, TV console or sideboard); else clear of the walls, when it fits. */
+/** Back to the nearer wall (a sofa, bed, TV console or sideboard); else clear of the walls, when it fits. */
 function settle(piece: PlacedFootprint, room: FurnishingRoom, againstWall: boolean): PlacedFootprint {
   const limit = limits(piece, room);
   const inset = getFurnitureWallInset(room.wallThickness);
   if (againstWall) {
-    // Back to the wall: a piece longer across x has its back on a north or south wall.
-    return piece.w >= piece.d
+    return backToNorthOrSouth(piece)
       ? { ...piece, z: Math.sign(piece.z || -1) * limit.z }
       : { ...piece, x: Math.sign(piece.x || 1) * limit.x };
   }
@@ -60,9 +63,9 @@ function settle(piece: PlacedFootprint, room: FurnishingRoom, againstWall: boole
   return { ...piece, x: away(piece.x, limit.x), z: away(piece.z, limit.z) };
 }
 
-/** Beside the room's sofa, at the end nearer its spot (the other end if it doesn't fit), back to the sofa's back. */
+/** Beside the room's sofa or bed, at the end nearer its spot (the other end if it doesn't fit), back to its back. */
 function besideSofa(piece: PlacedFootprint, sofa: PlacedFootprint, room: FurnishingRoom): PlacedFootprint | null {
-  const alongX = sofa.w >= sofa.d;
+  const alongX = backToNorthOrSouth(sofa);
   const limit = limits(piece, room);
   const ends = alongX
     ? [sofa.x - sofa.w / 2 - GAP_METERS - piece.w / 2, sofa.x + sofa.w / 2 + GAP_METERS + piece.w / 2]
@@ -79,7 +82,7 @@ function besideSofa(piece: PlacedFootprint, sofa: PlacedFootprint, room: Furnish
 
 /** In front of the sofa, a knee's width away, centred on it. */
 function inFrontOfSofa(piece: PlacedFootprint, sofa: PlacedFootprint, room: FurnishingRoom): PlacedFootprint {
-  const alongX = sofa.w >= sofa.d;
+  const alongX = backToNorthOrSouth(sofa);
   const facing = -Math.sign((alongX ? sofa.z : sofa.x) || -1);
   const front = alongX
     ? { x: sofa.x, z: sofa.z + facing * (sofa.d / 2 + COFFEE_TABLE_GAP_METERS + piece.d / 2) }
@@ -119,11 +122,12 @@ export function fitTemplateFurnishing(
   keepSpot = false
 ): PlacedFootprint {
   const sofa = placed.find((entry) => entry.category === "sofa");
+  const anchor = sofa ?? placed.find((entry) => entry.category === "bed");
   const start = keepSpot
     ? settle(inside(piece, room), room, false)
     : piece.category === "coffee_table" && sofa
       ? inFrontOfSofa(piece, sofa, room)
-      : (BESIDE_SOFA.has(piece.category) && sofa && besideSofa(piece, sofa, room)) ||
+      : (BESIDE_SOFA.has(piece.category) && anchor && besideSofa(piece, anchor, room)) ||
         settle(inside(piece, room), room, AGAINST_WALL.has(piece.category));
   const fitted = clearOf(start, placed, room);
   const round = (value: number) => Math.round(value * 1000) / 1000;

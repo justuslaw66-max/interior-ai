@@ -68,7 +68,7 @@ export type HousePlanTemplateId =
   | "small_condo"
   | "hdb_two_room"
   | "family_two_bed"
-  | "railroad_apartment" | "blank_room"
+  | "railroad_apartment" | "blank_room" | "one_room_living" | "one_room_bedroom"
   | `library_${string}`;
 
 export type HousePlanTemplateLayoutType =
@@ -145,7 +145,7 @@ export type HousePlanTemplateFurnishingIntent = {
     | "tv_console"
     | "sideboard"
     | "ottoman"
-    | "side_table"
+    | "side_table" | "bed"
   >;
   x: number;
   z: number;
