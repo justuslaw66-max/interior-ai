@@ -22,11 +22,12 @@ import {
   type TracedOpeningPreview,
 } from "@/lib/floor-plan-tracing";
 import {
-  buildHouseRoomAdjacencyGuides, buildHouseRoomDoorwaySuggestions,
+  buildHouseRoomAdjacencyGuides,
   HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS, ROOM_DIMENSION_DEFAULTS,
   resolveHouseRoomMove, type HouseRoomDoorwaySuggestion,
   type HouseRoomSnapPreview,
 } from "@/lib/design-page-house-plan";
+import { neededDoorwaySuggestions } from "@/lib/room-connection-checklist";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings, normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
@@ -1847,19 +1848,10 @@ export default function RoomRenderer2D({
   const visibleDoorwaySuggestions = useMemo(() => {
     if (!onAddDoorwaySuggestion || rooms.length < 2) return [];
     const suppressedKeys = new Set(suppressedDoorwaySuggestionKeys);
-    return buildHouseRoomDoorwaySuggestions(rooms, activeRoomId)
-      .filter(
-        (suggestion) =>
-          !suppressedKeys.has(getDoorwaySuggestionKey(suggestion)) &&
-          !openings.some(
-            (opening) =>
-              opening.kind === "door" &&
-              opening.roomId === suggestion.roomId &&
-              opening.wall === suggestion.wall &&
-              Math.abs(opening.offset - suggestion.offsetMeters) <=
-                Math.max(0.15, suggestion.widthMeters / 2)
-          )
-      )
+    // Only where the connections checklist says a door is needed (UX 4g, ST9).
+    const connectionOpenings = openings.map((opening) => ({ ...opening, offsetMm: opening.offset * 1000, widthMm: opening.width * 1000 }));
+    return neededDoorwaySuggestions(rooms, connectionOpenings, activeRoomId)
+      .filter((suggestion) => !suppressedKeys.has(getDoorwaySuggestionKey(suggestion)))
       .sort((a, b) => {
         const activePriority =
           Number(b.roomId === activeRoomId) - Number(a.roomId === activeRoomId);

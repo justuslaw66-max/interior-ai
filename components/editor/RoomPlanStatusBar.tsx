@@ -12,7 +12,7 @@ type RoomPlanStatusBarProps = {
   depthMeters: number;
   /** Null until the saved plan display unit has loaded, so no default-unit size flashes. */
   measurementUnit: DisplayUnit | null;
-  healthLevel?: "ready" | "review" | "blocked";
+  healthLevel?: "ready" | "review" | "blocked" | "empty";
   healthScore?: number;
   healthNextAction?: string;
   viewMode: EditorViewMode;

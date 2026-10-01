@@ -37,6 +37,7 @@ import {
   FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, floorPlanUploadRequestOf, requestFloorPlanUpload,
 } from "@/lib/floor-plan-upload-request";
 import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
+import { isConnectionBlocker } from "@/lib/room-connection-checklist";
 import { FloorPlanImportArrivalNote } from "./FloorPlanImportArrivalNote";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
@@ -575,9 +576,7 @@ export default function DesignControlsPlanPanel({
       Boolean(floorPlanUnderlay) ||
       floorPlanTraceRoomMode ||
       floorPlanTraceRoomPointCount > 0);
-  const connectionBlockerCount = roomConnectionChecklistItems.filter(
-    (item) => item.status !== "connected"
-  ).length;
+  const connectionBlockerCount = roomConnectionChecklistItems.filter(isConnectionBlocker).length;
   const missingDoorwayCount = roomConnectionChecklistItems.filter(
     (item) => item.status === "needs_doorway"
   ).length;

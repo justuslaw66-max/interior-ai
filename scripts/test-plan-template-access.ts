@@ -66,6 +66,11 @@ const floorPlanControllerPath = path.join(
   "useDesignPageFloorPlanUnderlayController.ts"
 );
 const floorPlanControllerSource = fs.readFileSync(floorPlanControllerPath, "utf8");
+// The template's plan is built in a pure module the controller applies (UX 4g, ST9).
+const planTemplateDocumentSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "plan-template-document.ts"),
+  "utf8"
+);
 const planWorkspaceFacadeSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPagePlanWorkspaceFacade.ts"),
   "utf8"
@@ -580,32 +585,32 @@ assert.match(
 );
 
 assert.match(
-  floorPlanControllerSource,
-  /const templateDoorOpenings: RoomOpening2D\[\] = template\.doorways\.flatMap/,
+  planTemplateDocumentSource,
+  /function doorOpenings\([\s\S]*?return template\.doorways\.flatMap/,
   "Applying a template should convert template doorway specs into plan openings."
 );
 
 assert.match(
-  floorPlanControllerSource,
-  /const templateWindowOpenings: RoomOpening2D\[\] = template\.windows\.flatMap[\s\S]*?kind: "window" as const/,
+  planTemplateDocumentSource,
+  /function windowOpenings\([\s\S]*?return template\.windows\.flatMap[\s\S]*?kind: "window" as const/,
   "Applying a template should convert exterior window specs into plan window openings."
 );
 
 assert.match(
-  floorPlanControllerSource,
-  /const templateOpenings = \[[\s\S]*?\.\.\.templateDoorOpenings,[\s\S]*?\.\.\.templateWindowOpenings,[\s\S]*?\]/,
+  planTemplateDocumentSource,
+  /const openings = \[\.\.\.doorOpenings\(template, roomIds, options\), \.\.\.windowOpenings\(template, roomIds, options\)\];/,
   "Applying a template should install automatic doors and windows together."
 );
 
 assert.match(
   floorPlanControllerSource,
-  /replacePlanDocument\(templateOpenings, templateFixedElements,/,
+  /const built = buildPlanTemplateDocument\(template, \{[\s\S]*?replacePlanDocument\(built\.openings, built\.fixedElements,/,
   "Applying a template should install automatic doorways instead of clearing openings."
 );
 
 assert.match(
-  floorPlanControllerSource,
-  /const templateFixedElements: FixedElement2D\[\] = \(template\.referenceZones \?\? \[\]\)\.map\([\s\S]*?kind: "reference_zone"[\s\S]*?locked: zone\.locked \?\? true/,
+  planTemplateDocumentSource,
+  /function referenceZoneElements\([\s\S]*?\(template\.referenceZones \?\? \[\]\)\.map\([\s\S]*?kind: "reference_zone"[\s\S]*?locked: zone\.locked \?\? true/,
   "Applying a template should convert its reference zones into locked plan elements."
 );
 
@@ -980,13 +985,17 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /options\?\.furnishingPackId[\s\S]*?targetRoom\.items = \[/,
+  /furnishingPackId: options\?\.furnishingPackId,/,
   "Furnished template application should create normal room-scoped design items only when requested."
+);
+assert.match(
+  planTemplateDocumentSource,
+  /const pack = options\.furnishingPackId[\s\S]*?targetRoom\.items = \[\.\.\.targetRoom\.items, furnishingItem\(fitted, product, instanceId\)\];/
 );
 
 assert.match(
-  floorPlanControllerSource,
-  /resolveTemplateFurnishingProduct\(intent\)/,
+  planTemplateDocumentSource,
+  /const resolveProduct = options\.resolveProduct \?\? resolveTemplateFurnishingProduct;[\s\S]*?const product = resolveProduct\(intent\);/,
   "Furnished starter items should be resolved through catalog readiness before placement."
 );
 

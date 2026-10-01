@@ -205,7 +205,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3582,
+      "lines": 3581,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5481,
+      "lines": 5473,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -481,7 +481,7 @@
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
-      "lines": 2907,
+      "lines": 2800,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -581,7 +581,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 629,
+      "lines": 615,
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
@@ -633,7 +633,7 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
-      "lines": 770,
+      "lines": 585,
       "limit": 400
     },
     "lib/useDesignPageItemDocumentController.ts": {
@@ -649,7 +649,7 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 429,
+      "lines": 424,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -1895,7 +1895,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3464
+        "maximum": 3462
       },
       "complexFunctions": {
         "count": 5,
@@ -2197,7 +2197,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 17,
-        "maximum": 4122
+        "maximum": 4113
       },
       "complexFunctions": {
         "count": 8,
@@ -2217,7 +2217,7 @@
     "components/editor/RoomConnectionChecklist.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 113
+        "maximum": 107
       }
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -3136,7 +3136,7 @@
     },
     "lib/design-page-house-plan.ts": {
       "overlongFunctions": {
-        "count": 8,
+        "count": 7,
         "maximum": 117
       },
       "complexFunctions": {
@@ -3799,7 +3799,7 @@
     "lib/floor-plan-quality.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 332
+        "maximum": 317
       },
       "complexFunctions": {
         "count": 1,
@@ -4009,7 +4009,7 @@
     "lib/room-health-summary.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 72
+        "maximum": 71
       },
       "complexFunctions": {
         "count": 1,
@@ -4263,11 +4263,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 673
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 18
+        "maximum": 503
       }
     },
     "lib/useDesignPageFloorPlanWorkflowState.ts": {
@@ -4445,7 +4441,7 @@
     "lib/useDesignPagePlanPresentationModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 216
+        "maximum": 210
       },
       "complexFunctions": {
         "count": 1,

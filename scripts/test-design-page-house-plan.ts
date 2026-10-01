@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import RoomConnectionChecklist from "@/components/editor/RoomConnectionChecklist";
+import { buildHouseRoomConnectionChecklist } from "@/lib/room-connection-checklist";
 import {
   buildHousePlan2D,
   buildHouseRoomAdjacencyGuides,
-  buildHouseRoomConnectionChecklist,
   buildHouseRoomConnectivityReport,
   buildHouseRoomDoorwaySuggestions,
   clampRoomDimension,

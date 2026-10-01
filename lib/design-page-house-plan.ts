@@ -1269,12 +1269,10 @@ const TEMPLATE_FURNISHING_OVERRIDES: Partial<
     essentials: [
       { roomId: "living", category: "sofa", x: -1.25, z: -1.15, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -1.25, z: -0.15, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -1.25, z: -0.1, rotationDeg: 0 },
     ],
     styled_starter: [
       { roomId: "living", category: "sofa", x: -1.25, z: -1.15, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -1.25, z: -0.15, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -1.25, z: -0.1, rotationDeg: 0 },
       { roomId: "living", category: "accent_chair", x: 0.65, z: 0.65, rotationDeg: -35 },
       { roomId: "living", category: "floor_lamp", x: -2, z: -1.55, rotationDeg: 0 },
       { roomId: "living", category: "side_table", x: 0.95, z: -1.35, rotationDeg: 0 },
@@ -1284,12 +1282,10 @@ const TEMPLATE_FURNISHING_OVERRIDES: Partial<
     essentials: [
       { roomId: "living", category: "sofa", x: -0.85, z: -1.25, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -0.85, z: -0.25, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -0.85, z: -0.2, rotationDeg: 0 },
     ],
     styled_starter: [
       { roomId: "living", category: "sofa", x: -0.85, z: -1.25, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -0.85, z: -0.25, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -0.85, z: -0.2, rotationDeg: 0 },
       { roomId: "living", category: "accent_chair", x: 1.15, z: 0.35, rotationDeg: -35 },
       { roomId: "living", category: "floor_lamp", x: -1.85, z: -1.45, rotationDeg: 0 },
       { roomId: "living", category: "tv_console", x: 1.35, z: -1.25, rotationDeg: 90 },
@@ -1299,13 +1295,11 @@ const TEMPLATE_FURNISHING_OVERRIDES: Partial<
     essentials: [
       { roomId: "living", category: "sofa", x: -0.9, z: -1.15, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -0.9, z: -0.15, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -0.9, z: -0.1, rotationDeg: 0 },
       { roomId: "dining", category: "dining_table", x: 0, z: -0.25, rotationDeg: 90 },
     ],
     styled_starter: [
       { roomId: "living", category: "sofa", x: -0.9, z: -1.15, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -0.9, z: -0.15, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -0.9, z: -0.1, rotationDeg: 0 },
       { roomId: "living", category: "accent_chair", x: 1.1, z: 0.65, rotationDeg: -35 },
       { roomId: "living", category: "tv_console", x: 1.35, z: -1.15, rotationDeg: 90 },
       { roomId: "dining", category: "dining_table", x: 0, z: -0.25, rotationDeg: 90 },
@@ -1321,7 +1315,6 @@ const TEMPLATE_FURNISHING_OVERRIDES: Partial<
     styled_starter: [
       { roomId: "living", category: "sofa", x: -0.8, z: -1, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -0.8, z: -0.1, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -0.8, z: -0.1, rotationDeg: 0 },
       { roomId: "living", category: "floor_lamp", x: -1.75, z: -1.25, rotationDeg: 0 },
       { roomId: "living", category: "tv_console", x: 1.35, z: -0.95, rotationDeg: 90 },
       { roomId: "kitchen", category: "dining_table", x: 0, z: 0.55, rotationDeg: 0 },
@@ -1336,7 +1329,6 @@ const TEMPLATE_FURNISHING_OVERRIDES: Partial<
     styled_starter: [
       { roomId: "living", category: "sofa", x: -1.1, z: -1.15, rotationDeg: 0 },
       { roomId: "living", category: "coffee_table", x: -1.1, z: -0.15, rotationDeg: 0 },
-      { roomId: "living", category: "rug", x: -1.1, z: -0.15, rotationDeg: 0 },
       { roomId: "living", category: "accent_chair", x: 1.05, z: 0.55, rotationDeg: -35 },
       { roomId: "living", category: "tv_console", x: 1.45, z: -1.2, rotationDeg: 90 },
       { roomId: "kitchen_dining", category: "dining_table", x: 0.25, z: 0.35, rotationDeg: 90 },
@@ -1439,14 +1431,6 @@ function buildTemplateFurnishingPacks(
     z: -0.15,
     rotationDeg: 0,
   });
-  if (hasLargeLivingRoom) {
-    pushTemplateFurnishingIntent(essentials, livingRoom, {
-      category: "rug",
-      x: 0,
-      z: -0.1,
-      rotationDeg: 0,
-    });
-  }
   if (hasDiningSpace) {
     pushTemplateFurnishingIntent(essentials, diningTarget, {
       category: "dining_table",
@@ -1688,7 +1672,8 @@ export type HouseRoomConnectionChecklistItem = {
   roomIds: string[];
   roomNames: string[];
   sharedWallLengthMeters: number;
-  status: "connected" | "needs_doorway" | "detached" | "disconnected_group";
+  /** "reachable": no door between them, but both are reached through other rooms (UX 4g). */
+  status: "connected" | "reachable" | "needs_doorway" | "detached" | "disconnected_group";
   doorwaySuggestion?: HouseRoomDoorwaySuggestion;
 };
 
@@ -2793,98 +2778,6 @@ export function buildHouseRoomDoorwaySuggestions(
   }
 
   return suggestions;
-}
-
-function doorwaySuggestionMatchesOpening(
-  suggestion: HouseRoomDoorwaySuggestion,
-  opening: HouseRoomConnectionOpening
-): boolean {
-  if (opening.kind !== "door") return false;
-  if (opening.roomId !== suggestion.roomId) return false;
-  if (opening.wall !== suggestion.wall) return false;
-
-  const offsetMm = Math.round(suggestion.offsetMeters * 1000);
-  const widthMm = Math.round(suggestion.widthMeters * 1000);
-  return Math.abs(opening.offsetMm - offsetMm) <= Math.max(150, widthMm / 2);
-}
-
-export function buildHouseRoomConnectionChecklist(
-  rooms: HousePlanRoom2D[],
-  openings: HouseRoomConnectionOpening[],
-  activeRoomId?: string | null
-): HouseRoomConnectionChecklistItem[] {
-  const suggestions = buildHouseRoomDoorwaySuggestions(rooms);
-
-  const adjacencyItems: HouseRoomConnectionChecklistItem[] = buildHouseRoomAdjacencyGuides(rooms).map((guide) => {
-    const [firstRoomId, secondRoomId] = guide.roomIds;
-    const firstRoom = rooms.find((room) => room.id === firstRoomId);
-    const secondRoom = rooms.find((room) => room.id === secondRoomId);
-    const pairSuggestions = suggestions.filter(
-      (suggestion) =>
-        guide.roomIds.includes(suggestion.roomId) &&
-        guide.roomIds.includes(suggestion.adjacentRoomId)
-    );
-    const hasDoorway = pairSuggestions.some((suggestion) =>
-      openings.some((opening) => doorwaySuggestionMatchesOpening(suggestion, opening))
-    );
-    const doorwaySuggestion =
-      hasDoorway
-        ? undefined
-        : activeRoomId
-          ? pairSuggestions.find((suggestion) => suggestion.roomId === activeRoomId) ??
-            pairSuggestions[0]
-          : pairSuggestions[0];
-
-    return {
-      id: guide.id,
-      roomIds: guide.roomIds,
-      roomNames: [
-        firstRoom?.name ?? "Room",
-        secondRoom?.name ?? "Room",
-      ],
-      sharedWallLengthMeters: guide.lengthMeters,
-      status: hasDoorway ? "connected" : "needs_doorway",
-      doorwaySuggestion,
-    };
-  });
-
-  const warningItems: HouseRoomConnectionChecklistItem[] = [];
-  const roomsByFloor = new Map<number, HousePlanRoom2D[]>();
-  for (const room of rooms) {
-    const floorLevel = getHouseRoomFloorLevel(room);
-    roomsByFloor.set(floorLevel, [...(roomsByFloor.get(floorLevel) ?? []), room]);
-  }
-
-  for (const [floorLevel, floorRooms] of roomsByFloor) {
-    const connectivity = buildHouseRoomConnectivityReport(floorRooms);
-    for (const roomId of connectivity.detachedRoomIds) {
-      const room = floorRooms.find((entry) => entry.id === roomId);
-      if (!room) continue;
-      warningItems.push({
-        id: `floor-${floorLevel}-${roomId}-detached`,
-        roomIds: [roomId],
-        roomNames: [room.name],
-        sharedWallLengthMeters: 0,
-        status: "detached",
-      });
-    }
-
-    for (const group of connectivity.disconnectedGroups) {
-      const groupRooms = group
-        .map((roomId) => floorRooms.find((entry) => entry.id === roomId))
-        .filter((room): room is HousePlanRoom2D => Boolean(room));
-      if (groupRooms.length <= 1) continue;
-      warningItems.push({
-        id: `floor-${floorLevel}-${group.join("-")}-disconnected`,
-        roomIds: groupRooms.map((room) => room.id),
-        roomNames: groupRooms.map((room) => room.name),
-        sharedWallLengthMeters: 0,
-        status: "disconnected_group",
-      });
-    }
-  }
-
-  return [...adjacencyItems, ...warningItems];
 }
 
 export function resolvePlanFitZoom(params: {

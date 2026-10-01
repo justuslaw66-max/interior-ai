@@ -4,7 +4,8 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 import { scoreManualPlacement } from "@/lib/manual-placement-scoring";
 import type { RoomSnapshot } from "@/lib/room-types";
 
-export type RoomHealthLevel = "ready" | "review" | "blocked";
+/** "empty": no products yet, which isn't a problem to review (UX 4g, ST9); the editor shows no badge. */
+export type RoomHealthLevel = "ready" | "review" | "blocked" | "empty";
 
 export type RoomHealthSummary = {
   roomId: string;
@@ -30,7 +31,7 @@ export type DesignPageRoomHealthReviewTarget =
 export function resolveDesignPageRoomHealthReviewTarget(
   summary: RoomHealthSummary | null
 ): DesignPageRoomHealthReviewTarget | null {
-  if (!summary || summary.level === "ready") return null;
+  if (!summary || summary.level === "ready" || summary.level === "empty") return null;
   if (summary.shoppingNeedsReviewCount > 0) return "shopping";
   if (summary.exportIssueCount > 0) return "export";
   if (
@@ -93,14 +94,13 @@ export function buildRoomHealthSummary({
   const hasBlocker =
     blockedPlacementCount > 0 ||
     !circulation.pathValid ||
-    shoppingNeedsReviewCount > 0 ||
-    exportIssueCount > 0;
+    shoppingNeedsReviewCount > 0;
   const hasReview =
     crampedPlacementCount > 0 ||
     missingAnchorCount > 0 ||
     circulation.warnings.length > 0 ||
     placementScore < 72;
-  const level: RoomHealthLevel = hasBlocker ? "blocked" : hasReview ? "review" : "ready";
+  const level: RoomHealthLevel = hasBlocker ? "blocked" : room.items.length === 0 ? "empty" : hasReview ? "review" : "ready";
   const nextAction =
     blockedPlacementCount > 0 || !circulation.pathValid
       ? "Fix blocked circulation before saving or sharing."
@@ -109,7 +109,7 @@ export function buildRoomHealthSummary({
         : shoppingNeedsReviewCount > 0
           ? "Fix shopping metadata before checkout."
           : exportIssueCount > 0
-            ? "Add at least one item before export handoff."
+            ? "Add furniture to start this room."
             : missingAnchorCount > 0
               ? "Add or move anchor furniture for better recommendations."
               : "Room is ready for save, share, and export.";

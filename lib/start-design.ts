@@ -7,6 +7,7 @@ import {
   type HousePlanTemplateFurnishingPackId,
   type HousePlanTemplateId,
 } from "@/lib/design-page-house-plan";
+import { DEFAULT_DOOR_WIDTH_MM, DEFAULT_WINDOW_WIDTH_MM } from "@/lib/design-page-opening-dimensions";
 
 /**
  * Blank room and Draw room start from one empty room at the default size, the same room a
@@ -36,8 +37,9 @@ export const BLANK_ROOM_TEMPLATE: HousePlanTemplate = {
       z: 0,
     },
   ],
-  doorways: [],
-  windows: [],
+  // The first visit's door and window (UX 4g, ST9), so a blank room has a way in and daylight.
+  doorways: [{ fromRoomId: "room", wall: "east", offsetMeters: 0, widthMeters: DEFAULT_DOOR_WIDTH_MM / 1000 }],
+  windows: [{ roomId: "room", wall: "west", offsetMeters: 0, widthMeters: DEFAULT_WINDOW_WIDTH_MM / 1000 }],
   furnishingPacks: [],
 };
 

@@ -53,7 +53,10 @@ assert.ok(blankRoom);
 assert.equal(blankRoom.roomType, "living");
 assert.equal(blankRoom.width, ROOM_DIMENSION_DEFAULTS.width);
 assert.equal(blankRoom.depth, ROOM_DIMENSION_DEFAULTS.depth);
-assert.deepEqual([BLANK_ROOM_TEMPLATE.doorways, BLANK_ROOM_TEMPLATE.windows, BLANK_ROOM_TEMPLATE.furnishingPacks], [[], [], []]);
+// It has the first visit's door and window too (UX 4g, ST9): a way in and daylight.
+assert.deepEqual(BLANK_ROOM_TEMPLATE.doorways, [{ fromRoomId: "room", wall: "east", offsetMeters: 0, widthMeters: 0.9 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.windows, [{ roomId: "room", wall: "west", offsetMeters: 0, widthMeters: 1.2 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.furnishingPacks, []);
 const base = migrateToV3({
   items: [],
   zones: [],
