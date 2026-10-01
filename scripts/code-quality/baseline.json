@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/PresentExportDialog.tsx": {
-      "lines": 838,
+      "lines": 794,
       "limit": 250
     },
     "components/editor/design-page/ProductFinishControls.tsx": {
@@ -1801,11 +1801,11 @@
     "components/editor/design-page/PresentExportDialog.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 732
+        "maximum": 688
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 77
+        "maximum": 71
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {

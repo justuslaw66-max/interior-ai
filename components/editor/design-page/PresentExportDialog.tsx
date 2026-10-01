@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
-import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
 import PlanOpeningInspector from "@/components/editor/PlanOpeningInspector";
 import { LightingPresetsUI } from "@/components/LightingPresetsUI";
+import { Button } from "@/components/ui/Button";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
@@ -111,7 +111,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
   const canUseAdvancedExportStyles =
     configuration.canUseAdvancedExportStyles;
   const {
-    exportReadiness,
     rooms,
     currentRoomId,
     viewMode,
@@ -168,13 +167,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
       }
       contentClassName="space-y-4"
     >
-          <ExportReadinessPreview
-            dark={showDesignerTheme}
-            items={exportReadiness.items}
-            readyCount={exportReadiness.readyCount}
-            score={exportReadiness.score}
-          />
-
           {/* Room Switcher Section */}
           {(() => {
             if (rooms.length > 1) {
@@ -714,37 +706,19 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
             }>
               Share
             </h3>
-            <button
+            <Button
               id={PRESENT_EXPORT_CREATE_SHARE_ACTION_ID} data-testid="create-share"
-              className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-hidden hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="w-full"
               disabled={sharingDesign || !designId}
               onClick={actions.onCreateShareLink}
               title={!designId ? "Save your design first to share it" : ""}
             >
               {sharingDesign ? "Creating link…" : shareToken ? "Copy link" : "Create link"}
-            </button>
+            </Button>
             {!designId && (
-              <div className={
-                showDesignerTheme
-                  ? "text-xs text-neutral-400"
-                  : "text-xs text-gray-500"
-              }>
+              <div className="text-xs text-gray-500">
                 Save your design first to share it
               </div>
-            )}
-            {shareToken && (
-              <a
-                href={`/share/${shareToken}/export`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={
-                  showDesignerTheme
-                    ? "designer-control-active block w-full rounded-lg border px-4 py-3 text-center text-sm font-medium"
-                    : "block w-full rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-700"
-                }
-              >
-                📦 View Export Pack
-              </a>
             )}
           </div>
 
@@ -785,53 +759,35 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 </div>
               </>
             )}
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-              }
+            {/* UX audit SX4 (phase 4e): one primary action, no emoji; AI Notes is Pro's (Q5). */}
+            <Button
+              variant="primary"
+              className="w-full"
               disabled={isExporting || !sceneReady}
               onClick={actions.onExportImages}
             >
-              {isExporting ? "Exporting…" : "📸 Export Images"}
-            </button>
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-              }
-              disabled={isPdfExporting || !sceneReady}
-              onClick={actions.onExportPdf}
-            >
-              {isPdfExporting ? "Generating…" : "📄 Export PDF"}
-            </button>
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              }
-              disabled={aiNotesLoading || !hasItems}
-              onClick={actions.onGenerateAiNotes}
-            >
-              {aiNotesLoading ? "Generating…" : "✨ AI Notes"}
-            </button>
+              {isExporting ? "Exporting…" : "Export Images"}
+            </Button>
+            <Button className="w-full" disabled={isPdfExporting || !sceneReady} onClick={actions.onExportPdf}>
+              {isPdfExporting ? "Generating…" : "Export PDF"}
+            </Button>
+            {canUseAdvancedExportStyles ? (
+              <Button className="w-full" disabled={aiNotesLoading || !hasItems} onClick={actions.onGenerateAiNotes}>
+                {aiNotesLoading ? "Generating…" : "AI Notes"}
+              </Button>
+            ) : null}
           </div>
 
           {/* Exit Present Mode Button */}
           <div className="border-t pt-4">
-            <button
-              disabled={Boolean(configuration.shareFallbackOpen)} className={
-                showDesignerTheme
-                  ? "designer-control w-full rounded-lg border px-4 py-3 text-sm font-medium"
-                  : "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              }
+            <Button
+              variant="quiet"
+              className="w-full"
+              disabled={Boolean(configuration.shareFallbackOpen)}
               onClick={actions.onClose}
             >
-              ← Back to Design Mode
-            </button>
+              Back to Design Mode
+            </Button>
           </div>
     </EditorDialog>
   );
