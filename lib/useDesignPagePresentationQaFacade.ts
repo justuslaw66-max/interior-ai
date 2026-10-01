@@ -13,7 +13,7 @@ import { areRuntimeQaHooksEnabled } from "@/lib/qa";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageDesignRename } from "@/lib/useDesignPageDesignRename";
-import { useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
+import { savedViewActions, useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
 import { useDesignPagePlanCanvasActionsController, type UseDesignPagePlanCanvasActionsControllerInput } from "@/lib/useDesignPagePlanCanvasActionsController";
 import { useDesignPagePresentExportController, type UseDesignPagePresentExportControllerInput } from "@/lib/useDesignPagePresentExportController";
 import { useDesignPageQaReadModel, type UseDesignPageQaReadModelInput } from "@/lib/useDesignPageQaReadModel";
@@ -405,15 +405,11 @@ export function useDesignPagePresentationQaFacade({
           ...state.presentation.lightingStatus,
         },
       },
-      betaStart: {
-        visible: state.chrome.showBetaStart,
-        panel: {
-          nextStepLabel:
-            state.chrome.firstRunActivation.nextStep?.label ?? null,
-          progressPercent: state.chrome.firstRunActivation.progressPercent,
-        },
-      },
+      betaStart: { visible: state.chrome.showBetaStart, panel: {
+        nextStepLabel: state.chrome.firstRunActivation.nextStep?.label ?? null, progressPercent: state.chrome.firstRunActivation.progressPercent,
+      } },
       designPanelOpen: state.chrome.designPanelOpen,
+      savedViews: { views: state.document.activeRoom?.savedViews ?? [], nameInput: state.presentation.cameraViewNameInput },
     },
     configuration: {
       commandBar: {
@@ -421,28 +417,17 @@ export function useDesignPagePresentationQaFacade({
         compactRoomStatus: configuration.compactRoomStatus,
         showRoomHealth: configuration.showRoomHealth,
       },
-      toolRail: {
-        dark: configuration.designerTheme,
-        aiDesignEnabled: state.editor.aiDesignEnabled,
-      },
+      toolRail: { dark: configuration.designerTheme, aiDesignEnabled: state.editor.aiDesignEnabled },
       canUseDesigner: configuration.canUseDesigner,
     },
     actions: {
-      navigation: {
-        ...actions.navigation,
-        changeViewMode: actions.shell.changeViewMode,
-        fitPlan: actions.plan.fitPlanView,
-      },
+      navigation: { ...actions.navigation, changeViewMode: actions.shell.changeViewMode, fitPlan: actions.plan.fitPlanView },
       history: { undo: actions.history.undo, redo: actions.history.redo },
       editor: { setMode: actions.shell.setEditorMode, setDesignPanelOpen: actions.shell.setDesignPanelOpen,
         setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
         setClientPreview: actions.shell.setClientPreview, setUrlMode: actions.shell.setUrlMode },
-      dialogs: {
-        ...actions.dialogs, openDesignRename: designRename.openRename,
-        setPresentOpen: actions.shell.setPresentModalOpen,
-        setUpgradeReason: actions.shell.setUpgradeReason,
-        setUpgradeOpen: actions.shell.setUpgradeOpen,
-      },
+      dialogs: { ...actions.dialogs, openDesignRename: designRename.openRename, setPresentOpen: actions.shell.setPresentModalOpen,
+        setUpgradeReason: actions.shell.setUpgradeReason, setUpgradeOpen: actions.shell.setUpgradeOpen },
       billing: actions.billing,
       persistence: actions.persistence,
       room: actions.room,
@@ -453,6 +438,7 @@ export function useDesignPagePresentationQaFacade({
         updateSettings: actions.lighting.updateSettings,
       },
       betaStart: actions.betaStart,
+      savedViews: savedViewActions(presentExport.actions),
       showToast: actions.feedback.showToast,
     },
   });

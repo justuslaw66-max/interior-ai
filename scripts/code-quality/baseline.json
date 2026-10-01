@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/PresentExportDialog.tsx": {
-      "lines": 794,
+      "lines": 709,
       "limit": 250
     },
     "components/editor/design-page/ProductFinishControls.tsx": {
@@ -657,7 +657,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 500,
+      "lines": 486,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -1801,11 +1801,11 @@
     "components/editor/design-page/PresentExportDialog.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 688
+        "maximum": 603
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 71
+        "maximum": 65
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
@@ -4503,7 +4503,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 290
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

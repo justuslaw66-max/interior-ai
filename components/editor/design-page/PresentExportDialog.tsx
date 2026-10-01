@@ -114,7 +114,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
     rooms,
     currentRoomId,
     viewMode,
-    cameraViewNameInput,
     activeRoom,
     layoutVersionNameInput,
     simplePlanControls,
@@ -139,7 +138,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
     aiNotesLoading,
     hasItems,
   } = state;
-  const activeRoomSavedViews = activeRoom?.savedViews ?? [];
   const activeRoomLayoutVersions = activeRoom?.layoutVersions ?? [];
   const latestManualLayoutVersion =
     activeRoomLayoutVersions.find(
@@ -212,7 +210,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 ? "designer-text-primary mb-2 text-sm font-semibold"
                 : "mb-2 text-sm font-semibold text-gray-800"
             }>
-              Saved views
+              View
             </h3>
             <div className="space-y-2">
               <EditorViewToggle
@@ -232,89 +230,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 Focus
               </button>
             </div>
-              <div
-                className={
-                  showDesignerTheme
-                    ? "designer-raised mt-3 rounded-lg p-3"
-                    : "mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
-                }
-              >
-                <label
-                  htmlFor="camera-view-name"
-                  className={
-                    showDesignerTheme
-                      ? "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-400"
-                      : "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
-                  }
-                >
-                  View name
-                </label>
-                <div className="grid grid-cols-[1fr_auto] gap-2">
-                  <input
-                    id="camera-view-name"
-                    data-testid="camera-view-name-input"
-                    value={cameraViewNameInput}
-                    onChange={(event) => actions.onCameraViewNameChange(event.target.value)}
-                    placeholder={`View ${activeRoomSavedViews.length + 1}`}
-                    className={
-                      showDesignerTheme
-                        ? "min-h-10 rounded-lg border border-neutral-700 bg-[#0f1218] px-3 text-sm text-neutral-100 placeholder:text-neutral-500"
-                        : "min-h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400"
-                    }
-                  />
-                  <button
-                    type="button"
-                    data-testid="save-named-camera-view"
-                    onClick={actions.onSaveCameraView}
-                    className="min-h-10 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white hover:bg-neutral-800"
-                  >
-                    Save
-                  </button>
-                </div>
-                {activeRoomSavedViews.length > 0 ? (
-                  <div className="mt-3 space-y-2" data-testid="saved-camera-view-list">
-                    {activeRoomSavedViews.map((view) => (
-                      <div
-                        key={view.id}
-                        className={
-                          showDesignerTheme
-                            ? "flex items-center justify-between gap-2 rounded-lg bg-[#0f1218] px-3 py-2"
-                            : "flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2"
-                        }
-                      >
-                        <button
-                          type="button"
-                          data-testid={`saved-camera-view-open-${view.id}`}
-                          className={
-                            showDesignerTheme
-                              ? "min-w-0 flex-1 truncate text-left text-xs font-semibold text-neutral-100"
-                              : "min-w-0 flex-1 truncate text-left text-xs font-semibold text-gray-800"
-                          }
-                          onClick={() => actions.onOpenCameraView(view)}
-                        >
-                          {view.name}
-                        </button>
-                        <button
-                          type="button"
-                          data-testid={`saved-camera-view-delete-${view.id}`}
-                          className={
-                            showDesignerTheme
-                              ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold"
-                              : "rounded px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                          }
-                          onClick={() => actions.onDeleteCameraView(view.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-gray-500"}>
-                    Saved views appear on share links and export packs.
-                  </div>
-                )}
-              </div>
               <div
                 className={
                   showDesignerTheme

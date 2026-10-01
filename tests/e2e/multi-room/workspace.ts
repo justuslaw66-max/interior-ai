@@ -130,13 +130,6 @@ export function registerWorkspaceTests() {
       timeout: 10000,
     });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
-    await page.getByTestId("camera-view-name-input").fill("Client hero angle");
-    await clickWithFallback(page.getByTestId("save-named-camera-view"));
-    await expect(page.getByTestId("saved-camera-view-list")).toContainText("Client hero angle");
-    await clickWithFallback(page.getByRole("button", { name: "Client hero angle" }));
-    await clickWithFallback(page.locator('[data-testid^="saved-camera-view-delete-"]'));
-    await expect(page.getByTestId("saved-camera-view-list")).toHaveCount(0);
-    await expect(page.getByText("Saved views appear on share links and export packs.")).toBeVisible();
     await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
 
     // Closing the panel ends presenting, so More offers Present & export again.
@@ -146,6 +139,20 @@ export function registerWorkspaceTests() {
     await expect(presentToggle).toHaveText("Present & export");
     await page.keyboard.press("Escape");
     await expect(presentToggle).toHaveCount(0);
+
+    // Saved views are on the 3D view's Views button (UX audit SX4, phase 4e).
+    const toolbar = page.getByTestId("canvas-view-toolbar");
+    await clickWithFallback(toolbar.getByTestId("editor-view-3d"));
+    await clickWithFallback(toolbar.getByTestId("canvas-saved-views"));
+    await page.getByTestId("camera-view-name-input").fill("Client hero angle");
+    await clickWithFallback(page.getByTestId("save-named-camera-view"));
+    await expect(page.getByTestId("saved-camera-view-list")).toContainText("Client hero angle");
+    await clickWithFallback(page.getByRole("button", { name: "Client hero angle", exact: true }));
+    await clickWithFallback(page.locator('[data-testid^="saved-camera-view-delete-"]'));
+    await expect(page.getByTestId("saved-camera-view-list")).toHaveCount(0);
+    await expect(page.getByText("Saved views appear on share links and export packs.")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("canvas-saved-views-panel")).toHaveCount(0);
 
     await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");

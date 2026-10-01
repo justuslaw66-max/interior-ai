@@ -6,6 +6,7 @@ import EditorToolRail from "@/components/editor/EditorToolRail";
 import { CanvasViewToolbar } from "@/components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsSheet } from "@/components/editor/canvas/KeyboardShortcutsSheet";
 import { PhoneCanvasPills } from "@/components/editor/canvas/PhoneCanvasPills";
+import type { CanvasSavedViewsActions, CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
 import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
@@ -32,6 +33,8 @@ export type DesignPageEditorChromeState = {
     visible: boolean;
     mode: ToolRailProps["mode"];
   };
+  /** The active room's saved views, for Views on the 3D view (UX 4e, SX4). */
+  savedViews: CanvasSavedViewsState;
 };
 
 export type DesignPageEditorChromeConfiguration = {
@@ -43,6 +46,7 @@ export type DesignPageEditorChromeActions = {
   commandBar: CommandBarProps["actions"];
   betaStart: BetaStartProps["actions"];
   toolRail: Pick<ToolRailProps, ToolRailActionKey>;
+  savedViews: CanvasSavedViewsActions;
 };
 
 export type DesignPageEditorChromeProps = {
@@ -64,6 +68,7 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
   const overCanvas = !bar.isClientPreview && bar.editorMode !== "buy";
   const onCanvas = wide && overCanvas;
   const tablet = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), bar.designSidebarCollapsed);
+  const savedViews = { ...state.savedViews, ...actions.savedViews };
   const leftInsetPx = resolveCanvasLeftInsetPx({
     panelVisible: !bar.millworkActive && isDesignControlsPanelMode(bar.editorMode),
     shopping: false,
@@ -86,6 +91,7 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
           redoName={bar.redoName}
           onUndo={barActions.onUndo}
           onRedo={barActions.onRedo}
+          savedViews={savedViews}
         />
       ) : null}
       {overCanvas && !wide ? (
@@ -99,6 +105,7 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
           redoName={bar.redoName}
           onUndo={barActions.onUndo}
           onRedo={barActions.onRedo}
+          savedViews={savedViews}
         />
       ) : null}
       {onCanvas ? <KeyboardShortcutsButton dark={dark} /> : null}

@@ -2,6 +2,7 @@
 
 import { Redo2, Undo2 } from "lucide-react";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 
 export type PhoneCanvasPillsProps = {
   dark: boolean;
@@ -13,6 +14,8 @@ export type PhoneCanvasPillsProps = {
   redoName: string | null;
   onUndo: () => void;
   onRedo: () => void;
+  /** Saved views, from Views beside 2D | 3D in 3D (UX 4e, SX4). */
+  savedViews: CanvasSavedViewsState & CanvasSavedViewsActions;
 };
 
 const PILL_CLASS =
@@ -33,6 +36,7 @@ export function PhoneCanvasPills(props: PhoneCanvasPillsProps) {
     <>
       <div data-testid="canvas-view-pill" className={`${pillClass} left-3`}>
         <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={dark} variant="pill" />
+        {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} dark={dark} size="pill" /> : null}
       </div>
       <div role="group" aria-label="History" data-testid="canvas-history-pill" className={`${pillClass} right-3`}>
         <button
