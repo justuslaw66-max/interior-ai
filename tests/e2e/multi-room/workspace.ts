@@ -161,6 +161,10 @@ export function registerWorkspaceTests() {
   test("layout versions save, restore, and delete the active room", async ({ page }) => {
     test.setTimeout(45_000);
 
+    // Layout versions are Pro's (UX audit SX4, phase 4e; J's Q5).
+    await page.route("**/api/me", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "pro", source: "playwright" }) })
+    );
     await clearBrowserStorageBeforeNextLoad(page);
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
@@ -171,6 +175,7 @@ export function registerWorkspaceTests() {
       timeout: 10_000,
     });
 
+    await expect(page.getByTestId("layout-versions-panel")).toBeVisible({ timeout: 10_000 });
     const versionName = "E2E active room layout";
     const versionList = page.getByTestId("layout-version-list");
     const comparison = page.getByTestId("layout-version-comparison");
@@ -189,6 +194,73 @@ export function registerWorkspaceTests() {
 
     await clickWithFallback(deleteButtons.first());
     await expect(deleteButtons).toHaveCount(1);
+  });
+
+  test("Pro's plan display sits at the foot of Plan while the 2D plan shows", async ({ page }) => {
+    test.setTimeout(45_000);
+
+    // The plan display moved from Present & export to Plan, for Pro (UX audit SX4, phase 4e; J's Q5).
+    await page.route("**/api/me", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "pro", source: "playwright" }) })
+    );
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toBeVisible({ timeout: 20_000 });
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+
+    const display = page.getByTestId("plan-display-section");
+    await page.getByTestId("editor-view-2d").click();
+    await expect(display).toBeVisible({ timeout: 10_000 });
+    await expect(display.getByRole("heading", { name: "Plan display" })).toBeVisible();
+    await expect(page.getByTestId("plan-notes-section")).toHaveCount(0);
+
+    // Simple has one note tool; Detailed adds callouts, room tags and the export style.
+    await expect(display.getByTestId("plan-add-note")).toBeVisible();
+    await expect(display.getByTestId("plan-add-callout")).toHaveCount(0);
+    const detailed = display.getByRole("button", { name: "Detailed", exact: true });
+    await detailed.click();
+    await expect(detailed).toHaveAttribute("aria-pressed", "true");
+    await expect(display.getByTestId("plan-add-callout")).toBeVisible();
+    await expect(display.getByTestId("plan-add-room-tag")).toBeVisible();
+    await expect(display.getByRole("group", { name: "Export style" })).toBeVisible();
+
+    // Only while the 2D plan shows, and only in Plan.
+    await page.getByTestId("editor-view-3d").click();
+    await expect(display).toHaveCount(0);
+    await page.getByTestId("editor-view-2d").click();
+    await expect(display).toBeVisible();
+    await selectWorkspace(page, "furnish");
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
+    await expect(display).toHaveCount(0);
+  });
+
+  test("Free users keep notes at the foot of Plan while the 2D plan shows", async ({ page }) => {
+    test.setTimeout(45_000);
+
+    // J, 1 Oct (option A): every plan adds notes, so Free users keep Add note and Delete selected.
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toBeVisible({ timeout: 20_000 });
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
+
+    const notes = page.getByTestId("plan-notes-section");
+    await page.getByTestId("editor-view-2d").click();
+    await expect(notes).toBeVisible({ timeout: 10_000 });
+    await expect(notes.getByRole("heading", { name: "Notes on the plan" })).toBeVisible();
+    await expect(notes.getByTestId("plan-add-note")).toBeVisible();
+    await expect(notes.getByRole("button", { name: "Delete selected" })).toBeDisabled();
+    await expect(page.getByTestId("plan-display-section")).toHaveCount(0);
+
+    await page.getByTestId("editor-view-3d").click();
+    await expect(notes).toHaveCount(0);
   });
 
   test("mobile Furnish shows the products first", async ({ page }) => {

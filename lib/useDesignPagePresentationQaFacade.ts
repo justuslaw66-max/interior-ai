@@ -65,7 +65,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     };
     presentation: Pick<PresentDialogState,
       "cameraViewNameInput" | "layoutVersionNameInput" | "exportReadiness" | "simplePlanControls" |
-      "lightingPreset" | "sharingDesign" | "exportStylePreset" | "isExporting" | "isPdfExporting" | "aiNotesLoading"
+      "sharingDesign" | "exportStylePreset" | "isExporting" | "isPdfExporting" | "aiNotesLoading"
     > & {
       presentModeRoomId: string | null;
       lightingSettings: DesignLightingSettings;
@@ -77,8 +77,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     };
     plan: Pick<PresentDialogState,
       "planLayerPreset" | "planLayers" | "planMeasurementUnit" | "planTheme" | "annotationToolKind" |
-      "selectedPlanOverlayId" | "visiblePlanOpening" | "visiblePlanOpeningRoomName" |
-      "visiblePlanOpeningWallSpanMeters" | "visiblePlanOpeningMaxHeightMeters"
+      "selectedPlanOverlayId"
     > & {
       houseRoomCount: number;
       openingCount: number;
@@ -222,13 +221,6 @@ export function useDesignPagePresentationQaFacade({
         planTheme: state.plan.planTheme,
         annotationToolKind: state.plan.annotationToolKind,
         selectedPlanOverlayId: state.plan.selectedPlanOverlayId,
-        visiblePlanOpening: state.plan.visiblePlanOpening,
-        visiblePlanOpeningRoomName: state.plan.visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters:
-          state.plan.visiblePlanOpeningWallSpanMeters,
-        visiblePlanOpeningMaxHeightMeters:
-          state.plan.visiblePlanOpeningMaxHeightMeters,
-        lightingPreset: state.presentation.lightingPreset,
         sharingDesign: state.presentation.sharingDesign,
         designId: state.identity.designId,
         shareToken: state.identity.shareToken,

@@ -486,7 +486,7 @@ export function DesignPageWorkspace() {
           </div>
         ) : null}
       </div>
-      <DesignPagePanelRegion {...panelRegionModel} />
+      <DesignPagePanelRegion {...panelRegionModel} planTools={presentExportDialog} />
       <DesignPageDialogLayer {...dialogLayerModel} />
       <LocalBackupRecoveryDialog
         state={presentationBackupRegistration.state.localBackupRecovery}

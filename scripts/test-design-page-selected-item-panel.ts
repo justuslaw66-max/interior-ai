@@ -67,8 +67,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}\s*\/>/,
-  "The workspace should compose the panel region through its typed model.",
+  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}(?:\s+planTools=\{presentExportDialog\})?\s*\/>/,
+  "The workspace should compose the panel region through its typed model (and the plan's tools, UX 4e).",
 );
 assert.doesNotMatch(
   workspaceSource,
