@@ -177,10 +177,10 @@ export function buildDesignPagePanelWorkspaceRegistration({
           planWorkspace.actions.overlay.handleUpdateOpeningMetrics2D,
       },
       shopping: {
-        commitItemsToRoom: itemDocument.actions.commitItemsToRoom,
+        commitItemsToRoom: itemDocument.actions.commitItemsToRoom, commitItemsToRooms: itemDocument.actions.commitItemsToRooms,
+        openPricing: (openerId) => { base.actions.dialogs.setPlansOpenerId(openerId); base.actions.dialogs.setShowPlans(true); },
         openGuestPrompt: persistence.actions.persistence.openGuestPrompt,
-        addImportedToRoom:
-          commerceOnboarding.actions.commerce.addSelectedImportedToRoom,
+        addImportedToRoom: commerceOnboarding.actions.commerce.addSelectedImportedToRoom,
       },
       cabinetry: {
         deleteSelected:

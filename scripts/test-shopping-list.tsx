@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ShoppingSwapAll } from "../components/editor/shop/ShoppingSwapAll";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { DesignItem } from "../lib/room-types";
 import {
@@ -179,5 +182,29 @@ assert.equal(swapAllStep("cheaper"), "Swap all for cheaper");
 assert.equal(swapAllStep("pricier"), "Swap all for pricier");
 assert.equal(swapAllMessage(6), "6 products swapped");
 assert.equal(swapAllMessage(1), "1 product swapped");
+
+// The buttons: Pro sees how many each would swap, and a direction with none is off; Free sees a
+// Pro badge, and a press opens Pricing, which hands focus back to the button.
+const noop = () => {};
+const pro = renderToStaticMarkup(<ShoppingSwapAll counts={{ cheaper: 6, pricier: 0 }} disabled={false} onSwapAll={noop} />);
+assert.match(pro, /^<div role="group" aria-label="Swap all" data-testid="shopping-swap-all"/);
+assert.match(pro, /id="shopping-swap-all-cheaper" data-testid="shopping-swap-all-cheaper" aria-label="Swap all for cheaper, 6 products">/);
+assert.match(pro, /id="shopping-swap-all-pricier" data-testid="shopping-swap-all-pricier" aria-label="Swap all for pricier, 0 products" disabled="">/);
+assert.match(pro, /\bmin-h-11\b/, "44px, the shared Button's touch size.");
+const free = renderToStaticMarkup(<ShoppingSwapAll counts={null} disabled={false} onSwapAll={noop} />);
+assert.equal(free.match(/aria-label="Swap all for (?:cheaper|pricier), Pro">/g)?.length, 2);
+assert.equal(free.match(/>Pro<\/span>/g)?.length, 2);
+assert.doesNotMatch(free, /disabled=""/, "Free can press them: they open Pricing.");
+
+const read = (path: string) => readFileSync(path, "utf8");
+const shopStep = read("components/editor/shop/ShopStep.tsx");
+assert.match(shopStep, /if \(!plans\) return swapAll\.openPricing\(swapAllButtonId\(direction\)\);/);
+assert.match(shopStep, /return swapAll && canEdit \? \{ counts, disabled: false, onSwapAll \} : null;/, "No Swap all where the host doesn't supply it.");
+assert.match(shopStep, /swapAll\.commitItemsToRooms\(roomIds\.map\(\(roomId\) => \(\{ roomId, update: \(items\) => withSwapAllApplied\(items, roomId, changes\) \}\)\), step\);\s*announceUndoableAction\(\{ message: swapAllMessage\(changes\.length\), undoLabels: \[step\] \}\);/, "One step, one toast with Undo.");
+assert.match(read("lib/design-page-panel-registration.ts"), /swapAll: \{ canSwapAll: state\.document\.plan === "pro", commitItemsToRooms: actions\.shopping\.commitItemsToRooms, openPricing: actions\.shopping\.openPricing \}/);
+assert.match(read("lib/useCommitItemsToRooms.ts"), /history\.executeCommand<[^>]+>\(\{\s*id: "replace-rooms-items",/);
+const page = read("components/editor/shop/ShoppingListPage.tsx");
+assert.match(page, /\{swapAll && !empty && !wide \? <ShoppingSwapAll \{\.\.\.swapAll\} \/> : null\}/, "Under the heading below lg.");
+assert.match(page, /swapAll=\{wide \? swapAll : null\}/, "In the summary from lg; never both.");
 
 console.log("Shopping list checks passed.");

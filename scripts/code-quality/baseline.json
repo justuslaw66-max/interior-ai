@@ -493,7 +493,7 @@
       "limit": 400
     },
     "lib/design-page-panel-registration.ts": {
-      "lines": 455,
+      "lines": 450,
       "limit": 400
     },
     "lib/design-page-product-data.ts": {
@@ -3171,7 +3171,7 @@
     "lib/design-page-panel-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 446
+        "maximum": 441
       }
     },
     "lib/design-page-panel-workspace-registration.ts": {
@@ -4311,7 +4311,7 @@
     "lib/useDesignPageItemDocumentController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 259
+        "maximum": 258
       }
     },
     "lib/useDesignPageItemGeometry.ts": {
