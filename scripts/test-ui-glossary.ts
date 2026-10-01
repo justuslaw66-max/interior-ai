@@ -31,8 +31,7 @@ const COPY_CALLS =
 const COPY_FUNCTIONS = /(?:Label|Copy|Text|Message|Title|Description|Hint|Caption|Summary|Heading|Explanation|Guidance|Tooltip)s?$/;
 // Reviewed exceptions: "file|exact text" → reason.
 const ALLOWED = new Map<string, string>([
-  ["app/share/[shareToken]/(presentation)/page.tsx|Drag to look around • Make a copy to edit", "an instruction, not the retired \"Copy to edit\" button"],
-  ["components/SharePageActions.tsx|- Interior AI design preview", "the product name Interior AI, then \"design preview\""],
+  ["app/share/[shareToken]/(presentation)/ShareHeader.tsx|Drag to look around • Make a copy to edit", "an instruction, not the retired \"Copy to edit\" button"],
   // The buy list sends people to a shop's website, where they add products to that shop's own cart.
   ["components/editor/shop/ShoppingBuyListDialog.tsx|Add to your cart", "the retailer's own cart, on its website"],
   ["components/editor/shop/ShoppingBuyListDialog.tsx|Add 1 to your cart", "the retailer's own cart, on its website"],

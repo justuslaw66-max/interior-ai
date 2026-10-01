@@ -2360,12 +2360,6 @@
         "maximum": 96
       }
     },
-    "components/SharePageActions.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 121
-      }
-    },
     "components/ShareShoppingCheckout.tsx": {
       "overlongFunctions": {
         "count": 1,

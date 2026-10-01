@@ -86,6 +86,11 @@ const sharePageSource = readFileSync(
 );
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
+const shareHeaderSource = readFileSync(join(root, "app/share/[shareToken]/(presentation)/ShareHeader.tsx"), "utf8");
+const shareShoppingSource = readFileSync(
+  join(root, "app/share/[shareToken]/(presentation)/ShareShoppingSection.tsx"),
+  "utf8"
+);
 const shareRoomScheduleSource = readFileSync(
   join(root, "components/public-share/PublicShareRoomSchedule.tsx"),
   "utf8"
@@ -275,15 +280,12 @@ for (const source of [sharePageSource, exportPageSource]) {
     "share/export QA marker should include missing-commerce count."
   );
 }
-assert.match(
-  sharePageSource,
-  /data-testid="share-handoff-integrity"/,
-  "share page should show visible handoff integrity."
-);
-assert.match(
-  sharePageSource,
-  /data-testid="share-handoff-id"/,
-  "share page should show a visible handoff ID."
+// UX audit SX7 (phase 4e): the shared page is for the person it was shared with, so the handoff
+// status, its "Reference" hash and each room's health left it; the hidden QA marker keeps the fingerprint.
+assert.doesNotMatch(
+  sharePageSource + shareHeaderSource,
+  /share-handoff-integrity|share-handoff-id|Reference \{/,
+  "The shared page shows no handoff status or reference hash."
 );
 assert.match(
   shareActionsSource,
@@ -291,20 +293,16 @@ assert.match(
   "share page actions should expose first-viewport PDF download."
 );
 assert.match(
-  shareActionsSource,
+  shareHeaderSource,
   /data-testid="share-shopping-list"[\s\S]*Shopping list/,
-  "share page actions should expose first-viewport shopping list access."
+  "the share page's summary line should link to the Shopping list in the first viewport."
 );
 assert.match(
-  sharePageSource,
+  shareShoppingSource,
   /id="shopping-preview"/,
   "share page shopping preview should be directly linkable from first-viewport actions."
 );
-assert.match(
-  shareRoomScheduleSource,
-  /data-testid="share-room-health"/,
-  "share page room list should show room health."
-);
+assert.doesNotMatch(shareRoomScheduleSource, /share-room-health|health/i, "The shared room list has no health column (SX7).");
 assert.match(
   exportPageSource,
   /data-testid="export-handoff-integrity"/,
