@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 317,
-      "expectedPathSha256": "47b4fe9ad805c1233f91e76eb35ece64deeb0611481534d5430e12165bc924c2"
+      "expectedFileCount": 318,
+      "expectedPathSha256": "6224e6355ee15232e5f10409b96131eda97442ed7e20c7b019bf56ad866d00dd"
     },
     {
       "id": "browser-specs",
@@ -542,18 +542,20 @@
       "blocking": true,
       "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
       "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
-      "packageClosure": { "expectedScriptCount": 12, "expectedSha256": "7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0" },
+      "packageClosure": { "expectedScriptCount": 13, "expectedSha256": "6e1a80dd0e336a509c2f2165b937c313ad96d01fe80ea7227820d3e9041cb819" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
         "scripts/test-catalog-registry-sync.ts",
         "scripts/test-catalog-asset-availability.ts",
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
       "requiredCommandSources": [
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
