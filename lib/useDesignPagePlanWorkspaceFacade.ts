@@ -27,8 +27,6 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
       layers: PresentationPlanState["planLayers"];
       theme: PresentationPlanState["planTheme"];
       guidedActionsEnabled: PresentationPlanState["planGuidedActionsEnabled"];
-      guidedActionsChoiceSeen: PresentationPlanState["planGuidedActionsChoiceSeen"];
-      settingsLoaded: PresentationPlanState["planSettingsLoaded"];
       canvasFocusActive: PresentationPlanState["planCanvasFocusActive"];
       dismissedCanvasGuidanceKey: PresentationPlanState["dismissedPlanCanvasGuidanceKey"];
       activeFloorPlanTool: PresentationPlanState["activeFloorPlanTool"];
@@ -139,8 +137,6 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
     >;
     floorPlanTracing: Pick<
       TracingInput["actions"],
-      | "setPlanGuidedActionsEnabled"
-      | "setPlanGuidedActionsChoiceSeen"
       | "setBlankGridRoomPreviewPoint"
       | "setFloorPlanTraceRoomMode"
       | "setFloorPlanTraceRoomPoints"
@@ -240,8 +236,6 @@ export function useDesignPagePlanWorkspaceFacade({
         activeFloorPlanTool: plan.activeFloorPlanTool,
         activePlanCanvasInteraction: plan.canvasInteractionActive,
         planCanvasFocusActive: plan.canvasFocusActive,
-        planSettingsLoaded: plan.settingsLoaded,
-        planGuidedActionsChoiceSeen: plan.guidedActionsChoiceSeen,
         showBetaStart: editor.showBetaStart,
         dismissedPlanCanvasGuidanceKey: plan.dismissedCanvasGuidanceKey,
       },

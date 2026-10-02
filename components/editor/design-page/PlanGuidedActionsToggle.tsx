@@ -10,6 +10,11 @@ type PlanGuidedActionsToggleProps = {
   };
 };
 
+/**
+ * Tips (UX audit ED6): on, Plan guides each step on the canvas; off, it shows the plain tools
+ * (Select, Draw room, Door, Window, Fit). One switch, on by default; the first-visit "Plan mode"
+ * choice is gone.
+ */
 export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsToggleProps) {
   const toggleClass = [
     "pointer-events-auto absolute z-30 flex items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
@@ -29,11 +34,11 @@ export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsTog
       data-compact={state.compact ? "true" : "false"}
       role="switch"
       aria-checked={state.enabled}
-      aria-label={state.enabled ? "Turn guided actions off" : "Turn guided actions on"}
+      aria-label="Tips"
       className={toggleClass}
       onClick={actions.toggle}
     >
-      <span>{state.compact ? "Guided" : "Guided actions"}</span>
+      <span>Tips</span>
       <span
         className={`relative h-5 w-9 shrink-0 rounded-full transition ${
           state.enabled ? "bg-emerald-500" : "bg-neutral-300"

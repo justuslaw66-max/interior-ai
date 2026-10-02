@@ -46,7 +46,7 @@ test.describe("100. Hugg Catalog Smoke", () => {
 
     await addCatalogDrawerItemToRoom(page);
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Hugg Nesting Square Coffee Table/i).first()).toBeVisible();
     await expect(page.getByText("Selected: Black").first()).toBeVisible();
     await page.getByRole("button", { name: "Select fabric colour Performance Dune" }).click();

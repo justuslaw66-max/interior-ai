@@ -19,7 +19,7 @@ test.describe("105. Product Info Panel Generic YAML Details", () => {
     expect(opened).toBeTruthy();
 
     await addCatalogDrawerItemToRoom(page);
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
 
     await page.getByRole("button", { name: /^Show details$/i }).click();
     await expect(page.getByTestId("selected-product-details-panel")).toContainText(/Body/i);

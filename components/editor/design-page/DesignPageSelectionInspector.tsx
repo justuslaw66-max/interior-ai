@@ -506,7 +506,7 @@ export function DesignPageSelectionInspector({
               }
               onClick={actions.item.delete}
             >
-              Delete
+              Remove
             </button>
           </>
         ) : roomSelectionActive && state.selectedRoom ? (

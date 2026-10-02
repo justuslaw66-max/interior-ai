@@ -8,7 +8,6 @@ import {
   PlanCanvasGuidance,
   type PlanCanvasGuidancePrimaryAction,
 } from "@/components/editor/design-page/PlanCanvasGuidance";
-import { PlanGuidedActionsChoice } from "@/components/editor/design-page/PlanGuidedActionsChoice";
 import { PlanGuidedActionsToggle } from "@/components/editor/design-page/PlanGuidedActionsToggle";
 import { PlanManualQuickActions } from "@/components/editor/design-page/PlanManualQuickActions";
 import type {
@@ -19,10 +18,6 @@ export type DesignPagePlanCanvasOverlaysState =
   ResolvedPlanCanvasOverlaysState;
 
 export type DesignPagePlanCanvasOverlaysActions = {
-  guidedActionsChoice: {
-    close: () => void;
-    choose: (guided: boolean) => void;
-  };
   manualQuickActions: {
     select: () => void;
     startScale: () => void;
@@ -94,16 +89,11 @@ export function DesignPagePlanCanvasOverlays({
   actions,
 }: DesignPagePlanCanvasOverlaysProps) {
   const guidance = state.guidance;
-  const guidancePrimaryAction = guidance
-    ? resolveGuidancePrimaryAction(guidance.action, actions.guidance)
-    : null;
+  const guidancePrimaryAction =
+    guidance ? resolveGuidancePrimaryAction(guidance.action, actions.guidance) : null;
 
   return (
     <>
-      {state.guidedActionsChoiceVisible && (
-        <PlanGuidedActionsChoice actions={actions.guidedActionsChoice} />
-      )}
-
       {state.manualQuickActions && (
         <PlanManualQuickActions
           state={state.manualQuickActions}
@@ -137,6 +127,7 @@ export function DesignPagePlanCanvasOverlays({
             guidance: guidance.guidance,
             primaryAction: guidancePrimaryAction,
             dismissible: guidance.dismissible,
+            aboveStepSheet: guidance.aboveStepSheet,
           }}
           actions={{
             dismiss: () => actions.guidance.dismiss(guidance.key),

@@ -526,9 +526,17 @@ test.describe("23. Consumer room setup", () => {
       (window as Window & { __measurementPreferenceStates?: string[] })
         .__measurementPreferenceStates ?? []
     );
-    expect(observed.some((entry) => entry.startsWith("loading:"))).toBe(true);
+    // The server can't know this browser's units, so it renders the region loading, without values.
+    // Whether that state is ever painted is up to React, which can reveal streamed content late:
+    // on 3c-3b's Mac run the page stayed hidden until hydration had resolved the units, so the first
+    // painted state was already ready. So check the server's HTML, and that nothing painted before
+    // the first ready state shows a value.
+    const serverHtml = await (await page.request.get("/design?view=2d")).text();
+    expect(serverHtml).toMatch(
+      /data-testid="room-setup-unit-dependent"[^>]*data-measurement-preference-state="loading"/
+    );
     const firstReady = observed.findIndex((entry) => entry.startsWith("ready:"));
-    expect(firstReady).toBeGreaterThan(0);
+    expect(firstReady).toBeGreaterThanOrEqual(0);
     expect(observed[firstReady]).toContain("16′ 4.9″ × 13′ 1.5″ · 215.3 ft²");
     expect(observed.slice(0, firstReady).some((entry) => /\d+(?:\.\d+)?\s*(?:mm|cm|m²|ft²|′|″)/.test(entry))).toBe(false);
     expect(observed.some((entry) => /500 cm|400 cm|m²/.test(entry))).toBe(false);

@@ -238,7 +238,7 @@ export default function CatalogItemDrawer({
             </div>
             <div className="shrink-0 text-right">
               <div className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
-                {detail.priceLabel ?? "External retailer"}
+                {detail.priceLabel ?? "Price on request"}
               </div>
               <div className="mt-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
                 Identity locked

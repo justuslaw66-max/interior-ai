@@ -269,6 +269,9 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
     const trayOpener = page.getByTestId(`catalog-compare-open-${productId}`);
     await trayOpener.focus();
     await trayOpener.press("Enter");
+    // The drawer takes focus on the next frame and closes on Escape from inside it; an Escape
+    // before that reaches the tray instead.
+    await expect(page.getByTestId("catalog-item-drawer-close")).toBeFocused();
     await page.keyboard.press("Escape");
     await expectConnectedActionableFocus(trayOpener);
 
