@@ -15,7 +15,7 @@ import {
 export type SurfaceBrowserTab = "tiles" | "rooms";
 export type WallSurfaceMode = "paint" | "materials";
 export type SurfaceBrowserViewMode = "grid" | "list";
-export type SurfaceFilterKey = "effect" | "collection" | "size" | "color";
+export type SurfaceFilterKey = "brand" | "collection" | "effect" | "size" | "color";
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
 export type SurfaceRoomSummary = {
@@ -166,6 +166,19 @@ export function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialCa
     )
     .trim();
   return withoutSize || displayName;
+}
+
+/**
+ * A card names the model ("Crema") under its collection ("Dorica"), as the manufacturer does.
+ * A name that doesn't start with its collection (Goodrich's) stays whole.
+ */
+export function getSurfaceMaterialModelName(material: SurfaceMaterialCatalogRecord) {
+  const displayName = getSurfaceMaterialProductDisplayName(material);
+  const collection = getSurfaceMaterialCollectionLabel(material);
+  const model = collection && displayName.toLowerCase().startsWith(`${collection.toLowerCase()} `)
+    ? displayName.slice(collection.length).trim()
+    : "";
+  return model || displayName;
 }
 
 export function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialCatalogRecord) {
