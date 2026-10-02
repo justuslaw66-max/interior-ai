@@ -79,7 +79,9 @@ function ShopGroup({ title, detail, subtotal, lines, linkType, action }: ShopGro
 
 function ShopGroups({ list, checkoutLines }: { list: ShoppingList; checkoutLines: ShareCheckoutLine[] }) {
   return (
-    <div className="mt-4 grid gap-4" data-testid="share-checkout-readiness">
+    // One column that may shrink (grid-cols-1 is minmax(0, 1fr)): an auto column grows to the
+    // widest product name, which the lines truncate, and pushed a phone's page 153px wide.
+    <div className="mt-4 grid grid-cols-1 gap-4" data-testid="share-checkout-readiness">
       <p className="text-xs text-neutral-600" data-testid="share-availability-warning">
         Prices are estimates. Each shop confirms stock, delivery and the final price.
       </p>

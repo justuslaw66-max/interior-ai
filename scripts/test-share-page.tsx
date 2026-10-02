@@ -77,6 +77,9 @@ assert.match(markup, /<section[^>]*aria-label="Not sold online yet"/);
 assert.equal(markup.match(/View product<span class="sr-only">/g)?.length, 3, "A link for each product a shop sells.");
 assert.doesNotMatch(markup, /Checkout here|share-live-commerce/, "Checkout here stays hidden without Shopify products.");
 assert.doesNotMatch(markup, /Checkout readiness|Missing commerce mapping|Valid but excluded|Cart-ready|Needs commerce/);
+// One column that can shrink: an auto column grows to the widest product name and a phone's page
+// scrolls sideways (share-responsive's single-room test, 153px at 390px).
+assert.match(markup, /<div class="mt-4 grid grid-cols-1 gap-4" data-testid="share-checkout-readiness">/);
 
 const withHere = renderToStaticMarkup(
   <ShareShoppingSection
