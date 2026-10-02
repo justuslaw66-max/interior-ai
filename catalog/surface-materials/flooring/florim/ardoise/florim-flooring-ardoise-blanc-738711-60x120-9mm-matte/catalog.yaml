@@ -1,0 +1,123 @@
+schema_version: 1
+surface_material:
+  supplier: florim
+  brand: Florim
+  collection: Ardoise
+  material_id: florim-flooring-ardoise-blanc-738711-60x120-9mm-matte
+  product_name: Florim Ardoise Blanc 9mm 60x120 Matt
+  slug: florim-flooring-ardoise-blanc-738711-60x120-9mm-matte
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.florim.com/en/products/all-collections/ardoise/blanc
+  sample_request_url: null
+  currency: EUR
+  license_status: needs_permission
+  notes:
+    - Florim item 738711, brand code REX, collection Ardoise, colour Blanc. Data and pictures taken from the product page on 2026-10-01.
+    - 'Surface: Matte - R10; edge: rectified (single caliber); body: fine porcelain stoneware; thickness 9 mm.'
+    - 'Pictures: 6 faces, 354x718 px, each covering 600x1200 mm.'
+    - The pictures are this item's own graphic; their scale could not be cross-checked against another size.
+    - 'Suggested grout on the product page: Kerakoll KK 64 (#d4d2c4).'
+    - Image usage rights are pending permission from Florim.
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: white
+  tone:
+    - neutral
+    - natural
+    - soft
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - soft_minimal
+    - japandi
+  room_suitability:
+    - living_room
+    - dining_room
+    - bedroom
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 600
+  tile_length_mm: 1200
+  total_thickness_mm: 9
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: R10
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/florim/ardoise/738711_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/florim/ardoise/738711_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 60.0
+    height: 120.0
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/florim/ardoise/738711_06.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+    - herringbone
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_supplier_image_usage_rights
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - florim_product_page_import
+    - physical_scale_faces
+    - surface_target_specific_entry

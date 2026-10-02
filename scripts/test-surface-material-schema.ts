@@ -671,6 +671,10 @@ for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
       ao_url: sourceMaterial.texture_assets.ao_url ?? null,
       preview_room_url: sourceMaterial.texture_assets.preview_room_url ?? null,
       tileable: sourceMaterial.texture_assets.tileable,
+      ...(sourceMaterial.texture_assets.image_physical_size_mm
+        ? { image_physical_size_mm: sourceMaterial.texture_assets.image_physical_size_mm }
+        : {}),
+      ...(sourceMaterial.texture_assets.faces ? { faces: sourceMaterial.texture_assets.faces } : {}),
     },
     `${runtimeMaterial.surface_material.material_id} texture-map identities must match canonical YAML`
   );
