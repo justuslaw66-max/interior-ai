@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { parseDesignPagePlacementAddMode } from "../lib/design-page-editor-client-preferences";
+import { checkActivation } from "../lib/onboarding";
 
 const root = process.cwd();
 const readSource = (relativePath: string) =>
@@ -313,5 +314,17 @@ assert.match(
   /zones=\{plan\.zones\}/,
   "The structure layer should pass the composed plan zones to the 2D renderer."
 );
+
+// The first sofa makes no seating zone (FU6), so the sofa itself finishes onboarding's first valid
+// layout; before, the zone was the milestone and a lone sofa never got there (the 2 Oct Mac run).
+const sofaOnly = { hasSofa: true, hasRug: false, hasCoffeeTable: false, hasSeatingZone: false };
+assert.equal(checkActivation(sofaOnly), true, "The first sofa alone is the first valid layout.");
+assert.equal(
+  checkActivation({ ...sofaOnly, constraintResults: [{ id: "clearance", level: "error" }] }),
+  false,
+  "A constraint error still holds it back."
+);
+assert.equal(checkActivation({ ...sofaOnly, hasSofa: false, hasRug: true, hasCoffeeTable: true }), false);
+assert.equal(checkActivation({ ...sofaOnly, hasSofa: false, hasSeatingZone: true }), true, "A Pro seating zone still counts.");
 
 console.log("Design-page zone controller guardrails passed.");
