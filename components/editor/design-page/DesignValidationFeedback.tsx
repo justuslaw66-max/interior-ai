@@ -72,7 +72,7 @@ export function DesignValidationFeedback({
               </label>
               <button
                 type="button"
-                className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700"
+                className="rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800"
                 onClick={floorPlanOrientation.onConfirm}
               >
                 Yes, it matches
@@ -168,9 +168,9 @@ export function DesignValidationFeedback({
                 key={item.id}
                 className={`rounded-full px-4 py-2 text-sm font-semibold shadow-lg ${
                   item.level === "ok"
-                    ? "bg-green-600 text-white"
+                    ? "bg-green-700 text-white"
                     : item.level === "warn"
-                      ? "bg-orange-500 text-white"
+                      ? "bg-orange-700 text-white"
                       : "bg-red-600 text-white"
                 }`}
               >

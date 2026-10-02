@@ -64,8 +64,14 @@ async function clickPanelAt(page: Page, x: number, y: number) {
 async function scanLivingEastPanels(page: Page) {
   const hits = new Map<string, Array<{ x: number; y: number }>>();
   const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
+  // Only points where the 3D view is on top are clicked (UX 4c): the room focus pill and a picked
+  // door's Width and Delete bar sit over the view across the scan's first rows, and a click there
+  // would press "Focus room" or delete the door mid-scan.
+  const onCanvas = (x: number, y: number) =>
+    page.evaluate(([px, py]) => Boolean(document.elementFromPoint(px, py)?.closest('[data-testid="scene-canvas"]')), [x, y]);
   for (const y of [160, 200, 240, 280, 320, 360]) {
     for (let x = 300; x <= 900; x += 30) {
+      if (!(await onCanvas(x, y))) continue;
       await page.mouse.click(x, y);
       await page.waitForTimeout(40);
       if ((await selectedInspector.count()) === 0) continue;
@@ -128,11 +134,16 @@ async function setLivingEastWallAngle(
 
 const THREE_DEGREES_TO_RADIANS = Math.PI / 180;
 
+// The canvas's view controls and the room focus pill float over the top of the 3D view (UX 4c),
+// where the selected piece's top edge can run; the render is measured without them.
+const HIDE_CANVAS_CONTROLS =
+  '[data-testid="canvas-view-toolbar"], [data-testid="active-room-focus-toolbar"] { visibility: hidden !important; }';
+
 async function wallPanelDiagonalMetrics(
   page: Page,
   suppliedBounds?: PixelBounds
 ) {
-  const screenshot = await page.screenshot();
+  const screenshot = await page.screenshot({ style: HIDE_CANVAS_CONTROLS });
   const { data, info } = await sharp(screenshot)
     .removeAlpha()
     .raw()

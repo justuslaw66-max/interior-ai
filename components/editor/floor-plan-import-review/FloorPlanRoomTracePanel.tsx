@@ -56,7 +56,7 @@ export default function FloorPlanRoomTracePanel({
   return (
     <details data-review-controls="room" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" open={pickingRoom || !floor.rooms.length}>
       <summary className="cursor-pointer text-sm font-semibold">
-        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">2</span>
+        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-xs text-white">2</span>
         Outline each room
         <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-800">
           {floor.rooms.length
@@ -112,7 +112,7 @@ export default function FloorPlanRoomTracePanel({
           </button>
         </div>
         <button
-          className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
           disabled={
             disabled ||
             !calibration ||

@@ -92,12 +92,15 @@ async function expectNoHorizontalOverflow(page: Page) {
   expect(overflow.document).toBeLessThanOrEqual(1);
 }
 
+// On phones (UX 4d, the PhonePlan mockup) the header is 56px: Menu, the name with the save status
+// under it, Save and Share, all 44px. 2D | 3D sits in a pill over the canvas's top left and Undo
+// and Redo in one over its top right, 12px under the header, with 44px targets.
 async function expectMobileHistoryGeometry(page: Page) {
   const bar = page.getByTestId("editor-command-bar");
-  const sidebar = page.getByTestId("editor-design-sidebar-toggle");
   const undo = page.getByTestId("command-undo");
   const redo = page.getByTestId("command-redo");
-  const viewToggle = page.getByTestId("editor-view-toggle");
+  const viewPill = page.getByTestId("canvas-view-pill");
+  const historyPill = page.getByTestId("canvas-history-pill");
 
   await expect(undo).toBeDisabled();
   await expect(redo).toBeDisabled();
@@ -107,40 +110,61 @@ async function expectMobileHistoryGeometry(page: Page) {
   await expect(redo).toHaveAttribute("title", "Redo (Cmd/Ctrl+Shift+Z)");
   await expectSemanticTarget(undo, 44, "mobile Undo");
   await expectSemanticTarget(redo, 44, "mobile Redo");
+  await expect(bar.getByTestId("command-undo")).toHaveCount(0);
+  await expect(bar.getByTestId("editor-view-toggle")).toHaveCount(0);
+  for (const testId of ["editor-command-overflow", "save-design", "editor-command-share"] as const) {
+    await expectSemanticTarget(bar.getByTestId(testId), 44, `mobile ${testId}`);
+  }
+  await expect(bar.getByTestId("editor-command-overflow")).toHaveAccessibleName("Menu");
+  await expect(bar.getByTestId("editor-command-account")).toHaveCount(0);
 
-  const [barBox, sidebarBox, undoBox, redoBox, viewToggleBox] = await Promise.all([
+  const [barBox, undoBox, redoBox, viewPillBox, historyPillBox] = await Promise.all([
     bar.boundingBox(),
-    sidebar.boundingBox(),
     undo.boundingBox(),
     redo.boundingBox(),
-    viewToggle.boundingBox(),
+    viewPill.boundingBox(),
+    historyPill.boundingBox(),
   ]);
   expect(barBox).not.toBeNull();
-  expect(sidebarBox).not.toBeNull();
   expect(undoBox).not.toBeNull();
   expect(redoBox).not.toBeNull();
-  expect(viewToggleBox).not.toBeNull();
-  expect(barBox!.height).toBeGreaterThanOrEqual(44);
-  expect(undoBox!.y).toBeGreaterThanOrEqual(barBox!.y);
-  expect(undoBox!.y + undoBox!.height).toBeLessThanOrEqual(
-    barBox!.y + barBox!.height,
-  );
-  expect(undoBox!.x - (sidebarBox!.x + sidebarBox!.width)).toBeGreaterThanOrEqual(4);
-  expect(redoBox!.x - (undoBox!.x + undoBox!.width)).toBeGreaterThanOrEqual(4);
-  expect(viewToggleBox!.x - (redoBox!.x + redoBox!.width)).toBeGreaterThanOrEqual(4);
-  await expect(page.getByTestId("save-status")).toBeHidden();
+  expect(viewPillBox).not.toBeNull();
+  expect(historyPillBox).not.toBeNull();
+  expect(barBox!.height).toBe(56);
+  const barBottom = barBox!.y + barBox!.height;
+  expect(Math.round(viewPillBox!.y - barBottom)).toBe(12);
+  expect(Math.round(historyPillBox!.y - barBottom)).toBe(12);
+  expect(Math.round(viewPillBox!.x)).toBe(12);
+  expect(Math.round(historyPillBox!.x + historyPillBox!.width)).toBe(MOBILE_VIEWPORT.width - 12);
+  expect(redoBox!.x).toBeGreaterThanOrEqual(undoBox!.x + undoBox!.width);
+  expect(historyPillBox!.x - (viewPillBox!.x + viewPillBox!.width)).toBeGreaterThanOrEqual(24);
+  for (const testId of ["editor-view-2d", "editor-view-3d"] as const) {
+    const segment = await page.getByTestId(testId).boundingBox();
+    expect(segment!.height, `${testId} should be finger-friendly`).toBe(44);
+  }
+  // The status line sits under the name, inside the header.
+  const status = await page.getByTestId("save-status").boundingBox();
+  expect(status!.y).toBeGreaterThanOrEqual(barBox!.y);
+  expect(status!.y + status!.height).toBeLessThanOrEqual(barBottom);
   await expectNoHorizontalOverflow(page);
 }
 
+// From md, Undo and Redo leave the bar for the canvas toolbar, 36px each, under the bar (UX 4c).
 async function expectDesktopHistoryGeometry(page: Page) {
   const bar = page.getByTestId("editor-command-bar");
-  const undo = page.getByTestId("command-undo");
-  const redo = page.getByTestId("command-redo");
+  const toolbar = page.getByTestId("canvas-view-toolbar");
+  const undo = toolbar.getByTestId("command-undo");
+  const redo = toolbar.getByTestId("command-redo");
 
-  await expectSemanticTarget(undo, 30, "desktop Undo");
-  await expectSemanticTarget(redo, 30, "desktop Redo");
-  await expect.poll(async () => (await bar.boundingBox())?.height).toBe(36);
-  await expect(page.getByTestId("save-status")).toHaveCSS("height", "30px");
+  await expect(bar.getByTestId("command-undo")).toHaveCount(0);
+  await expect(bar.getByTestId("editor-view-toggle")).toHaveCount(0);
+  await expectSemanticTarget(undo, 36, "desktop Undo");
+  await expectSemanticTarget(redo, 36, "desktop Redo");
+  await expect.poll(async () => (await bar.boundingBox())?.height).toBe(56);
+  const [barBox, toolbarBox] = await Promise.all([bar.boundingBox(), toolbar.boundingBox()]);
+  expect(toolbarBox!.y).toBeGreaterThanOrEqual(barBox!.y + barBox!.height + 8);
+  // The save status is a 16px line under the design's name (UX 4c).
+  await expect(page.getByTestId("save-status")).toHaveCSS("height", "16px");
   await expectNoHorizontalOverflow(page);
 }
 

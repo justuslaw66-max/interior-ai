@@ -4,7 +4,7 @@ import { ChevronRight, Copy, RotateCw, Trash2 } from "lucide-react";
 import type { SelectedItemSwap } from "@/lib/selected-item-summary";
 
 const ACTION_CLASS =
-  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-[10px] border bg-white text-xs font-bold text-neutral-900 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-[10px] border bg-white text-xs font-bold text-neutral-900 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50";
 
 type SelectedItemActionRowProps = {
   rotationOpen: boolean;
@@ -79,7 +79,7 @@ function SelectedItemSwapButton({
       data-testid={testId}
       disabled={disabled}
       onClick={onSwap}
-      className="flex min-h-[52px] items-center gap-2.5 rounded-[10px] border border-neutral-200 bg-white py-2 pl-3 pr-2.5 text-left text-neutral-900 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex min-h-[52px] items-center gap-2.5 rounded-[10px] border border-neutral-200 bg-white py-2 pl-3 pr-2.5 text-left text-neutral-900 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-sm font-bold">{label}</span>

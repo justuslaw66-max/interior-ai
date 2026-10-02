@@ -525,7 +525,7 @@ export default function FloorPlanImportAssistant({
         ) : null}
         <button
           type="button" data-floor-plan-workspace-focus="primary"
-          className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          className="mt-4 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
           disabled={disabled || submitting || deletingSource}
           onClick={() => void createDesign()}
         >

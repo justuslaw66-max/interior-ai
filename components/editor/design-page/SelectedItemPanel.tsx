@@ -155,7 +155,7 @@ function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel, onTogg
           data-testid="selected-item-deselect"
           aria-label={`Deselect ${title}`}
           onClick={onDeselect}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 md:h-8 md:w-8"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 md:h-8 md:w-8"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -179,13 +179,13 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
 
   return (
     <div
-      className={`absolute right-4 top-15 z-40 w-[320px] max-h-[calc(100vh-8.75rem-env(safe-area-inset-bottom))] overflow-y-auto pr-1 transition-opacity duration-300 md:max-h-[calc(100vh-4.75rem)] md:w-[21.25rem] ${
+      className={`absolute right-4 top-bar-17 z-40 md:top-bar-6 w-[320px] max-h-[calc(100vh-12.75rem-env(safe-area-inset-bottom))] overflow-y-auto pr-1 transition-opacity duration-300 md:max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] md:w-[21.25rem] ${
         isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
       aria-hidden={isClientPreview}
     >
       <section
-        data-testid="selected-item-panel"
+        data-testid="selected-item-panel" data-touch-area
         aria-label="Selected product"
         className={
           dark

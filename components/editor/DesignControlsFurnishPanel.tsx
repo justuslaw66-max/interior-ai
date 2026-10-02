@@ -107,7 +107,7 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
     <button
       type="button"
       data-testid="editor-workflow-ai"
-      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
+      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900"
       onClick={props.onGoAiDesign}
     >
       Suggest a layout

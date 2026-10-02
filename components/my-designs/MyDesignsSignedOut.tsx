@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 
-const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
 /**
  * My designs for guests (audit finding MD2): a sign-in prompt instead of a silent redirect.

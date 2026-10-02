@@ -46,7 +46,7 @@ export function FloorStackControl({
               configuration.dark
                 ? `grid min-w-12 grid-cols-[auto_1fr] items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold transition ${
                     floor.active
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-600 text-white"
                       : floor.hidden
                         ? "text-neutral-500 hover:bg-white/5"
                         : "text-neutral-200 hover:bg-white/10"

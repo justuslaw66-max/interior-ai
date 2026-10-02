@@ -99,7 +99,7 @@ export default function FloorPlanCatalogResultList({
                         onClick={() => onUse(result, true)}
                         className={dark
                           ? "rounded-md bg-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-950 hover:bg-emerald-200 disabled:opacity-50"
-                          : "rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"}
+                          : "rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"}
                       >
                         {isApplying ? "Opening…" : "Start a new design"}
                       </button>

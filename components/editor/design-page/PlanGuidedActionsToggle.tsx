@@ -17,12 +17,13 @@ type PlanGuidedActionsToggleProps = {
  */
 export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsToggleProps) {
   const toggleClass = [
-    "pointer-events-auto absolute z-30 flex items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
+    "pointer-events-auto flex touch:min-h-11 items-center rounded-xl border text-xs font-semibold shadow-xl backdrop-blur transition",
+    // Compact, it sits in the quick actions' row (DesignPagePlanCanvasOverlays); on its own, top centre.
     state.compact
-      ? "left-1/2 top-[7.5rem] translate-x-4 gap-1.5 px-2 py-1.5"
-      : "left-1/2 top-15 -translate-x-1/2 gap-2 px-3 py-2",
+      ? "gap-1.5 px-2 py-1.5"
+      : "absolute z-30 left-1/2 top-bar-17 -translate-x-1/2 gap-2 px-3 py-2 md:top-bar-20",
     state.enabled
-      ? "border-emerald-200 bg-white/95 text-neutral-950 hover:border-emerald-300"
+      ? "border-neutral-300 bg-white/95 text-neutral-950 hover:border-neutral-400"
       : "border-neutral-200 bg-white/95 text-neutral-600 hover:border-neutral-300",
   ].join(" ");
 
@@ -41,7 +42,7 @@ export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsTog
       <span>Tips</span>
       <span
         className={`relative h-5 w-9 shrink-0 rounded-full transition ${
-          state.enabled ? "bg-emerald-500" : "bg-neutral-300"
+          state.enabled ? "bg-neutral-900" : "bg-neutral-500"
         }`}
         aria-hidden="true"
       >
@@ -51,7 +52,7 @@ export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsTog
           }`}
         />
       </span>
-      <span className={state.enabled ? "text-emerald-700" : "text-neutral-500"}>
+      <span className={state.enabled ? "text-neutral-950" : "text-neutral-500"}>
         {state.enabled ? "On" : "Off"}
       </span>
     </button>

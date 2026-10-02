@@ -35,7 +35,7 @@ function SelectedItemSaleLine({ sale, onViewProduct }: { sale: SelectedItemSale;
         aria-label={`View product at ${sale.retailer}`}
         title={`Opens ${sale.retailer} in a new tab`}
         onClick={onViewProduct}
-        className="inline-flex min-h-8 items-center gap-1 rounded font-bold text-[#1f4fa8] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
+        className="inline-flex min-h-8 items-center gap-1 rounded font-bold text-[#1f4fa8] hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900"
       >
         View product
         <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />

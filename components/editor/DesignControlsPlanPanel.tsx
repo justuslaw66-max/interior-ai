@@ -832,8 +832,8 @@ export default function DesignControlsPlanPanel({
           : "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100",
     ].join(" ");
   const templateFilterSelectClass = dark
-    ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100 outline-none"
-    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 outline-none";
+    ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100"
+    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800";
   const activeFloorSettings = normalizeFloorSurfaceSettings(
     {
       floorPattern: activeRoomFloorPattern,
@@ -1285,8 +1285,8 @@ export default function DesignControlsPlanPanel({
     ? "flex flex-col gap-1 text-xs font-semibold text-neutral-200"
     : "flex flex-col gap-1 text-xs font-semibold text-neutral-700";
   const consumerInputClass = dark
-    ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 outline-none disabled:opacity-50"
-    : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 outline-none disabled:opacity-50";
+    ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 disabled:opacity-50"
+    : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
   const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
@@ -1389,7 +1389,7 @@ export default function DesignControlsPlanPanel({
             data-testid="surface-brush-toggle"
             className={
               surfaceBrushActive
-                ? "rounded-lg bg-emerald-600 px-2 py-1.5 text-xs font-semibold text-white"
+                ? "rounded-lg bg-neutral-900 px-2 py-1.5 text-xs font-semibold text-white"
                 : progressSecondaryActionClass
             }
             disabled={
@@ -1536,8 +1536,8 @@ export default function DesignControlsPlanPanel({
                 placeholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
                 className={
                   dark
-                    ? "designer-control h-9 w-full rounded-lg border px-2.5 text-sm text-neutral-100 outline-none placeholder:text-neutral-500"
-                    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
+                    ? "designer-control h-9 w-full rounded-lg border px-2.5 text-sm text-neutral-100 placeholder:text-neutral-500"
+                    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 placeholder:text-neutral-400"
                 }
               />
             </label>
@@ -1556,7 +1556,7 @@ export default function DesignControlsPlanPanel({
               data-testid="surfaces-recommended-filter"
               className={
                 surfaceFilters.recommendedOnly
-                  ? "rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white"
+                  ? "rounded-full bg-neutral-900 px-2 py-1 text-[11px] font-semibold text-white"
                   : dark
                     ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
                     : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
@@ -1570,7 +1570,7 @@ export default function DesignControlsPlanPanel({
               data-testid="surfaces-favorites-filter"
               className={
                 surfaceFilters.favoritesOnly
-                  ? "rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white"
+                  ? "rounded-full bg-neutral-900 px-2 py-1 text-[11px] font-semibold text-white"
                   : dark
                     ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
                     : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
@@ -3260,7 +3260,7 @@ export default function DesignControlsPlanPanel({
               ref={templatePickerHeadingRef}
               id="starter-floor-plan-picker-title"
               tabIndex={-1}
-              className={`${titleClass} rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
+              className={`${titleClass} rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
             >
               Choose a template
             </h2>
@@ -3273,8 +3273,8 @@ export default function DesignControlsPlanPanel({
                 data-testid="skip-to-starter-layouts"
                 className={
                   dark
-                    ? "rounded-md border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400"
-                    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500"
+                    ? "rounded-md border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 outline-hidden hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400"
+                    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500"
                 }
                 onClick={() => firstTemplateActionRef.current?.focus()}
               >
@@ -3536,7 +3536,7 @@ export default function DesignControlsPlanPanel({
                         className={
                           dark
                             ? "rounded-md bg-emerald-300 px-2 py-1.5 text-center text-xs font-semibold text-emerald-950 hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
-                            : "rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            : "rounded-md bg-neutral-900 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
                         <span className="block">Furnished</span>

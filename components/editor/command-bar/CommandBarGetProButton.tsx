@@ -25,8 +25,8 @@ export function CommandBarGetProButton({ dark, accountReady, canUpgrade, onGetPr
       aria-haspopup="dialog"
       className={
         dark
-          ? "designer-control hidden h-[30px] shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-semibold leading-none lg:inline-flex"
-          : "hidden h-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 text-sm font-semibold leading-none text-blue-700 hover:bg-neutral-50 lg:inline-flex"
+          ? "designer-control hidden h-9 shrink-0 items-center justify-center rounded-lg border px-3 text-sm font-bold leading-none lg:inline-flex"
+          : "hidden h-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white px-3 text-sm font-bold leading-none text-blue-700 hover:bg-neutral-50 lg:inline-flex"
       }
       onClick={onGetPro}
     >

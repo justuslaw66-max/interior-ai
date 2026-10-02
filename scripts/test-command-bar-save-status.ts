@@ -56,19 +56,19 @@ assert.ok(
 );
 assert.equal(
   [...saveStatusClassName.matchAll(/\$\{/g)].length,
-  2,
-  "Save status geometry should have exactly two statically audited class contributors."
+  1,
+  "Save status geometry should have exactly one statically audited class contributor."
 );
 assert.match(
   saveStatusClassName,
-  /\$\{\s*saveStatus\.canRetry\s*\?\s*""\s*:\s*"lg:shrink"\s*\}\s*\$\{\s*getSaveStatusClassName\(\s*saveStatus\.tone,\s*dark\s*\)\s*\}/,
-  "Save status dynamic classes should stay limited to shrink behavior and tone styling."
+  /\$\{\s*getSaveStatusClassName\(\s*saveStatus,\s*dark\s*\)\s*\}/,
+  "Save status dynamic classes should stay limited to tone styling."
 );
 const saveStatusToneHelperStart = commandBarSource.indexOf(
   "function getSaveStatusClassName"
 );
 const saveStatusToneHelperEnd = commandBarSource.indexOf(
-  "function getSaveStatusDotClassName",
+  "type CommandBarSaveStatusProps",
   saveStatusToneHelperStart
 );
 assert.ok(
@@ -81,12 +81,12 @@ const saveStatusToneHelperSource = commandBarSource.slice(
   saveStatusToneHelperEnd
 );
 const saveStatusToneClassValues = [
-  ...saveStatusToneHelperSource.matchAll(/\breturn\s+"([^"]*)"/g),
-].map((match) => match[1]);
-assert.equal(
-  saveStatusToneClassValues.length,
-  saveStatusToneHelperSource.match(/\breturn\b/g)?.length ?? 0,
-  "Every save-status tone return should remain a static class string."
+  ...saveStatusToneHelperSource.matchAll(/"([^"]*)"/g),
+].map((match) => match[1]).filter((value) => !["error", "saved", "cloud"].includes(value));
+assert.doesNotMatch(
+  saveStatusToneHelperSource,
+  /`/,
+  "Every save-status tone class should remain a static class string."
 );
 const saveStatusClassTokens = new Set(
   [
@@ -142,18 +142,18 @@ for (const override of ["max-md:flex", "md:h-7", "min-h-9"] as const) {
 }
 
 assert.ok(
-  saveStatusClassTokens.has("shrink-0"),
-  "Below lg the save status shows only its dot, so it must not shrink or the compact toolbar clips it."
+  saveStatusClassTokens.has("min-w-0"),
+  "Under the design's name the status line may shrink; its label is cut short, with the detail in the tooltip."
 );
 assert.deepEqual(
   saveStatusDisplayTokens,
-  ["hidden", "md:flex"].sort(),
-  "Save status should stay hidden below the desktop breakpoint and render from md upward."
+  ["flex"],
+  "The save status is a line under the design's name at every width, phones included (UX 4d)."
 );
 assert.deepEqual(
   saveStatusHeightTokens,
-  ["h-[30px]"],
-  "Save status should use the exact 30px desktop command-bar height."
+  ["h-4"],
+  "Save status should be one 16px line under the design's name."
 );
 assert.match(
   commandBarSource,

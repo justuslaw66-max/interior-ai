@@ -385,7 +385,7 @@ export default function DesignControlsAiPanel({
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
               type="button"
-              className={dark ? "rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white" : "rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white"}
+              className={dark ? "rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white" : "rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white"}
               onClick={onApplyAiLayoutProposal}
             >
               Apply layout

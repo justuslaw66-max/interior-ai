@@ -114,6 +114,11 @@ const typescriptGuardFiles = [
   "test-ux-states-and-fallbacks.ts",
   "test-user-facing-errors.ts",
   "test-ui-glossary.ts",
+  "test-ui-foundations.tsx",
+  "test-canvas-view-toolbar.tsx",
+  "test-phone-step-sheet.tsx",
+  "test-touch-targets.tsx",
+  "test-tablet-panels.tsx",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];

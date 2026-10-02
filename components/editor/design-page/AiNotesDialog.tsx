@@ -81,7 +81,7 @@ export function AiNotesDialog({
                         <button
                           type="button"
                           onClick={() => onApplySuggestion(suggestion.action)}
-                          className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white outline-none hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white outline-hidden hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                         >
                           Apply
                         </button>

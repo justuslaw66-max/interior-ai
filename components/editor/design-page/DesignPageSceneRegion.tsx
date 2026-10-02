@@ -175,7 +175,7 @@ export function DesignPageSceneRegion({
         <div
           data-testid="active-room-focus-toolbar"
           data-focus-enabled={activeRoomFocusEnabled ? "true" : "false"}
-          className="pointer-events-auto absolute left-1/2 top-15 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full border border-neutral-200 bg-white/95 px-2 py-1.5 text-xs text-neutral-700 shadow-md backdrop-blur"
+          className="pointer-events-auto absolute left-1/2 top-bar-17 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full md:top-bar-20 border border-neutral-200 bg-white/95 px-2 py-1.5 text-xs text-neutral-700 shadow-md backdrop-blur"
         >
           <span
             aria-hidden="true"

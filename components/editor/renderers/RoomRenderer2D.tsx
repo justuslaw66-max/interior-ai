@@ -1569,7 +1569,7 @@ export default function RoomRenderer2D({
     if (traceOpeningMode || roomSnapPreview) {
       return { maxAdjacency: 4, maxDoorways: 6, scale: 0.9 };
     }
-    if (planZoom < 56) return { maxAdjacency: 0, maxDoorways: 0, scale: 0.48 };
+    if (planZoom < 50) return { maxAdjacency: 0, maxDoorways: 0, scale: 0.48 };
     if (planZoom < 74) return { maxAdjacency: 1, maxDoorways: 2, scale: 0.54 };
     if (planZoom < 94) return { maxAdjacency: 2, maxDoorways: 3, scale: 0.66 };
     if (planZoom < 124) return { maxAdjacency: 3, maxDoorways: 4, scale: 0.78 };
