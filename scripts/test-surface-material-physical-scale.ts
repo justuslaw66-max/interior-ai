@@ -168,10 +168,13 @@ assert.equal(getSurfacePhysicalSourceKey(null), "");
 const physicalMaterials = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
   (material) => getSurfacePhysicalImageSources(material.texture_assets).length > 0
 );
+const isAnimaFumo = (material: { surface_material: { material_id: string } }) =>
+  /^gardenia-(flooring|wall-tile)-anima-fumo-/.test(material.surface_material.material_id);
 assert.ok(
-  physicalMaterials.every((material) => material.surface_material.supplier === "florim"),
-  "only the Florim materials declare physical-scale data"
+  physicalMaterials.every((material) => material.surface_material.supplier === "florim" || isAnimaFumo(material)),
+  "only the Florim materials and Gardenia Anima Fumo declare physical-scale data"
 );
+assert.equal(physicalMaterials.filter(isAnimaFumo).length, 8, "Anima Fumo: four sizes, floor and wall");
 for (const material of physicalMaterials) {
   const id = material.surface_material.material_id;
   const sources = getSurfacePhysicalImageSources(material.texture_assets);
@@ -201,7 +204,10 @@ assert.equal(cutFromSlab.physical_specs.tile_width_mm, 600);
 // The browser shows one card per product, with its sizes inside: the product
 // name must end in the size and finish so the sizes group together.
 const florimFloorGroups = buildSurfaceMaterialProductGroups(
-  physicalMaterials.filter((material) => material.surface_material.surface_category === "flooring") as never
+  physicalMaterials.filter(
+    (material) =>
+      material.surface_material.supplier === "florim" && material.surface_material.surface_category === "flooring"
+  ) as never
 );
 assert.deepEqual(
   florimFloorGroups.map((group) => [
@@ -214,8 +220,42 @@ assert.deepEqual(
   ]
 );
 
+// Anima Fumo is the first Gardenia product on real faces: one card, four sizes, and each size has
+// its own whole-tile pictures instead of one 60x60 preview stretched over all of them.
+const animaFumoFloor = physicalMaterials.filter(
+  (material) => isAnimaFumo(material) && material.surface_material.surface_category === "flooring"
+);
+const animaFumoGroups = buildSurfaceMaterialProductGroups(animaFumoFloor as never);
+assert.deepEqual(
+  animaFumoGroups.map((group) => [
+    getSurfaceMaterialProductDisplayName(group.primary),
+    getSurfaceMaterialGroupSizeLabels(group),
+  ]),
+  [["Anima Fumo", ["120x120", "60x120", "80x80", "60x60"]]]
+);
+assert.deepEqual(
+  animaFumoFloor
+    .map((material) => [
+      `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
+      material.texture_assets.faces?.length,
+      `${material.texture_assets.faces?.[0]?.width_mm}x${material.texture_assets.faces?.[0]?.height_mm}`,
+    ])
+    .sort(),
+  [
+    ["1200x1200", 7, "1200x1200"],
+    ["1200x600", 14, "600x1200"],
+    ["600x600", 14, "600x600"],
+    ["800x800", 7, "800x800"],
+  ]
+);
+assert.equal(
+  new Set(animaFumoFloor.map((material) => material.texture_assets.base_color_url)).size,
+  4,
+  "no two Anima Fumo sizes share a picture"
+);
+
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
-const baseTuple = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.find((tuple) => tuple[0] !== "florim");
+const baseTuple = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.find((tuple) => tuple.length === 31);
 assert.ok(baseTuple);
 assert.equal(baseTuple.length, 31, "existing tuples must not gain trailing fields");
 const decodedBase = decodeSurfaceMaterialRenderTuple(baseTuple);
