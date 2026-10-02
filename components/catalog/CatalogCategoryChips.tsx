@@ -10,7 +10,7 @@ type CatalogCategoryChipsProps = {
 };
 
 const CHIP_CLASS =
-  "min-h-10 shrink-0 whitespace-nowrap rounded-full border px-3 text-[13px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-1 md:min-h-8";
+  "min-h-10 shrink-0 whitespace-nowrap rounded-full border px-3 text-[13px] font-bold transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-1 md:min-h-8";
 const ACTIVE_CLASS = "border-neutral-900 bg-neutral-900 text-white";
 const IDLE_CLASS = "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50";
 

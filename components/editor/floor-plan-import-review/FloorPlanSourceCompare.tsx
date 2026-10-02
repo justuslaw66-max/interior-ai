@@ -72,7 +72,7 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
           if (event.key === "ArrowLeft") onWipe(Math.max(0, wipe - 2));
           if (event.key === "ArrowRight") onWipe(Math.min(100, wipe + 2));
         }}>
-        <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-semibold text-white">⇔</span>
+        <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-700 px-2 py-1 text-[10px] font-semibold text-white">⇔</span>
       </div>
     </div>
   );

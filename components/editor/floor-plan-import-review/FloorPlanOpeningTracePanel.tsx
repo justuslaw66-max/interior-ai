@@ -82,7 +82,7 @@ export default function FloorPlanOpeningTracePanel({
       open={pickingOpening || !floor.openings.length}
     >
       <summary className="cursor-pointer text-sm font-semibold">
-        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 text-xs text-white">
+        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-700 text-xs text-white">
           3
         </span>
         Add visible doors and windows
@@ -168,7 +168,7 @@ export default function FloorPlanOpeningTracePanel({
           </button>
         </div>
         <button
-          className="rounded-md bg-orange-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
           disabled={
             disabled ||
             !calibration ||

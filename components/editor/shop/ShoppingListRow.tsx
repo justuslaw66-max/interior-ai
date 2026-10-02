@@ -12,7 +12,7 @@ export type ShoppingListRowProps = {
   onSwapForCheaper: (line: ShoppingListLine) => void;
 };
 
-const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 function ShoppingLineImage({ line }: Pick<ShoppingListRowProps, "line">) {
   return (

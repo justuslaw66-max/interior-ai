@@ -53,6 +53,17 @@ export const UI_GLOSSARY: readonly UiGlossaryEntry[] = [
     use: "Shopping list; Buy at <shop>; Checkout here",
     retire: ["cart", "carts", "cart-ready", "selection tray", "shopping overview"],
   },
+  { concept: "Plan guidance (UX 3c-3, ED6)", use: "Tips (one switch, on by default)", retire: ["guided actions", "plan mode", "manual editing"] },
+  {
+    concept: "Save status (UX 4c, SX5)",
+    use: "Saving…, Saved, Saved on this device, Not saved (Retry)",
+    retire: ["cloud saved", "local saved", "cloud save pending"],
+  },
+  {
+    concept: "Where a product is sold (UX 3c-3, FU12)",
+    use: "Sold by <shop>; View product; Price on request; Checkout here",
+    retire: ["external retailer", "view retailer", "check stock", "buy on this site", "needs commerce review"],
+  },
 ];
 
 /** Restructured by phase 3 or 4; listed so nobody mistakes them for approved names. */

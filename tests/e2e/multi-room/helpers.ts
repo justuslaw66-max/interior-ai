@@ -191,9 +191,13 @@ export async function chooseTemplateStart(page: Page) {
   if (await planTab.isVisible().catch(() => false)) {
     await clickWithFallback(planTab);
   }
-  const manualPlanChoice = page.getByTestId("plan-guided-actions-choice-manual");
-  if (await manualPlanChoice.isVisible().catch(() => false)) {
-    await clickWithFallback(manualPlanChoice);
+  // Tips off, as the first-visit "Manual editing" choice used to leave it (UX audit ED6).
+  const tipsSwitch = page.getByTestId("plan-guided-actions-toggle");
+  if (
+    (await tipsSwitch.isVisible().catch(() => false)) &&
+    (await tipsSwitch.getAttribute("data-enabled")) === "true"
+  ) {
+    await clickWithFallback(tipsSwitch);
   }
   const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
   await expect(planStartTemplate).toBeVisible({ timeout: 20000 });

@@ -20,11 +20,11 @@ type StartTemplateGalleryProps = {
 };
 
 const chipClass = (pressed: boolean) =>
-  `flex h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 md:h-8 ${
+  `flex h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 md:h-8 ${
     pressed ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100"
   }`;
 const segmentClass = (pressed: boolean) =>
-  `h-11 rounded-lg px-3.5 text-[13px] font-bold text-neutral-900 outline-none focus-visible:ring-2 focus-visible:ring-blue-600 md:h-[30px] ${
+  `h-11 rounded-lg px-3.5 text-[13px] font-bold text-neutral-900 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 md:h-[30px] ${
     pressed ? "bg-white shadow-sm" : "bg-transparent"
   }`;
 
@@ -39,7 +39,7 @@ export function StartTemplateGallery({ headingRef, ready, onChooseTemplate, onSe
   return (
     <section aria-labelledby="start-templates-title" data-testid="start-templates" className="mt-9 flex flex-col">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <h2 ref={headingRef} id="start-templates-title" tabIndex={-1} className="text-xl font-bold outline-none">
+        <h2 ref={headingRef} id="start-templates-title" tabIndex={-1} className="text-xl font-bold outline-hidden">
           Templates
         </h2>
         <div role="group" aria-label="Filter templates" className="flex flex-wrap items-center gap-2">
@@ -60,7 +60,7 @@ export function StartTemplateGallery({ headingRef, ready, onChooseTemplate, onSe
             className={segmentClass(furnished)} onClick={() => setFurnished(true)}>Furnished</button>
         </div>
         <button type="button" data-testid="start-template-address-search" onClick={onSearchAddress}
-          className="flex h-11 items-center gap-1.5 rounded-md text-sm font-bold text-blue-800 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
+          className="flex h-11 items-center gap-1.5 rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
           <Search aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
           Search by HDB address
         </button>
@@ -68,7 +68,7 @@ export function StartTemplateGallery({ headingRef, ready, onChooseTemplate, onSe
       <StartTemplateCards cards={shown} furnished={furnished} ready={ready} onChooseTemplate={onChooseTemplate} />
       {!showAll && matching.length > shown.length ? (
         <button type="button" data-testid="start-templates-see-all" onClick={() => setShowAll(true)}
-          className="mt-2.5 flex h-11 items-center gap-1.5 self-start rounded-md text-sm font-bold text-blue-800 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
+          className="mt-2.5 flex h-11 items-center gap-1.5 self-start rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
           See all {matching.length} templates
           <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
         </button>
@@ -96,7 +96,7 @@ function StartTemplateCards({ cards, furnished, ready, onChooseTemplate }: Start
             data-testid={`start-template-${card.template.id}`}
             aria-label={`${card.name}, ${card.meta}${withFurniture ? ", furnished" : ""}`}
             disabled={!ready}
-            className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left text-neutral-950 outline-none transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+            className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left text-neutral-950 outline-hidden transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
             onClick={() => onChooseTemplate(card, withFurniture)}
           >
             <PlanTemplatePreview template={card.template} furnishingPackId={withFurniture ? card.furnishingPackId : null} />

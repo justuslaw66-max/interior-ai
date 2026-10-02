@@ -182,6 +182,7 @@ export default function BetaFeedbackWidget({
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) resetAndClose();
           }}
+          onKeyDown={(event) => { if (event.key === "Escape") resetAndClose(); }}
         >
           <div className="w-[min(420px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-4 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
@@ -203,7 +204,7 @@ export default function BetaFeedbackWidget({
               <span className="text-xs font-semibold text-neutral-700">What felt confusing?</span>
               <textarea
                 data-testid="beta-feedback-note"
-                className="mt-1 min-h-28 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 min-h-28 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 value={note}
                 maxLength={1200}
                 autoFocus
@@ -219,7 +220,6 @@ export default function BetaFeedbackWidget({
                   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
                     void submitFeedback();
                   }
-                  if (event.key === "Escape") resetAndClose();
                 }}
               />
             </label>

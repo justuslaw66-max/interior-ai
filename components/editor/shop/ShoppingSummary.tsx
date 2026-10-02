@@ -16,7 +16,7 @@ export type ShoppingSummaryProps = {
 };
 
 const PRIMARY =
-  "flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-[15px] font-bold text-white hover:bg-neutral-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
+  "flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-[15px] font-bold text-white hover:bg-neutral-800 disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
 
 function summaryNote(list: ShoppingList) {
   if (list.retailers.length === 1) return retailerCheckoutNote(list.retailers[0]);

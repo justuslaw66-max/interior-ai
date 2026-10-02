@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.15.0",
+ "exporterVersion": "app-evidence-0.17.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -1121,6 +1121,45 @@
    {
     "kind": "door",
     "operation": "swing",
+    "centerXRatio": 0.423647,
+    "centerYRatio": 0.046429,
+    "spanStart": {
+     "xRatio": 0.383376,
+     "yRatio": 0.046429
+    },
+    "spanEnd": {
+     "xRatio": 0.463918,
+     "yRatio": 0.046429
+    },
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      297.5,
+      65.0
+     ],
+     [
+      360.0,
+      65.0
+     ]
+    ],
+    "widthMm": 1063,
+    "hinge": "end",
+    "swingSide": 1,
+    "handing": "unknown",
+    "note": "pale or dashed swing arc",
+    "hingeSourcePx": [
+     360.0,
+     65.0
+    ],
+    "swingTowardSourcePx": [
+     360.0,
+     96.25
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
     "centerXRatio": 0.566044,
     "centerYRatio": 0.248214,
     "spanStart": {
@@ -1391,39 +1430,6 @@
     "swingSide": 0,
     "handing": "unknown",
     "note": null,
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null
-   },
-   {
-    "kind": "open_passage",
-    "operation": "open",
-    "centerXRatio": 0.423647,
-    "centerYRatio": 0.046429,
-    "spanStart": {
-     "xRatio": 0.383376,
-     "yRatio": 0.046429
-    },
-    "spanEnd": {
-     "xRatio": 0.463918,
-     "yRatio": 0.046429
-    },
-    "confidence": 0.55,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      297.5,
-      65.0
-     ],
-     [
-      360.0,
-      65.0
-     ]
-    ],
-    "widthMm": 1063,
-    "hinge": "none",
-    "swingSide": 0,
-    "handing": "unknown",
-    "note": "one stroke from jamb to jamb",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    },
@@ -2102,15 +2108,21 @@
    "thicknessPx": 9.0,
    "thicknessMm": 153,
    "opening": {
-    "kind": "open_passage",
-    "operation": "open",
-    "hinge": "none",
-    "swingSide": 0,
+    "kind": "door",
+    "operation": "swing",
+    "hinge": "end",
+    "swingSide": 1,
     "handing": "unknown",
-    "confidence": 0.55,
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null,
-    "note": "one stroke from jamb to jamb",
+    "confidence": 0.7,
+    "hingeSourcePx": [
+     360.0,
+     65.0
+    ],
+    "swingTowardSourcePx": [
+     360.0,
+     96.25
+    ],
+    "note": "pale or dashed swing arc",
     "widthMm": 1063,
     "between": [
      "outside",
@@ -3845,9 +3857,9 @@
   "bars": 58,
   "gapsSeen": 148,
   "openings": {
-   "door": 8,
+   "door": 9,
    "window": 7,
-   "open_passage": 3,
+   "open_passage": 2,
    "wall": 7
   },
   "doorSwingsWithoutGap": 0,
@@ -3879,6 +3891,13 @@
   "sidesSplitAtThicknessChanges": 2,
   "sidesWeldedOntoTheWall": 3,
   "jambChamfersDropped": 0,
+  "dimensionScrapsDropped": 0,
+  "slidingPartitionsFromStrokes": 0,
+  "wideDoorwaysKept": 0,
+  "swingsReadFromTheDrawing": 6,
+  "thresholdDoors": 0,
+  "gentleSlopedStrokes": 17,
+  "outdoorSpacesClosedByGentleSlopes": 0,
   "unsupportedWallPx": 22490,
   "thickAxisWallPx": 19772,
   "slantedWallPx": 0,

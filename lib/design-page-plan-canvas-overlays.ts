@@ -15,7 +15,6 @@ import type {
 } from "@/lib/useDesignPagePanelMode";
 
 export type DesignPagePlanCanvasOverlaysState = {
-  guidedActionsChoiceVisible: boolean;
   manualQuickActions: {
     activeTool: FloorPlanTool;
     hasUnderlay: boolean;
@@ -40,6 +39,8 @@ export type DesignPagePlanCanvasOverlaysState = {
     action: PlanCanvasGuidanceAction | null;
     key: string;
     dismissible: boolean;
+    /** On a phone the step panel is a sheet over the canvas: the tip sits above it, not on it. */
+    aboveStepSheet: boolean;
   } | null;
   emptyPromptVisible: boolean;
   restoreTools: {
@@ -51,8 +52,6 @@ export type DesignPagePlanCanvasOverlaysInput = {
   showGuidedActionsToggle: boolean;
   guidedActionsEnabled: boolean;
   activeInteraction: boolean;
-  planSettingsLoaded: boolean;
-  guidedActionsChoiceSeen: boolean;
   showBetaStart: boolean;
   isClientPreview: boolean;
   isDesigner: boolean;
@@ -80,8 +79,6 @@ export function resolveDesignPagePlanCanvasOverlaysState({
   showGuidedActionsToggle,
   guidedActionsEnabled,
   activeInteraction,
-  planSettingsLoaded,
-  guidedActionsChoiceSeen,
   showBetaStart,
   isClientPreview,
   isDesigner,
@@ -106,19 +103,12 @@ export function resolveDesignPagePlanCanvasOverlaysState({
 }: DesignPagePlanCanvasOverlaysInput): DesignPagePlanCanvasOverlaysState {
   const manualQuickActionsVisible =
     showGuidedActionsToggle && !guidedActionsEnabled && !activeInteraction;
-  const guidedActionsChoiceVisible =
-    showGuidedActionsToggle &&
-    planSettingsLoaded &&
-    !guidedActionsChoiceSeen &&
-    !activeInteraction &&
-    !showBetaStart;
   const emptyPromptVisible =
     !isClientPreview &&
     viewMode === "2d" &&
     roomCount === 0 &&
     !floorPlanTraceRoomMode &&
     !showBetaStart &&
-    !guidedActionsChoiceVisible &&
     !manualQuickActionsVisible &&
     !designControlsPanelVisible;
   const restoreToolsVisible =
@@ -137,10 +127,7 @@ export function resolveDesignPagePlanCanvasOverlaysState({
     : null;
   const guidanceDismissed =
     Boolean(guidanceKey) && dismissedPlanCanvasGuidanceKey === guidanceKey;
-  const visibleGuidance =
-    guidedActionsChoiceVisible || guidanceDismissed
-      ? null
-      : planCanvasGuidance;
+  const visibleGuidance = guidanceDismissed ? null : planCanvasGuidance;
 
   const focusPointCount = floorPlanCalibrationMode
     ? floorPlanCalibrationPointCount
@@ -165,7 +152,6 @@ export function resolveDesignPagePlanCanvasOverlaysState({
           : "Ready";
 
   return {
-    guidedActionsChoiceVisible,
     manualQuickActions: manualQuickActionsVisible
       ? {
           activeTool: activeFloorPlanTool,
@@ -204,8 +190,8 @@ export function resolveDesignPagePlanCanvasOverlaysState({
                 ? visibleGuidance.action
                 : null,
             key: guidanceKey,
-            dismissible:
-              visibleGuidance.tone === "ready" && !activeInteraction,
+            dismissible: visibleGuidance.tone === "ready" && !activeInteraction,
+            aboveStepSheet: designControlsPanelVisible,
           }
         : null,
     emptyPromptVisible,

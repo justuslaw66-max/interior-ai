@@ -11,18 +11,21 @@ export function getPriceNumber(item: CatalogItemSchema, variantId?: string): num
   return null;
 }
 
-/** What a product's price line says: the price in formatSgd, or where it is bought. */
+/**
+ * What a product's price line says: the price in formatSgd, "Checkout here" for a product bought
+ * in the app (Shopify prices come from the shop), else "Price on request", in the app's own voice
+ * (UX audit FU12).
+ */
 export function getPriceLabel(item: CatalogItemSchema, variantId?: string): string {
   const resolved = resolveCatalogVariant(item, variantId);
   if (resolved.commerce.type === "shopify") {
-    return "Buy on this site";
+    return "Checkout here";
   }
   if (resolved.commerce.type === "affiliate") {
     const amount = resolved.commerce.priceHint;
     if (typeof amount === "number" && Number.isFinite(amount)) {
       return formatSgd(amount);
     }
-    return "External retailer";
   }
-  return "External retailer";
+  return "Price on request";
 }

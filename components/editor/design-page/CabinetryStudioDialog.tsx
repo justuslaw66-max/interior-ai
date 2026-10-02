@@ -91,7 +91,7 @@ export function CabinetryStudioDialog({
       aria-modal="true"
       aria-label="Built-ins"
       tabIndex={-1}
-      className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm outline-none"
+      className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm outline-hidden"
       onKeyDown={(event) => handleDialogKeyDown(event, onDismiss)}
     >
       {children}

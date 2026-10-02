@@ -26,12 +26,14 @@ import {
   resolveHousePlanTemplateOpeningMetrics,
   type HousePlanTemplate,
   type HousePlanTemplateApplyOptions,
+  type HousePlanTemplateFurnishingIntent,
 } from "@/lib/design-page-house-plan";
 import { buildPlanTemplateReplacementSnapshot } from "@/lib/design-page-plan-template-replacement";
 import {
   isTemplateFurnishingNearDoorway,
   resolveTemplateFurnishingProduct,
   shouldConfirmPlanTemplateReplacement,
+  templateAppliedMessage,
 } from "@/lib/design-page-template-furnishings";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { metersToMm, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
@@ -338,7 +340,7 @@ export function useDesignPageFloorPlanUnderlayController({
           ) ?? null
         : null;
       let furnishedItemCount = 0;
-      let skippedFurnishingCount = 0;
+      const skippedFurnishings: HousePlanTemplateFurnishingIntent["category"][] = [];
 
       if (selectedFurnishingPack) {
         for (const intent of selectedFurnishingPack.intents) {
@@ -353,7 +355,7 @@ export function useDesignPageFloorPlanUnderlayController({
             !product ||
             isTemplateFurnishingNearDoorway(template, intent)
           ) {
-            skippedFurnishingCount += 1;
+            skippedFurnishings.push(intent.category);
             continue;
           }
 
@@ -384,16 +386,12 @@ export function useDesignPageFloorPlanUnderlayController({
         buildPlanTemplateReplacementSnapshot(previous, rooms, activeTemplateRoom.id)
       );
 
-      if (selectedFurnishingPack && skippedFurnishingCount > 0) {
-        showRuleToast("Some items couldn't be added");
-      } else {
-        showRuleToast(selectedFurnishingPack ? `${template.label} added with furniture` : `${template.label} added`);
-      }
+      showRuleToast(templateAppliedMessage(template.label, selectedFurnishingPack, skippedFurnishings));
       track("floor_plan_template_applied", {
         templateId: template.id,
         furnishingPackId: selectedFurnishingPack?.id ?? null,
         furnishedItemCount,
-        skippedFurnishingCount,
+        skippedFurnishingCount: skippedFurnishings.length,
         roomCount: rooms.length,
         openingCount: templateOpenings.length,
       });

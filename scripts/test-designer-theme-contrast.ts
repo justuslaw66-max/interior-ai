@@ -49,9 +49,11 @@ const consumerTokens = {
   "bg-panel-hover": "#f6f7fb",
   "text-primary": "#0b0d12",
   "text-secondary": "#4b5568",
-  "text-muted": "#7b8496",
-  accent: "#2f6bff",
-  danger: "#e5484d",
+  "text-muted": "#636363",
+  accent: "#275fcb",
+  focus: "#275fcb",
+  success: "#20553f",
+  danger: "#dc2626",
 } as const;
 
 for (const [name, expected] of Object.entries(consumerTokens)) {
@@ -61,6 +63,27 @@ for (const [name, expected] of Object.entries(consumerTokens)) {
     `Consumer token --${name} should remain unchanged.`
   );
 }
+
+// Consumer text tokens are read on white: muted text, the accent and danger need 4.5:1 (AX7),
+// and the focus ring and success fills 3:1 against the page.
+for (const name of ["text-primary", "text-secondary", "text-muted", "accent", "danger", "success"] as const) {
+  const ratio = contrastRatio(readConsumerHexToken(name), readConsumerHexToken("bg-panel"));
+  assert.ok(ratio >= 4.5, `Consumer --${name} on white is ${ratio.toFixed(2)}:1; expected at least 4.5:1.`);
+}
+assert.ok(
+  contrastRatio(readConsumerHexToken("focus"), readConsumerHexToken("bg-canvas")) >= 3,
+  "The consumer focus ring should reach 3:1 against the page."
+);
+assert.match(
+  css,
+  /@layer base \{\s*:focus-visible \{\s*outline: 2px solid var\(--focus\);\s*outline-offset: 2px;/,
+  "Every control should get one 2px focus ring from the base layer (AX6)."
+);
+assert.match(
+  css,
+  /@layer utilities \{\s*\.text-neutral-400 \{/,
+  "The darker neutral text sits in the utilities layer, so hover and disabled variants still apply."
+);
 
 const exactDesignerTokens = {
   "bg-canvas": "#dedfdf",
@@ -234,7 +257,7 @@ for (const semanticClass of [
 }
 
 for (const [relativePath, semanticClass] of [
-  ["components/editor/DesignControlsPanel.tsx", "designer-dock"],
+  ["components/editor/DesignControlsPanelFrame.tsx", "designer-dock"],
   ["components/editor/EditorToolRail.tsx", "designer-tool-rail"],
   ["components/editor/FloorPropertiesPanel.tsx", "designer-dock"],
   ["components/editor/RoomPanNavigator.tsx", "designer-dock"],
@@ -270,7 +293,11 @@ assert.match(
 );
 assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
 assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");
-assert.match(commandBarSource, /designer-status-(?:ready|blocked|info|pending)/, "Save states should use semantic Pro statuses.");
+assert.match(
+  commandBarSource,
+  /if \(saveStatus\.tone === "error"\) return dark \? "text-red-300" : "text-red-700";[\s\S]*?return dark \? "text-emerald-300" : "text-success";/,
+  "The save status line keeps red for Not saved and green for Saved, in both themes (UX 4c)."
+);
 
 const legacySurfacePattern = /#(?:10131a|12151d|151820|1b2030)/i;
 for (const relativePath of [
@@ -289,7 +316,7 @@ const planPanelSource = fs.readFileSync(
   "utf8"
 );
 const designControlsSource = fs.readFileSync(
-  path.join(root, "components", "editor", "DesignControlsPanel.tsx"),
+  path.join(root, "components", "editor", "DesignControlsPanelFrame.tsx"),
   "utf8"
 );
 assert.match(designControlsSource, /panelShellClass = `\$\{dark \? "designer-dock/, "The design workspace should have one outer Pro dock.");
@@ -360,10 +387,10 @@ const viewportOverlaySource = fs.readFileSync(
   ),
   "utf8"
 );
-const selectionInspectorSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "DesignPageSelectionInspector.tsx"),
-  "utf8"
-);
+// The inspector's frame (placement and style) lives beside it, read first (UX 4d).
+const selectionInspectorSource = ["selectionInspectorPlacement.ts", "DesignPageSelectionInspector.tsx"]
+  .map((file) => fs.readFileSync(path.join(root, "components", "editor", "design-page", file), "utf8"))
+  .join("\n");
 const selectedItemPanelSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "SelectedItemPanel.tsx"),
   "utf8"
@@ -543,7 +570,7 @@ assert.match(
 );
 assert.match(
   selectionInspectorSource,
-  /data-testid="selection-inspector"[\s\S]*?designer-work-surface/,
+  /function inspectorFrame[\s\S]*?designer-work-surface[\s\S]*?data-testid="selection-inspector"/,
   "The Pro selection inspector should use the light work-surface semantic."
 );
 assert.match(

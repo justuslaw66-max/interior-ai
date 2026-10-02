@@ -91,6 +91,16 @@ export function cheaperSwapFor(productId: string, style: string, catalogItems: C
   return price > 0 && price < current ? { productId: best.id, title: best.title } : null;
 }
 
+/** The nearest option in the same category that really costs more, for "Swap for pricier". */
+export function pricierSwapFor(productId: string, style: string, catalogItems: CatalogItems = CATALOG_ITEMS) {
+  const current = affiliatePriceHint(productId, catalogItems);
+  if (current <= 0) return null;
+  const best = findSwapOptions({ productId, style, direction: "premium" }).find(
+    (option) => affiliatePriceHint(option.id, catalogItems) > current
+  );
+  return best ? { productId: best.id, title: best.title } : null;
+}
+
 /** A set, or a product bought as a set, is left as it is: a swap would break the set. */
 function canSwap(item: ActiveRoomShoppingItem, placed: DesignItem | undefined) {
   return item.hasValidCommerce && !item.isBundle && !placed?.bundleGroupId && !placed?.purchaseOptionId;

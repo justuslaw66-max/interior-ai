@@ -86,8 +86,8 @@ export function useDesignPagePlanState() {
   const [planLayerPreset, setPlanLayerPreset] = useState<PlanLayerPresetId>("presentation");
   const [planMeasurementUnit, setPlanMeasurementUnit] = useState<PlanMeasurementUnit>(DEFAULT_DISPLAY_UNIT);
   const [exportStylePreset, setExportStylePreset] = useState<ExportStylePreset>("consumer");
+  // Tips (UX audit ED6): on by default, and remembered in this browser.
   const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
-  const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
   const [planSettingsLoaded, setPlanSettingsLoaded] = useState(false);
 
   // Load in the layout phase: the editor hydrates inside a Suspense boundary, so updates from
@@ -120,10 +120,6 @@ export function useDesignPagePlanState() {
       } else if (storedGuidedActions === "1") {
         setPlanGuidedActionsEnabled(true);
       }
-
-      setPlanGuidedActionsChoiceSeen(
-        localStorage.getItem("plan_guided_actions_choice_seen") === "1"
-      );
 
       const storedLayers = localStorage.getItem("plan_layers");
       if (storedLayers) {
@@ -182,11 +178,6 @@ export function useDesignPagePlanState() {
 
   useEffect(() => {
     if (!planSettingsLoaded) return;
-    writeStorage("plan_guided_actions_choice_seen", planGuidedActionsChoiceSeen ? "1" : "0");
-  }, [planGuidedActionsChoiceSeen, planSettingsLoaded]);
-
-  useEffect(() => {
-    if (!planSettingsLoaded) return;
     writeStorage("plan_annotations", JSON.stringify(planAnnotations));
   }, [planAnnotations, planSettingsLoaded]);
 
@@ -226,8 +217,6 @@ export function useDesignPagePlanState() {
     setExportStylePreset,
     planGuidedActionsEnabled,
     setPlanGuidedActionsEnabled,
-    planGuidedActionsChoiceSeen,
-    setPlanGuidedActionsChoiceSeen,
     planSettingsLoaded,
     planMeasurementUnitReady: planSettingsLoaded,
   };

@@ -358,7 +358,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     type="button"
                     data-testid="save-layout-version"
                     onClick={actions.onSaveLayoutVersion}
-                    className="min-h-10 rounded-lg bg-teal-600 px-3 text-xs font-semibold text-white hover:bg-teal-500"
+                    className="min-h-10 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white hover:bg-neutral-800"
                   >
                     Save
                   </button>
@@ -498,7 +498,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                   <button
                     className={
                       simplePlanControls
-                        ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
+                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
                         : showDesignerTheme
                           ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                           : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
@@ -512,7 +512,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     title={!canUseAdvancedPlanControls ? "Upgrade to Pro for layers, doors & windows, and themes" : undefined}
                     className={
                       !simplePlanControls
-                        ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
+                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
                         : showDesignerTheme
                           ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                           : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
@@ -558,7 +558,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     data-testid="plan-add-note"
                     className={
                       annotationToolKind === "note"
-                        ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
+                        ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
                         : showDesignerTheme
                           ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                           : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
@@ -573,7 +573,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                       data-testid="plan-add-callout"
                       className={
                         annotationToolKind === "callout"
-                          ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
+                          ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
                           : showDesignerTheme
                             ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                             : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
@@ -589,7 +589,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                       data-testid="plan-add-room-tag"
                       className={
                         annotationToolKind === "room_tag"
-                          ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
+                          ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
                           : showDesignerTheme
                             ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
                             : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
@@ -716,7 +716,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
             </h3>
             <button
               id={PRESENT_EXPORT_CREATE_SHARE_ACTION_ID} data-testid="create-share"
-              className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-none hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-hidden hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
               disabled={sharingDesign || !designId}
               onClick={actions.onCreateShareLink}
               title={!designId ? "Save your design first to share it" : ""}
@@ -759,7 +759,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                   <button
                     className={
                       exportStylePreset === "consumer"
-                        ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
+                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
                         : showDesignerTheme
                           ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                           : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
@@ -773,7 +773,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     title={!canUseAdvancedExportStyles ? "Upgrade to Pro to use the Pro export preset" : undefined}
                     className={
                       exportStylePreset === "pro"
-                        ? "rounded-lg bg-teal-600 px-3 py-2 text-xs font-medium text-white"
+                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
                         : showDesignerTheme
                           ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
                           : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
@@ -800,7 +800,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               className={
                 showDesignerTheme
                   ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50"
+                  : "w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
               }
               disabled={isPdfExporting || !sceneReady}
               onClick={actions.onExportPdf}

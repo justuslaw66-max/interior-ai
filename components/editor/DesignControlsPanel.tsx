@@ -31,11 +31,10 @@ import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import type { DesignSelectionContext } from "@/lib/design-page-selection-context";
 import type { RoomFloorPattern, RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { FloorSurfacePatch, NormalizedSurfaceSettings, SurfaceSettingsPatch } from "@/lib/surface-settings";
-import { PanelLeftOpen, Pin } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
 import DesignControlsFurnishPanel from "./DesignControlsFurnishPanel";
+import { DesignControlsPanelFrame } from "./DesignControlsPanelFrame";
 import DesignControlsPlanPanel, { type FloorPlanLifecycleIdentity, type PlanStartMode } from "./DesignControlsPlanPanel";
 import { FurnishStepModes } from "./FurnishStepModes";
 import { ProGridSnapToggles } from "./ProGridSnapToggles";
@@ -485,63 +484,6 @@ export default function DesignControlsPanel({
   onAddSuggestedDoorway,
   onUpdateOpeningMetrics,
 }: DesignControlsPanelProps) {
-  const [edgePreviewOpen, setEdgePreviewOpen] = useState(false);
-  const edgePreviewCloseTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
-  const temporarilyRevealed = Boolean(collapsed && edgePreviewOpen);
-
-  const cancelEdgePreviewClose = () => {
-    if (edgePreviewCloseTimerRef.current === null) return;
-    clearTimeout(edgePreviewCloseTimerRef.current);
-    edgePreviewCloseTimerRef.current = null;
-  };
-  const openEdgePreview = () => {
-    cancelEdgePreviewClose();
-    setEdgePreviewOpen(true);
-  };
-  const scheduleEdgePreviewClose = () => {
-    cancelEdgePreviewClose();
-    edgePreviewCloseTimerRef.current = setTimeout(() => {
-      edgePreviewCloseTimerRef.current = null;
-      setEdgePreviewOpen(false);
-    }, 180);
-  };
-
-  useEffect(
-    () => () => {
-      if (edgePreviewCloseTimerRef.current !== null) {
-        clearTimeout(edgePreviewCloseTimerRef.current);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!onCollapsedChange) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "b") {
-        return;
-      }
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.isContentEditable ||
-          target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT")
-      ) {
-        return;
-      }
-      event.preventDefault();
-      setEdgePreviewOpen(false);
-      onCollapsedChange(!collapsed);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [collapsed, onCollapsedChange]);
-
   const effectivePanelMode = panelMode === "ai" && !aiDesignEnabled ? "plan" : panelMode;
   const panelTitle =
     effectivePanelMode === "plan" ? "Plan" : effectivePanelMode === "furnish" ? "Furnish" : "Suggest a layout";
@@ -557,101 +499,16 @@ export default function DesignControlsPanel({
 
   const planPanelSurfaceTarget = activeSurfaceTarget;
   const panelClass = "space-y-3";
-  const panelHeaderClass = dark
-    ? "designer-divider border-b p-3"
-    : "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur";
-  const panelSubtitleClass = dark ? "designer-text-secondary mt-1 text-xs" : "mt-1 text-xs text-neutral-500";
-  const panelLeftClass = temporarilyRevealed
-    ? "left-0 md:left-0"
-    : isDesigner
-      ? "left-1 md:left-20"
-      : "left-1 md:left-1";
-  const panelShellClass = `${dark ? "designer-dock overflow-hidden rounded-xl p-2" : ""} absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-1 top-auto z-20 w-auto space-y-3 pr-1 md:bottom-auto md:right-auto md:top-11 md:w-[18.15rem] ${panelLeftClass}`;
-
-  if (collapsed && !temporarilyRevealed) {
-    return (
-      <div
-        data-testid="design-controls-edge-reveal"
-        className="group absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 top-9 z-40 w-8 md:bottom-0 md:top-11 md:w-4"
-        onMouseEnter={openEdgePreview}
-      >
-        <div
-          className={`absolute bottom-3 left-0 top-3 w-1 rounded-r-full transition-colors ${
-            dark
-              ? "bg-white/20 group-hover:bg-blue-400"
-              : "bg-neutral-300 group-hover:bg-blue-500"
-          }`}
-          aria-hidden="true"
-        />
-        <button
-          type="button"
-          data-testid="design-controls-edge-toggle"
-          aria-label="Show design sidebar"
-          title="Show design sidebar (Ctrl/⌘ B)"
-          className={
-            dark
-              ? "designer-work-control absolute left-1 top-4 flex h-9 w-9 items-center justify-center rounded-xl border opacity-70 shadow-xl transition-opacity focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 md:opacity-0"
-              : "absolute left-1 top-4 flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-800 opacity-70 shadow-xl transition-opacity hover:bg-neutral-50 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 md:opacity-0"
-          }
-          onClick={() => {
-            setEdgePreviewOpen(false);
-            onCollapsedChange?.(false);
-          }}
-        >
-          <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </div>
-    );
-  }
 
   return (
-    <div
-      data-testid="design-controls-panel"
-      data-temporary-reveal={temporarilyRevealed ? "true" : "false"}
-      className={`${panelShellClass} max-h-[calc(64vh-4rem-env(safe-area-inset-bottom))] overflow-y-auto pb-3 md:max-h-[calc(100vh-4.75rem)] md:pb-4 ${
-        temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
-      }`}
-      onMouseEnter={cancelEdgePreviewClose}
-      onMouseLeave={() => {
-        if (temporarilyRevealed) scheduleEdgePreviewClose();
-      }}
+    <DesignControlsPanelFrame
+      dark={dark}
+      isDesigner={isDesigner}
+      collapsed={collapsed}
+      onCollapsedChange={onCollapsedChange}
+      title={panelTitle}
+      subtitle={panelSubtitle}
     >
-      <div
-        data-testid="design-controls-panel-handle"
-        className="mx-auto h-1.5 w-12 rounded-full bg-neutral-300/80 md:hidden"
-        aria-hidden="true"
-      />
-      <div className={panelHeaderClass}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className={dark ? "designer-text-primary text-lg font-semibold" : "text-lg font-semibold text-neutral-950"}>
-              {panelTitle}
-            </div>
-            <div className={panelSubtitleClass}>{panelSubtitle}</div>
-          </div>
-          {temporarilyRevealed ? (
-            <button
-              type="button"
-              data-testid="design-controls-sidebar-toggle"
-              aria-label="Keep design tools open"
-              title="Keep sidebar open"
-              className={
-                dark
-                  ? "designer-work-control inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold"
-                  : "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
-              }
-              onClick={() => {
-                setEdgePreviewOpen(false);
-                onCollapsedChange?.(false);
-              }}
-            >
-              <Pin className="h-3.5 w-3.5" aria-hidden="true" />
-              Keep open
-            </button>
-          ) : null}
-        </div>
-      </div>
-
       {selectionContext && effectivePanelMode !== "plan" && (
         <SelectedObjectContextCard dark={dark} selectionContext={selectionContext} />
       )}
@@ -876,6 +733,6 @@ export default function DesignControlsPanel({
           <ProGridSnapToggles {...{ dark, showGrid, snapEnabled, onGridToggle, onSnapToggle }} />
         )}
       </div>
-    </div>
+    </DesignControlsPanelFrame>
   );
 }

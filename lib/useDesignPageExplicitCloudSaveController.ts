@@ -28,6 +28,12 @@ type Budget = "$" | "$$" | "$$$";
 type DesignMode = "homeowner" | "designer";
 type StageWrite = DesignPageCloudBaselineController["actions"]["stageWrite"];
 
+/**
+ * A caller that handles the Free plan's design limit itself (leaving for My designs asks whether
+ * to leave without saving) passes onDesignLimit; otherwise the limit opens Upgrade.
+ */
+export type ManualSaveOptions = { onDesignLimit?: () => void };
+
 export type PreserveCurrentDesignResult =
   | { ok: true; savedDesignId: string }
   | { ok: false; error: string };
@@ -163,18 +169,24 @@ function recordManualFailure(
   input: ManualSaveInput,
   error: unknown,
   designId: string | null,
-  startedAt: number
+  startedAt: number,
+  options: ManualSaveOptions = {}
 ) {
   const message = input.actions.recordCloudSaveFailure(
     error,
     designId,
     "Cloud save failed."
   );
-  if (error instanceof DesignApiError && error.kind === "forbidden") {
-    input.actions.showMaxDesignUpgrade();
-    track("upgrade_prompt_shown", { reason: "max_designs" });
+  const atDesignLimit = error instanceof DesignApiError && error.kind === "forbidden";
+  if (atDesignLimit && options.onDesignLimit) {
+    options.onDesignLimit();
+  } else {
+    if (atDesignLimit) {
+      input.actions.showMaxDesignUpgrade();
+      track("upgrade_prompt_shown", { reason: "max_designs" });
+    }
+    input.actions.showRuleToast(`Save failed: ${message}`);
   }
-  input.actions.showRuleToast(`Save failed: ${message}`);
   trackProductEvent("project_save_failed", {
     source: "cloud",
     result: "failure",
@@ -197,7 +209,10 @@ function recordInvalidManualResponse(input: ManualSaveInput, startedAt: number) 
   });
 }
 
-async function executeManualSave(input: ManualSaveInput): Promise<string | null> {
+async function executeManualSave(
+  input: ManualSaveInput,
+  options: ManualSaveOptions = {}
+): Promise<string | null> {
   if (input.actions.currentWriteIsBlocked()) {
     input.actions.showRuleToast(
       "Wait for the loaded cloud design to finish restoring before saving."
@@ -223,11 +238,11 @@ async function executeManualSave(input: ManualSaveInput): Promise<string | null>
     }
     if (result.status === "invalid") recordInvalidManualResponse(input, startedAt);
     if (result.status === "failed") {
-      recordManualFailure(input, result.error, result.binding.designId, startedAt);
+      recordManualFailure(input, result.error, result.binding.designId, startedAt, options);
     }
     return null;
   } catch (error) {
-    recordManualFailure(input, error, input.adapters.queue.getCurrent().designId, startedAt);
+    recordManualFailure(input, error, input.adapters.queue.getCurrent().designId, startedAt, options);
     return null;
   } finally {
     if (!result || input.adapters.queue.requestIsLatest(result.binding)) {
@@ -344,7 +359,10 @@ export function useDesignPageManualCloudSave(input: ManualSaveInput) {
   useLayoutEffect(() => {
     inputRef.current = input;
   }, [input]);
-  return useCallback(() => executeManualSave(inputRef.current), []);
+  return useCallback(
+    (options?: ManualSaveOptions) => executeManualSave(inputRef.current, options),
+    []
+  );
 }
 
 export function useDesignPagePreserveCloudSave(input: PreserveSaveInput) {

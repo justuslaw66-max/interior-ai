@@ -33,7 +33,7 @@ type PlanManualQuickActionsProps = {
 
 const manualPlanQuickActionButtonClass = (active: boolean, disabled = false) =>
   [
-    "group relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-neutral-900/20",
+    "group relative grid h-10 w-10 touch:h-11 touch:w-11 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-hidden focus:ring-2 focus:ring-neutral-900/20",
     active
       ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
@@ -105,7 +105,7 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
   return (
     <div
       data-testid="plan-manual-quick-actions"
-      className="pointer-events-auto absolute left-1/2 top-15 z-30 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
+      className="pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
       role="toolbar"
       aria-label="Manual plan actions"
     >

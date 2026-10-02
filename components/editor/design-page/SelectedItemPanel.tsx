@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ComponentProps } from "react";
+import { type ComponentProps } from "react";
+import { X } from "lucide-react";
 
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
@@ -14,6 +15,9 @@ import {
   type ProductModelVariantControlsActions,
   type ProductModelVariantControlsState,
 } from "@/components/editor/design-page/ProductModelVariantControls";
+import { SelectedItemActionRow, SelectedItemSwaps } from "@/components/editor/design-page/SelectedItemQuickActions";
+import { SelectedItemSummaryCard } from "@/components/editor/design-page/SelectedItemSummaryCard";
+import type { SelectedItemSummary } from "@/lib/selected-item-summary";
 
 type SelectedItemDetailsPanelProps = ComponentProps<
   typeof SelectedItemDetailsPanel
@@ -29,7 +33,6 @@ export type SelectedItemPanelDetailsState = Pick<
   | "rooms"
   | "activeRoomId"
   | "measurementUnit"
-  | "planningDimensionsMm"
   | "selectedBrand"
   | "selectedModelTitle"
   | "selectedCategoryDebugLabel"
@@ -40,7 +43,6 @@ export type SelectedItemPanelDetailsState = Pick<
   | "showInspectorDetails"
   | "showFullDimensions"
   | "showDeliveryWarranty"
-  | "showRotationControls"
   | "styleConsistencyReport"
   | "adjustableHangingHeight"
 >;
@@ -50,10 +52,7 @@ export type SelectedItemPanelDetailsActions = Pick<
   | "onToggleInspectorDetails"
   | "onToggleFullDimensions"
   | "onToggleDeliveryWarranty"
-  | "onToggleRotationControls"
   | "onMoveToRoom"
-  | "onDuplicate"
-  | "onDelete"
   | "onCenterInRoom"
   | "onSnapToWall"
   | "onNudge"
@@ -82,12 +81,6 @@ export type SelectedItemPanelRotationActions = Pick<
   | "onApplyRotationInput"
 >;
 
-export type SelectedItemPanelCommerceType =
-  | "affiliate"
-  | "shopify"
-  | "not_buyable"
-  | null;
-
 export type SelectedItemPanelLockLabel =
   | "Lock"
   | "Unlock"
@@ -96,10 +89,11 @@ export type SelectedItemPanelLockLabel =
 
 export type SelectedItemPanelState = {
   details: SelectedItemPanelDetailsState;
+  /** Picture, price, where it's sold, size and the named swaps (lib/selected-item-summary.ts). */
+  summary: SelectedItemSummary;
   rotation: SelectedItemPanelRotationState | null;
   productModelVariants: ProductModelVariantControlsState;
   productFinishes: ProductFinishControlsState;
-  commerceType: SelectedItemPanelCommerceType;
   lockLabel: SelectedItemPanelLockLabel;
 };
 
@@ -115,11 +109,14 @@ export type SelectedItemPanelActions = {
   rotation: SelectedItemPanelRotationActions;
   productModelVariants: ProductModelVariantControlsActions;
   productFinishes: ProductFinishControlsActions;
-  onSwapToCheaper: () => void;
-  onUpgradeItem: () => void;
-  onOpenCommerce: () => void;
-  onToggleLock: () => void;
+  onToggleRotation: () => void;
+  onDuplicate: () => void;
   onRemove: () => void;
+  onDeselect: () => void;
+  onSwapToCheaper: () => void;
+  onSwapToPricier: () => void;
+  onViewProduct: () => void;
+  onToggleLock: () => void;
 };
 
 export type SelectedItemPanelProps = {
@@ -128,191 +125,135 @@ export type SelectedItemPanelProps = {
   actions: SelectedItemPanelActions;
 };
 
-export function SelectedItemPanel({
-  state,
-  configuration,
-  actions,
-}: SelectedItemPanelProps) {
+type SelectedItemPanelHeaderProps = {
+  title: string;
+  isDesigner: boolean;
+  canEdit: boolean;
+  lockLabel: SelectedItemPanelLockLabel;
+  onToggleLock: () => void;
+  onDeselect: () => void;
+};
+
+/** "Selected", Pro's Lock, and Deselect (the mockup's ×), kept in view while the panel scrolls. */
+function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel, onToggleLock, onDeselect }: SelectedItemPanelHeaderProps) {
+  return (
+    <div className="sticky top-0 z-20 -mx-4 -mt-4 flex items-center justify-between gap-3 rounded-t-xl border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur">
+      <span className="text-[13px] font-bold text-neutral-600">Selected</span>
+      <div className="flex items-center gap-1">
+        {isDesigner ? (
+          <button
+            type="button"
+            disabled={!canEdit}
+            onClick={onToggleLock}
+            className="min-h-8 rounded-lg border border-neutral-200 px-3 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+          >
+            {lockLabel}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          data-testid="selected-item-deselect"
+          aria-label={`Deselect ${title}`}
+          onClick={onDeselect}
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 md:h-8 md:w-8"
+        >
+          <X className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The one item panel (UX audit FU12), as in the Furnish mockup: the product (picture, name, price,
+ * where it's sold), its colour and size, Rotate / Duplicate / Remove, named swaps, then the product's
+ * details and the placement tools. The shop's own words ("External retailer", "Check stock") and the
+ * second Delete are gone.
+ */
+export function SelectedItemPanel({ state, configuration, actions }: SelectedItemPanelProps) {
   const { dark, isDesigner, isClientPreview, canEdit } = configuration;
-  const [collapsed, setCollapsed] = useState(false);
-  const commerceAvailable =
-    state.commerceType === "affiliate" || state.commerceType === "shopify";
+  const { details, summary } = state;
+  const title = details.selectedModelTitle || summary.title;
+  const locked = Boolean(details.item?.locked);
+  const editsDisabled = !canEdit || !details.item || (isDesigner && locked);
 
   return (
     <div
-      className={`absolute right-4 top-15 z-40 w-[320px] max-h-[calc(100vh-8.75rem-env(safe-area-inset-bottom))] overflow-y-auto pr-1 transition-opacity duration-300 md:max-h-[calc(100vh-4.75rem)] md:w-[21.25rem] ${
+      className={`absolute right-4 top-bar-17 z-40 md:top-bar-6 w-[320px] max-h-[calc(100vh-12.75rem-env(safe-area-inset-bottom))] overflow-y-auto pr-1 transition-opacity duration-300 md:max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] md:w-[21.25rem] ${
         isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
       }`}
       aria-hidden={isClientPreview}
     >
-      <div
-        data-testid="selected-item-panel"
-        data-collapsed={collapsed ? "true" : "false"}
+      <section
+        data-testid="selected-item-panel" data-touch-area
+        aria-label="Selected product"
         className={
           dark
-            ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
-            : "w-full rounded-xl bg-white p-4 shadow"
+            ? "designer-panel designer-panel-strong flex w-full flex-col gap-4 rounded-xl p-4"
+            : "flex w-full flex-col gap-4 rounded-xl bg-white p-4 shadow"
         }
       >
-        <div
-          className={
-            dark
-              ? "designer-text-primary text-sm font-semibold"
-              : "text-sm font-semibold text-neutral-900"
-          }
-        >
-          <div
-            className={
-              dark
-                ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-2 border-b flex items-center justify-between gap-3 px-4 py-2"
-                : "sticky top-0 z-20 -mx-4 mb-2 border-b flex items-center justify-between gap-3 border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur"
-            }
-          >
-            <span>Selected Item</span>
-            <button
-              type="button"
-              data-testid="selected-item-panel-collapse"
-              aria-expanded={!collapsed}
-              aria-label={
-                collapsed
-                  ? "Expand selected item inspector"
-                  : "Collapse selected item inspector"
-              }
-              className={
-                dark
-                  ? "designer-control rounded-full border px-2.5 py-1 text-xs font-semibold text-neutral-100"
-                  : "rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
-              }
-              onClick={() => setCollapsed((current) => !current)}
-            >
-              {collapsed ? "Expand" : "Collapse"}
-            </button>
-          </div>
-        </div>
+        <SelectedItemPanelHeader
+          title={title}
+          isDesigner={isDesigner}
+          canEdit={canEdit}
+          lockLabel={state.lockLabel}
+          onToggleLock={actions.onToggleLock}
+          onDeselect={actions.onDeselect}
+        />
+        <SelectedItemSummaryCard summary={summary} title={title} locked={locked} onViewProduct={actions.onViewProduct} />
+        <SelectedItemOptions state={state} dark={dark} actions={actions} />
+        <SelectedItemActionRow
+          rotationOpen={state.rotation?.expanded ?? false}
+          canRotate={Boolean(state.rotation)}
+          disabled={editsDisabled}
+          onRotate={actions.onToggleRotation}
+          onDuplicate={actions.onDuplicate}
+          onRemove={actions.onRemove}
+        />
+        {state.rotation ? (
+          <SelectedItemRotationControls dark={dark} isDesigner={isDesigner} {...state.rotation} {...actions.rotation} />
+        ) : null}
+        <SelectedItemSwaps
+          cheaper={summary.swaps.cheaper}
+          pricier={summary.swaps.pricier}
+          disabled={editsDisabled}
+          onSwapToCheaper={actions.onSwapToCheaper}
+          onSwapToPricier={actions.onSwapToPricier}
+        />
+        <SelectedItemDetailsPanel dark={dark} isDesigner={isDesigner} canEdit={canEdit} {...details} {...actions.details} />
+      </section>
+    </div>
+  );
+}
 
-        {collapsed ? (
-          <div
-            data-testid="selected-item-panel-summary"
-            className={
-              dark
-                ? "designer-work-muted rounded-lg px-3 py-2"
-                : "rounded-lg bg-neutral-50 px-3 py-2"
-            }
-          >
-            <div className="truncate text-[11px] font-semibold uppercase tracking-wide opacity-60">
-              {state.details.selectedBrand}
-            </div>
-            <div className="truncate text-sm font-semibold">
-              {state.details.product.title}
-            </div>
-          </div>
-        ) : (
-          <>
-            <SelectedItemDetailsPanel
-              dark={dark}
-              isDesigner={isDesigner}
-              canEdit={canEdit}
-              onCheckRetailerStock={
-                state.details.product.commerce.type === "affiliate"
-                  ? actions.onOpenCommerce
-                  : undefined
-              }
-              {...state.details}
-              {...actions.details}
-            />
-
-            {state.rotation ? (
-              <SelectedItemRotationControls
-                dark={dark}
-                isDesigner={isDesigner}
-                {...state.rotation}
-                {...actions.rotation}
-              />
-            ) : null}
-
-            <ProductModelVariantControls
-              state={state.productModelVariants}
-              configuration={{ dark }}
-              actions={actions.productModelVariants}
-            />
-
-            <ProductFinishControls
-              state={state.productFinishes}
-              configuration={{ dark }}
-              actions={actions.productFinishes}
-            />
-
-            <button
-              className={
-                dark
-                  ? "designer-control mt-2 w-full rounded-lg border px-3 py-2 text-sm text-neutral-100"
-                  : "mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
-              }
-              disabled={!canEdit}
-              onClick={actions.onSwapToCheaper}
-            >
-              Swap for cheaper
-            </button>
-
-            <button
-              className={
-                dark
-                  ? "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-                  : "mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-              }
-              disabled={!canEdit}
-              onClick={actions.onUpgradeItem}
-            >
-              Swap for pricier
-            </button>
-
-            <div className="flex gap-2 pt-2">
-              {commerceAvailable ? (
-                <button
-                  className="mt-3 w-full rounded-lg bg-green-600 px-3 py-2 text-sm text-white"
-                  onClick={actions.onOpenCommerce}
-                >
-                  {state.commerceType === "affiliate"
-                    ? "View retailer"
-                    : "Buy now"}
-                </button>
-              ) : (
-                <button
-                  className="mt-3 w-full rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800 ring-1 ring-amber-100"
-                  disabled
-                >
-                  Needs commerce review
-                </button>
-              )}
-
-              {isDesigner ? (
-                <button
-                  className={
-                    dark
-                      ? "rounded-lg border px-3 py-2 text-sm"
-                      : "rounded-lg border px-3 py-2 text-sm text-neutral-900"
-                  }
-                  disabled={!canEdit}
-                  onClick={actions.onToggleLock}
-                >
-                  {state.lockLabel}
-                </button>
-              ) : null}
-
-              <button
-                className={
-                  dark
-                    ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100"
-                    : "rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-200"
-                }
-                disabled={!canEdit}
-                onClick={actions.onRemove}
-              >
-                Remove
-              </button>
-            </div>
-          </>
-        )}
+/** The product's configuration and colour pickers, then its size in the design's units. */
+function SelectedItemOptions({
+  state,
+  dark,
+  actions,
+}: {
+  state: SelectedItemPanelState;
+  dark: boolean;
+  actions: SelectedItemPanelActions;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <ProductModelVariantControls
+        state={state.productModelVariants}
+        configuration={{ dark }}
+        actions={actions.productModelVariants}
+      />
+      <ProductFinishControls
+        state={state.productFinishes}
+        configuration={{ dark }}
+        actions={actions.productFinishes}
+      />
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-bold text-neutral-900">Size</span>
+        <span data-testid="selected-item-dimensions" className="text-[13px] text-neutral-700">
+          {state.summary.sizeLabel}
+        </span>
       </div>
     </div>
   );

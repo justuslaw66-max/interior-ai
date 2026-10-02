@@ -1,3 +1,4 @@
+import { WIDE_PLAN_TOP_INSET_PX } from "../../../lib/editor-canvas-insets";
 import { test, expect } from "../fixtures";
 import {
   chooseTemplateStart,
@@ -236,7 +237,8 @@ export function registerEditingTests() {
     if (!canvasBox) throw new Error("Scene canvas is missing a bounding box");
     const roomWidthPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-width-px");
     const roomHeightPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-height-px");
-    const northWallY = canvasBox.y + canvasBox.height / 2 - roomHeightPx / 2;
+    // From md the plan is centred in the band under the canvas tools (UX 4d), not in the canvas.
+    const northWallY = canvasBox.y + (canvasBox.height + WIDE_PLAN_TOP_INSET_PX) / 2 - roomHeightPx / 2;
     await page.mouse.click(canvasBox.x + canvasBox.width / 2 - roomWidthPx * 0.36, northWallY);
 
     const openingLabel = page.getByTestId("plan-opening-live-label").first();

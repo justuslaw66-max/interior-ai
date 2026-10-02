@@ -174,7 +174,7 @@ test.describe("Flooring surface materials", () => {
     );
     await page.getByTestId("plan-change-floor-finish").click();
     await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("herringbone");
-    await expect(floorPanel.getByTestId("surface-rotation-45")).toHaveClass(/bg-emerald-600/);
+    await expect(floorPanel.getByTestId("surface-rotation-45")).toHaveClass(/bg-neutral-900/);
     await expect(floorPanel.getByTestId("surface-joint-size")).toHaveText("4 mm");
   });
 

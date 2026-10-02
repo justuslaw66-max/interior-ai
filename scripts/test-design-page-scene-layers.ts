@@ -228,7 +228,6 @@ assertSourceOrder(
 assertSourceOrder(
   shellRuntimeSource,
   [
-    "hoveredCartInstanceId, setHoveredCartInstanceId",
     "showPresentModal, setShowPresentModal",
     "presentModeRoomId, setPresentModeRoomId",
     "useDesignPageSurfaceStateController()",
@@ -240,7 +239,7 @@ assertSourceOrder(
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
   ],
-  "Editor shell runtime should preserve cart-through-camera-diagnostics hook order"
+  "Editor shell runtime should preserve presentation-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,

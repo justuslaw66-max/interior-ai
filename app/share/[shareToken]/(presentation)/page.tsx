@@ -538,7 +538,7 @@ export default async function SharePage({
               <div className="text-sm font-semibold text-neutral-950">Live commerce checkout</div>
               <div className="mt-1 max-w-2xl text-xs leading-5 text-neutral-600">
                 Direct-checkout stock and prices are checked with the retailer before checkout.
-                External retailer items stay available through their individual links.
+                Products sold by other shops open on their own websites.
               </div>
             </div>
             <ShareShoppingCheckout lines={shareCheckoutLines} />

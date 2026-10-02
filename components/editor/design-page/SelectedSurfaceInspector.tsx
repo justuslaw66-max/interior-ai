@@ -181,7 +181,7 @@ function SurfaceGroutControls({
                 disabled={grout.disabled}
                 className={
                   size.selected
-                    ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                    ? "min-h-8 rounded-lg bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
                     : dark
                       ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
                       : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"
@@ -765,7 +765,7 @@ export function SelectedSurfaceInspector({
                   data-testid={`surface-rotation-${rotation.value}`}
                   className={
                     rotation.selected
-                      ? "min-h-8 rounded-lg bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                      ? "min-h-8 rounded-lg bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
                       : dark
                         ? "min-h-8 rounded-lg border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 hover:bg-white/10"
                         : "min-h-8 rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100"

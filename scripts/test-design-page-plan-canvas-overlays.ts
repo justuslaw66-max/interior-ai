@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   resolveDesignPagePlanCanvasOverlaysState,
@@ -102,7 +102,6 @@ assert.ok(
 );
 
 for (const componentName of [
-  "PlanGuidedActionsChoice",
   "PlanManualQuickActions",
   "PlanGuidedActionsToggle",
   "PlanCanvasFocusControl",
@@ -183,7 +182,6 @@ for (const contractName of [
 }
 
 const overlayOrder = [
-  "<PlanGuidedActionsChoice",
   "<PlanManualQuickActions",
   "<PlanGuidedActionsToggle",
   "<PlanCanvasFocusControl",
@@ -199,7 +197,7 @@ for (const marker of overlayOrder) {
 }
 assert.match(
   overlaysSource,
-  /return \(\s*<>[\s\S]*<PlanGuidedActionsChoice[\s\S]*<DesignToolsRestoreButton[\s\S]*<\/\>\s*\);/,
+  /return \(\s*<>\s*<PlanCanvasTools state=\{state\} actions=\{actions\} \/>[\s\S]*<DesignToolsRestoreButton[\s\S]*<\/\>\s*\);/,
   "The overlay composition should remain wrapper-free."
 );
 
@@ -221,11 +219,10 @@ for (const expected of [
 
 for (const expected of [
   "showGuidedActionsToggle && !guidedActionsEnabled && !activeInteraction",
-  "showGuidedActionsToggle && planSettingsLoaded && !guidedActionsChoiceSeen && !activeInteraction && !showBetaStart",
   '!isClientPreview && viewMode === "2d" && roomCount === 0 && !floorPlanTraceRoomMode',
-  "!guidedActionsChoiceVisible && !manualQuickActionsVisible && !designControlsPanelVisible",
+  "!showBetaStart && !manualQuickActionsVisible && !designControlsPanelVisible",
   "!isClientPreview && !isDesigner && !designControlsPanelVisible && !planCanvasFocusActive",
-  "guidedActionsChoiceVisible || guidanceDismissed ? null : planCanvasGuidance",
+  "guidanceDismissed ? null : planCanvasGuidance",
   'floorPlanDrawRoomMode === "straight_wall" && floorPlanTraceRoomPointCount > 0',
 ] as const) {
   assert.ok(
@@ -238,8 +235,6 @@ const baseInput: DesignPagePlanCanvasOverlaysInput = {
   showGuidedActionsToggle: true,
   guidedActionsEnabled: false,
   activeInteraction: false,
-  planSettingsLoaded: true,
-  guidedActionsChoiceSeen: false,
   showBetaStart: false,
   isClientPreview: false,
   isDesigner: false,
@@ -269,10 +264,11 @@ const baseInput: DesignPagePlanCanvasOverlaysInput = {
   dismissedPlanCanvasGuidanceKey: null,
 };
 
+// Tips off: Plan gives no canvas guidance (the presentation model returns none), so the plain
+// tools, the compact switch and the restore button show.
 assert.deepEqual(
-  resolveDesignPagePlanCanvasOverlaysState(baseInput),
+  resolveDesignPagePlanCanvasOverlaysState({ ...baseInput, planCanvasGuidance: null }),
   {
-    guidedActionsChoiceVisible: true,
     manualQuickActions: {
       activeTool: "select",
       hasUnderlay: false,
@@ -286,7 +282,72 @@ assert.deepEqual(
     emptyPromptVisible: false,
     restoreTools: { label: "Plan tools" },
   },
-  "Choice, manual, toggle, and restore overlays should remain independently visible."
+  "Manual, switch, and restore overlays should remain independently visible."
+);
+
+// UX audit ED6: no first-visit "Plan mode" choice. With Tips on, a first visit gets the guidance
+// straight away, with its action, and can dismiss it once the room is ready.
+assert.deepEqual(
+  resolveDesignPagePlanCanvasOverlaysState({ ...baseInput, guidedActionsEnabled: true }),
+  {
+    manualQuickActions: null,
+    guidedActionsToggle: { enabled: true, compact: false },
+    focusControl: null,
+    guidance: {
+      guidance: baseInput.planCanvasGuidance,
+      action: "furnish",
+      key: "ready:Ready to furnish:furnish",
+      dismissible: true,
+      aboveStepSheet: false,
+    },
+    emptyPromptVisible: false,
+    restoreTools: { label: "Plan tools" },
+  },
+  "With Tips on, the guidance should show on a first visit, with nothing in front of it."
+);
+assert.equal(
+  resolveDesignPagePlanCanvasOverlaysState({
+    ...baseInput,
+    guidedActionsEnabled: true,
+    dismissedPlanCanvasGuidanceKey: "ready:Ready to furnish:furnish",
+  }).guidance,
+  null,
+  "Dismissed guidance should stay dismissed."
+);
+assert.ok(
+  !existsSync(join(process.cwd(), "components/editor/design-page/PlanGuidedActionsChoice.tsx")),
+  "The Plan mode choice went with ED6: Tips is the one switch."
+);
+
+// On a phone the open step panel is a sheet over the canvas, so the tip sits above it: its Furnish
+// and Hide buttons had covered the sheet's Expand buttons (3c-3b's Mac run, 18-multi-room at 390px).
+assert.equal(
+  resolveDesignPagePlanCanvasOverlaysState({
+    ...baseInput,
+    guidedActionsEnabled: true,
+    designControlsPanelVisible: true,
+  }).guidance?.aboveStepSheet,
+  true,
+  "With the step panel open, the tip should sit above the phone sheet."
+);
+assert.match(overlaysSource, /aboveStepSheet: guidance\.aboveStepSheet/);
+const guidanceSource = readSource("components/editor/design-page/PlanCanvasGuidance.tsx");
+assert.match(guidanceSource, /PLACEMENT_ABOVE_STEP_SHEET = "bottom-2 md:bottom-6"/);
+assert.match(guidanceSource, /aboveStepSheet \? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6"/);
+assert.match(guidanceSource, /backdrop-blur \$\{placementClass\(state\.aboveStepSheet\)\}`\}/);
+// On phones the tip sits 0.5rem above the sheet's current height (UX 4d): the sheet sits on the
+// step bar, where the overlay box ends too; with the sheet at full there's no room for the tip.
+assert.match(guidanceSource, /if \(onSheet && sheet\.snap === "full"\) return null;/);
+assert.match(guidanceSource, /style=\{onSheet \? \{ bottom: `calc\(\$\{sheet\.heightPx \+ 8\}px \+ env\(safe-area-inset-bottom\)\)` \} : undefined\}/);
+assert.ok(
+  readSource("components/editor/PhoneStepSheet.tsx").includes(
+    "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))]"
+  ),
+  "The phone sheet sits on the step bar, which is what the tip's offset assumes."
+);
+assert.ok(
+  workspaceSource.includes("absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"),
+  "The overlay box's bottom inset on phones is what the tip's offset assumes."
 );
 
 assert.deepEqual(
@@ -294,14 +355,12 @@ assert.deepEqual(
     ...baseInput,
     guidedActionsEnabled: true,
     activeInteraction: true,
-    guidedActionsChoiceSeen: true,
     floorPlanTraceRoomMode: true,
     floorPlanDrawRoomMode: "straight_wall",
     floorPlanTraceRoomPointCount: 2,
     planCanvasFocusActive: true,
   }),
   {
-    guidedActionsChoiceVisible: false,
     manualQuickActions: null,
     guidedActionsToggle: { enabled: true, compact: false },
     focusControl: {
@@ -317,6 +376,7 @@ assert.deepEqual(
       action: null,
       key: "ready:Ready to furnish:furnish",
       dismissible: false,
+      aboveStepSheet: false,
     },
     emptyPromptVisible: false,
     restoreTools: null,
@@ -328,7 +388,6 @@ assert.deepEqual(
   resolveDesignPagePlanCanvasOverlaysState({
     ...baseInput,
     activeInteraction: true,
-    guidedActionsChoiceSeen: true,
     floorPlanUnderlay: { mimeType: "image/png" },
     floorPlanCalibrationMode: true,
     floorPlanCalibrationPointCount: 1,
@@ -349,13 +408,11 @@ assert.deepEqual(
   resolveDesignPagePlanCanvasOverlaysState({
     ...baseInput,
     showGuidedActionsToggle: false,
-    guidedActionsChoiceSeen: true,
     isClientPreview: true,
     roomCount: 0,
     planCanvasGuidance: null,
   }),
   {
-    guidedActionsChoiceVisible: false,
     manualQuickActions: null,
     guidedActionsToggle: null,
     focusControl: null,

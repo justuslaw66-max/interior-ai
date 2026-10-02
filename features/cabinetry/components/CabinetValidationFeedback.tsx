@@ -44,7 +44,7 @@ export function ValidationIssueCard({
     >
       <button
         type="button"
-        className="block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2"
+        className="block w-full text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2"
         onClick={() => onFocus(issue)}
       >
         <span className="flex flex-wrap items-center gap-2">

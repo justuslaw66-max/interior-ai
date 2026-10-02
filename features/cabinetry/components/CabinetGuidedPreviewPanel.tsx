@@ -67,7 +67,7 @@ export function CabinetGuidedPreviewPanel({
               type="button"
               data-testid="cabinet-preview-clearance-toggle"
               aria-pressed={showClearances}
-              className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-[11px] font-semibold shadow-sm backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
+              className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-[11px] font-semibold shadow-sm backdrop-blur focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
                 showClearances
                   ? "bg-blue-600 text-white"
                   : "bg-white/90 text-neutral-700"

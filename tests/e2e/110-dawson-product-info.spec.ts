@@ -26,14 +26,15 @@ test.describe("110. Dawson Product Info", () => {
       await expect(addImportedProductIfReady(page)).resolves.toBeTruthy();
     }
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Dawson 3 Seater Sofa|Dawson/i).first()).toBeVisible();
+    // Where it's sold, in the app's words (UX audit FU12): "Sold by Castlery · View product".
     const availability = page.getByTestId("selected-item-availability");
     await expect(availability).toBeVisible();
-    await expect(availability).toContainText("External retailer");
-    await expect(availability).toContainText("Check stock");
+    await expect(availability).toContainText("Sold by Castlery");
+    await expect(availability).not.toContainText(/External retailer|Check stock/i);
     const liveAvailabilityButton = availability.getByRole("button", {
-      name: /Check current stock and delivery at Castlery/i,
+      name: "View product at Castlery",
     });
     await expect(liveAvailabilityButton).toBeVisible();
     await page.context().route(/^https:\/\/www\.castlery\.com\/sg\/products\//, (route) =>

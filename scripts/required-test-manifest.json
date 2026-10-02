@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 318,
-      "expectedPathSha256": "6224e6355ee15232e5f10409b96131eda97442ed7e20c7b019bf56ad866d00dd"
+      "expectedFileCount": 317,
+      "expectedPathSha256": "cf6b9de8cdc27a74393466ffd4d392308e6c24c67a0fc7bba3e19b3d7b52d513"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 109,
-      "expectedPathSha256": "a3672e4fe0d419ce7fea8e9c7b0a7e5c57ba1e829eece35e35a5322cd53ccdc2"
+      "expectedFileCount": 110,
+      "expectedPathSha256": "2056ff122950eccca3bc6fb847b708661b2a5f0bf064503a3c8907085f5caafa"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -739,7 +739,7 @@
         {
           "id": "visual.plans-account-keyboard-narrow",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+          "title": "gives the phone Menu's Pricing keyboard entry semantic replacement and narrow Plans return"
         },
         {
           "id": "visual.plans-upgrade-pointer",

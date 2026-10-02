@@ -45,12 +45,9 @@ async function openFurnishPanel(page: Page): Promise<void> {
   }
 }
 
+/** The one item panel (UX audit FU12), whatever the product and wherever it is sold. */
 export function getSelectedItemPanel(page: Page): Locator {
-  return page
-    .locator('[data-testid="selected-item-panel"], main > div')
-    .filter({ hasText: "Selected Item" })
-    .filter({ has: page.getByRole("button", { name: "View retailer" }) })
-    .first();
+  return page.getByTestId("selected-item-panel").first();
 }
 
 async function dismissBlockingDialogs(page: Page): Promise<void> {
@@ -389,7 +386,9 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
  */
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
-  const placedToast = page.getByTestId("editor-action-toast");
+  // Only an Add's toast ("<product> added to the <room>") means the product is in: a Remove's or a
+  // swap's toast can still be up from the step before.
+  const placedToast = page.getByTestId("editor-action-toast").filter({ hasText: / added to the / });
   const visible = await expect(confirmButton.or(placedToast).first())
     .toBeVisible({ timeout: 20000 })
     .then(() => true)

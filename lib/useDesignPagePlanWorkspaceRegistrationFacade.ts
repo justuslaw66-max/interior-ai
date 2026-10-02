@@ -124,10 +124,6 @@ function buildDesignPageFloorPlanTracingActions(
   floorPlan: FloorPlanDocumentBoundary
 ): WorkspaceInput["actions"]["floorPlanTracing"] {
   return {
-    setPlanGuidedActionsEnabled:
-      document.actions.setPlanGuidedActionsEnabled,
-    setPlanGuidedActionsChoiceSeen:
-      document.actions.setPlanGuidedActionsChoiceSeen,
     setBlankGridRoomPreviewPoint:
       floorPlan.actions.setBlankGridRoomPreviewPoint,
     setFloorPlanTraceRoomMode:
@@ -196,8 +192,6 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
         layers: document.state.planLayers,
         theme: document.state.planTheme,
         guidedActionsEnabled: document.state.planGuidedActionsEnabled,
-        guidedActionsChoiceSeen: document.state.planGuidedActionsChoiceSeen,
-        settingsLoaded: document.state.planSettingsLoaded,
         canvasFocusActive: state.plan.canvasFocusActive,
         dismissedCanvasGuidanceKey:
           state.plan.dismissedCanvasGuidanceKey,

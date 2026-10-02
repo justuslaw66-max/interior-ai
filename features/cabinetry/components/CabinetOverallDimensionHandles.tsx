@@ -382,9 +382,9 @@ export function CabinetOverallDimensionHandles({
             disabled={fieldDisabled}
             data-dimension-field={definition.field}
             data-testid={`cabinet-dimension-handle-${definition.field}`}
-            className={`pointer-events-auto absolute inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold tabular-nums shadow-lg backdrop-blur transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50 ${definition.placementClassName} ${definition.cursorClassName} ${
+            className={`pointer-events-auto absolute inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold tabular-nums shadow-lg backdrop-blur transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50 ${definition.placementClassName} ${definition.cursorClassName} ${
               isDragging
-                ? "border-sky-300 bg-sky-500 text-white"
+                ? "border-sky-300 bg-sky-700 text-white"
                 : "border-white/20 bg-slate-950/90 text-slate-50 hover:border-sky-300 hover:bg-slate-900"
             }`}
             style={{ touchAction: "none" }}

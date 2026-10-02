@@ -4,7 +4,7 @@ import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import {
-  PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
+  EDITOR_BAR_HEIGHT_PX, PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
   PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
   PLAN_FLOATING_OVERLAY_STACK_GAP_PX,
   PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX,
@@ -176,7 +176,7 @@ export function useDesignPagePlanAuthoringRegistration({
       canEdit,
       catalogItems: CATALOG_ITEMS,
       qualityReviewPanel: {
-        reviewPanelTopPx: 56,
+        reviewPanelTopPx: EDITOR_BAR_HEIGHT_PX + 20,
         collapsedReviewPanelFallbackHeightPx: 56,
         expandedReviewPanelFallbackHeightPx: 252,
       },

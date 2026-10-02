@@ -60,7 +60,7 @@ test.describe("17. Retailer Link Identity", () => {
     await gingerSwatch.click();
 
     const popupPromise = page.waitForEvent("popup", { timeout: 15_000 });
-    await selectedItemPanel.getByRole("button", { name: "View retailer" }).click();
+    await selectedItemPanel.getByRole("button", { name: "View product" }).click();
     const popup = await popupPromise;
     await expect.poll(() => popup.url(), { timeout: 15_000 }).toContain("castlery.com/sg/products");
     const openedUrl = new URL(popup.url());
@@ -100,7 +100,7 @@ test.describe("17. Retailer Link Identity", () => {
       ).toHaveAttribute("data-active", "true");
 
       const popupPromise = page.waitForEvent("popup", { timeout: 15_000 });
-      await selectedItemPanel.getByRole("button", { name: "View retailer" }).click();
+      await selectedItemPanel.getByRole("button", { name: "View product" }).click();
       const popup = await popupPromise;
       await expect.poll(() => popup.url(), { timeout: 15_000 }).toContain("castlery.com/sg/products");
       const openedUrl = popup.url();
