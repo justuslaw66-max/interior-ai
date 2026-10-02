@@ -48,6 +48,10 @@ function joinSurfaceMaterialCatalog(
     }
     return Object.freeze({
       ...renderRecord,
+      surface_material: {
+        ...renderRecord.surface_material,
+        ...metadata.surface_material,
+      },
       source: metadata.source,
       classification: {
         ...renderRecord.classification,

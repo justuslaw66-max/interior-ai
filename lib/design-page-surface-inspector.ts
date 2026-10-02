@@ -117,7 +117,6 @@ function getFlooringInspectorGroupKey(material: SurfaceMaterialRenderInfo) {
   return [
     material.surface_material.supplier,
     material.surface_material.brand,
-    material.surface_material.collection,
     material.surface_material.surface_category,
     material.surface_material.material_family,
     material.classification?.design_effect,

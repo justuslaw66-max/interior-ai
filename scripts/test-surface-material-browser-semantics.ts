@@ -79,8 +79,13 @@ assert.ok(dorica120);
 assert.equal(getSurfaceMaterialSupplierLabel(dorica120), "Gardenia Orchidea");
 assert.equal(
   getSurfaceMaterialCollectionLabel(dorica120),
-  "Gardenia Orchidea",
-  "collection labels must preserve the documented brand/supplier fallback when collection is not projected"
+  "Dorica",
+  "the browser must know each material's collection, not fall back to its brand"
+);
+assert.deepEqual(
+  records.filter((record) => !getSurfaceMaterialCollectionLabel(record)).map((record) => record.surface_material.material_id),
+  [],
+  "every catalogue material must reach the browser with its collection"
 );
 assert.equal(getSurfaceMaterialSizeLabel(dorica120), "1200x1200 mm");
 
@@ -91,7 +96,8 @@ const facets = {
   color: buildFacetOptions(records, getSurfaceMaterialColorLabel),
 };
 assert.ok(facets.effect.includes("Marble"));
-assert.ok(facets.collection.includes("Gardenia Orchidea"));
+assert.ok(facets.collection.includes("Dorica") && facets.collection.includes("Tabulae"));
+assert.ok(!facets.collection.includes("Gardenia Orchidea"), "the Collection filter must not list a brand");
 assert.ok(facets.size.includes("1200x1200 mm"));
 assert.ok(facets.color.includes("White"));
 

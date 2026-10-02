@@ -115,12 +115,9 @@ export function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialCatalog
   return material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier);
 }
 
+/** The manufacturer's collection (Dorica, Tabulae); never the brand, which has its own label. */
 export function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialCatalogRecord) {
-  return (
-    material.surface_material.collection ??
-    material.surface_material.brand ??
-    formatSurfaceMaterialValue(material.surface_material.supplier)
-  );
+  return material.surface_material.collection?.trim() ?? "";
 }
 
 export function getSurfaceMaterialSizeLabel(material: SurfaceMaterialCatalogRecord) {

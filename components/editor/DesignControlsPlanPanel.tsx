@@ -1749,7 +1749,7 @@ export default function DesignControlsPlanPanel({
                 </div>
                 <div className={progressMetaClass}>
                   {selectedSurfaceMaterial
-                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialCollectionLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
+                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialSupplierLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
                         selectedSurfaceMaterialGroup
                           ? ` · ${getSurfaceMaterialGroupSizeLabels(selectedSurfaceMaterialGroup).length} sizes`
                           : ""
