@@ -4,6 +4,13 @@ const postHogRegion = process.env.NEXT_PUBLIC_POSTHOG_HOST?.toLowerCase().includ
   ? "eu"
   : "us";
 
+// sharp's Linux binary loads libvips from its sibling @img package at run time; file tracing
+// does not follow that link, so Vercel functions failed with "libvips-cpp.so … cannot open".
+const SHARP_LINUX_NATIVE_FILES = [
+  "./node_modules/@img/sharp-linux-x64/**/*",
+  "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+];
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   serverExternalPackages: ["stripe", "@napi-rs/canvas"],
@@ -29,6 +36,16 @@ const nextConfig: NextConfig = {
     "/api/floor-plan-imports/*/process": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
     "/api/admin/floor-plan-imports/*/construction-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
     "/api/admin/floor-plan-imports/*/supplementary-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    // Every route family that reaches lib/floor-plan-imports, which imports sharp.
+    "/api/floor-plan-imports": SHARP_LINUX_NATIVE_FILES,
+    "/api/floor-plan-imports/**": SHARP_LINUX_NATIVE_FILES,
+    "/api/admin/floor-plan-imports": SHARP_LINUX_NATIVE_FILES,
+    "/api/admin/floor-plan-imports/**": SHARP_LINUX_NATIVE_FILES,
+    "/api/admin/floor-plan-variant-groups": SHARP_LINUX_NATIVE_FILES,
+    "/api/admin/floor-plan-variant-groups/**": SHARP_LINUX_NATIVE_FILES,
+    "/api/designs": SHARP_LINUX_NATIVE_FILES,
+    "/api/designs/**": SHARP_LINUX_NATIVE_FILES,
+    "/api/floor-plans/**": SHARP_LINUX_NATIVE_FILES,
   },
   outputFileTracingExcludes: {
     "/*": [
