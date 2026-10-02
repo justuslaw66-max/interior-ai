@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 980, "the browser must join all 980 render and catalog identities");
+assert.equal(records.length, 994, "the browser must join all 994 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);

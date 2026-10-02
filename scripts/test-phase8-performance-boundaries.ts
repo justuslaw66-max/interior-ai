@@ -370,9 +370,9 @@ function assertSurfaceCatalogChunkBoundary(requireBuild = false): void {
 async function assertSurfaceMaterialRuntimeBoundary(): Promise<void> {
   assert.equal(SURFACE_MATERIAL_RENDER_GENERATED_MARKER, "surface_render_registry_v1");
   assert.equal(SURFACE_MATERIAL_CATALOG_GENERATED_MARKER, "surface_catalog_metadata_v1");
-  assert.equal(PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.length, 980);
-  assert.equal(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.length, 980);
-  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.length, 980);
+  assert.equal(PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.length, 994);
+  assert.equal(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.length, 994);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.length, 994);
 
   const renderIds = SURFACE_MATERIAL_RENDER_REGISTRY.map(
     (record) => record.surface_material.material_id

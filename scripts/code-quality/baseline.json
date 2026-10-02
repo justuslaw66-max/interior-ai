@@ -209,7 +209,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3691,
+      "lines": 3684,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -281,7 +281,7 @@
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
-      "lines": 1155,
+      "lines": 1074,
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -1899,7 +1899,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3575
+        "maximum": 3567
       },
       "complexFunctions": {
         "count": 5,
@@ -2211,11 +2211,11 @@
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 263
+        "maximum": 258
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 29
       }
     },
     "components/editor/RoomConnectionChecklist.tsx": {

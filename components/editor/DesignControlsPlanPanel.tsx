@@ -38,6 +38,7 @@ import {
 } from "@/lib/floor-plan-upload-request";
 import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
 import { FloorPlanImportArrivalNote } from "./FloorPlanImportArrivalNote";
+import { SurfaceMaterialCardActions } from "./design-controls-plan/SurfaceMaterialCardActions";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
@@ -1685,23 +1686,15 @@ export default function DesignControlsPlanPanel({
                         </span>
                       </span>
                     </button>
-                    <div className="mt-2 flex items-center justify-between gap-2">
-                      <button
-                        type="button"
-                        data-testid={`surface-favorite-${materialId}`}
-                        className={progressSecondaryActionClass}
-                        onClick={() => toggleFavoriteSurfaceMaterialGroup(group)}
-                      >
-                        {favorite ? "Favourited" : "Favourite"}
-                      </button>
-                      <button
-                        type="button"
-                        className={progressSecondaryActionClass}
-                        onClick={() => selectSurfaceMaterial(materialId, "details")}
-                      >
-                        Details
-                      </button>
-                    </div>
+                    <SurfaceMaterialCardActions
+                      materialId={materialId}
+                      productName={displayName}
+                      favorite={favorite}
+                      dark={dark}
+                      detailsClassName={progressSecondaryActionClass}
+                      onToggleFavorite={() => toggleFavoriteSurfaceMaterialGroup(group)}
+                      onOpenDetails={() => selectSurfaceMaterial(materialId, "details")}
+                    />
                   </div>
                 );
               })

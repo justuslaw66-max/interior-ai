@@ -72,6 +72,13 @@ export type SurfacePatternLayout =
   | "grid"
   | "checker";
 
+/** One whole-tile picture of a format, with the physical size the picture covers. */
+export type SurfaceTextureFace = {
+  url: string;
+  width_mm: number;
+  height_mm: number;
+};
+
 export type SurfaceMaterial = {
   schema_version: number;
   surface_material: {
@@ -124,6 +131,10 @@ export type SurfaceMaterial = {
     preview_room_url?: string | null;
     tileable: boolean | "needs_confirmation";
     texture_repeat_size_cm?: { width: number; height: number } | null;
+    /** Physical size that base_color_url covers. Independent of the tile size. */
+    image_physical_size_mm?: { width: number; height: number } | null;
+    /** Whole-tile faces for this format. When present the renderer lays one face per tile. */
+    faces?: SurfaceTextureFace[] | null;
   };
   rendering: {
     default_rotation_deg: number;
