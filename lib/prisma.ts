@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import fs from "node:fs";
 import path from "node:path";
+import { databasePoolOptions, prismaTransactionOptions } from "./database-connection-options";
 
 // Resolve DATABASE_URL synchronously BEFORE Prisma initializes
 const resolvedDatabaseUrl = (() => {
@@ -57,10 +58,13 @@ const globalForPrisma = global as unknown as {
 const shouldReuse =
   globalForPrisma.prisma && globalForPrisma.prismaUrl === connectionString;
 
+const transactionOptions = prismaTransactionOptions();
+
 export const prisma = shouldReuse
   ? globalForPrisma.prisma!
   : new PrismaClient({
-      adapter: new PrismaPg(new Pool({ connectionString })),
+      adapter: new PrismaPg(new Pool({ connectionString, ...databasePoolOptions() })),
+      ...(transactionOptions ? { transactionOptions } : {}),
     });
 
 if (process.env.NODE_ENV !== "production") {
