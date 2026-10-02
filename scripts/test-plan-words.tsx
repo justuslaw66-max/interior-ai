@@ -101,10 +101,10 @@ assert.match(renderer, /if \(planZoom < 50\) return \{ maxAdjacency: 0, maxDoorw
 // both can sit at a wall's middle, an opening is picked only on the canvas, and the room's size is
 // in the sheet too. The label's layer tops out where the chips' did (20: no higher, so the phone's
 // step sheet, z-20 and later in the page, stays above both); the chips drop to 19.
-const htmlTopBefore = (testId: string) => {
-  const start = renderer.indexOf(`data-testid="${testId}"`);
-  const html = renderer.lastIndexOf("<Html", start);
-  const range = /zIndexRange=\{\[(\d+), (\d+)\]\}/.exec(renderer.slice(html, start));
+const htmlTopBefore = (testId: string, source = renderer) => {
+  const start = source.indexOf(`data-testid="${testId}"`);
+  const html = source.lastIndexOf("<Html", start);
+  const range = /zIndexRange=\{\[(\d+), (\d+)\]\}/.exec(source.slice(html, start));
   assert.ok(range, `${testId} sits in an <Html> with a z-index range.`);
   return Number(range[1]);
 };
@@ -112,5 +112,11 @@ assert.equal(htmlTopBefore("plan-opening-kind-label"), 20);
 for (const testId of ["active-room-dimension-width", "active-room-dimension-depth", "active-room-dimension-editor-width", "active-room-dimension-editor-depth"]) {
   assert.ok(htmlTopBefore(testId) < htmlTopBefore("plan-opening-kind-label"), `${testId} sits under the openings' labels.`);
 }
+// A door's or window's "needs wall repair" label is an opening's label too (J, 2 Oct), so it sits above
+// the room's toolbar: 4f's bigger toolbar can reach past a room's corner, onto that label's row, and
+// took its click (window-opening-corrections' ambiguous window).
+const repairLabelTop = htmlTopBefore("unresolved-opening-label-2d", read("components/editor/renderers/UnresolvedOpeningMarkers2D.tsx"));
+assert.equal(repairLabelTop, 20);
+assert.ok(htmlTopBefore("selected-room-toolbar") < repairLabelTop, "The room's toolbar sits under a door's or window's repair label.");
 
 console.log("Plan words (levels, Surfaces, Deselect) and the canvas chip checks passed");
