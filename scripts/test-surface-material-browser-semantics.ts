@@ -76,7 +76,7 @@ const dorica120 = doricaGroup.variants.find(
   (variant) => variant.surface_material.material_id === DORICA_CREMA_120_ID
 );
 assert.ok(dorica120);
-assert.equal(getSurfaceMaterialSupplierLabel(dorica120), "Gardenia Orchidea");
+assert.equal(getSurfaceMaterialSupplierLabel(dorica120), "Gardenia & Ariana");
 assert.equal(
   getSurfaceMaterialCollectionLabel(dorica120),
   "Dorica",
@@ -97,7 +97,7 @@ const facets = {
 };
 assert.ok(facets.effect.includes("Marble"));
 assert.ok(facets.collection.includes("Dorica") && facets.collection.includes("Tabulae"));
-assert.ok(!facets.collection.includes("Gardenia Orchidea"), "the Collection filter must not list a brand");
+assert.ok(!facets.collection.includes("Gardenia & Ariana"), "the Collection filter must not list a brand");
 assert.ok(facets.size.includes("1200x1200 mm"));
 assert.ok(facets.color.includes("White"));
 

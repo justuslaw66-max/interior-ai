@@ -146,7 +146,6 @@ function getSurfaceMaterialDisplayName(material: SurfaceMaterialCatalogRecord) {
   const productName = material.surface_material.product_name.trim();
   const prefixes = [
     material.surface_material.brand,
-    "Gardenia Orchidea",
     "Gardenia",
   ].filter(Boolean) as string[];
   for (const prefix of prefixes) {
