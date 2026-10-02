@@ -121,6 +121,10 @@ async function setLivingEastWallAngle(
   angleDeg: number,
   direction: 1 | -1
 ) {
+  // The right rail scrolls. The wall's inspector runs below its fold at 1280x720, so pressing its
+  // "Change material" scrolls the rail (157px in the 2 Oct run) and the navigator out of view; its
+  // handles were then measured above the page. Bring the navigator back first.
+  await page.getByRole("region", { name: "Room navigator" }).scrollIntoViewIfNeeded();
   const livingRoom = page.getByRole("button", {
     name: /^Focus Living \/ Sleep$/,
   });
