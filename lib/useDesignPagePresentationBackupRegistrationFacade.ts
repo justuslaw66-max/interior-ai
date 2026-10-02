@@ -35,21 +35,13 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       localBackupPlanningResolverRef,
     },
   } = coreShell;
-  const { planViewport, editorShell } = viewportShell.boundaries;
+  const { planViewport } = viewportShell.boundaries;
   const { snapshotDocument, documentRoom } =
     documentSelection.boundaries;
 
   const exportRuntime = useDesignPagePresentationExportRuntime({
     state: {
       access: { isDesigner: coreShell.derived.access.isDesigner },
-      editor: {
-        editorMode: editorShell.state.editor.editorMode,
-        viewMode: base.state.editor.viewMode,
-      },
-      shopping: {
-        hoveredCartInstanceId:
-          editorShell.state.cart.hoveredCartInstanceId,
-      },
       document: { items: documentRoom.derived.room.items },
       presentation: {
         designId: base.state.identity.designId,
@@ -63,8 +55,6 @@ export function useDesignPagePresentationBackupRegistrationFacade({
     },
     actions: {
       setClientPreview: base.actions.access.setClientPreview,
-      transitionToCameraView:
-        planViewport.actions.camera.navigation.transitionToCameraView,
       setUpgradeReason: base.actions.paywall.setUpgradeReason,
       setShowUpgrade: base.actions.dialogs.setShowUpgrade,
       updateProjection:

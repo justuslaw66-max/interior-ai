@@ -6,9 +6,9 @@ import {
   createDesignPageLoadRequestCoordinator,
 } from "@/lib/design-page-requested-design-load-coordinator";
 import { createUnmountCancellation } from "@/lib/useCancelOnUnmount";
+import { resolveRequestedDesignLoadCompletion } from "@/lib/design-page-requested-design-load";
 import {
   resolveActiveRequestedDesignId,
-  resolveRequestedDesignLoadCompletion,
   resolveRequestedDesignLoadDecision,
 } from "@/lib/useDesignPageRequestedDesignWorkspaceRegistration";
 

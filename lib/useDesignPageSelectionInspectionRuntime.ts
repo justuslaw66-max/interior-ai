@@ -177,7 +177,6 @@ export function useDesignPageSelectionInspectionRuntime({
         selectedItem: itemSelection.state.selectedItem,
         selectedInstanceId: itemSelection.state.selectedInstanceId,
         activeRoom: activeRoom ?? null,
-        editorMode,
       },
       configuration: {
         catalogItems: configuration.catalogItems,
@@ -195,8 +194,6 @@ export function useDesignPageSelectionInspectionRuntime({
         commitItems: itemDocument.actions.commitItems,
         ensureImportedCatalogItem:
           importedModels.actions.ensureCatalogItem,
-        setHoveredCartInstanceId:
-          editorShell.actions.cart.setHoveredCartInstanceId,
       },
     });
 

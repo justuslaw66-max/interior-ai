@@ -2,20 +2,13 @@
 
 import { useEffect } from "react";
 
-import { buildDesignEditorUrl } from "@/lib/design-editor-url";
-import type { DesignPageCloudLoadResult } from "@/lib/design-page-types";
+import { resolveRequestedDesignLoadCompletion } from "@/lib/design-page-requested-design-load";
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
-
-type DesignUrlContext = Pick<URLSearchParams, "get">;
 
 export type RequestedDesignLoadDecision =
   | { kind: "none" | "waiting" | "current" }
   | { kind: "load"; designId: string };
-
-export type RequestedDesignLoadCompletion =
-  | { kind: "unchanged" }
-  | { kind: "replace"; href: string };
 
 export function resolveActiveRequestedDesignId(
   routedDesignId: string,
@@ -39,26 +32,6 @@ export function resolveRequestedDesignLoadDecision(input: {
     return { kind: "current" };
   }
   return { kind: "load", designId: input.requestedDesignId };
-}
-
-export function resolveRequestedDesignLoadCompletion(input: {
-  active: boolean;
-  result: DesignPageCloudLoadResult;
-  currentDesignId: string | null;
-  context: DesignUrlContext;
-}): RequestedDesignLoadCompletion {
-  if (!input.active || input.result === "loaded" || input.result === "superseded") {
-    return { kind: "unchanged" };
-  }
-  return {
-    kind: "replace",
-    href: input.currentDesignId
-      ? buildDesignEditorUrl({
-          designId: input.currentDesignId,
-          context: input.context,
-        })
-      : "/design",
-  };
 }
 
 export type UseDesignPageRequestedDesignWorkspaceRegistrationInput = {

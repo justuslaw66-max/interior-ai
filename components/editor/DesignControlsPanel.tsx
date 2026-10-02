@@ -11,6 +11,7 @@ import type {
 } from "@/lib/design-page-house-plan";
 import { type AiLayoutProposal, type PlanMeasurementUnit, type Style } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { isEditorShortcutTargetBlocked } from "@/lib/editor-shortcut-guard";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
@@ -523,16 +524,7 @@ export default function DesignControlsPanel({
       if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "b") {
         return;
       }
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.isContentEditable ||
-          target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT")
-      ) {
-        return;
-      }
+      if (isEditorShortcutTargetBlocked(event.target)) return;
       event.preventDefault();
       setEdgePreviewOpen(false);
       onCollapsedChange(!collapsed);
