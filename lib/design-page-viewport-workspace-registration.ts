@@ -18,7 +18,7 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const { coreShell, documentSelection, planAuthoring, editorInteraction } =
     aiWorkspace.boundaries;
   const { base, viewportShell } = coreShell.boundaries;
-  const { documentRoom, sceneRoomRead, itemSelection, itemDocument } =
+  const { documentRoom, sceneRoomRead, itemSelection } =
     documentSelection.boundaries;
   const {
     selectionInspection,
@@ -70,35 +70,6 @@ export function buildDesignPageViewportWorkspaceRegistration({
           planWorkspace.actions.room.commitRoomDimensionEdit2D,
         commitActiveFloorWallHeightMm:
           selectionInspection.actions.roomGeometry.changeActiveRoomHeightMm,
-        item: {
-          center:
-            placementSelection.actions.interaction.centerSelectedItemInRoom,
-          snapToWall:
-            placementSelection.actions.interaction.snapSelectedItemToNearestWall,
-          duplicate:
-            placementSelection.actions.interaction.duplicateSelectedItem,
-          delete: placementSelection.actions.interaction.deleteSelectedItem,
-          changeFixtureLight: (patch) => {
-            const selectedInstanceId =
-              itemSelection.state.selectedItem?.instanceId;
-            if (!selectedInstanceId) return;
-            itemDocument.actions.commitItems(
-              (items) =>
-                items.map((item) =>
-                  item.instanceId === selectedInstanceId
-                    ? {
-                        ...item,
-                        fixtureLight: {
-                          ...item.fixtureLight,
-                          ...patch,
-                        },
-                      }
-                    : item
-                ),
-              "Change fixture lighting"
-            );
-          },
-        },
         room: {
           editFloor: surfaceWorkspace.actions.openFloorEditorForRoom,
           fit: camera.actions.navigation.handleFitSelectedPlanRoom,

@@ -23,6 +23,15 @@ type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
   cameraHandleCenter: { x: number; y: number };
 };
 
+
+/** Opens the surface inspector's "Adjust pattern" if it's closed (it is for consumers). */
+async function openAdjustPattern(page: Page) {
+  const adjust = page.getByTestId("surface-adjust-pattern");
+  await expect(adjust).toBeVisible();
+  if ((await adjust.getAttribute("open")) === null) await adjust.locator("summary").click();
+  await expect(adjust).toHaveAttribute("open", "");
+}
+
 async function frameLivingEastWall(page: Page) {
   const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
@@ -112,6 +121,10 @@ async function setLivingEastWallAngle(
   angleDeg: number,
   direction: 1 | -1
 ) {
+  // The right rail scrolls. The wall's inspector runs below its fold at 1280x720, so pressing its
+  // "Change material" scrolls the rail (157px in the 2 Oct run) and the navigator out of view; its
+  // handles were then measured above the page. Bring the navigator back first.
+  await page.getByRole("region", { name: "Room navigator" }).scrollIntoViewIfNeeded();
   const livingRoom = page.getByRole("button", {
     name: /^Focus Living \/ Sleep$/,
   });
@@ -645,7 +658,7 @@ test.describe("Studio canonical wall panels", () => {
       .toBe(true);
 
     const floorPanel = page.getByTestId("coohom-floor-panel");
-    await floorPanel.getByRole("button", { name: "Expand floor panel" }).click();
+    await floorPanel.getByRole("button", { name: "Expand Levels" }).click();
     await floorPanel.locator("summary", { hasText: "Opacity" }).click();
     await floorPanel
       .locator("label")
@@ -897,6 +910,8 @@ test.describe("Studio canonical wall panels", () => {
     // A card names the model under its collection (Anima, then Beige); pick it by its full name.
     await page.locator('[data-material-name="Anima Beige"] button').first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
+    // Grout sits in "Adjust pattern", closed for consumers (UX audit ED5, phase 4f).
+    await openAdjustPattern(page);
     const wallGrout = page.getByTestId("selection-inspector-wall-grout");
     await expect(wallGrout).toBeVisible();
     await wallGrout.getByTestId("wall-surface-joint-size-5").click();

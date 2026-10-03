@@ -16,6 +16,8 @@ import {
   type SelectedItemPanelProps,
 } from "@/components/editor/design-page/SelectedItemPanel";
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
+import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import { planStepFooter } from "@/components/editor/design-page/PlanDisplaySection";
 
 export type DesignPagePanelRegionState = {
   shopping: ShopStepProps | null;
@@ -38,6 +40,8 @@ export type DesignPagePanelRegionProps = {
   state: DesignPagePanelRegionState;
   configuration: DesignPagePanelRegionConfiguration;
   actions: DesignPagePanelRegionActions;
+  /** The plan display (Pro) or the plan's notes (Free), at the foot of Plan's panel (UX 4e, SX4). */
+  planTools?: PresentExportDialogProps | null;
 };
 
 /**
@@ -81,6 +85,7 @@ export function DesignPagePanelRegion({
   state,
   configuration,
   actions,
+  planTools,
 }: DesignPagePanelRegionProps) {
   const { isClientPreview } = configuration;
   // On a tablet the step panel steps aside for the item or cabinet panel (UX 4d, AX11).
@@ -107,7 +112,7 @@ export function DesignPagePanelRegion({
       ) : null}
       {state.selectedItem ? <SelectedItemPanel {...state.selectedItem} /> : null}
       {state.controls ? (
-        <DesignControlsPanelAdapter {...state.controls} />
+        <DesignControlsPanelAdapter {...state.controls} stepFooter={planStepFooter(state.controls.configuration.panelMode, planTools)} />
       ) : null}
 
       {isClientPreview ? (

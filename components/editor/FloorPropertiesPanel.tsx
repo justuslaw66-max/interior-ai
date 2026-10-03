@@ -141,7 +141,7 @@ export default function FloorPropertiesPanel({
     ? "designer-control h-8 w-full rounded-lg border px-2 text-right text-sm text-neutral-100"
     : "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
   const activeFloorLabel =
-    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
+    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const hiddenFloorLevelSet = new Set(hiddenFloorLevels);
   const getFloorAccentColor = (level: number) => {
     const palette = ["#2563eb", "#059669", "#d97706", "#7c3aed", "#dc2626", "#0891b2"];
@@ -152,7 +152,7 @@ export default function FloorPropertiesPanel({
     label: string;
     description: string;
   }> = [
-    { mode: "blank", label: "Blank floor", description: "Start with one empty room." },
+    { mode: "blank", label: "Blank level", description: "Start with one empty room." },
     { mode: "layout", label: "Duplicate layout", description: "Copy rooms, doors, windows and furniture." },
     { mode: "walls", label: "Walls only", description: "Copy rooms, doors and windows only." },
   ];
@@ -188,7 +188,7 @@ export default function FloorPropertiesPanel({
     <div data-testid="coohom-floor-panel" className={panelClass}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className={titleClass}>Floor</div>
+          <div className={titleClass}>Levels</div>
           <div className={metaClass}>
             {activeFloorLabel} · {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"}
           </div>
@@ -208,7 +208,7 @@ export default function FloorPropertiesPanel({
           <button
             type="button"
             className={`${secondaryButtonClass} grid h-8 w-8 place-items-center p-0`}
-            aria-label={isCollapsed ? "Expand floor panel" : "Collapse floor panel"}
+            aria-label={isCollapsed ? "Expand Levels" : "Collapse Levels"}
             title={isCollapsed ? "Expand" : "Collapse"}
             onClick={() => setIsCollapsed((value) => !value)}
           >
@@ -226,7 +226,7 @@ export default function FloorPropertiesPanel({
 
       <details className="mt-3">
         <summary className={dark ? "cursor-pointer text-xs font-semibold text-neutral-200" : "cursor-pointer text-xs font-semibold text-neutral-700"}>
-          Add floor
+          Add level
         </summary>
         <div className="mt-2 grid gap-2">
           <button
@@ -238,7 +238,7 @@ export default function FloorPropertiesPanel({
               setPendingAddDirection((current) => (current === "upper" ? null : "upper"))
             }
           >
-            <span>Upper floor</span>
+            <span>Level above</span>
             <span aria-hidden="true">^</span>
           </button>
           <button
@@ -250,7 +250,7 @@ export default function FloorPropertiesPanel({
               setPendingAddDirection((current) => (current === "lower" ? null : "lower"))
             }
           >
-            <span>Lower floor</span>
+            <span>Level below</span>
             <span aria-hidden="true">v</span>
           </button>
         </div>
@@ -268,7 +268,7 @@ export default function FloorPropertiesPanel({
           <div className="flex items-start justify-between gap-2">
             <div>
               <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-                {pendingAddDirection === "upper" ? "New upper floor" : "New lower floor"}
+                {pendingAddDirection === "upper" ? "New level above" : "New level below"}
               </div>
               <div className={dark ? "mt-0.5 text-[10px] text-neutral-400" : "mt-0.5 text-[10px] text-neutral-500"}>
                 Choose what to copy into the new level.
@@ -281,7 +281,7 @@ export default function FloorPropertiesPanel({
                   ? "h-6 w-6 rounded-md text-xs font-semibold text-neutral-300 hover:bg-white/10"
                   : "h-6 w-6 rounded-md text-xs font-semibold text-neutral-500 hover:bg-neutral-100"
               }
-              aria-label="Close floor creation menu"
+              aria-label="Close the new level menu"
               onClick={() => setPendingAddDirection(null)}
             >
               x
@@ -314,7 +314,7 @@ export default function FloorPropertiesPanel({
         <>
           <label className="mt-3 block">
             <div className="mb-1 flex items-center justify-between gap-3">
-              <span className={fieldLabelClass}>Current floor</span>
+              <span className={fieldLabelClass}>Current level</span>
             </div>
             <select
               value={activeFloorLevel}
@@ -370,7 +370,7 @@ export default function FloorPropertiesPanel({
                       }
                       disabled={!canEdit || isActive || !onToggleFloorVisibility}
                       aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
-                      title={isActive ? "Active floor stays visible" : isHidden ? "Show floor" : "Hide floor"}
+                      title={isActive ? "The level you're on stays visible" : isHidden ? "Show level" : "Hide level"}
                       onClick={() => onToggleFloorVisibility?.(option.level)}
                     >
                       {isHidden ? "○" : "●"}
@@ -382,7 +382,7 @@ export default function FloorPropertiesPanel({
 
           {hiddenFloorLevels.length > 0 ? (
             <div className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
-              Hidden floors stay out of stacked 3D until shown again.
+              Hidden levels stay out of stacked 3D until shown again.
             </div>
           ) : null}
         </>
@@ -398,7 +398,7 @@ export default function FloorPropertiesPanel({
             <div className={inputClass}>{formatDisplayArea(activeRoomFloorAreaSqm, measurementUnit)}</div>
           </div>
           <MeasurementField
-            label="Floor wall height"
+            label="Wall height"
             valueMm={activeRoomHeightMm}
             unit={measurementUnit}
             minMm={2000}

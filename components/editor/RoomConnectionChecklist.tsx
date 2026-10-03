@@ -17,6 +17,14 @@ type RoomConnectionChecklistProps = {
   onAddDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
 };
 
+const STATUS_LABELS: Record<HouseRoomConnectionChecklistItem["status"], string> = {
+  connected: "Connected",
+  reachable: "Reached through other rooms",
+  needs_doorway: "Needs a door",
+  detached: "Detached",
+  disconnected_group: "Disconnected",
+};
+
 export default function RoomConnectionChecklist({
   items,
   measurementUnit,
@@ -58,15 +66,9 @@ export default function RoomConnectionChecklist({
     ? "rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
     : "rounded-lg border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-600";
   const getStatusClass = (status: HouseRoomConnectionChecklistItem["status"]) => {
-    if (status === "connected") return connectedClass;
+    if (status === "connected" || status === "reachable") return connectedClass;
     if (status === "needs_doorway") return needsClass;
     return reviewClass;
-  };
-  const getStatusLabel = (status: HouseRoomConnectionChecklistItem["status"]) => {
-    if (status === "connected") return "Connected";
-    if (status === "needs_doorway") return "Needs a door";
-    if (status === "detached") return "Detached";
-    return "Disconnected";
   };
   const getItemLabel = (item: HouseRoomConnectionChecklistItem) => {
     if (item.status === "detached") return item.roomNames[0] ?? "Room";
@@ -109,7 +111,7 @@ export default function RoomConnectionChecklist({
                 data-testid="room-connection-status"
                 className={getStatusClass(item.status)}
               >
-                {getStatusLabel(item.status)}
+                {STATUS_LABELS[item.status]}
               </div>
             </div>
             {item.status === "needs_doorway" && item.doorwaySuggestion && (

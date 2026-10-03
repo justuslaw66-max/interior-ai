@@ -1,7 +1,6 @@
 "use client";
 
 import { type ComponentProps } from "react";
-import { X } from "lucide-react";
 
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
@@ -17,6 +16,10 @@ import {
 } from "@/components/editor/design-page/ProductModelVariantControls";
 import { SelectedItemActionRow, SelectedItemSwaps } from "@/components/editor/design-page/SelectedItemQuickActions";
 import { SelectedItemSummaryCard } from "@/components/editor/design-page/SelectedItemSummaryCard";
+import { SelectedItemPanelHeader, type SelectedItemPanelLockLabel } from "@/components/editor/design-page/SelectedItemPanelHeader";
+import { ProductLightControls } from "@/components/editor/design-page/ProductLightControls";
+import type { ProductFixtureLight } from "@/lib/product-fixture-light";
+import type { PlacedFixtureLightState } from "@/lib/room-types";
 import type { SelectedItemSummary } from "@/lib/selected-item-summary";
 
 type SelectedItemDetailsPanelProps = ComponentProps<
@@ -81,11 +84,7 @@ export type SelectedItemPanelRotationActions = Pick<
   | "onApplyRotationInput"
 >;
 
-export type SelectedItemPanelLockLabel =
-  | "Lock"
-  | "Unlock"
-  | "Lock selected"
-  | "Unlock selected";
+export type { SelectedItemPanelLockLabel };
 
 export type SelectedItemPanelState = {
   details: SelectedItemPanelDetailsState;
@@ -95,6 +94,8 @@ export type SelectedItemPanelState = {
   productModelVariants: ProductModelVariantControlsState;
   productFinishes: ProductFinishControlsState;
   lockLabel: SelectedItemPanelLockLabel;
+  /** A lamp's light, for Pro (UX 4f): the controls left Plan's inspector for this panel. */
+  light?: ProductFixtureLight | null;
 };
 
 export type SelectedItemPanelConfiguration = {
@@ -117,6 +118,7 @@ export type SelectedItemPanelActions = {
   onSwapToPricier: () => void;
   onViewProduct: () => void;
   onToggleLock: () => void;
+  onChangeLight?: (patch: PlacedFixtureLightState) => void;
 };
 
 export type SelectedItemPanelProps = {
@@ -124,45 +126,6 @@ export type SelectedItemPanelProps = {
   configuration: SelectedItemPanelConfiguration;
   actions: SelectedItemPanelActions;
 };
-
-type SelectedItemPanelHeaderProps = {
-  title: string;
-  isDesigner: boolean;
-  canEdit: boolean;
-  lockLabel: SelectedItemPanelLockLabel;
-  onToggleLock: () => void;
-  onDeselect: () => void;
-};
-
-/** "Selected", Pro's Lock, and Deselect (the mockup's ×), kept in view while the panel scrolls. */
-function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel, onToggleLock, onDeselect }: SelectedItemPanelHeaderProps) {
-  return (
-    <div className="sticky top-0 z-20 -mx-4 -mt-4 flex items-center justify-between gap-3 rounded-t-xl border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur">
-      <span className="text-[13px] font-bold text-neutral-600">Selected</span>
-      <div className="flex items-center gap-1">
-        {isDesigner ? (
-          <button
-            type="button"
-            disabled={!canEdit}
-            onClick={onToggleLock}
-            className="min-h-8 rounded-lg border border-neutral-200 px-3 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
-          >
-            {lockLabel}
-          </button>
-        ) : null}
-        <button
-          type="button"
-          data-testid="selected-item-deselect"
-          aria-label={`Deselect ${title}`}
-          onClick={onDeselect}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 md:h-8 md:w-8"
-        >
-          <X className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /**
  * The one item panel (UX audit FU12), as in the Furnish mockup: the product (picture, name, price,
@@ -221,6 +184,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
           onSwapToCheaper={actions.onSwapToCheaper}
           onSwapToPricier={actions.onSwapToPricier}
         />
+        {state.light && actions.onChangeLight ? <ProductLightControls light={state.light} disabled={editsDisabled} onChange={actions.onChangeLight} /> : null}
         <SelectedItemDetailsPanel dark={dark} isDesigner={isDesigner} canEdit={canEdit} {...details} {...actions.details} />
       </section>
     </div>

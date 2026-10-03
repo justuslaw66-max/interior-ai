@@ -34,7 +34,8 @@ export function UnresolvedOpeningMarkers2D({
         </mesh>
         <Line points={[[-0.1, 0.003, -0.1], [0.1, 0.003, 0.1]]} color="#dc2626" lineWidth={4} />
         <Line points={[[-0.1, 0.003, 0.1], [0.1, 0.003, -0.1]]} color="#dc2626" lineWidth={4} />
-        <Html zIndexRange={[12, 0]} position={[0, 0.08, 0.28]} center transform={false} style={{ pointerEvents: "auto" }}>
+        {/* On top like every door's or window's label (UX 4f): the room's toolbar can reach this row. */}
+        <Html zIndexRange={[20, 0]} position={[0, 0.08, 0.28]} center transform={false} style={{ pointerEvents: "auto" }}>
           <button
             type="button"
             data-testid="unresolved-opening-label-2d"

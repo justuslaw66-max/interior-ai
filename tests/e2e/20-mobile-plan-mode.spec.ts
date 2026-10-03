@@ -117,9 +117,9 @@ test("the phone's step sheet expands, peeks and comes back", async ({ page }) =>
 });
 
 // UX 4d (audit AX2): a door or window picked on a phone's plan shows its inspector in the sheet,
-// opening a peeking sheet, with Done to put the step's panel back. The door: at a phone's zoom the
-// living room's window label sits under the room's Depth chip, both at the west wall's middle.
-test("a phone shows the picked door's inspector in the step sheet", async ({ page }) => {
+// opening a peeking sheet, with Done to put the step's panel back. The window: at a phone's zoom
+// its label shares the west wall's middle with the room's Depth chip, and sits above it (4f).
+test("a phone shows the picked window's inspector in the step sheet", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await clearEditorStorage(page);
   await openTemplatePlan(page);
@@ -133,7 +133,7 @@ test("a phone shows the picked door's inspector in the step sheet", async ({ pag
   await expect(sheet).toHaveAttribute("data-sheet-snap", "peek");
   await expect(slot).toBeHidden();
 
-  await page.locator('[data-testid="plan-opening-kind-label"][data-opening-kind="door"]').first().click();
+  await page.locator('[data-testid="plan-opening-kind-label"][data-opening-kind="window"]').first().click();
   await expect(sheet).toHaveAttribute("data-sheet-snap", "half");
   await expect(slot.getByTestId("selection-inspector")).toBeVisible();
   await expect(slot.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();

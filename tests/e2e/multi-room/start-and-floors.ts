@@ -154,43 +154,44 @@ export function registerStartAndFloorTests() {
     await expect(page.getByTestId("plan-right-rail")).toBeVisible();
     await expect(page.getByTestId("floating-panel-presets-design-floor-properties")).toHaveCount(0);
 
-    const expandFloorPanel = page.getByRole("button", { name: "Expand floor panel" });
+    const expandFloorPanel = page.getByRole("button", { name: "Expand Levels" });
     if (await expandFloorPanel.isVisible().catch(() => false)) {
       await expandFloorPanel.click();
     }
-    await page.locator("summary").filter({ hasText: "Add floor" }).click();
+    await page.locator("summary").filter({ hasText: "Add level" }).click();
     await expect(page.getByTestId("floor-add-upper")).toBeVisible();
     await page.getByTestId("floor-add-upper").click();
     await expect(page.getByTestId("floor-add-mode-menu")).toBeVisible();
     await expect(page.getByText("Choose what to copy into the new level.")).toBeVisible();
-    await page.getByLabel("Close floor creation menu").click();
+    await page.getByLabel("Close the new level menu").click();
     await expect(page.getByTestId("floor-add-mode-menu")).toHaveCount(0);
     await page.getByTestId("floor-add-upper").click();
     await page.getByTestId("floor-add-mode-blank").click();
-    await expect(page.getByTestId("floor-row-2")).toContainText("2F");
-    await expect(page.getByTestId("floor-row-1")).toContainText("1F");
+    // Storeys read "Level 2" and "Basement 1" (UX audit ED7).
+    await expect(page.getByTestId("floor-row-2")).toContainText("Level 2");
+    await expect(page.getByTestId("floor-row-1")).toContainText("Level 1");
 
-    const secondFloorButton = page.getByTestId("floor-row-2").getByRole("button", { name: /2F/ }).first();
+    const secondFloorButton = page.getByTestId("floor-row-2").getByRole("button", { name: /Level 2/ }).first();
     if (await secondFloorButton.isEnabled()) {
       await secondFloorButton.click();
     }
-    await page.getByTestId("floor-row-1").getByRole("button", { name: "Hide 1F" }).click();
-    await expect(page.getByRole("button", { name: "Show 1F" })).toBeVisible();
+    await page.getByTestId("floor-row-1").getByRole("button", { name: "Hide Level 1" }).click();
+    await expect(page.getByRole("button", { name: "Show Level 1" })).toBeVisible();
 
-    await page.getByTestId("floor-row-1").getByRole("button", { name: /1F/ }).first().click();
-    await expect(page.getByTestId("floor-row-1").getByRole("button", { name: "Hide 1F" })).toBeDisabled();
+    await page.getByTestId("floor-row-1").getByRole("button", { name: /Level 1/ }).first().click();
+    await expect(page.getByTestId("floor-row-1").getByRole("button", { name: "Hide Level 1" })).toBeDisabled();
 
     await page.getByTestId("floor-add-lower").click();
     await expect(page.getByTestId("floor-add-mode-menu")).toBeVisible();
     await page.getByTestId("floor-add-mode-walls").click();
-    await expect(page.getByTestId("floor-row-0")).toContainText("B1");
+    await expect(page.getByTestId("floor-row-0")).toContainText("Basement 1");
 
     await page.getByText("Advanced").click();
     await page.getByTestId("floor-rename-open").click();
     await expect(page.getByTestId("floor-rename-dialog")).toBeVisible();
-    await page.getByTestId("floor-rename-input").fill("Basement");
+    await page.getByTestId("floor-rename-input").fill("Storage level");
     await page.getByTestId("floor-rename-save").click();
-    await expect(page.getByTestId("floor-row-0")).toContainText("Basement");
+    await expect(page.getByTestId("floor-row-0")).toContainText("Storage level");
 
     await page.getByTestId("floor-delete-open").click();
     await expect(page.getByTestId("floor-delete-dialog")).toBeVisible();

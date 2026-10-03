@@ -1015,10 +1015,10 @@ export function useDesignPageSurfaceInspector({
                 }
               : null;
           const headerLabel = surfaceInspectorIsWall
-            ? `${getWallFaceLabel(wallInspectorFaceId)} settings`
+            ? getWallFaceLabel(wallInspectorFaceId)
             : surfaceInspectorIsCeiling
-              ? "Ceiling settings"
-              : "Floor settings";
+              ? "Ceiling"
+              : "Floor";
           const footer = surfaceInspectorIsWall
             ? `Wall rotation ${wallInspectorSettings.rotationDeg}°`
             : surfaceInspectorIsCeiling

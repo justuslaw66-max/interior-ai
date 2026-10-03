@@ -362,7 +362,7 @@ assert.match(
 
 assert.match(
   viewportReadModelSource,
-  /rail:\s*planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
+  /rail:\s*\(?planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
   "The viewport read model should inject the shared overlay gate and 3D whole-home navigator state."
 );
 assert.match(

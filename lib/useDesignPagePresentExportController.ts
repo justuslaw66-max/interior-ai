@@ -13,6 +13,7 @@ import type {
   PlanLayerPresetId,
 } from "@/lib/design-page-types";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
+import type { LightingPreset } from "@/lib/lightingPresets";
 import {
   DEFAULT_DOOR_WIDTH_MM,
   DEFAULT_WINDOW_WIDTH_MM,
@@ -91,11 +92,11 @@ export type DesignPagePresentExportControllerActions = {
     selectOverlay: (id: string | null) => void;
     selectAnnotationTool: PresentExportDialogActions["onSelectAnnotationTool"];
     deleteOverlay: (id: string | null) => void;
-    changeOpening: PresentExportDialogActions["onOpeningChange"];
     applyLayerPresetInTransaction: (preset: PlanLayerPresetId) => void;
   };
   presentation: {
-    changeLightingPreset: PresentExportDialogActions["onLightingPresetChange"];
+    /** The Lighting drawer's mode buttons (UX audit ED14: lighting has one home). */
+    changeLightingPreset: (preset: LightingPreset) => void;
     createShareLink: PresentExportDialogActions["onCreateShareLink"];
     setExportStylePreset: (
       next: FunctionalStateAction<ExportStylePreset>
@@ -318,8 +319,6 @@ export function useDesignPagePresentExportController({
       onAddOpening: addOpening,
       onAddBuiltIn: addBuiltIn,
       onDeleteSelectedPlanOverlay: deleteSelectedOverlay,
-      onOpeningChange: actions.plan.changeOpening,
-      onLightingPresetChange: actions.presentation.changeLightingPreset,
       onCreateShareLink: actions.presentation.createShareLink,
       onExportStyleChange: changeExportStyle,
       onExportImages: exportImages,

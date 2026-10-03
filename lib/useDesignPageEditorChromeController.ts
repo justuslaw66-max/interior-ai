@@ -8,6 +8,7 @@ import type {
   DesignPageEditorChromeProps,
   DesignPageEditorChromeState,
 } from "@/components/editor/design-page/DesignPageEditorChrome";
+import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 import { PLANS_GET_PRO_OPENER_ID } from "@/lib/plans-dialog-focus";
@@ -29,6 +30,7 @@ export type UseDesignPageEditorChromeControllerInput = {
       panel: DesignPageEditorChromeState["betaStart"]["panel"];
     };
     designPanelOpen: boolean;
+    savedViews: DesignPageEditorChromeState["savedViews"];
   };
   configuration: {
     commandBar: DesignPageEditorChromeConfiguration["commandBar"];
@@ -93,9 +95,22 @@ export type UseDesignPageEditorChromeControllerInput = {
     };
     sceneLighting: SceneLightingActions;
     betaStart: DesignPageEditorChromeActions["betaStart"];
+    savedViews: DesignPageEditorChromeActions["savedViews"];
     showToast: (message: string) => void;
   };
 };
+
+/** Present & export's saved-view actions, for Views on the 3D view (UX 4e, SX4). */
+export function savedViewActions(
+  actions: Pick<PresentExportDialogProps["actions"], "onCameraViewNameChange" | "onSaveCameraView" | "onOpenCameraView" | "onDeleteCameraView">
+): DesignPageEditorChromeActions["savedViews"] {
+  return {
+    onNameChange: actions.onCameraViewNameChange,
+    onSave: actions.onSaveCameraView,
+    onOpen: actions.onOpenCameraView,
+    onDelete: actions.onDeleteCameraView,
+  };
+}
 
 export function useDesignPageEditorChromeController({
   state,
@@ -179,9 +194,7 @@ export function useDesignPageEditorChromeController({
   const openAdjustTools = () => openToolsPanel("adjust");
   const openAiTools = () => openToolsPanel("ai");
 
-  const openCart = () => {
-    actions.editor.setMode("buy");
-  };
+  const openCart = () => { actions.editor.setMode("buy"); };
 
   return {
     state: {
@@ -191,6 +204,7 @@ export function useDesignPageEditorChromeController({
         panel: state.betaStart.panel,
       },
       toolRail: { visible: !commandState.isClientPreview && commandState.isDesigner && commandState.editorMode !== "buy", mode: commandState.editorMode },
+      savedViews: state.savedViews,
     },
     configuration: {
       commandBar: configuration.commandBar,
@@ -231,6 +245,7 @@ export function useDesignPageEditorChromeController({
         sceneLighting: actions.sceneLighting,
       },
       betaStart: actions.betaStart,
+      savedViews: actions.savedViews,
       toolRail: {
         onDesign: openDesignTools,
         onAdjust: openAdjustTools,

@@ -75,10 +75,11 @@ assert.equal(formatFloorLevel(-1), "B2");
 assert.equal(resolveActiveFloorLevel(firstFloor), 1);
 assert.equal(resolveActiveFloorLevel(null), 1);
 
+// Shown as "Basement 1" and "Level 1"; the saved labels stay "B1" and "1F" (UX audit ED7).
 assert.deepEqual(resolveFloorOptions(rooms), [
-  { level: 0, label: "B1", roomCount: 1 },
-  { level: 1, label: "1F", roomCount: 1 },
-  { level: 2, label: "2F", roomCount: 1 },
+  { level: 0, label: "Basement 1", roomCount: 1 },
+  { level: 1, label: "Level 1", roomCount: 1 },
+  { level: 2, label: "Level 2", roomCount: 1 },
 ]);
 
 assert.equal(resolveNextFloorLevel(rooms, 1, "upper"), 3);
@@ -191,10 +192,10 @@ assert.equal(floorManagerSource.includes("history.commit()"), false,
   "useFloorManager must not call history.commit: paired with a nested begin it commits somebody "
   + "else's transaction.");
 for (const label of [
-  'direction === "upper" ? "Add upper floor" : "Add lower floor"',
-  '"Rename floor"',
-  '"Duplicate floor"',
-  '"Delete floor"',
+  'direction === "upper" ? "Add level above" : "Add level below"',
+  '"Rename level"',
+  '"Duplicate level"',
+  '"Delete level"',
 ]) {
   assert.ok(floorManagerSource.includes(`runHistoryTransaction(${label}, () => {`),
     `The floor action labelled ${label} must run through runHistoryTransaction, which flushes any `

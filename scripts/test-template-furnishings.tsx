@@ -33,10 +33,8 @@ assert.equal(
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const controller = source("lib/useDesignPageFloorPlanUnderlayController.ts");
 assert.doesNotMatch(controller, /Some items couldn't be added/);
-assert.match(
-  controller,
-  /skippedFurnishings\.push\(intent\.category\);[\s\S]*?showRuleToast\(templateAppliedMessage\(template\.label, selectedFurnishingPack, skippedFurnishings\)\)/
-);
+assert.match(source("lib/plan-template-document.ts"), /skippedFurnishings\.push\(intent\.category\);/);
+assert.match(controller, /showRuleToast\(templateAppliedMessage\(template\.label, built\.pack, built\.skippedFurnishings\)\);/);
 
 // Readiness: the imported catalogue marks itself answered once its products are in the catalogue,
 // and the editor's product readiness (`canEdit`) waits for it, with a time limit.

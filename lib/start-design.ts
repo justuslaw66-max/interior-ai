@@ -7,6 +7,8 @@ import {
   type HousePlanTemplateFurnishingPackId,
   type HousePlanTemplateId,
 } from "@/lib/design-page-house-plan";
+import { SINGLE_ROOM_TEMPLATES } from "@/lib/single-room-templates";
+import { DEFAULT_DOOR_WIDTH_MM, DEFAULT_WINDOW_WIDTH_MM } from "@/lib/design-page-opening-dimensions";
 
 /**
  * Blank room and Draw room start from one empty room at the default size, the same room a
@@ -36,22 +38,25 @@ export const BLANK_ROOM_TEMPLATE: HousePlanTemplate = {
       z: 0,
     },
   ],
-  doorways: [],
-  windows: [],
+  // The first visit's door and window (UX 4g, ST9), so a blank room has a way in and daylight.
+  doorways: [{ fromRoomId: "room", wall: "east", offsetMeters: 0, widthMeters: DEFAULT_DOOR_WIDTH_MM / 1000 }],
+  windows: [{ roomId: "room", wall: "west", offsetMeters: 0, widthMeters: DEFAULT_WINDOW_WIDTH_MM / 1000 }],
   furnishingPacks: [],
 };
 
 /** Singapore homes first, as in the mockups; the US layouts come last. */
 const START_TEMPLATE_ORDER: readonly HousePlanTemplateId[] = [
-  "hdb_two_room", "studio", "one_bedroom", "living_dining", "three_room_flat", "small_condo",
+  "one_room_living", "one_room_bedroom", "hdb_two_room", "studio", "one_bedroom", "living_dining", "three_room_flat", "small_condo",
   "compact_two_bed", "family_two_bed", "l_shaped_studio", "narrow_one_bed", "corner_one_bed",
   "railroad_apartment", "adu_guest_house",
 ];
 
-export type StartTemplateFilter = "all" | 0 | 1 | 2;
+/** "room": the one-room templates (UX 4g, ST8); the bedroom counts are for homes. */
+export type StartTemplateFilter = "all" | "room" | 0 | 1 | 2;
 
 export const START_TEMPLATE_FILTERS: ReadonlyArray<{ key: StartTemplateFilter; label: string }> = [
   { key: "all", label: "All" },
+  { key: "room", label: "1 room" },
   { key: 0, label: "Studio" },
   { key: 1, label: "1 bedroom" },
   { key: 2, label: "2 bedrooms" },
@@ -83,12 +88,16 @@ function templateCard(template: HousePlanTemplate): StartTemplateCard {
   return {
     template,
     name: template.label,
-    meta: `${bedroomLabel(template.bedroomCount)} · ${roomCountLabel(template.rooms.length)} · ${area} m²`,
+    meta: template.rooms.length === 1
+      ? `1 room · ${area} m²`
+      : `${bedroomLabel(template.bedroomCount)} · ${roomCountLabel(template.rooms.length)} · ${area} m²`,
     furnishingPackId: pack?.id ?? null,
   };
 }
 
-export function buildStartTemplateCards(templates: readonly HousePlanTemplate[] = HOUSE_PLAN_TEMPLATES) {
+export function buildStartTemplateCards(
+  templates: readonly HousePlanTemplate[] = [...SINGLE_ROOM_TEMPLATES, ...HOUSE_PLAN_TEMPLATES]
+) {
   const rank = (template: HousePlanTemplate) => {
     const index = START_TEMPLATE_ORDER.indexOf(template.id);
     return index === -1 ? START_TEMPLATE_ORDER.length : index;
@@ -98,5 +107,6 @@ export function buildStartTemplateCards(templates: readonly HousePlanTemplate[] 
 
 export function matchesStartTemplateFilter(card: StartTemplateCard, filter: StartTemplateFilter) {
   if (filter === "all") return true;
+  if (filter === "room" || card.template.rooms.length === 1) return filter === "room" && card.template.rooms.length === 1;
   return filter === 2 ? card.template.bedroomCount >= 2 : card.template.bedroomCount === filter;
 }

@@ -58,6 +58,11 @@ function CatalogCardPrice({ item }: Pick<Props, "item">) {
   );
 }
 
+/** The heart's words, on the card and in details (UX 4g, FU3): it adds and removes, it doesn't "save". */
+export function favouriteLabel(title: string, isFavorite: boolean) {
+  return isFavorite ? `Remove ${title} from Favourites` : `Add ${title} to Favourites`;
+}
+
 function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props, "item" | "isFavorite" | "onToggleFavorite">) {
   return (
     <button
@@ -65,7 +70,7 @@ function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props
       onClick={onToggleFavorite}
       data-testid={`catalog-favorite-toggle-${item.id}`}
       aria-pressed={isFavorite}
-      aria-label={isFavorite ? `Remove ${item.title} from Favourites` : `Save ${item.title} to Favourites`}
+      aria-label={favouriteLabel(item.title, isFavorite)}
       className={`absolute right-1.5 top-1.5 flex h-8 w-8 touch:h-11 touch:w-11 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
     >
       <Heart className={isFavorite ? "h-4 w-4 fill-current text-rose-600" : "h-4 w-4"} aria-hidden="true" />

@@ -83,7 +83,10 @@ async function dismissBlockingDialogs(page: import("@playwright/test").Page) {
 }
 
 async function openSurfacesPanelFromInspector(page: import("@playwright/test").Page) {
-  const surfacesPanel = page.getByTestId("room-surfaces-floor-panel");
+  // Pro's Plan panel holds two copies of the browser (in the selected room's card and in Floor
+  // finish), as the file's first tests found; these tests run as Pro since 4f, so they take Floor
+  // finish's, like those.
+  const surfacesPanel = page.getByTestId("floor-finish-panel").getByTestId("room-surfaces-floor-panel");
   const modalOverlay = page.locator(".fixed.inset-0.z-50").first();
   const changeFinish = page.getByTestId("plan-change-floor-finish");
 
@@ -263,18 +266,20 @@ test.describe("Flooring surface materials", () => {
   test("apply all uses the selected wall paint instead of the custom default", async ({ page }) => {
     test.setTimeout(90000);
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
     await dismissBlockingDialogs(page);
 
     const surfacesPanel = await openSurfacesPanelFromInspector(page);
-    await page.getByTestId("surface-target-walls").click();
-    await page.getByTestId("wall-paint-search").fill("Dutchess Pink");
-    await page.getByTestId("wall-paint-swatch-nippon-9072-dutchess-pink").click();
+    await surfacesPanel.getByTestId("surface-target-walls").click();
+    await surfacesPanel.getByTestId("wall-paint-search").fill("Dutchess Pink");
+    await surfacesPanel.getByTestId("wall-paint-swatch-nippon-9072-dutchess-pink").click();
 
-    await expect(page.getByTestId("wall-paint-custom-color")).toHaveValue("#d77c8e");
-    await page.getByTestId("wall-paint-apply-all").click();
+    await expect(surfacesPanel.getByTestId("wall-paint-custom-color")).toHaveValue("#d77c8e");
+    await surfacesPanel.getByTestId("wall-paint-apply-all").click();
 
     await expect(surfacesPanel).toContainText("All walls · Dutchess Pink");
     await expect(page.getByTestId("rule-announcement-status")).toHaveText(
@@ -285,13 +290,15 @@ test.describe("Flooring surface materials", () => {
   test("ceiling target can use the paint colour picker", async ({ page }) => {
     test.setTimeout(90000);
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
     await dismissBlockingDialogs(page);
 
     const surfacesPanel = await openSurfacesPanelFromInspector(page);
-    const targetButtonMetrics = await page.getByTestId("surface-target-bar").evaluate((bar) =>
+    const targetButtonMetrics = await surfacesPanel.getByTestId("surface-target-bar").evaluate((bar) =>
       Array.from(bar.querySelectorAll("button")).map((button) => {
         const rect = button.getBoundingClientRect();
         return { width: Math.round(rect.width), height: Math.round(rect.height) };
@@ -305,39 +312,41 @@ test.describe("Flooring surface materials", () => {
         Math.min(...targetButtonMetrics.map((metric) => metric.width))
     ).toBeLessThanOrEqual(1);
 
-    await page.getByTestId("surface-target-ceiling").click();
+    await surfacesPanel.getByTestId("surface-target-ceiling").click();
     await expect(surfacesPanel).toHaveAttribute("data-surface-target", "ceiling");
     const selectionInspectorSurface = page.getByTestId("selection-inspector-floor-settings");
     await expect(selectionInspectorSurface).toHaveAttribute("data-surface-target", "ceiling");
-    await expect(selectionInspectorSurface).toContainText("Ceiling settings");
+    await expect(selectionInspectorSurface.getByTestId("surface-inspector-heading")).toHaveText("Ceiling");
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeHidden();
-    await expect(page.getByTestId("wall-paint-panel")).toBeVisible();
-    await expect(page.getByTestId("wall-paint-family-filter")).toBeVisible();
+    await expect(surfacesPanel.getByTestId("wall-paint-panel")).toBeVisible();
+    await expect(surfacesPanel.getByTestId("wall-paint-family-filter")).toBeVisible();
 
-    await page.getByTestId("wall-paint-family-grey").click();
-    await expect(page.getByTestId("wall-paint-panel")).toContainText("Colour family: GREY");
-    await expect(page.getByTestId("wall-paint-swatch-nippon-5037-ash-grey")).toBeVisible();
-    await expect(page.getByTestId("wall-paint-swatch-nippon-9039-absinthe")).toHaveCount(0);
+    await surfacesPanel.getByTestId("wall-paint-family-grey").click();
+    await expect(surfacesPanel.getByTestId("wall-paint-panel")).toContainText("Colour family: GREY");
+    await expect(surfacesPanel.getByTestId("wall-paint-swatch-nippon-5037-ash-grey")).toBeVisible();
+    await expect(surfacesPanel.getByTestId("wall-paint-swatch-nippon-9039-absinthe")).toHaveCount(0);
 
-    await page.getByTestId("wall-paint-family-green").click();
-    await expect(page.getByTestId("wall-paint-panel")).toContainText("Colour family: GREEN");
-    await page.getByTestId("wall-paint-swatch-nippon-9039-absinthe").click();
+    await surfacesPanel.getByTestId("wall-paint-family-green").click();
+    await expect(surfacesPanel.getByTestId("wall-paint-panel")).toContainText("Colour family: GREEN");
+    await surfacesPanel.getByTestId("wall-paint-swatch-nippon-9039-absinthe").click();
     await expect(surfacesPanel).toContainText("Ceiling · Absinthe");
-    await expect(page.getByTestId("wall-paint-panel")).toContainText("#728E68");
+    await expect(surfacesPanel.getByTestId("wall-paint-panel")).toContainText("#728E68");
   });
 
   test("bottom-up 3D selection targets the ceiling instead of the room", async ({ page }) => {
     test.setTimeout(90000);
     await page.setViewportSize({ width: 1600, height: 1000 });
 
+    // The surface target bar is Pro's since UX 4f (ED8); designer mode needs the Pro plan.
+    await mockProPlan(page);
     await page.goto("/design?mode=designer");
     await page.waitForLoadState("domcontentloaded");
     const sceneCanvas = page.locator('[data-testid="scene-canvas"]:visible').first();
     await expect(sceneCanvas).toBeVisible({ timeout: 30000 });
     await dismissBlockingDialogs(page);
 
-    await openSurfacesPanelFromInspector(page);
-    await page.getByTestId("surface-target-ceiling").click();
+    const surfacesPanel = await openSurfacesPanelFromInspector(page);
+    await surfacesPanel.getByTestId("surface-target-ceiling").click();
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("selection-inspector-floor-settings")).toBeHidden();
 
@@ -364,7 +373,7 @@ test.describe("Flooring surface materials", () => {
 
     const selectionInspectorSurface = page.getByTestId("selection-inspector-floor-settings");
     await expect(selectionInspectorSurface).toHaveAttribute("data-surface-target", "ceiling");
-    await expect(selectionInspectorSurface).toContainText("Ceiling settings");
+    await expect(selectionInspectorSurface.getByTestId("surface-inspector-heading")).toHaveText("Ceiling");
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeHidden();
   });
 

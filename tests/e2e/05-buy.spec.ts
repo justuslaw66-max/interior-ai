@@ -10,6 +10,44 @@ import {
 // has a product sold through Shopify (J's answers to Q2 and Q5, 27 Sep).
 const DAWSON_SWIVEL_ID = 'sofa-real-castlery-dawson-swivel-armchair';
 
+// Pro's Swap all (UX 4h, J's Q2 (a)) opens on a design kept in this browser, as the Cart gate does:
+// two Castlery products in the Living Room, of which the swivel armchair has a cheaper swap.
+const DESIGN_STORAGE_KEY = 'interior-ai:v1:livingroom-design';
+const SWAP_ALL_TITLE = 'Swap all design';
+const SWAP_ALL_PRODUCTS = [
+  'armchair-real-castlery-avery-performance-swivel-armchair',
+  'coffee-real-castlery-hugg-nesting-square-performance-basalt-closed',
+] as const;
+
+function swapAllDesign() {
+  return JSON.stringify({
+    version: 3,
+    schemaRevision: 1,
+    units: { roomGeometry: 'm', scenePosition: 'm', productDimensions: 'mm', rotation: 'rad' },
+    coordinateSystem: { handedness: 'right', origin: 'room_center_floor', axes: { x: 'right', y: 'up', z: 'forward' } },
+    title: SWAP_ALL_TITLE,
+    activeRoomId: 'swap-all-living',
+    rooms: [
+      {
+        id: 'swap-all-living',
+        name: 'Living Room',
+        roomType: 'living',
+        geometry: { width: 6, depth: 5, wallThickness: 0.12 },
+        items: SWAP_ALL_PRODUCTS.map((productId, index) => ({
+          instanceId: `swap-all-${index + 1}`,
+          productId,
+          variantId: 'catalog-default',
+          position: [-1 + index * 2, 0, 0],
+          rotationY: 0,
+          includeInCheckout: true,
+        })),
+        zones: [],
+        savedViews: [],
+      },
+    ],
+  });
+}
+
 test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
   test('add Shopify-mapped item to cart and checkout link works', async ({ page }) => {
     await page.goto('/');
@@ -95,5 +133,59 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     const hasAffiliateCheckout = await page.getByTestId('shopping-buy').first().isVisible().catch(() => false);
 
     expect(hasShopifyCheckout || hasAffiliateCheckout).toBeTruthy();
+  });
+
+  test('Pro swaps every product for a cheaper one in one step, and Undo puts them back', async ({ page }) => {
+    test.setTimeout(120000);
+
+    await page.route('**/api/me', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ plan: 'pro', source: 'playwright' }),
+    }));
+    await page.addInitScript(({ key, raw }) => {
+      if (window.sessionStorage.getItem('__swapAllSeeded') === '1') return;
+      window.localStorage.clear();
+      window.localStorage.setItem(key, raw);
+      window.localStorage.setItem('interior-ai:beta-start-dismissed', '1');
+      window.sessionStorage.setItem('__swapAllSeeded', '1');
+    }, { key: DESIGN_STORAGE_KEY, raw: swapAllDesign() });
+    await page.goto('/design?mode=designer', { waitUntil: 'domcontentloaded' });
+    const scene = page.getByTestId('scene-canvas').first();
+    await expect(scene).toBeVisible({ timeout: 30000 });
+    await expect(scene).toHaveAttribute('data-client-hydrated', 'true', { timeout: 30000 });
+    await expect(page.getByTestId('editor-design-title')).toHaveText(SWAP_ALL_TITLE);
+    await page.getByTestId('editor-rail-cart').click();
+
+    await expect(page.getByTestId('shopping-list-page')).toBeVisible();
+    const rows = page.getByTestId('shopping-list-row');
+    await expect(rows).toHaveCount(SWAP_ALL_PRODUCTS.length);
+    const productsByLine = () => rows.evaluateAll((elements) =>
+      Object.fromEntries(elements.map((element) => [
+        (element as HTMLElement).dataset.instanceId ?? '',
+        (element as HTMLElement).dataset.productId ?? '',
+      ])));
+    const before = await productsByLine();
+
+    // The buttons show once the design can be edited; Pro's say how many products each swaps.
+    const cheaper = page.getByTestId('shopping-swap-all-cheaper');
+    await expect(cheaper).toBeVisible({ timeout: 30000 });
+    await expect(cheaper).toHaveAttribute('aria-label', /^Swap all for cheaper, \d+ products?$/);
+    const count = Number(/(\d+) products?$/.exec((await cheaper.getAttribute('aria-label')) ?? '')?.[1]);
+    expect(count, 'the fixture has a product with a cheaper swap').toBeGreaterThan(0);
+    await expect(cheaper).toBeEnabled();
+
+    await cheaper.click();
+    await expect(page.getByTestId('editor-action-toast')).toContainText(`${count} ${count === 1 ? 'product' : 'products'} swapped`);
+    await expect
+      .poll(async () => {
+        const after = await productsByLine();
+        return Object.keys(before).filter((instanceId) => after[instanceId] !== before[instanceId]).length;
+      })
+      .toBe(count);
+
+    // One Undo puts every product back.
+    await page.getByTestId('editor-action-toast-undo').click();
+    await expect.poll(productsByLine).toEqual(before);
   });
 });

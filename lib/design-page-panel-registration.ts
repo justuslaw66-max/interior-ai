@@ -42,16 +42,11 @@ export function buildDesignPagePanelRegistration({
   const shoppingPanelModel = buildDesignPageShoppingPanelModel({
     state: {
       rooms: state.document.rooms, planOpenings: planDocument.state.planOpenings,
-      style: state.editor.controls.style,
-      designId: state.document.designId,
-      isGuest: !state.document.authenticated,
-      canEdit: configuration.canEdit,
+      style: state.editor.controls.style, designId: state.document.designId,
+      isGuest: !state.document.authenticated, canEdit: configuration.canEdit,
+      swapAll: { canSwapAll: state.document.plan === "pro", commitItemsToRooms: actions.shopping.commitItemsToRooms, openPricing: actions.shopping.openPricing },
     },
-    actions: {
-      commitItemsToRoom: actions.shopping.commitItemsToRoom,
-      openGuestPrompt: actions.shopping.openGuestPrompt,
-      goFurnish: actions.navigation.goFurnish,
-    },
+    actions: { commitItemsToRoom: actions.shopping.commitItemsToRoom, openGuestPrompt: actions.shopping.openGuestPrompt, goFurnish: actions.navigation.goFurnish },
   });
 
   const selectionPanelModels = buildDesignPageSelectionPanelModels({

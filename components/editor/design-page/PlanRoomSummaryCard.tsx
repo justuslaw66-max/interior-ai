@@ -152,7 +152,7 @@ export function PlanRoomSummaryCard({
                     : actions.selectAllRooms
                 }
               >
-                {hasAllRoomsSelected ? "Clear" : "Select all"}
+                {hasAllRoomsSelected ? "Deselect all" : "Select all"}
               </button>
             </div>
           ) : null}
