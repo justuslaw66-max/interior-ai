@@ -78,9 +78,6 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       canEditActiveRoomWallHeight: boolean;
       activeFloorRoomCount: number;
       designRoomCount: number;
-      selectedFixtureLight: NonNullable<
-        ViewportState["selectionInspector"]
-      >["selectedFixtureLight"];
     };
     planSummary: ViewportState["planSummary"];
     planQuality: {
@@ -245,8 +242,6 @@ export function buildDesignPageViewportRegionAdapter({
                 state.selectionInspector.activeFloorRoomCount,
               canDeleteSelectedRoom:
                 state.selectionInspector.designRoomCount > 0,
-              selectedFixtureLight:
-                state.selectionInspector.selectedFixtureLight,
             }
           : null,
       planSummary: state.planSummary,

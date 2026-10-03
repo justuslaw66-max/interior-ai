@@ -10,11 +10,8 @@ import {
 } from "react";
 
 import type { CATALOG_ITEMS } from "@/lib/catalog";
-import {
-  buildHouseRoomConnectionChecklist,
-  type HousePlan2D,
-  type HouseRoomDoorwaySuggestion,
-} from "@/lib/design-page-house-plan";
+import type { HousePlan2D, HouseRoomDoorwaySuggestion } from "@/lib/design-page-house-plan";
+import { buildHouseRoomConnectionChecklist } from "@/lib/room-connection-checklist";
 import { getDoorwaySuggestionKey } from "@/lib/design-page-floor-plan-utils";
 import {
   applyOpeningKindPlanToMetrics,

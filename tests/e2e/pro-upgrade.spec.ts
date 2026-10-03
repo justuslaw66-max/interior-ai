@@ -66,7 +66,10 @@ test.describe("Pro Upgrade Flow", () => {
       await page.goto(`/share/${shareToken}/export`);
 
       await expect(page.getByRole("heading", { name: "Playwright Export Pack" })).toBeVisible();
-      await expect(page.getByRole("button", { name: /Download PDF(?: \(Pro\))?/i })).toBeVisible();
+      // One Download PDF, the server's (UX audit SX8): watermarked for a Free owner, with no upsell.
+      await expect(page.getByRole("link", { name: "Download PDF", exact: true })).toHaveAttribute("href", `/share/${shareToken}/export/pdf`);
+      await expect(page.getByTestId("share-export-pdf-watermark-note")).toHaveText("Includes an Interior AI watermark.");
+      await expect(page.getByRole("button", { name: /Download PDF/i })).toHaveCount(0);
       await expect(page.getByRole("heading", { name: "Practical checks" })).toBeVisible();
       await expect(page.getByText(/Measurements: 12 m2 captured across 1 room/i)).toBeVisible();
     } finally {

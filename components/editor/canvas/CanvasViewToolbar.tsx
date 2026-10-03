@@ -2,6 +2,7 @@
 
 import { Maximize, Redo2, Undo2 } from "lucide-react";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 import { Button } from "@/components/ui/Button";
 
 export type CanvasViewToolbarProps = {
@@ -19,15 +20,18 @@ export type CanvasViewToolbarProps = {
   redoName: string | null;
   onUndo: () => void;
   onRedo: () => void;
+  /** Saved views, from the Views button beside 2D | 3D in 3D (UX 4e, SX4). */
+  savedViews: CanvasSavedViewsState & CanvasSavedViewsActions;
 };
 
 /**
  * The toolbar's centre: the middle of the canvas right of the step panel, as in the mockup, but
  * never so far right that a right panel (the item panel, 340px at right-4) would cover Undo and
- * Redo, and never over the step panel. Half the toolbar is about 120px, 131px on touch screens.
+ * Redo, and never over the step panel. In 3D, with Views (UX 4e), half the toolbar is about 160px,
+ * 172px on touch screens.
  */
 export function canvasToolbarLeft(leftInsetPx: number): string {
-  return `clamp(${leftInsetPx + 144}px, calc(50% + ${leftInsetPx / 2}px), calc(100% - 496px))`;
+  return `clamp(${leftInsetPx + 188}px, calc(50% + ${leftInsetPx / 2}px), calc(100% - 540px))`;
 }
 
 const TOOLBAR_CLASS =
@@ -50,6 +54,7 @@ export function CanvasViewToolbar(props: CanvasViewToolbarProps) {
       style={{ left: canvasToolbarLeft(props.leftInsetPx) }}
     >
       <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={dark} variant="canvas" />
+      {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} dark={dark} size="toolbar" /> : null}
       <div aria-hidden="true" className="mx-1 h-6 w-px bg-neutral-200" />
       <Button
         variant="quiet"

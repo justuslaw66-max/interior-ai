@@ -4,6 +4,7 @@ import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 import { useClientHydrated } from "@/lib/useClientHydrated";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import type { ShoppingList, ShoppingListLine, ShoppingRetailer } from "@/lib/shopping-list";
 import type { ShoppingSurface } from "@/lib/shopping-surfaces";
 import type { ShoppingNotice } from "@/lib/useShoppingListBuy";
@@ -11,6 +12,7 @@ import { ShoppingBuyListDialog } from "./ShoppingBuyListDialog";
 import { ShoppingListSection } from "./ShoppingListSection";
 import { ShoppingSummary } from "./ShoppingSummary";
 import { ShoppingSurfacesSection } from "./ShoppingSurfacesSection";
+import { ShoppingSwapAll, type ShoppingSwapAllProps } from "./ShoppingSwapAll";
 import { SHOPPING_LIST_TITLE_ID, useShoppingListFocus } from "./useShoppingListFocus";
 
 export type ShoppingListPageProps = {
@@ -21,6 +23,8 @@ export type ShoppingListPageProps = {
   busy: boolean;
   notice: ShoppingNotice | null;
   buyList: { retailer: ShoppingRetailer | null; openedIds: ReadonlySet<string> };
+  /** Swap all (UX 4h): in the summary from lg, under the heading below it; null when it can't apply. */
+  swapAll?: ShoppingSwapAllProps | null;
   actions: {
     buyAtRetailer: (retailerId: string) => void;
     openLine: (line: ShoppingListLine) => void;
@@ -86,8 +90,9 @@ function ShoppingListSections({ list, canEdit, actions }: Pick<ShoppingListPageP
  * with the design's products by shop, one total, and one way to buy at each shop. Removing a product
  * keeps focus on the page: the next product's Remove, the one before it, or the heading.
  */
-export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, buyList, actions }: ShoppingListPageProps) {
+export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, buyList, swapAll = null, actions }: ShoppingListPageProps) {
   const empty = list.productCount === 0;
+  const wide = useMediaQuery("(min-width: 64rem)");
   const pageRef = useRef<HTMLElement | null>(null);
   const { remove, swapForCheaper } = useShoppingListFocus(list, actions, pageRef);
   const rowActions = { ...actions, remove, swapForCheaper };
@@ -98,12 +103,13 @@ export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, b
           <h1 id={SHOPPING_LIST_TITLE_ID} tabIndex={-1} className="rounded text-[22px] font-bold leading-7 text-neutral-900 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 lg:text-[26px] lg:leading-8">Shopping list</h1>
           <p className="text-sm text-neutral-600 lg:text-[15px]">Everything in this design, in one place. You pay on the retailer&apos;s website.</p>
         </div>
+        {swapAll && !empty && !wide ? <ShoppingSwapAll {...swapAll} /> : null}
         {notice && !buyList.retailer ? <ShoppingNoticeBar notice={notice} onDismiss={actions.dismissNotice} /> : null}
         {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} actions={rowActions} />}
         <ShoppingSurfacesSection surfaces={surfaces} />
       </div>
       {empty ? null : (
-        <ShoppingSummary list={list} hasSurfaces={surfaces.length > 0} busy={busy} onBuyAtRetailer={actions.buyAtRetailer} onCheckoutHere={actions.checkoutHere} />
+        <ShoppingSummary list={list} hasSurfaces={surfaces.length > 0} busy={busy} onBuyAtRetailer={actions.buyAtRetailer} onCheckoutHere={actions.checkoutHere} swapAll={wide ? swapAll : null} />
       )}
       <ShoppingBuyListPortal buyList={buyList} notice={notice} busy={busy} actions={actions} />
     </section>

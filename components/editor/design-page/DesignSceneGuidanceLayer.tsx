@@ -42,6 +42,8 @@ export type DesignSceneGuidanceLayerConfiguration = {
     coverage: "local" | "workspace";
   };
   zonesVisible: boolean;
+  /** Pro sees its zones' outlines all the time; consumers only while placing (UX 4g, FU6). */
+  zoneOutlinesAlways: boolean;
   activeRoomOffset: { x: number; z: number };
   activeRoomId: string | null;
 };
@@ -166,7 +168,7 @@ export function DesignSceneGuidanceLayer({
           ]}
         >
           {zones.entries.map((zone) => {
-            if (zone.source === "auto" && !showingPlacementZones) return null;
+            if ((zone.source === "auto" || !configuration.zoneOutlinesAlways) && !showingPlacementZones) return null;
 
             const bounds = resolvers.getZoneBounds(zone);
             if (!bounds) return null;

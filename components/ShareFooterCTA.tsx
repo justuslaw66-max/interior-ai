@@ -8,7 +8,7 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
   return (
     <footer className="mx-auto max-w-6xl px-6 pb-10">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 shadow">
-        <div className="text-xs text-neutral-500">Made with Interior AI (beta)</div>
+        <div className="text-sm text-neutral-600">Made with Interior AI</div>
         <div
           className="flex flex-wrap items-center justify-end gap-2"
           data-testid="share-footer-actions"
@@ -28,7 +28,7 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
             className="inline-flex min-h-11 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-offset-2 hover:bg-neutral-50 focus-visible:outline-2"
             onClick={() => track("share_cta_clicked", { source: "share_page" })}
           >
-            Create your own room
+            Start your own design
           </Link>
         </div>
       </div>

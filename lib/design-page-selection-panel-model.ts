@@ -281,3 +281,20 @@ export function buildDesignPageSelectionPanelModels({
     },
   };
 }
+
+/**
+ * The panel region with a lamp's light in its item panel (UX 4f): the item panel shows the light's
+ * controls, which left Plan's inspector. Without a selected product the region is unchanged.
+ */
+export function withSelectedItemLight<Region extends { state: { selectedItem: SelectedItemPanelProps | null } }>(
+  region: Region,
+  light: SelectedItemPanelProps["state"]["light"],
+  onChangeLight: NonNullable<ItemActions["onChangeLight"]>
+): Region {
+  const panel = region.state.selectedItem;
+  if (!panel) return region;
+  return {
+    ...region,
+    state: { ...region.state, selectedItem: { ...panel, state: { ...panel.state, light }, actions: { ...panel.actions, onChangeLight } } },
+  };
+}

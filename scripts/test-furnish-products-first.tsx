@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import CatalogCard, { CATALOG_CARD_ROW_HEIGHT } from "../components/catalog/CatalogCard";
+import { CatalogItemDrawerAddSection } from "../components/catalog/CatalogItemDrawerAddSection";
 import { CatalogCategoryChips } from "../components/catalog/CatalogCategoryChips";
 import { CatalogEmptyState } from "../components/catalog/CatalogEmptyState";
 import DesignControlsAiPanel from "../components/editor/DesignControlsAiPanel";
@@ -83,12 +84,26 @@ assert.match(plainCard, />Winora Armchair<\/span><span class="sr-only">, view de
 assert.match(plainCard, />70\.5 x 85 cm</);
 assert.match(plainCard, /data-testid="catalog-card-price-winora"[^>]*>S\$549</);
 assert.match(plainCard, /data-testid="catalog-add-winora" aria-label="Add Winora Armchair to the Living Room"/);
-assert.match(plainCard, /data-testid="catalog-favorite-toggle-winora" aria-pressed="false" aria-label="Save Winora Armchair to Favourites"/);
+assert.match(plainCard, /data-testid="catalog-favorite-toggle-winora" aria-pressed="false" aria-label="Add Winora Armchair to Favourites"/);
 assert.doesNotMatch(plainCard, /In this room|Compare|catalog-auto-place-|Auto place/, "No badge until it's in the room; Compare lives in details.");
 const placedCard = renderCard({ inRoom: true, isFavorite: true, item: { ...card, priceAmount: null } });
 assert.match(placedCard, /data-testid="catalog-in-room-winora"[^>]*>.*In this room</);
 assert.match(placedCard, /aria-pressed="true" aria-label="Remove Winora Armchair from Favourites"/);
 assert.match(placedCard, />Price on request</);
+// The heart (UX 4g, FU3): "Add … to Favourites", 44px on touch, and one in details beside Add.
+assert.match(plainCard, /data-testid="catalog-favorite-toggle-winora"[^>]*class="[^"]*touch:h-11 touch:w-11/);
+const detailsFoot = (isFavorite: boolean) =>
+  renderToStaticMarkup(createElement(CatalogItemDrawerAddSection, {
+    productId: "winora", addQuantity: 1, isCompared: false, placesDirectly: true, onAdd: noop, onToggleCompare: noop, onClose: noop,
+    summary: { finishLabel: "Sand", optionLabel: "Single", dimsLabel: "70.5 x 85 cm", roomLabel: "Living Room" },
+    favourite: { title: "Winora Armchair", isFavorite, onToggle: noop },
+  }));
+assert.match(detailsFoot(false), /data-testid="catalog-detail-add-to-room"[\s\S]*?data-testid="catalog-detail-favorite-toggle" aria-pressed="false" aria-label="Add Winora Armchair to Favourites"/);
+assert.match(detailsFoot(true), /aria-pressed="true" aria-label="Remove Winora Armchair from Favourites"/);
+assert.match(
+  read("components/catalog/CatalogPanel.tsx"),
+  /favourite=\{selectedDetail \? \{ title: selectedDetail\.title, isFavorite: favoriteIds\.includes\(selectedDetail\.id\), onToggle: \(\) => toggleFavorite\(selectedDetail\.id\) \} : undefined\}/
+);
 assert.equal(CATALOG_CARD_ROW_HEIGHT, 232 + 8, "The grid is virtualised on the card's height plus its gap.");
 
 const favouritesEmpty = renderToStaticMarkup(createElement(CatalogEmptyState, {

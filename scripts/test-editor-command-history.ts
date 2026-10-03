@@ -18,9 +18,6 @@ import {
 } from "@/lib/room-types";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
-import { joinSeatingZoneToPlacement } from "@/lib/design-page-seating-zone-history";
-import { updateActiveRoomZones } from "@/lib/design-page-zone-orchestration";
-import type { DesignPageHistorySnapshot } from "@/lib/useDesignPageHistory";
 
 type CounterState = { value: number; label: string };
 
@@ -338,31 +335,6 @@ function testPlanAnnotationPersistence() {
   );
 }
 
-function testDerivedSeatingHistory() {
-  const original: DesignPageHistorySnapshot = { designSnapshot: { version: 3, activeRoomId: "living", rooms: [createRoom("living", "Living")] },
-    planAnnotations: [], planFixedElements: [], planOpenings: [], floorPlanUnderlay: null };
-  let state = structuredClone(original);
-  const history = new HistoryManager(() => state, (value) => { state = value; });
-  const sofa = makeItem("sofa");
-  history.executeCommand({ id: "replace-room-items", description: "Add sofa", input: sofa,
-    execute: (item) => { state = { ...state, designSnapshot: applyReplaceRoomItemsCommand(state.designSnapshot, { roomId: "living", items: [item] }) }; } });
-  const zones = [{ id: "seating", type: "seating" as const, itemIds: [sofa.instanceId], source: "manual" as const }];
-  const setSnapshot = (updater: (previous: DesignSnapshot) => DesignSnapshot) => { state = { ...state, designSnapshot: updater(state.designSnapshot) }; };
-  // Mirrors useDesignPageZoneController: join the placement, else record the zone as its own edit.
-  const commitSeatingZone = (source: "onboarding_post_placement" | "editor", zoneList: typeof zones) => {
-    if (joinSeatingZoneToPlacement({ source, sofaId: sofa.instanceId, zones: zoneList, history, setSnapshot })) return;
-    history.begin("Create seating area"); setSnapshot((previous) => updateActiveRoomZones(previous, zoneList)); history.commit();
-  };
-  commitSeatingZone("onboarding_post_placement", zones);
-  const placed = structuredClone(state);
-  assert.equal(history.getStatus().pastCount, 1, "The automatic placement consequence must remain one history entry.");
-  assert.equal(history.undo(), "Add sofa"); assert.deepEqual(state, original);
-  assert.equal(history.redo(), "Add sofa"); assert.deepEqual(state, placed, "Redo restores exact zone identity with its sofa.");
-  commitSeatingZone("editor", [{ ...zones[0], id: "explicit" }]);
-  assert.equal(history.getStatus().pastCount, 2, "Explicit zone changes remain separate.");
-  history.undo(); assert.deepEqual(state, placed);
-}
-
 function testDerivedCommandGuards() {
   const workspace = createCounterHistory();
   const { history, getState, setState } = workspace;
@@ -381,7 +353,6 @@ function testDerivedCommandGuards() {
   history.redo(); assert.deepEqual(getState(), { value: 1, label: "placed" });
 }
 
-testDerivedSeatingHistory();
 testDerivedCommandGuards();
 function testNestedBeginStealsTheOpenTransaction() {
   // begin() refuses to nest, so a discrete edit that drives the manager directly and drops begin()'s

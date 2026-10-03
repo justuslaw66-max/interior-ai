@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// Layout versions are their own section, Pro's (UX audit SX4, phase 4e; J's Q5).
 const presentExportDialog = readFileSync(
-  join(process.cwd(), "components/editor/design-page/PresentExportDialog.tsx"),
+  join(process.cwd(), "components/editor/design-page/LayoutVersionsSection.tsx"),
   "utf8"
 );
 

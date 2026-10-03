@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { showsItemPanel } from "@/lib/item-panel-steps";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
@@ -11,12 +12,7 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
-import {
-  radiansToDeg,
-  type EditorAnnotation2D,
-  type FixedElement2D,
-  type RoomOpening2D,
-} from "@/lib/editorScene";
+import { radiansToDeg, type EditorAnnotation2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem } from "@/lib/room-types";
 import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
@@ -234,7 +230,7 @@ export function isDesignPageSelectionInspectorVisible({
   return (
     !isClientPreview &&
     hasInspectorSummary &&
-    !(editorMode === "adjust" && hasSelectedProduct)
+    !(hasSelectedProduct && showsItemPanel(editorMode))
   );
 }
 

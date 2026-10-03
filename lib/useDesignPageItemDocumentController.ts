@@ -17,6 +17,7 @@ import {
   reconcileCart,
 } from "@/lib/commerce-helpers";
 import { applyReplaceRoomItemsCommand } from "@/lib/design-page-item-commands";
+import { useCommitItemsToRooms } from "@/lib/useCommitItemsToRooms";
 import type { HistoryCommand } from "@/lib/historyManager";
 import {
   getActiveRoom,
@@ -376,10 +377,8 @@ export function useDesignPageItemDocumentController({
   );
 
   const getActiveItems = useCallback(() => itemsRef.current, [itemsRef]);
-  const getActiveRoomId = useCallback(
-    () => designSnapshotRef.current.activeRoomId,
-    [designSnapshotRef]
-  );
+  const getActiveRoomId = useCallback(() => designSnapshotRef.current.activeRoomId, [designSnapshotRef]);
+  const commitItemsToRooms = useCommitItemsToRooms({ designSnapshotRef, activeItemsRef: itemsRef, history, setDesignSnapshot, reconcile: reconcileDesignItems });
   const getRooms = useCallback(
     (): RoomSnapshot[] => designSnapshotRef.current.rooms,
     [designSnapshotRef]
@@ -406,6 +405,7 @@ export function useDesignPageItemDocumentController({
     actions: {
       commitItems,
       commitItemsToRoom,
+      commitItemsToRooms,
       previewItemsPresent,
       setItemsPresent,
       createInstanceId,

@@ -9,7 +9,7 @@ import CatalogItemGallery from "./CatalogItemGallery";
 import CatalogItemFinishPicker from "./CatalogItemFinishPicker";
 import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
-import { CatalogItemDrawerAddSection } from "./CatalogItemDrawerAddSection";
+import { CatalogItemDrawerAddSection, type CatalogItemDrawerFavourite } from "./CatalogItemDrawerAddSection";
 import LazyImage from "@/components/common/LazyImage";
 import { useCatalogDrawerFocusRestoration, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
 
@@ -36,8 +36,8 @@ type Props = {
   roomVariantQuantity?: number;
   onClose: () => void;
   onAdd: (id: string, variantId?: string, purchaseOptionId?: string) => void;
-  /** Consumers: Add places the product; this opens the preview instead (FU4). */
-  placesDirectly?: boolean;
+  placesDirectly?: boolean; // Consumers: Add places the product; onChooseSpot opens the preview instead (FU4).
+  favourite?: CatalogItemDrawerFavourite; // The heart in details (UX 4g, FU3).
   onChooseSpot?: (id: string, variantId?: string, purchaseOptionId?: string) => void;
   onToggleCompare: (id: string) => void;
   onPreviewRelated: (id: string) => void;
@@ -58,7 +58,7 @@ export default function CatalogItemDrawer({
   roomProductQuantity = 0,
   roomVariantQuantity = 0,
   onClose,
-  onAdd, placesDirectly = false, onChooseSpot,
+  onAdd, placesDirectly = false, onChooseSpot, favourite,
   onToggleCompare,
   onPreviewRelated,
   onSetFinish,
@@ -468,7 +468,7 @@ export default function CatalogItemDrawer({
         purchaseOptionId={selectedPurchaseOption?.id} addQuantity={addQuantity}
         summary={{ finishLabel: selectedFinishLabel, optionLabel: selectedPurchaseOption?.label ?? "Single", dimsLabel: dimsCmLabel, roomLabel: activeRoomLabel, price: selectedOptionPrice, compareAt: selectedOptionCompareAt }}
         retailerUrl={selectedRetailerUrl} isCompared={isCompared} placesDirectly={placesDirectly}
-        onAdd={onAdd} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} />
+        onAdd={onAdd} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} favourite={favourite} />
       </aside>
     </>,
     document.body

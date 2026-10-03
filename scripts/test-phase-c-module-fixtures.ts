@@ -8,7 +8,6 @@ import {
   zonesEqual,
 } from "../lib/design-page-zone-layout";
 import {
-  buildAutoSeatingZone,
   buildManualZoneFromSelection,
   reconcileZonesForItems,
   updateActiveRoomZones,
@@ -256,20 +255,8 @@ runFixture("reconcileZones preserves unrelated auto zones after manual creation"
   );
 });
 
-runFixture("buildAutoSeatingZone creates one zone and ignores additional requests", () => {
-  const sofa: any = { instanceId: "sofa-1", position: [1, 0, 1] };
-  const initial = buildAutoSeatingZone({ sofaItem: sofa, existingZones: [] });
-  assert.ok(initial);
-  assert.equal(initial?.manualZones.length, 1);
-
-  const secondAttempt = buildAutoSeatingZone({
-    sofaItem: sofa,
-    existingZones: initial?.manualZones ?? [],
-  });
-  assert.equal(secondAttempt, null);
-});
-
-runFixture("automatic seating creation reconciles existing manual and auto zones", () => {
+// UX 4g (FU6): the first sofa makes no zone; a seating zone is Create zone's (Pro).
+runFixture("a manual seating zone reconciles existing manual and auto zones", () => {
   const allItems: any[] = [
     { instanceId: "sofa-1", productId: "sofa", position: [0, 0, 0] },
     { instanceId: "table-1", productId: "table", position: [1, 0, 0] },
@@ -295,8 +282,10 @@ runFixture("automatic seating creation reconciles existing manual and auto zones
     allItems,
     catalogItems,
   });
-  const candidate = buildAutoSeatingZone({
-    sofaItem: allItems[0],
+  const candidate = buildManualZoneFromSelection({
+    selectedSet: new Set(["sofa-1"]),
+    selectedItems: [allItems[0]],
+    pendingZoneType: "seating",
     existingZones,
   });
   assert.ok(candidate);

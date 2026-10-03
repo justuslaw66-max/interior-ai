@@ -315,13 +315,11 @@ export function DesignPageEditorCommandBar({
         liteEnabled={state.sceneLighting.liteEnabled}
         dark={configuration.dark}
         advanced={state.commandBar.isDesigner}
-        performanceMode={state.scenePerformance.mode}
         placedFixtureCount={state.sceneLighting.placedFixtureCount}
         activeFixtureCount={state.sceneLighting.activeFixtureCount}
         estimatedFixtureCount={state.sceneLighting.estimatedFixtureCount}
         onPresetChange={actions.sceneLighting.changePreset}
         onShadowsEnabledChange={actions.sceneLighting.changeShadowsEnabled}
-        onPerformanceModeChange={actions.scenePerformance.changeMode}
         onSettingsChange={actions.sceneLighting.updateSettings}
       />
     ) : null;

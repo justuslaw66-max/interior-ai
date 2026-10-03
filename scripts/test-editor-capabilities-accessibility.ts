@@ -210,8 +210,9 @@ for (const relativePath of [
 const presentExport = read(
   "components/editor/design-page/PresentExportDialog.tsx"
 );
+// The plan display moved from Present & export to Plan, for Pro (UX audit SX4, phase 4e).
 assert.match(
-  presentExport,
+  read("components/editor/design-page/PlanDisplaySection.tsx"),
   /dynamic\([\s\S]*PresentExportProfessionalPlanControls[\s\S]*ssr:\s*false/,
   "professional plan controls should remain behind a client-only lazy boundary"
 );

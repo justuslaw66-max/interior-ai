@@ -17,7 +17,6 @@ export type UseDesignPageEditorClientLifecycleInput = {
     editorMode: DesignPageEditorMode;
   };
   refs: {
-    seatingZoneAutoDisabled: MutableRefObject<boolean>;
     resetSelectionState: MutableRefObject<() => void>;
   };
   actions: {
@@ -36,7 +35,7 @@ export function useDesignPageEditorClientLifecycle({
   refs,
   actions,
 }: UseDesignPageEditorClientLifecycleInput) {
-  const { seatingZoneAutoDisabled, resetSelectionState } = refs;
+  const { resetSelectionState } = refs;
   const {
     setPlacementAddMode,
     setPlacementPreferencesLoaded,
@@ -46,10 +45,6 @@ export function useDesignPageEditorClientLifecycle({
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const seatingDisabled = localStorage.getItem(
-        "seating_zone_auto_disabled"
-      );
-      seatingZoneAutoDisabled.current = seatingDisabled === "1";
       const storedPlacementAddMode = parseDesignPagePlacementAddMode(
         localStorage.getItem("placement_add_mode")
       );
@@ -62,7 +57,6 @@ export function useDesignPageEditorClientLifecycle({
       setPlacementPreferencesLoaded(true);
     }
   }, [
-    seatingZoneAutoDisabled,
     setPlacementAddMode,
     setPlacementPreferencesLoaded,
   ]);

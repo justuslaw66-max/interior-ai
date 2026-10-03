@@ -7,13 +7,20 @@ import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 import type { DesignItem, PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 import {
   buildShoppingList,
+  planSwapAll,
   shoppingRemovalStep,
   shoppingSwapStep,
+  swapAllMessage,
+  swapAllStep,
   withShoppingLineSwapped,
+  withSwapAllApplied,
   withoutShoppingLine,
   type ShoppingListLine,
   type ShoppingListRoom,
+  type SwapAllDirection,
 } from "@/lib/shopping-list";
+import type { RoomItemsUpdate } from "@/lib/useCommitItemsToRooms";
+import { swapAllButtonId } from "./ShoppingSwapAll";
 import { shoppingSurfacesOf, type ShoppingSurface } from "@/lib/shopping-surfaces";
 import { useShoppingListBuy } from "@/lib/useShoppingListBuy";
 import { ShoppingListPage } from "./ShoppingListPage";
@@ -24,6 +31,17 @@ export type ShopStepProps = {
   designId: string | null | undefined;
   isGuest: boolean;
   canEdit: boolean;
+  /**
+   * Swap all (UX 4h): Pro swaps every product at once; Free sees the buttons with a Pro badge that
+   * opens Pricing. The editor supplies it; without it (the required gates' harnesses), Shop has none.
+   */
+  swapAll?: {
+    canSwapAll: boolean;
+    /** Several rooms in one history step. */
+    commitItemsToRooms: (updates: readonly RoomItemsUpdate[], actionName: string) => unknown;
+    /** Opens Pricing; closing it hands focus back to the control with this id. */
+    openPricing: (openerId: string) => void;
+  };
   /** The editor's rooms with their finishes, and the doors and windows that cut the walls: the Surfaces list. */
   surfaceRooms?: readonly RoomSnapshot[];
   planOpenings?: readonly PersistedPlanOpening[];
@@ -55,14 +73,39 @@ function useShoppingListEdits({ canEdit, actions }: Pick<ShopStepProps, "canEdit
   return { remove, swapForCheaper };
 }
 
+/**
+ * Pro's Swap all (UX 4h, J's Q2 (a)): every product with a swap in that direction changes in one
+ * history step across the rooms, and one toast offers Undo ("6 products swapped").
+ */
+function useShoppingSwapAll({ rooms, style, canEdit, swapAll }: Pick<ShopStepProps, "rooms" | "style" | "canEdit" | "swapAll">) {
+  const canSwapAll = Boolean(swapAll?.canSwapAll);
+  const plans = useMemo(
+    () => (canSwapAll ? { cheaper: planSwapAll({ rooms, style, direction: "cheaper" }), pricier: planSwapAll({ rooms, style, direction: "pricier" }) } : null),
+    [canSwapAll, rooms, style]
+  );
+  const onSwapAll = useCallback((direction: SwapAllDirection) => {
+    if (!swapAll) return;
+    if (!plans) return swapAll.openPricing(swapAllButtonId(direction));
+    const changes = plans[direction];
+    if (!canEdit || changes.length === 0) return;
+    const step = swapAllStep(direction);
+    const roomIds = Array.from(new Set(changes.map((change) => change.roomId)));
+    swapAll.commitItemsToRooms(roomIds.map((roomId) => ({ roomId, update: (items) => withSwapAllApplied(items, roomId, changes) })), step);
+    announceUndoableAction({ message: swapAllMessage(changes.length), undoLabels: [step] });
+  }, [canEdit, plans, swapAll]);
+  const counts = plans ? { cheaper: plans.cheaper.length, pricier: plans.pricier.length } : null;
+  return swapAll && canEdit ? { counts, disabled: false, onSwapAll } : null;
+}
+
 const NO_SURFACES: readonly ShoppingSurface[] = [];
 
 /** The Shop step: the Shopping list of the whole design, and buying from it (FU7, FU8). */
-export function ShopStep({ rooms, style, designId, isGuest, canEdit, surfaceRooms, planOpenings, actions }: ShopStepProps) {
+export function ShopStep({ rooms, style, designId, isGuest, canEdit, swapAll: swapAllInput, surfaceRooms, planOpenings, actions }: ShopStepProps) {
   const list = useMemo(() => buildShoppingList({ rooms, style }), [rooms, style]);
   const surfaces = useMemo(() => (surfaceRooms ? shoppingSurfacesOf(surfaceRooms, planOpenings) : NO_SURFACES), [surfaceRooms, planOpenings]);
   const buy = useShoppingListBuy({ list, designId, isGuest, openGuestPrompt: actions.openGuestPrompt });
   const edits = useShoppingListEdits({ canEdit, actions });
+  const swapAll = useShoppingSwapAll({ rooms, style, canEdit, swapAll: swapAllInput });
   return (
     <ShoppingListPage
       list={list}
@@ -71,6 +114,7 @@ export function ShopStep({ rooms, style, designId, isGuest, canEdit, surfaceRoom
       busy={buy.busy}
       notice={buy.notice}
       buyList={buy.buyList}
+      swapAll={swapAll}
       actions={{ ...buy.actions, ...edits, goFurnish: actions.goFurnish }}
     />
   );

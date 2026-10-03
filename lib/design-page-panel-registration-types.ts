@@ -133,11 +133,10 @@ export type BuildDesignPagePanelRegistrationInput = {
       addSuggestedDoorway: ControlsInput["floorPlan"]["actions"]["onAddSuggestedDoorway"];
       updateOpeningMetrics: ControlsInput["floorPlan"]["actions"]["onUpdateOpeningMetrics"];
     };
-    shopping: {
-      commitItemsToRoom: ShoppingInput["actions"]["commitItemsToRoom"];
-      openGuestPrompt: ShoppingInput["actions"]["openGuestPrompt"];
-      addImportedToRoom: ControlsInput["shopping"]["actions"]["onAddImportedToRoom"];
-    };
+    shopping: Pick<ShoppingInput["actions"], "commitItemsToRoom" | "openGuestPrompt"> &
+      Pick<NonNullable<ShoppingInput["state"]["swapAll"]>, "commitItemsToRooms" | "openPricing"> & {
+        addImportedToRoom: ControlsInput["shopping"]["actions"]["onAddImportedToRoom"];
+      };
     cabinetry: {
       deleteSelected: SelectionInput["cabinet"]["actions"]["delete"];
     };

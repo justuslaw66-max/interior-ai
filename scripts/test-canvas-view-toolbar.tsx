@@ -45,10 +45,18 @@ const toolbarProps = {
   redoName: null,
   onUndo: noop,
   onRedo: noop,
+  savedViews: {
+    views: [{ id: "view-1", name: "Sofa corner", cameraPosition: [1, 1.6, 2] as [number, number, number], cameraTarget: [0, 0.8, 0] as [number, number, number] }],
+    nameInput: "",
+    onNameChange: noop,
+    onSave: noop,
+    onOpen: noop,
+    onDelete: noop,
+  },
 };
 const toolbar = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} />);
 assert.match(toolbar, /^<div role="group" aria-label="Canvas controls" data-testid="canvas-view-toolbar" class="absolute top-bar-4 z-40 flex -translate-x-1\/2 /);
-assert.match(toolbar, /style="left:clamp\(462px, calc\(50% \+ 159px\), calc\(100% - 496px\)\)"/);
+assert.match(toolbar, /style="left:clamp\(506px, calc\(50% \+ 159px\), calc\(100% - 540px\)\)"/);
 const order = ["editor-view-toggle", "editor-view-2d", "editor-view-3d", "canvas-fit-view", "command-undo", "command-redo"];
 const positions = order.map((testId) => toolbar.indexOf(`data-testid="${testId}"`));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "2D | 3D, then Fit, Undo and Redo.");
@@ -61,8 +69,29 @@ assert.match(toolbar, /focus-visible:ring-2 focus-visible:ring-focus/);
 const unfit = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} canFit={false} />);
 assert.match(unfit, /data-testid="canvas-fit-view"[^>]*disabled=""/, "Fit waits for a room.");
 
+// Saved views (UX 4e, SX4; J's Q5): a Views button beside 2D | 3D, in 3D only, that opens the room's
+// saved views. They left Present & export, which keeps no view name, Save or list.
+assert.doesNotMatch(toolbar, /canvas-saved-views/, "No Views in 2D.");
+const toolbar3d = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} viewMode="3d" />);
+const viewsAt = toolbar3d.indexOf('data-testid="canvas-saved-views"');
+assert.ok(viewsAt > toolbar3d.indexOf('data-testid="editor-view-3d"') && viewsAt < toolbar3d.indexOf('data-testid="canvas-fit-view"'), "Views sits beside 2D | 3D.");
+assert.match(toolbar3d, /<button type="button" data-testid="canvas-saved-views" aria-haspopup="dialog" aria-expanded="false" class="inline-flex h-8 [^"]*touch:h-11[^"]*"><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg>Views<\/button>/);
+assert.doesNotMatch(toolbar3d, /canvas-saved-views-panel/, "The panel opens on a press.");
+const savedViewsSource = read("components/editor/canvas/CanvasSavedViews.tsx");
+for (const testId of ["canvas-saved-views-panel", "saved-camera-view-list", "camera-view-name-input", "save-named-camera-view"]) {
+  assert.ok(savedViewsSource.includes(`data-testid="${testId}"`), testId);
+}
+assert.match(savedViewsSource, /data-testid=\{`saved-camera-view-open-\$\{view\.id\}`\}/);
+assert.match(savedViewsSource, /data-testid=\{`saved-camera-view-delete-\$\{view\.id\}`\}[\s\S]*?aria-label=\{`Delete \$\{view\.name\}`\}/);
+assert.match(savedViewsSource, /useDismissibleMenu\(\{[\s\S]*?if \(byKeyboard\) buttonRef\.current\?\.focus\(\);/, "Escape hands focus back to Views.");
+assert.match(savedViewsSource, /role="dialog"[\s\S]*?aria-labelledby=\{props\.headingId\}/);
+const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
+assert.doesNotMatch(presentExport, /camera-view-name-input|save-named-camera-view|saved-camera-view-list/, "Saved views left Present & export.");
+assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: \{ views: state\.document\.activeRoom\?\.savedViews \?\? \[\], nameInput: state\.presentation\.cameraViewNameInput \}/);
+assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: savedViewActions\(presentExport\.actions\)/);
+
 // Centred on the canvas right of the step panel, but clear of a 340px right panel and the step panel.
-assert.equal(canvasToolbarLeft(0), "clamp(144px, calc(50% + 0px), calc(100% - 496px))");
+assert.equal(canvasToolbarLeft(0), "clamp(188px, calc(50% + 0px), calc(100% - 540px))");
 for (const [input, expected] of [
   [{ panelVisible: false, shopping: false, collapsed: false, isDesigner: false }, 0],
   [{ panelVisible: true, shopping: false, collapsed: false, isDesigner: false }, 318],
@@ -78,13 +107,14 @@ assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const plan2DSaf
 // The phone's pills (UX 4d, the PhonePlan mockup): 2D | 3D top left, Undo and Redo top right, 12px
 // under the bar, with 44px targets that keep the controls' test ids.
 const pills = renderToStaticMarkup(<PhoneCanvasPills dark={false} viewMode="3d" onViewModeChange={noop} canUndo canRedo={false}
-  undoName="Remove Avery Armchair" redoName={null} onUndo={noop} onRedo={noop} />);
+  undoName="Remove Avery Armchair" redoName={null} onUndo={noop} onRedo={noop} savedViews={toolbarProps.savedViews} />);
 assert.match(pills, /^<div data-testid="canvas-view-pill" class="absolute top-bar-3 z-40 [^"]*left-3"><div role="group" aria-label="Design view" data-testid="editor-view-toggle"/);
 assert.match(pills, /aria-label="3D" aria-pressed="true" data-testid="editor-view-3d" class="inline-flex h-11 w-12 [^"]*bg-neutral-900 text-white"/);
 assert.match(pills, /<div role="group" aria-label="History" data-testid="canvas-history-pill" class="absolute top-bar-3 z-40 [^"]*right-3">/);
 assert.match(pills, /<button type="button" data-testid="command-undo" aria-label="Undo Remove Avery Armchair" title="Undo &quot;Remove Avery Armchair&quot; \(Cmd\/Ctrl\+Z\)" class="inline-flex h-11 w-11 /);
 assert.match(pills, /data-testid="command-redo" aria-label="Redo" [^>]*disabled="">/);
 assert.doesNotMatch(pills, /outline-hidden|canvas-fit-view/, "The global focus outline shows; Fit is the toolbar's.");
+assert.match(pills, /data-testid="editor-view-3d"[\s\S]*?<button type="button" data-testid="canvas-saved-views" aria-haspopup="dialog" aria-expanded="false" class="inline-flex h-11 /, "Views is a 44px target in the phone's view pill, in 3D.");
 
 // Where the toolbar, the pills and the sheet live: over the canvas, not in Client Preview or Shop.
 const chrome = read("components/editor/design-page/DesignPageEditorChrome.tsx");

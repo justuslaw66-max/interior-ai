@@ -5,6 +5,7 @@ import { GUEST_CHECKOUT_OPENER_ID } from "@/lib/guest-save-prompt";
 import { formatSgd } from "@/lib/money-format";
 import { productCountLabel, retailerCheckoutNote, type ShoppingList } from "@/lib/shopping-list";
 import { shoppingBuyOpenerId } from "@/lib/shopping-list-buy";
+import { ShoppingSwapAll, type ShoppingSwapAllProps } from "./ShoppingSwapAll";
 
 export type ShoppingSummaryProps = {
   list: ShoppingList;
@@ -13,6 +14,8 @@ export type ShoppingSummaryProps = {
   busy: boolean;
   onBuyAtRetailer: (retailerId: string) => void;
   onCheckoutHere: () => void;
+  /** Swap all, in the summary's column from lg (UX 4h). */
+  swapAll?: ShoppingSwapAllProps | null;
 };
 
 const PRIMARY =
@@ -76,6 +79,11 @@ export function ShoppingSummary(props: ShoppingSummaryProps) {
         <SummaryActions {...props} />
       </div>
       <p className="mt-3.5 hidden text-[13px] leading-[19px] text-neutral-600 lg:block">{summaryNote(list)}</p>
+      {props.swapAll ? (
+        <div className="mt-4 border-t border-neutral-200 pt-4">
+          <ShoppingSwapAll {...props.swapAll} />
+        </div>
+      ) : null}
     </aside>
   );
 }

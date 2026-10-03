@@ -9,7 +9,6 @@ import {
 } from "react";
 import { track } from "@/lib/analytics";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
-import { DEFAULT_FLOOR_MATERIAL_ID } from "@/lib/floor-materials";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import type { FloorPlanPoint, FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import {
@@ -21,26 +20,12 @@ import {
   resolveFloorPlanUploadMimeType,
   resolveUnderlayWorldSize,
 } from "@/lib/design-page-floor-plan-utils";
-import {
-  roundPlanCoordinate,
-  resolveHousePlanTemplateOpeningMetrics,
-  type HousePlanTemplate,
-  type HousePlanTemplateApplyOptions,
-  type HousePlanTemplateFurnishingIntent,
-} from "@/lib/design-page-house-plan";
+import type { HousePlanTemplate, HousePlanTemplateApplyOptions } from "@/lib/design-page-house-plan";
 import { buildPlanTemplateReplacementSnapshot } from "@/lib/design-page-plan-template-replacement";
-import {
-  isTemplateFurnishingNearDoorway,
-  resolveTemplateFurnishingProduct,
-  shouldConfirmPlanTemplateReplacement,
-  templateAppliedMessage,
-} from "@/lib/design-page-template-furnishings";
-import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
-import { metersToMm, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
-import {
-  createRoom,
-  type DesignSnapshot,
-} from "@/lib/room-types";
+import { shouldConfirmPlanTemplateReplacement, templateAppliedMessage } from "@/lib/design-page-template-furnishings";
+import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
+import { buildPlanTemplateDocument } from "@/lib/plan-template-document";
+import type { DesignSnapshot } from "@/lib/room-types";
 import type { CameraView } from "@/lib/design-page-types";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 
@@ -203,197 +188,27 @@ export function useDesignPageFloorPlanUnderlayController({
         return;
       }
 
-      const templateRoomIdMap = new Map<string, string>();
-      const rooms = template.rooms.map((templateRoom, index) => {
-        const room = createRoom(
-          `template_${template.id}_${templateRoom.id}_${timestamp}_${index}`,
-          templateRoom.name,
-          templateRoom.roomType,
-          {
-            width: templateRoom.width,
-            depth: templateRoom.depth,
-            wallThickness: templateRoom.wallThickness ?? wallThickness,
-            height: roomHeight,
-          }
-        );
-
-        room.planPosition = {
-          x: roundPlanCoordinate(templateRoom.x),
-          z: roundPlanCoordinate(templateRoom.z),
-        };
-        room.planShape = templateRoom.planPolygon?.length
-          ? "custom_polygon"
-          : templateRoom.shape;
-        room.planPolygon = templateRoom.planPolygon?.map((point) => ({
-          x: roundPlanCoordinate(point.x),
-          z: roundPlanCoordinate(point.z),
-        }));
-        room.surfaces = {
-          floorMaterialId:
-            templateRoom.roomType === "kitchen" || templateRoom.roomType === "toilet"
-              ? "light_stone_tile"
-              : DEFAULT_FLOOR_MATERIAL_ID,
-        };
-        room.surfaceFinishes = { ...room.surfaces };
-        templateRoomIdMap.set(templateRoom.id, room.id);
-        return room;
+      const built = buildPlanTemplateDocument(template, {
+        timestamp,
+        wallThickness,
+        roomHeight,
+        furnishingPackId: options?.furnishingPackId,
       });
-      const activeTemplateRoom = rooms[0];
+      const activeTemplateRoom = built.rooms[0];
       if (!activeTemplateRoom) return;
 
-      const templateDoorOpenings: RoomOpening2D[] = template.doorways.flatMap(
-        (doorway, index) => {
-          const roomId = templateRoomIdMap.get(doorway.fromRoomId);
-          const adjacentRoomId = doorway.toRoomId
-            ? templateRoomIdMap.get(doorway.toRoomId)
-            : undefined;
-          const sourceRoom = template.rooms.find(
-            (entry) => entry.id === doorway.fromRoomId
-          );
-          if (!roomId || !sourceRoom || (doorway.toRoomId && !adjacentRoomId)) {
-            return [];
-          }
-          const spanMeters =
-            doorway.wall === "north" || doorway.wall === "south"
-              ? sourceRoom.width
-              : sourceRoom.depth;
-          const { widthMeters, offsetMeters } =
-            resolveHousePlanTemplateOpeningMetrics(
-              spanMeters,
-              doorway.widthMeters ?? 0.9,
-              doorway.offsetMeters ?? 0
-            );
-
-          return [
-            {
-              id: `template-opening-${template.id}-${timestamp}-${index}`,
-              roomId,
-              wall: doorway.wall,
-              kind: "door" as const,
-              doorStyle:
-                doorway.kind === "opening" || doorway.operation === "open"
-                  ? "open"
-                  : doorway.operation === "sliding"
-                    ? "sliding"
-                    : doorway.operation === "folding"
-                      ? "folding"
-                      : "swing",
-              offsetMm: metersToMm(offsetMeters),
-              widthMm: metersToMm(widthMeters),
-              ...(doorway.kind === "opening"
-                ? { heightMm: metersToMm(roomHeight) }
-                : {}),
-            },
-          ];
-        }
-      );
-      const templateWindowOpenings: RoomOpening2D[] = template.windows.flatMap(
-        (windowSpec, index) => {
-          const roomId = templateRoomIdMap.get(windowSpec.roomId);
-          const sourceRoom = template.rooms.find(
-            (entry) => entry.id === windowSpec.roomId
-          );
-          if (!roomId || !sourceRoom) return [];
-          const spanMeters =
-            windowSpec.wall === "north" || windowSpec.wall === "south"
-              ? sourceRoom.width
-              : sourceRoom.depth;
-          const { widthMeters, offsetMeters } =
-            resolveHousePlanTemplateOpeningMetrics(
-              spanMeters,
-              windowSpec.widthMeters ?? 1,
-              windowSpec.offsetMeters ?? 0
-            );
-
-          return [
-            {
-              id: `template-window-${template.id}-${timestamp}-${index}`,
-              roomId,
-              wall: windowSpec.wall,
-              kind: "window" as const,
-              offsetMm: metersToMm(offsetMeters),
-              widthMm: metersToMm(widthMeters),
-            },
-          ];
-        }
-      );
-      const templateOpenings = [
-        ...templateDoorOpenings,
-        ...templateWindowOpenings,
-      ];
-      const templateFixedElements: FixedElement2D[] = (template.referenceZones ?? []).map(
-        (zone, index) => ({
-          id: `template-reference-zone-${template.id}-${timestamp}-${index}`,
-          kind: "reference_zone",
-          xMm: metersToMm(zone.x),
-          zMm: metersToMm(zone.z),
-          widthMm: metersToMm(zone.width),
-          depthMm: metersToMm(zone.depth),
-          rotationDeg: 0,
-          label: zone.label,
-          locked: zone.locked ?? true,
-        })
-      );
-      const selectedFurnishingPack = options?.furnishingPackId
-        ? template.furnishingPacks.find(
-            (pack) => pack.id === options.furnishingPackId
-          ) ?? null
-        : null;
-      let furnishedItemCount = 0;
-      const skippedFurnishings: HousePlanTemplateFurnishingIntent["category"][] = [];
-
-      if (selectedFurnishingPack) {
-        for (const intent of selectedFurnishingPack.intents) {
-          const roomId = templateRoomIdMap.get(intent.roomId);
-          const targetRoom = roomId
-            ? rooms.find((room) => room.id === roomId)
-            : null;
-          const product = resolveTemplateFurnishingProduct(intent);
-
-          if (
-            !targetRoom ||
-            !product ||
-            isTemplateFurnishingNearDoorway(template, intent)
-          ) {
-            skippedFurnishings.push(intent.category);
-            continue;
-          }
-
-          const resolved = resolveCatalogVariant(
-            product,
-            product.defaultVariantId
-          );
-          targetRoom.items = [
-            ...targetRoom.items,
-            {
-              instanceId: `template-furnishing-${template.id}-${intent.id}-${timestamp}-${furnishedItemCount}`,
-              productId: product.id,
-              variantId: resolved.variantId,
-              position: [intent.x, 0, intent.z],
-              rotationY:
-                intent.rotationDeg === undefined
-                  ? product.defaultRotation
-                  : (intent.rotationDeg * Math.PI) / 180,
-              qty: 1,
-              includeInCheckout: true,
-            },
-          ];
-          furnishedItemCount += 1;
-        }
-      }
-
-      replacePlanDocument(templateOpenings, templateFixedElements, (previous) =>
-        buildPlanTemplateReplacementSnapshot(previous, rooms, activeTemplateRoom.id)
+      replacePlanDocument(built.openings, built.fixedElements, (previous) =>
+        buildPlanTemplateReplacementSnapshot(previous, built.rooms, activeTemplateRoom.id)
       );
 
-      showRuleToast(templateAppliedMessage(template.label, selectedFurnishingPack, skippedFurnishings));
+      showRuleToast(templateAppliedMessage(template.label, built.pack, built.skippedFurnishings));
       track("floor_plan_template_applied", {
         templateId: template.id,
-        furnishingPackId: selectedFurnishingPack?.id ?? null,
-        furnishedItemCount,
-        skippedFurnishingCount: skippedFurnishings.length,
-        roomCount: rooms.length,
-        openingCount: templateOpenings.length,
+        furnishingPackId: built.pack?.id ?? null,
+        furnishedItemCount: built.furnishedItemCount,
+        skippedFurnishingCount: built.skippedFurnishings.length,
+        roomCount: built.rooms.length,
+        openingCount: built.openings.length,
       });
       // After the template's own toast, so a follow-up (Draw room) can show its hint.
       options?.onApplied?.();

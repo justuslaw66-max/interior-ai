@@ -10,20 +10,17 @@ import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
-import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
 
 type LightingSettingsControlsProps = {
   settings: DesignLightingSettings;
   liteEnabled: boolean;
   dark: boolean;
   advanced: boolean;
-  performanceMode: ScenePerformanceMode;
   placedFixtureCount: number;
   activeFixtureCount: number;
   estimatedFixtureCount: number;
   onPresetChange: (preset: LightingPreset) => void;
   onShadowsEnabledChange: (enabled: boolean) => void;
-  onPerformanceModeChange: (mode: ScenePerformanceMode) => void;
   onSettingsChange: (patch: Partial<DesignLightingSettings>) => void;
 };
 
@@ -114,13 +111,11 @@ export function LightingSettingsControls({
   liteEnabled,
   dark,
   advanced,
-  performanceMode,
   placedFixtureCount,
   activeFixtureCount,
   estimatedFixtureCount,
   onPresetChange,
   onShadowsEnabledChange,
-  onPerformanceModeChange,
   onSettingsChange,
 }: LightingSettingsControlsProps) {
   const panelClass = dark
@@ -427,27 +422,6 @@ export function LightingSettingsControls({
             </label>
           </div>
 
-          <label className="mt-5 block border-t border-current/10 pt-4 text-xs font-semibold">
-            Presentation quality
-            <select
-              data-testid="lighting-quality-select"
-              className={
-                dark
-                  ? "mt-2 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
-                  : "mt-2 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
-              }
-              value={performanceMode}
-              onChange={(event) =>
-                onPerformanceModeChange(
-                  event.currentTarget.value as ScenePerformanceMode
-                )
-              }
-            >
-              <option value="auto">Automatic</option>
-              <option value="quality">High quality</option>
-              <option value="lite">Lite</option>
-            </select>
-          </label>
         </section>
       ) : null}
 

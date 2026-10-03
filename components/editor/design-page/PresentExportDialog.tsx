@@ -1,38 +1,17 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
-import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
-import PlanOpeningInspector from "@/components/editor/PlanOpeningInspector";
-import { LightingPresetsUI } from "@/components/LightingPresetsUI";
+import { Button } from "@/components/ui/Button";
+import { LayoutVersionsSection } from "@/components/editor/design-page/LayoutVersionsSection";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
-import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-types";
-import { compareLayoutVersion, summarizeLayoutVersionComparison } from "@/lib/layout-versions";
-import type { LightingPreset } from "@/lib/lightingPresets";
 import type { RoomSnapshot, SavedView } from "@/lib/room-types";
 import { PRESENT_EXPORT_CLOSE_ACTION_ID, PRESENT_EXPORT_CREATE_SHARE_ACTION_ID } from "@/lib/share-link-fallback-dialog-focus";
 import type { ExportStylePreset, PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
-import { formatTimeAgo } from "@/lib/design-page-utils";
-
-const PresentExportProfessionalPlanControls = dynamic(
-  () => import("@/components/editor/design-page/PresentExportProfessionalPlanControls"),
-  {
-    ssr: false,
-    loading: () => (
-      <div role="status" aria-live="polite" className="rounded-lg border border-gray-200/70 p-3 text-xs text-gray-500">
-        Loading detailed options…
-      </div>
-    ),
-  }
-);
 
 type AnnotationToolKind = "note" | "callout" | "room_tag";
-
-type OpeningMetrics = DesignPageOpeningMetricsPatch;
 
 export type PresentExportDialogProps = {
   configuration: {
@@ -56,11 +35,6 @@ export type PresentExportDialogProps = {
     planTheme: PlanTheme;
     annotationToolKind: AnnotationToolKind;
     selectedPlanOverlayId: string | null;
-    visiblePlanOpening: RoomOpening2D | null;
-    visiblePlanOpeningRoomName: string;
-    visiblePlanOpeningWallSpanMeters: number;
-    visiblePlanOpeningMaxHeightMeters: number;
-    lightingPreset: LightingPreset;
     sharingDesign: boolean;
     designId: string | null;
     shareToken: string | null;
@@ -94,8 +68,6 @@ export type PresentExportDialogProps = {
     onAddOpening: (kind: RoomOpening2D["kind"]) => void;
     onAddBuiltIn: () => void;
     onDeleteSelectedPlanOverlay: () => void;
-    onOpeningChange: (id: string, metrics: OpeningMetrics) => void;
-    onLightingPresetChange: (preset: LightingPreset) => void;
     onCreateShareLink: () => void;
     onExportStyleChange: (preset: ExportStylePreset) => void;
     onExportImages: () => void;
@@ -111,41 +83,20 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
   const canUseAdvancedExportStyles =
     configuration.canUseAdvancedExportStyles;
   const {
-    exportReadiness,
     rooms,
     currentRoomId,
     viewMode,
-    cameraViewNameInput,
     activeRoom,
     layoutVersionNameInput,
-    simplePlanControls,
-    planLayerPreset,
-    planLayers,
-    planMeasurementUnit,
-    planTheme,
-    annotationToolKind,
-    selectedPlanOverlayId,
-    visiblePlanOpening,
-    visiblePlanOpeningRoomName,
-    visiblePlanOpeningWallSpanMeters,
-    visiblePlanOpeningMaxHeightMeters,
-    lightingPreset,
     sharingDesign,
     designId,
     shareToken,
-    exportStylePreset,
     isExporting,
     isPdfExporting,
     sceneReady,
     aiNotesLoading,
     hasItems,
   } = state;
-  const activeRoomSavedViews = activeRoom?.savedViews ?? [];
-  const activeRoomLayoutVersions = activeRoom?.layoutVersions ?? [];
-  const latestManualLayoutVersion =
-    activeRoomLayoutVersions.find(
-      (version) => version.source === "manual" && version.name.toLowerCase().startsWith("before")
-    ) ?? activeRoomLayoutVersions.find((version) => version.source === "manual") ?? null;
 
   if (!configuration.open) return null;
 
@@ -153,7 +104,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
     <EditorDialog
       open
       title="Present & Export"
-      description="Review the design, save views, and prepare presentation outputs."
+      description="Share the design, and export images or a PDF."
       onClose={actions.onClose}
       closeLabel="Close export panel"
       closeDisabled={Boolean(configuration.shareFallbackOpen)}
@@ -168,13 +119,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
       }
       contentClassName="space-y-4"
     >
-          <ExportReadinessPreview
-            dark={showDesignerTheme}
-            items={exportReadiness.items}
-            readyCount={exportReadiness.readyCount}
-            score={exportReadiness.score}
-          />
-
           {/* Room Switcher Section */}
           {(() => {
             if (rooms.length > 1) {
@@ -220,7 +164,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 ? "designer-text-primary mb-2 text-sm font-semibold"
                 : "mb-2 text-sm font-semibold text-gray-800"
             }>
-              Saved views
+              View
             </h3>
             <div className="space-y-2">
               <EditorViewToggle
@@ -240,470 +184,23 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 Focus
               </button>
             </div>
-              <div
-                className={
-                  showDesignerTheme
-                    ? "designer-raised mt-3 rounded-lg p-3"
-                    : "mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
-                }
-              >
-                <label
-                  htmlFor="camera-view-name"
-                  className={
-                    showDesignerTheme
-                      ? "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-400"
-                      : "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
-                  }
-                >
-                  View name
-                </label>
-                <div className="grid grid-cols-[1fr_auto] gap-2">
-                  <input
-                    id="camera-view-name"
-                    data-testid="camera-view-name-input"
-                    value={cameraViewNameInput}
-                    onChange={(event) => actions.onCameraViewNameChange(event.target.value)}
-                    placeholder={`View ${activeRoomSavedViews.length + 1}`}
-                    className={
-                      showDesignerTheme
-                        ? "min-h-10 rounded-lg border border-neutral-700 bg-[#0f1218] px-3 text-sm text-neutral-100 placeholder:text-neutral-500"
-                        : "min-h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400"
-                    }
-                  />
-                  <button
-                    type="button"
-                    data-testid="save-named-camera-view"
-                    onClick={actions.onSaveCameraView}
-                    className="min-h-10 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white hover:bg-neutral-800"
-                  >
-                    Save
-                  </button>
-                </div>
-                {activeRoomSavedViews.length > 0 ? (
-                  <div className="mt-3 space-y-2" data-testid="saved-camera-view-list">
-                    {activeRoomSavedViews.map((view) => (
-                      <div
-                        key={view.id}
-                        className={
-                          showDesignerTheme
-                            ? "flex items-center justify-between gap-2 rounded-lg bg-[#0f1218] px-3 py-2"
-                            : "flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2"
-                        }
-                      >
-                        <button
-                          type="button"
-                          data-testid={`saved-camera-view-open-${view.id}`}
-                          className={
-                            showDesignerTheme
-                              ? "min-w-0 flex-1 truncate text-left text-xs font-semibold text-neutral-100"
-                              : "min-w-0 flex-1 truncate text-left text-xs font-semibold text-gray-800"
-                          }
-                          onClick={() => actions.onOpenCameraView(view)}
-                        >
-                          {view.name}
-                        </button>
-                        <button
-                          type="button"
-                          data-testid={`saved-camera-view-delete-${view.id}`}
-                          className={
-                            showDesignerTheme
-                              ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold"
-                              : "rounded px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                          }
-                          onClick={() => actions.onDeleteCameraView(view.id)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-gray-500"}>
-                    Saved views appear on share links and export packs.
-                  </div>
-                )}
-              </div>
-              <div
-                className={
-                  showDesignerTheme
-                    ? "designer-raised mt-3 rounded-lg p-3"
-                    : "mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3"
-                }
-                data-testid="layout-versions-panel"
-              >
-                <label
-                  htmlFor="layout-version-name"
-                  className={
-                    showDesignerTheme
-                      ? "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-neutral-400"
-                      : "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
-                  }
-                >
-                  Layout versions
-                </label>
-                <div className="grid grid-cols-[1fr_auto] gap-2">
-                  <input
-                    id="layout-version-name"
-                    data-testid="layout-version-name-input"
-                    value={layoutVersionNameInput}
-                    onChange={(event) => actions.onLayoutVersionNameChange(event.target.value)}
-                    placeholder={`Layout ${activeRoomLayoutVersions.length + 1}`}
-                    className={
-                      showDesignerTheme
-                        ? "min-h-10 rounded-lg border border-neutral-700 bg-[#0f1218] px-3 text-sm text-neutral-100 placeholder:text-neutral-500"
-                        : "min-h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400"
-                    }
-                  />
-                  <button
-                    type="button"
-                    data-testid="save-layout-version"
-                    onClick={actions.onSaveLayoutVersion}
-                    className="min-h-10 rounded-lg bg-neutral-900 px-3 text-xs font-semibold text-white hover:bg-neutral-800"
-                  >
-                    Save
-                  </button>
-                </div>
-                {latestManualLayoutVersion ? (
-                  <button
-                    type="button"
-                    data-testid="layout-version-restore-latest-manual"
-                    className={
-                      showDesignerTheme
-                        ? "mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-teal-400/20 bg-teal-400/10 px-3 py-2 text-left text-xs font-semibold text-teal-100 hover:bg-teal-400/15"
-                        : "mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-left text-xs font-semibold text-teal-800 hover:bg-teal-100"
-                    }
-                    onClick={() => actions.onRestoreLayoutVersion(latestManualLayoutVersion.id)}
-                  >
-                    <span className="min-w-0 truncate">
-                      Restore previous manual layout
-                    </span>
-                    <span className={showDesignerTheme ? "shrink-0 text-teal-200" : "shrink-0 text-teal-700"}>
-                      {formatTimeAgo(latestManualLayoutVersion.timestamp)}
-                    </span>
-                  </button>
-                ) : null}
-                {activeRoomLayoutVersions.length > 0 && activeRoom ? (
-                  <div className="mt-3 space-y-2" data-testid="layout-version-list">
-                    {activeRoomLayoutVersions.map((version) => {
-                      const comparison = compareLayoutVersion(activeRoom, version);
-                      const comparisonSummary = summarizeLayoutVersionComparison(comparison);
-                      const sourceLabel =
-                        version.source === "make_space"
-                          ? "Make space"
-                          : version.source === "auto_place"
-                            ? "Auto"
-                            : version.source === "ai"
-                              ? "AI"
-                              : "Manual";
-
-                      return (
-                        <div
-                          key={version.id}
-                          className={
-                            showDesignerTheme
-                              ? "rounded-lg bg-[#0f1218] px-3 py-2"
-                              : "rounded-lg bg-white px-3 py-2"
-                          }
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <div
-                                className={
-                                  showDesignerTheme
-                                    ? "truncate text-xs font-semibold text-neutral-100"
-                                    : "truncate text-xs font-semibold text-gray-800"
-                                }
-                              >
-                                {version.name}
-                              </div>
-                              <div
-                                className={
-                                  showDesignerTheme
-                                    ? "mt-0.5 text-[11px] text-neutral-400"
-                                    : "mt-0.5 text-[11px] text-gray-500"
-                                }
-                              >
-                                {sourceLabel} · {formatTimeAgo(version.timestamp)}
-                              </div>
-                              <div data-testid="layout-version-comparison" className="mt-2 grid grid-cols-2 gap-1.5">
-                                <div className={showDesignerTheme ? "designer-recessed rounded-md px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
-                                  <div className={showDesignerTheme ? "text-[10px] font-semibold uppercase text-neutral-500" : "text-[10px] font-semibold uppercase text-gray-400"}>
-                                    Saved
-                                  </div>
-                                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>
-                                    {comparison.savedItemCount} item{comparison.savedItemCount === 1 ? "" : "s"}
-                                  </div>
-                                </div>
-                                <div className={showDesignerTheme ? "designer-recessed rounded-md px-2 py-1.5" : "rounded-md bg-gray-50 px-2 py-1.5"}>
-                                  <div className={showDesignerTheme ? "text-[10px] font-semibold uppercase text-neutral-500" : "text-[10px] font-semibold uppercase text-gray-400"}>
-                                    Current
-                                  </div>
-                                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>
-                                    {comparison.currentItemCount} item{comparison.currentItemCount === 1 ? "" : "s"}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className={showDesignerTheme ? "mt-2 text-[11px] text-neutral-400" : "mt-2 text-[11px] text-gray-500"}>
-                                {comparisonSummary.itemDeltaLabel} · {comparisonSummary.movementLabel}
-                              </div>
-                              <div className={showDesignerTheme ? "mt-0.5 text-[11px] text-neutral-500" : "mt-0.5 text-[11px] text-gray-500"}>
-                                {comparisonSummary.zoneDeltaLabel}
-                              </div>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-1">
-                              <button
-                                type="button"
-                                data-testid={`layout-version-restore-${version.id}`}
-                                className={
-                                  showDesignerTheme
-                                    ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold text-teal-200"
-                                    : "rounded px-2 py-1 text-[11px] font-semibold text-teal-700 hover:bg-teal-50"
-                                }
-                                onClick={() => actions.onRestoreLayoutVersion(version.id)}
-                              >
-                                {comparisonSummary.restoreLabel}
-                              </button>
-                              <button
-                                type="button"
-                                data-testid={`layout-version-delete-${version.id}`}
-                                className={
-                                  showDesignerTheme
-                                    ? "designer-control rounded border px-2 py-1 text-[11px] font-semibold"
-                                    : "rounded px-2 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                                }
-                                onClick={() => actions.onDeleteLayoutVersion(version.id)}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-gray-500"}>
-                    No saved layouts yet.
-                  </div>
-                )}
-              </div>
+              {canUseAdvancedPlanControls ? (
+                <LayoutVersionsSection
+                  activeRoom={activeRoom}
+                  nameInput={layoutVersionNameInput}
+                  onNameChange={actions.onLayoutVersionNameChange}
+                  onSave={actions.onSaveLayoutVersion}
+                  onRestore={actions.onRestoreLayoutVersion}
+                  onDelete={actions.onDeleteLayoutVersion}
+                />
+              ) : null}
             </div>
-            {viewMode === "2d" && (
-              <div className="mt-2 space-y-2">
-                <p className={showDesignerTheme ? "text-xs text-neutral-400" : "text-xs text-gray-500"}>
-                  Pan and zoom are enabled; rotation is locked for plan editing.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    className={
-                      simplePlanControls
-                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
-                        : showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                    }
-                    onClick={actions.onEnableSimplePlanControls}
-                  >
-                    Simple
-                  </button>
-                  <button
-                    aria-disabled={!canUseAdvancedPlanControls}
-                    title={!canUseAdvancedPlanControls ? "Upgrade to Pro for layers, doors & windows, and themes" : undefined}
-                    className={
-                      !simplePlanControls
-                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
-                        : showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                    }
-                    onClick={actions.onEnableProPlanControls}
-                  >
-                    Detailed
-                  </button>
-                </div>
-
-                {simplePlanControls ? (
-                  <div
-                    className={
-                      showDesignerTheme
-                        ? "designer-recessed rounded-lg p-3 text-xs text-neutral-300"
-                        : "rounded-lg bg-gray-100 p-3 text-xs text-gray-600"
-                    }
-                  >
-                    Simple keeps the plan clean. Choose Detailed for layers, doors & windows, and theme tuning.
-                  </div>
-                ) : (
-                  <PresentExportProfessionalPlanControls
-                    dark={showDesignerTheme}
-                    preset={planLayerPreset}
-                    layers={planLayers}
-                    theme={planTheme}
-                    onPresetChange={actions.onPlanLayerPresetChange}
-                    onThemeChange={actions.onPlanThemeChange}
-                    onToggleLayer={actions.onTogglePlanLayer}
-                  />
-                )}
-                <div className="rounded-lg border border-gray-200/70 p-2">
-                  <DisplayUnitSelect
-                    value={planMeasurementUnit}
-                    dark={showDesignerTheme}
-                    onChange={actions.onMeasurementUnitChange}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    data-testid="plan-add-note"
-                    className={
-                      annotationToolKind === "note"
-                        ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
-                        : showDesignerTheme
-                          ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                    }
-                    onClick={() => actions.onSelectAnnotationTool("note")}
-                  >
-                    + Note
-                  </button>
-                  {!simplePlanControls && (
-                    <button
-                      type="button"
-                      data-testid="plan-add-callout"
-                      className={
-                        annotationToolKind === "callout"
-                          ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
-                          : showDesignerTheme
-                            ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                            : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                      }
-                      onClick={() => actions.onSelectAnnotationTool("callout")}
-                    >
-                      + Callout
-                    </button>
-                  )}
-                  {!simplePlanControls && (
-                    <button
-                      type="button"
-                      data-testid="plan-add-room-tag"
-                      className={
-                        annotationToolKind === "room_tag"
-                          ? "rounded-lg bg-neutral-900 px-2 py-2 text-[11px] font-medium text-white"
-                          : showDesignerTheme
-                            ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                            : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                      }
-                      onClick={() => actions.onSelectAnnotationTool("room_tag")}
-                    >
-                      + Room Tag
-                    </button>
-                  )}
-                </div>
-
-                {!simplePlanControls && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      className={
-                        showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                      }
-                      onClick={() => actions.onAddOpening("door")}
-                    >
-                      + Door
-                    </button>
-                    <button
-                      className={
-                        showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                      }
-                      onClick={() => actions.onAddOpening("window")}
-                    >
-                      + Window
-                    </button>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  {!simplePlanControls ? (
-                    <button
-                      className={
-                        showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                      }
-                      onClick={actions.onAddBuiltIn}
-                    >
-                      + Built-in
-                    </button>
-                  ) : (
-                    <div
-                      className={
-                        showDesignerTheme
-                          ? "designer-recessed rounded-lg px-3 py-2 text-center text-xs text-neutral-400"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-center text-xs text-gray-500"
-                      }
-                    >
-                      Built-ins in Pro
-                    </div>
-                  )}
-                  <button
-                    className={
-                      selectedPlanOverlayId
-                        ? "rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white"
-                        : "rounded-lg bg-gray-200 px-3 py-2 text-xs text-gray-500"
-                    }
-                    disabled={!selectedPlanOverlayId}
-                    onClick={actions.onDeleteSelectedPlanOverlay}
-                  >
-                    Delete Selected
-                  </button>
-                </div>
-
-                {visiblePlanOpening && (
-                  <PlanOpeningInspector
-                    opening={visiblePlanOpening}
-                    roomName={visiblePlanOpeningRoomName}
-                    wallSpanMeters={visiblePlanOpeningWallSpanMeters}
-                    maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
-                    measurementUnit={planMeasurementUnit}
-                    dark={showDesignerTheme} proMode={canUseAdvancedPlanControls}
-                    onChange={actions.onOpeningChange}
-                  />
-                )}
-              </div>
-            )}
           </div>
 
-          {/* Lighting Section */}
-          <div>
-            <h3 className={
-              showDesignerTheme
-                ? "designer-text-primary mb-2 text-sm font-semibold"
-                : "mb-2 text-sm font-semibold text-gray-800"
-            }>
-              Lighting
-            </h3>
-            <LightingPresetsUI
-              current={lightingPreset}
-              onChange={actions.onLightingPresetChange}
-              theme={showDesignerTheme ? "designer" : "default"}
-            />
-            <p
-              data-testid="presentation-lighting-status"
-              className={
-                showDesignerTheme
-                  ? "mt-2 text-xs text-neutral-400"
-                  : "mt-2 text-xs text-gray-500"
-              }
-            >
-              The chosen scene is previewed with Presentation shadow and
-              effect quality while this panel is open and is used for image
-              and PDF captures.
-            </p>
-          </div>
+          <p data-testid="presentation-lighting-status" className="text-xs text-gray-500">
+            While this panel is open, the 3D view shows presentation lighting and quality, which image
+            and PDF exports use.
+          </p>
 
           {/* Client Handoff Section */}
           <div className="space-y-2 border-t pt-4">
@@ -714,124 +211,53 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
             }>
               Share
             </h3>
-            <button
+            <Button
               id={PRESENT_EXPORT_CREATE_SHARE_ACTION_ID} data-testid="create-share"
-              className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-hidden hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="w-full"
               disabled={sharingDesign || !designId}
               onClick={actions.onCreateShareLink}
               title={!designId ? "Save your design first to share it" : ""}
             >
               {sharingDesign ? "Creating link…" : shareToken ? "Copy link" : "Create link"}
-            </button>
+            </Button>
             {!designId && (
-              <div className={
-                showDesignerTheme
-                  ? "text-xs text-neutral-400"
-                  : "text-xs text-gray-500"
-              }>
+              <div className="text-xs text-gray-500">
                 Save your design first to share it
               </div>
-            )}
-            {shareToken && (
-              <a
-                href={`/share/${shareToken}/export`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={
-                  showDesignerTheme
-                    ? "designer-control-active block w-full rounded-lg border px-4 py-3 text-center text-sm font-medium"
-                    : "block w-full rounded-lg bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-700"
-                }
-              >
-                📦 View Export Pack
-              </a>
             )}
           </div>
 
           {/* Export Section */}
           <div className="space-y-2 border-t pt-4">
-            {!simplePlanControls && (
-              <>
-                <div className={showDesignerTheme ? "text-xs text-neutral-400" : "text-xs text-gray-500"}>
-                  Export style preset
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    className={
-                      exportStylePreset === "consumer"
-                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
-                        : showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                    }
-                    onClick={() => actions.onExportStyleChange("consumer")}
-                  >
-                    Consumer
-                  </button>
-                  <button
-                    aria-disabled={!canUseAdvancedExportStyles}
-                    title={!canUseAdvancedExportStyles ? "Upgrade to Pro to use the Pro export preset" : undefined}
-                    className={
-                      exportStylePreset === "pro"
-                        ? "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white"
-                        : showDesignerTheme
-                          ? "designer-control rounded-lg border px-3 py-2 text-xs text-neutral-200"
-                          : "rounded-lg bg-gray-100 px-3 py-2 text-xs hover:bg-gray-200"
-                    }
-                    onClick={() => actions.onExportStyleChange("pro")}
-                  >
-                    Pro
-                  </button>
-                </div>
-              </>
-            )}
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-              }
+            {/* UX audit SX4 (phase 4e): one primary action, no emoji; AI Notes is Pro's (Q5). */}
+            <Button
+              variant="primary"
+              className="w-full"
               disabled={isExporting || !sceneReady}
               onClick={actions.onExportImages}
             >
-              {isExporting ? "Exporting…" : "📸 Export Images"}
-            </button>
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-              }
-              disabled={isPdfExporting || !sceneReady}
-              onClick={actions.onExportPdf}
-            >
-              {isPdfExporting ? "Generating…" : "📄 Export PDF"}
-            </button>
-            <button
-              className={
-                showDesignerTheme
-                  ? "designer-control-active w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:opacity-50"
-                  : "w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              }
-              disabled={aiNotesLoading || !hasItems}
-              onClick={actions.onGenerateAiNotes}
-            >
-              {aiNotesLoading ? "Generating…" : "✨ AI Notes"}
-            </button>
+              {isExporting ? "Exporting…" : "Export Images"}
+            </Button>
+            <Button className="w-full" disabled={isPdfExporting || !sceneReady} onClick={actions.onExportPdf}>
+              {isPdfExporting ? "Generating…" : "Export PDF"}
+            </Button>
+            {canUseAdvancedExportStyles ? (
+              <Button className="w-full" disabled={aiNotesLoading || !hasItems} onClick={actions.onGenerateAiNotes}>
+                {aiNotesLoading ? "Generating…" : "AI Notes"}
+              </Button>
+            ) : null}
           </div>
 
           {/* Exit Present Mode Button */}
           <div className="border-t pt-4">
-            <button
-              disabled={Boolean(configuration.shareFallbackOpen)} className={
-                showDesignerTheme
-                  ? "designer-control w-full rounded-lg border px-4 py-3 text-sm font-medium"
-                  : "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              }
+            <Button
+              variant="quiet"
+              className="w-full"
+              disabled={Boolean(configuration.shareFallbackOpen)}
               onClick={actions.onClose}
             >
-              ← Back to Design Mode
-            </button>
+              Back to Design Mode
+            </Button>
           </div>
     </EditorDialog>
   );
