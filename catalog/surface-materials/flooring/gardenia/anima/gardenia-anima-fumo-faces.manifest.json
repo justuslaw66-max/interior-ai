@@ -1,0 +1,643 @@
+{
+  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/",
+  "source": "ABK Group download area, \"Download all (.zip)\" after sign-in, downloaded by J on 2026-10-02 (folder \"ANIMA - FUMO - minimali\").",
+  "note": "The download holds each face twice: a 1600 px JPG without a colour profile (darker) and a larger JPG with an sRGB profile (lighter, 2560 px; 2362 px for 60x60; 2560 x 1280 landscape for 60x120). The sRGB copy is used, turned upright for 60x120, and reduced to 1 px per mm. The full-size files are kept outside the repository.",
+  "formats": [
+    {
+      "format": "120x120",
+      "item_code": "0006047",
+      "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006047-v102/",
+      "face_mm": {
+        "width": 1200,
+        "height": 1200
+      },
+      "faces": [
+        {
+          "file": "0006047_01.webp",
+          "face": 1,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 372978,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_1 (3).jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006047_02.webp",
+          "face": 2,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 366812,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_13.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006047_03.webp",
+          "face": 3,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 404144,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_1.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006047_04.webp",
+          "face": 4,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 357116,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_2.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006047_05.webp",
+          "face": 5,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 346532,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_5.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006047_06.webp",
+          "face": 6,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 328196,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_12.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006047_07.webp",
+          "face": 7,
+          "width_px": 1200,
+          "height_px": 1200,
+          "bytes": 326036,
+          "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_14.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        }
+      ],
+      "swatch": "0006047_swatch.webp"
+    },
+    {
+      "format": "60x120",
+      "item_code": "0006051",
+      "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006051-v102/",
+      "face_mm": {
+        "width": 600,
+        "height": 1200
+      },
+      "faces": [
+        {
+          "file": "0006051_01.webp",
+          "face": 1,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 180418,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_1.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_02.webp",
+          "face": 2,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 167592,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_11.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006051_03.webp",
+          "face": 3,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 173914,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_24.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_04.webp",
+          "face": 4,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 190784,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_26.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_05.webp",
+          "face": 5,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 193502,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_22.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_06.webp",
+          "face": 6,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 208288,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_8.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006051_07.webp",
+          "face": 7,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 179640,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_2 (2).jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006051_08.webp",
+          "face": 8,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 186334,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_23.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_09.webp",
+          "face": 9,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 194590,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_10.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_10.webp",
+          "face": 10,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 181456,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_4.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_11.webp",
+          "face": 11,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 168602,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_12 (2).jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006051_12.webp",
+          "face": 12,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 157572,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_15.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006051_13.webp",
+          "face": 13,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 159930,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_28.jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006051_14.webp",
+          "face": 14,
+          "width_px": 600,
+          "height_px": 1200,
+          "bytes": 171524,
+          "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_14 (2).jpg",
+          "source_px": [
+            2560,
+            1280
+          ],
+          "orientation": "turned 90 ccw",
+          "match_r": 0.998
+        }
+      ],
+      "swatch": "0006051_swatch.webp"
+    },
+    {
+      "format": "60x60",
+      "item_code": "0006059",
+      "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006059-v102/",
+      "face_mm": {
+        "width": 600,
+        "height": 600
+      },
+      "faces": [
+        {
+          "file": "0006059_01.webp",
+          "face": 1,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 77684,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_1.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_02.webp",
+          "face": 2,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 88036,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_14.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006059_03.webp",
+          "face": 3,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 86696,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_26.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_04.webp",
+          "face": 4,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 91072,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_27.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_05.webp",
+          "face": 5,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 92138,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_28.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_06.webp",
+          "face": 6,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 87148,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_5 (2).jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006059_07.webp",
+          "face": 7,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 102750,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_15.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0006059_08.webp",
+          "face": 8,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 97102,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_6 (2).jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_09.webp",
+          "face": 9,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 94062,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_11.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_10.webp",
+          "face": 10,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 86928,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_23.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_11.webp",
+          "face": 11,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 81966,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_3.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_12.webp",
+          "face": 12,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 85654,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_7.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_13.webp",
+          "face": 13,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 83926,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_17.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0006059_14.webp",
+          "face": 14,
+          "width_px": 600,
+          "height_px": 600,
+          "bytes": 76846,
+          "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_19.jpg",
+          "source_px": [
+            2362,
+            2362
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        }
+      ],
+      "swatch": "0006059_swatch.webp"
+    },
+    {
+      "format": "80x80",
+      "item_code": "0007812",
+      "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60007812-v102/",
+      "face_mm": {
+        "width": 800,
+        "height": 800
+      },
+      "faces": [
+        {
+          "file": "0007812_01.webp",
+          "face": 1,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 140512,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_1 (3).jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0007812_02.webp",
+          "face": 2,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 144940,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_14.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.998
+        },
+        {
+          "file": "0007812_03.webp",
+          "face": 3,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 136602,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_5.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.996
+        },
+        {
+          "file": "0007812_04.webp",
+          "face": 4,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 165642,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_1.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.996
+        },
+        {
+          "file": "0007812_05.webp",
+          "face": 5,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 150814,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_9.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.999
+        },
+        {
+          "file": "0007812_06.webp",
+          "face": 6,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 149856,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_8.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.997
+        },
+        {
+          "file": "0007812_07.webp",
+          "face": 7,
+          "width_px": 800,
+          "height_px": 800,
+          "bytes": 136136,
+          "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_12.jpg",
+          "source_px": [
+            2560,
+            2560
+          ],
+          "orientation": "upright",
+          "match_r": 0.997
+        }
+      ],
+      "swatch": "0007812_swatch.webp"
+    }
+  ]
+}

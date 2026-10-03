@@ -3749,7 +3749,7 @@
     "lib/floor-plan-imports/worker.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 98
+        "maximum": 96
       }
     },
     "lib/floor-plan-legacy-adapters.ts": {
