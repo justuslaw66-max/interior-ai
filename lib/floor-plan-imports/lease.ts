@@ -460,11 +460,7 @@ export class PrismaFloorPlanImportLeaseService {
     const now = input.now ?? new Date();
     const limit = Math.min(MAX_QUEUE_SCAN, Math.max(1, Math.round(input.limit ?? 25)));
     const expired = await client.floorPlanImportJob.findMany({
-      where: {
-        status: { in: [...FLOOR_PLAN_PROCESSABLE_STATUSES] },
-        leaseToken: { not: null },
-        leaseExpiresAt: { lte: now },
-      },
+      where: { leaseToken: { not: null }, leaseExpiresAt: { lte: now } },
       orderBy: { leaseExpiresAt: "asc" },
       take: limit,
       select: leaseFields(),
@@ -472,29 +468,33 @@ export class PrismaFloorPlanImportLeaseService {
     const recovered: FloorPlanImportWorkerStatus[] = [];
 
     for (const candidate of expired) {
+      // A finished job only missed its lease release: clear the lease, keep the result.
+      const finished = !processableStatuses.has(candidate.status as FloorPlanImportStatus);
       const updated = await client.$transaction(async (transaction) => {
         const exhausted = candidate.attemptCount >= candidate.maxAttempts;
         const changed = await transaction.floorPlanImportJob.updateMany({
           where: leaseCasWhere(candidate),
           data: {
-            ...(exhausted
-              ? {
-                  status: "failed",
-                  statusChangedAt: now,
-                  progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
-                  nextAttemptAt: null,
-                  lastErrorAt: now,
-                  errorMessage: `Floor plan upload stopped after ${candidate.maxAttempts} attempts; processing timed out`,
-                }
-              : {
-                  retryCount: { increment: 1 },
-                  nextAttemptAt: now,
-                  errorMessage: `Recovered an expired worker lease; processing will resume from ${candidate.status}`,
-                }),
+            ...(finished
+              ? {}
+              : exhausted
+                ? {
+                    status: "failed",
+                    statusChangedAt: now,
+                    progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
+                    nextAttemptAt: null,
+                    lastErrorAt: now,
+                    errorMessage: `Floor plan upload stopped after ${candidate.maxAttempts} attempts; processing timed out`,
+                  }
+                : {
+                    retryCount: { increment: 1 },
+                    nextAttemptAt: now,
+                    errorMessage: `Recovered an expired worker lease; processing will resume from ${candidate.status}`,
+                  }),
             leaseToken: null,
             leaseOwner: null,
             leaseExpiresAt: null,
-            lastRecoveredAt: now,
+            ...(finished ? {} : { lastRecoveredAt: now }),
           },
         });
         if (changed.count !== 1) return null;
@@ -503,7 +503,7 @@ export class PrismaFloorPlanImportLeaseService {
           select: leaseFields(),
         });
       });
-      if (updated) recovered.push(publicStatus(updated));
+      if (updated && !finished) recovered.push(publicStatus(updated));
     }
     return recovered;
   }

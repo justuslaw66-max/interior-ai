@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 7 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60007812-v102/), full-size sRGB copies from the signed-in download of 2026-10-02, reduced to 1 px per mm. Each covers one whole 800x800 mm tile."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0007812/0/196233 for wall use.
     - "Configurator format: 80x80; surface destination: ENTRAMBE."
@@ -64,16 +65,41 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/anima/0006059.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/anima/0006059.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/anima/0007812_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/anima/0007812_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 80
     height: 80
+  image_physical_size_mm:
+    width: 800
+    height: 800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_01.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_02.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_03.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_04.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_05.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_06.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007812_07.webp
+      width_mm: 800
+      height_mm: 800
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -101,12 +127,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

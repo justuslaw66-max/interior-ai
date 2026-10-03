@@ -307,12 +307,87 @@ async function testHeartbeatReleaseAndRetry() {
   assert.equal(database.jobs.get("retry")?.status, "failed");
 }
 
+async function testReleaseAfterLateHeartbeat() {
+  const database = new FakeLeasePrisma();
+  const now = new Date("2026-07-16T04:00:00.000Z");
+  database.jobs.set("late", makeJob("late"));
+  const service = new PrismaFloorPlanImportLeaseService(database);
+  const lease = claimedLease(
+    await service.claimById({ jobId: "late", workerId: "worker", now })
+  );
+  // The pipeline's final status write commits before the heartbeat's renewal.
+  const row = database.jobs.get("late");
+  assert.ok(row);
+  row.status = "needs_review";
+  row.progress = 85;
+  const heartbeat = await service.renew({ lease, now: new Date(now.getTime() + 30_000) });
+  assert.equal(heartbeat.renewed, false);
+  // runClaimedJob still releases the lease it holds, keeping the result.
+  assert.equal(await service.release({ lease }), true);
+  assert.equal(row.status, "needs_review");
+  assert.equal(row.leaseToken, null);
+  assert.equal(row.leaseExpiresAt, null);
+
+  // The release CAS never clears a lease another worker has taken over.
+  database.jobs.set(
+    "taken",
+    makeJob("taken", { status: "ready", progress: 100, leaseToken: "other", leaseOwner: "other" })
+  );
+  assert.equal(
+    await service.release({ lease: { ...lease, jobId: "taken" } }),
+    false
+  );
+  assert.equal(database.jobs.get("taken")?.leaseToken, "other");
+}
+
+async function testFinishedJobLeaseIsCleared() {
+  const database = new FakeLeasePrisma();
+  const now = new Date("2026-07-16T05:00:00.000Z");
+  database.jobs.set(
+    "finished-stale",
+    makeJob("finished-stale", {
+      status: "needs_review",
+      progress: 85,
+      leaseToken: "stale-token",
+      leaseOwner: "finished-worker",
+      leaseExpiresAt: new Date(now.getTime() - 60_000),
+      attemptCount: 1,
+    })
+  );
+  database.jobs.set(
+    "finished-active",
+    makeJob("finished-active", {
+      status: "ready",
+      progress: 100,
+      leaseToken: "active-token",
+      leaseOwner: "releasing-worker",
+      leaseExpiresAt: new Date(now.getTime() + 60_000),
+      attemptCount: 1,
+    })
+  );
+  const service = new PrismaFloorPlanImportLeaseService(database);
+  const recovered = await service.recoverExpired({ now });
+  assert.equal(recovered.length, 0);
+  const cleared = database.jobs.get("finished-stale");
+  assert.equal(cleared?.status, "needs_review");
+  assert.equal(cleared?.progress, 85);
+  assert.equal(cleared?.leaseToken, null);
+  assert.equal(cleared?.leaseOwner, null);
+  assert.equal(cleared?.leaseExpiresAt, null);
+  assert.equal(cleared?.retryCount, 0);
+  assert.equal(cleared?.nextAttemptAt, null);
+  assert.equal(cleared?.lastRecoveredAt, null);
+  assert.equal(database.jobs.get("finished-active")?.leaseToken, "active-token");
+}
+
 async function main() {
   await testDuplicateClaims();
   await testExpiredLeaseClaimAndRecovery();
   await testTerminalJobsAreNeverClaimed();
   await testOwnerIsolation();
   await testHeartbeatReleaseAndRetry();
+  await testReleaseAfterLateHeartbeat();
+  await testFinishedJobLeaseIsCleared();
   console.log("Floor-plan import worker recovery tests passed");
 }
 
