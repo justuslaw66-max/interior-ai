@@ -240,4 +240,33 @@ assert.deepEqual(
   "Removing a named view should not mutate the source collection."
 );
 
+// Opening a saved view hands the view to the mode change: from 2D it is queued as
+// the 3D entry view, and in 3D it transitions directly. Queuing the default view
+// while already in 3D let a later view-mode effect run (a sceneReady flip) replace
+// the saved view mid-transition.
+assert.match(
+  namedViewsControllerSource,
+  /const openSavedCameraView = useCallback\([\s\S]*?handleEditorViewModeChange\(\s*"3d",\s*\{\s*pos: view\.cameraPosition,\s*target: view\.cameraTarget,[\s\S]*?openTransitionDurationMs\s*\);/,
+  "Opening a saved view should pass the view to the 3D mode change."
+);
+assert.doesNotMatch(
+  namedViewsControllerSource,
+  /transitionToCameraView/,
+  "The saved-view controller should not start its own transition next to a queued 3D entry view."
+);
+const cameraNavigationSource = readFileSync(
+  join(root, "lib/useDesignPageCameraNavigation.ts"),
+  "utf8"
+);
+assert.match(
+  cameraNavigationSource,
+  /const handleEditorViewModeChange = useCallback\([\s\S]*?if \(viewMode === "3d"\) \{\s*if \(open3DView\) transitionToCameraView\(open3DView, durationMs\);\s*return;\s*\}\s*pending3DViewRef\.current = open3DView \?\?/,
+  "Choosing 3D while already in 3D should not queue a view for a later effect run."
+);
+assert.match(
+  cameraNavigationSource,
+  /if \(cameraTransitionTokenRef\.current !== transitionToken\) return;/,
+  "A cancelled camera transition should leave the animating flag to the newer transition."
+);
+
 console.log("design page layout-version and named-camera-view controller guardrails passed");

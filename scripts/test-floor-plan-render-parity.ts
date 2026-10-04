@@ -662,7 +662,7 @@ assert.match(canonicalRenderer, /testId: "canonical-structure-2d"/);
 assert.match(canonicalRenderer, /testId: "canonical-structure-3d"/);
 assert.match(
   canonicalRenderer,
-  /<extrudeGeometry args=\{\[shape, \{ depth: heightMeters, bevelEnabled: false \}\]\}/,
+  /<extrudeGeometry args=\{\[shape, stableExtrudeOptions\(heightMeters\)\]\}/,
   "3D structural elements must extrude the same canonical polygon instead of a legacy bounding box."
 );
 assert.match(
