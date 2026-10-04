@@ -2,7 +2,6 @@
 
 import {
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -15,6 +14,7 @@ import type {
 } from "@/lib/design-page-types";
 import type { FloorActionAdapters } from "@/lib/useFloorManager";
 import type { DesignPageCameraNavigationActions } from "@/lib/useDesignPageCameraNavigation";
+import { useLiveCameraViewStore } from "@/lib/useDesignPageLiveCameraView";
 
 export type UseDesignPageCameraBridgeControllerInput = {
   configuration: {
@@ -101,9 +101,7 @@ export function useDesignPageCameraBridgeController({
     updateCameraViewFromScene,
   });
 
-  useEffect(() => {
-    cameraViewRef.current = cameraView;
-  }, [cameraView]);
+  const liveCameraView = useLiveCameraViewStore(cameraView, cameraViewRef);
 
   const bindFloorSelectionAction = useCallback(
     (clearNonRoomSelection: () => void) => {
@@ -148,7 +146,7 @@ export function useDesignPageCameraBridgeController({
   };
 
   return {
-    state: { cameraView, savedViews },
+    state: { cameraView, savedViews, liveCameraView },
     configuration: { initialCameraView, transitionDurationMs },
     refs: {
       canvas: canvasRef,
@@ -157,6 +155,7 @@ export function useDesignPageCameraBridgeController({
       renderer: rendererRef,
       scene: sceneRef,
       cameraView: cameraViewRef,
+      liveCameraView,
       floorCameraViews: floorCameraViewsRef,
       floorActionAdapters: floorActionAdaptersRef,
       navigationActions: navigationActionsRef,

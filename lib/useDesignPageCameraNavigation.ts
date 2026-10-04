@@ -14,6 +14,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
+import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
 import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
 import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
@@ -282,19 +283,9 @@ export function useDesignPageCameraNavigation({
       fov: perspectiveFov,
     };
 
-    setCameraView((previous) => {
-      const [px, py, pz] = previous.pos;
-      const [tx, ty, tz] = previous.target;
-      const changed =
-        Math.abs(px - next.pos[0]) > 0.001 ||
-        Math.abs(py - next.pos[1]) > 0.001 ||
-        Math.abs(pz - next.pos[2]) > 0.001 ||
-        Math.abs(tx - next.target[0]) > 0.001 ||
-        Math.abs(ty - next.target[1]) > 0.001 ||
-        Math.abs(tz - next.target[2]) > 0.001 ||
-        Math.abs((previous.fov ?? 45) - (next.fov ?? 45)) > 0.01;
-      return changed ? next : previous;
-    });
+    setCameraView((previous) =>
+      cameraViewChanged(previous, next) ? next : previous
+    );
   }, [cameraRef, controlsRef, setCameraView]);
 
   const preserveCameraAfterPlanOverlaySelection = useCallback(() => {

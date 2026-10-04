@@ -3,12 +3,12 @@
 import { useMemo, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { useLiveCameraView, type LiveCameraViewStore } from "@/lib/useDesignPageLiveCameraView";
 
 type RoomPanNavigatorProps = {
   rooms: HousePlanRoom2D[];
   activeRoomId: string;
-  cameraPosition: [number, number, number];
-  cameraTarget: [number, number, number];
+  liveCameraView: LiveCameraViewStore;
   itemCountsByRoomId?: Record<string, number>;
   targetRoomId?: string | null;
   targetRoomValid?: boolean;
@@ -78,8 +78,7 @@ function clamp(value: number, min: number, max: number): number {
 export default function RoomPanNavigator({
   rooms,
   activeRoomId,
-  cameraPosition,
-  cameraTarget,
+  liveCameraView,
   itemCountsByRoomId = {},
   targetRoomId = null,
   targetRoomValid = true,
@@ -91,6 +90,7 @@ export default function RoomPanNavigator({
   onZoom,
   onResetView,
 }: RoomPanNavigatorProps) {
+  const { pos: cameraPosition, target: cameraTarget } = useLiveCameraView(liveCameraView);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragModeRef = useRef<DragMode>(null);
