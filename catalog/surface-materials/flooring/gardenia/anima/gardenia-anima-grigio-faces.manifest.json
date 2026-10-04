@@ -1,0 +1,1048 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - GRIGIO - minimali.zip, 156100572 bytes, sha256 a518e02caa8ea367af26ff882ce8b7152d2000656ab37625760a7cfbd3fa50be).",
+ "note": "The download holds each face twice, the same picture exported two ways: a lighter JPG with an sRGB profile and a darker JPG without a profile (lighter is about 0.93 x darker + 14.5 in level). The lighter sRGB copy is used for every face (J, 2026-10-04), turned upright where it is landscape. Face numbers are ABK's numbers on the lighter copy's name.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are 1.3 to 3.9 px per mm (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/anima/ holds the tracking files and the ZIPs, and the same ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "If the renderer draws more pixels per metre, re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008672",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/pf60008672-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008672_swatch.webp",
+   "faces": [
+    {
+     "file": "0008672_01.webp",
+     "face": 1,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 267616,
+     "source_file": "120X280-Natural/ANIMA - GRIGIO - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1811,
+      4096
+     ],
+     "source_sha256": "4c6f47e13e042d2b13bbd1edca44ecb26095d4fc57af25fc67c1abdde2117f0d",
+     "source_px_per_mm": 1.46,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "cropped": "56 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "ANIMA GRIGIO 120X280_01",
+      "id": "3b0b4bab-5635-4299-b0b5-923be50dacf3"
+     }
+    },
+    {
+     "file": "0008672_02.webp",
+     "face": 2,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 262124,
+     "source_file": "120X280-Natural/ANIMA - GRIGIO - 120X280 - Natural - view_7.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "8be715d4bfff77ad1118a10383b9450dd1fb063c177d40bf66c26b7340973957",
+     "source_px_per_mm": 1.46,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 14",
+      "name": "ANIMA GRIGIO 120X280_02",
+      "id": "40950b61-7a0e-4b77-8251-bf2f7c959085"
+     }
+    },
+    {
+     "file": "0008672_03.webp",
+     "face": 3,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 295310,
+     "source_file": "120X280-Natural/ANIMA - GRIGIO - 120X280 - Natural - view_10.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "bc83a721bacc912776b37b266733d6a35135261d3f029482bc3ca5b80b0e47bc",
+     "source_px_per_mm": 1.46,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 15",
+      "name": "ANIMA GRIGIO 120X280_03",
+      "id": "8b87f599-5c03-452f-86a6-9963033397a0"
+     }
+    },
+    {
+     "file": "0008672_04.webp",
+     "face": 4,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 310252,
+     "source_file": "120X280-Natural/ANIMA - GRIGIO - 120X280 - Natural - view_14.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "8fdf41bdd1db6c2a8fc353f316be9f6a04c365b6cf1ed8478c30f16f3edbc1e6",
+     "source_px_per_mm": 1.46,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 16",
+      "name": "ANIMA GRIGIO 120X280_04",
+      "id": "a86f0606-0f92-41bf-9e6a-7066e568516f"
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0006046",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/pf60006046-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006046_swatch.webp",
+   "faces": [
+    {
+     "file": "0006046_01.webp",
+     "face": 1,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 126636,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d57b68084dbc9dccc9c01497eeae2e3011dbf45958cdaebf612fa705c8b09e81",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA GRIGIO 120X120_01",
+      "id": "5dfd71f6-e342-4b9f-9691-580266a54370"
+     }
+    },
+    {
+     "file": "0006046_02.webp",
+     "face": 2,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128938,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fb2a2782f76f4577be5084c357a9c1ae01700bdabb7e76775976f62f9bc4942d",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "ANIMA GRIGIO 120X120_02",
+      "id": "387b827f-2734-4613-a548-0af62d4d3f27"
+     }
+    },
+    {
+     "file": "0006046_03.webp",
+     "face": 3,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 131760,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "93bb6adf871fc2fd0966928ba5e99e7e8dfd8d9df175cca56520256738367eb8",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "ANIMA GRIGIO 120X120_03",
+      "id": "754879c5-f548-49da-b1bf-ebeb278034c5"
+     }
+    },
+    {
+     "file": "0006046_04.webp",
+     "face": 4,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 126528,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a252ff1268102dd1a7c1320676c2859beb418bb529ad1301da619456684c905c",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "ANIMA GRIGIO 120X120_04",
+      "id": "852d6da4-0e88-46e3-94e4-2dae69327004"
+     }
+    },
+    {
+     "file": "0006046_05.webp",
+     "face": 5,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128206,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "63d51129ec5a366f8683cff731faac2484cf6e302a0f4a928f1bd28e4b48df2b",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 13",
+      "name": "ANIMA GRIGIO 120X120_05",
+      "id": "c293b8aa-dd7f-4dbe-8d77-aed002056c7a"
+     }
+    },
+    {
+     "file": "0006046_06.webp",
+     "face": 6,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107616,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e9ac4bd47f8357879c9495963526333aceb33cec0493f3369bb89d395f9605be",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "ANIMA GRIGIO 120X120_06",
+      "id": "6663c96c-cb57-4b1d-af41-43a50f870833"
+     }
+    },
+    {
+     "file": "0006046_07.webp",
+     "face": 7,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 102956,
+     "source_file": "120X120-Nat P.tech/ANIMA - GRIGIO - 120X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "133551d0a6c80b8d5fe7a025358a407edb92856eea87ccaa1c75c0e5f80bf0a5",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 14",
+      "name": "ANIMA GRIGIO 120X120_07",
+      "id": "e8155d57-539e-455d-a99d-631cbe4933a4"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006050",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/pf60006050-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006050_swatch.webp",
+   "faces": [
+    {
+     "file": "0006050_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62736,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_1 (3).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2d3f71d90fbd3155254b4bc3b472a94a0ebec857cea20110aa496ec75d75d79a",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA GRIGIO 60X120_01",
+      "id": "2ad82bd7-4873-4124-a5d5-c3861f9b8965"
+     }
+    },
+    {
+     "file": "0006050_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65360,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "87d38605768f08ffaf8b6540de11732cb89f2bf3d2ee0082b17f145ce45acced",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "ANIMA GRIGIO 60X120_02",
+      "id": "3d9d33c6-49bc-4587-8653-c23fd4377705"
+     }
+    },
+    {
+     "file": "0006050_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63948,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "79722e0089d5e084c45f8793f99ddde4fa4e872e59a44b72d863945de67356a2",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "ANIMA GRIGIO 60X120_03",
+      "id": "962dcb55-ab4f-4ff0-9421-ba2c922728f7"
+     }
+    },
+    {
+     "file": "0006050_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68820,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0b01502c5b92fabded3eac872493f1934221d0ba86fe4d30f966035a32681fcd",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "ANIMA GRIGIO 60X120_04",
+      "id": "983f73e1-5ba1-4a54-9212-1608c3f1da5f"
+     }
+    },
+    {
+     "file": "0006050_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 66708,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "81228408aa35a93e82f97ae9e76504d8a0409849c96b0be5af4e508e9e60d3b4",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "ANIMA GRIGIO 60X120_05",
+      "id": "930afbac-d16d-4fee-977a-93a0ae241b0a"
+     }
+    },
+    {
+     "file": "0006050_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65944,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c5c0953627ccf7a4cdf235e34e8ceccf749baed5d9060b36396eda3a1841537b",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 26",
+      "name": "ANIMA GRIGIO 60X120_06",
+      "id": "e8acf4f2-8dff-40a2-875e-90c67c876b1a"
+     }
+    },
+    {
+     "file": "0006050_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64476,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_26.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "35681b60765028762436d7be116ab8cb7f16aab8bd443b93441f64c7a1bf2a87",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 27",
+      "name": "ANIMA GRIGIO 60X120_07",
+      "id": "f72113d4-6f84-48b5-a832-4f5db3ac6369"
+     }
+    },
+    {
+     "file": "0006050_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61886,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_28.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "37b92162aa07cee73e4a4ecf7be947d82e0f129eeea441138afebb83a58f7a72",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 28",
+      "name": "ANIMA GRIGIO 60X120_08",
+      "id": "fca585f6-8357-4d89-9e6a-b3364feb0925"
+     }
+    },
+    {
+     "file": "0006050_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52310,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e4e1691a68ef917668562eb9c0f0b119dea50da50f1c14f346377a57a54ad3e3",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "ANIMA GRIGIO 60X120_09",
+      "id": "308fc322-ada8-43b1-a963-e73bb2481def"
+     }
+    },
+    {
+     "file": "0006050_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49940,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1807680b4c12a99b64d46b3793a15e76798c2ce2d8934c576fba8972b09dfc13",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "ANIMA GRIGIO 60X120_10",
+      "id": "01acbfd4-6a63-49fb-ad4c-2502e2df942e"
+     }
+    },
+    {
+     "file": "0006050_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52442,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "80348bc54f9aacf67f07720673dcab68af0ae177119a1150a14966485958d2fb",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "ANIMA GRIGIO 60X120_11",
+      "id": "c1b5c852-5ff5-463e-88b4-7b9c5bf35786"
+     }
+    },
+    {
+     "file": "0006050_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56744,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fa342afaaba7f2db8c535dbabe4ac8ae390c89d946893850191771ffa5da1866",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "ANIMA GRIGIO 60X120_12",
+      "id": "8b9667a3-b25c-43a4-8213-830882da8cf4"
+     }
+    },
+    {
+     "file": "0006050_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 66198,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "17b81bc23fd10f7a1cc494cd73a98defd0eccf9d65df2eb4acb4b75868979239",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "ANIMA GRIGIO 60X120_13",
+      "id": "3e74e33d-a084-41c7-924e-dcf903d8e7e8"
+     }
+    },
+    {
+     "file": "0006050_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62634,
+     "source_file": "60X120-Nat P.tech/ANIMA - GRIGIO - 60X120 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7d038069d5e5aa25e31cbd0066d35bf69feed9ca9a82c13098ebd1dd3c41f21d",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 25",
+      "name": "ANIMA GRIGIO 60X120_14",
+      "id": "c5ea012b-18d8-4bcf-8104-a943f4168a85"
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0007811",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/pf60007811-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0007811_swatch.webp",
+   "faces": [
+    {
+     "file": "0007811_01.webp",
+     "face": 1,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46640,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "40f5ce3b0037bf03c70d47ee4f7d377a174215a7b9f947a83017f764db295ad1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA GRIGIO 80X80_01",
+      "id": "db9dff48-3d14-4571-bc78-fb77cf24d5d6"
+     }
+    },
+    {
+     "file": "0007811_02.webp",
+     "face": 2,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 54750,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e6b95b70b396155b6449a573a5876a0c24cccb8b2c02f0eea57f29d8e490f84a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 13",
+      "name": "ANIMA GRIGIO 80X80_02",
+      "id": "a80666d6-5967-4ccb-ac0f-b24d2a80a964"
+     }
+    },
+    {
+     "file": "0007811_03.webp",
+     "face": 3,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52678,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fca9f390a3d3b241c6518b313e2b0a201a7c23641763cee0b7c06b86ee8133df",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 9",
+      "name": "ANIMA GRIGIO 80X80_03",
+      "id": "4d8eaac1-c445-41d7-8a96-0f9a56730d25"
+     }
+    },
+    {
+     "file": "0007811_04.webp",
+     "face": 4,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55476,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e951c1efd5381b4ac7a40f6900a2a0375f48145c49e1f20ea8d489e2972332b1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 11",
+      "name": "ANIMA GRIGIO 80X80_04",
+      "id": "78a08c31-17cb-4de0-9d12-88b0015fd9b7"
+     }
+    },
+    {
+     "file": "0007811_05.webp",
+     "face": 5,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 56182,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0fadb77be36645cd5604492c83723725f421a68fda4884e2d19d83230f91e6d3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 12",
+      "name": "ANIMA GRIGIO 80X80_05",
+      "id": "8f298bf0-ba82-444d-b78a-d6e2e41f6456"
+     }
+    },
+    {
+     "file": "0007811_06.webp",
+     "face": 6,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 53206,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c95ef7470391b9861ca8ef4144868008fe6ef2a8e39b5a79384d7bc39fd2f2e2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "ANIMA GRIGIO 80X80_06",
+      "id": "d58b47f7-baba-4907-87a6-929fb42cdb85"
+     }
+    },
+    {
+     "file": "0007811_07.webp",
+     "face": 7,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 43890,
+     "source_file": "80X80-Nat P.tech/ANIMA - GRIGIO - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e6f7269ce7f5d8bd3807b0b3faec4b9fbd71e9fb6d07fc10718861d7818def76",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 10",
+      "name": "ANIMA GRIGIO 80X80_07",
+      "id": "6c295704-a7c1-42a2-962d-fe335a11e85f"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0006058",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/grigio/pf60006058-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0006058_swatch.webp",
+   "faces": [
+    {
+     "file": "0006058_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 34256,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7fe4e1b849dbc8f47430581c6b92e5c7963752dd4e873d19da6de13a7476daed",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA GRIGIO 60X60_01",
+      "id": "e38ce5d3-f285-401d-9c7f-6fb9c79be4ed"
+     }
+    },
+    {
+     "file": "0006058_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32922,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f49cd233c44b0bc6480194e4160903e08cc64702df32de0d9dcadf3c02817ebd",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "ANIMA GRIGIO 60X60_02",
+      "id": "550dc833-11a1-4af2-a95f-9766e764499e"
+     }
+    },
+    {
+     "file": "0006058_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33690,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "833ce1fac6fe2f61bb65b41e316b22f88ddb1377c30d1107bf967f7c2b1a5a7b",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "ANIMA GRIGIO 60X60_03",
+      "id": "3bf93db4-0e6b-4f3b-8b06-ddecd4c747fa"
+     }
+    },
+    {
+     "file": "0006058_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32212,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "2f0eff03633e88ca9628bfc19fff23c2b1d48a0748972efcc47cd1d4dfd2b30e",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "ANIMA GRIGIO 60X60_04",
+      "id": "3b4f922d-c60d-48d1-b21b-b6f6cbdc90d4"
+     }
+    },
+    {
+     "file": "0006058_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31290,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "08f4dbea3fb8ee6c46d1037805fe9eebb0d06a8279b563f93ecaec688c2d65d7",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "ANIMA GRIGIO 60X60_05",
+      "id": "6981b79c-bdec-45c4-ab20-90536ad45ba0"
+     }
+    },
+    {
+     "file": "0006058_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32172,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e7a57496905157212393b8157022c734ae7e9b252223a41d881bcad78c7221cc",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "ANIMA GRIGIO 60X60_06",
+      "id": "a8d407af-9421-49dc-959a-ba60ac96a1ed"
+     }
+    },
+    {
+     "file": "0006058_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28246,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d5a5920081726f95d0e8d36654d0a93c5da6ab2aa029a6b897508ae98aba36fa",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 25",
+      "name": "ANIMA GRIGIO 60X60_07",
+      "id": "e51cd45b-f076-4c13-80a3-bcac9dc0c5b2"
+     }
+    },
+    {
+     "file": "0006058_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25174,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_10 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f565284eeff0f8f87758999d2e00045797eb68e637749df091e369cdb4349c4d",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "ANIMA GRIGIO 60X60_08",
+      "id": "4aebc4f2-a637-4be5-a413-e13a1aa40dee"
+     }
+    },
+    {
+     "file": "0006058_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25084,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_28.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d0e457cfb93cdc7db13c3ca5df89641210a03d46f1946e70d8f6c789c904cf7f",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 28",
+      "name": "ANIMA GRIGIO 60X60_09",
+      "id": "f9ae8aec-94f9-40c9-b41c-c974a0a9c561"
+     }
+    },
+    {
+     "file": "0006058_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27140,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "03583d5d86ea29983afe600a8dea72de06fb722894f06d72f9db931ae157ba38",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "ANIMA GRIGIO 60X60_10",
+      "id": "dcbffe6c-072c-41c3-abd1-11ce6d9a343b"
+     }
+    },
+    {
+     "file": "0006058_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31064,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_25.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7e354487e386c6d0b34751d2d3821f451e416cdb114335766e7a78b8bed28dd3",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 27",
+      "name": "ANIMA GRIGIO 60X60_11",
+      "id": "ef0d3ab3-7de3-4672-819d-4cd02600a388"
+     }
+    },
+    {
+     "file": "0006058_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31394,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "78f06ac839de809c563180bdef4a0682eaef6e8e8c34bdb1d676371012ef2c01",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "ANIMA GRIGIO 60X60_12",
+      "id": "20df9835-ea99-4b9f-8ac7-5f378d9bcf0b"
+     }
+    },
+    {
+     "file": "0006058_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32760,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "61df40aa6fd942e4329f0a1315ac2ad4c537add28e8a11ca8b675bf7848fdfaf",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 26",
+      "name": "ANIMA GRIGIO 60X60_13",
+      "id": "e909fb07-8f8b-411d-aced-c47f6d2b3d51"
+     }
+    },
+    {
+     "file": "0006058_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32556,
+     "source_file": "60X60-Nat P.tech/ANIMA - GRIGIO - 60X60 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8c675c319cf3979e58b3ffd6702c850b84fd2235a72f16546715b9086d4f659d",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "ANIMA GRIGIO 60X60_14",
+      "id": "4efce7d3-0ffb-4d7d-9198-c72332e91c6b"
+     }
+    }
+   ]
+  }
+ ]
+}
