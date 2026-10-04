@@ -667,14 +667,50 @@ assert.match(
 );
 assert.match(
   canonicalRenderer,
-  /buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)[\s\S]*?testId: "canonical-wall-body-3d"[\s\S]*?<extrudeGeometry/,
+  /useCanonicalWallBands\(floor, cutawayWallKeys\)[\s\S]*?testId: "canonical-wall-body-3d"[\s\S]*?<extrudeGeometry/,
   "Canonical 3D walls must extrude unioned height bands instead of independent overlapping solids."
+);
+assert.match(
+  read("components/editor/renderers/canonical-floor-plan/useCanonicalWallBands.ts"),
+  /buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)/,
+  "The wall bands are the canonical union bands without the cut-away walls."
 );
 assert.match(
   canonicalRenderer,
   /useCanonicalCameraCutawayWallKeys\(\s*model,\s*cutawayTarget,\s*pinnedWallIds\s*\)[\s\S]*?cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)/,
   "Canonical exterior walls should follow the camera-aware dollhouse cutaway instead of blocking the floor plan."
 );
+assert.doesNotMatch(
+  canonicalRenderer,
+  /cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)\)\s*\{\s*return \[\];|cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)\s*\?\s*\[\]/,
+  "Cut-away walls and their openings must stay mounted: unmounting them re-created meshes and shaders on every cutaway change."
+);
+assert.equal(
+  (canonicalRenderer.match(/const cutAway = cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\);/g) ?? []).length,
+  2,
+  "Walls and openings should both read whether their wall is cut away."
+);
+assert.equal(
+  (canonicalRenderer.match(/interactive=\{interactive && !cutAway\}/g) ?? []).length,
+  2,
+  "Cut-away wall surfaces and openings should take no pointer events."
+);
+assert.equal(
+  (canonicalRenderer.match(/visible=\{!cutAway\}/g) ?? []).length,
+  3,
+  "The wall hit mesh, the wall surfaces and the openings should hide while cut away."
+);
+assert.match(
+  canonicalRenderer,
+  /visible=\{!cutAway\}\s*raycast=\{cutAway \? noRaycast : meshRaycast\}/,
+  "A hidden wall hit mesh should take no pointer rays (three.js raycasts invisible objects)."
+);
+assert.doesNotMatch(
+  canonicalRenderer,
+  /raycast=\{interactive \? undefined/,
+  "R3F 9 ignores a prop that becomes undefined, so a surface or opening that becomes pickable again needs meshRaycast."
+);
+assert.match(canonicalRenderer, /const meshRaycast = Mesh\.prototype\.raycast;/);
 assert.doesNotMatch(
   canonicalRenderer,
   /testId: "canonical-wall-3d"[\s\S]{0,1800}<boxGeometry/,

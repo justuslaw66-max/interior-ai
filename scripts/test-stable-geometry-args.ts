@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { stableExtrudeOptions } from "@/components/editor/renderers/stableExtrudeOptions";
+import { createLeastRecentlyUsedCache } from "@/lib/least-recently-used-cache";
 
 // React Three Fiber rebuilds a geometry when an `args` entry changes identity, so
 // extrude options must be the same object for the same depth.
@@ -30,17 +31,19 @@ const sourceFiles = (path: string): string[] =>
   statSync(path).isDirectory()
     ? readdirSync(path).flatMap((name) => sourceFiles(join(path, name)))
     : /\.tsx$/.test(path) ? [path] : [];
-const structureRenderers3D = [
+const structureRenderers = [
   "CanonicalFloorPlanStructure.tsx",
   "HousePlanRenderer3D.tsx",
   "house-plan-3d",
   "canonical-floor-plan",
 ].flatMap((entry) => sourceFiles(join(rendererRoot, entry)));
+// Calls that return the same object for the same input.
+const stableBuilders = /(?<!stableExtrudeOptions)\(/;
 const offenders: string[] = [];
-for (const path of structureRenderers3D) {
+for (const path of structureRenderers) {
   const source = readFileSync(path, "utf8").replace(/\s+/g, " ");
   for (const match of source.matchAll(/<(extrude|shape)Geometry args=\{\[([^\]]*)\]\}/g)) {
-    if (/\{\s*depth|(?<!stableExtrudeOptions)\(/.test(match[2])) {
+    if (/\{\s*depth/.test(match[2]) || stableBuilders.test(match[2])) {
       offenders.push(`${relative(root, path)}: ${match[0].slice(0, 90)}`);
     }
   }
@@ -51,15 +54,36 @@ assert.deepEqual(
   "Extrude and shape geometries should get memoized shapes and stableExtrudeOptions, not inline objects."
 );
 
-// Wall bodies build their shapes with the bands, not on every render.
-const canonicalStructure = readFileSync(
-  join(rendererRoot, "CanonicalFloorPlanStructure.tsx"),
+// Wall bodies build their shapes with the bands, and keep them per cut-away set.
+const wallBands = readFileSync(
+  join(rendererRoot, "canonical-floor-plan/useCanonicalWallBands.ts"),
   "utf8"
 ).replace(/\s+/g, " ");
 assert.match(
-  canonicalStructure,
-  /buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)\.map\(\(band\) => \(\{ \.\.\.band, shapes: planarUnionShapes\(band\.polygons\) \}\)\)/,
-  "Canonical wall bodies should memoize each band's shapes with the band."
+  wallBands,
+  /cache\.get\(\[\.\.\.excludedWallIds\]\.sort\(\)\.join\("\|"\), \(\) => buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)\.map\(\(band\) => \(\{ \.\.\.band, shapes: planarUnionShapes\(band\.polygons\), \}\)\) \)/,
+  "Canonical wall bodies should keep each band's shapes with the band, per cut-away set."
 );
+assert.match(
+  wallBands,
+  /const bandsByFloor = new WeakMap</,
+  "Each floor model keeps its own bands, so an edited plan never reuses old bands."
+);
+
+// The cache keeps the most recently used entries.
+const cache = createLeastRecentlyUsedCache<{ key: string }>(2);
+const built: string[] = [];
+const value = (key: string) => cache.get(key, () => {
+  built.push(key);
+  return { key };
+});
+const a = value("a");
+value("b");
+assert.equal(value("a"), a, "A cached key returns the same object.");
+value("c");
+assert.equal(cache.size, 2);
+value("a");
+value("b");
+assert.deepEqual(built, ["a", "b", "c", "b"], "Adding c evicts b, the least recently used.");
 
 console.log("Stable geometry args tests passed.");
