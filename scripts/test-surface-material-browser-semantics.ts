@@ -12,7 +12,6 @@ import {
   getSurfaceMaterialModelName,
   getSurfaceMaterialProductDisplayName,
   getSurfaceMaterialSizeLabel,
-  getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
   type SurfaceFilterState,
