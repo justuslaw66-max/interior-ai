@@ -119,7 +119,7 @@ assert.ok(
 const orbitHook = read("lib/useDesignPageLiveCameraView.ts");
 assert.match(
   orbitHook,
-  /liveCameraView\.publish\(readCameraViewFromControls\(controls\)\); settleTimer\.schedule\(\(\) => \{ if \(!cameraAnimating\.current\) commit\(\); \}\);/,
+  /liveCameraView\.publish\(readCameraViewFromControls\(controls\)\); settleTimer\.schedule\(\(\) => \{ if \(!cameraAnimatingRef\.current\) commit\(\); \}\);/,
   "Each orbit change should publish the live view and only schedule the commit."
 );
 assert.ok(

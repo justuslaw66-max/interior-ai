@@ -69,17 +69,18 @@ type OrbitCameraRefs = {
  * transition commits its own end view, so its frames are skipped.
  */
 export function useSettledOrbitCameraView(refs: OrbitCameraRefs, commit: () => void) {
-  const { orbitControls, cameraAnimating, liveCameraView } = refs;
+  // The `Ref` names let the React Compiler see these as refs, not reactive values.
+  const { orbitControls: orbitControlsRef, cameraAnimating: cameraAnimatingRef, liveCameraView } = refs;
   const [settleTimer] = useState(() =>
     createSettleTimer(windowTimers, CAMERA_VIEW_SETTLE_MS)
   );
   useEffect(() => () => settleTimer.cancel(), [settleTimer]);
   return useCallback(() => {
-    const controls = orbitControls.current;
-    if (cameraAnimating.current || !controls) return;
+    const controls = orbitControlsRef.current;
+    if (cameraAnimatingRef.current || !controls) return;
     liveCameraView.publish(readCameraViewFromControls(controls));
     settleTimer.schedule(() => {
-      if (!cameraAnimating.current) commit();
+      if (!cameraAnimatingRef.current) commit();
     });
-  }, [cameraAnimating, commit, liveCameraView, orbitControls, settleTimer]);
+  }, [cameraAnimatingRef, commit, liveCameraView, orbitControlsRef, settleTimer]);
 }
