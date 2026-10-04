@@ -9,10 +9,7 @@ import type {
   CompiledFloorPlanStructureV2,
 } from "@/lib/floor-plan-compiler-v2";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import {
-  buildCanonicalOpeningSymbolLinesV2,
-  getCanonicalOpeningRenderIdentityV2,
-} from "@/lib/floor-plan-opening-primitives";
+import { getCanonicalOpeningRenderIdentityV2 } from "@/lib/floor-plan-opening-primitives";
 import type {
   CanonicalFloorPlanLineSegment,
   CanonicalFloorPlanFloorRenderModel,
@@ -32,6 +29,7 @@ import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import {
+  canonicalOpening2DSymbolLines,
   planarUnionShapes,
   preferredRoomId,
   segmentTransform,
@@ -225,10 +223,8 @@ function CanonicalOpening2DSymbol({
   onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 }) {
   const identity = getCanonicalOpeningRenderIdentityV2(opening);
-  const symbols = buildCanonicalOpeningSymbolLinesV2(opening);
-  const exactHostPoints = hostSegments.length
-    ? [hostSegments[0].start, ...hostSegments.map((segment) => segment.end)]
-    : [opening.start, opening.end];
+  // Once per opening, not per render, so a selection or a click keeps each Line's geometry.
+  const symbols = useMemo(() => canonicalOpening2DSymbolLines(opening, hostSegments), [hostSegments, opening]);
   const color = openingColor(opening, selected);
   const { previewRef, beginMove, beginResize, move, finish, cancel } = useCanonicalOpeningDrag({
     opening, revisionId,
@@ -261,13 +257,12 @@ function CanonicalOpening2DSymbol({
       <OpeningDragPreview meshRef={previewRef} />
       {symbols.map((symbol) => {
         const style = symbolLineStyle(symbol.role);
-        const sourcePoints = symbol.role === "host_span" ? exactHostPoints : symbol.points;
         return (
           <Line
             key={`${opening.id}:${symbol.role}:${symbol.points
               .map((point) => `${point.xMm},${point.zMm}`)
               .join(";")}`}
-            points={sourcePoints.map((point) => [point.xMm / 1000, 0.014, point.zMm / 1000])}
+            points={symbol.linePoints}
             color={color}
             lineWidth={selected && symbol.role === "host_span" ? 5 : style.width}
             dashed={style.dashed || opening.operation === "open"}

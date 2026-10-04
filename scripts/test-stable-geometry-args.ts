@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
+import { memoizeByObject } from "@/components/editor/renderers/memoizeByObject";
 import { stableExtrudeOptions } from "@/components/editor/renderers/stableExtrudeOptions";
 import { createLeastRecentlyUsedCache } from "@/lib/least-recently-used-cache";
 
@@ -34,11 +35,12 @@ const sourceFiles = (path: string): string[] =>
 const structureRenderers = [
   "CanonicalFloorPlanStructure.tsx",
   "HousePlanRenderer3D.tsx",
+  "RoomRenderer2D.tsx",
   "house-plan-3d",
   "canonical-floor-plan",
 ].flatMap((entry) => sourceFiles(join(rendererRoot, entry)));
-// Calls that return the same object for the same input.
-const stableBuilders = /(?<!stableExtrudeOptions)\(/;
+// Calls that return the same object for the same input (see below for the 2D room shapes).
+const stableBuilders = /(?<!stableExtrudeOptions|buildRoomShapeGeometry|buildInnerFloorShapeGeometry)\(/;
 const offenders: string[] = [];
 for (const path of structureRenderers) {
   const source = readFileSync(path, "utf8").replace(/\s+/g, " ");
@@ -53,6 +55,36 @@ assert.deepEqual(
   [],
   "Extrude and shape geometries should get memoized shapes and stableExtrudeOptions, not inline objects."
 );
+
+// The 2D plan's room shapes are kept per room object, so a hover or a selection
+// keeps every room's ShapeGeometry.
+const roomRenderer2D = readFileSync(join(rendererRoot, "RoomRenderer2D.tsx"), "utf8").replace(/\s+/g, " ");
+for (const builder of ["buildRoomShapeGeometry", "buildInnerFloorShapeGeometry"]) {
+  assert.match(
+    roomRenderer2D,
+    new RegExp(`const ${builder} = memoizeByObject\\(\\(room: HouseRoom2D\\) => buildRoomPlanShape\\(`),
+    `${builder} should return one shape per room object.`
+  );
+}
+const builds: string[] = [];
+const shapeOf = memoizeByObject((room: { id: string }) => {
+  builds.push(room.id);
+  return { shapeFor: room.id };
+});
+const kitchen = { id: "kitchen" };
+assert.equal(shapeOf(kitchen), shapeOf(kitchen), "The same room object gets the same shape.");
+assert.notEqual(shapeOf({ id: "kitchen" }), shapeOf(kitchen), "An edited room (a new object) gets a new shape.");
+assert.deepEqual(builds, ["kitchen", "kitchen"]);
+
+// drei's Line rebuilds its geometry when `points` changes identity, so the canonical
+// 2D opening symbols build their line points once per opening.
+const canonicalStructure = readFileSync(join(rendererRoot, "CanonicalFloorPlanStructure.tsx"), "utf8").replace(/\s+/g, " ");
+assert.match(
+  canonicalStructure,
+  /const symbols = useMemo\(\(\) => canonicalOpening2DSymbolLines\(opening, hostSegments\), \[hostSegments, opening\]\);[\s\S]*?points=\{symbol\.linePoints\}/,
+  "2D opening symbols should keep their Line points across re-renders."
+);
+assert.doesNotMatch(canonicalStructure, /points=\{sourcePoints\.map\(/);
 
 // Wall bodies build their shapes with the bands, and keep them per cut-away set.
 const wallBands = readFileSync(
