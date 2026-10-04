@@ -1,0 +1,291 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/ghiaia-beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - GHIAIA BEIGE - minimali.zip, 28820054 bytes, sha256 50e2ad60b140b56b3721335e0f29d9cae6fdc03a05015e27056fc752395d166d).",
+ "note": "The download holds each face twice, the same picture exported two ways: a lighter JPG with an sRGB profile and a darker JPG without a profile (lighter is about 0.93 x darker + 14.5 in level). The lighter sRGB copy is used for every face (J, 2026-10-04), turned upright where it is landscape. Face numbers are ABK's numbers on the lighter copy's name.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are 1.3 to 3.9 px per mm (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/anima/ holds the tracking files and the ZIPs, and the same ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "If the renderer draws more pixels per metre, re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0007919",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/ghiaia-beige/pf60007919-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0007919_swatch.webp",
+   "faces": [
+    {
+     "file": "0007919_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 77770,
+     "source_file": "60X120-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "d70b6e1ae2004f423b821e10dd3decf75e7ba2962dde0d51900b174cb9ef2e56",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA GHIAIA BEIGE 60X120_01",
+      "id": "94f312f4-5401-4349-b98e-9e8648fc8e89"
+     }
+    },
+    {
+     "file": "0007919_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 79092,
+     "source_file": "60X120-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8ac7c0f7f37ebe62f17ee8da8fed187cb0dde71833a3e8631f4b8ce2fa511baa",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 8",
+      "name": "ANIMA GHIAIA BEIGE 60X120_02",
+      "id": "d28b0904-b0f2-423c-b15b-dad72cf8cb9f"
+     }
+    },
+    {
+     "file": "0007919_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 82638,
+     "source_file": "60X120-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ed71929606d7f1b8a24b4de98eaff4da39a03f8b52945d589fd4c648865eacf5",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 7",
+      "name": "ANIMA GHIAIA BEIGE 60X120_03",
+      "id": "9ca8f060-19ff-48c8-8c68-dd6c6accc24e"
+     }
+    },
+    {
+     "file": "0007919_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 80948,
+     "source_file": "60X120-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3bd69fc4ec1abeb49045963f8b80fb5b5c242b748ae065a3e75147d0a59b66c7",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 6",
+      "name": "ANIMA GHIAIA BEIGE 60X120_04",
+      "id": "3cba3ea4-472e-4346-8302-55b718ab01f4"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0007921",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/ghiaia-beige/pf60007921-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0007921_swatch.webp",
+   "faces": [
+    {
+     "file": "0007921_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 39062,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "2792a09384e6388258300a6b32a6e6d6015c106b4675aed8d0ef507cca64f739",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA GHIAIA BEIGE 60X60_01",
+      "id": "15125d1b-4dc3-44db-b1d9-923ac183ebfd"
+     }
+    },
+    {
+     "file": "0007921_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 39456,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1772,
+      1771
+     ],
+     "source_sha256": "c59c788f3ef4644ca84b6ebd94793ecc7cee9eb389f4d1d5c8b22c74d1c6566c",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 15",
+      "name": "ANIMA GHIAIA BEIGE 60X60_02",
+      "id": "c1b777f4-18db-46d1-86b8-edec30ae45ee"
+     }
+    },
+    {
+     "file": "0007921_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 39732,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1771,
+      1772
+     ],
+     "source_sha256": "335d1d1a0e5155122a7d81410014e3d32fa1011fe5a31d3da7f7eab45a78d73a",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "ANIMA GHIAIA BEIGE 60X60_03",
+      "id": "cf3d57d4-f8fa-4698-bf60-65b758495dba"
+     }
+    },
+    {
+     "file": "0007921_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 38826,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1771,
+      1771
+     ],
+     "source_sha256": "45ab281d1663c78bddba90d1b0fe7cf1125474481094372feb77abd310c9c4db",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 13",
+      "name": "ANIMA GHIAIA BEIGE 60X60_04",
+      "id": "b3151eab-d240-4ddb-870a-c53684895fce"
+     }
+    },
+    {
+     "file": "0007921_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 40992,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "cce6911f756237f076375e0eaa3697d1da7b3d011482f25af30c2c54ad8d0c3b",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 10",
+      "name": "ANIMA GHIAIA BEIGE 60X60_05",
+      "id": "025198f2-12ec-4bdc-8a2f-fb142352fc47"
+     }
+    },
+    {
+     "file": "0007921_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 43076,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      1771
+     ],
+     "source_sha256": "8d247c1be8cfcf53cd60ff3ca52810db562412634ab91e4ee0917f0af15b02cc",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 12",
+      "name": "ANIMA GHIAIA BEIGE 60X60_06",
+      "id": "9a8cf163-3f6c-4c97-b742-a67f33ed9f3f"
+     }
+    },
+    {
+     "file": "0007921_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 40844,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1771,
+      1772
+     ],
+     "source_sha256": "7015953dadfac306a56aee452a8cdbd64580cfc81095c33b4ade1efacfd1bd03",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 14",
+      "name": "ANIMA GHIAIA BEIGE 60X60_07",
+      "id": "bf898ec6-7e9c-4406-b32d-c5f5ffb5efc7"
+     }
+    },
+    {
+     "file": "0007921_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 40598,
+     "source_file": "60X60-Nat P.tech/ANIMA - GHIAIA BEIGE - 60X60 - Nat P.tech - view_8 (2).jpg",
+     "source_px": [
+      1771,
+      1771
+     ],
+     "source_sha256": "9adb7e1d8a3bbcc36a907e36c99b6ccf5cef6a6e56f8f35090e1654f4d655336",
+     "source_px_per_mm": 2.95,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 11",
+      "name": "ANIMA GHIAIA BEIGE 60X60_08",
+      "id": "99494a76-6852-4961-b426-42a2d8404ebc"
+     }
+    }
+   ]
+  }
+ ]
+}
