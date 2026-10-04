@@ -4339,7 +4339,7 @@
     "lib/useDesignPageNamedCameraViewsController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 119
+        "maximum": 118
       }
     },
     "lib/useDesignPageNewPlanController.ts": {

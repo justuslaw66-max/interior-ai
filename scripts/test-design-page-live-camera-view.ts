@@ -141,4 +141,32 @@ assert.ok(
   "Committed views should sync cameraViewRef and the live store."
 );
 
+// Save view and Export read the live view: the committed cameraView state trails
+// the camera by the glide plus CAMERA_VIEW_SETTLE_MS.
+const namedViews = read("lib/useDesignPageNamedCameraViewsController.ts");
+assert.match(
+  namedViews,
+  /const liveView = cameraViewRef\.current; const savedView = buildDesignPageSavedCameraView\(\{[^}]*cameraPosition: liveView\.pos, cameraTarget: liveView\.target,/,
+  "Save view should store the live camera, not the committed one."
+);
+assert.ok(
+  read("lib/useDesignPageEditorInteractionRegistration.ts").includes(
+    "refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef, cameraView: cameraBridge.refs.cameraView },"
+  ),
+  "The named-views controller should get the live camera-view ref."
+);
+const exportHook = read("lib/useDesignPageExport.ts");
+assert.equal(
+  (exportHook.match(/const originalTarget = new THREE\.Vector3\(\.\.\.cameraViewRef\.current\.target\);/g) ?? []).length,
+  2,
+  "Both exports should restore the live target, not the committed one."
+);
+assert.doesNotMatch(exportHook, /cameraView\.target/, "Export should not read the committed camera view.");
+assert.ok(
+  read("lib/useDesignPagePresentationBackupRegistrationFacade.ts").includes(
+    "cameraView: planViewport.refs.camera.cameraView,"
+  ),
+  "Export should get the live camera-view ref."
+);
+
 console.log("Live camera view tests passed.");

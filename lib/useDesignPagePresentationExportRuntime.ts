@@ -22,6 +22,7 @@ export type UseDesignPagePresentationExportRuntimeInput = {
     controls: ExportRefs["controlsRef"];
     renderer: ExportRefs["rendererRef"];
     scene: ExportRefs["sceneRef"];
+    cameraView: ExportRefs["cameraViewRef"];
     designSnapshot: ExportRefs["designSnapshotRef"];
   };
   actions: {
@@ -79,6 +80,7 @@ export function useDesignPagePresentationExportRuntime({
       controlsRef: refs.controls,
       rendererRef: refs.renderer,
       sceneRef: refs.scene,
+      cameraViewRef: refs.cameraView,
       designSnapshotRef: refs.designSnapshot,
     },
   });

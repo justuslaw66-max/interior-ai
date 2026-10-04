@@ -9,6 +9,7 @@ import {
 import {
   useDesignPageNamedCameraViewsController,
   type DesignPageNamedCameraViewsControllerActions,
+  type DesignPageNamedCameraViewsControllerRefs,
 } from "@/lib/useDesignPageNamedCameraViewsController";
 
 const MAXIMUM_SAVED_CAMERA_VIEWS = 6;
@@ -18,7 +19,7 @@ export type UseDesignPagePresentationStateRegistrationInput = {
   state: {
     cameraView: CameraView;
   };
-  refs: DesignPageLayoutVersionsRefs;
+  refs: DesignPageLayoutVersionsRefs & Pick<DesignPageNamedCameraViewsControllerRefs, "cameraView">;
   actions: {
     document: Pick<
       DesignPageNamedCameraViewsControllerActions,
