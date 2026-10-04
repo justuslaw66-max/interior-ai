@@ -617,7 +617,7 @@
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
-      "lines": 1293,
+      "lines": 1284,
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
@@ -3219,7 +3219,7 @@
     "lib/design-page-viewport-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 193
+        "maximum": 192
       }
     },
     "lib/design-page-viewport-workspace-registration.ts": {
@@ -4107,13 +4107,13 @@
     "lib/useDesignPageCameraBridgeController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 126
+        "maximum": 125
       }
     },
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1151
+        "maximum": 1141
       },
       "complexFunctions": {
         "count": 1,
@@ -4123,7 +4123,7 @@
     "lib/useDesignPageCameraWorkspaceFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 63
+        "maximum": 61
       }
     },
     "lib/useDesignPageCanonicalTopologyController.ts": {
@@ -4135,7 +4135,7 @@
     "lib/useDesignPageCanvasInteractionController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 204
+        "maximum": 202
       }
     },
     "lib/useDesignPageCatalogPlacement.ts": {

@@ -20,6 +20,10 @@ import {
   SCENE_ITEM_DRAG_COMMAND_ID,
 } from "@/lib/design-page-item-commands";
 import type { HistoryManager } from "@/lib/historyManager";
+import {
+  useSettledOrbitCameraView,
+  type LiveCameraViewStore,
+} from "@/lib/useDesignPageLiveCameraView";
 
 type CanvasInteractionHistory = Pick<
   HistoryManager,
@@ -35,6 +39,7 @@ export type UseDesignPageCanvasInteractionControllerInput = {
   refs: {
     orbitControls: MutableRefObject<OrbitControlsImpl | null>;
     cameraAnimating: MutableRefObject<boolean>;
+    liveCameraView: LiveCameraViewStore;
   };
   actions: {
     history: CanvasInteractionHistory;
@@ -45,6 +50,7 @@ export type UseDesignPageCanvasInteractionControllerInput = {
      * transaction, and the slider's own commit then warned "No active transaction to commit".
      */
     flushCoalescedHistoryTransaction: () => void;
+    /** Commits `cameraView` state; orbit frames call it only once settled. */
     updateCameraViewFromScene: () => void;
   };
 };
@@ -54,8 +60,7 @@ export function useDesignPageCanvasInteractionController({
   refs,
   actions,
 }: UseDesignPageCanvasInteractionControllerInput) {
-  const { orbitControls: orbitControlsRef, cameraAnimating: cameraAnimatingRef } =
-    refs;
+  const { orbitControls: orbitControlsRef } = refs;
   const { flushCoalescedHistoryTransaction, history, updateCameraViewFromScene } =
     actions;
   const [canvasObjectDragging, setCanvasObjectDragging] = useState(false);
@@ -202,11 +207,10 @@ export function useDesignPageCanvasInteractionController({
     }, 240);
   }, [state.isDesigner, state.showGrid, state.snapEnabled]);
 
-  const handleOrbitChange = useCallback(() => {
-    if (!cameraAnimatingRef.current) {
-      updateCameraViewFromScene();
-    }
-  }, [cameraAnimatingRef, updateCameraViewFromScene]);
+  const handleOrbitChange = useSettledOrbitCameraView(
+    refs,
+    updateCameraViewFromScene
+  );
 
   useEffect(
     () => () => {

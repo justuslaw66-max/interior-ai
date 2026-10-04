@@ -125,6 +125,7 @@ const typescriptGuardFiles = [
   "test-surface-inspector.tsx",
   "test-item-panel-in-plan.tsx",
   "test-template-review.tsx",
+  "test-design-page-live-camera-view.ts",
   "test-stable-geometry-args.ts",
   "test-planar-union-loops.ts",
 ];
