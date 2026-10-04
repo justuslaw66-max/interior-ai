@@ -224,38 +224,50 @@ function chooseNextBoundaryEdge(
   })[0];
 }
 
+type BoundaryLoopEntry = { key: string; segment: PlanarEdge };
+
+/**
+ * Walks boundary segments into closed loops. Segments are indexed by their start
+ * point and the loop starts are sorted once: re-scanning and re-keying every
+ * remaining segment at each step took about 0.5 s for a 13-room plan.
+ */
 function buildBoundaryLoops(segments: PlanarEdge[]) {
-  const remaining = new Map(
-    segments.map((segment) => [
-      `${pointKey(segment.start)}>${pointKey(segment.end)}`,
-      segment,
-    ])
-  );
+  const remaining = new Map<string, BoundaryLoopEntry>();
+  const byStart = new Map<string, BoundaryLoopEntry[]>();
+  for (const segment of segments) {
+    const startKey = pointKey(segment.start);
+    const entry = { key: `${startKey}>${pointKey(segment.end)}`, segment };
+    remaining.set(entry.key, entry);
+    byStart.set(startKey, [...(byStart.get(startKey) ?? []), entry]);
+  }
+  const loopStarts = [...remaining.keys()].sort((left, right) => left.localeCompare(right));
   const loops: FloorPlanPointMmV2[][] = [];
 
-  while (remaining.size) {
-    const firstEntry = [...remaining.entries()].sort(([left], [right]) =>
-      left.localeCompare(right)
-    )[0];
-    const [firstKey, first] = firstEntry;
+  for (const firstKey of loopStarts) {
+    const firstEntry = remaining.get(firstKey);
+    if (!firstEntry) continue;
     remaining.delete(firstKey);
+    const first = firstEntry.segment;
+    const firstStartKey = pointKey(first.start);
     const points = [first.start, first.end];
     let previous = first.start;
     let current = first.end;
+    let currentKey = pointKey(current);
     const maximumSteps = segments.length + 1;
 
-    for (let step = 0; step < maximumSteps && !samePoint(current, first.start); step += 1) {
-      const candidates = [...remaining.values()].filter((edge) =>
-        samePoint(edge.start, current)
-      );
+    for (let step = 0; step < maximumSteps && currentKey !== firstStartKey; step += 1) {
+      const candidates = (byStart.get(currentKey) ?? [])
+        .filter((entry) => remaining.has(entry.key))
+        .map((entry) => entry.segment);
       if (!candidates.length) break;
       const next = chooseNextBoundaryEdge(previous, current, candidates);
       remaining.delete(`${pointKey(next.start)}>${pointKey(next.end)}`);
       points.push(next.end);
       previous = current;
       current = next.end;
+      currentKey = pointKey(current);
     }
-    if (samePoint(current, first.start)) {
+    if (currentKey === firstStartKey) {
       const loop = simplifyRing(points.slice(0, -1));
       if (loop.length >= 3 && Math.abs(signedPlanarRingAreaSquareMm(loop)) > 0.001) {
         loops.push(loop);

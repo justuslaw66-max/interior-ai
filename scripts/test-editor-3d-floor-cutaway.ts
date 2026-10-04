@@ -274,7 +274,7 @@ assert.match(
 
 assert.match(
   cameraNavigationSource,
-  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?: singleRoomDefaultCameraView;[\s\S]*?transitionToCameraView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 420\)/,
+  /pending3DViewRef\.current = open3DView \?\? \(hasWholeHousePlan[\s\S]*?: singleRoomDefaultCameraView\);[\s\S]*?transitionToCameraView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 420\)/,
   "3D entry and Fit Room should use the floor-relative single-room camera view."
 );
 

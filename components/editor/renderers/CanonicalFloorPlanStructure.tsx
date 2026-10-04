@@ -64,6 +64,7 @@ import { openingColor, symbolLineStyle } from "./canonical-floor-plan/openingSty
 import { OpeningDragPreview } from "./canonical-floor-plan/OpeningDragPreview";
 import { openingGestureBindings } from "./canonical-floor-plan/openingGestureBindings";
 import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
+import { stableExtrudeOptions } from "./stableExtrudeOptions";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
@@ -182,7 +183,7 @@ function CanonicalStructure3D({
         canonicalGeometryHash: geometryHash,
       }}
     >
-      <extrudeGeometry args={[shape, { depth: heightMeters, bevelEnabled: false }]} />
+      <extrudeGeometry args={[shape, stableExtrudeOptions(heightMeters)]} />
       <meshStandardMaterial
         color={structureColor(structure.kind)}
         roughness={0.86}
@@ -386,9 +387,7 @@ function CanonicalWallSolidHitMesh({
         onSelectWall?.(wallId, roomId, event);
       }}
     >
-      <extrudeGeometry
-        args={[shape, { depth: height, bevelEnabled: false, steps: 1 }]}
-      />
+      <extrudeGeometry args={[shape, stableExtrudeOptions(height, 1)]} />
       <meshBasicMaterial
         transparent
         opacity={0}
@@ -429,9 +428,7 @@ function CanonicalFloorSlab3D({
         canonicalGeometryHash: geometryHash,
       }}
     >
-      <extrudeGeometry
-        args={[shapes, { depth: thicknessMeters, bevelEnabled: false, steps: 1 }]}
-      />
+      <extrudeGeometry args={[shapes, stableExtrudeOptions(thicknessMeters, 1)]} />
       <meshBasicMaterial
         transparent
         opacity={0}
@@ -461,14 +458,14 @@ function CanonicalWallBodies3D({
         )
         .map((wall) => wall.id)
     );
-    return buildCanonicalWallUnionBands(floor, { excludedWallIds });
+    // Shapes are built here, not per render, so a re-render keeps each band's geometry.
+    return buildCanonicalWallUnionBands(floor, { excludedWallIds }).map((band) => ({ ...band, shapes: planarUnionShapes(band.polygons) }));
   }, [cutawayWallKeys, floor]);
   const maximumTopMm = Math.max(
     Number.NEGATIVE_INFINITY,
     ...bands.map((band) => band.topMm)
   );
-  return bands.map((band, index) => {
-    const shapes = planarUnionShapes(band.polygons);
+  return bands.map(({ shapes, ...band }, index) => {
     const heightMeters = Math.max(0.001, (band.topMm - band.bottomMm) / 1000);
     const topMeters = floor.elevationMm / 1000 + band.topMm / 1000;
     return (
@@ -489,9 +486,7 @@ function CanonicalWallBodies3D({
             canonicalGeometryHash: geometryHash,
           }}
         >
-          <extrudeGeometry
-            args={[shapes, { depth: heightMeters, bevelEnabled: false, steps: 1 }]}
-          />
+          <extrudeGeometry args={[shapes, stableExtrudeOptions(heightMeters, 1)]} />
           <meshStandardMaterial
             color={CANONICAL_WALL_BODY_COLOR}
             emissive={CANONICAL_WALL_BODY_COLOR}

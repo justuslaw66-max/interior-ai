@@ -94,8 +94,8 @@ export type DesignPageNamedCameraViewsControllerActions = {
   setDesignSnapshot: SetDesignSnapshot;
   setLegacySavedViews: (savedViews: NamedCameraView[]) => void;
   showToast: (message: string) => void;
-  handleEditorViewModeChange: (viewMode: "3d") => void;
-  transitionToCameraView: (cameraView: CameraView, durationMs: number) => void;
+  /** Switches to 3D on `open3DView`, or transitions to it when already in 3D. */
+  handleEditorViewModeChange: (viewMode: "3d", open3DView: CameraView, durationMs: number) => void;
 };
 
 export type UseDesignPageNamedCameraViewsControllerInput = {
@@ -114,7 +114,6 @@ export function useDesignPageNamedCameraViewsController({
     setLegacySavedViews,
     showToast,
     handleEditorViewModeChange,
-    transitionToCameraView,
   },
 }: UseDesignPageNamedCameraViewsControllerInput) {
   const [cameraViewNameInput, setCameraViewNameInput] = useState("");
@@ -202,8 +201,8 @@ export function useDesignPageNamedCameraViewsController({
 
   const openSavedCameraView = useCallback(
     (view: SavedView) => {
-      handleEditorViewModeChange("3d");
-      transitionToCameraView(
+      handleEditorViewModeChange(
+        "3d",
         {
           pos: view.cameraPosition,
           target: view.cameraTarget,
@@ -212,12 +211,7 @@ export function useDesignPageNamedCameraViewsController({
         openTransitionDurationMs
       );
     },
-    [
-      cameraView.fov,
-      handleEditorViewModeChange,
-      openTransitionDurationMs,
-      transitionToCameraView,
-    ]
+    [cameraView.fov, handleEditorViewModeChange, openTransitionDurationMs]
   );
 
   return {
