@@ -28,7 +28,6 @@ export type UseDesignPagePresentationStateRegistrationInput = {
       DesignPageNamedCameraViewsControllerActions,
       | "setLegacySavedViews"
       | "handleEditorViewModeChange"
-      | "transitionToCameraView"
     >;
     history: Pick<DesignPageLayoutVersionsActions, "runHistoryTransaction">;
     selection: Pick<DesignPageLayoutVersionsActions, "updateSelection">;
@@ -61,7 +60,6 @@ export function useDesignPagePresentationStateRegistration({
       setLegacySavedViews: actions.camera.setLegacySavedViews,
       showToast: actions.feedback.showToast,
       handleEditorViewModeChange: actions.camera.handleEditorViewModeChange,
-      transitionToCameraView: actions.camera.transitionToCameraView,
     },
   });
 

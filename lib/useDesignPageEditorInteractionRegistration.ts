@@ -130,8 +130,6 @@ export function useDesignPageEditorInteractionRegistration({
         setLegacySavedViews: cameraBridge.actions.setSavedViews,
         handleEditorViewModeChange:
           camera.actions.navigation.handleEditorViewModeChange,
-        transitionToCameraView:
-          cameraBridge.actions.navigation.transitionToCameraView,
       },
       history: { runHistoryTransaction },
       selection: { updateSelection: itemSelection.actions.updateSelection },

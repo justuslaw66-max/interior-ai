@@ -104,7 +104,7 @@ export type DesignPageCameraNavigationActions = {
   }) => boolean;
   applyQueued2DPlanView: (attempt?: number) => void;
   prepareForPlanTemplate: () => void;
-  handleEditorViewModeChange: (next: EditorViewMode) => void;
+  handleEditorViewModeChange: (next: EditorViewMode, open3DView?: CameraView, durationMs?: number) => void;
   handleFitPlanView: () => void;
   handleFitSelectedPlanRoom: (roomId: string) => void;
   focusWholeHomeCameraPoint: (x: number, z: number, durationMs?: number) => void;
@@ -357,19 +357,14 @@ export function useDesignPageCameraNavigation({
       const start = performance.now();
 
       const tick = (timestamp: number) => {
-        if (cameraTransitionTokenRef.current !== transitionToken) {
-          isCameraAnimatingRef.current = false;
-          return;
-        }
+        if (cameraTransitionTokenRef.current !== transitionToken) return; // the newer transition owns isCameraAnimatingRef
 
         const t = Math.min(1, (timestamp - start) / durationMs);
         const eased = 1 - Math.pow(1 - t, 3);
 
         camera.position.lerpVectors(fromPos, toPos, eased);
         (controls.target as THREE.Vector3).lerpVectors(fromTarget, toTarget, eased);
-        if (isPerspective) {
-          camera.fov = fromFov + (toFov - fromFov) * eased;
-        }
+        if (isPerspective) camera.fov = fromFov + (toFov - fromFov) * eased;
         updateProjection(camera);
         controls.update();
 
@@ -557,14 +552,19 @@ export function useDesignPageCameraNavigation({
   ]);
 
   const handleEditorViewModeChange = useCallback(
-    (next: EditorViewMode) => {
+    (next: EditorViewMode, open3DView?: CameraView, durationMs = 420) => {
       if (next === "3d") {
         resetFloorPlanInteraction({ resetCalibrationDistance: false });
-        pending3DViewRef.current = hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView;
+        // Already in 3D: a queued view would only replace the camera on a later view-mode effect run.
+        if (viewMode === "3d") {
+          if (open3DView) transitionToCameraView(open3DView, durationMs);
+          return;
+        }
+        pending3DViewRef.current = open3DView ?? (hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView);
       }
       setViewMode(next);
     },
-    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView]
+    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView, transitionToCameraView, viewMode]
   );
 
   const prepareForPlanTemplate = useCallback(() => {

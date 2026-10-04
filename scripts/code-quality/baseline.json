@@ -4233,7 +4233,7 @@
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 144
+        "maximum": 142
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
@@ -4339,7 +4339,7 @@
     "lib/useDesignPageNamedCameraViewsController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 125
+        "maximum": 119
       }
     },
     "lib/useDesignPageNewPlanController.ts": {
