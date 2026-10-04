@@ -125,6 +125,7 @@ const typescriptGuardFiles = [
   "test-surface-inspector.tsx",
   "test-item-panel-in-plan.tsx",
   "test-template-review.tsx",
+  "test-stable-geometry-args.ts",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];

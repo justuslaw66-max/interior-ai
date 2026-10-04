@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1236,
+      "lines": 1231,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -253,7 +253,7 @@
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
-      "lines": 346,
+      "lines": 339,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
@@ -2151,7 +2151,7 @@
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 180
+        "maximum": 177
       }
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
