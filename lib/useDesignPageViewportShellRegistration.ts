@@ -69,7 +69,7 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanRoomId,
         selectedPlanRoomIds,
       },
-      camera: { cameraView, savedViews },
+      camera: { cameraView, savedViews, liveCameraView },
     },
     actions: {
       plan: {
@@ -195,7 +195,7 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanRoomId,
         selectedPlanRoomIds,
       },
-      camera: { cameraView, savedViews },
+      camera: { cameraView, savedViews, liveCameraView },
       presentation: { showPresentModal, presentModeRoomId },
       surface: {
         activeSurfaceTarget,
