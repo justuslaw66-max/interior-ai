@@ -601,7 +601,7 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 572,
+      "lines": 570,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {

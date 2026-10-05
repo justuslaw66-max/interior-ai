@@ -172,10 +172,10 @@ export function useDesignPageHousePlanState({
     [activeFloorLevel, designSnapshot.rooms]
   );
 
-  const housePlan2D = useMemo(
-    () => buildHousePlan2D(activeFloorRooms, roomWidth, roomDepth),
-    [activeFloorRooms, roomDepth, roomWidth]
-  );
+  // The placed rooms do not depend on the active room's size, so selecting a room keeps every room object.
+  const placedPlan = useMemo(() => buildHousePlan2D(activeFloorRooms, 0, 0), [activeFloorRooms]);
+  const housePlan2D = useMemo(() => ({ rooms: placedPlan.rooms, width: Math.max(roomWidth, placedPlan.width),
+    depth: Math.max(roomDepth, placedPlan.depth) }), [placedPlan, roomDepth, roomWidth]);
 
   const activeRoomPlanOffset = useMemo(
     () => getActiveRoomPlanOffset(housePlan2D.rooms, designSnapshot.activeRoomId),
