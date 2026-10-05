@@ -113,6 +113,10 @@ assert.match(canonicalStructure, /const wallEditing = useStableWallGestureContro
 assert.match(canonicalStructure, /useStableCanonicalPlan2DHandlers\(latestHandlers\);/);
 assert.match(roomRenderer2D, /const HouseRoomFloorFill2D = memo\(function HouseRoomFloorFill2D\(/);
 assert.match(planQualityHints, /export const PlanQualityHintOverlay = memo\(function PlanQualityHintOverlay\(/);
+// The room fills' handlers come through the structure layer as stable stand-ins.
+const structureLayer = readFileSync(join(root, "components/editor/design-page/DesignSceneStructureLayer.tsx"), "utf8");
+assert.match(structureLayer, /const selectSurfaceTarget = useLatestCallback\(actions\.rooms\.selectSurfaceTarget\);/);
+assert.equal(structureLayer.match(/onSelectSurfaceTarget=\{selectSurfaceTarget\}/g)?.length, 2, "Both plan renderers get the stable handler.");
 const latestCallback = readFileSync(join(rendererRoot, "useLatestCallback.ts"), "utf8");
 assert.match(latestCallback, /useInsertionEffect\(\(\) => \{\s*latest\.current = callback;\s*\}\);/);
 assert.match(latestCallback, /useCallback\(\(\.\.\.args: Args\) => latest\.current\?\.\(\.\.\.args\) as Result, \[\]\);\s*return callback \? stable : undefined;/);

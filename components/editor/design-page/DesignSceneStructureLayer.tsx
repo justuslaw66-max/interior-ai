@@ -184,12 +184,11 @@ export function DesignSceneStructureLayer({
     [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;
   const planOverlays = useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan));
-  // Stable, so the memoized room fills skip re-rendering when only the page's handler changed.
+  // Stable, so the memoized room fills skip re-rendering when only the page's handlers changed.
   const selectRoom = useLatestCallback(actions.rooms.select);
+  const selectSurfaceTarget = useLatestCallback(actions.rooms.selectSurfaceTarget);
   const canonicalActiveFloorId =
-    canonicalPlan?.floors.find(
-      (floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel
-    )?.id ?? null;
+    canonicalPlan?.floors.find((floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel)?.id ?? null;
   const canonicalStructureExpected = Boolean(state.plan.canonicalDocument);
   const canonicalIntegrityWarning = canonicalResolution.error ? (
     <Html position={[0, 0.18, 0]} center transform={false} zIndexRange={[30, 0]}>
@@ -268,7 +267,7 @@ export function DesignSceneStructureLayer({
           activeRoomId={plan.activeRoomId}
           selectedRoomIds={plan.selectedRoomIds}
           onSelectRoom={selectRoom}
-          onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
+          onSelectSurfaceTarget={selectSurfaceTarget}
           onClearRoomSelection={
             plan.calibration.enabled ? undefined : actions.rooms.clearSelection
           }
@@ -382,7 +381,7 @@ export function DesignSceneStructureLayer({
         onSelectRoom={selectRoom}
         selectedOpeningId={state.wholeHome.selectedOpeningId}
         selectedSurfaceTarget={state.wholeHome.selectedSurfaceTarget}
-        onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
+        onSelectSurfaceTarget={selectSurfaceTarget}
         onSelectOpening={actions.overlays.select}
         onMoveOpening={actions.overlays.moveOpening}
         onResizeOpening={actions.overlays.resizeOpening}
