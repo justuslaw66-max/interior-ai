@@ -2,6 +2,7 @@ import type {
   FloorPlanDocumentV2,
 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
+import { keepUnchangedRooms } from "@/lib/room-snapshot-sharing";
 import type {
   CabinetBOMItem,
   CabinetCutListItem,
@@ -530,8 +531,8 @@ export function updateRoom(snapshot: DesignSnapshot, updatedRoom: RoomSnapshot):
 }
 
 /**
- * Switch to a different room
- * Clears selection and resets UI state (handled by caller)
+ * Switch to a different room. Clears selection and resets UI state (handled by
+ * caller). Unchanged rooms keep their objects, so what is memoized on them stays.
  */
 export function switchRoom(snapshot: DesignSnapshot, roomId: string): DesignSnapshot {
   const migrated = migrateToV3(snapshot);
@@ -539,10 +540,7 @@ export function switchRoom(snapshot: DesignSnapshot, roomId: string): DesignSnap
     console.warn(`Room ${roomId} not found`);
     return migrated;
   }
-  return {
-    ...migrated,
-    activeRoomId: roomId,
-  };
+  return { ...migrated, rooms: keepUnchangedRooms(snapshot.rooms, migrated.rooms), activeRoomId: roomId };
 }
 
 /**
