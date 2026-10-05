@@ -227,8 +227,6 @@ assertSourceOrder(
 assertSourceOrder(
   shellRuntimeSource,
   [
-    "showPresentModal, setShowPresentModal",
-    "presentModeRoomId, setPresentModeRoomId",
     "useDesignPageSurfaceStateController()",
     "editorMode, setEditorMode",
     "guidedPlanStartMode, setGuidedPlanStartMode",
@@ -238,7 +236,7 @@ assertSourceOrder(
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
   ],
-  "Editor shell runtime should preserve presentation-through-camera-diagnostics hook order"
+  "Editor shell runtime should preserve surface-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,
@@ -246,7 +244,7 @@ assertSourceOrder(
     'localStorage.getItem("placement_add_mode")',
     'localStorage.setItem("placement_add_mode"',
     "preloadCoreAssets()",
-    'if (state.editorMode === "present")',
+    'if (state.editorMode === "buy")',
     "const signInWithReturn",
   ],
   "Editor client lifecycle should preserve hydration-through-sign-in hook order"

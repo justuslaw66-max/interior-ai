@@ -16,7 +16,7 @@ import {
   type SelectedItemPanelProps,
 } from "@/components/editor/design-page/SelectedItemPanel";
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import { stepPanelFooters } from "@/components/editor/design-page/StepPanelFooters";
 
 export type DesignPagePanelRegionState = {
@@ -41,7 +41,7 @@ export type DesignPagePanelRegionProps = {
   configuration: DesignPagePanelRegionConfiguration;
   actions: DesignPagePanelRegionActions;
   /** The step panel's sections: the plan display (Pro) or notes (Free) in Plan, layout versions (Pro) in Furnish. */
-  planTools?: PresentExportDialogProps | null;
+  planTools?: PresentationTools | null;
 };
 
 /**

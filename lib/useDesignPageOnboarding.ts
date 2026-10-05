@@ -39,6 +39,8 @@ type ClampToRoom = (
 export type DesignPageOnboardingState = {
   designId: string | null;
   shareToken: string | null;
+  /** Download is open: the first-run checklist's "Share or export" step (it was Present & export). */
+  downloadOpen: boolean;
   plan: Plan;
   editorMode: DesignPageEditorMode;
   viewMode: EditorViewMode;
@@ -53,10 +55,7 @@ export type DesignPageOnboardingState = {
   planRoomCount: number;
   saveStatusKind: string;
   planGuidedActionsEnabled: boolean;
-  viewportSize: {
-    width: number;
-    height: number;
-  };
+  viewportSize: { width: number; height: number };
 };
 
 export type DesignPageOnboardingActions = {
@@ -545,11 +544,11 @@ export function useDesignPageOnboarding({
                 ? "failed"
                 : "idle",
         shareToken: state.shareToken,
-        exportOpened: state.editorMode === "present",
+        exportOpened: state.downloadOpen,
       }),
     [
       state.designRoomCount,
-      state.editorMode,
+      state.downloadOpen,
       state.items.length,
       state.saveStatusKind,
       state.shareToken,

@@ -613,7 +613,7 @@
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
-      "lines": 1284,
+      "lines": 1213,
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
@@ -621,7 +621,7 @@
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
-      "lines": 462,
+      "lines": 447,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
@@ -637,7 +637,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 658,
+      "lines": 657,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -649,7 +649,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 478,
+      "lines": 456,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -1790,12 +1790,6 @@
         "maximum": 139
       }
     },
-    "components/editor/design-page/PresentExportDialog.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 163
-      }
-    },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1903,13 +1897,13 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 126
+        "maximum": 124
       }
     },
     "components/editor/EditorToolRail.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 92
+        "maximum": 81
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanDimensionCorrectionFields.tsx": {
@@ -3107,7 +3101,7 @@
     "lib/design-page-dialog-layer-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 113
       }
     },
     "lib/design-page-equivalent-variant.ts": {
@@ -4105,7 +4099,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1141
+        "maximum": 1079
       },
       "complexFunctions": {
         "count": 1,
@@ -4173,7 +4167,7 @@
     "lib/useDesignPageCoreShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 244
+        "maximum": 241
       }
     },
     "lib/useDesignPageCrossRoomItemTransfer.ts": {
@@ -4201,7 +4195,7 @@
     "lib/useDesignPageDocumentSelectionRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 207
+        "maximum": 206
       }
     },
     "lib/useDesignPageDocumentStateController.ts": {
@@ -4213,31 +4207,31 @@
     "lib/useDesignPageEditorChromeController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 145
+        "maximum": 132
       }
     },
     "lib/useDesignPageEditorClientLifecycle.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 68
+        "maximum": 61
       }
     },
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 142
+        "maximum": 138
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 111
+        "maximum": 106
       }
     },
     "lib/useDesignPageExport.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 381
+        "maximum": 370
       }
     },
     "lib/useDesignPageFloorPlanLifecycleRegistration.ts": {
@@ -4481,25 +4475,25 @@
     "lib/useDesignPagePresentationBackupRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 112
       }
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 283
+        "maximum": 263
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 322
+        "maximum": 305
       }
     },
     "lib/useDesignPagePresentExportController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 209
+        "maximum": 154
       }
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -4563,7 +4557,7 @@
     "lib/useDesignPageRoomReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 301
+        "maximum": 300
       },
       "complexFunctions": {
         "count": 1,
@@ -4689,7 +4683,7 @@
     "lib/useDesignPageViewportShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 243
+        "maximum": 239
       }
     },
     "lib/useDesignPageZoneController.ts": {

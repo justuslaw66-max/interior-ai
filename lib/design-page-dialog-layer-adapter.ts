@@ -6,7 +6,6 @@ import type {
 
 type UpgradeDialog = DesignPageDialogLayerDialogs["upgrade"];
 type GuestSaveDialog = DesignPageDialogLayerDialogs["guestSave"];
-type PresentExportDialog = DesignPageDialogLayerDialogs["presentExport"];
 
 export type BuildDesignPageDialogLayerAdapterInput = {
   state: {
@@ -16,14 +15,13 @@ export type BuildDesignPageDialogLayerAdapterInput = {
   };
   dialogs: Omit<
     DesignPageDialogLayerDialogs,
-    "upgrade" | "guestSave" | "presentExport"
+    "upgrade" | "guestSave"
   > & {
     upgrade: {
       state: Omit<UpgradeDialog["state"], "open">;
       actions: UpgradeDialog["actions"];
     };
     guestSave: Omit<GuestSaveDialog, "reason">;
-    presentExport: PresentExportDialog;
   };
   overlays: DesignPageDialogLayerOverlays;
 };
@@ -53,14 +51,6 @@ export function buildDesignPageDialogLayerAdapter({
       aiNotes: dialogs.aiNotes,
       // Download stays open while its export briefly turns on Client Preview to capture the scene.
       download: dialogs.download,
-      presentExport: {
-        ...dialogs.presentExport,
-        configuration: {
-          ...dialogs.presentExport.configuration,
-          open:
-            dialogs.presentExport.configuration.open && !isClientPreview,
-        },
-      },
       designRename: dialogs.designRename,
       roomRename: dialogs.roomRename,
       planAnnotation: dialogs.planAnnotation,

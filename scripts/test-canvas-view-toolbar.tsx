@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -85,8 +85,7 @@ assert.match(savedViewsSource, /data-testid=\{`saved-camera-view-open-\$\{view\.
 assert.match(savedViewsSource, /data-testid=\{`saved-camera-view-delete-\$\{view\.id\}`\}[\s\S]*?aria-label=\{`Delete \$\{view\.name\}`\}/);
 assert.match(savedViewsSource, /useDismissibleMenu\(\{[\s\S]*?if \(byKeyboard\) buttonRef\.current\?\.focus\(\);/, "Escape hands focus back to Views.");
 assert.match(savedViewsSource, /role="dialog"[\s\S]*?aria-labelledby=\{props\.headingId\}/);
-const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
-assert.doesNotMatch(presentExport, /camera-view-name-input|save-named-camera-view|saved-camera-view-list/, "Saved views left Present & export.");
+assert.equal(existsSync(join(process.cwd(), "components/editor/design-page/PresentExportDialog.tsx")), false, "Saved views left Present & export, which then retired.");
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: \{ views: state\.document\.activeRoom\?\.savedViews \?\? \[\], nameInput: state\.presentation\.cameraViewNameInput \}/);
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: savedViewActions\(presentExport\.actions\)/);
 

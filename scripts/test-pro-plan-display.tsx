@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { LayoutVersionsSection } from "../components/editor/design-page/LayoutVersionsSection";
 import { PlanDisplaySection, PlanNotesSection, planStepFooter, type PlanDisplaySectionProps } from "../components/editor/design-page/PlanDisplaySection";
-import type { PresentExportDialogProps } from "../components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "../lib/design-page-presentation-tools";
 import { aiStepFooter, furnishStepFooter, stepPanelFooters } from "../components/editor/design-page/StepPanelFooters";
 import { AiNotesSection } from "../components/editor/design-page/AiNotesSection";
 import { createLayoutVersion } from "../lib/layout-versions";
@@ -65,7 +65,7 @@ assert.doesNotMatch(selectedNote, /<button[^>]*disabled=""[^>]*>Delete selected<
 
 // In Plan, while the 2D plan is on screen: Pro's plan display, or Free's notes. Not in 3D or other steps.
 const tools = (pro: boolean, viewMode: "2d" | "3d") =>
-  ({ configuration: { canUseAdvancedPlanControls: pro }, state: { ...planState, viewMode }, actions: planActions }) as unknown as PresentExportDialogProps;
+  ({ configuration: { canUseAdvancedPlanControls: pro }, state: { ...planState, viewMode }, actions: planActions }) as unknown as PresentationTools;
 const proFooter = planStepFooter("plan", tools(true, "2d"));
 assert.ok(proFooter && proFooter.type === PlanDisplaySection, "Pro has the plan display.");
 const freeFooter = planStepFooter("plan", tools(false, "2d"));
@@ -86,7 +86,7 @@ for (const viewMode of ["2d", "3d"] as const) {
 assert.equal(furnishStepFooter("furnish", null), null);
 // In Suggest a layout, Pro's AI notes on the active room (J, 5 Oct).
 const aiTools = (pro: boolean) =>
-  ({ configuration: { canUseAdvancedExportStyles: pro }, state: { aiNotesLoading: false, hasItems: true }, actions: { onGenerateAiNotes: noop } }) as unknown as PresentExportDialogProps;
+  ({ configuration: { canUseAdvancedExportStyles: pro }, state: { aiNotesLoading: false, hasItems: true }, actions: { onGenerateAiNotes: noop } }) as unknown as PresentationTools;
 const aiFooter = aiStepFooter("ai", aiTools(true));
 assert.ok(aiFooter && aiFooter.type === AiNotesSection, "Pro has AI notes in Suggest a layout.");
 assert.equal(aiStepFooter("ai", aiTools(false)), null, "AI notes are Pro's.");
@@ -149,10 +149,10 @@ assert.match(listed, /data-testid="layout-version-comparison"[\s\S]*Saved[\s\S]*
 assert.match(listed, new RegExp(`data-testid="layout-version-delete-${version.id}" aria-label="Delete Before TV wall"`));
 assert.match(listed, /Manual · /);
 
-// Present & export: no plan display, no lighting presets, no export style, no layout versions.
-const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
-assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect|LayoutVersionsSection|AI Notes|onGenerateAiNotes\b(?!: \(\) => void)/);
-assert.match(presentExport, /data-testid="presentation-lighting-status"/);
+// Present & export retired (phase 4's small PR): its sections have homes in Plan, Furnish and
+// Suggest a layout, and Download shows the presentation lighting.
+assert.equal(existsSync(join(root, "components/editor/design-page/PresentExportDialog.tsx")), false);
+assert.match(read("components/editor/design-page/DownloadDialog.tsx"), /data-testid="presentation-lighting-status"/);
 assert.equal(existsSync(join(root, "components/LightingPresetsUI.tsx")), false, "Lighting has one home: the Lighting drawer.");
 assert.doesNotMatch(read("components/editor/design-page/LightingSettingsControls.tsx"), /lighting-quality-select|Presentation quality|onPerformanceModeChange/);
 assert.match(read("components/editor/design-page/DesignPageEditorCommandBar.tsx"), /data-testid=\{`scene-performance-\$\{option\}`\}/);

@@ -117,7 +117,6 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
       },
       room: {
         setDesignPanelOpen: base.actions.panels.setDesignPanelOpen,
-        setEditorMode: editorShell.actions.editor.setEditorMode,
         goPlan: editorShell.actions.panel.goPlan,
         goFurnish: editorShell.actions.panel.goFurnish,
         goShop: editorShell.actions.panel.goShop,

@@ -246,7 +246,7 @@ async function openFurnishPanel(page: Page) {
   await expect(page.getByTestId("furnish-room-target-select")).toBeVisible();
 }
 
-// Saved views are on the 3D view's Views button (UX audit SX4, phase 4e), no longer in Present & export.
+// Saved views are on the 3D view's Views button (UX audit SX4, phase 4e).
 async function openSavedViews(page: Page) {
   const toolbar = page.getByTestId("canvas-view-toolbar");
   await toolbar.getByTestId("editor-view-3d").click();

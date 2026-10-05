@@ -237,7 +237,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
   },
   ai: { notes: {} },
   presentation: {
-    presentExport: { configuration: { open: true }, state: {}, actions: {} },
+    presentExport: { configuration: {}, state: {}, actions: {} },
   },
   editing: { roomRename: {}, annotation: {} },
   placement: {

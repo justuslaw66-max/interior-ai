@@ -81,15 +81,16 @@ command-bar lifecycle.
 ## Loading boundaries
 
 The Cabinetry Studio remains client-only and dynamically loaded. Advanced plan
-layer/theme controls in Present & Export are also dynamically loaded only after
-the advanced workflow is selected. Consumer users do not download that control
+layer/theme controls in Plan's plan display (Pro) are also dynamically loaded
+only after the advanced workflow is selected. Consumer users do not download that control
 surface during the default simple workflow.
 
 ## Dialog design system and accessibility
 
 `components/editor/design-system/EditorDialog.tsx` owns the repeated modal
 contract used by confirmation, copy fallback, room rename, plan annotation, AI
-notes, upgrade, and Present & Export workflows. It provides:
+notes, upgrade, Download and Share Link workflows. (Present & Export used it
+too until it retired in UX phase 4's small PR.) It provides:
 
 - labelled dialog semantics and optional descriptions;
 - deterministic initial focus;

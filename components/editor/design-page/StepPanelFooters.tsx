@@ -1,12 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import { AiNotesSection } from "@/components/editor/design-page/AiNotesSection";
 import { LayoutVersionsSection } from "@/components/editor/design-page/LayoutVersionsSection";
 import { planStepFooter } from "@/components/editor/design-page/PlanDisplaySection";
 
-type StepTools = PresentExportDialogProps | null | undefined;
+type StepTools = PresentationTools | null | undefined;
 
 /**
  * Layout versions of the active room, for Pro, above Furnish's own foot (the room's total and

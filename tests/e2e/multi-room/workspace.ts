@@ -9,14 +9,8 @@ import {
 } from "./helpers";
 import { confirmCatalogPlacementIfVisible } from "../variant-test-utils";
 
-// Plan, Furnish and Shop are steps in the command bar; Present & export sits in the More menu.
-async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop" | "export") {
-  if (workspace === "export") {
-    const more = page.getByTestId("editor-command-overflow");
-    if ((await more.getAttribute("aria-expanded")) !== "true") {
-      await more.click({ timeout: 10_000 });
-    }
-  }
+// Plan, Furnish and Shop are steps in the command bar.
+async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop") {
   const item = page.getByTestId(`editor-workflow-${workspace}`);
   await expect(item).toBeVisible();
   await expect(item).toBeEnabled();
@@ -126,20 +120,16 @@ export function registerWorkspaceTests() {
     await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    await selectWorkspace(page, "export");
-    await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
-      timeout: 10000,
-    });
-    await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "false");
-    await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
-
-    // Closing the panel ends presenting, so More offers Present & export again.
+    // Present & export retired (phase 4's small PR): More doesn't offer it; Share and Download are
+    // in the bar.
     await page.getByTestId("editor-command-overflow").click();
-    const presentToggle = page.getByTestId("editor-workflow-export");
-    await expect(presentToggle).toHaveAttribute("data-active", "false");
-    await expect(presentToggle).toHaveText("Present & export");
+    await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
+    await expect(page.getByTestId("editor-workflow-export")).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-overflow-menu")).not.toContainText("Present & export");
     await page.keyboard.press("Escape");
-    await expect(presentToggle).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-overflow-menu")).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-share")).toBeVisible();
+    await expect(page.getByTestId("editor-command-download")).toBeVisible();
 
     // Saved views are on the 3D view's Views button (UX audit SX4, phase 4e).
     const toolbar = page.getByTestId("canvas-view-toolbar");
