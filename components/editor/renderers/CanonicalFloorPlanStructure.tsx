@@ -53,12 +53,14 @@ import {
 } from "./canonical-floor-plan/surfaceMaterials";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
+import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
 import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
 import { openingColor, symbolLineStyle } from "./canonical-floor-plan/openingStyle";
 import { OpeningDragPreview } from "./canonical-floor-plan/OpeningDragPreview";
 import { openingGestureBindings } from "./canonical-floor-plan/openingGestureBindings";
+import { type CanonicalPlan2DHandlers, useStableCanonicalPlan2DHandlers, useStableWallGestureControls } from "./canonical-floor-plan/useStablePlanHandlers";
 import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
 import { stableExtrudeOptions } from "./stableExtrudeOptions";
 
@@ -195,7 +197,8 @@ function CanonicalStructure3D({
   );
 }
 
-function CanonicalOpening2DSymbol({
+/** Memoized: a click or a selection elsewhere leaves the symbol and its Lines alone. */
+const CanonicalOpening2DSymbol = memo(function CanonicalOpening2DSymbol({
   opening,
   wallId,
   floorId,
@@ -340,7 +343,7 @@ function CanonicalOpening2DSymbol({
       )}
     </group>
   );
-}
+});
 
 const CanonicalWallSolidHitMesh = memo(function CanonicalWallSolidHitMesh({
   solid,
@@ -923,22 +926,10 @@ type CanonicalFloorPlanWalls2DProps = {
   showStructures?: boolean;
   interactive?: boolean;
   theme?: "consumer" | "pro";
-  onSelectRoom?: (roomId: string) => void;
-  onSelectWall?: (wallId: string, roomId: string | null) => void;
-  onSelectOpening?: (openingId: string | null) => void;
-  onEditOpening?: (
-    openingId: string,
-    metrics: CanonicalOpeningDragMetricsV2,
-    mode: CanonicalOpeningDragMode
-  ) => void;
-  onOpeningDragStateChange?: (
-    dragging: boolean,
-    mode: CanonicalOpeningDragMode
-  ) => void;
-};
+} & CanonicalPlan2DHandlers;
 
 export function CanonicalFloorPlanWalls2D({
-  model, wallEditing,
+  model, wallEditing: latestWallEditing,
   activeFloorId = null,
   activeFloorLevel,
   activeRoomId,
@@ -947,12 +938,11 @@ export function CanonicalFloorPlanWalls2D({
   showStructures = true,
   interactive = false,
   theme = "consumer",
-  onSelectRoom,
-  onSelectWall,
-  onSelectOpening,
-  onEditOpening,
-  onOpeningDragStateChange,
+  ...latestHandlers
 }: CanonicalFloorPlanWalls2DProps) {
+  const wallEditing = useStableWallGestureControls(latestWallEditing);
+  const { onSelectRoom, onSelectWall, onSelectOpening, onEditOpening, onOpeningDragStateChange } =
+    useStableCanonicalPlan2DHandlers(latestHandlers);
   const activeFloor = resolveCanonicalFloorPlan2DActiveFloor(model, {
     floorId: activeFloorId,
     floorLevel: activeFloorLevel,
@@ -1080,11 +1070,8 @@ export function CanonicalFloorPlanWalls3D({
     }
     return pinned;
   }, [model.floors, selectedOpeningId, selectedWallId]);
-  const cutawayWallKeys = useCanonicalCameraCutawayWallKeys(
-    model,
-    cutawayTarget,
-    pinnedWallIds
-  );
+  const cutawayWallKeys = useCanonicalCameraCutawayWallKeys(model, cutawayTarget, pinnedWallIds);
+  usePrebuiltCanonicalWallBands(model, cutawayTarget, pinnedWallIds, !focusRoomId);
   return (
     <group
       userData={{
