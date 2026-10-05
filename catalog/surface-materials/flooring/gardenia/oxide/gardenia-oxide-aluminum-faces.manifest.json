@@ -1,0 +1,769 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (OXIDE - ALUMINUM - minimali.zip, 41475989 bytes, sha256 a421c6166f6ce2fd090196c83a5f9103b5bec9ec9553bd6d57165a885d26f61d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/oxide/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g69300",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g69300-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g69300_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-alluminum-g69300-120x280-90833-0; wall gardenia-wall-tile-oxide-alluminum-g69300-120x280-90833-0",
+   "faces": [
+    {
+     "file": "g69300_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 267892,
+     "source_file": "120X280-Natural/OXIDE - ALUMINUM - 120X280 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "4673f82c2cc19c5725cf4aa88dd338cd93d15cd561588735332d15fa54c53e13",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "ALUMINIUM 120X280_1",
+      "id": "4b1f1ada-5215-4cc8-bae3-624b8f8d9bbe",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69300_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 249708,
+     "source_file": "120X280-Natural/OXIDE - ALUMINUM - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "9286f37cc39cc5c83f2420a2173651aea36c7d5663d363f072d0d9db4969c681",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "ALUMINIUM 120X280_2",
+      "id": "79176289-21bf-46c9-86b7-a6e147d3f857",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69300_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 272308,
+     "source_file": "120X280-Natural/OXIDE - ALUMINUM - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "3809e949f6847818280d9a79727578caea3b89a931f5062c67cdc4058fe30094",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "ALUMINIUM 120X280_3",
+      "id": "af7a6a6d-3f8d-4eb5-9d5c-87f22fd070fb",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g69310",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g69310-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g69310_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-alluminum-g69310-120x120-90838-0; wall gardenia-wall-tile-oxide-alluminum-g69310-120x120-90838-0",
+   "faces": [
+    {
+     "file": "g69310_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63162,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3441dd589c11739e4faf81d86a6c9b8f00ba04ba0a8ff540af7f920ad16a1c68",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE_ALUMINUM_120x120_1",
+      "id": "39dc4507-ee4e-4854-a0bb-c31421d989f5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69310_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73264,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ec4271847795dcfb9b9941179338da7b70299133ab1a4500d2fde28adca45894",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE_ALUMINUM_120x120_6",
+      "id": "4f6a9b62-0dcb-401d-a8c3-222f10264a0c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69310_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67912,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6014a98db37489d09797c9ef6c11f83f4cf6d7e4863851e4c61e8da0d42ae35d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE_ALUMINUM_120x120_7",
+      "id": "fea1ae75-b0be-4683-98b3-59814c5eca5e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69310_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67274,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ac8f4e493986cb078a67b3fb56e9cae10d3e745b1818b6f58f78288fbf2a0119",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE_ALUMINUM_120x120_3",
+      "id": "bcc1c33e-72a8-4b5e-b646-f6495d0f5b20",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69310_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64686,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4159f5b9edf7b97c8a8e38595a0f582490ff882be3bbe0bd9762086296b8d895",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE_ALUMINUM_120x120_4",
+      "id": "fd24e356-ba75-4b3d-a931-9da451a6c744",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69310_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63300,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a8dbd82e40222951c5ef8280fabb78470f320729a10a3ba2e8895b926ff6863f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE_ALUMINUM_120x120_2",
+      "id": "9279e47a-ff13-4796-b714-f13343358267",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69310_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65528,
+     "source_file": "120X120-Natural/OXIDE - ALUMINUM - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b7e4cfa9c392f1c46c4ab11db1265e96c2cde348acb29951d69e1490b252a416",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "OXIDE_ALUMINUM_120x120_5",
+      "id": "96d131d0-0225-44e6-af59-274e6f0b6ae8",
+      "site_position": 7
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g69320",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g69320-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g69320_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-alluminum-g69320-60x120-90843-0; wall gardenia-wall-tile-oxide-alluminum-g69320-60x120-90843-0",
+   "faces": [
+    {
+     "file": "g69320_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30326,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "409a1c7c31fd00428fff2383e1845c55b787b88537310cf2ed428138592b5369",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE_ALUMINUM_60x120_1",
+      "id": "3ce63030-4ff1-4664-b2a6-7c6da1256f50",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69320_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33752,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "8759b3df1f3501193a9f8ad3eefac93190902f80fa652e75a6a97905b5449f79",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE_ALUMINUM_60x120_12",
+      "id": "900910c8-081d-462d-a801-8ee49fa9f9c5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69320_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37554,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "3f96399940812220348332761652d22970ecbc829c06f32103477bb2a20db0a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE_ALUMINUM_60x120_14",
+      "id": "8c2e5f72-2460-4d1a-aeef-06f36458d7a5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69320_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32694,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "23fb6151dc16861e542e2c337588af4634db990efc66fd8e380690f8edc83622",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE_ALUMINUM_60x120_6",
+      "id": "3fa0603d-8a9c-4a73-8b1f-b6969979a32c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69320_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28806,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "fbb6b5ab6f84e153a219b429bc27a57704795ce16f1948b82252b62b565f54e1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE_ALUMINUM_60x120_7",
+      "id": "fd6d1212-3076-4d76-8d3c-000343a53ad2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69320_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34250,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "21505caa8dd94b9f4e02c138f5095a4671343df735c2b13d9ae9b57791f14c49",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE_ALUMINUM_60x120_9",
+      "id": "5719e51e-6bf6-4e99-aea9-dbf1d18104d6",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69320_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33830,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "17f4a222c69271384ddf1360d4ca12ee871a1eea886c7c1c605c425d2175e112",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "OXIDE_ALUMINUM_60x120_10",
+      "id": "f09010a1-94f3-4a01-abbd-0e6fda720a72",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g69320_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30432,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "b0c09b9aaa8e50187149fe9b06501a6d2efd504c1603552fe6eea64ceaa0b784",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "OXIDE_ALUMINUM_60x120_13",
+      "id": "52746059-4503-4439-afd9-08cfe0c24766",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g69320_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39652,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "6356caf3f30571288682ac413fd9a1b9a83cc4e520470e7ea241f7ab0f873e95",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "OXIDE_ALUMINUM_60x120_11",
+      "id": "d7be1ecd-566d-49c3-9c40-f71a796f5b4a",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g69320_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36868,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "d3a129f74e271664628f8bf1119c7fb6c3fecc05962acce8062d440ba44da35e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "OXIDE_ALUMINUM_60x120_8",
+      "id": "407dcb64-9038-43e5-a4de-f4804205f706",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g69320_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34338,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7267c298954204929d252fe197a3c69c216749fc09ca5f23a47c827b0adaf7a8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "OXIDE_ALUMINUM_60x120_5",
+      "id": "0644a775-8337-44f9-b1b1-0f778ebd024c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g69320_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34972,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "247d0a82ba19c00d9378e2d8820648bc2183a67da0e1360ca683d870867255d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "OXIDE_ALUMINUM_60x120_4",
+      "id": "464e808b-ae6a-4ab2-98fc-6d43723a9ae6",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g69320_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33158,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "2651702f6c068450ffade4ec4c91bb66c761f3485eba4e1acacdb983d1367545",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "OXIDE_ALUMINUM_60x120_2",
+      "id": "4d3b9a02-d791-4042-9a44-4edb484febd9",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g69320_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29262,
+     "source_file": "60X120-Natural/OXIDE - ALUMINUM - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "6b0a7a21df43a008167957ded77a8e64287274cd26e94e2e3aea83db2340cbbc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "OXIDE_ALUMINUM_60x120_3",
+      "id": "a1af434c-44a1-453c-80d0-a951854f799a",
+      "site_position": 14
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g69330",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g0069330-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g69330_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    7
+   ],
+   "used_by": "floor gardenia-flooring-oxide-alluminum-g69330-80x80-90848-0; wall gardenia-wall-tile-oxide-alluminum-g69330-80x80-90848-0",
+   "faces": [
+    {
+     "file": "g69330_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63594,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0d8a2de6f16aa859a820cf947a129ddb5a69380912a12aa8ebe3c871bddf1636",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE_ALUMINUM_80x80_1",
+      "id": "b420ded6-0218-4365-a426-3570cc84d51c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69330_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73536,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7bf63d223c4f59fb922202f1838606700ad76d2e66b7b7c9535ce7dea72feea8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE_ALUMINUM_80x80_6",
+      "id": "ef35bd4b-be3b-4633-bee8-3d9c1ea76f32",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69330_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 66374,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4b86382e11296a0000711b88581b2d4a801c0012625a17a5daa4793913b033a1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE_ALUMINUM_80x80_5",
+      "id": "c14c702c-3f58-484f-b4af-77c9dad5445b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69330_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24178,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b6905c4d1e3b3d899d938d7dac20df82ee290b266a039fd315d0d992b07b692c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE_ALUMINUM_80x80_2",
+      "id": "5f7918a5-4783-4c20-b875-c1d3230d5578",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69330_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23712,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bef199f33666a6cdfb2b7cb83af37a89c86f7b6eba6edf21f534455e1ef68224",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE_ALUMINUM_80x80_4",
+      "id": "caecdd50-eb46-4019-adbd-1d4e2e4c6edf",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69330_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25474,
+     "source_file": "80X80-Natural/OXIDE - ALUMINUM - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2cd2f5d5b9f298d99e6b539698d7738e38cf6dc59e46fe5507539908f4610a10",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE_ALUMINUM_80x80_7",
+      "id": "2cbf93d9-dc08-4b39-b7c3-4825f1440cfc",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

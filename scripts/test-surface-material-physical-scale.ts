@@ -170,9 +170,16 @@ const physicalMaterials = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
 );
 const isAnima = (material: { surface_material: { material_id: string } }) =>
   /^gardenia-(flooring|wall-tile)-anima-/.test(material.surface_material.material_id);
+const isGardeniaCollection = (collection: string) => (material: { surface_material: { material_id: string } }) =>
+  new RegExp(`^gardenia-(flooring|wall-tile)-${collection}-`).test(material.surface_material.material_id);
+const isDorica = isGardeniaCollection("dorica");
+const isOxide = isGardeniaCollection("oxide");
 assert.ok(
-  physicalMaterials.every((material) => material.surface_material.supplier === "florim" || isAnima(material)),
-  "only the Florim materials and Gardenia Anima declare physical-scale data"
+  physicalMaterials.every(
+    (material) =>
+      material.surface_material.supplier === "florim" || isAnima(material) || isDorica(material) || isOxide(material)
+  ),
+  "only the Florim materials and Gardenia Anima, Dorica and Oxide declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -185,7 +192,8 @@ for (const material of physicalMaterials) {
   const sources = getSurfacePhysicalImageSources(material.texture_assets);
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
-  assert.ok(sources.length >= 4, `${id} has at least four faces`);
+  // ABK supplies three faces for Oxide's 120x280 slabs; every other format has at least four.
+  assert.ok(sources.length >= 3, `${id} has at least three faces`);
   for (const source of sources) {
     // Pixel size does not matter here: the mode depends only on millimetres.
     const sample = resolveSurfacePhysicalTileSample({
@@ -305,6 +313,115 @@ for (const material of animaById.values()) {
     .replace("-0007196-60x120-196230-", "-0006050-60x120-196219-");
   assert.ok(faceUrls(floorId), `${id} has a floor counterpart ${floorId}`);
   assert.deepEqual(faceUrls(id), faceUrls(floorId), `${id} uses the floor entry's faces`);
+}
+
+// Gardenia Dorica and Oxide are on real faces too (downloaded 6 Oct 2026). Some entries use another
+// item's pictures, found by image matching (see the colour manifests):
+//  - Dorica 20x120 planks use the 120x120 faces turned a quarter (veins along the plank), stored as
+//    0010518_nn / 0010519_nn: ABK's plank pictures are that graphic at 0.75 scale;
+//  - Dorica 0010147 / 0010148 use 0010008's / 0010009's faces (the same visible variant as R11);
+//  - Oxide Iron 80x80 uses the 120x120 faces: its 80x80 pictures are the 120x120 pictures.
+// Three of Oxide Aluminum's 80x80 pictures are its 120x120 graphic and are declared 1200x1200 mm.
+const collectionCards = (filter: (material: { surface_material: { material_id: string } }) => boolean, category: string) =>
+  buildSurfaceMaterialProductGroups(
+    physicalMaterials.filter((material) => filter(material) && material.surface_material.surface_category === category) as never
+  ).map((group) => [getSurfaceMaterialProductDisplayName(group.primary), getSurfaceMaterialGroupSizeLabels(group)]);
+for (const [filter, label, count] of [[isDorica, "Dorica", 24], [isOxide, "Oxide", 38]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+const doricaSizes = ["120x280 Nat", "120x120 Nat", "60x120 Nat", "20x120 Nat"];
+assert.deepEqual(collectionCards(isDorica, "flooring"), [
+  ["Dorica Avorio", ["120x280 Nat", "120x120 Nat", "60x120", "60x120 Nat", "20x120 Nat"]],
+  ["Dorica Crema", ["120x280 Nat", "120x120 Nat", "60x120", "60x120 Nat", "20x120 Nat"]],
+  ["Dorica Degrade'", ["60x120"]],
+  ["Dorica Greige", ["120x120 Nat", "60x120 Nat"]],
+]);
+assert.deepEqual(collectionCards(isDorica, "wall_tile"), [
+  ["Dorica Avorio", doricaSizes],
+  ["Dorica Crema", doricaSizes],
+  ["Dorica Degrade'", ["60x120"]],
+  ["Dorica Greige", ["120x120 Nat", "60x120 Nat"]],
+]);
+const oxideSizes = ["120x280", "120x120", "60x120", "80x80"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(collectionCards(isOxide, category), [
+    ["Oxide Alluminum", oxideSizes],
+    ["Oxide Brass", oxideSizes],
+    ["Oxide Green", oxideSizes],
+    ["Oxide Iron", oxideSizes],
+    ["Oxide Steel", ["120x120", "60x120", "80x80"]],
+  ]);
+}
+const collectionFaceRows = (filter: (material: { surface_material: { material_id: string } }) => boolean) =>
+  physicalMaterials
+    .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
+    .map((material) => [
+      /-(?:dorica|oxide)-([a-z-]+?)-(?:g|\d)/.exec(material.surface_material.material_id)?.[1],
+      `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
+      material.texture_assets.faces?.length,
+      [...new Set(material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`))].join("+"),
+      material.texture_assets.base_color_url?.split("/").pop(),
+    ])
+    .sort();
+assert.deepEqual(collectionFaceRows(isDorica), [
+  ["avorio", "1200x1200", 8, "1200x1200", "0010005_01.webp"],
+  ["avorio", "1200x200", 8, "1200x1200", "0010518_01.webp"],
+  ["avorio", "1200x600", 16, "600x1200", "0010008_01.webp"],
+  ["avorio", "1200x600", 16, "600x1200", "0010008_01.webp"],
+  ["avorio", "2800x1200", 4, "1200x2800", "0009999_01.webp"],
+  ["crema", "1200x1200", 8, "1200x1200", "0010006_01.webp"],
+  ["crema", "1200x200", 8, "1200x1200", "0010519_01.webp"],
+  ["crema", "1200x600", 16, "600x1200", "0010009_01.webp"],
+  ["crema", "1200x600", 16, "600x1200", "0010009_01.webp"],
+  ["crema", "2800x1200", 4, "1200x2800", "0010000_01.webp"],
+  ["degrade", "1200x600", 4, "600x1200", "0010087_01.webp"],
+  ["greige", "1200x1200", 8, "1200x1200", "0010004_01.webp"],
+  ["greige", "1200x600", 16, "600x1200", "0010007_01.webp"],
+]);
+assert.deepEqual(collectionFaceRows(isOxide), [
+  ["alluminum", "1200x1200", 7, "1200x1200", "g69310_01.webp"],
+  ["alluminum", "1200x600", 14, "600x1200", "g69320_01.webp"],
+  ["alluminum", "2800x1200", 3, "1200x2800", "g69300_01.webp"],
+  ["alluminum", "800x800", 6, "1200x1200+800x800", "g69330_01.webp"],
+  ["brass", "1200x1200", 6, "1200x1200", "g69314_01.webp"],
+  ["brass", "1200x600", 10, "600x1200", "g69324_01.webp"],
+  ["brass", "2800x1200", 3, "1200x2800", "g69304_01.webp"],
+  ["brass", "800x800", 7, "800x800", "g69334_01.webp"],
+  ["green", "1200x1200", 6, "1200x1200", "g69313_01.webp"],
+  ["green", "1200x600", 12, "600x1200", "g69323_01.webp"],
+  ["green", "2800x1200", 3, "1200x2800", "g69303_01.webp"],
+  ["green", "800x800", 14, "800x800", "g69333_01.webp"],
+  ["iron", "1200x1200", 6, "1200x1200", "g69312_01.webp"],
+  ["iron", "1200x600", 7, "600x1200", "g69322_01.webp"],
+  ["iron", "2800x1200", 3, "1200x2800", "g69302_01.webp"],
+  ["iron", "800x800", 6, "1200x1200", "g69312_01.webp"],
+  ["steel", "1200x1200", 5, "1200x1200", "g69311_01.webp"],
+  ["steel", "1200x600", 10, "600x1200", "g69321_01.webp"],
+  ["steel", "800x800", 14, "800x800", "g69331_01.webp"],
+]);
+// Floor entries share pictures only where declared above; every wall entry uses the faces of the
+// floor entry with the same item code.
+const sharedFaces = new Map([
+  ["0010147", "0010008"], ["0010148", "0010009"], ["g69332", "g69312"],
+]);
+const itemCode = (id: string) => /-((?:g|pf)?\d{5,7})-\d+x\d+/.exec(id)?.[1] ?? "?";
+const collectionById = new Map(
+  physicalMaterials
+    .filter((material) => isDorica(material) || isOxide(material))
+    .map((material) => [material.surface_material.material_id, material])
+);
+for (const material of collectionById.values()) {
+  const id = material.surface_material.material_id;
+  const code = itemCode(id);
+  const firstFace = material.texture_assets.faces?.[0]?.url.split("/").pop() ?? "";
+  assert.ok(firstFace.startsWith(`${sharedFaces.get(code) ?? code}_`), `${id} draws ${sharedFaces.get(code) ?? code}'s faces`);
+  if (material.surface_material.surface_category !== "wall_tile") continue;
+  const floor = [...collectionById.values()].find(
+    (other) => other.surface_material.surface_category === "flooring" && itemCode(other.surface_material.material_id) === code
+  );
+  assert.ok(floor, `${id} has a floor entry with item ${code}`);
+  assert.deepEqual(material.texture_assets.faces, floor.texture_assets.faces, `${id} uses the floor entry's faces`);
 }
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
