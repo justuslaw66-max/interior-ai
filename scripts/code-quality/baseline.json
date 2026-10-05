@@ -4607,13 +4607,13 @@
     "lib/useDesignPageSelectionCoordinator.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 190
+        "maximum": 188
       }
     },
     "lib/useDesignPageSelectionInspectionRuntime.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 150
+        "maximum": 148
       }
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
