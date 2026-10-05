@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import type { Metadata } from "next";
 import { canAccessAdmin } from "@/lib/admin";
 import {
   ADMIN_FLOOR_PLAN_QUEUE_FILTERS,
@@ -11,11 +9,18 @@ import {
   parseAdminFloorPlanQueueFilter,
 } from "@/lib/floor-plan-imports/admin-queue";
 import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
 import AdminFloorPlanFixturePanel from "./AdminFloorPlanFixturePanel";
 import AdminFloorPlanIntakeForm from "./AdminFloorPlanIntakeForm";
 import AdminFloorPlanQueueTable from "./AdminFloorPlanQueueTable";
 
 type PageSearchParams = Record<string, string | string[] | undefined>;
+
+const SECTION = adminSection("/admin/floor-plans");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 function single(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -42,7 +47,7 @@ export default async function AdminFloorPlansPage({
   searchParams: Promise<PageSearchParams>;
 }) {
   const session = await auth();
-  if (!canAccessAdmin(session?.user?.email)) redirect("/");
+  if (!canAccessAdmin(session?.user?.email)) return null;
 
   const params = await searchParams;
   const filter = parseAdminFloorPlanQueueFilter(single(params.filter));
@@ -99,21 +104,11 @@ export default async function AdminFloorPlansPage({
 
   return (
     <main className="space-y-6 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-            Floor-plan platform
-          </div>
-          <h1 className="mt-1 text-2xl font-semibold">Import review queue</h1>
-          <p className="mt-1 max-w-3xl text-sm text-neutral-600">
-            Review source registration, resolve extraction uncertainty, then approve an immutable
-            revision. Publication always runs the server verification gates.
-          </p>
-        </div>
-        <Link className="rounded-lg border px-3 py-2 text-sm font-medium" href="/admin">
-          Admin overview
-        </Link>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Review source registration, resolve extraction uncertainty, then approve an immutable revision. Publication always runs the server verification gates."
+      />
 
       <AdminFloorPlanIntakeForm />
 

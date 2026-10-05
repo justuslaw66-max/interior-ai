@@ -260,6 +260,11 @@ assert.match(
   /const session = await auth\(\);\s*if \(!isAdminEmail\(session\?\.user\?\.email\)\) notFound\(\);/,
   "Internal /tools pages must be admin-only, like the APIs they call."
 );
+assert.match(
+  source("app/lighting-reference/page.tsx"),
+  /const session = await auth\(\);\s*if \(!isAdminEmail\(session\?\.user\?\.email\)\) notFound\(\);/,
+  "The lighting reference is an internal page and must be admin-only, like /tools."
+);
 
 const adminPagePaths = discoverFiles(path.join(process.cwd(), "app/admin"), "page.tsx")
   .map((filePath) => path.relative(process.cwd(), filePath));
@@ -271,12 +276,40 @@ for (const pagePath of adminPagePaths) {
   assert.ok(adminCheckIndex(pageSource) >= 0, `${pagePath} must use canonical admin authorization`);
 }
 
+// UX phase 4i: the layout shows the access page, not a silent redirect, and each page still
+// checks before its own work; development tools stay off production.
+const adminLayout = source("app/admin/layout.tsx");
+assert.ok(adminLayout.indexOf("await auth(") >= 0 && adminLayout.indexOf("await auth(") < adminCheckIndex(adminLayout));
+assert.match(adminLayout, /if \(!canAccessAdmin\(email\)\) return <AdminAccessDenied /);
+assert.match(source("app/admin/admin-session.ts"), /export const auth = cache\(/);
+for (const pagePath of adminPagePaths) {
+  assert.doesNotMatch(source(pagePath), /redirect\(["']\/["']\)/, `${pagePath} must leave denial to the access page`);
+}
+const trackEventRoute = source("app/api/track/event/route.ts");
+assert.ok(
+  trackEventRoute.indexOf('getApplicationEnvironment() === "production"') >= 0 &&
+    trackEventRoute.indexOf('getApplicationEnvironment() === "production"') < trackEventRoute.indexOf("await auth("),
+  "Test conversion events must not exist in production"
+);
+assert.match(
+  source("app/admin/page.tsx"),
+  /applicationEnvironment === "development" \|\| applicationEnvironment === "staging"[\s\S]*showSmokeWorksheet \? <StagingSmokeEvidencePanel/,
+  "The smoke worksheet shows on development and staging only"
+);
+const clicksPage = source("app/admin/clicks/page.tsx");
+assert.match(clicksPage, /applicationEnvironment === "development" \? \(\s*<a[\s\S]*?localhost:5555/);
+assert.match(
+  clicksPage,
+  /applicationEnvironment === "development" \|\| applicationEnvironment === "staging" \? <AdminTestPanel \/>/
+);
+
 const adminConsumers = discoverFiles(path.join(process.cwd(), "app"), "route.ts")
   .concat(discoverFiles(path.join(process.cwd(), "app"), "page.tsx"))
   .filter((filePath) => fs.readFileSync(filePath, "utf8").includes("@/lib/admin"));
 const inventoriedConsumers = new Set([
   ...adminRoutePaths,
   ...adminPagePaths,
+  "app/lighting-reference/page.tsx",
   "app/api/me/route.ts",
   "app/api/tools/glb-optimizer/route.ts",
   "app/api/track/event/route.ts",

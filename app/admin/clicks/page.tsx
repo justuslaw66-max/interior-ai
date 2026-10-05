@@ -1,10 +1,17 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { CATALOG_ITEMS } from "@/lib/catalog";
+import type { Metadata } from "next";
 import AdminTestPanel from "@/components/AdminTestPanel";
 import RecentClicksTable from "@/components/RecentClicksTable";
-import { redirect } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { getApplicationEnvironment } from "@/lib/config";
+import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
+
+const SECTION = adminSection("/admin/clicks");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 const COMMISSION: Record<string, number> = {
   "Castlery Singapore": 0.08,
@@ -43,10 +50,8 @@ type RetailerRevenueRow = {
 
 export default async function AdminClicksPage() {
   const session = await auth();
-
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
+  const applicationEnvironment = getApplicationEnvironment();
 
   const now = new Date();
   const daysAgo = (n: number) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000);
@@ -152,45 +157,42 @@ export default async function AdminClicksPage() {
   });
 
   return (
-    <main className="min-h-screen bg-neutral-100 p-10 text-neutral-900">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Click Analytics</h1>
-          <p className="text-sm text-neutral-800">Admin-only page</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <a
-            className="inline-flex rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
-            href="/api/admin/clicks.csv"
-          >
-            Export CSV
-          </a>
-          <a
-            className="inline-flex rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
-            href="http://localhost:5555"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Prisma Studio
-          </a>
-        </div>
-      </div>
+    <div className="p-6 text-neutral-900">
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Clicks through to retailers, by product, retailer and design."
+        actions={
+          <>
+            <a
+              className="inline-flex rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
+              href="/api/admin/clicks.csv"
+            >
+              Export CSV
+            </a>
+            {applicationEnvironment === "development" ? (
+              <a
+                className="inline-flex rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
+                href="http://localhost:5555"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Prisma Studio
+              </a>
+            ) : null}
+          </>
+        }
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-xl bg-white p-4 shadow">
-          <div className="text-sm text-neutral-700">Clicks (7 days)</div>
-          <div className="text-3xl font-semibold text-neutral-900">{clicks7d}</div>
-        </div>
-
-        <div className="rounded-xl bg-white p-4 shadow">
-          <div className="text-sm text-neutral-700">Clicks (30 days)</div>
-          <div className="text-3xl font-semibold text-neutral-900">{clicks30d}</div>
-        </div>
-
-        <div className="rounded-xl bg-white p-4 shadow">
-          <div className="text-sm text-neutral-700">All-time clicks</div>
-          <div className="text-3xl font-semibold text-neutral-900">{totalClicks}</div>
-        </div>
+        {([["Clicks (7 days)", clicks7d], ["Clicks (30 days)", clicks30d], ["All-time clicks", totalClicks]] as const).map(
+          ([label, count]) => (
+            <div key={label} className="rounded-xl bg-white p-4 shadow">
+              <div className="text-sm text-neutral-700">{label}</div>
+              <div className="text-3xl font-semibold text-neutral-900">{count}</div>
+            </div>
+          )
+        )}
       </div>
 
       <section className="mt-8 rounded-xl bg-white p-4 shadow">
@@ -314,22 +316,14 @@ export default async function AdminClicksPage() {
       <section className="mt-8 rounded-xl bg-white p-4 shadow">
         <h2 className="text-lg font-semibold">Funnel</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-4">
-          <div className="rounded-lg border p-3">
-            <div className="text-xs text-neutral-500">Clicks</div>
-            <div className="text-2xl font-semibold">{totalClicks}</div>
-          </div>
-          <div className="rounded-lg border p-3">
-            <div className="text-xs text-neutral-500">Add to cart</div>
-            <div className="text-2xl font-semibold">{adds}</div>
-          </div>
-          <div className="rounded-lg border p-3">
-            <div className="text-xs text-neutral-500">Checkout</div>
-            <div className="text-2xl font-semibold">{checkouts}</div>
-          </div>
-          <div className="rounded-lg border p-3">
-            <div className="text-xs text-neutral-500">Purchase</div>
-            <div className="text-2xl font-semibold">{purchases}</div>
-          </div>
+          {([["Clicks", totalClicks], ["Add to cart", adds], ["Checkout", checkouts], ["Purchase", purchases]] as const).map(
+            ([label, count]) => (
+              <div key={label} className="rounded-lg border p-3">
+                <div className="text-xs text-neutral-500">{label}</div>
+                <div className="text-2xl font-semibold">{count}</div>
+              </div>
+            )
+          )}
         </div>
       </section>
 
@@ -372,7 +366,7 @@ export default async function AdminClicksPage() {
         </div>
       </section>
 
-      <AdminTestPanel />
-    </main>
+      {applicationEnvironment === "development" || applicationEnvironment === "staging" ? <AdminTestPanel /> : null}
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
+import { getApplicationEnvironment } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
 import { ApiBoundaryError, apiErrorResponse, createOperationId, readJsonRequest } from "@/lib/api-boundary";
 
@@ -14,6 +15,10 @@ export async function POST(req: Request) {
   const operationId = createOperationId();
   const startedAt = Date.now();
   try {
+    // Test events are for development and staging; production has real conversions only (UX phase 4i).
+    if (getApplicationEnvironment() === "production") {
+      throw new ApiBoundaryError(404, "NOT_FOUND", "Not found.");
+    }
     const session = await auth();
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {
       throw new ApiBoundaryError(404, "NOT_FOUND", "Not found.");
