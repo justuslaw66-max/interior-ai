@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1231,
+      "lines": 1222,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5473,
+      "lines": 5472,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -2129,7 +2129,7 @@
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 22
+        "maximum": 21
       }
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -4339,7 +4339,7 @@
     "lib/useDesignPageNamedCameraViewsController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 119
+        "maximum": 118
       }
     },
     "lib/useDesignPageNewPlanController.ts": {

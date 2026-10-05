@@ -64,6 +64,7 @@ import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
 import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "./canvasChipStyle";
+import { memoizeByObject } from "./memoizeByObject";
 type RectZone = {
   id: string;
   x: number;
@@ -568,11 +569,9 @@ const getRoomHoleOutlinePoints = (room: HouseRoom2D): Array<Array<[number, numbe
       return [...points, points[0]];
     });
 
-const buildRoomShapeGeometry = (room: HouseRoom2D) =>
-  buildRoomPlanShape(getRoomOutlinePoints(room), getRoomHoleOutlinePoints(room));
-
-const buildInnerFloorShapeGeometry = (room: HouseRoom2D) =>
-  buildRoomPlanShape(buildInnerFloorGeometry2D(room), getRoomHoleOutlinePoints(room));
+// One shape per room object, so a re-render (a hover, a selection) keeps each room's ShapeGeometry.
+const buildRoomShapeGeometry = memoizeByObject((room: HouseRoom2D) => buildRoomPlanShape(getRoomOutlinePoints(room), getRoomHoleOutlinePoints(room)));
+const buildInnerFloorShapeGeometry = memoizeByObject((room: HouseRoom2D) => buildRoomPlanShape(buildInnerFloorGeometry2D(room), getRoomHoleOutlinePoints(room)));
 
 function buildRectangleLinePoints(points: FloorPlanPoint[]): Array<[number, number, number]> {
   if (points.length !== 2) return [];

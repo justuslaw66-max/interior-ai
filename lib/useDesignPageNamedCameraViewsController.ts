@@ -88,6 +88,8 @@ export type DesignPageNamedCameraViewsControllerConfiguration = {
 
 export type DesignPageNamedCameraViewsControllerRefs = {
   designSnapshot: { current: DesignSnapshot };
+  /** The latest camera view, live while the controls glide; the committed `cameraView` state trails it. */
+  cameraView: { current: CameraView };
 };
 
 export type DesignPageNamedCameraViewsControllerActions = {
@@ -108,7 +110,7 @@ export type UseDesignPageNamedCameraViewsControllerInput = {
 export function useDesignPageNamedCameraViewsController({
   state: { cameraView },
   configuration: { maximumSavedViews, openTransitionDurationMs },
-  refs: { designSnapshot: designSnapshotRef },
+  refs: { designSnapshot: designSnapshotRef, cameraView: cameraViewRef },
   actions: {
     setDesignSnapshot,
     setLegacySavedViews,
@@ -125,12 +127,13 @@ export function useDesignPageNamedCameraViewsController({
       return;
     }
 
+    const liveView = cameraViewRef.current;
     const savedView = buildDesignPageSavedCameraView({
       idTimestamp: Date.now(),
       requestedName: cameraViewNameInput,
       existingViewCount: room.savedViews?.length ?? 0,
-      cameraPosition: cameraView.pos,
-      cameraTarget: cameraView.target,
+      cameraPosition: liveView.pos,
+      cameraTarget: liveView.target,
       timestamp: Date.now(),
     });
     const nextRoomViews = appendDesignPageSavedCameraView(
@@ -140,7 +143,7 @@ export function useDesignPageNamedCameraViewsController({
     );
     const nextLegacyViews = mapDesignPageSavedCameraViewsToLegacy(
       nextRoomViews,
-      cameraView.fov
+      liveView.fov
     );
 
     setDesignSnapshot((previous) => {
@@ -155,10 +158,8 @@ export function useDesignPageNamedCameraViewsController({
     setCameraViewNameInput("");
     showToast(`${savedView.name} saved`);
   }, [
-    cameraView.fov,
-    cameraView.pos,
-    cameraView.target,
     cameraViewNameInput,
+    cameraViewRef,
     designSnapshotRef,
     maximumSavedViews,
     setDesignSnapshot,

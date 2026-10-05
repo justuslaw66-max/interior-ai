@@ -123,7 +123,7 @@ export function useDesignPageEditorInteractionRegistration({
 
   const presentationState = useDesignPagePresentationStateRegistration({
     state: { cameraView: planViewport.state.camera.cameraView },
-    refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef },
+    refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef, cameraView: cameraBridge.refs.cameraView },
     actions: {
       document: { setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot },
       camera: {

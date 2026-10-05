@@ -5,7 +5,11 @@ import {
   Shape,
 } from "three";
 
-import type { CompiledFloorPlanStructureV2 } from "@/lib/floor-plan-compiler-v2";
+import type {
+  CompiledFloorPlanOpeningV2,
+  CompiledFloorPlanStructureV2,
+} from "@/lib/floor-plan-compiler-v2";
+import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
 import type { PlanarUnionPolygonMm } from "@/lib/floor-plan-planar-union";
 import type {
   CanonicalFloorPlanLineSegment,
@@ -168,4 +172,25 @@ export function structureColor(kind: CompiledFloorPlanStructureV2["kind"]) {
   if (kind === "shaft") return "#cbd5e1";
   if (kind === "column" || kind === "structural_core") return "#94a3b8";
   return "#d1d5db";
+}
+
+/**
+ * An opening's 2D symbol lines, each with its plan points ready for drei's
+ * `Line`. The host span follows the exact wall path the opening sits on.
+ * Build these once per opening: a new `points` array makes `Line` rebuild its
+ * geometry.
+ */
+export function canonicalOpening2DSymbolLines(
+  opening: CompiledFloorPlanOpeningV2,
+  hostSegments: CanonicalFloorPlanLineSegment[]
+) {
+  const hostPoints = hostSegments.length
+    ? [hostSegments[0].start, ...hostSegments.map((segment) => segment.end)]
+    : [opening.start, opening.end];
+  return buildCanonicalOpeningSymbolLinesV2(opening).map((symbol) => ({
+    ...symbol,
+    linePoints: (symbol.role === "host_span" ? hostPoints : symbol.points).map(
+      (point): [number, number, number] => [point.xMm / 1000, 0.014, point.zMm / 1000]
+    ),
+  }));
 }
