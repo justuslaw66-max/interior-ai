@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, type MutableRefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetryFacade";
+import { skipUnchangedCanvasSize } from "@/components/editor/design-page/skipUnchangedCanvasSize";
 import {
   recordSceneDemandMutation,
   requestSceneDemandFrame,
@@ -17,8 +18,9 @@ export const DESIGN_SCENE_FRAMELOOP = "demand" as const;
 export const DESIGN_SCENE_CONTROL_DAMPING_FACTOR = 0.08;
 const DESIGN_SCENE_MAX_DAMPING_FRAME_SECONDS = 0.125;
 
-export function initializeDesignSceneDemandRenderer({ gl }: RootState) {
-  instrumentGLBMainThreadRenderer(gl);
+export function initializeDesignSceneDemandRenderer(state: RootState) {
+  instrumentGLBMainThreadRenderer(state.gl);
+  skipUnchangedCanvasSize(state);
 }
 
 export const DESIGN_SCENE_DEMAND_PROPS = Object.freeze({
