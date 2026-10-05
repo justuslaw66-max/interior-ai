@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { flushSync } from "react-dom";
 import { X } from "lucide-react";
 import { useEditorDialogLifecycle } from "@/components/editor/design-system/useEditorDialogLifecycle";
@@ -15,6 +15,9 @@ const START_DESIGN_RETURN_FOCUS_IDS = [CLIENT_PREVIEW_FALLBACK_ACTION_ID] as con
 
 export type StartDesignChooserProps = {
   open: boolean;
+  /** Plan's "Choose a template" opened it (ST8): at Templates, and focus goes back to that button. */
+  atTemplates: boolean;
+  openerId: string | null;
   /** The choices wait until the editor can change the design (products loaded, not Client Preview). */
   ready: boolean;
   isAuthenticated: boolean;
@@ -29,35 +32,52 @@ export type StartDesignChooserProps = {
 };
 
 /**
- * Plan's template list focuses its heading and later hands focus back to what held it, so More
- * takes focus first, once the chooser and the background it made inert are gone.
+ * Plan's address search focuses its heading and later hands focus back to what held it, so the
+ * chooser's opener (else More) takes focus first, once the chooser and the inert background are gone.
  */
-function handOverToAddressSearch(close: () => void, openAddressSearch: () => void) {
+function handOverToAddressSearch(close: () => void, openAddressSearch: () => void, openerId: string | null) {
   flushSync(close);
-  document.getElementById(CLIENT_PREVIEW_FALLBACK_ACTION_ID)?.focus({ preventScroll: true });
+  const opener = openerId ? document.getElementById(openerId) : null;
+  (opener ?? document.getElementById(CLIENT_PREVIEW_FALLBACK_ACTION_ID))?.focus({ preventScroll: true });
   openAddressSearch();
 }
 
-/**
- * Start a new design (audit findings FR1, FR3, ST2, ST7, ST8), laid out as in the mockup: four
- * ways to begin, then the templates. It covers the editor as one screen; Close or Escape keeps
- * the design that was open.
- */
-export function StartDesignChooser(props: StartDesignChooserProps) {
-  const { open, isAuthenticated, onClose } = props;
+type ChooserLifecycleInput = Pick<StartDesignChooserProps, "open" | "atTemplates" | "openerId" | "onClose">;
+
+/** Opened at Templates, the chooser scrolls to them and focuses their heading (ST8). */
+function useStartDesignChooserLifecycle({ open, atTemplates, openerId, onClose }: ChooserLifecycleInput) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const templatesHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const focusRestorationEnabledRef = useRef(true);
+  const returnFocusIds = useMemo(
+    () => (openerId ? [openerId, CLIENT_PREVIEW_FALLBACK_ACTION_ID] : START_DESIGN_RETURN_FOCUS_IDS),
+    [openerId]
+  );
   useEffect(() => {
     if (open) focusRestorationEnabledRef.current = true;
   }, [open]);
+  useEffect(() => {
+    if (open && atTemplates) templatesHeadingRef.current?.scrollIntoView({ block: "start" });
+  }, [open, atTemplates]);
   const requestClose = useEditorDialogLifecycle({
-    open, dialogRef, panelRef, closeButtonRef, returnFocusIds: START_DESIGN_RETURN_FOCUS_IDS,
-    focusRestorationEnabledRef, hideWhenSuperseded: false, cancelFocusRestorationOnUnmount: false,
+    open, dialogRef, panelRef, closeButtonRef, initialFocusRef: atTemplates ? templatesHeadingRef : undefined,
+    returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded: false, cancelFocusRestorationOnUnmount: false,
     manageBackground: true, lockBodyScroll: true, waitForEntryTransition: false, closeDisabled: false, onClose,
   });
+  return { dialogRef, panelRef, closeButtonRef, templatesHeadingRef, focusRestorationEnabledRef, requestClose };
+}
+
+/**
+ * Start a new design (audit findings FR1, FR3, ST2, ST7, ST8), laid out as in the mockup: four
+ * ways to begin, then the templates, the editor's one template list. It covers the editor as one
+ * screen; Close or Escape keeps the design that was open.
+ */
+export function StartDesignChooser(props: StartDesignChooserProps) {
+  const { open, isAuthenticated, onClose } = props;
+  const { dialogRef, panelRef, closeButtonRef, templatesHeadingRef, focusRestorationEnabledRef, requestClose } =
+    useStartDesignChooserLifecycle(props);
   if (!open) return <UploadSignInDialog {...props.uploadSignIn} />;
   const showTemplates = () => {
     templatesHeadingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -65,7 +85,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
   };
   const searchAddress = () => {
     focusRestorationEnabledRef.current = false;
-    handOverToAddressSearch(onClose, props.onSearchAddress);
+    handOverToAddressSearch(onClose, props.onSearchAddress, props.openerId);
   };
   return (
     <div

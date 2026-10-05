@@ -201,7 +201,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3533,
+      "lines": 3169,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -1880,12 +1880,12 @@
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
-        "count": 6,
-        "maximum": 3410
+        "count": 5,
+        "maximum": 3046
       },
       "complexFunctions": {
-        "count": 4,
-        "maximum": 237
+        "count": 2,
+        "maximum": 227
       }
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -2017,7 +2017,7 @@
     "components/editor/FloorPlanAddressSearch.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 208
+        "maximum": 207
       },
       "complexFunctions": {
         "count": 1,
@@ -4075,7 +4075,7 @@
     "lib/useDesignPageBetaStartController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 86
+        "maximum": 82
       }
     },
     "lib/useDesignPageBilling.ts": {

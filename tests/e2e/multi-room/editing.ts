@@ -1,7 +1,7 @@
 import { WIDE_PLAN_TOP_INSET_PX } from "../../../lib/editor-canvas-insets";
 import { test, expect } from "../fixtures";
 import {
-  chooseTemplateStart,
+  addOneRoom,
   clickWithFallback,
   expectPlan2DProjectionHealthy,
   getEmptyCanvasPoint,
@@ -19,8 +19,7 @@ export function registerEditingTests() {
     let duplicateRoomCount = "3 rooms";
     let deleteRoomCount = "2 rooms";
     if (await planStartTemplate.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await planStartTemplate.click();
-      await page.getByTestId("add-room-template-bedroom").click();
+      await addOneRoom(page);
     } else {
       duplicateRoomCount = "2 rooms";
       deleteRoomCount = "1 room";
@@ -135,8 +134,7 @@ export function registerEditingTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D", exact: true }).click();
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
 
     const canvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
     expect(canvasBox).not.toBeNull();

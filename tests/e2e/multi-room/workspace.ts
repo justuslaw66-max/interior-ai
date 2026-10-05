@@ -1,13 +1,14 @@
 import { test, expect } from "../fixtures";
 import type { Page } from "@playwright/test";
 import {
+  addOneRoom,
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
   clickWithFallback,
   getActiveRoomBodyProbe,
   getEmptyCanvasPoint,
 } from "./helpers";
-import { confirmCatalogPlacementIfVisible } from "../variant-test-utils";
+import { chooseStartTemplate, confirmCatalogPlacementIfVisible } from "../variant-test-utils";
 
 // Plan, Furnish and Shop are steps in the command bar.
 async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop") {
@@ -398,7 +399,7 @@ export function registerWorkspaceTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-compact_two_bed").click();
+    await chooseStartTemplate(page, "compact_two_bed");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
     await page.getByRole("button", { name: "3D", exact: true }).click();
     const rail = page.getByTestId("plan-right-rail");
@@ -472,8 +473,7 @@ export function registerWorkspaceTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D", exact: true }).click();
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
 
     const activeRoomLabels = page.locator(
       '[data-testid="house-room-2d-label"][data-active="true"]'

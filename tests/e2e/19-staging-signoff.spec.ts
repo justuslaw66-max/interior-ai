@@ -139,14 +139,14 @@ test.describe("19. Staging Signoff Evidence", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
     const betaStartTemplate = page.getByTestId("beta-start-template");
     if (await betaStartTemplate.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // The beta panel's Choose a template opens Start a new design at its Templates (UX ST8).
       await betaStartTemplate.click();
-      await page.getByTestId("apply-furnished-template-studio").click();
     } else {
       // New design opens Start a new design.
       await page.getByTestId("editor-command-overflow").click();
       await page.getByTestId("editor-command-new-plan").click();
-      await chooseStartTemplate(page, "studio", { furnished: true });
     }
+    await chooseStartTemplate(page, "studio", { furnished: true });
     await confirmPlanTemplateReplacementIfNeeded(page);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);

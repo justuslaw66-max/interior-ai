@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
 import { chooseTemplateStart } from "./multi-room/helpers";
+import { chooseStartTemplate } from "./variant-test-utils";
 
 const PANEL_ATTRIBUTE = "data-selected-wall-panel-id";
 
@@ -732,7 +733,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
@@ -882,7 +883,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 },
@@ -986,7 +987,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
@@ -1075,7 +1076,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }

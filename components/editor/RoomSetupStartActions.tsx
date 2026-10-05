@@ -1,6 +1,7 @@
 "use client";
 
 import { FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID } from "@/lib/floor-plan-upload-dialog-focus";
+import { PLAN_START_TEMPLATE_ACTION_ID } from "@/lib/start-templates-request";
 
 type RoomSetupStartActionsProps = {
   dark: boolean;
@@ -14,7 +15,8 @@ type RoomSetupStartActionsProps = {
 };
 
 /**
- * The other ways to start, under the room card: a template, a measured room, or a floor plan.
+ * The other ways to start, under the room card: a template (Start a new design's, ST8), a measured
+ * room, or a floor plan.
  * Upload floor plan is one visible line here, as in the Plan mockup (audit finding ST2); it was
  * a "Choose a file" tile in a section that started collapsed. The link is the same blue in the
  * Pro theme, whose work surfaces are light too.
@@ -29,6 +31,7 @@ export function RoomSetupStartActions({
     <>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
+          id={PLAN_START_TEMPLATE_ACTION_ID}
           type="button"
           data-testid="plan-start-template"
           className={secondaryActionClass}

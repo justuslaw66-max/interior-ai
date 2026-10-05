@@ -412,14 +412,12 @@ const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
 for (const required of [
   'data-testid="starter-floor-plan-picker"',
   'aria-labelledby="starter-floor-plan-picker-title"',
-  'data-testid="skip-to-starter-layouts"',
   "templatePickerHeadingRef.current?.focus({ preventScroll: true })",
-  "firstTemplateActionRef.current?.focus()",
   "opener.focus({ preventScroll: true })",
 ]) {
   assert.ok(
     planPanel.includes(required),
-    `new-plan picker focus workflow must preserve ${required}`
+    `Plan's address search focus workflow must preserve ${required}`
   );
 }
 
