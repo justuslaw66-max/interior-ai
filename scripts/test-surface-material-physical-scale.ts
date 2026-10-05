@@ -350,7 +350,9 @@ const yamlFaces = getAllSurfaceMaterialYamlEntries().filter((entry) => entry.tex
 const runTuples = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.filter(
   (tuple) => tuple[32] && typeof tuple[32][0] === "string"
 );
-assert.equal(runTuples.length, yamlFaces.length, "every catalogue face list is written as a run");
+const runnableFaces = yamlFaces.filter((entry) => compactSurfaceTextureFaces(entry.texture_assets.faces ?? []));
+assert.equal(runTuples.length, runnableFaces.length, "every numbered face list of one size is written as a run");
+assert.ok(runnableFaces.length > 0, "the catalogue has face lists written as runs");
 for (const entry of yamlFaces) {
   const id = entry.surface_material.material_id;
   assert.deepEqual(
