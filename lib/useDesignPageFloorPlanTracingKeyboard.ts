@@ -165,9 +165,9 @@ export function bindDesignPageFloorPlanTracingKeyboard(
 export function useDesignPageFloorPlanTracingKeyboard(
   input: UseDesignPageFloorPlanTracingKeyboardInput
 ): void {
-  const { editorMode, isClientPreview, viewMode } = input.state;
+  const { isClientPreview, viewMode } = input.state;
   useEffect(() => {
-    if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
+    if (isClientPreview || viewMode !== "2d") return;
     return bindDesignPageFloorPlanTracingKeyboard(window, input);
-  }, [editorMode, input, isClientPreview, viewMode]);
+  }, [input, isClientPreview, viewMode]);
 }

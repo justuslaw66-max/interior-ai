@@ -86,7 +86,7 @@ type FixtureOptions = {
   rooms?: HousePlanRoom2D[];
   activeRoomId?: string;
   viewMode?: "2d" | "3d";
-  editorMode?: "design" | "adjust" | "ai" | "buy" | "present";
+  editorMode?: "design" | "adjust" | "ai" | "buy";
   isDesigner?: boolean;
   isClientPreview?: boolean;
   selectedItem?: DesignItem | null;
@@ -439,11 +439,12 @@ assert.equal(preview.state.selectionControls.floorStack, null);
 assert.equal(preview.state.selectionControls.multiSelection, null);
 assert.equal(preview.state.selectionControls.selectedZone, null);
 
-const presentation = adaptReadModel(
-  buildReadModel({ rooms: [roomA, roomB], viewMode: "3d", editorMode: "present" })
+// Present mode retired with Present & export (phase 4's small PR): the navigator is never disabled.
+const furnishing = adaptReadModel(
+  buildReadModel({ rooms: [roomA, roomB], viewMode: "3d", editorMode: "adjust" })
 );
-assert.ok(presentation.state.navigator);
-assert.equal(presentation.configuration.navigator.disabled, true);
+assert.ok(furnishing.state.navigator);
+assert.deepEqual(Object.keys(furnishing.configuration.navigator), ["dark"]);
 
 const openingEdits: Parameters<BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"]>[] = [];
 const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, viewMode: "3d" }),

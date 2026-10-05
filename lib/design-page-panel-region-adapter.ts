@@ -11,7 +11,7 @@ type ControlsPanel = NonNullable<DesignPagePanelRegionState["controls"]>;
 
 export type BuildDesignPagePanelRegionAdapterInput = {
   state: {
-    editorMode: "design" | "adjust" | "ai" | "buy" | "present";
+    editorMode: "design" | "adjust" | "ai" | "buy";
     shoppingVisible: boolean;
     controlsVisible: boolean;
     hasSelectedCabinet: boolean;

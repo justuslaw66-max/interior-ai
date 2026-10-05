@@ -29,7 +29,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
   state: {
     editor: {
       viewMode: CanvasState["viewMode"];
-      editorMode: StructureConfiguration["editorMode"];
+      editorMode: ItemsConfiguration["editorMode"];
       isClientPreview: boolean;
       isDesigner: boolean;
       canEdit: boolean;
@@ -217,7 +217,6 @@ export function buildDesignPageSceneRegionAdapter({
         orbit: configuration.orbit,
       },
       structure: {
-        editorMode: editor.editorMode,
         isClientPreview: editor.isClientPreview,
         plan: {
           measurementUnit: plan.measurementUnit,
@@ -237,7 +236,7 @@ export function buildDesignPageSceneRegionAdapter({
           pulse: scene.gridPulse,
           coverage: editor.viewMode === "2d" ? "workspace" : "local",
         },
-        zonesVisible: !editor.isClientPreview && editor.editorMode !== "present",
+        zonesVisible: !editor.isClientPreview,
         zoneOutlinesAlways: editor.isDesigner,
         activeRoomOffset: room.activePlanOffset,
         activeRoomId: room.guidanceActiveId,

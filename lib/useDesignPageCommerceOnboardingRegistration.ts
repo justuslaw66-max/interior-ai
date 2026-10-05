@@ -54,7 +54,6 @@ export function useDesignPageCommerceOnboardingRegistration({
       designId: base.state.identity.designId,
       shareToken: base.state.identity.shareToken, downloadOpen: base.state.dialogs.downloadOpen,
       plan: base.state.access.plan,
-      editorMode: viewportShell.state.editor.editorMode,
       viewMode: base.state.editor.viewMode,
       mode: base.state.brief.mode,
       isClientPreview: coreShell.derived.access.isClientPreview,

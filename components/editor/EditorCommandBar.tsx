@@ -19,7 +19,7 @@ import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { useCallback, useRef, useState, type ReactNode } from "react";
-type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
+type EditorMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorCommandBarProps = {
   isClientPreview: boolean;

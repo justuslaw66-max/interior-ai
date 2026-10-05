@@ -121,7 +121,7 @@ assert.match(chrome, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);/
 assert.match(chrome, /const overCanvas = !bar\.isClientPreview && bar\.editorMode !== "buy";\s*const onCanvas = wide && overCanvas;/);
 assert.match(chrome, /\{overCanvas && !wide \? \(\s*<PhoneCanvasPills/);
 assert.match(chrome, /\{onCanvas \? \(\s*<CanvasViewToolbar/);
-assert.match(chrome, /canFit=\{Boolean\(state\.commandBar\.room\) && bar\.editorMode !== "present"\}/);
+assert.match(chrome, /canFit=\{Boolean\(state\.commandBar\.room\)\}/);
 assert.match(chrome, /\{onCanvas \? <KeyboardShortcutsButton dark=\{dark\} \/> : null\}/);
 assert.match(chrome, /<KeyboardShortcutsSheet enabled=\{!bar\.isClientPreview\}/);
 assert.match(read("lib/useMediaQuery.ts"), /CANVAS_TOOLBAR_MEDIA_QUERY = "\(min-width: 48rem\)"/);

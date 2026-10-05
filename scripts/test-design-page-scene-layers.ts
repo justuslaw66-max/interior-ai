@@ -590,8 +590,8 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /interactive=\{\s*configuration\.editorMode !== "present" &&\s*!configuration\.isClientPreview\s*\}/,
-  "Whole-home structure interaction should remain disabled in present and client-preview modes."
+  /interactive=\{!configuration\.isClientPreview\}/,
+  "Whole-home structure interaction should remain disabled in Client Preview."
 );
 assert.match(
   housePlanRenderer3DSource,
@@ -746,11 +746,11 @@ assert.doesNotMatch(
 );
 const structureConfigurationSource =
   adapterSource.match(
-    /structure:\s*\{\s*editorMode: editor\.editorMode,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
+    /structure:\s*\{\s*isClientPreview: editor\.isClientPreview,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
   )?.[0] ?? "";
 assert.match(
   structureConfigurationSource,
-  /editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
+  /isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
   "The scene adapter should map editor and plan structure configuration."
 );
 assert.doesNotMatch(

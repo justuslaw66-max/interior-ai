@@ -137,7 +137,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 337,
+      "lines": 332,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -161,7 +161,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 410,
+      "lines": 405,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -181,7 +181,7 @@
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
-      "lines": 495,
+      "lines": 482,
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -637,7 +637,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 657,
+      "lines": 653,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -1585,11 +1585,11 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 242
+        "maximum": 237
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 34
+        "maximum": 33
       }
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -1661,11 +1661,11 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 232
+        "maximum": 229
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 18
+        "maximum": 16
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {
@@ -1819,11 +1819,11 @@
     "components/editor/design-page/SceneItemsLayer.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 363
+        "maximum": 350
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 57
+        "maximum": 54
       }
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -3187,7 +3187,7 @@
     "lib/design-page-scene-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 153
+        "maximum": 152
       }
     },
     "lib/design-page-selection-panel-model.ts": {
@@ -3205,7 +3205,7 @@
     "lib/design-page-viewport-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 192
+        "maximum": 191
       }
     },
     "lib/design-page-viewport-workspace-registration.ts": {
@@ -4155,7 +4155,7 @@
     "lib/useDesignPageCommerceOnboardingRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 73
+        "maximum": 72
       }
     },
     "lib/useDesignPageCoreShellBaseRegistration.ts": {
@@ -4337,7 +4337,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 452
+        "maximum": 450
       }
     },
     "lib/useDesignPagePanelActions.ts": {
@@ -4391,7 +4391,7 @@
     "lib/useDesignPagePlacementWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 181
+        "maximum": 180
       }
     },
     "lib/useDesignPagePlanActions.ts": {

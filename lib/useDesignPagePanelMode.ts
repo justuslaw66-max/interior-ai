@@ -1,6 +1,6 @@
 import { useCallback, useEffect, type Dispatch, type SetStateAction } from "react";
 
-export type DesignPageEditorMode = "design" | "adjust" | "ai" | "buy" | "present";
+export type DesignPageEditorMode = "design" | "adjust" | "ai" | "buy";
 export type DesignControlsPanelMode = "plan" | "furnish" | "ai";
 
 type UseDesignPagePanelModeParams = {

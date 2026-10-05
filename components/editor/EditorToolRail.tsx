@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy" | "present";
+export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorToolRailProps = {
   mode: EditorToolRailMode;

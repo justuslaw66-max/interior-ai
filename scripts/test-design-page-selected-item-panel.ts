@@ -192,7 +192,7 @@ for (const editorMode of ["design", "ai"] as const) {
     `the item panel shows in ${editorMode} mode.`,
   );
 }
-for (const editorMode of ["buy", "present"] as const) {
+for (const editorMode of ["buy"] as const) {
   assert.equal(
     buildDesignPagePanelRegionAdapter({ ...panelModelInput, state: { ...panelModelInput.state, editorMode } }).state.selectedItem,
     null,

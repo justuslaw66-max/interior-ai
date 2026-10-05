@@ -258,7 +258,7 @@ export function useDesignPageSelectionCoordinator({
         clearZoneSelection();
         setSelectedPlanRoomId(null);
         setSelectedRendererSurfaceTarget(null);
-        if (editorMode !== "present") setEditorMode("design");
+        setEditorMode("design");
       }
     },
     [
