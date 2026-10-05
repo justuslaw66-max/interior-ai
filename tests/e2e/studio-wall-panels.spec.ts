@@ -788,7 +788,8 @@ test.describe("Studio canonical wall panels", () => {
       PANEL_ATTRIBUTE,
       middlePanelId
     );
-    await page.getByText("Anima Beige", { exact: true }).first().click();
+    // A card names the model under its collection (Anima, then Beige); pick it by its full name.
+    await page.locator('[data-material-name="Anima Beige"] button').first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
 
     await clickPanelAt(page, finalHits[0].x, finalHits[0].y);
@@ -906,7 +907,8 @@ test.describe("Studio canonical wall panels", () => {
     const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
     await clickPanelAt(page, middleHits[0].x, middleHits[0].y);
     await page.getByRole("button", { name: "Change material" }).click();
-    await page.getByText("Anima Beige", { exact: true }).first().click();
+    // A card names the model under its collection (Anima, then Beige); pick it by its full name.
+    await page.locator('[data-material-name="Anima Beige"] button').first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
     // Grout sits in "Adjust pattern", closed for consumers (UX audit ED5, phase 4f).
     await openAdjustPattern(page);

@@ -5,7 +5,6 @@ export type SurfaceMaterialRenderRecord = {
     SurfaceMaterial["surface_material"],
     | "supplier"
     | "brand"
-    | "collection"
     | "material_id"
     | "slug"
     | "product_name"
@@ -30,6 +29,8 @@ export type SurfaceMaterialRenderRecord = {
 
 export type SurfaceMaterialCatalogMetadata = {
   material_id: string;
+  /** The collection is browser-only (filters and cards), so it stays out of the render data. */
+  surface_material: Pick<SurfaceMaterial["surface_material"], "collection">;
   source: Pick<
     SurfaceMaterial["source"],
     "source_url" | "sample_request_url" | "license_status"
@@ -53,6 +54,8 @@ export type SurfaceMaterialCatalogMetadata = {
 };
 
 export type SurfaceMaterialCatalogRecord = SurfaceMaterialRenderRecord & {
+  surface_material: SurfaceMaterialRenderRecord["surface_material"] &
+    SurfaceMaterialCatalogMetadata["surface_material"];
   source: SurfaceMaterialCatalogMetadata["source"];
   classification: SurfaceMaterialRenderRecord["classification"] &
     SurfaceMaterialCatalogMetadata["classification"];

@@ -183,6 +183,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
 function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCatalogMetadata {
   return {
     material_id: entry.surface_material.material_id,
+    surface_material: { collection: entry.surface_material.collection ?? null },
     source: {
       source_url: entry.source.source_url,
       sample_request_url: entry.source.sample_request_url ?? null,

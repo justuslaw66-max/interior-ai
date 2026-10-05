@@ -15,7 +15,7 @@ import {
 export type SurfaceBrowserTab = "tiles" | "rooms";
 export type WallSurfaceMode = "paint" | "materials";
 export type SurfaceBrowserViewMode = "grid" | "list";
-export type SurfaceFilterKey = "effect" | "collection" | "size" | "color";
+export type SurfaceFilterKey = "brand" | "collection" | "effect" | "size" | "color";
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
 export type SurfaceRoomSummary = {
@@ -115,12 +115,9 @@ export function getSurfaceMaterialSupplierLabel(material: SurfaceMaterialCatalog
   return material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier);
 }
 
+/** The manufacturer's collection (Dorica, Tabulae); never the brand, which has its own label. */
 export function getSurfaceMaterialCollectionLabel(material: SurfaceMaterialCatalogRecord) {
-  return (
-    material.surface_material.collection ??
-    material.surface_material.brand ??
-    formatSurfaceMaterialValue(material.surface_material.supplier)
-  );
+  return material.surface_material.collection?.trim() ?? "";
 }
 
 export function getSurfaceMaterialSizeLabel(material: SurfaceMaterialCatalogRecord) {
@@ -149,7 +146,6 @@ function getSurfaceMaterialDisplayName(material: SurfaceMaterialCatalogRecord) {
   const productName = material.surface_material.product_name.trim();
   const prefixes = [
     material.surface_material.brand,
-    "Gardenia Orchidea",
     "Gardenia",
   ].filter(Boolean) as string[];
   for (const prefix of prefixes) {
@@ -170,6 +166,19 @@ export function getSurfaceMaterialProductDisplayName(material: SurfaceMaterialCa
     )
     .trim();
   return withoutSize || displayName;
+}
+
+/**
+ * A card names the model ("Crema") under its collection ("Dorica"), as the manufacturer does.
+ * A name that doesn't start with its collection (Goodrich's) stays whole.
+ */
+export function getSurfaceMaterialModelName(material: SurfaceMaterialCatalogRecord) {
+  const displayName = getSurfaceMaterialProductDisplayName(material);
+  const collection = getSurfaceMaterialCollectionLabel(material);
+  const model = collection && displayName.toLowerCase().startsWith(`${collection.toLowerCase()} `)
+    ? displayName.slice(collection.length).trim()
+    : "";
+  return model || displayName;
 }
 
 export function getSurfaceMaterialSizeOptionLabel(material: SurfaceMaterialCatalogRecord) {

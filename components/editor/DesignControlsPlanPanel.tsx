@@ -85,18 +85,15 @@ import {
   SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   SURFACE_MATERIAL_VISIBLE_INCREMENT,
   WALL_PAINT_INITIAL_VISIBLE_COUNT,
-  buildFacetOptions,
   buildSurfaceMaterialProductGroups,
   getFloorMaterialSwatchStyle,
   getSurfaceMaterialCollectionLabel,
-  getSurfaceMaterialColorLabel,
-  getSurfaceMaterialEffectLabel,
   getSurfaceMaterialGroupMetaLabel,
   getSurfaceMaterialGroupSizeLabels,
   getSurfaceMaterialPrimaryId,
   getSurfaceMaterialProductDisplayName,
+  getSurfaceMaterialModelName,
   getSurfaceMaterialSampleUrl,
-  getSurfaceMaterialSizeLabel,
   getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
@@ -108,6 +105,12 @@ import {
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
 import { buildSurfaceSummaryRows, getActiveSurfaceRoomFloorAreaSqm } from "./design-controls-plan/surfaceSummaryRows";
+import {
+  buildSurfaceFilterOptions,
+  filterSurfaceMaterialGroups,
+  hasActiveSurfaceFilters,
+  withSurfaceFilter,
+} from "./design-controls-plan/surfaceMaterialFilters";
 import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
@@ -995,52 +998,15 @@ export default function DesignControlsPlanPanel({
     [favoriteSurfaceMaterialIds]
   );
   const surfaceFilterOptions = useMemo(
-    () => ({
-      effect: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialEffectLabel),
-      collection: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialCollectionLabel),
-      size: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialSizeLabel),
-      color: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialColorLabel),
-    }),
-    [visibleSurfaceMaterials]
+    () => buildSurfaceFilterOptions(visibleSurfaceMaterials, surfaceFilters.brand),
+    [visibleSurfaceMaterials, surfaceFilters.brand]
   );
-  const filteredSurfaceMaterialGroups = (() => {
-    const search = flooringSearch.trim().toLowerCase();
-    return surfaceMaterialProductGroups.filter((group) => {
-      return group.variants.some((material) => {
-        const materialId = material.surface_material.material_id;
-        const searchable = [
-          material.surface_material.product_name,
-          material.surface_material.material_id,
-          getSurfaceMaterialProductDisplayName(material),
-          getSurfaceMaterialSupplierLabel(material),
-          getSurfaceMaterialCollectionLabel(material),
-          getSurfaceMaterialSizeLabel(material),
-          getSurfaceMaterialSizeOptionLabel(material),
-          material.surface_material.material_family,
-          material.classification?.design_effect,
-          material.classification?.color_family,
-          ...(material.classification?.tone ?? []),
-          ...(material.classification?.style_cluster ?? []),
-          ...(material.classification?.room_suitability ?? []),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        const matchesSearch = !search || searchable.includes(search);
-        const matchesFilters =
-          (!surfaceFilters.effect || getSurfaceMaterialEffectLabel(material) === surfaceFilters.effect) &&
-          (!surfaceFilters.collection ||
-            getSurfaceMaterialCollectionLabel(material) === surfaceFilters.collection) &&
-          (!surfaceFilters.size || getSurfaceMaterialSizeLabel(material) === surfaceFilters.size) &&
-          (!surfaceFilters.color || getSurfaceMaterialColorLabel(material) === surfaceFilters.color) &&
-          (!surfaceFilters.favoritesOnly || favoriteSurfaceMaterialIdSet.has(materialId)) &&
-          (!surfaceFilters.recommendedOnly ||
-            (material.classification?.room_suitability ?? []).includes(activeRoomType) ||
-            (material.classification?.room_suitability ?? []).includes("living"));
-        return matchesSearch && matchesFilters;
-      });
-    });
-  })();
+  const filteredSurfaceMaterialGroups = filterSurfaceMaterialGroups(surfaceMaterialProductGroups, {
+    search: flooringSearch,
+    filters: surfaceFilters,
+    favoriteIds: favoriteSurfaceMaterialIdSet,
+    roomType: activeRoomType,
+  });
   const visibleFilteredSurfaceMaterialGroups = filteredSurfaceMaterialGroups.slice(
     0,
     surfaceVisibleLimit
@@ -1049,14 +1015,7 @@ export default function DesignControlsPlanPanel({
     0,
     filteredSurfaceMaterialGroups.length - visibleFilteredSurfaceMaterialGroups.length
   );
-  const hasSurfaceFilters =
-    Boolean(flooringSearch.trim()) ||
-    Boolean(surfaceFilters.effect) ||
-    Boolean(surfaceFilters.collection) ||
-    Boolean(surfaceFilters.size) ||
-    Boolean(surfaceFilters.color) ||
-    Boolean(surfaceFilters.favoritesOnly) ||
-    Boolean(surfaceFilters.recommendedOnly);
+  const hasSurfaceFilters = hasActiveSurfaceFilters(flooringSearch, surfaceFilters);
   const clearSurfaceFilters = () => {
     setFlooringSearch("");
     setSurfaceFilters({});
@@ -1221,10 +1180,7 @@ export default function DesignControlsPlanPanel({
     getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(materialId))
   );
   const setSurfaceFilter = (key: SurfaceFilterKey, value: string) => {
-    setSurfaceFilters((current) => ({
-      ...current,
-      [key]: value || undefined,
-    }));
+    setSurfaceFilters((current) => withSurfaceFilter(current, key, value, visibleSurfaceMaterials));
     track("floor_surface_filter_changed", {
       key,
       value: value || null,
@@ -1507,8 +1463,9 @@ export default function DesignControlsPlanPanel({
 
           {surfaceFilterDrawerOpen ? (
             <div data-testid="surfaces-filter-drawer" className={dark ? "designer-recessed mt-2 grid gap-2 rounded-lg p-2" : "mt-2 grid gap-2 rounded-lg border border-neutral-200 bg-white p-2"}>
-              {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
+              {renderSurfaceFilterSelect("brand", "Brand", surfaceFilterOptions.brand)}
               {renderSurfaceFilterSelect("collection", "Collection", surfaceFilterOptions.collection)}
+              {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
               {renderSurfaceFilterSelect("size", "Size", surfaceFilterOptions.size)}
               {renderSurfaceFilterSelect("color", "Color", surfaceFilterOptions.color)}
             </div>
@@ -1547,6 +1504,7 @@ export default function DesignControlsPlanPanel({
                   <div
                     key={materialId}
                     data-testid={`surface-floor-material-${materialId}`}
+                    data-material-name={displayName}
                     className={surfaceMaterialCardClass(materialId, selected)}
                   >
                     <button
@@ -1560,8 +1518,9 @@ export default function DesignControlsPlanPanel({
                         style={getSurfaceMaterialSwatchStyle(material)}
                       />
                       <span className={surfaceViewMode === "grid" ? "mt-2 block min-w-0" : "block min-w-0"}>
-                        <span className={dark ? "block truncate text-xs font-semibold text-neutral-100" : "block truncate text-xs font-semibold text-neutral-900"} title={material.surface_material.product_name}>
-                          {displayName}
+                        <span className={dark ? "block truncate text-xs text-neutral-400" : "block truncate text-xs text-neutral-500"}>{getSurfaceMaterialCollectionLabel(material)}</span>
+                        <span className={dark ? "block truncate text-sm font-semibold text-neutral-100" : "block truncate text-sm font-semibold text-neutral-900"} title={material.surface_material.product_name}>
+                          {getSurfaceMaterialModelName(material)}
                         </span>
                         <span className={floorMaterialMetaClass}>
                           {getSurfaceMaterialGroupMetaLabel(group)}
@@ -1654,7 +1613,7 @@ export default function DesignControlsPlanPanel({
                 </div>
                 <div className={progressMetaClass}>
                   {selectedSurfaceMaterial
-                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialCollectionLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
+                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialSupplierLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
                         selectedSurfaceMaterialGroup
                           ? ` · ${getSurfaceMaterialGroupSizeLabels(selectedSurfaceMaterialGroup).length} sizes`
                           : ""
