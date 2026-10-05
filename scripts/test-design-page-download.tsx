@@ -36,6 +36,8 @@ assert.match(free, />Download</, "The dialog should be called Download.");
 assert.match(button(free, "download-images"), /aria-disabled="false"/);
 assert.doesNotMatch(button(free, "download-images"), /disabled=""/);
 assert.doesNotMatch(button(free, "download-pdf"), /disabled=""/, "A signed-in user with products can download a PDF.");
+assert.match(free, /data-testid="presentation-lighting-status"[^>]*>While this is open, the 3D view shows presentation lighting and quality, which pictures and PDFs use\.</,
+  "Download says the 3D view shows the lighting its files use.");
 assert.match(free, /data-testid="download-free-note"[\s\S]*?one view with a small watermark[\s\S]*?data-testid="download-see-pricing"[^>]*>See pricing</,
   "Free users should read the limits and find Pricing before they download.");
 assert.doesNotMatch(free, /download-pdf-sign-in|download-pdf-needs-items/);
@@ -92,6 +94,11 @@ assert.match(
   read("lib/useDesignPageEditorChromeController.ts"),
   /const openDownload = \(\) => \{\s*actions\.navigation\.changeViewMode\("3d"\);\s*actions\.dialogs\.setDownloadOpen\(true\);[\s\S]*?onDownload: openDownload,/,
   "Download shows the 3D view it captures, then opens.",
+);
+assert.match(
+  read("lib/useDesignPageSceneRegionWorkspaceRegistration.ts"),
+  /lightingModeOverride:\s*[^\n]*base\.state\.dialogs\.downloadOpen\s*\?\s*"presentation"/,
+  "Download takes over Present & export's presentation lighting (J, 30 Sep).",
 );
 const workspace = read("components/editor/design-page/DesignPageWorkspace.tsx");
 assert.match(workspace, /onDownloadImages: \(\) => presentationBackupRegistration\.actions\.exportImages\(\{ limitsShown: true \}\)/);
