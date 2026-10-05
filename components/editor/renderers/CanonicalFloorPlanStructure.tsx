@@ -53,6 +53,7 @@ import {
 } from "./canonical-floor-plan/surfaceMaterials";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
+import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
 import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
@@ -1080,11 +1081,8 @@ export function CanonicalFloorPlanWalls3D({
     }
     return pinned;
   }, [model.floors, selectedOpeningId, selectedWallId]);
-  const cutawayWallKeys = useCanonicalCameraCutawayWallKeys(
-    model,
-    cutawayTarget,
-    pinnedWallIds
-  );
+  const cutawayWallKeys = useCanonicalCameraCutawayWallKeys(model, cutawayTarget, pinnedWallIds);
+  usePrebuiltCanonicalWallBands(model, cutawayTarget, pinnedWallIds, !focusRoomId);
   return (
     <group
       userData={{

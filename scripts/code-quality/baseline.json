@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1222,
+      "lines": 1220,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {

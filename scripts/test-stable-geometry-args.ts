@@ -117,5 +117,8 @@ assert.equal(cache.size, 2);
 value("a");
 value("b");
 assert.deepEqual(built, ["a", "b", "c", "b"], "Adding c evicts b, the least recently used.");
+assert.ok(cache.has("a") && !cache.has("c"), "has() reports what is cached.");
+value("d");
+assert.ok(!cache.has("a"), "has() does not make an entry recent: a was older than b, so d evicts it.");
 
 console.log("Stable geometry args tests passed.");

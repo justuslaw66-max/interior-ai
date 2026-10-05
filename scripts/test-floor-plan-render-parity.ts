@@ -23,6 +23,7 @@ import {
   CANONICAL_CUTAWAY_DIRECTIONS,
   canonicalCutawayDirectionStep,
   canonicalCutawayStepDirection,
+  canonicalCutawayTurn,
   canonicalWallCutawayKey,
   resolveCanonicalCameraCutawayWallKeys,
 } from "@/lib/floor-plan-camera-cutaway";
@@ -598,6 +599,26 @@ assert.equal(canonicalCutawayDirectionStep({ x: 0.0005, z: -0.0005 }), null, "St
 for (const step of [0, 1, 89, 180, 359]) {
   assert.equal(canonicalCutawayDirectionStep(canonicalCutawayStepDirection(step)), step);
 }
+// Every cut set an orbit around the bedroom can show, which the renderer builds in
+// idle time: one per compass step, nearest to the current view first, each new set
+// yielded once, and exactly the sets the resolver gives at the steps.
+const bedroomTarget = { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 };
+const cutawayAtStep = (step: number) =>
+  resolveCanonicalCameraCutawayWallKeys(fourRoomModel, { x: 0, z: 0 }, bedroomTarget, {
+    viewDirection: canonicalCutawayStepDirection(step),
+  });
+const cutawaySignature = (keys: ReadonlySet<string>) => [...keys].sort().join("|");
+const turnSteps = [...canonicalCutawayTurn(fourRoomModel, bedroomTarget, new Set(), 57)];
+const turnSets = turnSteps.filter((keys): keys is ReadonlySet<string> => keys !== undefined);
+assert.equal(turnSteps.length, CANONICAL_CUTAWAY_DIRECTIONS, "The turn should try every compass step.");
+assert.equal(cutawaySignature(turnSets[0]), cutawaySignature(cutawayAtStep(57)), "The current view's set comes first.");
+assert.equal(new Set(turnSets.map(cutawaySignature)).size, turnSets.length, "Each cut set appears once.");
+const everyStep = new Set(
+  Array.from({ length: CANONICAL_CUTAWAY_DIRECTIONS }, (_, step) => cutawaySignature(cutawayAtStep(step)))
+);
+assert.ok(turnSets.length >= 2, "A full turn around the bedroom changes the cut set.");
+assert.equal(turnSets.length, everyStep.size, "The turn finds every set the compass steps give.");
+assert.ok(turnSets.every((keys) => everyStep.has(cutawaySignature(keys))));
 const bedroomExcludedWallIds = new Set(
   fourRoomFloor.walls
     .filter((wall) =>
@@ -727,6 +748,11 @@ assert.doesNotMatch(
   "R3F 9 ignores a prop that becomes undefined, so a surface or opening that becomes pickable again needs meshRaycast."
 );
 assert.match(canonicalRenderer, /const meshRaycast = Mesh\.prototype\.raycast;/);
+assert.match(
+  canonicalRenderer,
+  /usePrebuiltCanonicalWallBands\(model, cutawayTarget, pinnedWallIds, !focusRoomId\);/,
+  "The 3D walls should build the bands for an orbit's cut sets in idle time, except in a focused room."
+);
 const cutawayHook = read("components/editor/renderers/canonical-floor-plan/useCameraCutaway.ts");
 assert.doesNotMatch(cutawayHook, /\.sort\(\)\.join/, "The per-frame cutaway hook should not build signature strings.");
 assert.match(

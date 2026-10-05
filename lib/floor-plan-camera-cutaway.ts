@@ -284,9 +284,9 @@ function isCanonicalWallCutAway(
 
 /**
  * The cutaway follows the view's compass direction in whole degrees, so an
- * orbit meets at most this many directions, and frames that stay within a
- * step skip the resolver. A degree is far below what the eye notices as a
- * wall comes and goes.
+ * orbit meets at most this many directions and every cut set it can show can
+ * be prepared ahead (`canonicalCutawayTurn`). A degree is far below what the
+ * eye notices as a wall comes and goes.
  */
 export const CANONICAL_CUTAWAY_DIRECTIONS = 360;
 
@@ -304,3 +304,32 @@ export function canonicalCutawayStepDirection(step: number) {
   return { x: Math.sin(angle), z: Math.cos(angle) };
 }
 
+/**
+ * Walks every compass step around the target, nearest to `startStep` first,
+ * yielding each cut set the first time it appears and `undefined` for a step
+ * whose set was already seen, so a caller can pause between steps. These are
+ * all the sets an orbit around the target can show.
+ */
+export function* canonicalCutawayTurn(
+  model: CanonicalFloorPlanRenderModel,
+  target: CanonicalCutawayTarget | null,
+  pinnedWallIds: ReadonlySet<string>,
+  startStep: number
+): Generator<ReadonlySet<string> | undefined, void, void> {
+  const seen = new Set<string>();
+  for (let index = 0; index < CANONICAL_CUTAWAY_DIRECTIONS; index += 1) {
+    const turn = index % 2 === 0 ? index / 2 : -(index + 1) / 2;
+    const step = (startStep + turn + CANONICAL_CUTAWAY_DIRECTIONS) % CANONICAL_CUTAWAY_DIRECTIONS;
+    const keys = resolveCanonicalCameraCutawayWallKeys(model, { x: 0, z: 0 }, target, {
+      viewDirection: canonicalCutawayStepDirection(step),
+      pinnedWallIds,
+    });
+    const signature = [...keys].sort().join("|");
+    if (seen.has(signature)) {
+      yield undefined;
+      continue;
+    }
+    seen.add(signature);
+    yield keys;
+  }
+}
