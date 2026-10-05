@@ -10,6 +10,10 @@ import type {
   SurfaceMaterialRenderRecord,
   SurfaceMaterialRenderTuple,
 } from "../lib/surface-material-runtime-types";
+import {
+  compactSurfaceTextureFaces,
+  expandSurfaceTextureFaces,
+} from "../lib/surface-texture-face-run";
 
 const GENERATED_RENDER_PATH = path.join(
   process.cwd(),
@@ -94,7 +98,8 @@ function toRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderTu
   const imagePhysicalSizeMm = entry.texture_assets.image_physical_size_mm ?? null;
   const faces = entry.texture_assets.faces ?? null;
   // Trailing fields are emitted only when present, so existing tuples stay byte-identical.
-  if (faces) return [...base, imagePhysicalSizeMm, faces];
+  // Numbered faces of one size are written as a run, which the runtime expands to the same list.
+  if (faces) return [...base, imagePhysicalSizeMm, compactSurfaceTextureFaces(faces) ?? faces];
   if (imagePhysicalSizeMm) return [...base, imagePhysicalSizeMm];
   return base;
 }
@@ -164,7 +169,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
       preview_room_url: tuple[19],
       tileable: tuple[20],
       ...(tuple[31] ? { image_physical_size_mm: tuple[31] } : {}),
-      ...(tuple[32] ? { faces: tuple[32] } : {}),
+      ...(tuple[32] ? { faces: expandSurfaceTextureFaces(tuple[32]) } : {}),
     },
     rendering: {
       default_rotation_deg: tuple[21],
