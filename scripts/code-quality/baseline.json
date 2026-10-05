@@ -3303,10 +3303,6 @@
       }
     },
     "lib/floor-plan-camera-cutaway.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 101
-      },
       "complexFunctions": {
         "count": 1,
         "maximum": 17

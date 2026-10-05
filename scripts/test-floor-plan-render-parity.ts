@@ -20,6 +20,9 @@ import {
   isPointInPlanarRing,
 } from "@/lib/floor-plan-planar-union";
 import {
+  CANONICAL_CUTAWAY_DIRECTIONS,
+  canonicalCutawayDirectionStep,
+  canonicalCutawayStepDirection,
   canonicalWallCutawayKey,
   resolveCanonicalCameraCutawayWallKeys,
 } from "@/lib/floor-plan-camera-cutaway";
@@ -582,6 +585,19 @@ assert(
   ),
   "A selected exterior wall must remain visible instead of becoming a paper-thin cutaway remnant."
 );
+// The cutaway follows whole-degree compass steps of the view: atan2(view.x, view.z),
+// wrapping at a full turn, and none when looking straight down.
+const degree = Math.PI / 180;
+const viewAt = (degrees: number) => ({ x: Math.sin(degrees * degree), z: Math.cos(degrees * degree) });
+assert.deepEqual([0, 90, 180, 270].map((degrees) => canonicalCutawayDirectionStep(viewAt(degrees))), [0, 90, 180, 270]);
+assert.equal(canonicalCutawayDirectionStep(viewAt(41.4)), 41);
+assert.equal(canonicalCutawayDirectionStep(viewAt(41.6)), 42);
+assert.equal(canonicalCutawayDirectionStep(viewAt(359.6)), 0, "Steps wrap at a full turn.");
+assert.equal(canonicalCutawayDirectionStep(viewAt(-90)), 270);
+assert.equal(canonicalCutawayDirectionStep({ x: 0.0005, z: -0.0005 }), null, "Straight down has no compass step.");
+for (const step of [0, 1, 89, 180, 359]) {
+  assert.equal(canonicalCutawayDirectionStep(canonicalCutawayStepDirection(step)), step);
+}
 const bedroomExcludedWallIds = new Set(
   fourRoomFloor.walls
     .filter((wall) =>
@@ -711,6 +727,18 @@ assert.doesNotMatch(
   "R3F 9 ignores a prop that becomes undefined, so a surface or opening that becomes pickable again needs meshRaycast."
 );
 assert.match(canonicalRenderer, /const meshRaycast = Mesh\.prototype\.raycast;/);
+const cutawayHook = read("components/editor/renderers/canonical-floor-plan/useCameraCutaway.ts");
+assert.doesNotMatch(cutawayHook, /\.sort\(\)\.join/, "The per-frame cutaway hook should not build signature strings.");
+assert.match(
+  cutawayHook,
+  /if \(sameKeys\(next, resolved\.keys\)\) return;/,
+  "The cutaway hook should keep its state when the cut set is unchanged."
+);
+assert.match(
+  cutawayHook,
+  /viewDirection: step === null \? viewDirection : canonicalCutawayStepDirection\(step\)[\s\S]*?const step = canonicalCutawayDirectionStep\(viewDirection\);[\s\S]*?resolved\.step === step &&/,
+  "The cutaway hook should resolve once per compass step, at the step's direction."
+);
 assert.doesNotMatch(
   canonicalRenderer,
   /testId: "canonical-wall-3d"[\s\S]{0,1800}<boxGeometry/,
