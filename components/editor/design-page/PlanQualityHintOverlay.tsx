@@ -1,4 +1,4 @@
-import { Line } from "@react-three/drei/core/Line";
+import { StableLine as Line } from "@/components/editor/renderers/StableLine";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
 

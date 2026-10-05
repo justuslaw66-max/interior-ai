@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { memoizeByObject } from "@/components/editor/renderers/memoizeByObject";
+import { sameLinePoints } from "@/components/editor/renderers/sameLinePoints";
 import { stableExtrudeOptions } from "@/components/editor/renderers/stableExtrudeOptions";
 import { createLeastRecentlyUsedCache } from "@/lib/least-recently-used-cache";
 
@@ -85,6 +86,21 @@ assert.match(
   "2D opening symbols should keep their Line points across re-renders."
 );
 assert.doesNotMatch(canonicalStructure, /points=\{sourcePoints\.map\(/);
+
+// The other 2D lines are built inline, so the 2D renderer and the plan-quality hints draw
+// through StableLine, which keeps the points array while its values stay the same.
+const planQualityHints = readFileSync(join(root, "components/editor/design-page/PlanQualityHintOverlay.tsx"), "utf8");
+for (const [name, source] of [["RoomRenderer2D", roomRenderer2D], ["PlanQualityHintOverlay", planQualityHints]]) {
+  assert.match(source, /import \{ StableLine as Line \} from "[^"]*\/StableLine";/, `${name} should draw its lines through StableLine.`);
+}
+const stableLine = readFileSync(join(rendererRoot, "StableLine.tsx"), "utf8");
+assert.match(stableLine, /if \(!unchanged\) setPoints\(props\.points\);[\s\S]*?points=\{unchanged \? points : props\.points\}/);
+assert.ok(sameLinePoints([[0, 0, 0], [1, 0, 2]], [[0, 0, 0], [1, 0, 2]]), "Equal tuples are the same points.");
+assert.ok(sameLinePoints([{ x: 1, y: 2, z: 3 }, 4], [{ x: 1, y: 2, z: 3 }, 4]), "Equal vectors and numbers are the same.");
+assert.ok(sameLinePoints([{ x: 1, y: 2 }], [{ x: 1, y: 2, z: 0 }]), "A Vector2 is a Vector3 at z = 0.");
+assert.ok(!sameLinePoints([[0, 0, 0], [1, 0, 2]], [[0, 0, 0], [1, 0, 2.001]]), "A moved point is a change.");
+assert.ok(!sameLinePoints([[0, 0, 0]], [[0, 0, 0], [1, 0, 2]]), "An added point is a change.");
+assert.ok(!sameLinePoints([{ x: 1, y: 2 }], [[1, 2]]), "A vector replaced by a tuple is a change.");
 
 // Wall bodies build their shapes with the bands, and keep them per cut-away set.
 const wallBands = readFileSync(

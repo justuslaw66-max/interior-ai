@@ -1,5 +1,5 @@
 "use client";
-import { Line } from "@react-three/drei/core/Line";
+import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
