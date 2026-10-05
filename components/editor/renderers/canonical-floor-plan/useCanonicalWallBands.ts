@@ -14,13 +14,38 @@ import { planarUnionShapes } from "./geometry";
 
 type CanonicalWallBand = CanonicalWallUnionBand & { shapes: ReturnType<typeof planarUnionShapes> };
 
-/** Cut sets kept per floor: a full turn around "h1" (13 rooms, 125 walls) passes 23. */
-export const CANONICAL_WALL_BAND_CACHE_LIMIT = 32;
+/**
+ * Cut sets kept per floor: a full turn around "h1" (13 rooms, 125 walls) shows
+ * 48 at its 360 compass steps, their bands about 1,500 outline points each.
+ */
+export const CANONICAL_WALL_BAND_CACHE_LIMIT = 64;
 
 const bandsByFloor = new WeakMap<
   CanonicalFloorPlanFloorRenderModel,
   LeastRecentlyUsedCache<CanonicalWallBand[]>
 >();
+
+function floorBandCache(floor: CanonicalFloorPlanFloorRenderModel) {
+  let cache = bandsByFloor.get(floor);
+  if (!cache) {
+    cache = createLeastRecentlyUsedCache<CanonicalWallBand[]>(CANONICAL_WALL_BAND_CACHE_LIMIT);
+    bandsByFloor.set(floor, cache);
+  }
+  return cache;
+}
+
+function excludedWallIdsOf(floor: CanonicalFloorPlanFloorRenderModel, cutawayWallKeys: ReadonlySet<string>) {
+  return new Set(
+    floor.walls
+      .filter((wall) => cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id)))
+      .map((wall) => wall.id)
+  );
+}
+
+/** Whether the floor already keeps the bands for this cut set. */
+export function hasCanonicalWallBands(floor: CanonicalFloorPlanFloorRenderModel, cutawayWallKeys: ReadonlySet<string>) {
+  return floorBandCache(floor).has([...excludedWallIdsOf(floor, cutawayWallKeys)].sort().join("|"));
+}
 
 /**
  * The floor's wall bodies as union bands, without its cut-away walls. Building
@@ -31,16 +56,8 @@ export function canonicalWallBands(
   floor: CanonicalFloorPlanFloorRenderModel,
   cutawayWallKeys: ReadonlySet<string>
 ): CanonicalWallBand[] {
-  let cache = bandsByFloor.get(floor);
-  if (!cache) {
-    cache = createLeastRecentlyUsedCache<CanonicalWallBand[]>(CANONICAL_WALL_BAND_CACHE_LIMIT);
-    bandsByFloor.set(floor, cache);
-  }
-  const excludedWallIds = new Set(
-    floor.walls
-      .filter((wall) => cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id)))
-      .map((wall) => wall.id)
-  );
+  const cache = floorBandCache(floor);
+  const excludedWallIds = excludedWallIdsOf(floor, cutawayWallKeys);
   // Shapes are built here, not per render, so a re-render keeps each band's geometry.
   return cache.get([...excludedWallIds].sort().join("|"), () =>
     buildCanonicalWallUnionBands(floor, { excludedWallIds }).map((band) => ({

@@ -161,7 +161,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 405,
+      "lines": 401,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1222,
+      "lines": 1209,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -577,7 +577,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 615,
+      "lines": 612,
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
@@ -597,7 +597,7 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 572,
+      "lines": 570,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
@@ -1661,11 +1661,7 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 229
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 16
+        "maximum": 227
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {
@@ -3289,10 +3285,6 @@
       }
     },
     "lib/floor-plan-camera-cutaway.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 101
-      },
       "complexFunctions": {
         "count": 1,
         "maximum": 17
@@ -3785,7 +3777,7 @@
     "lib/floor-plan-quality.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 317
+        "maximum": 314
       },
       "complexFunctions": {
         "count": 1,

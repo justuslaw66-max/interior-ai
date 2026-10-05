@@ -1,7 +1,7 @@
 "use client";
-import { Line } from "@react-three/drei/core/Line";
+import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -274,7 +274,7 @@ function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], i
   return getSurfaceMaterialPlanColor(settings.materialId, fallback);
 }
 
-function HouseRoomFloorFill2D({
+const HouseRoomFloorFill2D = memo(function HouseRoomFloorFill2D({
   room,
   fillColor,
   dragStatus,
@@ -348,7 +348,7 @@ function HouseRoomFloorFill2D({
       />
     </mesh>
   );
-}
+});
 
 function HouseRoomComparisonOverlay2D({
   room,

@@ -447,13 +447,21 @@ for (const expected of [
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
   "mapPlanOpeningsToRoomRenderer(",
-  "mapPlanFixedElementsToRoomRenderer(",
-  "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
+  "useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan))",
 ] as const) {
   assert.ok(
     structureSource.includes(expected),
     `Structure layer should own ${expected}.`
   );
+}
+// The structure layer's 2D overlays, memoized so a page re-render keeps them.
+const planOverlaysSource = readSource("lib/useRoomRendererPlanOverlays.ts");
+for (const expected of [
+  "mapPlanOpeningsToRoomRenderer(openings, rooms), [openings, rooms]",
+  "mapPlanFixedElementsToRoomRenderer(",
+  "mapPlanAnnotationsToRoomRenderer(annotations), [annotations]",
+] as const) {
+  assert.ok(planOverlaysSource.includes(expected), `The plan overlays hook should own ${expected}.`);
 }
 
 assert.match(
