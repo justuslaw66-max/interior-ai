@@ -77,8 +77,6 @@ export type PresentExportDialogProps = {
 
 export function PresentExportDialog({ configuration, state, actions }: PresentExportDialogProps) {
   const showDesignerTheme = configuration.designerTheme;
-  const canUseAdvancedExportStyles =
-    configuration.canUseAdvancedExportStyles;
   const {
     rooms,
     currentRoomId,
@@ -89,8 +87,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
     isExporting,
     isPdfExporting,
     sceneReady,
-    aiNotesLoading,
-    hasItems,
   } = state;
 
   if (!configuration.open) return null;
@@ -214,7 +210,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
 
           {/* Export Section */}
           <div className="space-y-2 border-t pt-4">
-            {/* UX audit SX4 (phase 4e): one primary action, no emoji; AI Notes is Pro's (Q5). */}
+            {/* UX audit SX4 (phase 4e): one primary action, no emoji. */}
             <Button
               variant="primary"
               className="w-full"
@@ -226,11 +222,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
             <Button className="w-full" disabled={isPdfExporting || !sceneReady} onClick={actions.onExportPdf}>
               {isPdfExporting ? "Generating…" : "Export PDF"}
             </Button>
-            {canUseAdvancedExportStyles ? (
-              <Button className="w-full" disabled={aiNotesLoading || !hasItems} onClick={actions.onGenerateAiNotes}>
-                {aiNotesLoading ? "Generating…" : "AI Notes"}
-              </Button>
-            ) : null}
           </div>
 
           {/* Exit Present Mode Button */}

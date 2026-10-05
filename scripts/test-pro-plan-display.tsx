@@ -7,7 +7,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LayoutVersionsSection } from "../components/editor/design-page/LayoutVersionsSection";
 import { PlanDisplaySection, PlanNotesSection, planStepFooter, type PlanDisplaySectionProps } from "../components/editor/design-page/PlanDisplaySection";
 import type { PresentExportDialogProps } from "../components/editor/design-page/PresentExportDialog";
-import { furnishStepFooter, stepPanelFooters } from "../components/editor/design-page/StepPanelFooters";
+import { aiStepFooter, furnishStepFooter, stepPanelFooters } from "../components/editor/design-page/StepPanelFooters";
+import { AiNotesSection } from "../components/editor/design-page/AiNotesSection";
 import { createLayoutVersion } from "../lib/layout-versions";
 import type { RoomSnapshot } from "../lib/room-types";
 
@@ -83,6 +84,28 @@ for (const viewMode of ["2d", "3d"] as const) {
   assert.equal(furnishStepFooter("plan", tools(true, viewMode)), null, "Only in Furnish.");
 }
 assert.equal(furnishStepFooter("furnish", null), null);
+// In Suggest a layout, Pro's AI notes on the active room (J, 5 Oct).
+const aiTools = (pro: boolean) =>
+  ({ configuration: { canUseAdvancedExportStyles: pro }, state: { aiNotesLoading: false, hasItems: true }, actions: { onGenerateAiNotes: noop } }) as unknown as PresentExportDialogProps;
+const aiFooter = aiStepFooter("ai", aiTools(true));
+assert.ok(aiFooter && aiFooter.type === AiNotesSection, "Pro has AI notes in Suggest a layout.");
+assert.equal(aiStepFooter("ai", aiTools(false)), null, "AI notes are Pro's.");
+assert.equal(aiStepFooter("furnish", aiTools(true)), null, "Only in Suggest a layout.");
+assert.ok(stepPanelFooters("ai", aiTools(true)).stepFooter, "The AI notes take the step's foot.");
+const aiSection = (loading: boolean, hasItems: boolean) =>
+  renderToStaticMarkup(createElement(AiNotesSection, { loading, hasItems, onGenerate: noop }));
+assert.match(aiSection(false, true), /data-testid="ai-notes-section"[\s\S]*<h3 id="ai-notes-heading"[^>]*>AI notes<\/h3>/);
+assert.match(aiSection(false, true), /<button[^>]*data-testid="ai-notes-generate"[^>]*>Get AI notes<\/button>/);
+assert.doesNotMatch(aiSection(false, true), /disabled=""|Add products to the room first/);
+assert.match(aiSection(false, false), /data-testid="ai-notes-generate" disabled=""/);
+assert.match(aiSection(false, false), /Add products to the room first\./);
+assert.match(aiSection(true, true), /data-testid="ai-notes-generate" disabled=""[^>]*>Generating…<\/button>/);
+assert.match(
+  read("lib/useDesignPagePresentExportController.ts"),
+  /onGenerateAiNotes: actions\.presentation\.generateAiNotes,/,
+  "AI notes leave the step as it is: no closing to design mode."
+);
+
 const planFooters = stepPanelFooters("plan", tools(true, "2d"));
 assert.ok(planFooters.stepFooter && planFooters.furnishFooter === null);
 const furnishFooters = stepPanelFooters("furnish", tools(true, "2d"));
@@ -128,7 +151,7 @@ assert.match(listed, /Manual · /);
 
 // Present & export: no plan display, no lighting presets, no export style, no layout versions.
 const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
-assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect|LayoutVersionsSection/);
+assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect|LayoutVersionsSection|AI Notes|onGenerateAiNotes\b(?!: \(\) => void)/);
 assert.match(presentExport, /data-testid="presentation-lighting-status"/);
 assert.equal(existsSync(join(root, "components/LightingPresetsUI.tsx")), false, "Lighting has one home: the Lighting drawer.");
 assert.doesNotMatch(read("components/editor/design-page/LightingSettingsControls.tsx"), /lighting-quality-select|Presentation quality|onPerformanceModeChange/);

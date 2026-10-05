@@ -7,6 +7,7 @@ import {
   getActiveRoomBodyProbe,
   getEmptyCanvasPoint,
 } from "./helpers";
+import { confirmCatalogPlacementIfVisible } from "../variant-test-utils";
 
 // Plan, Furnish and Shop are steps in the command bar; Present & export sits in the More menu.
 async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop" | "export") {
@@ -198,6 +199,66 @@ export function registerWorkspaceTests() {
 
     await clickWithFallback(deleteButtons.first());
     await expect(deleteButtons).toHaveCount(1);
+  });
+
+  test("Pro's AI notes sit at the foot of Suggest a layout", async ({ page }) => {
+    test.setTimeout(60_000);
+
+    // AI notes moved from Present & export to Suggest a layout, for Pro (J, 5 Oct). Free users have none.
+    await clearBrowserStorageBeforeNextLoad(page);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    await selectWorkspace(page, "furnish");
+    await clickWithFallback(page.getByTestId("editor-workflow-ai"));
+    await expect(page.getByTestId("furnish-step-back-to-products")).toBeVisible();
+    await expect(page.getByTestId("ai-notes-section")).toHaveCount(0);
+
+    await page.route("**/api/me", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "pro", source: "playwright" }) })
+    );
+    let notesRequests = 0;
+    await page.route("**/api/ai/design-notes", (route) => {
+      notesRequests += 1;
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ summary: ["The sofa anchors the room."], rationale: "Seating faces the window.", suggestions: [] }),
+      });
+    });
+    await page.reload();
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    await selectWorkspace(page, "furnish");
+    await expect(page.getByTestId("ai-notes-section")).toHaveCount(0);
+
+    // An empty room has nothing to review.
+    await clickWithFallback(page.getByTestId("editor-workflow-ai"));
+    const section = page.getByTestId("ai-notes-section");
+    await expect(section).toBeVisible({ timeout: 10_000 });
+    await expect(section.getByRole("heading", { name: "AI notes" })).toBeVisible();
+    const generate = section.getByTestId("ai-notes-generate");
+    await expect(generate).toBeDisabled();
+    await expect(section).toContainText("Add products to the room first.");
+
+    // With a product in the room, the notes open in their dialog.
+    await clickWithFallback(page.getByTestId("furnish-step-back-to-products"));
+    const firstPreview = page.locator('[data-testid^="catalog-preview-"]').first();
+    await expect(firstPreview).toBeVisible({ timeout: 20_000 });
+    const productId = (await firstPreview.getAttribute("data-testid"))?.replace("catalog-preview-", "");
+    expect(productId).toBeTruthy();
+    await clickWithFallback(page.getByTestId(`catalog-add-${productId}`));
+    expect(await confirmCatalogPlacementIfVisible(page)).toBe(true);
+    await clickWithFallback(page.getByTestId("editor-workflow-ai"));
+    await expect(generate).toBeEnabled({ timeout: 10_000 });
+    await generate.click();
+    const notes = page.getByRole("dialog", { name: "AI notes" });
+    await expect(notes).toBeVisible({ timeout: 10_000 });
+    await expect(notes).toContainText("The sofa anchors the room.");
+    expect(notesRequests).toBe(1);
+    await notes.getByRole("button", { name: "Close", exact: true }).click();
+    await expect(notes).toHaveCount(0);
+    await expect(section).toBeVisible();
   });
 
   test("Pro's plan display sits at the foot of Plan while the 2D plan shows", async ({ page }) => {

@@ -283,11 +283,6 @@ export function useDesignPagePresentExportController({
     closeToDesign();
   }, [actions.presentation, closeToDesign]);
 
-  const generateAiNotes = useCallback(() => {
-    actions.presentation.generateAiNotes();
-    closeToDesign();
-  }, [actions.presentation, closeToDesign]);
-
   return {
     configuration: {
       open: configuration.open,
@@ -323,7 +318,7 @@ export function useDesignPagePresentExportController({
       onExportStyleChange: changeExportStyle,
       onExportImages: exportImages,
       onExportPdf: exportPdf,
-      onGenerateAiNotes: generateAiNotes,
+      onGenerateAiNotes: actions.presentation.generateAiNotes,
     },
   };
 }
