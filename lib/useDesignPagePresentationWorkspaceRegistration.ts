@@ -127,13 +127,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         planTheme: viewportShell.state.plan.planTheme,
         annotationToolKind: planWorkspace.state.overlay.annotationToolKind,
         selectedPlanOverlayId: viewportShell.state.planSelection.selectedPlanOverlayId,
-        visiblePlanOpening: planWorkspace.state.inspector.visiblePlanOpening,
-        visiblePlanOpeningRoomName:
-          planWorkspace.state.inspector.visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters:
-          planWorkspace.state.inspector.visiblePlanOpeningWallSpanMeters,
-        visiblePlanOpeningMaxHeightMeters:
-          planWorkspace.state.inspector.visiblePlanOpeningMaxHeightMeters,
         houseRoomCount: documentRoom.derived.plan.housePlan2D.rooms.length,
         openingCount: viewportShell.state.plan.planOpenings.length,
         selectedPlanRoomId:
@@ -276,8 +269,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
           planWorkspace.actions.overlay.selectAnnotationTool,
         deleteOverlay:
           selectionInspection.actions.selection.deletePlanOverlayById,
-        changeOpening:
-          planWorkspace.actions.overlay.handleUpdateOpeningMetrics2D,
         applyLayerPresetInTransaction:
           planWorkspace.actions.overlay.applyPlanLayerPresetInTransaction,
         addFloorPlanOpening:
@@ -287,9 +278,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         deleteRoom: planWorkspace.actions.room.deleteRoom,
       },
       planCanvas: {
-        setGuidedActionsChoiceSeen:
-          viewportShell.actions.plan.setPlanGuidedActionsChoiceSeen,
-        chooseGuidedActionsMode: tracing.actions.choosePlanGuidedActionsMode,
         selectFloorPlanTool: tracing.actions.selectFloorPlanTool,
         setGuidedPlanStartMode:
           viewportShell.actions.editor.setGuidedPlanStartMode,

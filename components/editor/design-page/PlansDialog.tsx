@@ -105,7 +105,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               type="button"
               data-testid="plans-manage-billing"
               disabled={state.openingBillingPortal}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               style={{
                 ...actionStyle,
                 border: "1px solid var(--border-subtle)",
@@ -121,7 +121,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               type="button"
               data-testid="checkout-yearly"
               disabled={state.startingCheckout}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               style={{
                 ...actionStyle,
                 border: "1px solid #059669",
@@ -137,7 +137,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               type="button"
               data-testid="checkout-monthly"
               disabled={state.startingCheckout}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               style={{
                 ...actionStyle,
                 border: "1px solid var(--border-subtle)",
@@ -153,7 +153,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               type="button"
               data-testid="checkout-monthly"
               disabled={state.startingCheckout}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               style={{
                 ...actionStyle,
                 border: "1px solid var(--border-subtle)",
@@ -167,7 +167,7 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               type="button"
               data-testid="checkout-yearly"
               disabled={state.startingCheckout}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
               style={{
                 ...actionStyle,
                 border: "1px solid var(--border-subtle)",

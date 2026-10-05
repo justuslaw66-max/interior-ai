@@ -28,15 +28,18 @@ type CommandBarAccountMenuProps = {
   onViewPlans: () => void;
 };
 
+/** The account's items: the Account menu's from md, and the end of the phone Menu's (UX 4d). */
+export type AccountMenuItemsProps = Omit<CommandBarAccountMenuProps, "containerRef" | "open" | "onToggle" | "menuPanelClass">;
+
 /**
- * The account corner (audit finding D): nothing until the session has loaded, then Sign in for
- * guests, or an Account button with the user's initial and a menu with the plan, Pricing or
- * billing, and Sign out.
+ * The account corner (audit finding D), from md: nothing until the session has loaded, then Sign
+ * in for guests, or an Account button with the user's initial and a menu with the plan, Pricing
+ * or billing, and Sign out. Phones find the same items in the Menu.
  */
 export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
   const { dark, containerRef, open, onToggle } = props;
   if (!props.accountReady) {
-    return <span aria-hidden="true" data-testid="editor-command-account-pending" className="h-[30px] w-[30px] shrink-0" />;
+    return <span aria-hidden="true" data-testid="editor-command-account-pending" className="h-9 w-9 shrink-0" />;
   }
   if (!props.isAuthed) return <CommandBarSignInButton dark={dark} />;
   const initial = props.accountName?.trim().charAt(0).toUpperCase();
@@ -50,8 +53,8 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
         aria-expanded={open}
         className={
           dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border text-sm font-semibold leading-none"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-200"
+            ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold leading-none"
+            : "inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-200"
         }
         onClick={onToggle}
       >
@@ -66,10 +69,21 @@ function AccountMenuPanel(props: CommandBarAccountMenuProps) {
   const { dark, menuPanelClass } = props;
   return (
     <div
-      data-testid="editor-command-account-menu"
+      data-testid="editor-command-account-menu" data-touch-area
       role="menu"
       className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
     >
+      <AccountMenuItems {...props} />
+    </div>
+  );
+}
+
+export function AccountMenuItems(props: AccountMenuItemsProps) {
+  const { dark } = props;
+  if (!props.accountReady) return null;
+  if (!props.isAuthed) return <CommandBarSignInButton dark={dark} menuButtonClass={props.menuButtonClass} />;
+  return (
+    <>
       <div
         data-testid="editor-account-plan"
         className={
@@ -92,7 +106,7 @@ function AccountMenuPanel(props: CommandBarAccountMenuProps) {
       >
         Sign out
       </button>
-    </div>
+    </>
   );
 }
 
@@ -103,7 +117,7 @@ function AccountBillingItem({
   isOpeningBillingPortal,
   onManageBilling,
   onViewPlans,
-}: CommandBarAccountMenuProps) {
+}: AccountMenuItemsProps) {
   return canManageBilling ? (
     <button
       type="button"
@@ -132,22 +146,27 @@ function AccountBillingItem({
   );
 }
 
-/** Guests sign in from the bar itself; wide screens show the word. */
-function CommandBarSignInButton({ dark }: { dark: boolean }) {
+/**
+ * Guests sign in from the bar from md (the word from lg), and from the Menu on phones: given the
+ * menu's item class, it's one of the Menu's items.
+ */
+function CommandBarSignInButton({ dark, menuButtonClass }: { dark: boolean; menuButtonClass?: string }) {
   return (
     <button
       type="button"
+      role={menuButtonClass ? "menuitem" : undefined}
       data-testid="editor-command-sign-in"
       aria-label="Sign in"
       className={
-        dark
-          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none lg:w-auto lg:px-3"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 lg:w-auto lg:px-3"
+        menuButtonClass ??
+        (dark
+          ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-sm font-bold leading-none lg:w-auto lg:px-3.5"
+          : "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 lg:w-auto lg:px-3.5")
       }
       onClick={signInWithReturn}
     >
-      <LogIn className="h-4 w-4 lg:hidden" aria-hidden="true" />
-      <span className="hidden lg:inline">Sign in</span>
+      {menuButtonClass ? null : <LogIn className="h-4 w-4 lg:hidden" aria-hidden="true" />}
+      <span className={menuButtonClass ? undefined : "hidden lg:inline"}>Sign in</span>
     </button>
   );
 }

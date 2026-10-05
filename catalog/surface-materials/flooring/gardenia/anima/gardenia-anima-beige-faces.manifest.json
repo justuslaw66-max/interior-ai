@@ -1,0 +1,947 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - BEIGE - minimali.zip, 122277221 bytes, sha256 75f8fcbfb0e78d71a67b9fa46b98265719e8176edbaf37f28d5115b36795dff6).",
+ "note": "The download holds each face twice, the same picture exported two ways: a lighter JPG with an sRGB profile and a darker JPG without a profile (lighter is about 0.93 x darker + 14.5 in level). The lighter sRGB copy is used for every face (J, 2026-10-04), turned upright where it is landscape. Face numbers are ABK's numbers on the lighter copy's name.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are 1.3 to 3.9 px per mm (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/anima/ holds the tracking files and the ZIPs, and the same ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "If the renderer draws more pixels per metre, re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0006044",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60006044-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006044_swatch.webp",
+   "faces": [
+    {
+     "file": "0006044_01.webp",
+     "face": 1,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109136,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a368d0ed6deb0645c1bddec8551bb7219e42191a245b1cb8deffb5a4706cfb7e",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA BEIGE 120X120_01",
+      "id": "3f77a575-6e28-4334-a45a-f9fc52d305ac"
+     }
+    },
+    {
+     "file": "0006044_02.webp",
+     "face": 2,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 115756,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6febeba931f185c659159e793176335407da334744d12eb58f974786d81a7bff",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 13",
+      "name": "ANIMA BEIGE 120X120_02",
+      "id": "86c63ebe-879f-4243-8cf7-864588874277"
+     }
+    },
+    {
+     "file": "0006044_03.webp",
+     "face": 3,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113646,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4c52102883d2553b8033bd283e4ec348484c6973288817e93dbe7e1e2ef21314",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "ANIMA BEIGE 120X120_3",
+      "id": "64fb0629-8f42-4917-98dc-23d0437c2ffb"
+     }
+    },
+    {
+     "file": "0006044_04.webp",
+     "face": 4,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113714,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2a5ae4bdced679b23e987465548c9a44bc97fc47490f4ec33475e37905ed884b",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "ANIMA BEIGE 120X120_4",
+      "id": "4c030575-5635-4d68-8b77-4ffbab813a4d"
+     }
+    },
+    {
+     "file": "0006044_05.webp",
+     "face": 5,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 122068,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "75f3093303c6f5c44dd2d4bc857f974d10e39addcf1d56b51cd93fd88262fa57",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "ANIMA BEIGE 120X120_5",
+      "id": "62333324-3065-45fb-8f26-3dd4fb14e494"
+     }
+    },
+    {
+     "file": "0006044_06.webp",
+     "face": 6,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98582,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f4a7e8cfd7e9bb01c887ef135a78f6dfc3cfb03f1ea64a062f3cd0d6f855b177",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "ANIMA BEIGE 120X120_6",
+      "id": "07047825-6d0a-4a50-b95b-df2395113737"
+     }
+    },
+    {
+     "file": "0006044_07.webp",
+     "face": 7,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 93604,
+     "source_file": "120X120-Nat P.tech/ANIMA - BEIGE - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ea242f24bd3d19183c3ad4c28d2f072f36bdffca8f95eb071bca379bb81ec9c9",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 14",
+      "name": "ANIMA BEIGE 120X120_7",
+      "id": "9c760a8a-7694-4832-8606-c4557ccabb6c"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006048",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60006048-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006048_swatch.webp",
+   "faces": [
+    {
+     "file": "0006048_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60132,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a1a2f1b04762b6e8feaafb40e9355cfd629dd218ddc1bcf658fba2d067630722",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA BEIGE 60X120_01",
+      "id": "c4db3dc3-5bfc-4e17-a6b3-bb94b4afc961"
+     }
+    },
+    {
+     "file": "0006048_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58218,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_27.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8e946b75f2584908bf296b29854af02e5d0198ec8184da7b88ff8ebdf80f8482",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 28",
+      "name": "ANIMA BEIGE 60X120_02",
+      "id": "e65c5aa3-479e-4438-ba57-5fccf36d8082"
+     }
+    },
+    {
+     "file": "0006048_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57104,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ddcaeef233ccf98350151b59067714263b29b473107f1c7f8f10806f36a78d83",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "ANIMA BEIGE 60X120_03",
+      "id": "6e7c3940-3dd6-4dce-8b69-4ded5cdfe7e2"
+     }
+    },
+    {
+     "file": "0006048_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55368,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "63e42dc38ad242e9cd277aa86b09fdc90963fbea5e1f106c005319af0d592f58",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "ANIMA BEIGE 60X120_04",
+      "id": "7f5b09a4-a4c6-49a6-9c38-a7e7e74a4e85"
+     }
+    },
+    {
+     "file": "0006048_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 59528,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b909b5f00b76f4b9e755b91913aec0b316747ce2d7e2046c8024860dad73a367",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "ANIMA BEIGE 60X120_05",
+      "id": "480e3d63-5fcf-432a-b21c-1b7c9e7e55b9"
+     }
+    },
+    {
+     "file": "0006048_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57528,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c980393d75578ae80aaf7e4c6befcdff2f35c17c540c50242596fb89eca72bfd",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 25",
+      "name": "ANIMA BEIGE 60X120_06",
+      "id": "dd287794-86a0-466a-aafb-b28ba0f4b454"
+     }
+    },
+    {
+     "file": "0006048_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57312,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "278fad4e383323b1e3d53cf169e9f8ff56bd6bec4f5a9167a4e344d63e880233",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "ANIMA BEIGE 60X120_07",
+      "id": "bd00cca9-75d4-47b4-a804-ea9f268ad6e4"
+     }
+    },
+    {
+     "file": "0006048_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55502,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5375e8644016283fe6250641ec11a236d3e90dc6b3b84cf8405546d324909d10",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "ANIMA BEIGE 60X120_08",
+      "id": "5df9509a-cef3-4a97-bceb-92ac30cdb1f8"
+     }
+    },
+    {
+     "file": "0006048_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55306,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2568d7575123f5d52476e942c4c7c44987418259ec560ce54a2ac2515fb21340",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 27",
+      "name": "ANIMA BEIGE 60X120_09",
+      "id": "e4532207-eba3-4c1d-98ac-f96dcd4cae57"
+     }
+    },
+    {
+     "file": "0006048_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47376,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_10 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "871d7f81f94261067398efad21b749b687fa810f8a24d8aa3528f8d39fab6dcc",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "ANIMA BEIGE 60X120_10",
+      "id": "63919c0d-f384-44d1-82fb-ae689e298bdf"
+     }
+    },
+    {
+     "file": "0006048_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46088,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a90a906c53a2efee4646c2cfc46723ad286dfc037763354571b47377aa2ff120",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "ANIMA BEIGE 60X120_11",
+      "id": "1269c16e-3c13-4d64-a8bd-7b0a4e1e1f9d"
+     }
+    },
+    {
+     "file": "0006048_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48932,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4fe5ec6712211f3d79114c652672b090a471bac0bcc982f9b9245cee6e4a6bee",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "ANIMA BEIGE 60X120_12",
+      "id": "cbec6fa1-f1fc-45d4-a560-e21582c7b7fc"
+     }
+    },
+    {
+     "file": "0006048_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51536,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "75eb608f35a0878caaec6b619a98c0f9eb3efd3b86b7edea98e7ace662f826f0",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "ANIMA BEIGE 60X120_13",
+      "id": "1bb24fa6-e931-48ff-bf36-4e7e4c18e509"
+     }
+    },
+    {
+     "file": "0006048_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62274,
+     "source_file": "60X120-Nat P.tech/ANIMA - BEIGE - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0099fc153730665f8715dbf6660aa661967db4dbcb959890d50efca3c6d833a8",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 26",
+      "name": "ANIMA BEIGE 60X120_14",
+      "id": "dfc26bf2-edba-4067-b066-32a70c922e36"
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0007809",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60007809-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0007809_swatch.webp",
+   "faces": [
+    {
+     "file": "0007809_01.webp",
+     "face": 1,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 42316,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "09ef83104a756b8dd7bea6535fcb4bd2903f2a7340dab43d41712c78d65e452a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA BEIGE 80X80_01",
+      "id": "324f777e-cba5-4b6d-bc3e-88146652cf5d"
+     }
+    },
+    {
+     "file": "0007809_02.webp",
+     "face": 2,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52856,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7ab42fa7490cfbc1ba4c1c8aafde55eaec88637326c5b865f918138949e88b2f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "ANIMA BEIGE 80X80_02",
+      "id": "c2c63d5a-8376-4d29-a822-a8e35835c6d2"
+     }
+    },
+    {
+     "file": "0007809_03.webp",
+     "face": 3,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48892,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "32fba079de65bbe414363863536d8b352a35265941cbfd0d644d79e3e8e6ea7e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 12",
+      "name": "ANIMA BEIGE 80X80_03",
+      "id": "7d96eecd-c230-4518-83fe-63840a5e81ac"
+     }
+    },
+    {
+     "file": "0007809_04.webp",
+     "face": 4,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47700,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e32ddc245f064b051b6c707a50fb4799722d39fe7e2cf7eee3e2c43c615a14f9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.994,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 13",
+      "name": "ANIMA BEIGE 80X80_04",
+      "id": "b3883b74-ae7d-4fff-9daf-7a2930a2556c"
+     }
+    },
+    {
+     "file": "0007809_05.webp",
+     "face": 5,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46472,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5402eed347023f99b9333e210bb721b391df0b16eb1b1a5c1517408e5f96fb25",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.993,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 9",
+      "name": "ANIMA BEIGE 80X80_05",
+      "id": "28f6d76b-bb5b-4429-b8ca-c6d6ee583ba9"
+     }
+    },
+    {
+     "file": "0007809_06.webp",
+     "face": 6,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46582,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "407f943c72dd3e0942fe376af9b5282df8bbfb0ee5a184f99ff399ff34cfac7a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 11",
+      "name": "ANIMA BEIGE 80X80_06",
+      "id": "7a8de5b1-9e5f-48cc-8ec3-dff902483ddd"
+     }
+    },
+    {
+     "file": "0007809_07.webp",
+     "face": 7,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 39722,
+     "source_file": "80X80-Nat P.tech/ANIMA - BEIGE - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a665fb1ff079757c52ad441a3962554cff5d5059f1777d9a0a2ae72080eba75d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 10",
+      "name": "ANIMA BEIGE 80X80_07",
+      "id": "57d6a1c2-3dc3-444b-bc03-382fe833c2d7"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0006056",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60006056-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0006056_swatch.webp",
+   "faces": [
+    {
+     "file": "0006056_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30146,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_1 (3).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "275ebb4e171291a38a13d1ee3cebdd11ba01d54aadf5bda9dd40a60269ee7825",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA BEIGE 60X60_01",
+      "id": "584fc6b7-e2b3-4852-b0fb-89878cea1e92"
+     }
+    },
+    {
+     "file": "0006056_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29860,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_27.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5dfd9b3cdb69ecc380b3cbb0482ff68c1f893a8556d43d7eb7b9ceaa8cc4cf6d",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 27",
+      "name": "ANIMA BEIGE 60X60_02",
+      "id": "fac95d79-29e3-41e9-aa30-9c31c2d92f20"
+     }
+    },
+    {
+     "file": "0006056_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30472,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f9109b9d485c21a2b0b240adaa1dbb853feb92eac55dc7624c80516dc55771cd",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "ANIMA BEIGE 60X60_03",
+      "id": "409de0f2-16c8-4420-8c75-66fec8298ce3"
+     }
+    },
+    {
+     "file": "0006056_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30154,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "06a420421e0dae8c66d532b5afc0c66e0cdc0f6e4658b1bab5dbcde7dd9a215e",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "ANIMA BEIGE 60X60_04",
+      "id": "045890ba-41c2-4964-b228-16f9753b2ada"
+     }
+    },
+    {
+     "file": "0006056_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25652,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4a400dff3a45a130b78435a60b7b746073ab562eb42965dbcdcac5845f303fee",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "ANIMA BEIGE 60X60_05",
+      "id": "c4bd44af-965e-416a-a8e9-743680311395"
+     }
+    },
+    {
+     "file": "0006056_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23428,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d3c629973741d16c0eef6e5d355212cfc6e3adaf0fe4ed8c69eab653ea87940e",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "ANIMA BEIGE 60X60_06",
+      "id": "92d8354b-8bdd-409f-b006-6903b5a5f504"
+     }
+    },
+    {
+     "file": "0006056_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22882,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "72769139de2710ddc881cf457b8d69ce3d25583ddc3f27669d2133bd04914a13",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "ANIMA BEIGE 60X60_07",
+      "id": "857b2cd9-efe8-4da5-bd09-c3faf1732441"
+     }
+    },
+    {
+     "file": "0006056_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24374,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_28.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "58f837caf3954593a218478836cde06f527a09d98376d47a5439cdabe3797f91",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 28",
+      "name": "ANIMA BEIGE 60X60_08",
+      "id": "fc8836f4-43b6-4e3f-9ad1-8b69e501fc89"
+     }
+    },
+    {
+     "file": "0006056_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26734,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_26.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f9d73673df8875eea9a81b30a8f695b94908a47d1d0b50ab4313efee1c27491b",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 26",
+      "name": "ANIMA BEIGE 60X60_09",
+      "id": "f8c18b84-0d6c-4c96-8b25-a9eb0541c745"
+     }
+    },
+    {
+     "file": "0006056_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28160,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1fa05df5d09d1f80de9afa54d712c7b692077c6f256d0eca4630709b6dce11a8",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "ANIMA BEIGE 60X60_10",
+      "id": "115442e3-35e1-4a67-8ec8-bef3533ce03f"
+     }
+    },
+    {
+     "file": "0006056_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28202,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "78a08f3b5e92623d811471812383da10e2d74a5ab032cf993e0e74013034b242",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "ANIMA BEIGE 60X60_11",
+      "id": "09f0db64-60aa-4a08-a9bb-f56a4278191b"
+     }
+    },
+    {
+     "file": "0006056_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27968,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "543950858e901432b3737dc16e94899035c1dc70f3b709a5e5f4802e006810d0",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "ANIMA BEIGE 60X60_12",
+      "id": "23b8794b-1a54-43d6-b2c8-7997fe59cd2f"
+     }
+    },
+    {
+     "file": "0006056_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30198,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_25.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c27a68ae76c9bb804a8cb2e106cd137bc13073e91d0d8a47e7118e4ed26f6666",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 25",
+      "name": "ANIMA BEIGE 60X60_13",
+      "id": "d275663a-4f38-4607-882e-4f31433fc768"
+     }
+    },
+    {
+     "file": "0006056_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28250,
+     "source_file": "60X60-Nat P.tech/ANIMA - BEIGE - 60X60 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d7ebb9b0b3445983ab19fb86a2d28cf67430c0f66a59274b174e990a02dbdf2d",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "ANIMA BEIGE 60X60_14",
+      "id": "2ec493e0-5d24-4519-8c9e-4f7c805c7524"
+     }
+    }
+   ]
+  }
+ ]
+}

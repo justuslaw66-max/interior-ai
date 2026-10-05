@@ -62,7 +62,6 @@ type SceneItemsLayerState = {
   selectedInstanceId: string | null;
   previewVariantId: string | null;
   previewMaterialPresetId: string | null;
-  hoveredCartInstanceId: string | null;
   activeSceneItemsForGuides: DesignItem[];
   itemPlanningBoundsByInstanceId: Record<string, SceneItemDimensionsMm>;
 };
@@ -425,11 +424,6 @@ export function SceneItemsLayer({
               showGuidesAndMeasurements={
                 isActiveSceneRoom &&
                 (configuration.editorMode === "design" || configuration.editorMode === "adjust")
-              }
-              cartPreviewed={
-                isActiveSceneRoom &&
-                configuration.editorMode === "buy" &&
-                state.hoveredCartInstanceId === item.instanceId
               }
               viewMode={configuration.viewMode}
               planShowLabels={configuration.planShowLabels}

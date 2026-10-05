@@ -127,7 +127,7 @@ test.describe("145. Sloane Dining Table Product Info", () => {
     expect(await addImportedProductIfReady(page)).toBeTruthy();
 
     const selectedItemPanel = getSelectedItemPanel(page);
-    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel).toBeVisible({ timeout: 10000 });
     await expect(selectedItemPanel.getByText("Sloane Dining Table")).toBeVisible();
     await expect(selectedItemPanel.getByRole("button", { name: /^Dining table$/i })).toBeVisible();
     await expect(selectedItemPanel.getByRole("button", { name: /^Travertine dining table$/i })).toBeVisible();

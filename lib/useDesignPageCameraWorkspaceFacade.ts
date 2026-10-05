@@ -31,7 +31,7 @@ export type UseDesignPageCameraWorkspaceFacadeInput = {
   };
   refs: Pick<
     BridgeRefs,
-    "canvas" | "camera" | "controls" | "cameraView"
+    "canvas" | "camera" | "controls" | "cameraView" | "liveCameraView"
   >;
   actions: {
     camera: Pick<
@@ -71,10 +71,7 @@ export function useDesignPageCameraWorkspaceFacade({
       controlsRef,
       cameraViewRef,
     },
-    state: {
-      ...state.navigation,
-      cameraView: state.cameraView,
-    },
+    state: { ...state.navigation, cameraView: state.cameraView },
     configuration: configuration.navigation,
     actions: {
       ...actions.navigation,
@@ -90,6 +87,7 @@ export function useDesignPageCameraWorkspaceFacade({
     refs: {
       orbitControls: controlsRef,
       cameraAnimating: navigationController.refs.isCameraAnimatingRef,
+      liveCameraView: refs.liveCameraView,
     },
     actions: {
       ...actions.canvas,

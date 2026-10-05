@@ -74,7 +74,7 @@ test.describe("109. Madison Swatch Textures", () => {
     await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
-    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel).toBeVisible({ timeout: 10000 });
     await expect(selectedItemPanel.getByText(/Madison Sofa/i).first()).toBeVisible();
     await expect(selectedItemPanel.getByRole("button", { name: "Select Stone" })).toHaveCount(0);
 

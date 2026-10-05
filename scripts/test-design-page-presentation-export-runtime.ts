@@ -17,25 +17,66 @@ const presentationBackupSource = readSource(
   "lib/useDesignPagePresentationBackupRegistrationFacade.ts"
 );
 
+const presentKey = (
+  key: string,
+  extra: Partial<Parameters<typeof resolveDesignPagePresentHotkey>[0]["event"]> = {}
+) => ({
+  key,
+  altKey: false,
+  ctrlKey: false,
+  metaKey: false,
+  isComposing: false,
+  target: null,
+  ...extra,
+});
+
 assert.equal(
-  resolveDesignPagePresentHotkey({ isDesigner: true, key: "p" }),
+  resolveDesignPagePresentHotkey({ isDesigner: true, event: presentKey("p") }),
   "toggle-client-preview",
   "Lowercase P should toggle client preview for designers."
 );
 assert.equal(
-  resolveDesignPagePresentHotkey({ isDesigner: true, key: "P" }),
+  resolveDesignPagePresentHotkey({ isDesigner: true, event: presentKey("P") }),
   "toggle-client-preview",
   "Uppercase P should toggle client preview for designers."
 );
 assert.equal(
-  resolveDesignPagePresentHotkey({ isDesigner: false, key: "p" }),
+  resolveDesignPagePresentHotkey({ isDesigner: false, event: presentKey("p") }),
   null,
   "The presentation hotkey should remain disabled outside designer mode."
 );
 assert.equal(
-  resolveDesignPagePresentHotkey({ isDesigner: true, key: "KeyP" }),
+  resolveDesignPagePresentHotkey({ isDesigner: true, event: presentKey("KeyP") }),
   null,
   "The resolver should continue using KeyboardEvent.key semantics."
+);
+// Typing wins (UX audit ED12): "p" in a field, with a modifier or mid-composition isn't P.
+for (const extra of [
+  { target: { tagName: "INPUT" } as unknown as EventTarget },
+  { target: { tagName: "SELECT" } as unknown as EventTarget },
+  { metaKey: true },
+  { ctrlKey: true },
+  { altKey: true },
+  { isComposing: true },
+]) {
+  assert.equal(
+    resolveDesignPagePresentHotkey({ isDesigner: true, event: presentKey("p", extra) }),
+    null,
+    `P must not toggle client preview here: ${JSON.stringify(Object.keys(extra))}`
+  );
+}
+assert.equal(
+  resolveDesignPagePresentHotkey({
+    isDesigner: true,
+    event: presentKey("p", {
+      target: {
+        tagName: "BUTTON",
+        closest: () => ({ role: "dialog" }),
+      } as unknown as EventTarget,
+    }),
+  }),
+  "toggle-client-preview",
+  "P still works with focus on a button in a dialog, such as the command palette's."
 );
 
 assert.match(
@@ -50,7 +91,6 @@ assert.match(
 );
 for (const formerWorkspaceOwner of [
   "handlePresentModeHotkey",
-  "useDesignPageCartHoverCameraFocus",
   "useDesignPageExport",
 ]) {
   assert.doesNotMatch(
@@ -64,7 +104,6 @@ const runtimeOrder = [
   "useEffect(() => {",
   'window.addEventListener("keydown", handlePresentModeHotkey)',
   'window.removeEventListener("keydown", handlePresentModeHotkey)',
-  "useDesignPageCartHoverCameraFocus({",
   "useDesignPageExport({",
 ];
 let previousIndex = -1;
@@ -97,5 +136,8 @@ assert.match(
   /const exportController = useDesignPageExport\(\{[\s\S]*?return exportController;/,
   "The runtime should return the existing export controller contract unchanged."
 );
+
+// The Shop's hover camera focus was never reached once the Shopping list took over (UX phase 4a).
+assert.doesNotMatch(runtimeSource, /CartHover|hoveredCartInstanceId/);
 
 console.log("Design-page presentation/export runtime checks passed.");

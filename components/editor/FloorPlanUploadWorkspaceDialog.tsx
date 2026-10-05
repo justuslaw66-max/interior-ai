@@ -97,7 +97,7 @@ export function FloorPlanUploadWorkspaceDialog(
         if (!historyConfirmationOpen && event.target === event.currentTarget) onClose();
       }}>
       <section ref={panelRef} data-testid="floor-plan-import-dialog-panel" tabIndex={-1}
-        className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white text-neutral-950 shadow-2xl outline-none sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-neutral-200">
+        className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white text-neutral-950 shadow-2xl outline-hidden sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-neutral-200">
         <WorkspaceHeader disabled={disabled} signedIn={choose.signedIn} closeButtonRef={closeButtonRef}
           historyConfirmationOpen={historyConfirmationOpen} onClose={onClose}
           onChooseFile={onChooseFile} />

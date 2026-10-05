@@ -69,7 +69,7 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanRoomId,
         selectedPlanRoomIds,
       },
-      camera: { cameraView, savedViews },
+      camera: { cameraView, savedViews, liveCameraView },
     },
     actions: {
       plan: {
@@ -82,7 +82,6 @@ export function useDesignPageViewportShellRegistration({
         setPlanMeasurementUnit,
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
-        setPlanGuidedActionsChoiceSeen,
       },
       floorPlan: {
         setFloorPlanTraceOpeningKind,
@@ -130,7 +129,6 @@ export function useDesignPageViewportShellRegistration({
   const {
     boundaries: { surfaceState: surfaceStateController },
     state: {
-      cart: { hoveredCartInstanceId },
       presentation: { showPresentModal, presentModeRoomId },
       surface: {
         activeSurfaceTarget,
@@ -197,9 +195,8 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanRoomId,
         selectedPlanRoomIds,
       },
-      camera: { cameraView, savedViews },
+      camera: { cameraView, savedViews, liveCameraView },
       presentation: { showPresentModal, presentModeRoomId },
-      shopping: { hoveredCartInstanceId },
       surface: {
         activeSurfaceTarget,
         selectedWallSurfaceTarget,
@@ -223,7 +220,6 @@ export function useDesignPageViewportShellRegistration({
         setPlanMeasurementUnit,
         setExportStylePreset,
         setPlanGuidedActionsEnabled,
-        setPlanGuidedActionsChoiceSeen,
         setSelectedPlanOverlayId,
         setSelectedPlanRoomId,
         setSelectedPlanRoomSelection,

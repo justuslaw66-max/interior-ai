@@ -44,7 +44,7 @@ export function StartChoiceCards({ isAuthenticated, ready, onTemplates, onDraw, 
           type="button"
           data-testid={`start-choice-${id}`}
           disabled={!ready && id !== "templates"}
-          className="flex min-h-11 items-start gap-3.5 rounded-2xl border border-neutral-200 bg-white p-4 text-left text-neutral-950 outline-none transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 lg:p-[18px]"
+          className="flex min-h-11 items-start gap-3.5 rounded-2xl border border-neutral-200 bg-white p-4 text-left text-neutral-950 outline-hidden transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 lg:p-[18px]"
           onClick={handlers[id]}
         >
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neutral-100">

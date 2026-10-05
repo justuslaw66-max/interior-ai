@@ -69,6 +69,12 @@ export function scheduleEditorDialogFocusRestoration(
     ...(options.returnFocusIds ?? []),
     ...(options.returnFocusId ? [options.returnFocusId] : []),
   ];
+  // The opener first when it's one of the dialog's return targets (UX 4d): Rename design from the
+  // Menu goes back to the Menu, and from the design's name back to the name, now both show on phones.
+  if (opener?.id && semanticIds.includes(opener.id)) {
+    semanticIds.splice(semanticIds.indexOf(opener.id), 1);
+    semanticIds.unshift(opener.id);
+  }
   options.restoreFrameRef.current = window.requestAnimationFrame(() => {
     // React removes a closing portal after layout-effect cleanup. Wait one
     // paint before rejecting a semantic target as visually obscured.

@@ -237,7 +237,7 @@ export function CabinetPreviewViewSelector({
           type="button"
           aria-pressed={value === option.value}
           data-testid={`cabinet-preview-view-${option.value}`}
-          className={`inline-flex min-h-7 items-center rounded-md px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          className={`inline-flex min-h-7 items-center rounded-md px-2 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 ${
             value === option.value ? "bg-neutral-950 text-white" : "hover:bg-neutral-100"
           }`}
           onClick={() => onChange(option.value)}

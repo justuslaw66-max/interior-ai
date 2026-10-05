@@ -93,8 +93,6 @@ type UseDesignPageFloorPlanTracingInput = {
     setViewMode: Dispatch<SetStateAction<EditorViewMode>>;
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
     setPlanFocusPanelRevealed: Dispatch<SetStateAction<boolean>>;
-    setPlanGuidedActionsEnabled: Dispatch<SetStateAction<boolean>>;
-    setPlanGuidedActionsChoiceSeen: Dispatch<SetStateAction<boolean>>;
     setBlankGridRoomPreviewPoint: Dispatch<SetStateAction<FloorPlanPoint | null>>;
     setFloorPlanTraceRoomMode: Dispatch<SetStateAction<boolean>>;
     setFloorPlanTraceRoomPoints: Dispatch<SetStateAction<FloorPlanPoint[]>>;
@@ -157,8 +155,6 @@ export function useDesignPageFloorPlanTracing({
     setViewMode,
     setDesignPanelOpen,
     setPlanFocusPanelRevealed,
-    setPlanGuidedActionsEnabled,
-    setPlanGuidedActionsChoiceSeen,
     setBlankGridRoomPreviewPoint,
     setFloorPlanTraceRoomMode,
     setFloorPlanTraceRoomPoints,
@@ -200,14 +196,6 @@ export function useDesignPageFloorPlanTracing({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsumerPlanCompletionSignal(null);
   }, [planGuidedActionsEnabled]);
-
-  const choosePlanGuidedActionsMode = useCallback(
-    (enabled: boolean) => {
-      setPlanGuidedActionsEnabled(enabled);
-      setPlanGuidedActionsChoiceSeen(true);
-    },
-    [setPlanGuidedActionsChoiceSeen, setPlanGuidedActionsEnabled]
-  );
 
   const selectFloorPlanTool = useCallback(() => {
     setViewMode("2d");
@@ -526,7 +514,6 @@ export function useDesignPageFloorPlanTracing({
       consumerPlanCompletionSignal,
     },
     actions: {
-      choosePlanGuidedActionsMode,
       handleConsumerPlanCompletionHandled,
       selectFloorPlanTool,
       changeCalibrationMode,

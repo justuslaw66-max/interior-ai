@@ -53,12 +53,28 @@ export const UI_GLOSSARY: readonly UiGlossaryEntry[] = [
     use: "Shopping list; Buy at <shop>; Checkout here",
     retire: ["cart", "carts", "cart-ready", "selection tray", "shopping overview"],
   },
+  { concept: "Plan guidance (UX 3c-3, ED6)", use: "Tips (one switch, on by default)", retire: ["guided actions", "plan mode", "manual editing"] },
+  {
+    concept: "Save status (UX 4c, SX5)",
+    use: "Saving…, Saved, Saved on this device, Not saved (Retry)",
+    retire: ["cloud saved", "local saved", "cloud save pending"],
+  },
+  {
+    concept: "Where a product is sold (UX 3c-3, FU12)",
+    use: "Sold by <shop>; View product; Price on request; Checkout here",
+    retire: ["external retailer", "view retailer", "check stock", "buy on this site", "needs commerce review"],
+  },
+  {
+    concept: "Storeys (UX 4f, ED7)",
+    use: "Level 1, Basement 1 (saved 1F and B1 are shown this way); Levels; Add level; Level above, Level below",
+    retire: ["add floor", "upper floor", "lower floor", "current floor", "floor panel", "hidden floors"],
+  },
 ];
 
 /** Restructured by phase 3 or 4; listed so nobody mistakes them for approved names. */
 export const LATER_PHASE_UI_TERMS: readonly string[] = [
   "Export / Present & Export (→ Download)", "Presentation mode (→ Preview)",
-  "1F / Add floor (→ Level)", "Tiles (→ Surfaces)", "Clear (four meanings)", "furniture / items (→ products)",
+  "Tiles (→ Surfaces)", "Clear (four meanings)", "furniture / items (→ products)",
 ];
 
 /** D4: UK spelling in user-facing text. Keys are US forms, matched as whole words. */

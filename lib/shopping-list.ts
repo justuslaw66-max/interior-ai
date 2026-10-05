@@ -91,6 +91,16 @@ export function cheaperSwapFor(productId: string, style: string, catalogItems: C
   return price > 0 && price < current ? { productId: best.id, title: best.title } : null;
 }
 
+/** The nearest option in the same category that really costs more, for "Swap for pricier". */
+export function pricierSwapFor(productId: string, style: string, catalogItems: CatalogItems = CATALOG_ITEMS) {
+  const current = affiliatePriceHint(productId, catalogItems);
+  if (current <= 0) return null;
+  const best = findSwapOptions({ productId, style, direction: "premium" }).find(
+    (option) => affiliatePriceHint(option.id, catalogItems) > current
+  );
+  return best ? { productId: best.id, title: best.title } : null;
+}
+
 /** A set, or a product bought as a set, is left as it is: a swap would break the set. */
 function canSwap(item: ActiveRoomShoppingItem, placed: DesignItem | undefined) {
   return item.hasValidCommerce && !item.isBundle && !placed?.bundleGroupId && !placed?.purchaseOptionId;
@@ -215,4 +225,61 @@ export function shoppingRemovalStep(line: Pick<ShoppingListLine, "title">) {
 
 export function shoppingSwapStep(line: Pick<ShoppingListLine, "title">, swapTitle: string) {
   return `Swap ${line.title} for ${swapTitle}`;
+}
+
+export type SwapAllDirection = "cheaper" | "pricier";
+
+/** One product "Swap all" changes: where it stands, and what it becomes. */
+export type SwapAllChange = {
+  roomId: string;
+  instanceId: string;
+  from: string;
+  to: { id: string; defaultVariantId: string; title: string };
+};
+
+/**
+ * Pro's "Swap all for cheaper" and "Swap all for pricier" (UX 4h, J's Q2 (a)): every product in the
+ * design that has a swap in that direction, as "Swap for cheaper" offers it one at a time. Sets, and
+ * products bought as a set, stay as they are; a swap is only offered when the price really moves.
+ */
+export function planSwapAll({
+  rooms,
+  style,
+  direction,
+  catalogItems = CATALOG_ITEMS,
+}: BuildShoppingListInput & { direction: SwapAllDirection }): SwapAllChange[] {
+  const find = direction === "cheaper" ? cheaperSwapFor : pricierSwapFor;
+  const changes: SwapAllChange[] = [];
+  for (const room of rooms) {
+    for (const item of resolveRoomShoppingItems(room, catalogItems)) {
+      const placed = room.items.find((entry) => entry.instanceId === item.instanceId);
+      // A product a Pro user locked stays, as AI Notes' bulk swap leaves it (lib/bulkSwap.ts).
+      const swap = canSwap(item, placed) && !placed?.locked ? find(item.productId, style, catalogItems) : null;
+      const product = swap ? catalogItems[swap.productId] : undefined;
+      if (!product) continue;
+      changes.push({
+        roomId: room.id,
+        instanceId: item.instanceId,
+        from: item.title,
+        to: { id: product.id, defaultVariantId: product.defaultVariantId, title: product.title },
+      });
+    }
+  }
+  return changes;
+}
+
+/** A room's products after "Swap all": each change in that room, where the product stands. */
+export function withSwapAllApplied(items: readonly DesignItem[], roomId: string, changes: readonly SwapAllChange[]): DesignItem[] {
+  return changes
+    .filter((change) => change.roomId === roomId)
+    .reduce<DesignItem[]>((next, change) => withShoppingLineSwapped(next, change.instanceId, change.to), [...items]);
+}
+
+/** "Swap all" is one history step, whose name the toast's Undo checks. */
+export function swapAllStep(direction: SwapAllDirection) {
+  return direction === "cheaper" ? "Swap all for cheaper" : "Swap all for pricier";
+}
+
+export function swapAllMessage(count: number) {
+  return `${productCountLabel(count)} swapped`;
 }

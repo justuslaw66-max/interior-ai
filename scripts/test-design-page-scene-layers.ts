@@ -156,7 +156,6 @@ assertSourceOrder(
     "useDesignPageViewportShellRegistration({",
     "useEditorMode(",
     "useDesignPageTransientFeedback({",
-    "const seatingZoneAutoDisabledRef",
     "useDesignPageWorkspacePaywallRegistration({",
     "useDesignPageEditorClientLifecycle({",
     "useDesignPageSnapshotDocumentState()",
@@ -228,7 +227,6 @@ assertSourceOrder(
 assertSourceOrder(
   shellRuntimeSource,
   [
-    "hoveredCartInstanceId, setHoveredCartInstanceId",
     "showPresentModal, setShowPresentModal",
     "presentModeRoomId, setPresentModeRoomId",
     "useDesignPageSurfaceStateController()",
@@ -240,12 +238,12 @@ assertSourceOrder(
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
   ],
-  "Editor shell runtime should preserve cart-through-camera-diagnostics hook order"
+  "Editor shell runtime should preserve presentation-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,
   [
-    '"seating_zone_auto_disabled"',
+    'localStorage.getItem("placement_add_mode")',
     'localStorage.setItem("placement_add_mode"',
     "preloadCoreAssets()",
     'if (state.editorMode === "present")',
@@ -651,7 +649,7 @@ for (const expected of [
   "raycast={() => null}",
   "<DesignerGrid",
   "<CirculationHeatmapOverlay",
-  'if (zone.source === "auto" && !showingPlacementZones) return null;',
+  'if ((zone.source === "auto" || !configuration.zoneOutlinesAlways) && !showingPlacementZones) return null;',
   "!supportSurface && zones.compatibleIds.has(zone.id)",
   'helperLabel={compatible ? `Tap to place in ${label}` : undefined}',
   "actions.targetPendingPlacementToRoom(",

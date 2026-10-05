@@ -43,7 +43,24 @@ def _dbg(tag, x, y, w, h, *more):
         print("DBG", tag, x, y, w, h, *more)
 from skimage.morphology import skeletonize
 
+# Speed switches (round 17).  Each gives the same output to the byte; "0" turns it off.
+FAST_SWING = os.environ.get("FV_FAST_SWING", "1") != "0"    # the swing search's fine pass as one array operation per candidate
+OCR_THREADS = int(os.environ.get("FV_OCR_THREADS", "0") or 0) or max(1, min(8, (os.cpu_count() or 2)))   # tesseract calls in parallel
+
 # ----------------------------------------------------------------- helpers
+
+def ocr_many(jobs):
+    """pytesseract.image_to_string for every (image, config) in jobs, OCR_THREADS at a time (each call is a tesseract
+    process of its own, so threads are enough); the strings come back in the order of the jobs, exactly as one call
+    after another would have read them."""
+    if not jobs:
+        return []
+    if OCR_THREADS <= 1 or len(jobs) == 1:
+        return [pytesseract.image_to_string(img, config=cfg) for img, cfg in jobs]
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=min(OCR_THREADS, len(jobs))) as ex:
+        return list(ex.map(lambda j: pytesseract.image_to_string(j[0], config=j[1]), jobs))
+
 
 def cluster_1d(values, tol, weights=None, max_span=3.5):
     """Group 1-D values closer than tol. Returns {original_value: cluster_position}.
@@ -1478,7 +1495,25 @@ def extract(path):
                           seen_.add((i_, r_i // 3, cjx, cjy))
                           # fine: thin mask, hinge +-4 px, radius +-3 px
                           best = (0.0, None)
-                          for rr in range(int(radii[r_i]) - 3, int(radii[r_i]) + 4):
+                          if FAST_SWING:
+                            # the 7 x 5 x 5 circles of the fine pass scored in one go (the same sums, in the same order:
+                            # the first of equal best scores wins, as the loop below would have it)
+                            rrs = np.arange(int(radii[r_i]) - 3, int(radii[r_i]) + 4)
+                            fx_ = np.rint(rrs[:, None] * ca[None, :]).astype(np.int32); fy_ = np.rint(rrs[:, None] * sa[None, :]).astype(np.int32)
+                            jj = np.arange(-4, 5, 2, dtype=np.int32)
+                            PX = hp_[i_, 0] + cjx + jj[None, :, None, None] + fx_[:, None, None, :]
+                            PY = hp_[i_, 1] + cjy + jj[None, None, :, None] + fy_[:, None, None, :]
+                            PX, PY = np.broadcast_arrays(PX, PY)
+                            ok_ = (PX.min(-1) >= 0) & (PY.min(-1) >= 0) & (PX.max(-1) < W) & (PY.max(-1) < H)
+                            if ok_.any():
+                                PXc = np.clip(PX, 0, W - 1); PYc = np.clip(PY, 0, H - 1)
+                                vv = restd[PYc, PXc].mean(-1) + 0.1 * thin_b[PYc, PXc].mean(-1) + 0.2 * dark_[PYc, PXc].mean(-1).astype(np.float64)
+                                vv = np.where(ok_, vv, -1.0)
+                                k_ = int(np.argmax(vv)); ri_, jxi_, jyi_ = np.unravel_index(k_, vv.shape)
+                                if float(vv[ri_, jxi_, jyi_]) > 0.0:
+                                    best = (float(vv[ri_, jxi_, jyi_]), (int(hp_[i_, 0] + cjx + jj[jxi_]), int(hp_[i_, 1] + cjy + jj[jyi_]), int(rrs[ri_])))
+                          else:
+                           for rr in range(int(radii[r_i]) - 3, int(radii[r_i]) + 4):
                             fx_ = np.rint(rr * ca).astype(np.int32); fy_ = np.rint(rr * sa).astype(np.int32)
                             for jx in range(-4, 5, 2):
                                 for jy in range(-4, 5, 2):
@@ -3403,6 +3438,8 @@ def vote_verify_numbers(m):
     if gray is None:
         return
     changed = []
+    # the crops first, then every tesseract call at once (they are independent processes), then the tally per number
+    jobs, per_text = [], []
     for t in m["texts"]:
         s_ = t["s"].replace(" ", "")
         if t.get("angle") is not None or not re.fullmatch(r"[0-9/.,'\-]{3,6}", s_) or not any(ch.isdigit() for ch in s_):
@@ -3417,14 +3454,18 @@ def vote_verify_numbers(m):
             continue
         if t["vertical"]:
             crop = cv2.rotate(crop, cv2.ROTATE_90_COUNTERCLOCKWISE if t["vertical"] == "down" else cv2.ROTATE_90_CLOCKWISE)
-        votes = []
+        first = len(jobs)
         for target in (50.0, 75.0, 100.0):                  # (measured on three CAD renders: single-word modes at >= 50 px read 40-42 of 46 numbers, line mode 13-36)
             z = target / cap
             u = cv2.resize(crop, None, fx=z, fy=z, interpolation=cv2.INTER_CUBIC if z > 1 else cv2.INTER_AREA)
             for v in (u, cv2.erode(u, np.ones((3, 3), np.uint8))):
                 v = cv2.copyMakeBorder(v, 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
                 for psm in (8, 13):
-                    votes.append(pytesseract.image_to_string(v, config="--psm %d -c tessedit_char_whitelist=0123456789" % psm).strip())
+                    jobs.append((v, "--psm %d -c tessedit_char_whitelist=0123456789" % psm))
+        per_text.append((t, s_, first, len(jobs)))
+    reads = ocr_many(jobs)
+    for t, s_, j0, j1 in per_text:
+        votes = [r_.strip() for r_ in reads[j0:j1]]
         cnt = {}
         for v_ in votes:
             if v_:
@@ -3516,7 +3557,7 @@ def vote_read_numbers(m):
     n, lab, st, _c = cv2.connectedComponentsWithStats(rest)
     added, pending, lettering = [], [], []
     def read_votes(crop):
-        votes = []
+        jobs = []
         for z in (2, 3, 4):
             u = cv2.resize(crop, None, fx=z, fy=z, interpolation=cv2.INTER_CUBIC)
             for prep in range(3):
@@ -3527,10 +3568,11 @@ def vote_read_numbers(m):
                     _t, v = cv2.threshold(u, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                 v = cv2.copyMakeBorder(v, 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
                 for psm in (7, 8):
-                    votes.append(pytesseract.image_to_string(v, config="--psm %d -c tessedit_char_whitelist=0123456789" % psm).strip())
-                if prep == 0 and z == 2 and not any(len(v_) >= 2 for v_ in votes):
-                    return votes                            # nothing like a number here: no need to ask seventeen more times
-        return votes
+                    jobs.append((v, "--psm %d -c tessedit_char_whitelist=0123456789" % psm))
+        votes = [r_.strip() for r_ in ocr_many(jobs[:2])]   # (the first two readings first: they decide whether to go on)
+        if not any(len(v_) >= 2 for v_ in votes):
+            return votes                                    # nothing like a number here: no need to ask sixteen more times
+        return votes + [r_.strip() for r_ in ocr_many(jobs[2:])]
     for vertical in (False, "up"):
         gl = []
         for i in range(1, n):
@@ -3564,16 +3606,17 @@ def vote_read_numbers(m):
             votes = read_votes(crop)
             if len(votes) < 18:
                 # not a number.  A word of the plan vocabulary, lettered too small for the page reader ('RAMP', 'UP')?
-                wv = []
+                wj = []
                 for z in (2, 3, 4):
                     u = cv2.resize(crop, None, fx=z, fy=z, interpolation=cv2.INTER_CUBIC)
                     for prep in range(3):
                         v = u if prep == 0 else cv2.addWeighted(u, 1.8, cv2.GaussianBlur(u, (0, 0), z * 0.6), -0.8, 0) if prep == 1 else \
                             cv2.threshold(u, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
                         v = cv2.copyMakeBorder(v, 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
-                        wv.append(re.sub(r"[^A-Z/.\-]", "", pytesseract.image_to_string(v, config="--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ/.-").strip()))
-                    if z == 2 and not any(w_ in SMALL_WORDS for w_ in wv):
-                        break
+                        wj.append((v, "--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ/.-"))
+                wv = [re.sub(r"[^A-Z/.\-]", "", r_.strip()) for r_ in ocr_many(wj[:3])]   # (the z = 2 readings first: they decide whether to go on)
+                if any(w_ in SMALL_WORDS for w_ in wv):
+                    wv += [re.sub(r"[^A-Z/.\-]", "", r_.strip()) for r_ in ocr_many(wj[3:])]
                 cw = {}
                 for w_ in wv:
                     cw[w_] = cw.get(w_, 0) + 1

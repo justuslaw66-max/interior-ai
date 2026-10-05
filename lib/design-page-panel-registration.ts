@@ -42,16 +42,11 @@ export function buildDesignPagePanelRegistration({
   const shoppingPanelModel = buildDesignPageShoppingPanelModel({
     state: {
       rooms: state.document.rooms, planOpenings: planDocument.state.planOpenings,
-      style: state.editor.controls.style,
-      designId: state.document.designId,
-      isGuest: !state.document.authenticated,
-      canEdit: configuration.canEdit,
+      style: state.editor.controls.style, designId: state.document.designId,
+      isGuest: !state.document.authenticated, canEdit: configuration.canEdit,
+      swapAll: { canSwapAll: state.document.plan === "pro", commitItemsToRooms: actions.shopping.commitItemsToRooms, openPricing: actions.shopping.openPricing },
     },
-    actions: {
-      commitItemsToRoom: actions.shopping.commitItemsToRoom,
-      openGuestPrompt: actions.shopping.openGuestPrompt,
-      goFurnish: actions.navigation.goFurnish,
-    },
+    actions: { commitItemsToRoom: actions.shopping.commitItemsToRoom, openGuestPrompt: actions.shopping.openGuestPrompt, goFurnish: actions.navigation.goFurnish },
   });
 
   const selectionPanelModels = buildDesignPageSelectionPanelModels({
@@ -91,7 +86,6 @@ export function buildDesignPagePanelRegistration({
           product: inspection.selectedProduct!,
           item: placementSelection.state.selection.selectedItem,
           measurementUnit: planDocument.state.planMeasurementUnit,
-          planningDimensionsMm: inspection.selectedItemPlanningDimensionsMm,
           selectedBrand: inspection.selectedBrand,
           selectedModelTitle: inspection.selectedModelTitle,
           selectedCategoryDebugLabel: inspection.selectedCategoryDebugLabel,
@@ -101,6 +95,7 @@ export function buildDesignPagePanelRegistration({
           selectedDimensionImageUrl: inspection.selectedDimensionImageUrl,
           styleConsistencyReport: inspection.selectedStyleConsistencyReport,
         },
+        summarySource: { style: state.editor.controls.style, planningDimensionsMm: inspection.selectedItemPlanningDimensionsMm },
         inspectionController: {
           state: interaction.selectedItemPanelControllerState,
           adjustableHangingHeight: inspection.selectedAdjustablePendantHeight
@@ -142,9 +137,9 @@ export function buildDesignPagePanelRegistration({
           onCenterInRoom: interactionActions.centerSelectedItemInRoom,
           onSnapToWall: interactionActions.snapSelectedItemToNearestWall,
           onNudge: interactionActions.nudgeSelectedItem,
-          onAdjustHangingHeight:
-            placementSelection.actions.inspection.adjustSelectedPendantHeight,
+          onAdjustHangingHeight: placementSelection.actions.inspection.adjustSelectedPendantHeight,
         },
+        selection: { clearAllSelection: placementSelection.actions.selection.clearAllSelection },
         rotation: {
           onSnapPresetChange:
             placementSelection.actions.inspection.setRotationSnapPresetDegrees,

@@ -19,7 +19,7 @@ import type { MyDesignCard } from "@/lib/my-designs";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 import { NEW_DESIGN_HREF, PRICING_HREF } from "@/lib/start-design-link";
 
-const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
 const NO_RETURN_FOCUS: readonly string[] = [];
 

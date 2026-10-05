@@ -23,6 +23,7 @@ import {
 } from "@/lib/design-page-utils";
 import { applyMoveItemsBetweenRoomsCommand } from "@/lib/design-page-item-commands";
 import { buildNearbyDuplicateOffsets } from "@/lib/design-page-object-placement";
+import { announceUndoableAction } from "@/lib/editor-action-toast";
 import type { HistoryCommand } from "@/lib/historyManager";
 import { buildAlignedSelectionItems } from "@/lib/design-page-zone-layout";
 import type { DesignItem, DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
@@ -850,14 +851,12 @@ export function useDesignPageSelectionTransforms({
   const deleteSelectedItem = useCallback(() => {
     if (!selectedItem || !canEdit) return;
     if (isDesigner && selectedItem.locked) {
-      reportTransformRejection("delete", "Unlock this item to delete it.");
+      reportTransformRejection("delete", "Unlock this item to remove it.");
       return;
     }
-    commitItems(
-      (previousItems) =>
-        previousItems.filter((item) => item.instanceId !== selectedItem.instanceId),
-      `Delete ${selectedItemDeleteLabel}`
-    );
+    const step = `Remove ${selectedItemDeleteLabel}`; // One Remove for a product (UX audit ED3, FU12).
+    commitItems((previousItems) => previousItems.filter((item) => item.instanceId !== selectedItem.instanceId), step);
+    announceUndoableAction({ message: `${selectedItemDeleteLabel} removed`, undoLabels: [step] });
 
     const currentSelection = getSelectedIds();
     if (!currentSelection.has(selectedItem.instanceId)) return;

@@ -1,11 +1,17 @@
 import type { SelectedCabinetPanelProps } from "@/components/editor/design-page/SelectedCabinetPanel";
 import type { SelectedItemPanelProps } from "@/components/editor/design-page/SelectedItemPanel";
+import {
+  buildSelectedItemSummary,
+  NO_SELECTED_ITEM_SUMMARY,
+  type BuildSelectedItemSummaryInput,
+} from "@/lib/selected-item-summary";
 
 type ItemDetailsState = SelectedItemPanelProps["state"]["details"];
 type ItemRotationState = NonNullable<
   SelectedItemPanelProps["state"]["rotation"]
 >;
 type ItemDetailsActions = SelectedItemPanelProps["actions"]["details"];
+type ItemActions = SelectedItemPanelProps["actions"];
 type ModelActions = SelectedItemPanelProps["actions"]["productModelVariants"];
 type FinishActions = SelectedItemPanelProps["actions"]["productFinishes"];
 
@@ -55,9 +61,10 @@ export type BuildDesignPageSelectionPanelModelsInput = {
         | "showInspectorDetails"
         | "showFullDimensions"
         | "showDeliveryWarranty"
-        | "showRotationControls"
         | "adjustableHangingHeight"
       >;
+      /** What the summary also needs: the design's style (for swaps) and the product's planning size. */
+      summarySource: Pick<BuildSelectedItemSummaryInput, "style" | "planningDimensionsMm">;
       rotation: {
         enabled: boolean;
         state: Omit<ItemRotationState, "expanded">;
@@ -70,9 +77,8 @@ export type BuildDesignPageSelectionPanelModelsInput = {
           | "showInspectorDetails"
           | "showFullDimensions"
           | "showDeliveryWarranty"
-          | "showRotationControls"
         > & {
-          selectedItemCommerceType: SelectedItemPanelProps["state"]["commerceType"];
+          showRotationControls: boolean;
           selectedItemLockLabel: SelectedItemPanelProps["state"]["lockLabel"];
         };
         adjustableHangingHeight: ItemDetailsState["adjustableHangingHeight"];
@@ -84,25 +90,27 @@ export type BuildDesignPageSelectionPanelModelsInput = {
         toggleSelectedItemDetails: ItemDetailsActions["onToggleInspectorDetails"];
         toggleSelectedItemDimensions: ItemDetailsActions["onToggleFullDimensions"];
         toggleSelectedItemDeliveryWarranty: ItemDetailsActions["onToggleDeliveryWarranty"];
-        toggleSelectedItemRotationControls: ItemDetailsActions["onToggleRotationControls"];
+        toggleSelectedItemRotationControls: ItemActions["onToggleRotation"];
         setSelectedItemPosition: ItemDetailsActions["onSetPosition"];
         applySelectedItemStyleAlternative: ItemDetailsActions["onApplyStyleAlternative"];
-        swapSelectedItemToCheaper: SelectedItemPanelProps["actions"]["onSwapToCheaper"];
-        upgradeSelectedItem: SelectedItemPanelProps["actions"]["onUpgradeItem"];
-        openSelectedItemCommerce: SelectedItemPanelProps["actions"]["onOpenCommerce"];
-        toggleSelectedItemLock: SelectedItemPanelProps["actions"]["onToggleLock"];
-        removeSelectedItemFromDesign: SelectedItemPanelProps["actions"]["onRemove"];
+        swapSelectedItemToCheaper: ItemActions["onSwapToCheaper"];
+        swapSelectedItemToPricier: ItemActions["onSwapToPricier"];
+        openSelectedItemCommerce: ItemActions["onViewProduct"];
+        toggleSelectedItemLock: ItemActions["onToggleLock"];
       };
       placement: Pick<
         ItemDetailsActions,
         | "onMoveToRoom"
-        | "onDuplicate"
-        | "onDelete"
         | "onCenterInRoom"
         | "onSnapToWall"
         | "onNudge"
         | "onAdjustHangingHeight"
-      >;
+      > & {
+        onDuplicate: ItemActions["onDuplicate"];
+        /** The one Remove: the placement's delete, recorded as "Remove <product>" (FU12, ED3). */
+        onDelete: ItemActions["onRemove"];
+      };
+      selection: { clearAllSelection: ItemActions["onDeselect"] };
       rotation: SelectedItemPanelProps["actions"]["rotation"];
       productConfiguration: {
         model: ProductModelControlSources;
@@ -118,11 +126,21 @@ export type DesignPageSelectionPanelModels = {
   selectedItem: SelectedItemPanelProps;
 };
 
+/** Picture, price, where it's sold, size and the named swaps; nothing while no product is selected. */
+function selectedItemSummaryOf(
+  state: BuildDesignPageSelectionPanelModelsInput["item"]["state"]
+): SelectedItemPanelProps["state"]["summary"] {
+  const { product, item, measurementUnit } = state.details;
+  if (!product) return NO_SELECTED_ITEM_SUMMARY;
+  return buildSelectedItemSummary({ product, item, measurementUnit, ...state.summarySource });
+}
+
 /** Builds both mutually-exclusive selection inspectors from domain groups. */
 export function buildDesignPageSelectionPanelModels({
   cabinet,
   item,
 }: BuildDesignPageSelectionPanelModelsInput): DesignPageSelectionPanelModels {
+  const { onDuplicate, onDelete, ...placementDetails } = item.actions.placement;
   return {
     selectedCabinet: {
       ...cabinet.state,
@@ -140,8 +158,6 @@ export function buildDesignPageSelectionPanelModels({
             item.state.inspectionController.state.showFullDimensions,
           showDeliveryWarranty:
             item.state.inspectionController.state.showDeliveryWarranty,
-          showRotationControls:
-            item.state.inspectionController.state.showRotationControls,
           adjustableHangingHeight:
             item.state.inspectionController.adjustableHangingHeight,
         },
@@ -152,10 +168,9 @@ export function buildDesignPageSelectionPanelModels({
               ...item.state.rotation.state,
             }
           : null,
+        summary: selectedItemSummaryOf(item.state),
         productModelVariants: item.state.productModelVariants,
         productFinishes: item.state.productFinishes,
-        commerceType:
-          item.state.inspectionController.state.selectedItemCommerceType,
         lockLabel: item.state.inspectionController.state.selectedItemLockLabel,
       },
       configuration: item.configuration,
@@ -167,9 +182,7 @@ export function buildDesignPageSelectionPanelModels({
             item.actions.inspectionController.toggleSelectedItemDimensions,
           onToggleDeliveryWarranty:
             item.actions.inspectionController.toggleSelectedItemDeliveryWarranty,
-          onToggleRotationControls:
-            item.actions.inspectionController.toggleSelectedItemRotationControls,
-          ...item.actions.placement,
+          ...placementDetails,
           onSetPosition:
             item.actions.inspectionController.setSelectedItemPosition,
           onApplyStyleAlternative:
@@ -251,17 +264,37 @@ export function buildDesignPageSelectionPanelModels({
             item.actions.productConfiguration.finish
               .handleBlurStructuredColourPreview,
         },
+        onToggleRotation:
+          item.actions.inspectionController.toggleSelectedItemRotationControls,
+        onDuplicate,
+        onRemove: onDelete,
+        onDeselect: item.actions.selection.clearAllSelection,
         onSwapToCheaper:
           item.actions.inspectionController.swapSelectedItemToCheaper,
-        onUpgradeItem:
-          item.actions.inspectionController.upgradeSelectedItem,
-        onOpenCommerce:
+        onSwapToPricier:
+          item.actions.inspectionController.swapSelectedItemToPricier,
+        onViewProduct:
           item.actions.inspectionController.openSelectedItemCommerce,
         onToggleLock:
           item.actions.inspectionController.toggleSelectedItemLock,
-        onRemove:
-          item.actions.inspectionController.removeSelectedItemFromDesign,
       },
     },
+  };
+}
+
+/**
+ * The panel region with a lamp's light in its item panel (UX 4f): the item panel shows the light's
+ * controls, which left Plan's inspector. Without a selected product the region is unchanged.
+ */
+export function withSelectedItemLight<Region extends { state: { selectedItem: SelectedItemPanelProps | null } }>(
+  region: Region,
+  light: SelectedItemPanelProps["state"]["light"],
+  onChangeLight: NonNullable<ItemActions["onChangeLight"]>
+): Region {
+  const panel = region.state.selectedItem;
+  if (!panel) return region;
+  return {
+    ...region,
+    state: { ...region.state, selectedItem: { ...panel, state: { ...panel.state, light }, actions: { ...panel.actions, onChangeLight } } },
   };
 }

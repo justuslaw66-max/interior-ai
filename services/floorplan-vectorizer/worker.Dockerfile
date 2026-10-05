@@ -4,6 +4,11 @@
 # pytesseract) and the tesseract program with English data. The doctor runs at build time, so an image that
 # cannot run the vectorizer does not build.
 #
+# The OCR engine is part of the measured runtime: the base is Debian bookworm, whose tesseract is 5.3.0, and
+# FLOOR_PLAN_VECTORIZER_TESSERACT below makes the doctor refuse any other release line at build time. With the same
+# programs and the same eng.traineddata, 5.5.3 read 122 of the corpus's 138 rooms where 5.3.0 read 126 (2 Oct 2026).
+# Before moving the base image or the pin, score the corpus inside the new image and compare.
+#
 # Build from the repository root (the worker runs the repository, not a bundle):
 #     docker build -f services/floorplan-vectorizer/worker.Dockerfile -t interior-ai-floor-plan-worker .
 # Run with the app's server environment (DATABASE_URL, APP_ENV=production|staging, the FLOOR_PLAN_* storage
@@ -39,7 +44,8 @@ ENV NODE_ENV=production \
     FLOOR_PLAN_PROCESSING_MODE=background \
     FLOOR_PLAN_VECTORIZER_ENABLED=1 \
     FLOOR_PLAN_VECTORIZER_PYTHON=/app/services/floorplan-vectorizer/.venv/bin/python3 \
-    FLOOR_PLAN_VECTORIZER_DIR=services/floorplan-vectorizer
+    FLOOR_PLAN_VECTORIZER_DIR=services/floorplan-vectorizer \
+    FLOOR_PLAN_VECTORIZER_TESSERACT=5.3
 
 # The runtime must be whole, or the image is not worth having.
 RUN services/floorplan-vectorizer/.venv/bin/python3 services/floorplan-vectorizer/doctor.py --run

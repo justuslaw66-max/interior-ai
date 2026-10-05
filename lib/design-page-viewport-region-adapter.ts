@@ -78,9 +78,6 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       canEditActiveRoomWallHeight: boolean;
       activeFloorRoomCount: number;
       designRoomCount: number;
-      selectedFixtureLight: NonNullable<
-        ViewportState["selectionInspector"]
-      >["selectedFixtureLight"];
     };
     planSummary: ViewportState["planSummary"];
     planQuality: {
@@ -104,8 +101,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       enabled: boolean;
       rooms: NonNullable<ViewportState["navigator"]>["rooms"];
       activeRoomId: NonNullable<ViewportState["navigator"]>["activeRoomId"];
-      cameraPosition: NonNullable<ViewportState["navigator"]>["cameraPosition"];
-      cameraTarget: NonNullable<ViewportState["navigator"]>["cameraTarget"];
+      liveCameraView: NonNullable<ViewportState["navigator"]>["liveCameraView"];
       itemCountsByRoomId: NonNullable<ViewportState["navigator"]>["itemCountsByRoomId"];
       targetRoomId: NonNullable<ViewportState["navigator"]>["targetRoomId"];
       targetRoomValid: NonNullable<ViewportState["navigator"]>["targetRoomValid"];
@@ -245,8 +241,6 @@ export function buildDesignPageViewportRegionAdapter({
                 state.selectionInspector.activeFloorRoomCount,
               canDeleteSelectedRoom:
                 state.selectionInspector.designRoomCount > 0,
-              selectedFixtureLight:
-                state.selectionInspector.selectedFixtureLight,
             }
           : null,
       planSummary: state.planSummary,
@@ -276,8 +270,7 @@ export function buildDesignPageViewportRegionAdapter({
         ? {
             rooms: state.navigator.rooms,
             activeRoomId: state.navigator.activeRoomId,
-            cameraPosition: state.navigator.cameraPosition,
-            cameraTarget: state.navigator.cameraTarget,
+            liveCameraView: state.navigator.liveCameraView,
             itemCountsByRoomId: state.navigator.itemCountsByRoomId,
             targetRoomId: state.navigator.targetRoomId,
             targetRoomValid: state.navigator.targetRoomValid,

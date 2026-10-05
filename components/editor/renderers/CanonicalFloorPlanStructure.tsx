@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { DoubleSide, Mesh } from "three";
@@ -9,10 +9,7 @@ import type {
   CompiledFloorPlanStructureV2,
 } from "@/lib/floor-plan-compiler-v2";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import {
-  buildCanonicalOpeningSymbolLinesV2,
-  getCanonicalOpeningRenderIdentityV2,
-} from "@/lib/floor-plan-opening-primitives";
+import { getCanonicalOpeningRenderIdentityV2 } from "@/lib/floor-plan-opening-primitives";
 import type {
   CanonicalFloorPlanLineSegment,
   CanonicalFloorPlanFloorRenderModel,
@@ -20,10 +17,7 @@ import type {
   CanonicalFloorPlanWallSolid,
 } from "@/lib/floor-plan-render-model";
 import { resolveCanonicalFloorPlan2DActiveFloor } from "@/lib/floor-plan-render-model";
-import {
-  buildCanonicalFloorSlabPolygons,
-  buildCanonicalWallUnionBands,
-} from "@/lib/floor-plan-watertight-geometry";
+import { buildCanonicalFloorSlabPolygons } from "@/lib/floor-plan-watertight-geometry";
 import {
   canonicalWallCutawayKey,
   type CanonicalCutawayTarget,
@@ -35,6 +29,7 @@ import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import {
+  canonicalOpening2DSymbolLines,
   planarUnionShapes,
   preferredRoomId,
   segmentTransform,
@@ -57,6 +52,7 @@ import {
   surfaceMaterialFallbackColor,
 } from "./canonical-floor-plan/surfaceMaterials";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
+import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
 import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
@@ -64,6 +60,7 @@ import { openingColor, symbolLineStyle } from "./canonical-floor-plan/openingSty
 import { OpeningDragPreview } from "./canonical-floor-plan/OpeningDragPreview";
 import { openingGestureBindings } from "./canonical-floor-plan/openingGestureBindings";
 import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
+import { stableExtrudeOptions } from "./stableExtrudeOptions";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
@@ -74,6 +71,9 @@ const CANONICAL_ACTIVE_WALL_COLOR = "#fbfbf7";
 const CANONICAL_WALL_BODY_COLOR = "#ddddda";
 const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;
 const CANONICAL_WALL_INDIRECT_FILL_INTENSITY = 0.08;
+const noRaycast = () => null;
+// R3F 9 skips a prop that becomes undefined, so turning picking back on must pass the default raycast.
+const meshRaycast = Mesh.prototype.raycast;
 
 function CanonicalStructure2D({
   structure,
@@ -182,7 +182,7 @@ function CanonicalStructure3D({
         canonicalGeometryHash: geometryHash,
       }}
     >
-      <extrudeGeometry args={[shape, { depth: heightMeters, bevelEnabled: false }]} />
+      <extrudeGeometry args={[shape, stableExtrudeOptions(heightMeters)]} />
       <meshStandardMaterial
         color={structureColor(structure.kind)}
         roughness={0.86}
@@ -223,10 +223,8 @@ function CanonicalOpening2DSymbol({
   onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 }) {
   const identity = getCanonicalOpeningRenderIdentityV2(opening);
-  const symbols = buildCanonicalOpeningSymbolLinesV2(opening);
-  const exactHostPoints = hostSegments.length
-    ? [hostSegments[0].start, ...hostSegments.map((segment) => segment.end)]
-    : [opening.start, opening.end];
+  // Once per opening, not per render, so a selection or a click keeps each Line's geometry.
+  const symbols = useMemo(() => canonicalOpening2DSymbolLines(opening, hostSegments), [hostSegments, opening]);
   const color = openingColor(opening, selected);
   const { previewRef, beginMove, beginResize, move, finish, cancel } = useCanonicalOpeningDrag({
     opening, revisionId,
@@ -259,13 +257,12 @@ function CanonicalOpening2DSymbol({
       <OpeningDragPreview meshRef={previewRef} />
       {symbols.map((symbol) => {
         const style = symbolLineStyle(symbol.role);
-        const sourcePoints = symbol.role === "host_span" ? exactHostPoints : symbol.points;
         return (
           <Line
             key={`${opening.id}:${symbol.role}:${symbol.points
               .map((point) => `${point.xMm},${point.zMm}`)
               .join(";")}`}
-            points={sourcePoints.map((point) => [point.xMm / 1000, 0.014, point.zMm / 1000])}
+            points={symbol.linePoints}
             color={color}
             lineWidth={selected && symbol.role === "host_span" ? 5 : style.width}
             dashed={style.dashed || opening.operation === "open"}
@@ -345,7 +342,7 @@ function CanonicalOpening2DSymbol({
   );
 }
 
-function CanonicalWallSolidHitMesh({
+const CanonicalWallSolidHitMesh = memo(function CanonicalWallSolidHitMesh({
   solid,
   wallId,
   pathKind,
@@ -353,6 +350,7 @@ function CanonicalWallSolidHitMesh({
   floorElevationMm,
   geometryHash,
   roomId,
+  cutAway,
   onSelectWall,
 }: {
   solid: CanonicalFloorPlanWallSolid;
@@ -362,11 +360,8 @@ function CanonicalWallSolidHitMesh({
   floorElevationMm: number;
   geometryHash: string;
   roomId: string | null;
-  onSelectWall?: (
-    wallId: string,
-    roomId: string | null,
-    event: CanonicalPointerEvent
-  ) => void;
+  cutAway: boolean;
+  onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
 }) {
   const shape = useMemo(() => wallSolidShape(solid), [solid]);
   const height = Math.max(0.001, (solid.topMm - solid.bottomMm) / 1000);
@@ -374,6 +369,8 @@ function CanonicalWallSolidHitMesh({
     <mesh
       position={[0, floorElevationMm / 1000 + solid.bottomMm / 1000, 0]}
       rotation-x={-Math.PI / 2}
+      visible={!cutAway}
+      raycast={cutAway ? noRaycast : meshRaycast}
       userData={{
         testId: "canonical-wall-3d",
         canonicalWallId: wallId,
@@ -386,9 +383,7 @@ function CanonicalWallSolidHitMesh({
         onSelectWall?.(wallId, roomId, event);
       }}
     >
-      <extrudeGeometry
-        args={[shape, { depth: height, bevelEnabled: false, steps: 1 }]}
-      />
+      <extrudeGeometry args={[shape, stableExtrudeOptions(height, 1)]} />
       <meshBasicMaterial
         transparent
         opacity={0}
@@ -397,7 +392,7 @@ function CanonicalWallSolidHitMesh({
       />
     </mesh>
   );
-}
+});
 
 function CanonicalFloorSlab3D({
   floor,
@@ -429,9 +424,7 @@ function CanonicalFloorSlab3D({
         canonicalGeometryHash: geometryHash,
       }}
     >
-      <extrudeGeometry
-        args={[shapes, { depth: thicknessMeters, bevelEnabled: false, steps: 1 }]}
-      />
+      <extrudeGeometry args={[shapes, stableExtrudeOptions(thicknessMeters, 1)]} />
       <meshBasicMaterial
         transparent
         opacity={0}
@@ -453,22 +446,12 @@ function CanonicalWallBodies3D({
   opacity: number;
   cutawayWallKeys: ReadonlySet<string>;
 }) {
-  const bands = useMemo(() => {
-    const excludedWallIds = new Set(
-      floor.walls
-        .filter((wall) =>
-          cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))
-        )
-        .map((wall) => wall.id)
-    );
-    return buildCanonicalWallUnionBands(floor, { excludedWallIds });
-  }, [cutawayWallKeys, floor]);
+  const bands = useCanonicalWallBands(floor, cutawayWallKeys);
   const maximumTopMm = Math.max(
     Number.NEGATIVE_INFINITY,
     ...bands.map((band) => band.topMm)
   );
-  return bands.map((band, index) => {
-    const shapes = planarUnionShapes(band.polygons);
+  return bands.map(({ shapes, ...band }, index) => {
     const heightMeters = Math.max(0.001, (band.topMm - band.bottomMm) / 1000);
     const topMeters = floor.elevationMm / 1000 + band.topMm / 1000;
     return (
@@ -489,9 +472,7 @@ function CanonicalWallBodies3D({
             canonicalGeometryHash: geometryHash,
           }}
         >
-          <extrudeGeometry
-            args={[shapes, { depth: heightMeters, bevelEnabled: false, steps: 1 }]}
-          />
+          <extrudeGeometry args={[shapes, stableExtrudeOptions(heightMeters, 1)]} />
           <meshStandardMaterial
             color={CANONICAL_WALL_BODY_COLOR}
             emissive={CANONICAL_WALL_BODY_COLOR}
@@ -536,7 +517,7 @@ function CanonicalWallBodies3D({
   });
 }
 
-function CanonicalWallSurfaceMesh({
+const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
   solid,
   wallId,
   floorId,
@@ -547,6 +528,7 @@ function CanonicalWallSurfaceMesh({
   opacity,
   geometryHash,
   interactive,
+  cutAway,
   onSelectWall,
 }: {
   solid: CanonicalFloorPlanWallSolid;
@@ -558,7 +540,9 @@ function CanonicalWallSurfaceMesh({
   selected: boolean;
   opacity: number;
   geometryHash: string;
+  /** False while cut away, so a hidden surface takes no pointer events. */
   interactive: boolean;
+  cutAway: boolean;
   onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
 }) {
   const { gl } = useThree();
@@ -610,7 +594,8 @@ function CanonicalWallSurfaceMesh({
     <mesh
       position={[0, floorElevationMm / 1000, 0]}
       renderOrder={12}
-      raycast={interactive ? undefined : () => null}
+      visible={!cutAway}
+      raycast={interactive ? meshRaycast : noRaycast}
       userData={{
         testId: "canonical-wall-surface-3d",
         canonicalFloorId: floorId,
@@ -664,9 +649,9 @@ function CanonicalWallSurfaceMesh({
       )}
     </mesh>
   );
-}
+});
 
-function CanonicalOpening3DSymbol({
+const CanonicalOpening3DSymbol = memo(function CanonicalOpening3DSymbol({
   opening,
   wallId,
   wallThicknessMm,
@@ -674,7 +659,7 @@ function CanonicalOpening3DSymbol({
   floorElevationMm,
   hostSegments,
   geometryHash, revisionId,
-  selected,
+  selected, cutAway,
   opacity,
   interactive,
   onSelect,
@@ -690,7 +675,7 @@ function CanonicalOpening3DSymbol({
   floorElevationMm: number;
   hostSegments: CanonicalFloorPlanLineSegment[];
   geometryHash: string; revisionId: string;
-  selected: boolean;
+  selected: boolean; cutAway: boolean;
   opacity: number;
   interactive: boolean;
   onSelect?: (openingId: string | null) => void;
@@ -822,7 +807,7 @@ function CanonicalOpening3DSymbol({
     onDragStateChange,
   });
   return (
-    <>
+    <group visible={!cutAway}>
       <OpeningDragPreview meshRef={previewRef} y={floorElevationMm / 1000 + bottom + height / 2} height={height} depth={Math.max(0.08, wallThicknessMm / 1000)} />
       <group
         position={[geometry.centerX, floorElevationMm / 1000, geometry.centerZ]}
@@ -857,7 +842,7 @@ function CanonicalOpening3DSymbol({
               host.centerZ,
             ]}
             rotation-y={host.rotationY}
-            raycast={interactive ? undefined : () => null}
+            raycast={interactive ? meshRaycast : noRaycast}
             userData={{
               testId: "canonical-opening-3d",
               canonicalOpeningId: opening.id,
@@ -922,9 +907,9 @@ function CanonicalOpening3DSymbol({
             </mesh>
           );
         })}
-    </>
+    </group>
   );
-}
+});
 
 type CanonicalFloorPlanWalls2DProps = {
   wallEditing?: CanonicalWallGestureControls;
@@ -1148,9 +1133,8 @@ export function CanonicalFloorPlanWalls3D({
           />
         );
         const walls = visibleWalls.flatMap((wall) => {
-          if (cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))) {
-            return [];
-          }
+          // A cut-away wall stays mounted, hidden and unpickable, so a cutaway change creates no meshes or shaders.
+          const cutAway = cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id));
           const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId);
           const selected = wall.id === selectedWallId;
           return wall.solids.flatMap((solid) => {
@@ -1164,6 +1148,7 @@ export function CanonicalFloorPlanWalls3D({
                 floorElevationMm={floor.elevationMm}
                 geometryHash={model.geometryHash}
                 roomId={roomId}
+                cutAway={cutAway}
                 onSelectWall={onSelectWall}
               />
             ) : null;
@@ -1185,7 +1170,8 @@ export function CanonicalFloorPlanWalls3D({
                   }
                   opacity={opacity}
                   geometryHash={model.geometryHash}
-                  interactive={interactive}
+                  interactive={interactive && !cutAway}
+                  cutAway={cutAway}
                   onSelectWall={onSelectWall}
                 />,
               ];
@@ -1206,30 +1192,30 @@ export function CanonicalFloorPlanWalls3D({
             (wall) =>
               !focusRoomId || wall.adjacentRoomIds.includes(focusRoomId)
           )
-          .flatMap((wall) =>
-          cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))
-            ? []
-            : wall.openingPaths.map(({ opening, segments }) => (
-                <CanonicalOpening3DSymbol
-                  key={`${floor.id}:${opening.id}:opening`}
-                  opening={opening}
-                  wallId={wall.id}
-                  wallThicknessMm={wall.thicknessMm}
-                  floorId={floor.id}
-                  floorElevationMm={floor.elevationMm}
-                  hostSegments={segments}
-                  geometryHash={model.geometryHash}
-                  selected={opening.id === selectedOpeningId}
-                  opacity={opacity}
-                  interactive={interactive}
-                  onSelect={onSelectOpening}
-                  wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
-                  wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
-                  revisionId={model.revisionId}
-                  {...openingGestureBindings(wallEditing, floor.id, wall.path.kind, onEditOpening, onOpeningDragStateChange)}
-                />
-              ))
-        );
+          .flatMap((wall) => {
+            const cutAway = cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id));
+            return wall.openingPaths.map(({ opening, segments }) => (
+              <CanonicalOpening3DSymbol
+                key={`${floor.id}:${opening.id}:opening`}
+                opening={opening}
+                wallId={wall.id}
+                wallThicknessMm={wall.thicknessMm}
+                floorId={floor.id}
+                floorElevationMm={floor.elevationMm}
+                hostSegments={segments}
+                geometryHash={model.geometryHash}
+                selected={opening.id === selectedOpeningId}
+                cutAway={cutAway}
+                opacity={opacity}
+                interactive={interactive && !cutAway}
+                onSelect={onSelectOpening}
+                wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
+                wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
+                revisionId={model.revisionId}
+                {...openingGestureBindings(wallEditing, floor.id, wall.path.kind, onEditOpening, onOpeningDragStateChange)}
+              />
+            ));
+          });
       })}
     </group>
   );

@@ -596,7 +596,7 @@ export function CabinetryStudioDetailedView({
 
       <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 lg:hidden">
         <span>Detailed controls work best on a larger screen.</span>
-        <button type="button" className="shrink-0 rounded px-1 font-semibold underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800" onClick={() => chooseExperienceMode("guided")}>
+        <button type="button" className="shrink-0 rounded px-1 font-semibold underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-800" onClick={() => chooseExperienceMode("guided")}>
           Use guided setup
         </button>
       </div>

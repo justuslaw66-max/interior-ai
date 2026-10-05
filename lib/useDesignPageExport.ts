@@ -25,7 +25,6 @@ type DesignPageExportState = {
   plan: Plan;
   exportStylePreset: ExportStylePreset;
   sceneReady: boolean;
-  cameraView: CameraView;
   clientPreview: boolean;
   items: DesignItem[];
 };
@@ -45,6 +44,7 @@ type DesignPageExportRefs = {
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
   rendererRef: MutableRefObject<THREE.WebGLRenderer | null>;
   sceneRef: MutableRefObject<THREE.Scene | null>;
+  cameraViewRef: MutableRefObject<CameraView>; // live while the controls glide; the committed cameraView state trails it
   designSnapshotRef: MutableRefObject<DesignSnapshot>;
 };
 
@@ -96,7 +96,6 @@ export function useDesignPageExport({
     plan,
     exportStylePreset,
     sceneReady,
-    cameraView,
     clientPreview,
     items,
   } = state;
@@ -114,6 +113,7 @@ export function useDesignPageExport({
     controlsRef,
     rendererRef,
     sceneRef,
+    cameraViewRef,
     designSnapshotRef,
   } = refs;
   const capabilities = resolveEditorCapabilities(plan);
@@ -171,7 +171,7 @@ export function useDesignPageExport({
 
     const camera = cameraRef.current;
     const originalPosition = camera.position.clone();
-    const originalTarget = new THREE.Vector3(...cameraView.target);
+    const originalTarget = new THREE.Vector3(...cameraViewRef.current.target);
     const previousPreview = clientPreview;
     setClientPreview(true);
     await waitForFrames(2);
@@ -212,7 +212,7 @@ export function useDesignPageExport({
     return images;
   }, [
     cameraRef,
-    cameraView.target,
+    cameraViewRef,
     canvasRef,
     canExportMultipleViews,
     captureCanvasImageForPdf,
@@ -247,7 +247,7 @@ export function useDesignPageExport({
     try {
       const camera = cameraRef.current;
       const originalPosition = camera.position.clone();
-      const originalTarget = new THREE.Vector3(...cameraView.target);
+      const originalTarget = new THREE.Vector3(...cameraViewRef.current.target);
       setClientPreview(true);
       await waitForFrames(2);
       const angles =
@@ -318,7 +318,7 @@ export function useDesignPageExport({
     }
   }, [
     cameraRef,
-    cameraView.target,
+    cameraViewRef,
     canvasRef,
     captureCanvasImage,
     canExportMultipleViews,

@@ -18,6 +18,7 @@ import {
 import type { PlanLayerPresetId } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { DEFAULT_DOOR_WIDTH_MM } from "@/lib/design-page-opening-dimensions";
+import { openKeyboardShortcuts } from "@/lib/editor-shortcuts";
 
 export type DesignPageCommandPaletteState = {
   isClientPreview: boolean;
@@ -152,6 +153,11 @@ function buildPaletteActions(
       hint: "Switch plan layers to technical",
       enabled: planLayerPreset !== "technical",
       run: () => runPlanPreset("technical"),
+    },
+    {
+      // A frame after the palette hands focus back (scheduleActionFocusReturn), so the sheet returns it there (UX 4c).
+      id: "keyboard-shortcuts", label: "Keyboard shortcuts", hint: "See every shortcut",
+      enabled: true, run: () => window.requestAnimationFrame(() => window.requestAnimationFrame(openKeyboardShortcuts)),
     },
   ];
   const normalizedQuery = query.trim().toLowerCase();

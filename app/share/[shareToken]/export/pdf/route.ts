@@ -301,7 +301,7 @@ export async function GET(
     y -= 24;
     drawTextLine(page, "Prepared by: Interior AI", MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
     y -= 14;
-    drawTextLine(page, `Style: ${publicDesign.style ?? "Not specified"}   Budget: ${publicDesign.budget ?? "Not specified"}`, MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
+    drawTextLine(page, [publicDesign.style && `Style: ${publicDesign.style}`, publicDesign.budget && `Budget: ${publicDesign.budget}`].filter(Boolean).join("   "), MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
     y -= 32;
 
     y = drawSectionHeading(page, "Export Overview", y, fonts);

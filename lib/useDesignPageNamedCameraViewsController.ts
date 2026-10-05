@@ -88,14 +88,16 @@ export type DesignPageNamedCameraViewsControllerConfiguration = {
 
 export type DesignPageNamedCameraViewsControllerRefs = {
   designSnapshot: { current: DesignSnapshot };
+  /** The latest camera view, live while the controls glide; the committed `cameraView` state trails it. */
+  cameraView: { current: CameraView };
 };
 
 export type DesignPageNamedCameraViewsControllerActions = {
   setDesignSnapshot: SetDesignSnapshot;
   setLegacySavedViews: (savedViews: NamedCameraView[]) => void;
   showToast: (message: string) => void;
-  handleEditorViewModeChange: (viewMode: "3d") => void;
-  transitionToCameraView: (cameraView: CameraView, durationMs: number) => void;
+  /** Switches to 3D on `open3DView`, or transitions to it when already in 3D. */
+  handleEditorViewModeChange: (viewMode: "3d", open3DView: CameraView, durationMs: number) => void;
 };
 
 export type UseDesignPageNamedCameraViewsControllerInput = {
@@ -108,13 +110,12 @@ export type UseDesignPageNamedCameraViewsControllerInput = {
 export function useDesignPageNamedCameraViewsController({
   state: { cameraView },
   configuration: { maximumSavedViews, openTransitionDurationMs },
-  refs: { designSnapshot: designSnapshotRef },
+  refs: { designSnapshot: designSnapshotRef, cameraView: cameraViewRef },
   actions: {
     setDesignSnapshot,
     setLegacySavedViews,
     showToast,
     handleEditorViewModeChange,
-    transitionToCameraView,
   },
 }: UseDesignPageNamedCameraViewsControllerInput) {
   const [cameraViewNameInput, setCameraViewNameInput] = useState("");
@@ -126,12 +127,13 @@ export function useDesignPageNamedCameraViewsController({
       return;
     }
 
+    const liveView = cameraViewRef.current;
     const savedView = buildDesignPageSavedCameraView({
       idTimestamp: Date.now(),
       requestedName: cameraViewNameInput,
       existingViewCount: room.savedViews?.length ?? 0,
-      cameraPosition: cameraView.pos,
-      cameraTarget: cameraView.target,
+      cameraPosition: liveView.pos,
+      cameraTarget: liveView.target,
       timestamp: Date.now(),
     });
     const nextRoomViews = appendDesignPageSavedCameraView(
@@ -141,7 +143,7 @@ export function useDesignPageNamedCameraViewsController({
     );
     const nextLegacyViews = mapDesignPageSavedCameraViewsToLegacy(
       nextRoomViews,
-      cameraView.fov
+      liveView.fov
     );
 
     setDesignSnapshot((previous) => {
@@ -156,10 +158,8 @@ export function useDesignPageNamedCameraViewsController({
     setCameraViewNameInput("");
     showToast(`${savedView.name} saved`);
   }, [
-    cameraView.fov,
-    cameraView.pos,
-    cameraView.target,
     cameraViewNameInput,
+    cameraViewRef,
     designSnapshotRef,
     maximumSavedViews,
     setDesignSnapshot,
@@ -202,8 +202,8 @@ export function useDesignPageNamedCameraViewsController({
 
   const openSavedCameraView = useCallback(
     (view: SavedView) => {
-      handleEditorViewModeChange("3d");
-      transitionToCameraView(
+      handleEditorViewModeChange(
+        "3d",
         {
           pos: view.cameraPosition,
           target: view.cameraTarget,
@@ -212,12 +212,7 @@ export function useDesignPageNamedCameraViewsController({
         openTransitionDurationMs
       );
     },
-    [
-      cameraView.fov,
-      handleEditorViewModeChange,
-      openTransitionDurationMs,
-      transitionToCameraView,
-    ]
+    [cameraView.fov, handleEditorViewModeChange, openTransitionDurationMs]
   );
 
   return {

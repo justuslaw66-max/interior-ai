@@ -101,9 +101,9 @@ assert.ok(
 );
 assert.ok(
   normalizedModel.includes(
-    "selectedZone: selectedZone && !isClientPreview ? {"
+    "selectedZone: selectedZone && !isClientPreview && zoneTools ? {"
   ),
-  "Selected-zone controls should remain limited to an active zone outside preview."
+  "Selected-zone controls stay limited to an active zone outside preview, and are Pro's (UX 4g, FU6)."
 );
 
 for (const expected of [
@@ -116,6 +116,7 @@ for (const expected of [
   "pendingZoneType: zone.state.pendingZoneType",
   "selectedZone: zone.state.selectedZone",
   "isClientPreview: coreShell.derived.access.isClientPreview",
+  "zoneTools: coreShell.derived.access.isDesigner",
 ] as const) {
   assert.ok(
     normalizedViewportReadModel.includes(expected),
@@ -232,6 +233,7 @@ const visibleState = resolveDesignPageViewportSelectionControlsState({
   pendingZoneType: "reading",
   selectedZone: { id: "zone-reading", type: "reading" },
   isClientPreview: false,
+  zoneTools: true,
 });
 
 assert.deepEqual(
@@ -255,7 +257,7 @@ assert.deepEqual(
         },
       ],
     },
-    multiSelection: { count: 2, zoneType: "reading" },
+    multiSelection: { count: 2, zoneType: "reading", zoneTools: true },
     selectedZone: { id: "zone-reading", label: "Reading nook" },
   },
   "The pure resolver should preserve every visible control model independently."
@@ -274,6 +276,7 @@ const previewState = resolveDesignPageViewportSelectionControlsState({
   pendingZoneType: "seating",
   selectedZone: { id: "zone-seating", type: "seating" },
   isClientPreview: true,
+  zoneTools: true,
 });
 
 assert.deepEqual(
@@ -281,5 +284,17 @@ assert.deepEqual(
   { floorStack: null, multiSelection: null, selectedZone: null },
   "Client preview should continue to suppress all three viewport controls."
 );
+
+// Consumers: Align stays, zone type and Create zone go, and no zone toolbar (UX 4g, FU6).
+const consumerState = resolveDesignPageViewportSelectionControlsState({
+  viewMode: "2d", stackedFloorView: false, floorOptions: [], activeFloorLevel: 1, hiddenFloorLevels: [],
+  selectedCount: 2, pendingZoneType: "seating", selectedZone: { id: "zone-seating", type: "seating" },
+  isClientPreview: false, zoneTools: false,
+});
+assert.deepEqual(consumerState.multiSelection, { count: 2, zoneType: "seating", zoneTools: false });
+assert.equal(consumerState.selectedZone, null);
+const multiSelectionToolbar = readSource("components/editor/design-page/MultiSelectionToolbar.tsx");
+assert.match(multiSelectionToolbar, /Align Z centre\s*<\/button>\s*\{state\.zoneTools \? <ZoneCreateControls /);
+assert.match(multiSelectionToolbar, /function ZoneCreateControls\([\s\S]*?Create zone/);
 
 console.log("Design-page viewport selection-control ownership checks passed.");

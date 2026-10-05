@@ -1,0 +1,947 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - FUMO - minimali.zip, 129848940 bytes, sha256 0da8886809412f84f4aa5911ebc6efd080be645b3fef4edd3d3a42f2f35c481a).",
+ "note": "The download holds each face twice, the same picture exported two ways: a lighter JPG with an sRGB profile and a darker JPG without a profile (lighter is about 0.93 x darker + 14.5 in level). The lighter sRGB copy is used for every face (J, 2026-10-04), turned upright where it is landscape. Face numbers are ABK's numbers on the lighter copy's name.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are 1.3 to 3.9 px per mm (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/anima/ holds the tracking files and the ZIPs, and the same ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "If the renderer draws more pixels per metre, re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0006047",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006047-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006047_swatch.webp",
+   "faces": [
+    {
+     "file": "0006047_01.webp",
+     "face": 1,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 127034,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_1 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f0321496814d34751be06a6ad5a6a17cef711d4e989111471485fd703a63f070",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA FUMO 120X120_01",
+      "id": "771e6d9f-3073-4cda-b101-c8be0680bc82"
+     }
+    },
+    {
+     "file": "0006047_02.webp",
+     "face": 2,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 124378,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "eb9522b025e3dac90f854f5a59596ea73528ab0f0068699365dbd7a583e247aa",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 13",
+      "name": "ANIMA FUMO 120X120_02",
+      "id": "bbc44c02-b7b6-4840-a023-0222e724ee40"
+     }
+    },
+    {
+     "file": "0006047_03.webp",
+     "face": 3,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 135328,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f51ad68e7d7be29a58f064601574ff52f595d5be08c2769e3405857eba5a60b8",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "ANIMA FUMO 120X120_03",
+      "id": "01b55e72-4a0d-47b4-b19d-e176641bcfc0"
+     }
+    },
+    {
+     "file": "0006047_04.webp",
+     "face": 4,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 123966,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e99e053ab85ea6c3993f6a9f161c184e2e5902654bad6e0a87075208aa091db3",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "ANIMA FUMO 120X120_04",
+      "id": "14063e1a-3f1a-443b-9bd6-52e559d4c8ce"
+     }
+    },
+    {
+     "file": "0006047_05.webp",
+     "face": 5,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 120606,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f3176f7f79dfec526581c9ed239e3ec82aba55d3b4030702f40b9238f1dbd974",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "ANIMA FUMO 120X120_05",
+      "id": "223fc831-acf7-4d21-be19-d7727daa58b8"
+     }
+    },
+    {
+     "file": "0006047_06.webp",
+     "face": 6,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114498,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a455a870f1a7650f9c5e22c93ade99e929f2c94b612b55dbff63a17534f5e252",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "ANIMA FUMO 120X120_06",
+      "id": "b0ee2a6e-0380-41b2-a11b-6de88e350bf7"
+     }
+    },
+    {
+     "file": "0006047_07.webp",
+     "face": 7,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 111676,
+     "source_file": "120X120-Nat P.tech/ANIMA - FUMO - 120X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a9b7869fe7bf534ffbf4e425a62f914d6ac23efe2a05f980c7023ad2d20c66f9",
+     "source_px_per_mm": 2.13,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 14",
+      "name": "ANIMA FUMO 120X120_07",
+      "id": "fe334c49-8cc8-4a3a-8258-cdf58d9180a0"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006051",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006051-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006051_swatch.webp",
+   "faces": [
+    {
+     "file": "0006051_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63014,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ae445339ea6d77d2cad868f15a1ef70e4999bbdb63021ecbc3ad308a2303c887",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA FUMO 60X120_01",
+      "id": "4f1d8ef4-629c-4f8f-83d8-79352d19148c"
+     }
+    },
+    {
+     "file": "0006051_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57434,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5721a816e09fe14796a2a18b263aaf7fe391bfbb3426563e7982cbe09f6bfcce",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "ANIMA FUMO 60X120_02",
+      "id": "6f8ef021-1430-45ca-a585-999dadde68be"
+     }
+    },
+    {
+     "file": "0006051_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60610,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "18cac4a61c41bc9435e99cd0ecc8e39bb861ce8fde2c7cb37db267d4d28e38af",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 26",
+      "name": "ANIMA FUMO 60X120_03",
+      "id": "e03e1c32-448e-4af2-87dc-b7da4133467e"
+     }
+    },
+    {
+     "file": "0006051_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65616,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_26.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2a34e375e9b78c44a02e6e174d567dbade2213f5d46d78b7d507bfc99c737869",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 27",
+      "name": "ANIMA FUMO 60X120_04",
+      "id": "f23854d6-2a70-4560-9ca4-3ff6cd181a18"
+     }
+    },
+    {
+     "file": "0006051_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65614,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7661fee5ba57dcae30eeba8b4462934975fdfc7ca4ea8f5c4765cf87772c1e9b",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "ANIMA FUMO 60X120_05",
+      "id": "dbeba58a-6d2f-4717-834e-5530b0ab05ec"
+     }
+    },
+    {
+     "file": "0006051_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 71076,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "aabb6f901a97326d7dc3d4902820158f7f4d7a5afcc1c255c6af33edad3ac0df",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "ANIMA FUMO 60X120_06",
+      "id": "5163e5d7-930d-452a-9bda-b6899a486638"
+     }
+    },
+    {
+     "file": "0006051_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61258,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7971b4543fd2459980861756f32d76194421f3eed9d86bb1c5a50c86474b12b1",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "ANIMA FUMO 60X120_07",
+      "id": "0642f374-99da-4f7e-89ac-1bbbaf95fe29"
+     }
+    },
+    {
+     "file": "0006051_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64078,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b0b65e7afee6c76107d04ad9bd6973cb0072e061e4e9bfa7ba31774c6fc9cf0d",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 25",
+      "name": "ANIMA FUMO 60X120_08",
+      "id": "dd516cd4-bc43-483f-8ff0-2635588d263b"
+     }
+    },
+    {
+     "file": "0006051_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69200,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ef74ba0abebe7768fd73702b56e117d1facebf6b0fdc872984fd7afa5aecdf83",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "ANIMA FUMO 60X120_09",
+      "id": "65b9c867-1c61-41e9-922b-05d0a0728191"
+     }
+    },
+    {
+     "file": "0006051_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62650,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "81e9424d6bd9c57774f0adf30d158c61b020f9e9606d1ad953fc925836216424",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "ANIMA FUMO 60X120_10",
+      "id": "3fc81561-dba1-4604-9120-c99e62ab4efd"
+     }
+    },
+    {
+     "file": "0006051_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60054,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_12 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "60bf4c0d25fb5735d42c9c6d31b3bf56120a896f23e7be20f1b16647cf8b5d5b",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "ANIMA FUMO 60X120_11",
+      "id": "7c759ec4-2a56-4001-b6ab-78b2bce6a5c5"
+     }
+    },
+    {
+     "file": "0006051_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53758,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fa3af0931104bcfa2881eb73faad886bc01740f8ac362a2c2b60db0ee244f161",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "ANIMA FUMO 60X120_12",
+      "id": "94c55afd-afc6-440b-a2e7-59a1f9ad24aa"
+     }
+    },
+    {
+     "file": "0006051_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56852,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_28.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "454ec306caad5078aa9d0cd2bb2655d3c0b910fd9dbbc63cf1108f8a51df3045",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 28",
+      "name": "ANIMA FUMO 60X120_13",
+      "id": "f8c3b0e2-6af3-454e-a5f4-10de8552bdd7"
+     }
+    },
+    {
+     "file": "0006051_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60234,
+     "source_file": "60X120-Nat P.tech/ANIMA - FUMO - 60X120 - Nat P.tech - view_14 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9c9d9648b52bbfbc7a7ee084f27ed3134c5b0cb07aa2ea3d11426de28fd98a02",
+     "source_px_per_mm": 2.13,
+     "orientation": "turned 90 ccw",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "ANIMA FUMO 60X120_14",
+      "id": "80765b53-fb5f-4e47-94cf-2fa3fd17d911"
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0007812",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60007812-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0007812_swatch.webp",
+   "faces": [
+    {
+     "file": "0007812_01.webp",
+     "face": 1,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49078,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_1 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c0ed7adc02ea385b08450e37a42ca7507fe14c6bfdde387046540be74f4b4a1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "ANIMA FUMO 80X80_01",
+      "id": "884a45ec-f6fc-45f0-8a52-6292f437eb56"
+     }
+    },
+    {
+     "file": "0007812_02.webp",
+     "face": 2,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49820,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4810d1d4f28d4055670a7dd1d3e11810d966d4b58d6ece9661adc64ac4ede394",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "ANIMA FUMO 80X80_02",
+      "id": "fc641d5b-6ea6-41d7-a0ed-d07bd2cdbeb1"
+     }
+    },
+    {
+     "file": "0007812_03.webp",
+     "face": 3,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47368,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "72c1e11deb710a9dad1a2744e352936d2a86c72a670e6f75bfc993d515295759",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.996,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 10",
+      "name": "ANIMA FUMO 80X80_03",
+      "id": "69d92e0a-c2a7-44f0-984a-fe5b5f9aa296"
+     }
+    },
+    {
+     "file": "0007812_04.webp",
+     "face": 4,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55638,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ff188974bfca673d9c6798408156fc48d90e5523800a2f661a60c175c88fbfb3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.997,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 9",
+      "name": "ANIMA FUMO 80X80_04",
+      "id": "0d69d94c-41a5-44ec-80f0-eafa6d8c22fd"
+     }
+    },
+    {
+     "file": "0007812_05.webp",
+     "face": 5,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52712,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2db3bff2804a75cf4f19eadd3b7fc323ca20c8b1444ca01ffc70348810820a2d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 12",
+      "name": "ANIMA FUMO 80X80_05",
+      "id": "b7293840-a687-4479-bfa5-9710a5ae6ad7"
+     }
+    },
+    {
+     "file": "0007812_06.webp",
+     "face": 6,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51452,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a8fdd9add939a5eb78fb90a7459a7fffab82eb217fb7380ff81b0a3cd860c933",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 11",
+      "name": "ANIMA FUMO 80X80_06",
+      "id": "b235aeb8-1ff0-4ec2-b0e2-835c768894ca"
+     }
+    },
+    {
+     "file": "0007812_07.webp",
+     "face": 7,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48446,
+     "source_file": "80X80-Nat P.tech/ANIMA - FUMO - 80X80 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "badc6acb4995f2208140a415e351884371dc8bc5583731f91cfd28dc59323e07",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 13",
+      "name": "ANIMA FUMO 80X80_07",
+      "id": "eb587b00-eba1-4c16-8f00-a5c343ad278b"
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0006059",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60006059-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0006059_swatch.webp",
+   "faces": [
+    {
+     "file": "0006059_01.webp",
+     "face": 1,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27996,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c040c5b6ccc9ed0f9ccad00ee814dc53c308c3874787cbabd35bae7473cbe6e4",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "ANIMA FUMO 60X60_01",
+      "id": "6408a6bd-aae8-4706-99e3-be562be49d21"
+     }
+    },
+    {
+     "file": "0006059_02.webp",
+     "face": 2,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31316,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "a9554e8004ba32ae99d6b5880011ecbe89bc068ad3b28a0784df94757eecb9f4",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "ANIMA FUMO 60X60_02",
+      "id": "76c61ef9-3753-483d-9de2-2b2aa248f1e3"
+     }
+    },
+    {
+     "file": "0006059_03.webp",
+     "face": 3,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29842,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_26.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d2d739321fbc1b6bf7b18c10bf816ac053a35563478a6b415d262ee7282adab5",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 26",
+      "name": "ANIMA FUMO 60X60_03",
+      "id": "e17cfef4-3544-4c2d-a7f0-317020fc4d4a"
+     }
+    },
+    {
+     "file": "0006059_04.webp",
+     "face": 4,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33152,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_27.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7803d99ba18f7cd896db0aec395aaa8a8fb96c8f3b9601c481a319b2ded82a77",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 27",
+      "name": "ANIMA FUMO 60X60_04",
+      "id": "e2ba6688-5076-48ea-8af6-c60c73286659"
+     }
+    },
+    {
+     "file": "0006059_05.webp",
+     "face": 5,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32162,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_28.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3c78314ebd3ec3a9895422fe477ef08a0bc3eaf348686d75f32b8ad0d138abb4",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 28",
+      "name": "ANIMA FUMO 60X60_05",
+      "id": "ec91a774-aca2-43f2-b935-cdc108f64f24"
+     }
+    },
+    {
+     "file": "0006059_06.webp",
+     "face": 6,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29584,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6413a404b12538fc3bd92fbb9ec4f89ea76f6b5fbaa7a13e476a0a3263bf12a1",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.998,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "ANIMA FUMO 60X60_06",
+      "id": "51e188bb-4509-4192-a68b-b52f1df50b38"
+     }
+    },
+    {
+     "file": "0006059_07.webp",
+     "face": 7,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 35504,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "2f9330eb3ef216d4bf14151e7c87a90e3a4edb8a677a99c4176338ea9b29aa21",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "ANIMA FUMO 60X60_07",
+      "id": "7b0ce088-167c-40c0-a959-4d9f4873904c"
+     }
+    },
+    {
+     "file": "0006059_08.webp",
+     "face": 8,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33018,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_6 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7d6edae08508fc459c2ab6a9f9f2193acdfbecfcaa9fe6700a2408abff25c970",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "ANIMA FUMO 60X60_08",
+      "id": "5a3e50d9-3415-455f-809f-cf6a0339428c"
+     }
+    },
+    {
+     "file": "0006059_09.webp",
+     "face": 9,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32724,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1f9623aa2495b3139254e26c322c33c1b3a427fc29ce93af9d3fd07e57f1ddfd",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "ANIMA FUMO 60X60_09",
+      "id": "67c8cbb2-6392-4e33-8ef9-fabdef70f378"
+     }
+    },
+    {
+     "file": "0006059_10.webp",
+     "face": 10,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30508,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "953fce676e97ccc03d6a7fc9f097dd121cf7569b16b0fb40583bd495baecd538",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 25",
+      "name": "ANIMA FUMO 60X60_10",
+      "id": "c8025208-35ff-4318-b64c-082bc9dad066"
+     }
+    },
+    {
+     "file": "0006059_11.webp",
+     "face": 11,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28218,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "df15869bb474dfdd2874039993eba72014e3ce0c183a1c542feb391768689dc7",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "ANIMA FUMO 60X60_11",
+      "id": "2e67d140-0199-4e59-a89d-373af579a650"
+     }
+    },
+    {
+     "file": "0006059_12.webp",
+     "face": 12,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30782,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3e5233e2895bb9d419d72e183acf6ada1edcbf16a00fc2ab4cf4b90e27e154a7",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "ANIMA FUMO 60X60_12",
+      "id": "5a88455b-5bb8-457b-b541-841835192896"
+     }
+    },
+    {
+     "file": "0006059_13.webp",
+     "face": 13,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29840,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8fd96d9c0ced2b6bf4406fcd30097b7fef8dc130875969d5b5ae214487e1fa5e",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "ANIMA FUMO 60X60_13",
+      "id": "811ee4a8-3107-45e0-8fb6-88800c191bfd"
+     }
+    },
+    {
+     "file": "0006059_14.webp",
+     "face": 14,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27090,
+     "source_file": "60X60-Nat P.tech/ANIMA - FUMO - 60X60 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1b6cc05c52fbc03c7cdeb3f55611c20099a31c729abb800f8684ca4f454d4272",
+     "source_px_per_mm": 3.94,
+     "orientation": "upright",
+     "darker_copy_match_r": 0.999,
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "ANIMA FUMO 60X60_14",
+      "id": "92dc652c-db31-4782-bd78-3eee7459b20d"
+     }
+    }
+   ]
+  }
+ ]
+}

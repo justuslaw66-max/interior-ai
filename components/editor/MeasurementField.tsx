@@ -214,7 +214,7 @@ export default function MeasurementField({
               ? millimetresToScalarDisplay(resolved.valueMm, unit)
               : ariaValues.value
           }
-          className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             dark
               ? error
                 ? "border-red-400 bg-[#10131a] text-red-100 focus-visible:ring-red-400/20"

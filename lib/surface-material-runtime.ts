@@ -45,6 +45,8 @@ export function decodeSurfaceMaterialRenderTuple(
       ao_url: tuple[18],
       preview_room_url: tuple[19],
       tileable: tuple[20],
+      ...(tuple[31] ? { image_physical_size_mm: tuple[31] } : {}),
+      ...(tuple[32] ? { faces: tuple[32] } : {}),
     },
     rendering: {
       default_rotation_deg: tuple[21],

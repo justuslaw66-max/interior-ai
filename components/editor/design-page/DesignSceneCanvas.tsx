@@ -90,11 +90,7 @@ type DesignSceneCanvasConfiguration = {
     centerX: number;
     centerZ: number;
   };
-  planSafeArea: {
-    leftPx: number;
-    rightPx: number;
-    bottomPx: number;
-  };
+  planSafeArea: { leftPx: number; rightPx: number; topPx: number; bottomPx: number };
   planRooms: HousePlanRoom2D[];
   orbit: {
     minDistance: number;
@@ -449,7 +445,7 @@ export function DesignSceneCanvas({
           centerZ={planBounds.centerZ}
           safeAreaLeftPx={configuration.planSafeArea.leftPx}
           safeAreaRightPx={configuration.planSafeArea.rightPx}
-          safeAreaBottomPx={configuration.planSafeArea.bottomPx}
+          safeAreaBottomPx={configuration.planSafeArea.bottomPx} safeAreaTopPx={configuration.planSafeArea.topPx}
           zoomScale={WHOLE_HOME_FIT_ZOOM_SCALE}
         />
         <Plan2DCameraInvariantGuard

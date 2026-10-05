@@ -43,8 +43,8 @@ assert.match(
 );
 assert.match(
   registrationSource,
-  /shopping: \{\s+commitItemsToRoom: itemDocument\.actions\.commitItemsToRoom,\s+openGuestPrompt: persistence\.actions\.persistence\.openGuestPrompt,/,
-  "Shop's edits should go through the item document, and its checkout through the guest prompt."
+  /shopping: \{\s+commitItemsToRoom: itemDocument\.actions\.commitItemsToRoom, commitItemsToRooms: itemDocument\.actions\.commitItemsToRooms,\s+openPricing: \(openerId\) => \{ base\.actions\.dialogs\.setPlansOpenerId\(openerId\); base\.actions\.dialogs\.setShowPlans\(true\); \},\s+openGuestPrompt: persistence\.actions\.persistence\.openGuestPrompt,/,
+  "Shop's edits (Swap all's several rooms too) should go through the item document, Swap all's Pro badge to Pricing, and its checkout through the guest prompt."
 );
 assert.match(
   registrationSource,

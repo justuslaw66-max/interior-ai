@@ -57,7 +57,7 @@ const legacyRoute = read("app/design/[id]/page.tsx");
 const dashboardList = read("components/my-designs/MyDesignCardView.tsx");
 const duplicateButton = read("components/DuplicateDesignButton.tsx");
 const checkoutSuccess = read("app/checkout/success/page.tsx");
-const floorPlanAssistant = read("components/editor/FloorPlanImportAssistant.tsx");
+const floorPlanImportCreation = read("components/editor/useConsumerFloorPlanImportCreation.ts");
 const floorPlanHistory = read("components/editor/FloorPlanImportHistory.tsx");
 const floorPlanLifecycle = read(
   "lib/useDesignPageFloorPlanLifecycleRegistration.ts"
@@ -68,6 +68,7 @@ const canonicalWorkspace = read(
 const requestedDesignWorkspace = read(
   "lib/useDesignPageRequestedDesignWorkspaceRegistration.ts"
 );
+const requestedDesignLoad = read("lib/design-page-requested-design-load.ts");
 const ownedDesignApi = read("app/api/designs/[id]/route.ts");
 
 assert.match(legacyRoute, /redirect\(buildDesignEditorUrl\(\{/);
@@ -117,11 +118,23 @@ assert.match(
   /if \(!res\.ok\)[\s\S]*?return;[\s\S]*?const newDesignId[\s\S]*?router\.push\(buildDesignEditorUrl/,
   "Duplicate failures must return without navigation, while success uses the response ID."
 );
-for (const source of [floorPlanAssistant, floorPlanHistory]) {
-  assert.match(
+// An upload opens its new design in Plan, in 2D, with the import's arrival note (UX phase 3b-2);
+// Previous uploads' Open design opens it in 2D without the note.
+assert.match(
+  floorPlanImportCreation,
+  /router\.push\(buildDesignEditorUrl\(\{ designId: id, view: "2d", floorPlanImportId: activeJob\.id \}\)\)/,
+  "A new design from an upload should open through the canonical saved-design URL, in 2D, with its import."
+);
+assert.match(
+  floorPlanHistory,
+  /router\.push\(buildDesignEditorUrl\(\{ designId: job\.appliedDesignId!, view: "2d" \}\)\)/,
+  "A previous upload's design should open through the canonical saved-design URL, in 2D."
+);
+for (const source of [floorPlanImportCreation, floorPlanHistory]) {
+  assert.doesNotMatch(
     source,
-    /`\/design\?designId=\$\{encodeURIComponent\([\s\S]*?view=2d&workspace=furnish&floorPlanImport=\$\{encodeURIComponent\(/,
-    "Existing floor-plan continuations should retain the canonical saved-design URL and encoded context."
+    /`\/design\?designId=/,
+    "Floor-plan continuations must not hand-build the editor URL."
   );
 }
 
@@ -136,12 +149,12 @@ assert.match(
   "The canonical editor should continue loading the requested persisted design."
 );
 assert.match(
-  requestedDesignWorkspace,
+  requestedDesignLoad,
   /!input\.active \|\| input\.result === "loaded" \|\| input\.result === "superseded"[\s\S]*?kind: "unchanged"/,
   "A superseded route load must not pull navigation back to a stale design."
 );
 assert.match(
-  requestedDesignWorkspace,
+  requestedDesignLoad,
   /currentDesignId[\s\S]*?buildDesignEditorUrl\(\{[\s\S]*?designId: input\.currentDesignId,[\s\S]*?context: input\.context[\s\S]*?: "\/design"/,
   "A denied route load should restore the previous design with allowed editor context."
 );
@@ -156,7 +169,7 @@ assert.match(
   "A successfully loaded floor-plan revision copy should replace the source URL identity."
 );
 assert.doesNotMatch(
-  `${canonicalWorkspace}\n${requestedDesignWorkspace}\n${floorPlanLifecycle}`,
+  `${canonicalWorkspace}\n${requestedDesignWorkspace}\n${requestedDesignLoad}\n${floorPlanLifecycle}`,
   /import\("@\/lib\/design-editor-url"\)/,
   "Client navigation should not resume from a late helper import after unmount."
 );

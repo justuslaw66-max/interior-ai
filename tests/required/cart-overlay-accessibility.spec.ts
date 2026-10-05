@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page, type TestInfo } from "@playwright/test";
 
 // CH-0015A's Cart gate, re-pinned in UX phase 3c-2 (J, 27 Sep): the Selection Tray is gone, and the
 // gate owns the Shopping list, the page Shop shows over the canvas (audit findings FU7, FU8). The
@@ -47,7 +47,101 @@ function designFixture(productIds: readonly string[]) {
   });
 }
 
+// Where a failing or slow test's time went (UX 4a, #73): on `5422594` Chromium's Undo test found the
+// toast's Undo, then lost it before it could take focus, and it never came back. The toast drops
+// Undo when its 8 s timer ends or when the newest history step stops being the removal. Each test
+// notes its steps; the page records when the toast and its Undo come and go, the bar's undo step
+// and long main-thread tasks; and the report says when the catalogue requests were sent and
+// answered. It prints for a test that fails or takes over 10 s, and changes nothing a test checks.
+const WATCHED_REQUESTS = ["/api/models/imported", "/api/catalog/live"] as const;
+const timeline: Array<{ at: number; name: string }> = [];
+let startedAt = 0;
+function step(name: string) {
+  timeline.push({ at: Date.now(), name });
+}
+
+function watchCatalogRequests(page: Page) {
+  const watched = (url: string) => WATCHED_REQUESTS.find((path) => new URL(url).pathname === path);
+  page.on("request", (request) => {
+    const path = watched(request.url());
+    if (path) step(`${path} sent`);
+  });
+  page.on("requestfinished", async (request) => {
+    const path = watched(request.url());
+    if (path) step(`${path} answered ${(await request.response())?.status() ?? "without a response"}`);
+  });
+  page.on("requestfailed", (request) => {
+    const path = watched(request.url());
+    if (path) step(`${path} failed: ${request.failure()?.errorText ?? "no reason given"}`);
+  });
+}
+
+/** In the page: when the toast and its Undo come and go, the bar's undo step, and long tasks. */
+function recordToastAndUndo() {
+  const log: Array<[number, string]> = [];
+  (window as unknown as { __cartGateLog: typeof log }).__cartGateLog = log;
+  const note = (name: string, at = Date.now()) => log.push([Math.round(at), name]);
+  let toast: string | null = null;
+  let undo = false;
+  let barUndo: string | null = null;
+  const check = () => {
+    const toastElement = document.querySelector('[data-testid="editor-action-toast"]');
+    const nextToast = toastElement ? (toastElement.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 90) : null;
+    if (nextToast !== toast) note(nextToast === null ? "toast gone" : `toast "${nextToast}"`);
+    const nextUndo = Boolean(document.querySelector('[data-testid="editor-action-toast-undo"]'));
+    if (nextUndo !== undo) note(nextUndo ? "toast's Undo shown" : "toast's Undo gone");
+    const nextBarUndo = document.querySelector('[data-testid="command-undo"]')?.getAttribute("aria-label") ?? null;
+    if (nextBarUndo !== barUndo) note(`bar: ${nextBarUndo ?? "no Undo"}`);
+    toast = nextToast;
+    undo = nextUndo;
+    barUndo = nextBarUndo;
+  };
+  new MutationObserver(check).observe(document, {
+    subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["aria-label"],
+  });
+  try {
+    new PerformanceObserver((entries) => {
+      for (const entry of entries.getEntries()) {
+        if (entry.duration >= 100) note(`long task ${Math.round(entry.duration)} ms`, performance.timeOrigin + entry.startTime);
+      }
+    }).observe({ type: "longtask", buffered: true });
+  } catch {
+    note("this browser doesn't time long tasks");
+  }
+}
+
+/** The page's own log, or why it couldn't be read within 3 s. */
+async function pageLog(page: Page): Promise<Array<{ at: number; name: string }>> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<Array<[number, string]>>((resolve) => {
+    timer = setTimeout(() => resolve([[Date.now(), "no answer from the page in 3 s"]]), 3_000);
+  });
+  try {
+    const read = page.evaluate(() => (window as unknown as { __cartGateLog?: Array<[number, string]> }).__cartGateLog ?? []);
+    return (await Promise.race([read, late])).map(([at, name]) => ({ at, name: `page: ${name}` }));
+  } catch (error) {
+    return [{ at: Date.now(), name: `page log unreadable: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}` }];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function reportSlowOrFailedTest(page: Page, testInfo: TestInfo) {
+  const now = Date.now();
+  const failed = testInfo.status !== testInfo.expectedStatus;
+  if (!startedAt || (!failed && now - startedAt < 10_000)) return;
+  const label = `[cart gate] ${testInfo.project.name} "${testInfo.title}"`;
+  const events = [...timeline, ...(await pageLog(page))].sort((a, b) => a.at - b.at);
+  console.info(`${label} ${failed ? "failed" : "was slow"} (${now - startedAt} ms since the editor opened):`);
+  console.info(events.map(({ at, name }) => `${at - startedAt} ms ${name}`).join(" · "));
+}
+
 async function openEditor(page: Page, mode: UserMode, productIds: readonly string[]) {
+  timeline.length = 0;
+  startedAt = Date.now();
+  step(`opening the editor (${mode})`);
+  watchCatalogRequests(page);
+  await page.addInitScript(recordToastAndUndo);
   await page.setViewportSize(DESKTOP);
   await page.route("**/api/me", (route) =>
     route.fulfill({
@@ -73,6 +167,7 @@ async function openEditor(page: Page, mode: UserMode, productIds: readonly strin
   // The design kept in this browser has opened: the bar shows its name.
   await expect(page.getByTestId("editor-design-title")).toHaveText(DESIGN_TITLE);
   if (mode === "pro") await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+  step("editor open");
 }
 
 // Opening the editor has its own allowance; every Shopping list check keeps the test's budget.
@@ -91,6 +186,11 @@ const shopTest = test.extend<{ consumerShop: Locator; proShop: Locator; singlePr
   }, { timeout: 60_000 }],
 });
 
+shopTest.afterEach(async ({ page }, testInfo) => {
+  await reportSlowOrFailedTest(page, testInfo);
+  startedAt = 0;
+});
+
 const rows = (page: Page) => page.getByTestId("shopping-list-row");
 const row = (page: Page, instanceId: string) =>
   page.locator(`[data-testid="shopping-list-row"][data-instance-id="${instanceId}"]`);
@@ -104,6 +204,7 @@ async function expectShoppingList(page: Page, count: number) {
   await expect(shopping).toHaveAttribute("aria-labelledby", "shopping-list-title");
   await expect(page.getByRole("heading", { level: 1, name: "Shopping list" })).toBeVisible();
   await expect(rows(page)).toHaveCount(count);
+  step(`list shows ${count}`);
   return shopping;
 }
 
@@ -132,6 +233,7 @@ async function expectCanvasCovered(page: Page, covered: boolean) {
 async function focusRemove(page: Page, instanceId: string) {
   const button = removeButton(page, instanceId);
   await expect(button).toBeEnabled();
+  step(`${instanceId}'s Remove enabled`);
   await button.focus();
   await expect(button).toBeFocused();
   return button;
@@ -139,8 +241,10 @@ async function focusRemove(page: Page, instanceId: string) {
 
 async function removeByKeyboard(page: Page, instanceId: string, key: "Enter" | "Space") {
   await focusRemove(page, instanceId);
+  step(`${key} on ${instanceId}'s Remove`);
   await page.keyboard.press(key);
   await expect(row(page, instanceId)).toHaveCount(0);
+  step(`${instanceId} removed`);
 }
 
 async function productTitle(page: Page, instanceId: string) {
@@ -229,9 +333,11 @@ shopTest("Undo in the toast puts the product back and keeps keyboard focus on Sh
   await expect(removeButton(page, IDS[2])).toBeFocused();
   const toast = page.getByTestId("editor-action-toast");
   await expect(toast).toContainText(`${title} removed from the design`);
+  step("the toast names the removal");
   const undo = page.getByTestId("editor-action-toast-undo");
   await undo.focus();
   await expect(undo).toBeFocused();
+  step("the toast's Undo focused");
   await page.keyboard.press("Enter");
   await expect(rows(page)).toHaveCount(3);
   expect(await listedIds(page)).toEqual([...IDS]);

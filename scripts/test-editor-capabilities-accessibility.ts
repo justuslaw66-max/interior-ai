@@ -115,6 +115,9 @@ for (const required of [
   "hasExternalEditorModal()",
   'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
   "...(options.returnFocusId ? [options.returnFocusId] : [])",
+  // The opener first among the return targets (UX 4d): Rename design from the Menu returns there.
+  "if (opener?.id && semanticIds.includes(opener.id)) {",
+  "semanticIds.unshift(opener.id);",
   ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
@@ -207,8 +210,9 @@ for (const relativePath of [
 const presentExport = read(
   "components/editor/design-page/PresentExportDialog.tsx"
 );
+// The plan display moved from Present & export to Plan, for Pro (UX audit SX4, phase 4e).
 assert.match(
-  presentExport,
+  read("components/editor/design-page/PlanDisplaySection.tsx"),
   /dynamic\([\s\S]*PresentExportProfessionalPlanControls[\s\S]*ssr:\s*false/,
   "professional plan controls should remain behind a client-only lazy boundary"
 );

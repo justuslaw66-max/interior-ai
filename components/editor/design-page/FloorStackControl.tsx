@@ -33,7 +33,7 @@ export function FloorStackControl({
           : "absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-neutral-200 bg-white/90 p-1 shadow-xl backdrop-blur md:flex"
       }
       data-testid="floor-stack-control"
-      aria-label="Floor stack"
+      aria-label="Levels"
     >
       {state.floors
         .slice()
@@ -46,7 +46,7 @@ export function FloorStackControl({
               configuration.dark
                 ? `grid min-w-12 grid-cols-[auto_1fr] items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold transition ${
                     floor.active
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-600 text-white"
                       : floor.hidden
                         ? "text-neutral-500 hover:bg-white/5"
                         : "text-neutral-200 hover:bg-white/10"

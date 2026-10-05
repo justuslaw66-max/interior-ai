@@ -5,6 +5,7 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
 import { resolvePlanFitZoom } from "@/lib/design-page-house-plan";
+import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
 import { applyPlan2DCameraInvariant } from "@/lib/plan-camera-2d";
 
 const WHOLE_HOME_FIT_PADDING_MIN_METERS = 3.2;
@@ -23,6 +24,12 @@ type Plan2DViewFit = {
   zoom: number;
 };
 
+/**
+ * The 2D camera that fits the plan in the band the insets leave, centred in it. The camera moves
+ * by half the insets' difference: right by (right − left) / 2 and up the screen by (top − bottom)
+ * / 2, so the plan lands right of a left panel and under a top inset. Screen-up is −z (`up`
+ * [0, 0, −1]), or +x when rotated; screen-right is +x, or +z when rotated.
+ */
 export function resolvePlan2DViewFit(params: {
   centerX: number;
   centerZ: number;
@@ -33,6 +40,8 @@ export function resolvePlan2DViewFit(params: {
   safeAreaBottomPx: number;
   safeAreaLeftPx: number;
   safeAreaRightPx: number;
+  /** Phones: the header and the canvas pills (UX 4d). */
+  safeAreaTopPx?: number;
   viewportHeightPx: number;
   viewportWidthPx: number;
   zoomScale?: number;
@@ -43,7 +52,8 @@ export function resolvePlan2DViewFit(params: {
     320,
     params.viewportWidthPx - params.safeAreaLeftPx - params.safeAreaRightPx
   );
-  const fitHeightPx = Math.max(260, params.viewportHeightPx - params.safeAreaBottomPx);
+  const safeAreaTopPx = params.safeAreaTopPx ?? 0;
+  const fitHeightPx = Math.max(260, params.viewportHeightPx - params.safeAreaBottomPx - safeAreaTopPx);
   const normalZoom = resolvePlanFitZoom({
     viewportWidthPx: fitWidthPx,
     viewportHeightPx: fitHeightPx,
@@ -66,8 +76,7 @@ export function resolvePlan2DViewFit(params: {
       : fitOrientation;
   const zoom = (orientation === "rotated" ? rotatedZoom : normalZoom) * zoomScale;
   const screenOffsetX = (params.safeAreaRightPx - params.safeAreaLeftPx) / zoom / 2;
-  const screenOffsetY =
-    params.safeAreaBottomPx > 0 ? -params.safeAreaBottomPx / zoom / 2 : 0;
+  const screenOffsetY = (safeAreaTopPx - params.safeAreaBottomPx) / zoom / 2;
 
   if (orientation === "rotated") {
     return {
@@ -85,7 +94,7 @@ export function resolvePlan2DViewFit(params: {
     fitPlanDepthMeters: params.planDepthMeters,
     fitPlanWidthMeters: params.planWidthMeters,
     offsetX: params.centerX + screenOffsetX,
-    offsetZ: params.centerZ + screenOffsetY,
+    offsetZ: params.centerZ - screenOffsetY,
     orientation,
     up: [0, 0, -1],
     zoom,
@@ -103,6 +112,7 @@ type EditorCamera2DProps = {
   safeAreaLeftPx?: number;
   safeAreaRightPx?: number;
   safeAreaBottomPx?: number;
+  safeAreaTopPx?: number;
   zoomScale?: number;
 };
 
@@ -117,6 +127,7 @@ export default function EditorCamera2D({
   safeAreaLeftPx = 0,
   safeAreaRightPx = 0,
   safeAreaBottomPx = 0,
+  safeAreaTopPx = 0,
   zoomScale = WHOLE_HOME_FIT_ZOOM_SCALE,
 }: EditorCamera2DProps) {
   const cameraRef = useRef<ThreeOrthographicCamera | null>(null);
@@ -125,9 +136,7 @@ export default function EditorCamera2D({
   useEffect(() => {
     if (!active || !cameraRef.current) return;
 
-    const leftInsetPx = size.width >= 768 ? Math.max(0, safeAreaLeftPx) : 0;
-    const rightInsetPx = size.width >= 768 ? Math.max(0, safeAreaRightPx) : 0;
-    const bottomInsetPx = size.width < 768 ? Math.max(0, safeAreaBottomPx) : 0;
+    const insets = resolvePlanFitInsetsPx(size.width, { leftPx: safeAreaLeftPx, rightPx: safeAreaRightPx, topPx: safeAreaTopPx, bottomPx: safeAreaBottomPx });
     const fitPaddingMeters = Math.max(
       WHOLE_HOME_FIT_PADDING_MIN_METERS,
       Math.max(roomWidth, roomDepth) * WHOLE_HOME_FIT_PADDING_RATIO
@@ -139,9 +148,7 @@ export default function EditorCamera2D({
       paddingMeters: fitPaddingMeters,
       planDepthMeters: roomDepth,
       planWidthMeters: roomWidth,
-      safeAreaBottomPx: bottomInsetPx,
-      safeAreaLeftPx: leftInsetPx,
-      safeAreaRightPx: rightInsetPx,
+      ...insets,
       viewportHeightPx: size.height,
       viewportWidthPx: size.width,
       zoomScale,
@@ -162,6 +169,7 @@ export default function EditorCamera2D({
     safeAreaBottomPx,
     safeAreaLeftPx,
     safeAreaRightPx,
+    safeAreaTopPx,
     size.height,
     size.width,
     zoomScale,

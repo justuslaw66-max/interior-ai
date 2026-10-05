@@ -723,7 +723,7 @@ export default function FloorPlanImportReviewPanel({
           </p>
           <button
             type="button" data-floor-plan-workspace-focus="primary"
-            className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-3 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             disabled={disabled || submitting}
             onClick={confirmDetectedPlan}
           >

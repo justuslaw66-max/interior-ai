@@ -14,8 +14,6 @@ import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
 
 export type UseDesignPagePlanCanvasActionsControllerInput = {
   actions: {
-    setGuidedActionsChoiceSeen: Dispatch<SetStateAction<boolean>>;
-    chooseGuidedActionsMode: (guided: boolean) => void;
     selectFloorPlanTool: () => void;
     setGuidedPlanStartMode: Dispatch<SetStateAction<PlanStartMode>>;
     changeCalibrationMode: (enabled: boolean) => void;
@@ -40,10 +38,6 @@ export type DesignPagePlanCanvasActionsController = {
 export function useDesignPagePlanCanvasActionsController({
   actions,
 }: UseDesignPagePlanCanvasActionsControllerInput): DesignPagePlanCanvasActionsController {
-  const closeGuidedActionsChoice = useCallback(() => {
-    actions.setGuidedActionsChoiceSeen(true);
-  }, [actions]);
-
   const startScaleFromManualActions = useCallback(() => {
     actions.setGuidedPlanStartMode("upload");
     actions.changeCalibrationMode(true);
@@ -85,10 +79,6 @@ export function useDesignPagePlanCanvasActionsController({
 
   const controllerActions = useMemo(
     () => ({
-      guidedActionsChoice: {
-        close: closeGuidedActionsChoice,
-        choose: actions.chooseGuidedActionsMode,
-      },
       manualQuickActions: {
         select: actions.selectFloorPlanTool,
         startScale: startScaleFromManualActions,
@@ -114,14 +104,12 @@ export function useDesignPagePlanCanvasActionsController({
     }),
     [
       actions.addFloorPlanOpening,
-      actions.chooseGuidedActionsMode,
       actions.clearPlanFocusPoints,
       actions.dismissPlanCanvasGuidance,
       actions.fitPlanView,
       actions.goFurnish,
       actions.selectFloorPlanTool,
       actions.undoFloorPlanTraceRoomPoint,
-      closeGuidedActionsChoice,
       finishPlanFocus,
       restoreDesignTools,
       startEmptyPlanRoom,

@@ -256,7 +256,7 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
 
     await addCatalogDrawerItemToRoom(page);
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Muted Honey/i);
     await expect(page.getByTestId("selected-single-finish-swatch")).toBeVisible();
     await expect(page.getByTestId("selected-single-finish-swatch")).toHaveAttribute(

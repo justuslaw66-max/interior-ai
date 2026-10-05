@@ -22,6 +22,7 @@ import {
   IMPORTED_VARIANT_BY_PRODUCT_ID,
   IMPORTED_VARIANTS_BY_PRODUCT_ID,
 } from "@/lib/design-page-product-data";
+import { markImportedCatalogHydrated } from "@/lib/imported-catalog-readiness";
 
 export type ImportedFamilyOption = {
   familyKey: string;
@@ -65,6 +66,47 @@ function upsertImportedOption(option: ImportedModelOption): void {
   });
 }
 
+type ImportedModels = {
+  catalogByProductId: Record<string, ImportedModelCatalog>;
+  modelUrlByAssetId: Record<string, string>;
+  options: ImportedModelOption[];
+};
+
+const NO_IMPORTED_MODELS: ImportedModels = {
+  catalogByProductId: {},
+  modelUrlByAssetId: {},
+  options: [],
+};
+
+/** Reads the imported catalogue: its product options, and each model's catalogue by product and asset id. */
+async function readImportedModels(): Promise<ImportedModels> {
+  const response = await fetch("/api/models/imported", { cache: "no-store" });
+  const payload = (await response.json().catch(() => ({ models: [] }))) as {
+    models?: ImportedModelEntry[];
+  };
+  const models = payload.models ?? [];
+  const assembled = buildImportedModelOptions({
+    models,
+    importedProductConfigById: IMPORTED_PRODUCT_CONFIG_BY_ID,
+  });
+  const catalogByProductId: Record<string, ImportedModelCatalog> = {};
+  for (const model of models) {
+    const id = String(model.id ?? "").trim();
+    if (!id || !model.catalog) continue;
+    catalogByProductId[id] = model.catalog;
+
+    const assetId = String(
+      model.catalog.assets?.assetId ?? model.catalog.assets?.asset_id ?? ""
+    ).trim();
+    if (assetId) catalogByProductId[assetId] = model.catalog;
+  }
+  return {
+    catalogByProductId,
+    modelUrlByAssetId: assembled.modelUrlByAssetId,
+    options: assembled.options,
+  };
+}
+
 export function buildFurnishCatalogItems(
   catalogItemsById: Readonly<Record<string, CatalogItemSchema>>
 ): CatalogItemSchema[] {
@@ -102,46 +144,18 @@ export function useDesignPageImportedModels() {
     let cancelled = false;
 
     const hydrate = async () => {
-      try {
-        const response = await fetch("/api/models/imported", { cache: "no-store" });
-        const payload = (await response.json().catch(() => ({ models: [] }))) as {
-          models?: ImportedModelEntry[];
-        };
-        if (cancelled) return;
-
-        const models = payload.models ?? [];
-        const assembled = buildImportedModelOptions({
-          models,
-          importedProductConfigById: IMPORTED_PRODUCT_CONFIG_BY_ID,
-        });
-        for (const option of assembled.options) {
-          const existing = CATALOG_ITEMS[option.id];
-          if (shouldRefreshImportedCatalogItem(existing, option)) {
-            upsertImportedOption(option);
-          }
+      const imported = await readImportedModels().catch(() => NO_IMPORTED_MODELS);
+      if (cancelled) return;
+      for (const option of imported.options) {
+        if (shouldRefreshImportedCatalogItem(CATALOG_ITEMS[option.id], option)) {
+          upsertImportedOption(option);
         }
-        const nextCatalogByProductId: Record<string, ImportedModelCatalog> = {};
-        for (const model of models) {
-          const id = String(model.id ?? "").trim();
-          if (!id || !model.catalog) continue;
-          nextCatalogByProductId[id] = model.catalog;
-
-          const assetId = String(
-            model.catalog.assets?.assetId ?? model.catalog.assets?.asset_id ?? ""
-          ).trim();
-          if (assetId) nextCatalogByProductId[assetId] = model.catalog;
-        }
-
-        setCatalogByProductId(nextCatalogByProductId);
-        setCatalogItemsById({ ...CATALOG_ITEMS });
-        setModelUrlByAssetId(assembled.modelUrlByAssetId);
-        setModelOptions(assembled.options);
-      } catch {
-        if (cancelled) return;
-        setCatalogByProductId({});
-        setModelUrlByAssetId({});
-        setModelOptions([]);
       }
+      setCatalogByProductId(imported.catalogByProductId);
+      setCatalogItemsById({ ...CATALOG_ITEMS });
+      setModelUrlByAssetId(imported.modelUrlByAssetId);
+      setModelOptions(imported.options);
+      markImportedCatalogHydrated();
     };
 
     void hydrate();

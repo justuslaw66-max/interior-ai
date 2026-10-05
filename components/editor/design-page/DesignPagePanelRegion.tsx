@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { TABLET_ITEM_PANEL_INSET_PX, useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
 import { ShopStep, type ShopStepProps } from "@/components/editor/shop/ShopStep";
 import {
   DesignControlsPanelAdapter,
@@ -15,6 +16,8 @@ import {
   type SelectedItemPanelProps,
 } from "@/components/editor/design-page/SelectedItemPanel";
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
+import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import { planStepFooter } from "@/components/editor/design-page/PlanDisplaySection";
 
 export type DesignPagePanelRegionState = {
   shopping: ShopStepProps | null;
@@ -37,6 +40,8 @@ export type DesignPagePanelRegionProps = {
   state: DesignPagePanelRegionState;
   configuration: DesignPagePanelRegionConfiguration;
   actions: DesignPagePanelRegionActions;
+  /** The plan display (Pro) or the plan's notes (Free), at the foot of Plan's panel (UX 4e, SX4). */
+  planTools?: PresentExportDialogProps | null;
 };
 
 /**
@@ -80,8 +85,11 @@ export function DesignPagePanelRegion({
   state,
   configuration,
   actions,
+  planTools,
 }: DesignPagePanelRegionProps) {
   const { isClientPreview } = configuration;
+  // On a tablet the step panel steps aside for the item or cabinet panel (UX 4d, AX11).
+  useReportTabletRightPanel("item", !isClientPreview && Boolean(state.selectedItem || state.selectedCabinet), TABLET_ITEM_PANEL_INSET_PX);
 
   return (
     <>
@@ -93,7 +101,7 @@ export function DesignPagePanelRegion({
       {state.shopping ? (
         <div
           data-testid="shop-step"
-          className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-12 z-40 overflow-y-auto bg-[#fafaf9] md:bottom-0 md:top-9"
+          className="absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-bar-0 z-40 overflow-y-auto bg-[#fafaf9] md:bottom-0"
         >
           <ShopStep {...state.shopping} />
         </div>
@@ -104,7 +112,7 @@ export function DesignPagePanelRegion({
       ) : null}
       {state.selectedItem ? <SelectedItemPanel {...state.selectedItem} /> : null}
       {state.controls ? (
-        <DesignControlsPanelAdapter {...state.controls} />
+        <DesignControlsPanelAdapter {...state.controls} stepFooter={planStepFooter(state.controls.configuration.panelMode, planTools)} />
       ) : null}
 
       {isClientPreview ? (

@@ -22,7 +22,7 @@ test.describe("115. Dawson Pit Product Info", () => {
     await expect(page.locator('[aria-label="Seat softness: 1 of 5"]')).toBeVisible();
 
     await addCatalogDrawerItemToRoom(page);
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Dawson Pit-Sectional Sofa/i).first()).toBeVisible();
 
     await page.getByRole("button", { name: /^Show details$/i }).click();

@@ -87,6 +87,21 @@ export function applyReplaceRoomItemsCommand(
   };
 }
 
+export type ReplaceRoomsItemsCommandInput = {
+  rooms: Array<{ roomId: string; items: DesignItem[] }>;
+};
+
+/** Several rooms' products in one step: Pro's "Swap all" across the design (UX 4h). */
+export function applyReplaceRoomsItemsCommand(
+  snapshot: DesignSnapshot,
+  input: ReplaceRoomsItemsCommandInput
+): DesignSnapshot {
+  return input.rooms.reduce(
+    (next, room) => applyReplaceRoomItemsCommand(next, { roomId: room.roomId, items: room.items }),
+    snapshot
+  );
+}
+
 /** Pure, all-or-nothing reducer for single- and multi-item room transfers. */
 export function applyMoveItemsBetweenRoomsCommand(
   snapshot: DesignSnapshot,

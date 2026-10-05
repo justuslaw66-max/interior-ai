@@ -8,7 +8,6 @@ import {
 } from "./variant-test-utils";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
-const SEATING_ZONE_AUTO_DISABLED_KEY = "seating_zone_auto_disabled";
 const CAMMY_ARMCHAIR_ID = "armchair-real-castlery-cammy-armchair";
 const AVERY_ARMCHAIR_ID =
   "armchair-real-castlery-avery-performance-armchair";
@@ -35,12 +34,6 @@ async function clickWithDomFallback(locator: Locator) {
   });
 }
 
-async function activateWithKeyboard(locator: Locator) {
-  await locator.focus();
-  await expect(locator).toBeFocused();
-  await locator.press("Enter");
-}
-
 async function chooseTemplateStart(page: Page) {
   const betaTemplate = page.locator('[data-testid="beta-start-template"]:visible').first();
   if (await betaTemplate.isVisible().catch(() => false)) {
@@ -54,11 +47,13 @@ async function chooseTemplateStart(page: Page) {
     await selectEditorWorkspace(page, "editor-workflow-plan");
   }
 
-  const manualPlanChoice = page.getByTestId(
-    "plan-guided-actions-choice-manual"
-  );
-  if (await manualPlanChoice.isVisible().catch(() => false)) {
-    await clickWithDomFallback(manualPlanChoice);
+  // Tips off, as the first-visit "Manual editing" choice used to leave it (UX audit ED6).
+  const tipsSwitch = page.getByTestId("plan-guided-actions-toggle");
+  if (
+    (await tipsSwitch.isVisible().catch(() => false)) &&
+    (await tipsSwitch.getAttribute("data-enabled")) === "true"
+  ) {
+    await clickWithDomFallback(tipsSwitch);
   }
 
   const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
@@ -191,8 +186,8 @@ async function expectRenderedZoneState(
   );
 }
 
-async function buildStoredFixtureForLocalHydration(page: Page) {
-  return page.evaluate(({ storageKey, productId, variantId }) => {
+async function buildStoredFixtureForLocalHydration(page: Page, withSeatingZone = false) {
+  return page.evaluate(({ storageKey, productId, variantId, withSeatingZone }) => {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) throw new Error("Expected a local design backup");
 
@@ -202,11 +197,13 @@ async function buildStoredFixtureForLocalHydration(page: Page) {
       rooms?: Array<{
         id?: string;
         items?: Array<{
+          instanceId?: string;
           productId?: string;
           variantId?: string;
           purchaseOptionId?: string;
           productSnapshot?: unknown;
         }>;
+        zones?: Array<{ id: string; type: string; source: string; itemIds: string[] }>;
       }>;
     };
     stored.designId = null;
@@ -219,15 +216,24 @@ async function buildStoredFixtureForLocalHydration(page: Page) {
       delete item.purchaseOptionId;
       delete item.productSnapshot;
     }
+    // A seating zone a Pro user made over the set, as saved.
+    if (activeRoom && withSeatingZone) {
+      const itemIds = (activeRoom.items ?? []).map((item) => item.instanceId ?? "").filter(Boolean);
+      activeRoom.zones = [
+        ...(activeRoom.zones ?? []).filter((zone) => zone.source !== "manual"),
+        { id: "zone-e2e-seating", type: "seating", source: "manual", itemIds },
+      ];
+    }
     return JSON.stringify(stored);
   }, {
     storageKey: DESIGN_STORAGE_KEY,
     productId: AVERY_ARMCHAIR_ID,
     variantId: AVERY_VARIANT_ID,
+    withSeatingZone,
   });
 }
 
-async function createManualZoneInBedroom(page: Page) {
+async function placeArmchairSetInBedroom(page: Page) {
   await chooseTemplateStart(page);
   const addBedroom = page.getByTestId("add-room-template-bedroom");
   await expect(addBedroom).toBeVisible({ timeout: 30_000 });
@@ -257,16 +263,33 @@ async function createManualZoneInBedroom(page: Page) {
   await expect(page.getByText("Group (2)", { exact: true })).toBeVisible({
     timeout: 10_000,
   });
+  // Consumers align a group but make no zones (UX 4g, FU6): zone type and Create zone are Pro's.
+  await expect(page.getByRole("button", { name: "Align X centre", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create zone", exact: true })).toHaveCount(0);
+}
 
-  await activateWithKeyboard(
-    page.getByRole("button", { name: "Create zone", exact: true })
+async function openStoredDesign(page: Page, fixture: string) {
+  const browser = page.context().browser();
+  if (!browser) throw new Error("Expected a browser-backed Playwright page");
+  const context = await browser.newContext({ baseURL: new URL(page.url()).origin });
+  await context.addInitScript(
+    ({ storageKey, stored }) => {
+      window.localStorage.setItem(storageKey, stored);
+    },
+    { storageKey: DESIGN_STORAGE_KEY, stored: fixture }
   );
-  await expect(page.getByTestId("selected-zone-label")).toHaveText("Seating area");
-  await expect(page.getByRole("button", { name: "Ungroup", exact: true })).toBeVisible();
+  const opened = await context.newPage();
+  await opened.goto("/design", { waitUntil: "domcontentloaded" });
+  await expect(opened.getByTestId("scene-canvas").first()).toBeVisible({
+    timeout: 30_000,
+  });
+  return { context, opened };
 }
 
 test.describe("22. Active-room zone persistence", () => {
-  test("manual create and ungroup persist only in the active room", async ({
+  // The first sofa no longer makes a seating zone and zones are Pro's (UX 4g, FU6). A saved zone
+  // still loads, only in its room, and reloads unchanged; consumers get no zone toolbar.
+  test("a saved seating zone hydrates only in the active room", async ({
     page,
   }) => {
     test.setTimeout(120_000);
@@ -287,87 +310,28 @@ test.describe("22. Active-room zone persistence", () => {
       timeout: 30_000,
     });
 
-    await createManualZoneInBedroom(page);
-    const createdState = await waitForStoredZoneState(page, 1);
-    await expectRenderedZoneState(page, createdState, 1);
+    await placeArmchairSetInBedroom(page);
+    const placedState = await waitForStoredZoneState(page, 0);
+    await expectRenderedZoneState(page, placedState, 0);
 
-    const browser = page.context().browser();
-    if (!browser) throw new Error("Expected a browser-backed Playwright page");
-    const baseURL = new URL(page.url()).origin;
-    const createdHydrationFixture = await buildStoredFixtureForLocalHydration(
-      page
-    );
-    const createdHydrationContext = await browser.newContext({ baseURL });
-    await createdHydrationContext.addInitScript(
-      ({ storageKey, fixture }) => {
-        window.localStorage.setItem(storageKey, fixture);
-      },
-      {
-        storageKey: DESIGN_STORAGE_KEY,
-        fixture: createdHydrationFixture,
-      }
-    );
-    const hydratedPage = await createdHydrationContext.newPage();
-    await hydratedPage.goto("/design", { waitUntil: "domcontentloaded" });
-    await expect(hydratedPage.getByTestId("scene-canvas").first()).toBeVisible({
+    const zoned = await openStoredDesign(page, await buildStoredFixtureForLocalHydration(page, true));
+    const hydratedState = await waitForStoredZoneState(zoned.opened, 1);
+    expect(hydratedState.manualZones.map((zone) => zone.id)).toEqual(["zone-e2e-seating"]);
+    await expectRenderedZoneState(zoned.opened, hydratedState, 1);
+    await expect(zoned.opened.getByTestId("selected-zone-label")).toHaveCount(0);
+
+    await zoned.opened.reload({ waitUntil: "domcontentloaded" });
+    await expect(zoned.opened.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    const hydratedState = await waitForStoredZoneState(hydratedPage, 1);
-    expect(hydratedState.itemIds).toEqual(createdState.itemIds);
-    expect(hydratedState.manualZones).toEqual(createdState.manualZones);
-    await expectRenderedZoneState(hydratedPage, hydratedState, 1);
-    await createdHydrationContext.close();
+    const reloadedState = await waitForStoredZoneState(zoned.opened, 1);
+    expect(reloadedState.manualZones).toEqual(hydratedState.manualZones);
+    await expectRenderedZoneState(zoned.opened, reloadedState, 1);
+    await zoned.context.close();
 
-    await activateWithKeyboard(
-      page.getByRole("button", { name: "Ungroup", exact: true })
-    );
-    const ungroupedState = await waitForStoredZoneState(page, 0);
-    expect(ungroupedState.activeRoomId).toBe(createdState.activeRoomId);
-    expect(ungroupedState.itemIds).toEqual(createdState.itemIds);
-    await expectRenderedZoneState(page, ungroupedState, 0);
-    await expect
-      .poll(() =>
-        page.evaluate(
-          (storageKey) => window.localStorage.getItem(storageKey),
-          SEATING_ZONE_AUTO_DISABLED_KEY
-        )
-      )
-      .toBe("1");
-
-    const ungroupedHydrationFixture =
-      await buildStoredFixtureForLocalHydration(page);
-    const ungroupedHydrationContext = await browser.newContext({ baseURL });
-    await ungroupedHydrationContext.addInitScript(
-      ({ storageKey, fixture, seatingPreferenceKey }) => {
-        window.localStorage.setItem(storageKey, fixture);
-        window.localStorage.setItem(seatingPreferenceKey, "1");
-      },
-      {
-        storageKey: DESIGN_STORAGE_KEY,
-        fixture: ungroupedHydrationFixture,
-        seatingPreferenceKey: SEATING_ZONE_AUTO_DISABLED_KEY,
-      }
-    );
-    const reloadedPage = await ungroupedHydrationContext.newPage();
-    await reloadedPage.goto("/design", { waitUntil: "domcontentloaded" });
-    await expect(reloadedPage.getByTestId("scene-canvas").first()).toBeVisible({
-      timeout: 30_000,
-    });
-    const reloadedState = await waitForStoredZoneState(reloadedPage, 0);
-    await expectRenderedZoneState(reloadedPage, reloadedState, 0);
-
-    await reloadedPage.reload({ waitUntil: "domcontentloaded" });
-    await expect(reloadedPage.getByTestId("scene-canvas").first()).toBeVisible({
-      timeout: 30_000,
-    });
-    const rehydratedState = await waitForStoredZoneState(reloadedPage, 0);
-    await expectRenderedZoneState(reloadedPage, rehydratedState, 0);
-    expect(
-      await reloadedPage.evaluate(
-        (storageKey) => window.localStorage.getItem(storageKey),
-        SEATING_ZONE_AUTO_DISABLED_KEY
-      )
-    ).toBe("1");
-    await ungroupedHydrationContext.close();
+    const plain = await openStoredDesign(page, await buildStoredFixtureForLocalHydration(page));
+    const plainState = await waitForStoredZoneState(plain.opened, 0);
+    await expectRenderedZoneState(plain.opened, plainState, 0);
+    await plain.context.close();
   });
 });

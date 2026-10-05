@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 315,
-      "expectedPathSha256": "e6e5b957f5db4c99f47baee6106f82dd3d946da161898170b5f053c864e783ff"
+      "expectedFileCount": 318,
+      "expectedPathSha256": "47309f8f218cc9a0d5329f020974485d426e898f643abf62f6cf166b46094092"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 109,
-      "expectedPathSha256": "a3672e4fe0d419ce7fea8e9c7b0a7e5c57ba1e829eece35e35a5322cd53ccdc2"
+      "expectedFileCount": 110,
+      "expectedPathSha256": "2056ff122950eccca3bc6fb847b708661b2a5f0bf064503a3c8907085f5caafa"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -542,18 +542,20 @@
       "blocking": true,
       "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
       "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
-      "packageClosure": { "expectedScriptCount": 12, "expectedSha256": "7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0" },
+      "packageClosure": { "expectedScriptCount": 13, "expectedSha256": "6e1a80dd0e336a509c2f2165b937c313ad96d01fe80ea7227820d3e9041cb819" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
         "scripts/test-catalog-registry-sync.ts",
         "scripts/test-catalog-asset-availability.ts",
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
       "requiredCommandSources": [
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
@@ -737,7 +739,7 @@
         {
           "id": "visual.plans-account-keyboard-narrow",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+          "title": "gives the phone Menu's Pricing keyboard entry semantic replacement and narrow Plans return"
         },
         {
           "id": "visual.plans-upgrade-pointer",

@@ -131,10 +131,10 @@ const designSceneCanvasSource = fs.readFileSync(
   ),
   "utf8"
 );
-const selectionInspectorSource = fs.readFileSync(
-  path.join(designPageComponentsPath, "DesignPageSelectionInspector.tsx"),
-  "utf8"
-);
+// The inspector's frame (placement and style) lives beside it, read first (UX 4d).
+const selectionInspectorSource = ["selectionInspectorPlacement.ts", "DesignPageSelectionInspector.tsx"]
+  .map((file) => fs.readFileSync(path.join(designPageComponentsPath, file), "utf8"))
+  .join("\n");
 const planManualQuickActionsSource = fs.readFileSync(
   path.join(designPageComponentsPath, "PlanManualQuickActions.tsx"),
   "utf8"
@@ -213,13 +213,13 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-11/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-bar-2/,
   "Floating overlay stack should align with the left plan panel top edge."
 );
 
 assert.match(
   editorConfigurationSource,
-  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 304;/,
+  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX \+ 268;/,
   "Selection inspector should dock beneath the floating room navigator."
 );
 
@@ -362,7 +362,7 @@ assert.match(
 
 assert.match(
   viewportReadModelSource,
-  /rail:\s*planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
+  /rail:\s*\(?planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
   "The viewport read model should inject the shared overlay gate and 3D whole-home navigator state."
 );
 assert.match(
@@ -397,7 +397,7 @@ assert.match(
 
 assert.match(
   planAuthoringRegistrationSource,
-  /reviewPanelTopPx: 56,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
+  /reviewPanelTopPx: EDITOR_BAR_HEIGHT_PX \+ 20,[\s\S]*?collapsedReviewPanelFallbackHeightPx: 56,[\s\S]*?expandedReviewPanelFallbackHeightPx: 252,/,
   "Plan authoring should configure the review panel against the shared overlay row."
 );
 
@@ -454,19 +454,24 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-11[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-bar-2[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
   "Floating plan overlays should stay inside a fixed, right-anchored scroll rail."
 );
 
 assert.match(
+  fs.readFileSync(path.join(designPageComponentsPath, "DesignPagePlanCanvasOverlays.tsx"), "utf8"),
+  /data-testid="plan-canvas-tool-row"\s+className="pointer-events-none absolute left-1\/2 top-bar-17 z-30 flex w-max max-w-\[calc\(100vw-2rem\)\] -translate-x-1\/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"\s*>\s*\{quickActions\}\s*\{tips\}/,
+  "Manual plan quick actions, with Tips after them in one row, are centred near the top of the canvas (UX 4d)."
+);
+assert.match(
   planManualQuickActionsSource,
-  /data-testid="plan-manual-quick-actions"[\s\S]*left-1\/2 top-15[\s\S]*-translate-x-1\/2/,
-  "Manual plan quick actions should be centered near the top of the canvas instead of overlapping the left panel."
+  /data-testid="plan-manual-quick-actions"\s+className="pointer-events-auto flex flex-wrap items-center/,
+  "The quick actions sit in the row, which places them."
 );
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-15 -translate-x-1\/2[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-bar-17 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 
@@ -506,7 +511,7 @@ assert.match(
 
 assert.match(
   planPresentationSource,
-  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: 140;/,
+  /const selectionInspectorTopPx = selectionInspectorDockedWithPlanStack[\s\S]*\? floatingOverlayInspectorStackTopPx[\s\S]*: planQualityReviewVisible[\s\S]*\? planQualityReviewReservedBottomPx \+ floatingOverlayStackGapPx[\s\S]*: EDITOR_BAR_HEIGHT_PX \+ 104;/,
   "The plan presentation model should place the selection inspector below the navigator or plan review panel."
 );
 
@@ -518,7 +523,7 @@ assert.match(
 
 assert.match(
   selectionInspectorSource,
-  /style=\{[\s\S]*right: configuration\.floatingRightPx,[\s\S]*top: configuration\.floatingTopPx,[\s\S]*width: configuration\.floatingWidthPx,[\s\S]*\}/,
+  /function inspectorFrame[\s\S]*?right: configuration\.floatingRightPx,[\s\S]*top: configuration\.floatingTopPx,[\s\S]*width: configuration\.floatingWidthPx,[\s\S]*style=\{frame\.style\}/,
   "Selection inspector should use dynamic stack-aware placement."
 );
 
@@ -536,7 +541,7 @@ assert.match(
 
 assert.match(
   panelRegionSource,
-  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-12 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0 md:top-9"/,
+  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-bar-0 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0"/,
   "Shop should be one page over the canvas at every width, from the command bar to the phone's step bar (UX audit FU8)."
 );
 
@@ -574,7 +579,11 @@ assert.match(
 );
 
 const designControlsPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPanel.tsx");
-const designControlsPanelSource = fs.readFileSync(designControlsPanelPath, "utf8");
+// The panel's frame (the desktop column, its edge strip and the phone sheet) is its own file.
+const designControlsPanelSource = [
+  designControlsPanelPath,
+  path.join(process.cwd(), "components", "editor", "DesignControlsPanelFrame.tsx"),
+].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 const editorCommandBarSource = readEditorCommandBarSource();
 const editorViewToggleSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "EditorViewToggle.tsx"),
@@ -593,14 +602,14 @@ const editorCamera2DSource = fs.readFileSync(editorCamera2DPath, "utf8");
 
 assert.match(
   designControlsPanelSource,
-  /md:w-\[18\.15rem\]/,
+  /absolute top-bar-2 z-20 w-\[18\.15rem\] space-y-3 pr-1/,
   "Main left design controls column should use the adjusted slimmer panel width."
 );
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1 md:left-1";[\s\S]*?bottom-\[calc\(4\.25rem\+env\(safe-area-inset-bottom\)\)\] right-1 top-auto[\s\S]*?md:top-11/,
-  "Main left design controls column should sit as close to the viewport edge as the right overlay stack, and just above the phone step bar."
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1";[\s\S]*?absolute top-bar-2 z-20/,
+  "Main left design controls column should sit as close to the viewport edge as the right overlay stack (phones get the step sheet, UX 4d)."
 );
 
 assert.match(
@@ -611,13 +620,18 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /data-temporary-reveal=\{temporarilyRevealed \? "true" : "false"\}[\s\S]*?onMouseEnter=\{cancelEdgePreviewClose\}[\s\S]*?onMouseLeave=\{\(\) => \{[\s\S]*?scheduleEdgePreviewClose\(\)[\s\S]*?data-testid="design-controls-sidebar-toggle"[\s\S]*?Keep open/,
+  /temporarilyRevealed,\s*header: <PanelColumnHeader [\s\S]*?onMouseEnter: cancelEdgePreviewClose,\s*onMouseLeave: \(\) => \{\s*if \(temporarilyRevealed\) scheduleEdgePreviewClose\(\);[\s\S]*?data-testid="design-controls-sidebar-toggle"[\s\S]*?Keep open/,
   "The edge-revealed sidebar should dismiss on pointer exit and support pinning itself open."
+);
+// The column is drawn by the phone sheet's component (UX 4d), which takes its reveal and pointer handlers.
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components/editor/PhoneStepSheet.tsx"), "utf8"),
+  /"data-temporary-reveal": column\.temporarilyRevealed \? "true" : "false",[\s\S]*?onMouseEnter: column\.onMouseEnter,\s*onMouseLeave: column\.onMouseLeave,/
 );
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?\? "left-0 md:left-0"/,
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?\? "left-0"/,
   "The temporary sidebar should stay under the left-edge cursor instead of opening beside it."
 );
 
@@ -629,65 +643,125 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /event\.metaKey \|\| event\.ctrlKey[\s\S]*?event\.key\.toLowerCase\(\) !== "b"[\s\S]*?onCollapsedChange\(!collapsed\)/,
+  /event\.metaKey \|\| event\.ctrlKey[\s\S]*?event\.key\.toLowerCase\(\) !== "b"[\s\S]*?onToggle\(\);[\s\S]*?const toggle = \(\) => \{[\s\S]*?if \(wide\) toggleStepPanel\(policy, props\.collapsed, onCollapsedChange\);\s*else onCollapsedChange\(!props\.collapsed\);/,
   "The design sidebar should expose a Codex-style Ctrl/Cmd+B toggle without intercepting text fields."
 );
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-design-sidebar-toggle"[\s\S]*?data-state=\{designSidebarCollapsed \? "collapsed" : "expanded"\}[\s\S]*?aria-expanded=\{!designSidebarCollapsed\}[\s\S]*?onClick=\{onToggleDesignSidebar\}[\s\S]*?<PanelLeft/,
+  /data-testid="editor-design-sidebar-toggle"[\s\S]*?data-state=\{designSidebarCollapsed \? "collapsed" : "expanded"\}[\s\S]*?aria-expanded=\{!designSidebarCollapsed\}[\s\S]*?onClick=\{\(\) => toggleStepPanel\(policy, storedCollapsed, setCollapsed\)\}[\s\S]*?<PanelLeft/,
   "The command bar should expose a compact Codex-style sidebar toggle in the top-left controls."
 );
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-9/,
-  "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
+  /data-testid="editor-command-bar"[\s\S]{0,300}?absolute left-0 right-0 top-0 z-50 flex h-\(--editor-bar-h\) items-center gap-1 [^`]*px-1 [^`]*md:gap-4 md:px-4 md:backdrop-blur/,
+  "The editor command bar is --editor-bar-h (56px) tall at every width: the phone header and the desktop bar (UX 4c, 4d)."
 );
 
-assert.match(
-  editorCommandBarSource,
-  /const commandHistoryButtonClass = `[^`]*\bmd:h-\[30px\] md:w-\[30px\]/,
-  "Undo and redo should share the 30px closed-control size on desktop."
+// Undo, Redo and 2D/3D sit over the canvas at every width: the toolbar from md (UX 4c), the
+// phone's pills below it (UX 4d, 44px targets).
+assert.doesNotMatch(editorCommandBarSource, /data-testid="command-(?:undo|redo)"|<EditorViewToggle/, "The bar holds no history or view controls.");
+const phoneCanvasPillsSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "canvas", "PhoneCanvasPills.tsx"),
+  "utf8"
 );
+assert.match(phoneCanvasPillsSource, /const historyClass = `inline-flex h-11 w-11 shrink-0 (?![^`]*\bmd:)/, "The phone's Undo and Redo are 44px.");
 for (const historyTestId of ["command-undo", "command-redo"] as const) {
   assert.match(
-    editorCommandBarSource,
-    new RegExp(`data-testid="${historyTestId}"[^>]*?className=\\{commandHistoryButtonClass\\}`),
-    `${historyTestId} should use the shared history-control size.`
+    phoneCanvasPillsSource,
+    new RegExp(`data-testid="${historyTestId}"[^>]*?className=\\{historyClass\\}`),
+    `${historyTestId} should use the pill's history-control size.`
   );
 }
 
-for (const controlTestId of [
-  "editor-design-sidebar-toggle",
-  "save-status",
-  "save-design",
-  "editor-command-overflow",
-  "editor-command-account",
-] as const) {
+// The phone header's controls are 44px targets (the PhonePlan mockup); from md the 56px bar's
+// are 36px (the TopBar mockup). More and Account show only from md, the Menu only below it.
+for (const controlTestId of ["save-design", "editor-command-share"] as const) {
   assert.match(
     editorCommandBarSource,
-    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?h-\\[30px\\]`),
-    `${controlTestId} should use the shared 30px closed-control height.`
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,1400}?"[^"]*\\bh-11 w-11\\b[^"]*\\bmd:h-9\\b`),
+    `${controlTestId} should be 44px on phones and 36px from md.`
   );
 }
+assert.match(editorCommandBarSource, /if \(phone\) \{\s*return dark\s*\? "designer-control inline-flex h-11 w-11 /, "The phone's Menu is 44px.");
+assert.match(editorCommandBarSource, /return dark\s*\? "designer-control inline-flex h-9 w-9 [^"]*"\s*: "inline-flex h-9 w-9 /, "More is 36px.");
+assert.match(editorCommandBarSource, /data-testid="editor-command-account"[\s\S]{0,400}?"inline-flex h-9 w-9 /, "Account is 36px.");
+assert.match(editorCommandBarSource, /data-testid="editor-design-sidebar-toggle"[\s\S]{0,700}?: "inline-flex h-9 w-9 /, "The sidebar toggle is 36px, from md.");
+assert.match(editorCommandBarSource, /sidebarToggleVisible=\{sidebarToggleVisible && wide\}/, "Phones collapse and expand the step sheet from its handle.");
+for (const controlTestId of ["editor-command-get-pro", "editor-command-download"] as const) {
+  assert.match(
+    editorCommandBarSource,
+    new RegExp(`data-testid="${controlTestId}"[\\s\\S]{0,600}?"hidden h-9 `),
+    `${controlTestId} should be 36px where it shows.`
+  );
+}
+assert.match(
+  editorCommandBarSource,
+  /<div className="ml-1\.5 flex min-w-0 flex-1 flex-col justify-center gap-0\.5 md:ml-0 md:flex-initial">\s*<CommandBarDesignTitle [^>]*\/>\s*<CommandBarSaveStatus [^>]*\/>\s*<\/div>/,
+  "At every width the save status is a line under the design's name."
+);
+assert.match(
+  editorCommandBarSource,
+  /<div className="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3">[\s\S]*?<\/div>\s*<CommandBarStepTabs [^>]*\/>\s*<div className="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2">/,
+  "From md the steps sit in the centre of the bar, between two equal sides."
+);
 
 // The steps sit in the bar from tablet width up; phones get them as a bar along the bottom.
 assert.match(
   editorCommandBarSource,
-  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-\[30px\]/,
-  "The design steps should use the shared 30px closed-control height in the bar and a bottom bar on phones."
+  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-11 [^"]*md:rounded-xl md:p-1/,
+  "The design steps should be the mockup's 44px segmented control of 36px steps in the bar, and a bottom bar on phones."
 );
 assert.match(
   editorCommandBarSource,
-  /md:h-9 md:gap-2 md:backdrop-blur/,
+  /md:gap-4 md:px-4 md:backdrop-blur/,
   "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
 );
 
+// One bar height from md (UX 4c): the bar is --editor-bar-h tall, and what sits under it is placed
+// from it with top-bar-* (0.5rem under the bar is top-bar-2), so the bar can grow in one place.
+const globalsCss = fs.readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
+assert.match(globalsCss, /:root \{[\s\S]*?--editor-bar-h: 3\.5rem;[\s\S]*?\}/);
+assert.match(editorConfigurationSource, /export const EDITOR_BAR_HEIGHT_PX = 56;/, "The TypeScript bar height matches --editor-bar-h.");
+assert.match(globalsCss, /@utility top-bar-\* \{\s*top: calc\(var\(--editor-bar-h\) \+ --spacing\(--value\(integer\)\)\);\s*\}/);
+const editorOverlayFiles = [
+  "components/editor/DesignControlsPanel.tsx",
+  "components/editor/DesignControlsPanelFrame.tsx",
+  "components/editor/PhoneStepSheet.tsx",
+  "components/editor/EditorToolRail.tsx",
+  "components/catalog/CatalogItemDrawer.tsx",
+  ...fs
+    .readdirSync(path.join(process.cwd(), "components/editor/design-page"))
+    .filter((name) => name.endsWith(".tsx"))
+    .map((name) => `components/editor/design-page/${name}`),
+];
+const barOffsetsByHand = editorOverlayFiles.filter((file) =>
+  /(?<![\w-])md:(?:top-(?:9|11|15|23|36)|max-h-\[calc\(100vh-4\.75rem\)\])(?![\w-])/.test(
+    fs.readFileSync(path.join(process.cwd(), file), "utf8")
+  )
+);
+assert.deepEqual(barOffsetsByHand, [], "Place what sits under the bar with top-bar-* from md, not a fixed offset.");
+// Phones too (UX 4d): the header is --editor-bar-h tall, and the canvas pills sit 12px under it.
+const phoneBarOffsetsByHand = editorOverlayFiles.filter((file) =>
+  /(?<![\w:-])top-(?:9|11|12|15|23)(?![\w-])/.test(fs.readFileSync(path.join(process.cwd(), file), "utf8"))
+);
+assert.deepEqual(phoneBarOffsetsByHand, [], "Place what sits under the phone header with top-bar-* too.");
+
 assert.match(
   editorViewToggleSource,
-  /h-\[26px\][\s\S]*h-\[30px\][\s\S]*p-0\.5/,
-  "The view selector should combine centered 26px buttons with a balanced 30px shell."
+  /grid h-\[30px\] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0\.5[\s\S]*inline-flex h-\[26px\] items-center/,
+  "Present & export's view selector should combine centered 26px buttons with a balanced 30px shell."
+);
+assert.match(
+  editorViewToggleSource,
+  /const PILL_SEGMENT_CLASS =\s*"inline-flex h-11 w-12 items-center justify-center rounded-\[9px\] text-sm font-bold leading-none";/,
+  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d)."
+);
+assert.match(
+  editorViewToggleSource,
+  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 touch:h-11 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
+  "The canvas toolbar's view selector should use the mockup's 32px segments."
 );
 
 assert.match(

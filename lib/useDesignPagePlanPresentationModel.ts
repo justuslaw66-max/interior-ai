@@ -5,16 +5,17 @@ import { useCallback, useMemo } from "react";
 import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { LightingPreset } from "@/lib/lightingPresets";
-import {
-  buildExportReadinessItems,
-  getExportReadinessScore,
-} from "@/lib/design-page-export-readiness";
+import { buildExportReadinessItems, getExportReadinessScore } from "@/lib/design-page-export-readiness";
 import { getPlan2DRoomFitBounds } from "@/lib/design-page-floor-plan-utils";
+import { EDITOR_BAR_HEIGHT_PX, resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
 import {
   buildHousePlan2D,
   type HouseRoomConnectionChecklistItem,
 } from "@/lib/design-page-house-plan";
 import { resolveDesignPagePlanCanvasOverlaysState } from "@/lib/design-page-plan-canvas-overlays";
+import { isConnectionBlocker } from "@/lib/room-connection-checklist";
+import { resolvePhoneCanvasInsets, usePhoneSheetState } from "@/lib/phone-step-sheet";
+import { isTabletWidth, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
@@ -52,6 +53,9 @@ export type ResolveDesignPageViewportLayoutInput = {
   floatingOverlayInspectorStackTopPx: number;
   floatingOverlayStackWidthPx: number;
   floatingOverlayStackGapPx: number;
+  /** The phone's step sheet, while it's open, and a tablet's right panel (UX 4d). */
+  phoneSheetHeightPx: number;
+  tabletRightInsetPx: number;
 };
 
 export function resolveDesignPageViewportLayout({
@@ -72,6 +76,8 @@ export function resolveDesignPageViewportLayout({
   floatingOverlayInspectorStackTopPx,
   floatingOverlayStackWidthPx,
   floatingOverlayStackGapPx,
+  phoneSheetHeightPx,
+  tabletRightInsetPx,
 }: ResolveDesignPageViewportLayoutInput) {
   const floorPropertiesPanelEligible =
     designControlsPanelVisible &&
@@ -87,20 +93,12 @@ export function resolveDesignPageViewportLayout({
     floorPropertiesPanelEligible && !floatingFloorPropertiesPanelVisible;
   const primaryLeftPanelVisible =
     designControlsPanelVisible || shoppingPanelVisible;
-  const plan2DSafeAreaLeftPx =
-    primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768
-      ? shoppingPanelVisible
-        ? isDesigner
-          ? 398
-          : 318
-        : designPanelCollapsed
-          ? isDesigner
-            ? 128
-            : 88
-          : isDesigner
-            ? 398
-            : 318
-      : 0;
+  const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx({
+    panelVisible: primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768,
+    shopping: shoppingPanelVisible,
+    collapsed: designPanelCollapsed,
+    isDesigner,
+  });
   const selectionInspectorDockedWithPlanStack =
     floatingPlanOverlayStackVisible &&
     viewMode === "3d" &&
@@ -112,7 +110,7 @@ export function resolveDesignPageViewportLayout({
     ? floatingOverlayInspectorStackTopPx
     : planQualityReviewVisible
       ? planQualityReviewReservedBottomPx + floatingOverlayStackGapPx
-      : 140;
+      : EDITOR_BAR_HEIGHT_PX + 104;
   const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail
     ? floatingOverlayStackWidthPx
     : 288;
@@ -120,16 +118,13 @@ export function resolveDesignPageViewportLayout({
     !isClientPreview && viewMode === "2d" && viewportWidth >= 768
       ? Math.max(
           planQualityReviewVisible ? 344 : 0,
-          floatingFloorPropertiesPanelVisible ? 284 : 0
+          floatingFloorPropertiesPanelVisible ? 284 : 0,
+          tabletRightInsetPx
         )
       : 0;
-  const plan2DSafeAreaBottomPx =
-    designControlsPanelVisible &&
-    !isClientPreview &&
-    viewportWidth > 0 &&
-    viewportWidth < 768
-      ? 360
-      : 0;
+  const phoneInsets = resolvePhoneCanvasInsets({
+    viewportWidth, isClientPreview, sheetOpen: designControlsPanelVisible, sheetHeightPx: phoneSheetHeightPx,
+  });
 
   return {
     floorPropertiesPanelEligible,
@@ -144,7 +139,8 @@ export function resolveDesignPageViewportLayout({
     selectionInspectorTopPx,
     selectionInspectorWidthPx,
     plan2DSafeAreaRightPx,
-    plan2DSafeAreaBottomPx,
+    plan2DSafeAreaTopPx: phoneInsets.topPx,
+    plan2DSafeAreaBottomPx: phoneInsets.bottomPx,
   };
 }
 
@@ -197,8 +193,6 @@ export type UseDesignPagePlanPresentationModelInput = {
       activeFloorPlanTool: FloorPlanActiveTool;
       activePlanCanvasInteraction: boolean;
       planCanvasFocusActive: boolean;
-      planSettingsLoaded: boolean;
-      planGuidedActionsChoiceSeen: boolean;
       showBetaStart: boolean;
       dismissedPlanCanvasGuidanceKey: string | null;
     };
@@ -224,19 +218,15 @@ export function useDesignPagePlanPresentationModel({
   actions,
 }: UseDesignPagePlanPresentationModelInput) {
   const { layout, export: exportState, presentation } = state;
-  const {
-    simplePlanLayers,
-    floatingOverlayDesktopMinWidthPx,
-    floatingOverlayStackRightPx,
-    floatingOverlayInspectorStackTopPx,
-    floatingOverlayStackWidthPx,
-    floatingOverlayStackGapPx,
-  } = configuration;
+  const { simplePlanLayers, floatingOverlayDesktopMinWidthPx, floatingOverlayStackRightPx } = configuration;
+  const { floatingOverlayInspectorStackTopPx, floatingOverlayStackWidthPx, floatingOverlayStackGapPx } = configuration;
+  const phoneSheetHeightPx = usePhoneSheetState().heightPx;
+  const tablet = useTabletPanelPolicy(isTabletWidth(layout.viewportWidth), layout.designPanelCollapsed);
   const viewportLayout = resolveDesignPageViewportLayout({
     designControlsPanelVisible: layout.designControlsPanelVisible,
     designControlsPanelMode: layout.designControlsPanelMode,
     shoppingPanelVisible: layout.shoppingPanelVisible,
-    designPanelCollapsed: layout.designPanelCollapsed,
+    designPanelCollapsed: tablet.collapsed,
     isClientPreview: layout.isClientPreview,
     isDesigner: layout.isDesigner,
     floorCount: layout.floorCount,
@@ -251,6 +241,8 @@ export function useDesignPagePlanPresentationModel({
     floatingOverlayInspectorStackTopPx,
     floatingOverlayStackWidthPx,
     floatingOverlayStackGapPx,
+    phoneSheetHeightPx,
+    tabletRightInsetPx: tablet.rightInsetPx,
   });
   const plan2DFitBounds = useMemo(
     () =>
@@ -268,10 +260,7 @@ export function useDesignPagePlanPresentationModel({
         openingCount: exportState.openingCount,
         itemCount: exportState.itemCount,
         shoppableCount: exportState.shoppableCount,
-        hasRoomConnectionBlockers:
-          exportState.roomConnectionChecklistItems.some(
-            (item) => item.status !== "connected"
-          ),
+        hasRoomConnectionBlockers: exportState.roomConnectionChecklistItems.some(isConnectionBlocker),
         sceneReady: exportState.sceneReady,
         exportStylePreset: exportState.exportStylePreset,
       }),
@@ -293,11 +282,7 @@ export function useDesignPagePlanPresentationModel({
     [exportReadinessItems]
   );
   const sceneBackgroundColor =
-    layout.viewMode === "3d"
-      ? presentation.showDesignerTheme
-        ? "#dedfdf"
-        : "#f4f2ed"
-      : "#ffffff";
+    layout.viewMode === "3d" ? (presentation.showDesignerTheme ? "#dedfdf" : "#f4f2ed") : "#ffffff";
   const effectivePlanLayers = presentation.simplePlanControls
     ? simplePlanLayers
     : presentation.planLayers;
@@ -335,10 +320,7 @@ export function useDesignPagePlanPresentationModel({
         presentation.floorPlanTraceOpeningPointCount,
       hasRooms: layout.housePlanRooms.length > 0,
       hasOpenings: exportState.openingCount > 0,
-      hasConnectionBlockers:
-        exportState.roomConnectionChecklistItems.some(
-          (item) => item.status !== "connected"
-        ),
+      hasConnectionBlockers: exportState.roomConnectionChecklistItems.some(isConnectionBlocker),
       hasFurniture: exportState.itemCount > 0,
     });
   }, [
@@ -375,9 +357,6 @@ export function useDesignPagePlanPresentationModel({
       showGuidedActionsToggle: showPlanGuidedActionsToggle,
       guidedActionsEnabled: presentation.planGuidedActionsEnabled,
       activeInteraction: presentation.activePlanCanvasInteraction,
-      planSettingsLoaded: presentation.planSettingsLoaded,
-      guidedActionsChoiceSeen:
-        presentation.planGuidedActionsChoiceSeen,
       showBetaStart: presentation.showBetaStart,
       isClientPreview: layout.isClientPreview,
       isDesigner: layout.isDesigner,

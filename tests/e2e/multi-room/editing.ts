@@ -1,3 +1,4 @@
+import { WIDE_PLAN_TOP_INSET_PX } from "../../../lib/editor-canvas-insets";
 import { test, expect } from "../fixtures";
 import {
   chooseTemplateStart,
@@ -49,6 +50,19 @@ export function registerEditingTests() {
       await page.getByTestId("plan-annotation-save").click();
       await expect(page.getByTestId("plan-annotation-dialog")).toHaveCount(0);
       await expect(noteTool).toBeFocused();
+      // The new note is selected, and that clears the room selection, so the room's toolbar goes.
+      // Free users have notes since UX 4e (J: option A), so this path runs for them too: pick the
+      // Bedroom again, as the template left it, for the toolbar steps below. (A plan of one room
+      // keeps it in focus, so the other path needs nothing.)
+      if (duplicateRoomCount === "3 rooms") {
+        const bedroomLabel = page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: "Bedroom" }).first();
+        const bedroomBox = await bedroomLabel.boundingBox();
+        if (!bedroomBox) throw new Error("The Bedroom's label is missing a bounding box");
+        await expect(async () => {
+          await page.mouse.click(bedroomBox.x + bedroomBox.width / 2, bedroomBox.y + bedroomBox.height / 2);
+          await expect(bedroomLabel).toHaveAttribute("data-active", "true", { timeout: 1000 });
+        }).toPass({ timeout: 10_000 });
+      }
     } else {
       test.info().annotations.push({
         type: "note",
@@ -236,7 +250,8 @@ export function registerEditingTests() {
     if (!canvasBox) throw new Error("Scene canvas is missing a bounding box");
     const roomWidthPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-width-px");
     const roomHeightPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-height-px");
-    const northWallY = canvasBox.y + canvasBox.height / 2 - roomHeightPx / 2;
+    // From md the plan is centred in the band under the canvas tools (UX 4d), not in the canvas.
+    const northWallY = canvasBox.y + (canvasBox.height + WIDE_PLAN_TOP_INSET_PX) / 2 - roomHeightPx / 2;
     await page.mouse.click(canvasBox.x + canvasBox.width / 2 - roomWidthPx * 0.36, northWallY);
 
     const openingLabel = page.getByTestId("plan-opening-live-label").first();

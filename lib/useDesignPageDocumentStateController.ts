@@ -54,8 +54,6 @@ export function useDesignPagePlanDocumentState() {
     setExportStylePreset: setExportStylePresetState,
     planGuidedActionsEnabled,
     setPlanGuidedActionsEnabled,
-    planGuidedActionsChoiceSeen,
-    setPlanGuidedActionsChoiceSeen,
     planSettingsLoaded, planMeasurementUnitReady,
   } = useDesignPagePlanState();
 
@@ -137,7 +135,6 @@ export function useDesignPagePlanDocumentState() {
       planMeasurementUnit,
       exportStylePreset,
       planGuidedActionsEnabled,
-      planGuidedActionsChoiceSeen,
       planSettingsLoaded, planMeasurementUnitReady,
     },
     actions: {
@@ -151,7 +148,6 @@ export function useDesignPagePlanDocumentState() {
       setPlanMeasurementUnit,
       setExportStylePreset: setExportStylePresetState,
       setPlanGuidedActionsEnabled,
-      setPlanGuidedActionsChoiceSeen,
     },
     refs: {
       planOpeningsRef,

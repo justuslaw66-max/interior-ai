@@ -7,7 +7,8 @@ Run by `PythonFloorPlanVectorizerProvider` (`lib/floor-plan-imports/vectorizer-e
 
 Off unless `FLOOR_PLAN_VECTORIZER_ENABLED=1`. Other settings: `FLOOR_PLAN_VECTORIZER_DIR` (default
 `<cwd>/services/floorplan-vectorizer`), `FLOOR_PLAN_VECTORIZER_PYTHON` (default `python3`),
-`FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000, 10 s – 15 min), `FLOOR_PLAN_VECTORIZER_MAX_PAGES` (default 1).
+`FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000, 10 s – 15 min), `FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS` (the least
+`app_evidence.py` gets after `floorplan_vectorize.py`, default 60000, 10 s – 5 min), `FLOOR_PLAN_VECTORIZER_MAX_PAGES` (default 1).
 
 ## Setting up and checking, in three steps
 
@@ -34,8 +35,13 @@ machine needs, in the worker's working directory (the repository checkout the wo
 
 - this folder, with a Python 3.9+ virtual environment built from `requirements.txt` (OpenCV **4**; `opencv-python-headless`
   is pinned `<5`, and the program refuses to start on 5), scikit-image and pytesseract;
-- the `tesseract` program (4.x or 5.x) with the English data on the worker's `PATH` — Debian/Ubuntu
-  `apt-get install -y tesseract-ocr tesseract-ocr-eng`, macOS `brew install tesseract`;
+- the `tesseract` program with the English data on the worker's `PATH` — Debian/Ubuntu
+  `apt-get install -y tesseract-ocr tesseract-ocr-eng`, macOS `brew install tesseract`. Any 4.x or 5.x runs, but the
+  release decides what is read: the scores were measured with the 5.3 line (Debian bookworm's 5.3.0, Ubuntu 24.04's
+  5.3.4). With the same programs and the same `eng.traineddata`, 5.5.3 (Homebrew, October 2026) read 122 of the
+  corpus's 138 rooms where 5.3.0 read 126 — room labels and printed numbers go unread, and rooms, doors and windows
+  follow the labels. A machine that must read like the measured one sets `FLOOR_PLAN_VECTORIZER_TESSERACT=5.3` (the
+  worker image does), and the doctor then fails on any other release line; without it the doctor only warns;
 - the settings on that process: `FLOOR_PLAN_VECTORIZER_ENABLED=1`, `FLOOR_PLAN_VECTORIZER_PYTHON=<absolute path to
   .venv/bin/python3>`, and only if the folder is elsewhere `FLOOR_PLAN_VECTORIZER_DIR`; `FLOOR_PLAN_VECTORIZER_TIMEOUT_MS`
   if 7 minutes per page is not right for the machine (the worker renews its lease while the programs run).
@@ -44,8 +50,8 @@ Hosts that run only the Next.js app (Vercel functions) cannot run this: no persi
 the flag unset there; in `background` mode the app process never runs imports anyway.
 
 There is no production worker yet (26 Sep 2026): the app on Vercel cannot host one. `worker.Dockerfile` in this folder
-builds one — Node 24, the pinned venv, `tesseract` + English data, the worker as the command, and the doctor at build
-time so a broken runtime does not build:
+builds one — Node 24, the pinned venv, `tesseract` + English data (pinned to the 5.3 line through the doctor), the
+worker as the command, and the doctor at build time so a broken runtime, or another OCR engine, does not build:
 
     docker build -f services/floorplan-vectorizer/worker.Dockerfile -t interior-ai-floor-plan-worker .
     docker run --rm --env-file .env.worker interior-ai-floor-plan-worker                                   # imports
@@ -63,7 +69,8 @@ threaded per plan and the worker processes one job at a time; start it with 2 CP
     services/floorplan-vectorizer/.venv/bin/python3 services/floorplan-vectorizer/doctor.py --run
 
 One line per check (interpreter and the `FLOOR_PLAN_VECTORIZER_*` settings as the shell has them, numpy / OpenCV 4 /
-scikit-image / pytesseract, the `tesseract` program, its version and English data, a digit read the way the tracer
+scikit-image / pytesseract, the `tesseract` program, its version, whether that is the measured release line (a
+warning, or a failure where `FLOOR_PLAN_VECTORIZER_TESSERACT` pins one) and English data, a digit read the way the tracer
 asks for one, both programs present, the temporary folder); `--run` also traces a small drawn plan through both
 programs the way the worker runs them (about half a minute) and expects its rooms, a `BEDROOM` label and a scale of
 10 mm per pixel back; `--run=/path/to/plan.png` traces a real plan instead and reports what came out. It ends with

@@ -235,7 +235,8 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     );
     expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
 
-    await page.getByTestId("selection-inspector-clear").click();
+    // A product shows the item panel in Plan too (UX 4f), so its × deselects.
+    await page.getByTestId("selected-item-deselect").click();
     await expect(selectedPlanItem).toHaveAttribute("aria-pressed", "false");
     await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
     await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();

@@ -14,6 +14,18 @@ import {
   normalizeFloorPatternOffset,
 } from "@/lib/surface-settings";
 import type { RoomFloorPattern } from "@/lib/room-types";
+import {
+  getSurfacePhysicalSourceKey,
+  seededSurfaceRandom as seededRandom,
+} from "@/lib/surface-material-physical-sampling";
+import {
+  createHerringbonePlankSampler,
+  createSurfaceTilePainter,
+  getImageSize,
+  loadSurfaceTextureInputs,
+  resolveSurfaceDetailStrength,
+  type LoadedSurfacePhysicalSource,
+} from "./surfaceTilePainter";
 
 const surfaceTextureSourceCache = new Map<string, Promise<THREE.Texture | null>>();
 const DEFAULT_MAX_SURFACE_TEXTURE_SIZE = 2048;
@@ -22,7 +34,6 @@ const DEFAULT_TARGET_PIXELS_PER_METER = 260;
 const SURFACE_TEXTURE_RENDER_VERSION = 11;
 
 type SurfaceTextureUvMode = "world" | "normalized";
-type ImageSize = { width: number; height: number };
 type SourceRect = { x: number; y: number; width: number; height: number };
 type SurfaceTextureResolution = {
   maxSize?: number;
@@ -59,11 +70,6 @@ function clampFinite(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function seededRandom(seed: number) {
-  const value = Math.sin(seed * 12.9898) * 43758.5453;
-  return value - Math.floor(value);
-}
-
 function hashString(input: string) {
   let hash = 2166136261;
   for (let index = 0; index < input.length; index += 1) {
@@ -94,27 +100,6 @@ function getHerringbonePlankVariationSeed({
     Math.imul(Math.round(originYUnit), 19349663) +
     (orientation === "vertical" ? 83492791 : 0)
   ) >>> 0;
-}
-
-function getImageSize(image: CanvasImageSource): ImageSize {
-  return {
-    width: Math.max(
-      1,
-      Number(
-        (image as { naturalWidth?: number; width?: number }).naturalWidth ??
-          (image as { width?: number }).width ??
-          1
-      )
-    ),
-    height: Math.max(
-      1,
-      Number(
-        (image as { naturalHeight?: number; height?: number }).naturalHeight ??
-          (image as { height?: number }).height ??
-          1
-      )
-    ),
-  };
 }
 
 function getSurfaceTileSizeMeters(material: SurfaceMaterialRenderInfo) {
@@ -602,24 +587,6 @@ function parseRgbColor(color: string): [number, number, number] {
   return [142, 142, 142];
 }
 
-function getImageDataForSource(image: CanvasImageSource): ImageData | null {
-  if (typeof document === "undefined") return null;
-  const imageSize = getImageSize(image);
-  const sourceCanvas = document.createElement("canvas");
-  sourceCanvas.width = imageSize.width;
-  sourceCanvas.height = imageSize.height;
-  const sourceContext = sourceCanvas.getContext("2d");
-  if (!sourceContext) return null;
-
-  sourceContext.drawImage(image, 0, 0, imageSize.width, imageSize.height);
-
-  try {
-    return sourceContext.getImageData(0, 0, imageSize.width, imageSize.height);
-  } catch {
-    return null;
-  }
-}
-
 function enhanceGeneratedStoneTexture(
   context: CanvasRenderingContext2D,
   width: number,
@@ -627,6 +594,7 @@ function enhanceGeneratedStoneTexture(
   seed: number,
   strength = 1
 ) {
+  if (strength <= 0) return;
   let imageData: ImageData;
   try {
     imageData = context.getImageData(0, 0, width, height);
@@ -677,57 +645,9 @@ function enhanceGeneratedStoneTexture(
   context.putImageData(imageData, 0, 0);
 }
 
-type HerringbonePlankTextureVariation = {
-  sourceX: number;
-  sourceY: number;
-  sourceWidth: number;
-  sourceHeight: number;
-  flipWidth: boolean;
-  flipLength: boolean;
-  tint: number;
-};
-
-function getHerringbonePlankTextureVariation({
-  seed,
-  sourceWidth,
-  sourceHeight,
-  targetAspect,
-}: {
-  seed: number;
-  sourceWidth: number;
-  sourceHeight: number;
-  targetAspect: number;
-}): HerringbonePlankTextureVariation {
-  const cropScale = 0.72 + seededRandom(seed + 3) * 0.22;
-  const safeInsetX = sourceWidth * 0.04;
-  const safeInsetY = sourceHeight * 0.04;
-  const safeWidth = Math.max(1, sourceWidth - safeInsetX * 2);
-  const safeHeight = Math.max(1, sourceHeight - safeInsetY * 2);
-  const safeAspect = safeWidth / safeHeight;
-  let cropWidth = sourceWidth;
-  let cropHeight = sourceHeight;
-
-  if (safeAspect > targetAspect) {
-    cropHeight = safeHeight * cropScale;
-    cropWidth = Math.min(safeWidth, cropHeight * targetAspect);
-  } else {
-    cropWidth = safeWidth * cropScale;
-    cropHeight = Math.min(safeHeight, cropWidth / targetAspect);
-  }
-
-  return {
-    sourceX: safeInsetX + seededRandom(seed + 11) * Math.max(0, safeWidth - cropWidth),
-    sourceY: safeInsetY + seededRandom(seed + 23) * Math.max(0, safeHeight - cropHeight),
-    sourceWidth: Math.max(1, cropWidth),
-    sourceHeight: Math.max(1, cropHeight),
-    flipWidth: seededRandom(seed + 31) > 0.5,
-    flipLength: seededRandom(seed + 41) > 0.72,
-    tint: seededRandom(seed + 53) - 0.5,
-  };
-}
-
 function createPatternedSurfaceTexture({
   sourceTexture,
+  physicalSources,
   material,
   surfaceWidthMeters,
   surfaceHeightMeters,
@@ -738,6 +658,7 @@ function createPatternedSurfaceTexture({
   resolution,
 }: {
   sourceTexture: THREE.Texture;
+  physicalSources: LoadedSurfacePhysicalSource[] | null;
   material: SurfaceMaterialRenderInfo;
   surfaceWidthMeters: number;
   surfaceHeightMeters: number;
@@ -788,7 +709,7 @@ function createPatternedSurfaceTexture({
     tileWidthPx / Math.max(1, imageSize.width),
     tileHeightPx / Math.max(1, imageSize.height)
   );
-  const detailStrength = clampFinite(0.85 + Math.max(0, sourceUpscaleRatio - 1) * 0.45, 0.85, 2.6);
+  const detailStrength = resolveSurfaceDetailStrength(physicalSources, sourceUpscaleRatio);
   const continuousPatternSourceRect = useContinuousPatternSource
     ? getContinuousPatternSourceRectForTest({
         materialId: material.surface_material.material_id,
@@ -824,19 +745,22 @@ function createPatternedSurfaceTexture({
     const plankSize = getHerringbonePlankSizeForTest({ tileWidthPx, tileHeightPx });
     const plankLength = plankSize.length;
     const plankWidth = plankSize.width;
-    const sourceImageData = getImageDataForSource(image);
-    if (!sourceImageData) return null;
+    const canvasPxPerMm = tileWidthPx / (tileSize.width * 1000);
+    const samplePlank = createHerringbonePlankSampler({
+      image,
+      physicalSources,
+      plankWidthMm: plankWidth / canvasPxPerMm,
+      plankLengthMm: plankLength / canvasPxPerMm,
+      canvasPxPerMm,
+      targetAspect: Math.max(0.05, Math.min(1, plankWidth / Math.max(1, plankLength))),
+    });
+    if (!samplePlank) return null;
 
     const aspectRatio = Math.max(1, plankLength / Math.max(1, plankWidth));
     const jointInset = Math.min(Math.max(0, jointSizePx / 2), Math.max(0, plankWidth / 2 - 0.25));
     const jointRgb = parseRgbColor(jointColor);
     const outputImageData = context.createImageData(canvas.width, canvas.height);
     const outputData = outputImageData.data;
-    const sourceData = sourceImageData.data;
-    const sourceWidth = sourceImageData.width;
-    const sourceHeight = sourceImageData.height;
-    const textureVariationBySeed = new Map<number, HerringbonePlankTextureVariation>();
-    const sourceTargetAspect = Math.max(0.05, Math.min(1, plankWidth / Math.max(1, plankLength)));
 
     for (let pixelY = 0; pixelY < canvas.height; pixelY += 1) {
       const unitY = pixelY / plankWidth;
@@ -881,16 +805,10 @@ function createPatternedSurfaceTexture({
           originYUnit: orientation === "horizontal" ? unitY - localYUnit : unitY - localXUnit,
           orientation,
         });
-        let textureVariation = textureVariationBySeed.get(variationSeed);
-        if (!textureVariation) {
-          textureVariation = getHerringbonePlankTextureVariation({
-            seed: variationSeed,
-            sourceWidth,
-            sourceHeight,
-            targetAspect: sourceTargetAspect,
-          });
-          textureVariationBySeed.set(variationSeed, textureVariation);
-        }
+        const textureVariation = samplePlank(variationSeed, orientation === "horizontal");
+        const sourceData = textureVariation.data;
+        const sourceWidth = textureVariation.dataWidth;
+        const sourceHeight = textureVariation.dataHeight;
 
         let sourceWidthRatio = localY / Math.max(1, plankWidth);
         let sourceLengthRatio = localX / Math.max(1, plankLength);
@@ -929,6 +847,13 @@ function createPatternedSurfaceTexture({
   }
 
   const rowCount = Math.ceil(canvas.height / tileHeightPx) + 3;
+  const paintTile = createSurfaceTilePainter({
+    context,
+    physicalSources,
+    tileSizeMeters: tileSize,
+    paintLegacyTile: (tile) =>
+      drawImageCroppedToTile({ context, image, ...tile, rotateSourceQuarterTurn, allowQuarterTurnVariation, detailStrength }),
+  });
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
 
@@ -962,18 +887,7 @@ function createPatternedSurfaceTexture({
         context.restore();
       } else {
         const seed = seedBase + row * 101 + col * 313;
-        drawImageCroppedToTile({
-          context,
-          image,
-          x: drawX,
-          y: drawY,
-          width: drawWidth,
-          height: drawHeight,
-          seed,
-          rotateSourceQuarterTurn,
-          allowQuarterTurnVariation,
-          detailStrength,
-        });
+        paintTile({ row, col, x: drawX, y: drawY, width: drawWidth, height: drawHeight, seed });
       }
 
       if (normalizedPattern === "checker" && (row + col) % 2 !== 0) {
@@ -989,6 +903,8 @@ function createPatternedSurfaceTexture({
   enhanceGeneratedStoneTexture(context, canvas.width, canvas.height, seedBase, detailStrength);
   return new THREE.CanvasTexture(canvas);
 }
+
+export { createPatternedSurfaceTexture as createPatternedSurfaceTextureForTest };
 
 export function useSurfaceMaterialTexture({
   material,
@@ -1039,6 +955,7 @@ export function useSurfaceMaterialTexture({
         materialSpecs?.plank_length_mm,
         materialRepeatSize?.width,
         materialRepeatSize?.height,
+        getSurfacePhysicalSourceKey(material?.texture_assets),
         roomWidthMeters,
         roomDepthMeters,
         floorScale,
@@ -1070,7 +987,8 @@ export function useSurfaceMaterialTexture({
       };
     }
 
-    void loadSurfaceTextureSource(source.url).then((sourceTexture) => {
+    const inputs = loadSurfaceTextureInputs(material, source.url, loadSurfaceTextureSource);
+    void inputs.then(({ sourceTexture, physicalSources }) => {
       if (cancelled || !sourceTexture) return;
 
       const singleSwatch = shouldUseSingleSurfaceSwatch(material, source.kind);
@@ -1078,6 +996,7 @@ export function useSurfaceMaterialTexture({
         ? null
         : createPatternedSurfaceTexture({
             sourceTexture,
+            physicalSources,
             material,
             surfaceWidthMeters: roomWidthMeters,
             surfaceHeightMeters: roomDepthMeters,

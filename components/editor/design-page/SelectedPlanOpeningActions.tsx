@@ -19,6 +19,10 @@ type SelectedPlanOpeningActionsProps = {
   };
 };
 
+/**
+ * A selected door's or window's width and Delete, over the plan from md. Phones get the whole
+ * inspector in the step sheet instead (UX 4d, audit AX2).
+ */
 export function SelectedPlanOpeningActions({
   state,
   configuration,
@@ -26,11 +30,11 @@ export function SelectedPlanOpeningActions({
 }: SelectedPlanOpeningActionsProps) {
   return (
     <div
-      data-testid="selected-plan-opening-actions"
+      data-testid="selected-plan-opening-actions" data-touch-area
       className={
         configuration.dark
-          ? "designer-work-surface absolute left-1/2 top-23 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs"
-          : "absolute left-1/2 top-23 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur"
+          ? "designer-work-surface absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs md:flex"
+          : "absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur md:flex"
       }
       style={{ maxWidth: "calc(100% - 2rem)" }}
     >

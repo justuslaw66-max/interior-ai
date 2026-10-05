@@ -1,13 +1,22 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ShoppingSwapAll } from "../components/editor/shop/ShoppingSwapAll";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { DesignItem } from "../lib/room-types";
 import {
   buildShoppingList,
   cheaperSwapFor,
+  planSwapAll,
+  pricierSwapFor,
   productCountLabel,
   retailerCheckoutNote,
   retailerDisplayName,
   retailerSite,
+  shoppingListLines,
+  swapAllMessage,
+  swapAllStep,
+  withSwapAllApplied,
   type ShoppingListRoom,
 } from "../lib/shopping-list";
 
@@ -129,5 +138,73 @@ assert.equal(retailerSite("https://www.castlery.com/sg/products/x"), "castlery.c
 assert.equal(retailerSite("https://shop.example.com/a"), "shop.example.com");
 assert.equal(retailerSite("not a url"), null);
 assert.equal(retailerSite(null), null);
+
+// Pro's "Swap all" (UX 4h, J's Q2 (a)): exactly the products that offer "Swap for cheaper", every
+// one of them, and the same rule the other way; sets, products bought as a set and locked products stay.
+const rooms = [living, dining];
+const cheaperAll = planSwapAll({ rooms, style: "modern", direction: "cheaper", catalogItems: catalog });
+assert.deepEqual(
+  cheaperAll.map((change) => [change.instanceId, change.to.id]),
+  shoppingListLines(list).filter((line) => line.cheaperSwap).map((line) => [line.instanceId, line.cheaperSwap?.productId]),
+  "Swap all for cheaper swaps what Swap for cheaper offers, line by line."
+);
+assert.ok(cheaperAll.length > 0, "The fixture has something to swap.");
+const pricierAll = planSwapAll({ rooms, style: "modern", direction: "pricier", catalogItems: catalog });
+for (const change of pricierAll) {
+  const placed = rooms.flatMap((room) => room.items).find((entry) => entry.instanceId === change.instanceId);
+  assert.ok(placed && hint(change.to.id) > hint(placed.productId), `${change.to.id} costs more`);
+  assert.equal(pricierSwapFor(placed.productId, "modern", catalog)?.productId, change.to.id);
+}
+const asSet = { ...living, items: living.items.map((entry) => ({ ...entry, purchaseOptionId: "set-of-2" })) } as ShoppingListRoom;
+assert.deepEqual(planSwapAll({ rooms: [asSet], style: "modern", direction: "cheaper", catalogItems: catalog }), [], "Products bought as a set stay.");
+const lockedId = cheaperAll[0].instanceId;
+const withLock = rooms.map((room) => ({
+  ...room,
+  items: room.items.map((entry) => (entry.instanceId === lockedId ? { ...entry, locked: true } : entry)),
+})) as ShoppingListRoom[];
+assert.deepEqual(
+  planSwapAll({ rooms: withLock, style: "modern", direction: "cheaper", catalogItems: catalog }).map((change) => change.instanceId),
+  cheaperAll.map((change) => change.instanceId).filter((instanceId) => instanceId !== lockedId),
+  "A locked product stays, as AI Notes' bulk swap leaves it."
+);
+
+// Applying it: one room at a time, each change where the product stands, in its default variant.
+const livingAfter = withSwapAllApplied(living.items, "living", cheaperAll);
+for (const entry of livingAfter) {
+  const change = cheaperAll.find((candidate) => candidate.instanceId === entry.instanceId);
+  const before = living.items.find((candidate) => candidate.instanceId === entry.instanceId);
+  assert.equal(entry.productId, change ? change.to.id : before?.productId);
+  if (change) assert.equal(entry.variantId, catalog[change.to.id].defaultVariantId);
+  assert.deepEqual(entry.position, before?.position, "Where it stands.");
+}
+assert.deepEqual(withSwapAllApplied(living.items, "elsewhere", cheaperAll), living.items);
+assert.equal(swapAllStep("cheaper"), "Swap all for cheaper");
+assert.equal(swapAllStep("pricier"), "Swap all for pricier");
+assert.equal(swapAllMessage(6), "6 products swapped");
+assert.equal(swapAllMessage(1), "1 product swapped");
+
+// The buttons: Pro sees how many each would swap, and a direction with none is off; Free sees a
+// Pro badge, and a press opens Pricing, which hands focus back to the button.
+const noop = () => {};
+const pro = renderToStaticMarkup(<ShoppingSwapAll counts={{ cheaper: 6, pricier: 0 }} disabled={false} onSwapAll={noop} />);
+assert.match(pro, /^<div role="group" aria-label="Swap all" data-testid="shopping-swap-all"/);
+assert.match(pro, /id="shopping-swap-all-cheaper" data-testid="shopping-swap-all-cheaper" aria-label="Swap all for cheaper, 6 products">/);
+assert.match(pro, /id="shopping-swap-all-pricier" data-testid="shopping-swap-all-pricier" aria-label="Swap all for pricier, 0 products" disabled="">/);
+assert.match(pro, /\bmin-h-11\b/, "44px, the shared Button's touch size.");
+const free = renderToStaticMarkup(<ShoppingSwapAll counts={null} disabled={false} onSwapAll={noop} />);
+assert.equal(free.match(/aria-label="Swap all for (?:cheaper|pricier), Pro">/g)?.length, 2);
+assert.equal(free.match(/>Pro<\/span>/g)?.length, 2);
+assert.doesNotMatch(free, /disabled=""/, "Free can press them: they open Pricing.");
+
+const read = (path: string) => readFileSync(path, "utf8");
+const shopStep = read("components/editor/shop/ShopStep.tsx");
+assert.match(shopStep, /if \(!plans\) return swapAll\.openPricing\(swapAllButtonId\(direction\)\);/);
+assert.match(shopStep, /return swapAll && canEdit \? \{ counts, disabled: false, onSwapAll \} : null;/, "No Swap all where the host doesn't supply it.");
+assert.match(shopStep, /swapAll\.commitItemsToRooms\(roomIds\.map\(\(roomId\) => \(\{ roomId, update: \(items\) => withSwapAllApplied\(items, roomId, changes\) \}\)\), step\);\s*announceUndoableAction\(\{ message: swapAllMessage\(changes\.length\), undoLabels: \[step\] \}\);/, "One step, one toast with Undo.");
+assert.match(read("lib/design-page-panel-registration.ts"), /swapAll: \{ canSwapAll: state\.document\.plan === "pro", commitItemsToRooms: actions\.shopping\.commitItemsToRooms, openPricing: actions\.shopping\.openPricing \}/);
+assert.match(read("lib/useCommitItemsToRooms.ts"), /history\.executeCommand<[^>]+>\(\{\s*id: "replace-rooms-items",/);
+const page = read("components/editor/shop/ShoppingListPage.tsx");
+assert.match(page, /\{swapAll && !empty && !wide \? <ShoppingSwapAll \{\.\.\.swapAll\} \/> : null\}/, "Under the heading below lg.");
+assert.match(page, /swapAll=\{wide \? swapAll : null\}/, "In the summary from lg; never both.");
 
 console.log("Shopping list checks passed.");

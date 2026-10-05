@@ -100,10 +100,6 @@ async function expectCompletedOnboardingState(page: Page) {
               itemCount: state.itemIds.length,
               productIds: state.productIds,
               seatingZoneCount: state.seatingZones.length,
-              seatingZoneMatchesItems:
-                state.seatingZones.length === 1 &&
-                JSON.stringify(state.seatingZones[0].itemIds) ===
-                  JSON.stringify(state.itemIds),
               completed: state.completed,
             }
           : null;
@@ -114,8 +110,8 @@ async function expectCompletedOnboardingState(page: Page) {
       version: 3,
       itemCount: 1,
       productIds: [MADISON_2S_ID],
-      seatingZoneCount: 1,
-      seatingZoneMatchesItems: true,
+      // The first sofa makes no seating zone any more (UX 4g, FU6): zones are Pro's.
+      seatingZoneCount: 0,
       completed: true,
     });
 
@@ -125,7 +121,7 @@ async function expectCompletedOnboardingState(page: Page) {
 }
 
 test.describe("1. Onboarding Activation Flow", () => {
-  test("sofa placement persists its seating zone and completed onboarding across reload", async ({
+  test("sofa placement completes onboarding, with no seating zone, across reload", async ({
     page,
   }) => {
     test.setTimeout(180_000);
@@ -191,11 +187,7 @@ test.describe("1. Onboarding Activation Flow", () => {
       "data-active-room-id",
       persistedBeforeReload.activeRoomId,
     );
-    await expect(zoneState).toHaveAttribute("data-manual-zone-count", "1");
-    await expect(zoneState).toHaveAttribute(
-      "data-manual-zone-items",
-      persistedBeforeReload.itemIds.join(","),
-    );
+    await expect(zoneState).toHaveAttribute("data-manual-zone-count", "0");
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
@@ -208,12 +200,7 @@ test.describe("1. Onboarding Activation Flow", () => {
     );
     await expect(zoneState).toHaveAttribute(
       "data-manual-zone-count",
-      "1",
-      { timeout: 60_000 },
-    );
-    await expect(zoneState).toHaveAttribute(
-      "data-manual-zone-items",
-      persistedBeforeReload.itemIds.join(","),
+      "0",
       { timeout: 60_000 },
     );
     await expect

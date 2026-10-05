@@ -93,8 +93,8 @@ const barProps = {
   showLoadDesign: true, onOpenMyDesigns: noop, onSave: noop, onRetrySaveStatus: noop,
   onOpenPresentExport: noop,
   saveStatus: {
-    kind: "saved", source: "cloud", label: "Cloud saved", detail: "Just now", tone: "saved",
-    canRetry: false, lastSuccessfulSaveAt: null,
+    kind: "saved", source: "cloud", label: "Saved", detail: "Just now", tone: "saved",
+    canRetry: false, lastSuccessfulSaveAt: null, cloudBacked: false,
   },
 } as unknown as BarProps;
 const bar = (props: Partial<BarProps>) => renderToStaticMarkup(createElement(EditorCommandBar, { ...barProps, ...props }));
@@ -103,30 +103,38 @@ assert.match(
   named,
   new RegExp(`id="${DESIGN_RENAME_OPENER_ID}"[^>]*data-testid="editor-design-title"[^>]*aria-haspopup="dialog"[^>]*aria-label="Rename design, Tan flat"`),
 );
-assert.match(named, /data-testid="editor-design-title"[^>]*class="hidden [^"]*max-w-\[200px\][^"]*xl:flex/);
+assert.match(named, /data-testid="editor-design-title"[^>]*class="-ml-1\.5 flex h-6 [^"]*max-w-full[^"]*text-\[15px\][^"]*md:max-w-\[240px\] md:text-sm/);
+// A static render is the phone header (UX 4d): the Menu, then the name with the status under it.
 assert.ok(
-  named.indexOf('data-testid="editor-design-title"') < named.indexOf('data-testid="command-undo"'),
-  "The name leads the bar, as in the mockups.",
+  named.indexOf('data-testid="editor-command-overflow"') < named.indexOf('data-testid="editor-design-title"') &&
+    named.indexOf('data-testid="editor-design-title"') < named.indexOf('data-testid="save-status"'),
+  "The name leads the bar after the Menu, as in the mockups.",
 );
+assert.doesNotMatch(named, /data-testid="command-undo"/, "Undo is over the canvas at every width.");
 assert.doesNotMatch(bar({ designTitle: "Tan flat" }), /editor-design-title/, "No handler, no name button.");
-// The status keeps its label for xl and its detail for 2xl, so the name has room at 1280px.
-assert.match(named, /max-w-28 truncate font-semibold xl:inline">Cloud saved</);
-assert.match(named, /max-w-36 truncate 2xl:inline">Just now</);
-// The groups size to their content; the room status needs 1800px beside the name.
-assert.match(named, /class="ml-auto flex shrink-0 items-center justify-end/);
-assert.match(named, /hidden min-w-0 flex-1 items-center justify-center min-\[1800px\]:flex/);
+// The status is a line under the name (UX 4c, 4d): its label, with the detail as the tooltip.
+assert.match(named, /<span class="min-w-0 truncate">Saved<\/span>/);
+assert.match(named, /data-testid="save-status"[^>]*title="Just now"/);
+// Save shows until the design's first save to the account; then the status says it all (Decision E).
+assert.match(named, /data-testid="save-design"/);
+const cloudBacked = bar({ designTitle: "Tan flat", onRenameDesign: noop, saveStatus: { ...barProps.saveStatus, cloudBacked: true } });
+assert.doesNotMatch(cloudBacked, /data-testid="save-design"/);
+assert.match(cloudBacked, /data-testid="save-status"/);
+// Two equal sides with the steps between them; the name side gives way first.
+assert.match(named, /class="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3"/);
+assert.match(named, /class="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2"/);
 
-// Below xl, Rename design is in More, and the dialog then hands focus back to More.
+// Phones also have Rename design in the Menu, and the dialog then hands focus back to the Menu.
 type MoreProps = ComponentProps<typeof CommandBarMoreMenu>;
 const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
-  dark: false, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
+  dark: false, phone: true, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
   open: true, onToggle: noop, onClose: noop, menuButtonClass: "item", menuPanelClass: "panel",
   lightingSettingsOpen: false, showLoadDesign: true, isDesigner: false, isClientPreview: false,
   presentModeActive: false, lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
   onToggleDesignerMode: noop, onToggleClientPreview: noop, onOpenPresentExport: noop, onExport: noop,
   onOpenLightingSettings: noop, onCloseLightingSettings: noop, onFeedback: noop, onRenameDesign: noop,
 } satisfies MoreProps));
-assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item xl:hidden"[^>]*>Rename design</);
+assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item md:hidden"[^>]*>Rename design</);
 assert.deepEqual(DESIGN_RENAME_RETURN_FOCUS_IDS, [DESIGN_RENAME_OPENER_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID]);
 
 // The dialog: the current name to edit, the API's length limit, and no empty names.

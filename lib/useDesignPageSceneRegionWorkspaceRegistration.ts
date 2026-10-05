@@ -106,7 +106,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         safeArea: {
           leftPx: planWorkspace.derived.plan2DSafeAreaLeftPx,
           rightPx: planWorkspace.derived.plan2DSafeAreaRightPx,
-          bottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
+          topPx: planWorkspace.derived.plan2DSafeAreaTopPx, bottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
         },
         rooms: plan.housePlan2D.rooms,
         underlay: viewportShell.state.floorPlan.floorPlanUnderlay,
@@ -202,8 +202,6 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
           selectionInspection.state.inspection.previewVariantId,
         previewMaterialPresetId:
           selectionInspection.state.inspection.previewMaterialPresetId,
-        hoveredCartInstanceId:
-          viewportShell.state.shopping.hoveredCartInstanceId,
         activeSceneItemsForGuides: roomRead.activeSceneItemsForGuides,
         itemPlanningBoundsByInstanceId:
           selectionInspection.derived.itemPlanningBoundsByInstanceId,
