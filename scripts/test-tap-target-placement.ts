@@ -258,7 +258,7 @@ assert.match(
 );
 assert.match(
   structureLayerSource,
-  /<RoomRenderer2D[\s\S]*?onSelectRoom=\{actions\.rooms\.select\}[\s\S]*?<HousePlanRenderer3D[\s\S]*?onSelectRoom=\{actions\.rooms\.select\}/
+  /const selectRoom = useLatestCallback\(actions\.rooms\.select\);[\s\S]*?<RoomRenderer2D[\s\S]*?onSelectRoom=\{selectRoom\}[\s\S]*?<HousePlanRenderer3D[\s\S]*?onSelectRoom=\{selectRoom\}/
 );
 assert.match(
   guidanceLayerSource,
