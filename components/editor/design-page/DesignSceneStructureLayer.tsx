@@ -10,11 +10,9 @@ import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRe
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import {
-  mapPlanAnnotationsToRoomRenderer,
-  mapPlanFixedElementsToRoomRenderer,
-  mapPlanOpeningsToRoomRenderer,
-} from "@/lib/design-page-plan-overlays";
+import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlays";
+import { useRoomRendererPlanOverlays } from "@/lib/useRoomRendererPlanOverlays";
+import { useLatestCallback } from "@/components/editor/renderers/useLatestCallback";
 import type { PlanZone2D } from "@/lib/design-page-zone-layout";
 import type { EditorScene2D } from "@/lib/editorScene";
 import type {
@@ -185,6 +183,9 @@ export function DesignSceneStructureLayer({
   const canonicalResolution = useMemo(() => resolveCanonicalSceneModel(state.plan.canonicalDocument, state.plan.canonicalGeometryHash),
     [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;
+  const planOverlays = useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan));
+  // Stable, so the memoized room fills skip re-rendering when only the page's handler changed.
+  const selectRoom = useLatestCallback(actions.rooms.select);
   const canonicalActiveFloorId =
     canonicalPlan?.floors.find(
       (floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel
@@ -266,7 +267,7 @@ export function DesignSceneStructureLayer({
           activeFloorLevel={state.wholeHome.activeFloorLevel}
           activeRoomId={plan.activeRoomId}
           selectedRoomIds={plan.selectedRoomIds}
-          onSelectRoom={actions.rooms.select}
+          onSelectRoom={selectRoom}
           onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
           onClearRoomSelection={
             plan.calibration.enabled ? undefined : actions.rooms.clearSelection
@@ -332,13 +333,9 @@ export function DesignSceneStructureLayer({
           traceOpeningMode={plan.openingTrace.enabled && !plan.underlay}
           traceOpeningKind={plan.openingTrace.kind}
           onTraceOpeningPoint={actions.drawing.addOpeningPoint}
-          openings={mapPlanOpeningsToRoomRenderer(plan.scene.openings, plan.rooms)}
-          fixedElements={mapPlanFixedElementsToRoomRenderer(
-            canonicalPlan
-              ? plan.scene.fixedElements.filter((element) => !element.canonicalKind)
-              : plan.scene.fixedElements
-          )}
-          annotations={mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)}
+          openings={planOverlays.openings}
+          fixedElements={planOverlays.fixedElements}
+          annotations={planOverlays.annotations}
           zones={plan.zones}
           onPlanDebugMetricsChange={actions.reportPlanMetrics}
           canonicalPlan={canonicalPlan}
@@ -382,7 +379,7 @@ export function DesignSceneStructureLayer({
           configuration.editorMode !== "present" &&
           !configuration.isClientPreview
         }
-        onSelectRoom={actions.rooms.select}
+        onSelectRoom={selectRoom}
         selectedOpeningId={state.wholeHome.selectedOpeningId}
         selectedSurfaceTarget={state.wholeHome.selectedSurfaceTarget}
         onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}

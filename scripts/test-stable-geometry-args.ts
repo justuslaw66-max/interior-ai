@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
+import { openingGestureBindings } from "@/components/editor/renderers/canonical-floor-plan/openingGestureBindings";
 import { memoizeByObject } from "@/components/editor/renderers/memoizeByObject";
 import { sameLinePoints } from "@/components/editor/renderers/sameLinePoints";
 import { stableExtrudeOptions } from "@/components/editor/renderers/stableExtrudeOptions";
@@ -101,6 +102,36 @@ assert.ok(sameLinePoints([{ x: 1, y: 2 }], [{ x: 1, y: 2, z: 0 }]), "A Vector2 i
 assert.ok(!sameLinePoints([[0, 0, 0], [1, 0, 2]], [[0, 0, 0], [1, 0, 2.001]]), "A moved point is a change.");
 assert.ok(!sameLinePoints([[0, 0, 0]], [[0, 0, 0], [1, 0, 2]]), "An added point is a change.");
 assert.ok(!sameLinePoints([{ x: 1, y: 2 }], [[1, 2]]), "A vector replaced by a tuple is a change.");
+
+// A click on the 2D plan changes the selection, not the walls, openings or room fills. Those
+// parts are memoized and get stable handlers, so only the ones whose look changed re-render.
+const wallSegments2D = readFileSync(join(rendererRoot, "canonical-floor-plan/CanonicalWallSegments2D.tsx"), "utf8");
+assert.match(wallSegments2D, /const CanonicalWall2D = memo\(function CanonicalWall2D\(/);
+assert.match(wallSegments2D, /const pick = useLatestCallback\([\s\S]*?onPick=\{pick\}/);
+assert.match(canonicalStructure, /const CanonicalOpening2DSymbol = memo\(function CanonicalOpening2DSymbol\(/);
+assert.match(canonicalStructure, /const wallEditing = useStableWallGestureControls\(latestWallEditing\);/);
+assert.match(canonicalStructure, /useStableCanonicalPlan2DHandlers\(latestHandlers\);/);
+assert.match(roomRenderer2D, /const HouseRoomFloorFill2D = memo\(function HouseRoomFloorFill2D\(/);
+assert.match(planQualityHints, /export const PlanQualityHintOverlay = memo\(function PlanQualityHintOverlay\(/);
+const latestCallback = readFileSync(join(rendererRoot, "useLatestCallback.ts"), "utf8");
+assert.match(latestCallback, /useInsertionEffect\(\(\) => \{\s*latest\.current = callback;\s*\}\);/);
+assert.match(latestCallback, /useCallback\(\(\.\.\.args: Args\) => latest\.current\?\.\(\.\.\.args\) as Result, \[\]\);\s*return callback \? stable : undefined;/);
+// Proposed opening edits: one handler per controls object and floor, committing as before.
+const commits: unknown[] = [];
+const controls = {
+  enabled: true, selectedWallId: null, select: () => {}, setDragging: () => {},
+  commit: (operation: unknown, revisionId: string) => commits.push([operation, revisionId]) > 0,
+};
+const onEdit = openingGestureBindings(controls, "f1", "line", undefined, undefined).onEdit;
+assert.equal(openingGestureBindings(controls, "f1", "line", undefined, undefined).onEdit, onEdit);
+assert.notEqual(openingGestureBindings(controls, "f2", "line", undefined, undefined).onEdit, onEdit);
+assert.notEqual(openingGestureBindings({ ...controls }, "f1", "line", undefined, undefined).onEdit, onEdit);
+onEdit?.("o1", { offsetMm: 120, widthMm: 900, expectedRevisionId: "r1" } as never, "resize");
+onEdit?.("o1", { offsetMm: 80, widthMm: 900, expectedRevisionId: "r2" } as never, "move");
+assert.deepEqual(commits, [
+  [{ kind: "update_opening", floorId: "f1", openingId: "o1", changes: { offsetMm: 120, widthMm: 900 } }, "r1"],
+  [{ kind: "update_opening", floorId: "f1", openingId: "o1", changes: { offsetMm: 80 } }, "r2"],
+]);
 
 // Wall bodies build their shapes with the bands, and keep them per cut-away set.
 const wallBands = readFileSync(

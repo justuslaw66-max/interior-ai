@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import { StableLine as Line } from "@/components/editor/renderers/StableLine";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
@@ -7,7 +9,8 @@ export interface PlanQualityHintOverlayProps {
   issues: FloorPlanQualityIssue[];
 }
 
-export function PlanQualityHintOverlay({
+/** Memoized: its rooms and issues change far less often than the page re-renders. */
+export const PlanQualityHintOverlay = memo(function PlanQualityHintOverlay({
   rooms,
   issues,
 }: PlanQualityHintOverlayProps) {
@@ -59,4 +62,4 @@ export function PlanQualityHintOverlay({
       })}
     </group>
   );
-}
+});

@@ -161,7 +161,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 410,
+      "lines": 407,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1220,
+      "lines": 1209,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -1665,11 +1665,11 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 232
+        "maximum": 231
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 18
+        "maximum": 17
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {

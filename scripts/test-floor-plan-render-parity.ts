@@ -796,7 +796,12 @@ assert.match(
 );
 assert.match(
   structureLayer,
-  /canonicalPlan\s*\? plan\.scene\.fixedElements\.filter\(\(element\) => !element\.canonicalKind\)/,
+  /useRoomRendererPlanOverlays\(state\.plan\.scene, state\.plan\.rooms, Boolean\(canonicalPlan\)\)/,
+  "Canonical structures must not also render as legacy rectangular reference zones."
+);
+assert.match(
+  read("lib/useRoomRendererPlanOverlays.ts"),
+  /hideCanonicalFixedElements\s*\? fixedElements\.filter\(\(element\) => !element\.canonicalKind\)/,
   "Canonical structures must not also render as legacy rectangular reference zones."
 );
 assert.match(renderer2d, /showOpenings && !canonicalStructureExpected/);
