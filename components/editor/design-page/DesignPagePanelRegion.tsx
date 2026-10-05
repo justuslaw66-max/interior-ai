@@ -17,7 +17,7 @@ import {
 } from "@/components/editor/design-page/SelectedItemPanel";
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
-import { planStepFooter } from "@/components/editor/design-page/PlanDisplaySection";
+import { stepPanelFooters } from "@/components/editor/design-page/StepPanelFooters";
 
 export type DesignPagePanelRegionState = {
   shopping: ShopStepProps | null;
@@ -40,7 +40,7 @@ export type DesignPagePanelRegionProps = {
   state: DesignPagePanelRegionState;
   configuration: DesignPagePanelRegionConfiguration;
   actions: DesignPagePanelRegionActions;
-  /** The plan display (Pro) or the plan's notes (Free), at the foot of Plan's panel (UX 4e, SX4). */
+  /** The step panel's sections: the plan display (Pro) or notes (Free) in Plan, layout versions (Pro) in Furnish. */
   planTools?: PresentExportDialogProps | null;
 };
 
@@ -112,7 +112,7 @@ export function DesignPagePanelRegion({
       ) : null}
       {state.selectedItem ? <SelectedItemPanel {...state.selectedItem} /> : null}
       {state.controls ? (
-        <DesignControlsPanelAdapter {...state.controls} stepFooter={planStepFooter(state.controls.configuration.panelMode, planTools)} />
+        <DesignControlsPanelAdapter {...state.controls} {...stepPanelFooters(state.controls.configuration.panelMode, planTools)} />
       ) : null}
 
       {isClientPreview ? (

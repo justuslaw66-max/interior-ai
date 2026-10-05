@@ -161,7 +161,7 @@ export function registerWorkspaceTests() {
   test("layout versions save, restore, and delete the active room", async ({ page }) => {
     test.setTimeout(45_000);
 
-    // Layout versions are Pro's (UX audit SX4, phase 4e; J's Q5).
+    // Layout versions are Pro's (UX audit SX4, phase 4e; J's Q5), above Furnish's own foot.
     await page.route("**/api/me", (route) =>
       route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "pro", source: "playwright" }) })
     );
@@ -170,12 +170,16 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20_000 });
-    await selectWorkspace(page, "export");
-    await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(page.getByTestId("layout-versions-panel")).toHaveCount(0);
+    await selectWorkspace(page, "furnish");
 
     await expect(page.getByTestId("layout-versions-panel")).toBeVisible({ timeout: 10_000 });
+    expect(
+      await page.getByTestId("layout-versions-panel").evaluate((section) => {
+        const foot = document.querySelector('[data-testid="furnish-footer"]');
+        return Boolean(foot && section.compareDocumentPosition(foot) & Node.DOCUMENT_POSITION_FOLLOWING);
+      })
+    ).toBe(true);
     const versionName = "E2E active room layout";
     const versionList = page.getByTestId("layout-version-list");
     const comparison = page.getByTestId("layout-version-comparison");

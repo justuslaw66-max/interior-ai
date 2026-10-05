@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LayoutVersionsSection } from "../components/editor/design-page/LayoutVersionsSection";
 import { PlanDisplaySection, PlanNotesSection, planStepFooter, type PlanDisplaySectionProps } from "../components/editor/design-page/PlanDisplaySection";
 import type { PresentExportDialogProps } from "../components/editor/design-page/PresentExportDialog";
+import { furnishStepFooter, stepPanelFooters } from "../components/editor/design-page/StepPanelFooters";
 import { createLayoutVersion } from "../lib/layout-versions";
 import type { RoomSnapshot } from "../lib/room-types";
 
@@ -73,13 +74,29 @@ for (const pro of [true, false]) {
   assert.equal(planStepFooter("furnish", tools(pro, "2d")), null, "Only in Plan.");
 }
 assert.equal(planStepFooter("plan", null), null);
+
+// In Furnish, Pro's layout versions sit above Furnish's own foot (J, 5 Oct), in 2D and 3D alike.
+for (const viewMode of ["2d", "3d"] as const) {
+  const furnishFooter = furnishStepFooter("furnish", tools(true, viewMode));
+  assert.ok(furnishFooter && furnishFooter.type === LayoutVersionsSection, "Pro has layout versions in Furnish.");
+  assert.equal(furnishStepFooter("furnish", tools(false, viewMode)), null, "Layout versions are Pro's.");
+  assert.equal(furnishStepFooter("plan", tools(true, viewMode)), null, "Only in Furnish.");
+}
+assert.equal(furnishStepFooter("furnish", null), null);
+const planFooters = stepPanelFooters("plan", tools(true, "2d"));
+assert.ok(planFooters.stepFooter && planFooters.furnishFooter === null);
+const furnishFooters = stepPanelFooters("furnish", tools(true, "2d"));
+assert.ok(furnishFooters.stepFooter === null && furnishFooters.furnishFooter);
 assert.match(
   read("components/editor/design-page/DesignPagePanelRegion.tsx"),
-  /<DesignControlsPanelAdapter \{\.\.\.state\.controls\} stepFooter=\{planStepFooter\(state\.controls\.configuration\.panelMode, planTools\)\} \/>/
+  /<DesignControlsPanelAdapter \{\.\.\.state\.controls\} \{\.\.\.stepPanelFooters\(state\.controls\.configuration\.panelMode, planTools\)\} \/>/
 );
 assert.match(read("components/editor/design-page/DesignPageWorkspace.tsx"), /<DesignPagePanelRegion \{\.\.\.panelRegionModel\} planTools=\{presentExportDialog\} \/>/);
-assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+\};/);
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
+assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+furnishFooter,\s+\};/);
+const controlsPanel = read("components/editor/DesignControlsPanel.tsx");
+assert.match(controlsPanel, /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
+assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
+assert.match(read("components/editor/DesignControlsFurnishPanel.tsx"), /<FurnishImportedModels[\s\S]*?\/>\n\s+\{props\.footer\}\n\s+<FurnishFooter/, "Above Furnish's own foot.");
 
 // Layout versions: save, compare, restore and delete, as their own section.
 const room: RoomSnapshot = {
@@ -109,10 +126,9 @@ assert.match(listed, /data-testid="layout-version-comparison"[\s\S]*Saved[\s\S]*
 assert.match(listed, new RegExp(`data-testid="layout-version-delete-${version.id}" aria-label="Delete Before TV wall"`));
 assert.match(listed, /Manual · /);
 
-// Present & export: no plan display, no lighting presets, no export style; layout versions for Pro.
+// Present & export: no plan display, no lighting presets, no export style, no layout versions.
 const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
-assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect/);
-assert.match(presentExport, /\{canUseAdvancedPlanControls \? \(\s+<LayoutVersionsSection/);
+assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect|LayoutVersionsSection/);
 assert.match(presentExport, /data-testid="presentation-lighting-status"/);
 assert.equal(existsSync(join(root, "components/LightingPresetsUI.tsx")), false, "Lighting has one home: the Lighting drawer.");
 assert.doesNotMatch(read("components/editor/design-page/LightingSettingsControls.tsx"), /lighting-quality-select|Presentation quality|onPerformanceModeChange/);

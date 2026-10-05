@@ -277,12 +277,12 @@ export type DesignControlsPanelProps = {
     id: string,
     metrics: DesignPageOpeningMetricsPatch
   ) => void;
-  /** Pro's sections at the foot of the step (UX 4e): the plan display in Plan. */
-  stepFooter?: ReactNode;
+  /** Sections the region adds: at the foot of the step (Pro's plan display), and above Furnish's own foot. */
+  stepFooter?: ReactNode; furnishFooter?: ReactNode;
 };
 
 export default function DesignControlsPanel({
-  dark, floorPlanLifecycleIdentity, stepFooter,
+  dark, floorPlanLifecycleIdentity, stepFooter, furnishFooter,
   isClientPreview,
   isDesigner,
   canEdit,
@@ -694,7 +694,7 @@ export default function DesignControlsPanel({
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
             dark={dark}
-            canEdit={canEdit} isDesigner={isDesigner}
+            canEdit={canEdit} isDesigner={isDesigner} footer={furnishFooter}
             {...{ aiDesignEnabled, onGoAiDesign, activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}

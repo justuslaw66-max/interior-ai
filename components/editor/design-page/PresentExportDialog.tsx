@@ -3,7 +3,6 @@
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import { Button } from "@/components/ui/Button";
-import { LayoutVersionsSection } from "@/components/editor/design-page/LayoutVersionsSection";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
 import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-types";
@@ -78,16 +77,12 @@ export type PresentExportDialogProps = {
 
 export function PresentExportDialog({ configuration, state, actions }: PresentExportDialogProps) {
   const showDesignerTheme = configuration.designerTheme;
-  const canUseAdvancedPlanControls =
-    configuration.canUseAdvancedPlanControls;
   const canUseAdvancedExportStyles =
     configuration.canUseAdvancedExportStyles;
   const {
     rooms,
     currentRoomId,
     viewMode,
-    activeRoom,
-    layoutVersionNameInput,
     sharingDesign,
     designId,
     shareToken,
@@ -184,16 +179,6 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 Focus
               </button>
             </div>
-              {canUseAdvancedPlanControls ? (
-                <LayoutVersionsSection
-                  activeRoom={activeRoom}
-                  nameInput={layoutVersionNameInput}
-                  onNameChange={actions.onLayoutVersionNameChange}
-                  onSave={actions.onSaveLayoutVersion}
-                  onRestore={actions.onRestoreLayoutVersion}
-                  onDelete={actions.onDeleteLayoutVersion}
-                />
-              ) : null}
             </div>
           </div>
 
