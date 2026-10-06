@@ -49,7 +49,6 @@ export function useDesignPagePresentationBackupRegistrationFacade({
         exportStylePreset:
           planViewport.state.plan.exportStylePreset,
         sceneReady: documentSelection.boundaries.sceneRoomRead.state.scene.sceneReady,
-        cameraView: planViewport.state.camera.cameraView,
         clientPreview: base.state.access.clientPreview,
       },
     },
@@ -68,6 +67,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       controls: planViewport.refs.camera.controls,
       renderer: planViewport.refs.camera.renderer,
       scene: planViewport.refs.camera.scene,
+      cameraView: planViewport.refs.camera.cameraView,
       designSnapshot: snapshotDocument.refs.designSnapshotRef,
     },
   });

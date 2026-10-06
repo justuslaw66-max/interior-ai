@@ -126,7 +126,7 @@ assert.match(
 );
 assert.match(
   selectedSurfaceInspectorSource,
-  /data-testid=\{[\s\S]*?state\.target === "wall"[\s\S]*?"selection-inspector-wall-apply-all"[\s\S]*?\{state\.target === "wall" \? "Apply to all walls" : "Apply all"\}/,
+  /data-testid=\{[\s\S]*?wall[\s\S]*?"selection-inspector-wall-apply-all"[\s\S]*?\{state\.target === "wall" \? "Apply to all walls" : target === "ceiling" \? "Apply to all ceilings" : "Apply to all floors"\}/,
   "The selected-wall inspector should expose an explicit Apply to all walls action."
 );
 for (const testId of [

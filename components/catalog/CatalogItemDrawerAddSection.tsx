@@ -1,6 +1,11 @@
 "use client";
 
+import { Heart } from "lucide-react";
+import { favouriteLabel } from "./CatalogCard";
+
 type AddHandler = (id: string, variantId?: string, purchaseOptionId?: string) => void;
+
+export type CatalogItemDrawerFavourite = { title: string; isFavorite: boolean; onToggle: () => void };
 
 export type CatalogItemDrawerAddSummary = {
   finishLabel: string;
@@ -25,6 +30,7 @@ type CatalogItemDrawerAddSectionProps = {
   onChooseSpot?: AddHandler;
   onToggleCompare: (id: string) => void;
   onClose: () => void;
+  favourite?: CatalogItemDrawerFavourite;
 };
 
 const SECONDARY_CLASS =
@@ -45,20 +51,39 @@ function AddSummary({ summary, placesDirectly }: Pick<CatalogItemDrawerAddSectio
   );
 }
 
-/** The drawer's foot: what's being added, Add, then the retailer link and Compare. */
+/** The heart beside Add (UX 4g, FU3): the card's Favourites, from details too. Favourites stay in this browser. */
+function DetailFavourite({ favourite }: { favourite: CatalogItemDrawerFavourite }) {
+  return (
+    <button
+      type="button"
+      data-testid="catalog-detail-favorite-toggle"
+      aria-pressed={favourite.isFavorite}
+      aria-label={favouriteLabel(favourite.title, favourite.isFavorite)}
+      className="grid w-12 shrink-0 place-items-center rounded-xl border border-neutral-200 text-neutral-900 hover:bg-neutral-50"
+      onClick={favourite.onToggle}
+    >
+      <Heart className={favourite.isFavorite ? "h-5 w-5 fill-current text-rose-600" : "h-5 w-5"} aria-hidden="true" />
+    </button>
+  );
+}
+
+/** The drawer's foot: what's being added, Add and the heart, then the retailer link and Compare. */
 export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionProps) {
   const { productId, variantId, purchaseOptionId, summary, addQuantity, placesDirectly, onChooseSpot } = props;
   return (
     <div className="border-t border-neutral-100 bg-white px-4 pb-4 pt-3">
       <AddSummary summary={summary} placesDirectly={placesDirectly} />
-      <button
-        type="button"
-        onClick={() => props.onAdd(productId, variantId, purchaseOptionId)}
-        data-testid="catalog-detail-add-to-room"
-        className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
-      >
-        {addQuantity > 1 ? `Add set of ${addQuantity} to ${summary.roomLabel}` : `Add to ${summary.roomLabel}`}
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => props.onAdd(productId, variantId, purchaseOptionId)}
+          data-testid="catalog-detail-add-to-room"
+          className="min-w-0 flex-1 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+        >
+          {addQuantity > 1 ? `Add set of ${addQuantity} to ${summary.roomLabel}` : `Add to ${summary.roomLabel}`}
+        </button>
+        {props.favourite ? <DetailFavourite favourite={props.favourite} /> : null}
+      </div>
       {placesDirectly && onChooseSpot ? (
         <button
           type="button"

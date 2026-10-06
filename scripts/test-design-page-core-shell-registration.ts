@@ -95,7 +95,6 @@ assertSourceOrder(
     "useDesignPageViewportShellRegistration({",
     "useEditorMode(",
     "useDesignPageTransientFeedback({",
-    "const seatingZoneAutoDisabledRef",
     "useDesignPageWorkspacePaywallRegistration({",
     "useDesignPageEditorClientLifecycle({",
     "useDesignPageSnapshotDocumentState()",

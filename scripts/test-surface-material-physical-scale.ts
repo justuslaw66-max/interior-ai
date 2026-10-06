@@ -168,13 +168,18 @@ assert.equal(getSurfacePhysicalSourceKey(null), "");
 const physicalMaterials = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
   (material) => getSurfacePhysicalImageSources(material.texture_assets).length > 0
 );
-const isAnimaFumo = (material: { surface_material: { material_id: string } }) =>
-  /^gardenia-(flooring|wall-tile)-anima-fumo-/.test(material.surface_material.material_id);
+const isAnima = (material: { surface_material: { material_id: string } }) =>
+  /^gardenia-(flooring|wall-tile)-anima-/.test(material.surface_material.material_id);
 assert.ok(
-  physicalMaterials.every((material) => material.surface_material.supplier === "florim" || isAnimaFumo(material)),
-  "only the Florim materials and Gardenia Anima Fumo declare physical-scale data"
+  physicalMaterials.every((material) => material.surface_material.supplier === "florim" || isAnima(material)),
+  "only the Florim materials and Gardenia Anima declare physical-scale data"
 );
-assert.equal(physicalMaterials.filter(isAnimaFumo).length, 8, "Anima Fumo: four sizes, floor and wall");
+assert.equal(
+  physicalMaterials.filter(isAnima).length,
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter(isAnima).length,
+  "every Anima entry is on real faces"
+);
+assert.equal(physicalMaterials.filter(isAnima).length, 38, "Anima: six colours, 19 floor and 19 wall entries");
 for (const material of physicalMaterials) {
   const id = material.surface_material.material_id;
   const sources = getSurfacePhysicalImageSources(material.texture_assets);
@@ -220,39 +225,87 @@ assert.deepEqual(
   ]
 );
 
-// Anima Fumo is the first Gardenia product on real faces: one card, four sizes, and each size has
-// its own whole-tile pictures instead of one 60x60 preview stretched over all of them.
-const animaFumoFloor = physicalMaterials.filter(
-  (material) => isAnimaFumo(material) && material.surface_material.surface_category === "flooring"
+// Gardenia Anima is on real faces: one card per colour with its sizes, and each size has its own
+// whole-tile pictures instead of one 60x60 preview stretched over all of them.
+for (const category of ["flooring", "wall_tile"]) {
+  const animaGroups = buildSurfaceMaterialProductGroups(
+    physicalMaterials.filter(
+      (material) => isAnima(material) && material.surface_material.surface_category === category
+    ) as never
+  );
+  assert.deepEqual(
+    animaGroups.map((group) => [
+      getSurfaceMaterialProductDisplayName(group.primary),
+      getSurfaceMaterialGroupSizeLabels(group),
+    ]),
+    [
+      ["Anima Beige", ["120x120", "60x120", "80x80", "60x60"]],
+      ["Anima Fango", ["60x120", "60x60"]],
+      ["Anima Fumo", ["120x120", "60x120", "80x80", "60x60"]],
+      ["Anima Ghiaia Beige", ["60x120", "60x60"]],
+      ["Anima Ghiaia Grigio", ["60x120", "60x60"]],
+      ["Anima Grigio", ["120x280 Nat", "120x120", "60x120", "80x80", "60x60"]],
+    ],
+    `Anima ${category} cards`
+  );
+}
+const animaFloor = physicalMaterials.filter(
+  (material) => isAnima(material) && material.surface_material.surface_category === "flooring"
 );
-const animaFumoGroups = buildSurfaceMaterialProductGroups(animaFumoFloor as never);
-assert.deepEqual(
-  animaFumoGroups.map((group) => [
-    getSurfaceMaterialProductDisplayName(group.primary),
-    getSurfaceMaterialGroupSizeLabels(group),
-  ]),
-  [["Anima Fumo", ["120x120", "60x120", "80x80", "60x60"]]]
-);
-assert.deepEqual(
-  animaFumoFloor
+const animaColour = (material: { surface_material: { material_id: string } }) =>
+  /-anima-([a-z-]+?)-\d{7}-/.exec(material.surface_material.material_id)?.[1] ?? "?";
+const faceRows = (materials: typeof animaFloor) =>
+  materials
     .map((material) => [
+      animaColour(material),
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
       material.texture_assets.faces?.length,
       `${material.texture_assets.faces?.[0]?.width_mm}x${material.texture_assets.faces?.[0]?.height_mm}`,
     ])
-    .sort(),
+    .sort();
+const fourSizes = (colour: string) => [
+  [colour, "1200x1200", 7, "1200x1200"],
+  [colour, "1200x600", 14, "600x1200"],
+  [colour, "600x600", 14, "600x600"],
+  [colour, "800x800", 7, "800x800"],
+];
+assert.deepEqual(
+  faceRows(animaFloor),
   [
-    ["1200x1200", 7, "1200x1200"],
-    ["1200x600", 14, "600x1200"],
-    ["600x600", 14, "600x600"],
-    ["800x800", 7, "800x800"],
-  ]
+    ...fourSizes("beige"),
+    ["fango", "1200x600", 14, "600x1200"],
+    ["fango", "600x600", 14, "600x600"],
+    ...fourSizes("fumo"),
+    ["ghiaia-beige", "1200x600", 4, "600x1200"],
+    ["ghiaia-beige", "600x600", 8, "600x600"],
+    ["ghiaia-grigio", "1200x600", 4, "600x1200"],
+    ["ghiaia-grigio", "600x600", 8, "600x600"],
+    ...fourSizes("grigio").slice(0, 2),
+    ["grigio", "2800x1200", 4, "1200x2800"],
+    ...fourSizes("grigio").slice(2),
+  ].sort()
 );
 assert.equal(
-  new Set(animaFumoFloor.map((material) => material.texture_assets.base_color_url)).size,
-  4,
-  "no two Anima Fumo sizes share a picture"
+  new Set(animaFloor.map((material) => material.texture_assets.base_color_url)).size,
+  animaFloor.length,
+  "no two Anima floor entries share a picture"
 );
+// The wall entries use the same faces as the floor entry of the same item, and the two
+// wall-only codes (0007195, 0007196) are the same tiles as 0006049 and 0006050.
+const animaById = new Map(
+  physicalMaterials.filter(isAnima).map((material) => [material.surface_material.material_id, material])
+);
+const faceUrls = (id: string) => animaById.get(id)?.texture_assets.faces?.map((face) => face.url);
+for (const material of animaById.values()) {
+  const id = material.surface_material.material_id;
+  if (material.surface_material.surface_category !== "wall_tile") continue;
+  const floorId = id
+    .replace("-wall-tile-", "-flooring-")
+    .replace("-0007195-60x120-196229-", "-0006049-60x120-196218-")
+    .replace("-0007196-60x120-196230-", "-0006050-60x120-196219-");
+  assert.ok(faceUrls(floorId), `${id} has a floor counterpart ${floorId}`);
+  assert.deepEqual(faceUrls(id), faceUrls(floorId), `${id} uses the floor entry's faces`);
+}
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
 const baseTuple = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.find((tuple) => tuple.length === 31);

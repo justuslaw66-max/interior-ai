@@ -224,7 +224,8 @@ const roomAreaReadouts: Array<[string, RegExp]> = [
   ["lib/floor-plan-quality.ts", /Number\(getPlanRoomFloorAreaSqm\(room\)\.toFixed\(2\)\)/],
   ["components/editor/renderers/RoomRenderer2D.tsx",
     /\{formatDisplayArea\(getPlanRoomFloorAreaSqm\(room\), measurementUnit\)\}/],
-  ["app/share/[shareToken]/(presentation)/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+  // The share page's rooms come from its model since UX 4e (SX7).
+  ["lib/public-share-page-model.ts", /areaLabel: `\$\{Math\.round\(getRoomSnapshotFloorAreaSqm\(room\)\)\} m²`,/],
   ["app/share/[shareToken]/export/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["app/share/[shareToken]/export/pdf/route.ts", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["lib/floor-plan-types.ts", /areaSqm: getRoomSnapshotFloorAreaSqm\(room\),/],

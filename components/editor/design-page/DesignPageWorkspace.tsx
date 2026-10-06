@@ -311,7 +311,6 @@ export function DesignPageWorkspace() {
       boundaries: {
         coreShell: coreShellRegistration,
         documentSelection: documentSelectionRegistration,
-        editorInteraction: editorInteractionRegistration,
         persistence: persistenceWorkspaceRegistration,
         placement: placementWorkspaceRegistration,
       },
@@ -486,7 +485,7 @@ export function DesignPageWorkspace() {
           </div>
         ) : null}
       </div>
-      <DesignPagePanelRegion {...panelRegionModel} />
+      <DesignPagePanelRegion {...panelRegionModel} planTools={presentExportDialog} />
       <DesignPageDialogLayer {...dialogLayerModel} />
       <LocalBackupRecoveryDialog
         state={presentationBackupRegistration.state.localBackupRecovery}

@@ -156,7 +156,6 @@ assertSourceOrder(
     "useDesignPageViewportShellRegistration({",
     "useEditorMode(",
     "useDesignPageTransientFeedback({",
-    "const seatingZoneAutoDisabledRef",
     "useDesignPageWorkspacePaywallRegistration({",
     "useDesignPageEditorClientLifecycle({",
     "useDesignPageSnapshotDocumentState()",
@@ -244,7 +243,7 @@ assertSourceOrder(
 assertSourceOrder(
   clientLifecycleSource,
   [
-    '"seating_zone_auto_disabled"',
+    'localStorage.getItem("placement_add_mode")',
     'localStorage.setItem("placement_add_mode"',
     "preloadCoreAssets()",
     'if (state.editorMode === "present")',
@@ -450,13 +449,21 @@ for (const expected of [
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
   "mapPlanOpeningsToRoomRenderer(",
-  "mapPlanFixedElementsToRoomRenderer(",
-  "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
+  "useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan))",
 ] as const) {
   assert.ok(
     structureSource.includes(expected),
     `Structure layer should own ${expected}.`
   );
+}
+// The structure layer's 2D overlays, memoized so a page re-render keeps them.
+const planOverlaysSource = readSource("lib/useRoomRendererPlanOverlays.ts");
+for (const expected of [
+  "mapPlanOpeningsToRoomRenderer(openings, rooms), [openings, rooms]",
+  "mapPlanFixedElementsToRoomRenderer(",
+  "mapPlanAnnotationsToRoomRenderer(annotations), [annotations]",
+] as const) {
+  assert.ok(planOverlaysSource.includes(expected), `The plan overlays hook should own ${expected}.`);
 }
 
 assert.match(
@@ -650,7 +657,7 @@ for (const expected of [
   "raycast={() => null}",
   "<DesignerGrid",
   "<CirculationHeatmapOverlay",
-  'if (zone.source === "auto" && !showingPlacementZones) return null;',
+  'if ((zone.source === "auto" || !configuration.zoneOutlinesAlways) && !showingPlacementZones) return null;',
   "!supportSurface && zones.compatibleIds.has(zone.id)",
   'helperLabel={compatible ? `Tap to place in ${label}` : undefined}',
   "actions.targetPendingPlacementToRoom(",

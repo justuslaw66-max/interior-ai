@@ -1,9 +1,10 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { ProductCategory } from "@/lib/catalog-schema";
-import {
-  buildHouseRoomConnectionChecklist,
-  type HousePlanRoom2D,
-} from "@/lib/design-page-house-plan";
+import { getFurnitureWallInset } from "@/lib/design-page-geometry";
+import { AGAINST_WALL_TOLERANCE_METERS } from "@/lib/template-furnishing-layout";
+import { narrowRoomIssues } from "@/lib/floor-plan-narrow-rooms";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { buildHouseRoomConnectionChecklist } from "@/lib/room-connection-checklist";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { buildOpeningHostQualityIssues, openingHostRoomId } from "@/lib/floor-plan-opening-quality";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
@@ -171,13 +172,13 @@ function wallIsExterior(room: HousePlanRoom2D, wall: RoomOpening2D["wall"], room
   });
 }
 
-function roomWindows(room: HousePlanRoom2D, openings: RoomOpening2D[], rooms: HousePlanRoom2D[]) {
-  return openings.filter(
-    (opening) =>
-      opening.kind === "window" &&
-      openingHostRoomId(opening, rooms) === room.id &&
-      wallIsExterior(room, opening.wall, rooms)
-  );
+/** Each window with its host room, resolved once per report: resolving a host costs about 0.3 ms on "h1". */
+type HostedWindow = { opening: RoomOpening2D; hostRoomId: string | null };
+
+function roomWindows(room: HousePlanRoom2D, windows: HostedWindow[], rooms: HousePlanRoom2D[]) {
+  return windows
+    .filter(({ opening, hostRoomId }) => hostRoomId === room.id && wallIsExterior(room, opening.wall, rooms))
+    .map(({ opening }) => opening);
 }
 
 function preferredExteriorWall(room: HousePlanRoom2D, rooms: HousePlanRoom2D[]): RoomOpening2D["wall"] | undefined {
@@ -302,12 +303,9 @@ export function buildFloorPlanQualityReport({
   const issues = buildOpeningHostQualityIssues(openings, rooms);
   const strengths: string[] = [];
   const roomsNeedingLight = rooms.filter(isRoomNeedingLight);
-  const roomsWithExteriorLight = roomsNeedingLight.filter(
-    (room) => roomWindows(room, openings, rooms).length > 0
-  );
-  const roomsMissingLight = roomsNeedingLight.filter(
-    (room) => roomWindows(room, openings, rooms).length === 0
-  );
+  const windows = openings.filter(({ kind }) => kind === "window").map((opening) => ({ opening, hostRoomId: openingHostRoomId(opening, rooms) }));
+  const roomsWithExteriorLight = roomsNeedingLight.filter((room) => roomWindows(room, windows, rooms).length > 0);
+  const roomsMissingLight = roomsNeedingLight.filter((room) => roomWindows(room, windows, rooms).length === 0);
   for (const room of roomsMissingLight) {
     addIssue(issues, {
       id: `missing-window-${room.id}`,
@@ -343,7 +341,7 @@ export function buildFloorPlanQualityReport({
         openingKind: "door",
       },
       title: `${connection.roomNames[0]} and ${connection.roomNames[1]} need a door`,
-      detail: "Adjacent rooms should have a door between them so the plan feels walkable.",
+      detail: "A room no door reaches yet. One door here reaches it.",
       suggestedFix: `Add a door between ${connection.roomNames[0]} and ${connection.roomNames[1]}.`,
       action: "add_doorway",
     });
@@ -377,22 +375,7 @@ export function buildFloorPlanQualityReport({
     });
   }
 
-  for (const room of rooms) {
-    const minDimension = Math.min(room.w, room.d);
-    if (minDimension < 2.15) {
-      addIssue(issues, {
-        id: `narrow-room-${room.id}`,
-        category: "accessibility",
-        severity: "review",
-        roomId: room.id,
-        target: { roomId: room.id },
-        title: `${room.name} is narrow`,
-        detail: "Very narrow rooms can feel hard to move through once furniture is added.",
-        suggestedFix: `Give ${room.name} more breathing room or keep furniture light.`,
-        action: "review_furniture_fit",
-      });
-    }
-  }
+  narrowRoomIssues(rooms).forEach((issue) => addIssue(issues, issue));
 
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0] ?? null;
   const activeRoomItems = activeRoom
@@ -426,7 +409,7 @@ export function buildFloorPlanQualityReport({
           suggestedFix: "Move or resize the item so the main path stays clear.",
           action: "review_furniture_fit",
         });
-      } else if (roomGap < 0.35) {
+      } else if (roomGap < 0.35 && roomGap > getFurnitureWallInset(activeRoom.wallThickness ?? 0) + AGAINST_WALL_TOLERANCE_METERS) {
         tightItemCount += 1;
       }
 
@@ -504,7 +487,7 @@ export function buildFloorPlanQualityReport({
     disconnectedGroups.length === 0 &&
     rooms.length > 1
   ) {
-    strengths.push("Adjacent rooms are linked.");
+    strengths.push("Every room can be reached through a door.");
   }
   if (!supportMissing && rooms.length > 1) strengths.push("Support space is represented.");
   if (itemBounds.length > 0 && overlapCount === 0) strengths.push("Placed furniture has a workable footprint.");
@@ -583,7 +566,7 @@ export function buildFloorPlanQualityReport({
       },
       roomGraph: {
         nodes: rooms.map((room) => {
-          const exteriorWindows = roomWindows(room, openings, rooms);
+          const exteriorWindows = roomWindows(room, windows, rooms);
           return {
             id: room.id,
             name: room.name,
@@ -596,7 +579,7 @@ export function buildFloorPlanQualityReport({
         edges: connectionChecklist
           .filter(
             (connection) =>
-              (connection.status === "connected" || connection.status === "needs_doorway") &&
+              connection.status !== "detached" && connection.status !== "disconnected_group" &&
               connection.roomIds.length >= 2
           )
           .map((connection) => ({

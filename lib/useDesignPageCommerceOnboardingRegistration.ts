@@ -3,7 +3,6 @@
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import { useDesignPageCommerceActions } from "@/lib/useDesignPageCommerceActions";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
-import type { DesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
 import { useDesignPageOnboardingRegistrationFacade } from "@/lib/useDesignPageOnboardingRegistrationFacade";
 import type { DesignPagePersistenceWorkspaceRegistration } from "@/lib/useDesignPagePersistenceWorkspaceRegistration";
 import type { DesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
@@ -12,7 +11,6 @@ export type UseDesignPageCommerceOnboardingRegistrationInput = {
   boundaries: {
     coreShell: DesignPageCoreShellRegistration;
     documentSelection: DesignPageDocumentSelectionRegistrationFacade;
-    editorInteraction: DesignPageEditorInteractionRegistration;
     persistence: DesignPagePersistenceWorkspaceRegistration;
     placement: DesignPagePlacementWorkspaceRegistration;
   };
@@ -23,7 +21,6 @@ export function useDesignPageCommerceOnboardingRegistration({
   boundaries: {
     coreShell,
     documentSelection,
-    editorInteraction,
     persistence,
     placement,
   },
@@ -74,8 +71,6 @@ export function useDesignPageCommerceOnboardingRegistration({
       viewportSize: viewportShell.state.diagnostics.viewportSize,
     },
     actions: {
-      autoCreateSeatingZone:
-        editorInteraction.boundaries.zone.actions.autoCreateSeatingZone,
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
       showConstraintsForMoment:
         coreShell.actions.feedback.showConstraintsForMoment,

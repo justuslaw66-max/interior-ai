@@ -144,7 +144,6 @@ export function useDesignPageCoreShellRegistration({
     },
   } = useDesignPageTransientFeedback({ isClientPreview, editorMode });
 
-  const seatingZoneAutoDisabledRef = useRef(false);
   const itemsRef = useRef<DesignItem[]>([]);
   const resetSelectionStateRef = useRef<() => void>(() => undefined);
   const localBackupPersistenceActionsRef = useRef<
@@ -209,7 +208,6 @@ export function useDesignPageCoreShellRegistration({
   } = useDesignPageEditorClientLifecycle({
     state: { placementAddMode, placementPreferencesLoaded, editorMode },
     refs: {
-      seatingZoneAutoDisabled: seatingZoneAutoDisabledRef,
       resetSelectionState: resetSelectionStateRef,
     },
     actions: {
@@ -293,7 +291,6 @@ export function useDesignPageCoreShellRegistration({
       document: { setDesignSnapshot, setLocalBackupHydrated },
     },
     refs: {
-      seatingZoneAutoDisabledRef,
       itemsRef,
       resetSelectionStateRef,
       localBackupPersistenceActionsRef,

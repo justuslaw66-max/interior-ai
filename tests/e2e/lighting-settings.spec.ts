@@ -143,7 +143,9 @@ test.describe("Lighting settings", () => {
     await expect(canvas).toHaveAttribute("data-client-hydrated", "true", {
       timeout: 30_000,
     });
+    // Quality lives in More › Scene quality alone (UX audit ED14, phase 4e).
     await openMoreMenu(page);
+    await page.getByTestId("scene-performance-quality").click();
     await page.getByTestId("editor-command-overflow-lighting").click();
     await expect(page.getByTestId("lighting-pro-controls")).toBeVisible();
 
@@ -164,7 +166,6 @@ test.describe("Lighting settings", () => {
     await page.getByTestId("lighting-latitude-input").fill("1.35");
     await page.getByTestId("lighting-longitude-input").fill("103.82");
     await page.getByTestId("lighting-fixture-master-toggle").click();
-    await page.getByTestId("lighting-quality-select").selectOption("quality");
 
     await expect
       .poll(() =>

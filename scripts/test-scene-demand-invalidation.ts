@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { SceneActiveFpsSampler } from "../lib/scene-active-fps-sampler";
+import { skipUnchangedCanvasSize } from "../components/editor/design-page/skipUnchangedCanvasSize";
 
 import {
   DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
@@ -131,4 +133,34 @@ assert.equal(sampler.degraded, true);
 sampler.reset();
 for (let frame = 0; frame <= 500; frame += 1) sampler.recordFrame(frame * 20);
 assert.equal(sampler.degraded, false, "healthy sustained rendering stays Quality");
+
+// R3F's Canvas sets its size on every render; an unchanged size must not store a
+// new size object, or every size subscriber re-renders with the page.
+type FakeSize = { width: number; height: number; top: number; left: number };
+const sizeCalls: number[][] = [];
+let canvasState: { size: FakeSize; setSize: (width: number, height: number, top?: number, left?: number) => void } = {
+  size: { width: 1440, height: 900, top: 0, left: 0 },
+  setSize: (width, height, top = 0, left = 0) => {
+    sizeCalls.push([width, height, top, left]);
+    canvasState = { ...canvasState, size: { width, height, top, left } };
+  },
+};
+const canvasStore = {
+  get setSize() { return canvasState.setSize; },
+  set: (partial: Partial<typeof canvasState>) => { canvasState = { ...canvasState, ...partial }; },
+  get: () => canvasState,
+};
+skipUnchangedCanvasSize(canvasStore as never);
+const unchangedSize = canvasState.size;
+canvasState.setSize(1440, 900, 0, 0);
+canvasState.setSize(1440, 900);
+assert.equal(canvasState.size, unchangedSize, "An unchanged size keeps the same size object.");
+canvasState.setSize(1440, 860);
+canvasState.setSize(1440, 860, 12, 0);
+assert.deepEqual(sizeCalls, [[1440, 860, 0, 0], [1440, 860, 12, 0]], "A resize or a moved canvas still goes through.");
+assert.match(
+  readFileSync("components/editor/design-page/designSceneDemandPolicy.tsx", "utf8"),
+  /export function initializeDesignSceneDemandRenderer\(state: RootState\) \{[\s\S]*?skipUnchangedCanvasSize\(state\);/,
+  "The design canvas should skip unchanged sizes from its first render on."
+);
 console.log("Auto active-frame sampling controls passed (idle, finite, slow, reset).");

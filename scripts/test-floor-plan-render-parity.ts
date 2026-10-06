@@ -20,6 +20,10 @@ import {
   isPointInPlanarRing,
 } from "@/lib/floor-plan-planar-union";
 import {
+  CANONICAL_CUTAWAY_DIRECTIONS,
+  canonicalCutawayDirectionStep,
+  canonicalCutawayStepDirection,
+  canonicalCutawayTurn,
   canonicalWallCutawayKey,
   resolveCanonicalCameraCutawayWallKeys,
 } from "@/lib/floor-plan-camera-cutaway";
@@ -582,6 +586,39 @@ assert(
   ),
   "A selected exterior wall must remain visible instead of becoming a paper-thin cutaway remnant."
 );
+// The cutaway follows whole-degree compass steps of the view: atan2(view.x, view.z),
+// wrapping at a full turn, and none when looking straight down.
+const degree = Math.PI / 180;
+const viewAt = (degrees: number) => ({ x: Math.sin(degrees * degree), z: Math.cos(degrees * degree) });
+assert.deepEqual([0, 90, 180, 270].map((degrees) => canonicalCutawayDirectionStep(viewAt(degrees))), [0, 90, 180, 270]);
+assert.equal(canonicalCutawayDirectionStep(viewAt(41.4)), 41);
+assert.equal(canonicalCutawayDirectionStep(viewAt(41.6)), 42);
+assert.equal(canonicalCutawayDirectionStep(viewAt(359.6)), 0, "Steps wrap at a full turn.");
+assert.equal(canonicalCutawayDirectionStep(viewAt(-90)), 270);
+assert.equal(canonicalCutawayDirectionStep({ x: 0.0005, z: -0.0005 }), null, "Straight down has no compass step.");
+for (const step of [0, 1, 89, 180, 359]) {
+  assert.equal(canonicalCutawayDirectionStep(canonicalCutawayStepDirection(step)), step);
+}
+// Every cut set an orbit around the bedroom can show, which the renderer builds in
+// idle time: one per compass step, nearest to the current view first, each new set
+// yielded once, and exactly the sets the resolver gives at the steps.
+const bedroomTarget = { x: 4.55, z: 1.68, width: 3.035, depth: 3.355 };
+const cutawayAtStep = (step: number) =>
+  resolveCanonicalCameraCutawayWallKeys(fourRoomModel, { x: 0, z: 0 }, bedroomTarget, {
+    viewDirection: canonicalCutawayStepDirection(step),
+  });
+const cutawaySignature = (keys: ReadonlySet<string>) => [...keys].sort().join("|");
+const turnSteps = [...canonicalCutawayTurn(fourRoomModel, bedroomTarget, new Set(), 57)];
+const turnSets = turnSteps.filter((keys): keys is ReadonlySet<string> => keys !== undefined);
+assert.equal(turnSteps.length, CANONICAL_CUTAWAY_DIRECTIONS, "The turn should try every compass step.");
+assert.equal(cutawaySignature(turnSets[0]), cutawaySignature(cutawayAtStep(57)), "The current view's set comes first.");
+assert.equal(new Set(turnSets.map(cutawaySignature)).size, turnSets.length, "Each cut set appears once.");
+const everyStep = new Set(
+  Array.from({ length: CANONICAL_CUTAWAY_DIRECTIONS }, (_, step) => cutawaySignature(cutawayAtStep(step)))
+);
+assert.ok(turnSets.length >= 2, "A full turn around the bedroom changes the cut set.");
+assert.equal(turnSets.length, everyStep.size, "The turn finds every set the compass steps give.");
+assert.ok(turnSets.every((keys) => everyStep.has(cutawaySignature(keys))));
 const bedroomExcludedWallIds = new Set(
   fourRoomFloor.walls
     .filter((wall) =>
@@ -662,18 +699,71 @@ assert.match(canonicalRenderer, /testId: "canonical-structure-2d"/);
 assert.match(canonicalRenderer, /testId: "canonical-structure-3d"/);
 assert.match(
   canonicalRenderer,
-  /<extrudeGeometry args=\{\[shape, \{ depth: heightMeters, bevelEnabled: false \}\]\}/,
+  /<extrudeGeometry args=\{\[shape, stableExtrudeOptions\(heightMeters\)\]\}/,
   "3D structural elements must extrude the same canonical polygon instead of a legacy bounding box."
 );
 assert.match(
   canonicalRenderer,
-  /buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)[\s\S]*?testId: "canonical-wall-body-3d"[\s\S]*?<extrudeGeometry/,
+  /useCanonicalWallBands\(floor, cutawayWallKeys\)[\s\S]*?testId: "canonical-wall-body-3d"[\s\S]*?<extrudeGeometry/,
   "Canonical 3D walls must extrude unioned height bands instead of independent overlapping solids."
+);
+assert.match(
+  read("components/editor/renderers/canonical-floor-plan/useCanonicalWallBands.ts"),
+  /buildCanonicalWallUnionBands\(floor, \{ excludedWallIds \}\)/,
+  "The wall bands are the canonical union bands without the cut-away walls."
 );
 assert.match(
   canonicalRenderer,
   /useCanonicalCameraCutawayWallKeys\(\s*model,\s*cutawayTarget,\s*pinnedWallIds\s*\)[\s\S]*?cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)/,
   "Canonical exterior walls should follow the camera-aware dollhouse cutaway instead of blocking the floor plan."
+);
+assert.doesNotMatch(
+  canonicalRenderer,
+  /cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)\)\s*\{\s*return \[\];|cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\)\s*\?\s*\[\]/,
+  "Cut-away walls and their openings must stay mounted: unmounting them re-created meshes and shaders on every cutaway change."
+);
+assert.equal(
+  (canonicalRenderer.match(/const cutAway = cutawayWallKeys\.has\(canonicalWallCutawayKey\(floor\.id, wall\.id\)\);/g) ?? []).length,
+  2,
+  "Walls and openings should both read whether their wall is cut away."
+);
+assert.equal(
+  (canonicalRenderer.match(/interactive=\{interactive && !cutAway\}/g) ?? []).length,
+  2,
+  "Cut-away wall surfaces and openings should take no pointer events."
+);
+assert.equal(
+  (canonicalRenderer.match(/visible=\{!cutAway\}/g) ?? []).length,
+  3,
+  "The wall hit mesh, the wall surfaces and the openings should hide while cut away."
+);
+assert.match(
+  canonicalRenderer,
+  /visible=\{!cutAway\}\s*raycast=\{cutAway \? noRaycast : meshRaycast\}/,
+  "A hidden wall hit mesh should take no pointer rays (three.js raycasts invisible objects)."
+);
+assert.doesNotMatch(
+  canonicalRenderer,
+  /raycast=\{interactive \? undefined/,
+  "R3F 9 ignores a prop that becomes undefined, so a surface or opening that becomes pickable again needs meshRaycast."
+);
+assert.match(canonicalRenderer, /const meshRaycast = Mesh\.prototype\.raycast;/);
+assert.match(
+  canonicalRenderer,
+  /usePrebuiltCanonicalWallBands\(model, cutawayTarget, pinnedWallIds, !focusRoomId\);/,
+  "The 3D walls should build the bands for an orbit's cut sets in idle time, except in a focused room."
+);
+const cutawayHook = read("components/editor/renderers/canonical-floor-plan/useCameraCutaway.ts");
+assert.doesNotMatch(cutawayHook, /\.sort\(\)\.join/, "The per-frame cutaway hook should not build signature strings.");
+assert.match(
+  cutawayHook,
+  /if \(sameKeys\(next, resolved\.keys\)\) return;/,
+  "The cutaway hook should keep its state when the cut set is unchanged."
+);
+assert.match(
+  cutawayHook,
+  /viewDirection: step === null \? viewDirection : canonicalCutawayStepDirection\(step\)[\s\S]*?const step = canonicalCutawayDirectionStep\(viewDirection\);[\s\S]*?resolved\.step === step &&/,
+  "The cutaway hook should resolve once per compass step, at the step's direction."
 );
 assert.doesNotMatch(
   canonicalRenderer,
@@ -706,7 +796,12 @@ assert.match(
 );
 assert.match(
   structureLayer,
-  /canonicalPlan\s*\? plan\.scene\.fixedElements\.filter\(\(element\) => !element\.canonicalKind\)/,
+  /useRoomRendererPlanOverlays\(state\.plan\.scene, state\.plan\.rooms, Boolean\(canonicalPlan\)\)/,
+  "Canonical structures must not also render as legacy rectangular reference zones."
+);
+assert.match(
+  read("lib/useRoomRendererPlanOverlays.ts"),
+  /hideCanonicalFixedElements\s*\? fixedElements\.filter\(\(element\) => !element\.canonicalKind\)/,
   "Canonical structures must not also render as legacy rectangular reference zones."
 );
 assert.match(renderer2d, /showOpenings && !canonicalStructureExpected/);

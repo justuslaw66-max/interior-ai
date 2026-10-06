@@ -540,8 +540,8 @@ assert.match(
 );
 assert.match(
   selectedSurfaceInspectorSource,
-  /state\.header\.draft[\s\S]{0,500}?designer-status-warning[\s\S]{0,500}?designer-status-ready/,
-  "Pro material publication statuses should use theme-first semantic status classes."
+  /\{pro \? \([\s\S]{0,200}?data-testid="surface-inspector-publish-status"[\s\S]{0,200}?header\.draft/,
+  "Pro sees material publication statuses (UX 4f, ED5); the dark theme's status classes went with the dark theme (Q3)."
 );
 assert.match(
   planPresentationSource,

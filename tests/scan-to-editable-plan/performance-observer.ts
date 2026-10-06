@@ -66,7 +66,8 @@ export async function rendererPerformance(page: Page, install = false) {
       };
     }
     const walls = new Set<string>(), openings = new Set<string>();
-    state.scene.traverse((object) => {
+    // Cut-away walls stay mounted but hidden, so count what is drawn.
+    state.scene.traverseVisible((object) => {
       if (object.userData.testId === "canonical-wall-3d") walls.add(object.userData.canonicalWallId);
       if (object.userData.testId === "canonical-opening-symbol-3d") openings.add(object.userData.canonicalOpeningId);
     });

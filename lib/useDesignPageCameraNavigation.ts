@@ -14,6 +14,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
+import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
 import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
 import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
@@ -104,7 +105,7 @@ export type DesignPageCameraNavigationActions = {
   }) => boolean;
   applyQueued2DPlanView: (attempt?: number) => void;
   prepareForPlanTemplate: () => void;
-  handleEditorViewModeChange: (next: EditorViewMode) => void;
+  handleEditorViewModeChange: (next: EditorViewMode, open3DView?: CameraView, durationMs?: number) => void;
   handleFitPlanView: () => void;
   handleFitSelectedPlanRoom: (roomId: string) => void;
   focusWholeHomeCameraPoint: (x: number, z: number, durationMs?: number) => void;
@@ -282,19 +283,9 @@ export function useDesignPageCameraNavigation({
       fov: perspectiveFov,
     };
 
-    setCameraView((previous) => {
-      const [px, py, pz] = previous.pos;
-      const [tx, ty, tz] = previous.target;
-      const changed =
-        Math.abs(px - next.pos[0]) > 0.001 ||
-        Math.abs(py - next.pos[1]) > 0.001 ||
-        Math.abs(pz - next.pos[2]) > 0.001 ||
-        Math.abs(tx - next.target[0]) > 0.001 ||
-        Math.abs(ty - next.target[1]) > 0.001 ||
-        Math.abs(tz - next.target[2]) > 0.001 ||
-        Math.abs((previous.fov ?? 45) - (next.fov ?? 45)) > 0.01;
-      return changed ? next : previous;
-    });
+    setCameraView((previous) =>
+      cameraViewChanged(previous, next) ? next : previous
+    );
   }, [cameraRef, controlsRef, setCameraView]);
 
   const preserveCameraAfterPlanOverlaySelection = useCallback(() => {
@@ -357,19 +348,14 @@ export function useDesignPageCameraNavigation({
       const start = performance.now();
 
       const tick = (timestamp: number) => {
-        if (cameraTransitionTokenRef.current !== transitionToken) {
-          isCameraAnimatingRef.current = false;
-          return;
-        }
+        if (cameraTransitionTokenRef.current !== transitionToken) return; // the newer transition owns isCameraAnimatingRef
 
         const t = Math.min(1, (timestamp - start) / durationMs);
         const eased = 1 - Math.pow(1 - t, 3);
 
         camera.position.lerpVectors(fromPos, toPos, eased);
         (controls.target as THREE.Vector3).lerpVectors(fromTarget, toTarget, eased);
-        if (isPerspective) {
-          camera.fov = fromFov + (toFov - fromFov) * eased;
-        }
+        if (isPerspective) camera.fov = fromFov + (toFov - fromFov) * eased;
         updateProjection(camera);
         controls.update();
 
@@ -557,14 +543,19 @@ export function useDesignPageCameraNavigation({
   ]);
 
   const handleEditorViewModeChange = useCallback(
-    (next: EditorViewMode) => {
+    (next: EditorViewMode, open3DView?: CameraView, durationMs = 420) => {
       if (next === "3d") {
         resetFloorPlanInteraction({ resetCalibrationDistance: false });
-        pending3DViewRef.current = hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView;
+        // Already in 3D: a queued view would only replace the camera on a later view-mode effect run.
+        if (viewMode === "3d") {
+          if (open3DView) transitionToCameraView(open3DView, durationMs);
+          return;
+        }
+        pending3DViewRef.current = open3DView ?? (hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView);
       }
       setViewMode(next);
     },
-    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView]
+    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView, transitionToCameraView, viewMode]
   );
 
   const prepareForPlanTemplate = useCallback(() => {

@@ -1,12 +1,14 @@
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { createRoom, type RoomSnapshot } from "@/lib/room-types";
+import { storeyDisplayLabel } from "@/lib/storey-labels";
 
 export type FloorCreationDirection = "upper" | "lower";
 export type FloorCreationMode = "blank" | "layout" | "walls";
 
 export type FloorOption = {
   level: number;
+  /** As shown: "Level 1", "Basement 1" or the storey's own name (UX audit ED7). */
   label: string;
   roomCount: number;
 };
@@ -61,7 +63,7 @@ export function resolveFloorOptions(rooms: RoomSnapshot[]): FloorOption[] {
     .sort((first, second) => first - second)
     .map((level) => ({
       level,
-      label: rooms.find((room) => (room.floorLevel ?? 1) === level)?.floorLabel ?? formatFloorLevel(level),
+      label: storeyDisplayLabel(rooms.find((room) => (room.floorLevel ?? 1) === level)?.floorLabel ?? formatFloorLevel(level)),
       roomCount: rooms.filter((room) => (room.floorLevel ?? 1) === level).length,
     }));
 }

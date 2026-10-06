@@ -8,6 +8,7 @@ import { START_UPLOAD_CHOICE_ID } from "../components/editor/start/UploadSignInD
 import { HOUSE_PLAN_TEMPLATES, ROOM_DIMENSION_DEFAULTS, type HousePlanTemplate } from "../lib/design-page-house-plan";
 import { shouldConfirmPlanTemplateReplacement } from "../lib/design-page-template-furnishings";
 import { createRoom, migrateToV3, type DesignSnapshot } from "../lib/room-types";
+import { SINGLE_ROOM_TEMPLATES } from "../lib/single-room-templates";
 import {
   BLANK_ROOM_TEMPLATE,
   buildStartTemplateCards,
@@ -53,7 +54,10 @@ assert.ok(blankRoom);
 assert.equal(blankRoom.roomType, "living");
 assert.equal(blankRoom.width, ROOM_DIMENSION_DEFAULTS.width);
 assert.equal(blankRoom.depth, ROOM_DIMENSION_DEFAULTS.depth);
-assert.deepEqual([BLANK_ROOM_TEMPLATE.doorways, BLANK_ROOM_TEMPLATE.windows, BLANK_ROOM_TEMPLATE.furnishingPacks], [[], [], []]);
+// It has the first visit's door and window too (UX 4g, ST9): a way in and daylight.
+assert.deepEqual(BLANK_ROOM_TEMPLATE.doorways, [{ fromRoomId: "room", wall: "east", offsetMeters: 0, widthMeters: 0.9 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.windows, [{ roomId: "room", wall: "west", offsetMeters: 0, widthMeters: 1.2 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.furnishingPacks, []);
 const base = migrateToV3({
   items: [],
   zones: [],
@@ -70,13 +74,21 @@ const cards = buildStartTemplateCards();
 assert.deepEqual(
   cards.map((card) => card.template.id),
   [
+    "one_room_living", "one_room_bedroom",
     "hdb_two_room", "studio", "one_bedroom", "living_dining", "three_room_flat", "small_condo",
     "compact_two_bed", "family_two_bed", "l_shaped_studio", "narrow_one_bed", "corner_one_bed",
     "railroad_apartment", "adu_guest_house",
   ]
 );
-assert.equal(cards.length, HOUSE_PLAN_TEMPLATES.length);
-for (const card of cards) {
+assert.equal(cards.length, HOUSE_PLAN_TEMPLATES.length + SINGLE_ROOM_TEMPLATES.length);
+// The one-room templates (UX 4g, ST8): "1 room · 20 m²", with a door, a window and a furnished pack.
+assert.deepEqual(cards.slice(0, 2).map((card) => [card.name, card.meta]), [["Living room", "1 room · 20 m²"], ["Bedroom", "1 room · 14 m²"]]);
+for (const template of SINGLE_ROOM_TEMPLATES) {
+  assert.equal(template.doorways.length, 1);
+  assert.equal(template.windows.length, 1);
+  assert.ok(template.furnishingPacks[0]?.intents.length);
+}
+for (const card of cards.slice(2)) {
   const area = Math.round(card.template.rooms.reduce((sum, room) => sum + room.width * room.depth, 0));
   const bedrooms = card.template.bedroomCount;
   const bedroomLabel = bedrooms === 0 ? "Studio" : bedrooms === 1 ? "1 bedroom" : `${bedrooms} bedrooms`;
@@ -87,11 +99,12 @@ for (const card of cards) {
 }
 const unknownTemplate: HousePlanTemplate = { ...BLANK_ROOM_TEMPLATE, id: "library_test" };
 assert.equal(buildStartTemplateCards([unknownTemplate, ...HOUSE_PLAN_TEMPLATES]).at(-1)?.template.id, "library_test");
-assert.equal(buildStartTemplateCards([unknownTemplate])[0]?.meta, "Studio · 1 room · 20 m²");
+assert.equal(buildStartTemplateCards([unknownTemplate])[0]?.meta, "1 room · 20 m²");
 const countFor = (key: (typeof START_TEMPLATE_FILTERS)[number]["key"]) =>
   cards.filter((card) => matchesStartTemplateFilter(card, key)).length;
 assert.equal(countFor("all"), cards.length);
-assert.equal(countFor(0) + countFor(1) + countFor(2), cards.length, "Every template is in one bedroom filter.");
+assert.equal(countFor("room"), 2, "The 1 room chip shows the one-room templates.");
+assert.equal(countFor("room") + countFor(0) + countFor(1) + countFor(2), cards.length, "Every template is under one chip.");
 assert.ok(cards.filter((card) => matchesStartTemplateFilter(card, 2)).every((card) => card.template.bedroomCount >= 2));
 
 // The chooser's markup.

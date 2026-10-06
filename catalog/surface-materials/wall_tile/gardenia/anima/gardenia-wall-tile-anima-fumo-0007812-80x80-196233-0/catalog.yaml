@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Anima
   material_id: gardenia-wall-tile-anima-fumo-0007812-80x80-196233-0
   product_name: Gardenia Anima Fumo 80x80
@@ -15,7 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: 7 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60007812-v102/), full-size sRGB copies from the signed-in download of 2026-10-02, reduced to 1 px per mm. Each covers one whole 800x800 mm tile."
+    - "Tile faces: 7 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fumo/pf60007812-v102/), the lighter sRGB copies from the signed-in download of 2026-10-02, stored at 0.6 px per mm; the originals are sharper, see gardenia-anima-fumo-faces.manifest.json. Each covers one whole 800x800 mm tile."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0007812/0/196233 for wall use.
     - "Configurator format: 80x80; surface destination: ENTRAMBE."

@@ -47,6 +47,7 @@ const TEMPLATE_FURNISHING_NAMES: Readonly<Record<TemplateFurnishingCategory, [st
   sideboard: ["sideboard", "sideboards"],
   ottoman: ["ottoman", "ottomans"],
   side_table: ["side table", "side tables"],
+  bed: ["bed", "beds"],
 };
 
 /** "the rug", "the rug and the floor lamp", "the sofa, the rug and the side tables". */

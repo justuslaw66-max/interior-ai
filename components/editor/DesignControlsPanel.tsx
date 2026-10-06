@@ -14,11 +14,8 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
-import type {
-  FloorPlanDrawAngleLockMode,
-  FloorPlanDrawRoomMode,
-  FloorPlanUnderlay,
-} from "@/lib/floor-plan-types";
+import type { ReactNode } from "react";
+import type { FloorPlanDrawAngleLockMode, FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import type {
   FloorPlanQualityAction,
   FloorPlanQualityIssue,
@@ -280,10 +277,12 @@ export type DesignControlsPanelProps = {
     id: string,
     metrics: DesignPageOpeningMetricsPatch
   ) => void;
+  /** Pro's sections at the foot of the step (UX 4e): the plan display in Plan. */
+  stepFooter?: ReactNode;
 };
 
 export default function DesignControlsPanel({
-  dark, floorPlanLifecycleIdentity,
+  dark, floorPlanLifecycleIdentity, stepFooter,
   isClientPreview,
   isDesigner,
   canEdit,
@@ -497,9 +496,6 @@ export default function DesignControlsPanel({
         : "Get a suggested layout, review it, then apply when it looks right.";
   if (isClientPreview) return null;
 
-  const planPanelSurfaceTarget = activeSurfaceTarget;
-  const panelClass = "space-y-3";
-
   return (
     <DesignControlsPanelFrame
       dark={dark}
@@ -513,7 +509,7 @@ export default function DesignControlsPanel({
         <SelectedObjectContextCard dark={dark} selectionContext={selectionContext} />
       )}
 
-      <div className={panelClass}>
+      <div className="space-y-3">
         {effectivePanelMode === "plan" && (
           <DesignControlsPlanPanel floorPlanLifecycleIdentity={floorPlanLifecycleIdentity}
             dark={dark}
@@ -566,7 +562,7 @@ export default function DesignControlsPanel({
             activeRoomFloorPatternOffset={activeRoomFloorPatternOffset}
             activeRoomFloorJointSizeMm={activeRoomFloorJointSizeMm}
             activeRoomFloorJointColor={activeRoomFloorJointColor}
-            activeSurfaceTarget={planPanelSurfaceTarget}
+            activeSurfaceTarget={activeSurfaceTarget}
             selectedWallFaceId={selectedWallFaceId}
             selectedWallLabel={selectedWallLabel}
             activeRoomWallSettings={activeRoomWallSettings}
@@ -729,9 +725,8 @@ export default function DesignControlsPanel({
           />
         )}
 
-        {effectivePanelMode !== "ai" && isDesigner && (
-          <ProGridSnapToggles {...{ dark, showGrid, snapEnabled, onGridToggle, onSnapToggle }} />
-        )}
+        {effectivePanelMode !== "ai" && isDesigner && <ProGridSnapToggles {...{ dark, showGrid, snapEnabled, onGridToggle, onSnapToggle }} />}
+        {stepFooter}
       </div>
     </DesignControlsPanelFrame>
   );

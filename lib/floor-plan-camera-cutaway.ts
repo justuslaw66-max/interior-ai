@@ -176,6 +176,31 @@ function isCanonicalWallBetweenCameraAndTarget(
   });
 }
 
+type CanonicalPlanBounds = { minX: number; maxX: number; minZ: number; maxZ: number };
+
+const planBoundsCache = new WeakMap<CanonicalFloorPlanRenderModel, CanonicalPlanBounds | null>();
+
+/** The plan's wall extent in metres, or null for a plan without walls. Kept per model. */
+function canonicalPlanBounds(model: CanonicalFloorPlanRenderModel): CanonicalPlanBounds | null {
+  if (planBoundsCache.has(model)) return planBoundsCache.get(model) ?? null;
+  const bounds = { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
+  for (const floor of model.floors) {
+    for (const wall of floor.walls) {
+      for (const segment of wall.centerlineSegments) {
+        for (const point of [segment.start, segment.end]) {
+          bounds.minX = Math.min(bounds.minX, point.xMm / 1000);
+          bounds.maxX = Math.max(bounds.maxX, point.xMm / 1000);
+          bounds.minZ = Math.min(bounds.minZ, point.zMm / 1000);
+          bounds.maxZ = Math.max(bounds.maxZ, point.zMm / 1000);
+        }
+      }
+    }
+  }
+  const result = Number.isFinite(bounds.minX) && Number.isFinite(bounds.minZ) ? bounds : null;
+  planBoundsCache.set(model, result);
+  return result;
+}
+
 /**
  * Resolve only true exterior walls on the camera side of the authored room
  * loop. Shared partitions stay visible so the dollhouse view remains legible.
@@ -189,35 +214,9 @@ export function resolveCanonicalCameraCutawayWallKeys(
     pinnedWallIds?: ReadonlySet<string>;
   } = {}
 ) {
-  const planPoints = model.floors.flatMap((floor) =>
-    floor.walls.flatMap((wall) =>
-      wall.centerlineSegments.flatMap((segment) => [
-        segment.start,
-        segment.end,
-      ])
-    )
-  );
-  const planBounds = planPoints.reduce(
-    (bounds, point) => ({
-      minX: Math.min(bounds.minX, point.xMm / 1000),
-      maxX: Math.max(bounds.maxX, point.xMm / 1000),
-      minZ: Math.min(bounds.minZ, point.zMm / 1000),
-      maxZ: Math.max(bounds.maxZ, point.zMm / 1000),
-    }),
-    {
-      minX: Number.POSITIVE_INFINITY,
-      maxX: Number.NEGATIVE_INFINITY,
-      minZ: Number.POSITIVE_INFINITY,
-      maxZ: Number.NEGATIVE_INFINITY,
-    }
-  );
-  const hasBounds =
-    Number.isFinite(planBounds.minX) &&
-    Number.isFinite(planBounds.maxX) &&
-    Number.isFinite(planBounds.minZ) &&
-    Number.isFinite(planBounds.maxZ);
-  const targetX = target?.x ?? (hasBounds ? (planBounds.minX + planBounds.maxX) / 2 : 0);
-  const targetZ = target?.z ?? (hasBounds ? (planBounds.minZ + planBounds.maxZ) / 2 : 0);
+  const planBounds = canonicalPlanBounds(model);
+  const targetX = target?.x ?? (planBounds ? (planBounds.minX + planBounds.maxX) / 2 : 0);
+  const targetZ = target?.z ?? (planBounds ? (planBounds.minZ + planBounds.maxZ) / 2 : 0);
   const suppliedDirectionMagnitude = Math.hypot(
     options.viewDirection?.x ?? 0,
     options.viewDirection?.z ?? 0
@@ -236,7 +235,7 @@ export function resolveCanonicalCameraCutawayWallKeys(
   const normalizedSourceZ =
     sourceMagnitude > 0.001 ? sourceDirectionZ / sourceMagnitude : 1 / Math.sqrt(2);
   const virtualCameraDistance =
-    (hasBounds
+    (planBounds
       ? Math.hypot(
           planBounds.maxX - planBounds.minX,
           planBounds.maxZ - planBounds.minZ
@@ -249,35 +248,88 @@ export function resolveCanonicalCameraCutawayWallKeys(
     z: targetZ + normalizedSourceZ * virtualCameraDistance,
   };
 
-  return new Set(
-    model.floors.flatMap((floor) =>
-      {
-        const boundaryRoles = deriveCanonicalWallBoundaryRoles(floor);
-        return floor.walls.flatMap((wall) => {
-          if (
-            options.pinnedWallIds?.has(wall.id) ||
-            boundaryRoles.get(wall.id) !== "exterior" ||
-            wall.roomSides.length !== 1 ||
-            wall.adjacentRoomIds.length !== 1
-          ) {
-            return [];
-          }
-          return isCanonicalWallFacingCamera(
-            wall,
-            stableCamera.x,
-            stableCamera.z
-          ) ||
-            (target &&
-              isCanonicalWallBetweenCameraAndTarget(
-                wall,
-                stableCamera.x,
-                stableCamera.z,
-                target
-              ))
-            ? [canonicalWallCutawayKey(floor.id, wall.id)]
-            : [];
-        });
+  // A loop, not flatMap: this runs on every frame while the camera turns.
+  const keys = new Set<string>();
+  for (const floor of model.floors) {
+    const boundaryRoles = deriveCanonicalWallBoundaryRoles(floor);
+    for (const wall of floor.walls) {
+      if (isCanonicalWallCutAway(wall, boundaryRoles, stableCamera, target, options.pinnedWallIds)) {
+        keys.add(canonicalWallCutawayKey(floor.id, wall.id));
       }
-    )
+    }
+  }
+  return keys;
+}
+
+function isCanonicalWallCutAway(
+  wall: CanonicalFloorPlanWallRenderModel,
+  boundaryRoles: ReadonlyMap<string, CanonicalWallBoundaryRole>,
+  camera: { x: number; z: number },
+  target: CanonicalCutawayTarget | null | undefined,
+  pinnedWallIds: ReadonlySet<string> | undefined
+) {
+  if (
+    pinnedWallIds?.has(wall.id) ||
+    boundaryRoles.get(wall.id) !== "exterior" ||
+    wall.roomSides.length !== 1 ||
+    wall.adjacentRoomIds.length !== 1
+  ) {
+    return false;
+  }
+  return (
+    isCanonicalWallFacingCamera(wall, camera.x, camera.z) ||
+    Boolean(target && isCanonicalWallBetweenCameraAndTarget(wall, camera.x, camera.z, target))
   );
+}
+
+/**
+ * The cutaway follows the view's compass direction in whole degrees, so an
+ * orbit meets at most this many directions and every cut set it can show can
+ * be prepared ahead (`canonicalCutawayTurn`). A degree is far below what the
+ * eye notices as a wall comes and goes.
+ */
+export const CANONICAL_CUTAWAY_DIRECTIONS = 360;
+
+/** The view direction's compass step, 0 to 359, or null when looking straight down. */
+export function canonicalCutawayDirectionStep(viewDirection: { x: number; z: number }): number | null {
+  if (Math.hypot(viewDirection.x, viewDirection.z) <= 0.001) return null;
+  const turns = Math.atan2(viewDirection.x, viewDirection.z) / (2 * Math.PI);
+  const step = Math.round(turns * CANONICAL_CUTAWAY_DIRECTIONS);
+  return ((step % CANONICAL_CUTAWAY_DIRECTIONS) + CANONICAL_CUTAWAY_DIRECTIONS) % CANONICAL_CUTAWAY_DIRECTIONS;
+}
+
+/** The unit view direction of a compass step. */
+export function canonicalCutawayStepDirection(step: number) {
+  const angle = (step * 2 * Math.PI) / CANONICAL_CUTAWAY_DIRECTIONS;
+  return { x: Math.sin(angle), z: Math.cos(angle) };
+}
+
+/**
+ * Walks every compass step around the target, nearest to `startStep` first,
+ * yielding each cut set the first time it appears and `undefined` for a step
+ * whose set was already seen, so a caller can pause between steps. These are
+ * all the sets an orbit around the target can show.
+ */
+export function* canonicalCutawayTurn(
+  model: CanonicalFloorPlanRenderModel,
+  target: CanonicalCutawayTarget | null,
+  pinnedWallIds: ReadonlySet<string>,
+  startStep: number
+): Generator<ReadonlySet<string> | undefined, void, void> {
+  const seen = new Set<string>();
+  for (let index = 0; index < CANONICAL_CUTAWAY_DIRECTIONS; index += 1) {
+    const turn = index % 2 === 0 ? index / 2 : -(index + 1) / 2;
+    const step = (startStep + turn + CANONICAL_CUTAWAY_DIRECTIONS) % CANONICAL_CUTAWAY_DIRECTIONS;
+    const keys = resolveCanonicalCameraCutawayWallKeys(model, { x: 0, z: 0 }, target, {
+      viewDirection: canonicalCutawayStepDirection(step),
+      pinnedWallIds,
+    });
+    const signature = [...keys].sort().join("|");
+    if (seen.has(signature)) {
+      yield undefined;
+      continue;
+    }
+    seen.add(signature);
+    yield keys;
+  }
 }

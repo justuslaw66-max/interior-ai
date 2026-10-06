@@ -14,6 +14,7 @@ import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import { createFloorMaterialTexture, useTransparencyRecompileRef } from "./materials";
+import { stableExtrudeOptions } from "../stableExtrudeOptions";
 import {
   buildLegacyWallBandCoreGeometry,
   buildRoomEdgeBandGeometry,
@@ -60,12 +61,7 @@ export function LegacyFloorSlabMesh({ slab }: { slab: LegacyFloorSlab3D }) {
         polygonCount: slab.polygons.length,
       }}
     >
-      <extrudeGeometry
-        args={[
-          shapes,
-          { depth: slab.thicknessMeters, bevelEnabled: false, steps: 1 },
-        ]}
-      />
+      <extrudeGeometry args={[shapes, stableExtrudeOptions(slab.thicknessMeters, 1)]} />
       <meshBasicMaterial
         attach="material-0"
         transparent
@@ -207,6 +203,7 @@ export function RoomFloorMesh({
   const floorRotation = THREE.MathUtils.degToRad(floorSettings.floorRotationDeg);
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
   const slabEdgeOffset = wallThickness / 2;
+  const roomShape = useMemo(() => buildRoomShapeGeometry(room), [room]);
   const floorBandGeometry = useMemo(
     () =>
       showEdgeBand
@@ -254,11 +251,7 @@ export function RoomFloorMesh({
     floorRotation,
   ]);
 
-  useEffect(() => {
-    return () => {
-      defaultTexture?.dispose();
-    };
-  }, [defaultTexture]);
+  useEffect(() => () => defaultTexture?.dispose(), [defaultTexture]);
 
   useEffect(() => {
     return () => {
@@ -312,7 +305,7 @@ export function RoomFloorMesh({
           onSelectTarget(floorTarget, event);
         }}
       >
-        <shapeGeometry args={[buildRoomShapeGeometry(room)]} />
+        <shapeGeometry args={[roomShape]} />
         <meshStandardMaterial
           color={surfaceTexture || defaultTexture ? "#ffffff" : material.renderColor}
           map={surfaceTexture ?? defaultTexture ?? undefined}

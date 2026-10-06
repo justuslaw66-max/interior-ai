@@ -50,6 +50,19 @@ export function registerEditingTests() {
       await page.getByTestId("plan-annotation-save").click();
       await expect(page.getByTestId("plan-annotation-dialog")).toHaveCount(0);
       await expect(noteTool).toBeFocused();
+      // The new note is selected, and that clears the room selection, so the room's toolbar goes.
+      // Free users have notes since UX 4e (J: option A), so this path runs for them too: pick the
+      // Bedroom again, as the template left it, for the toolbar steps below. (A plan of one room
+      // keeps it in focus, so the other path needs nothing.)
+      if (duplicateRoomCount === "3 rooms") {
+        const bedroomLabel = page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: "Bedroom" }).first();
+        const bedroomBox = await bedroomLabel.boundingBox();
+        if (!bedroomBox) throw new Error("The Bedroom's label is missing a bounding box");
+        await expect(async () => {
+          await page.mouse.click(bedroomBox.x + bedroomBox.width / 2, bedroomBox.y + bedroomBox.height / 2);
+          await expect(bedroomLabel).toHaveAttribute("data-active", "true", { timeout: 1000 });
+        }).toPass({ timeout: 10_000 });
+      }
     } else {
       test.info().annotations.push({
         type: "note",

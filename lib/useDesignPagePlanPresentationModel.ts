@@ -13,6 +13,7 @@ import {
   type HouseRoomConnectionChecklistItem,
 } from "@/lib/design-page-house-plan";
 import { resolveDesignPagePlanCanvasOverlaysState } from "@/lib/design-page-plan-canvas-overlays";
+import { isConnectionBlocker } from "@/lib/room-connection-checklist";
 import { resolvePhoneCanvasInsets, usePhoneSheetState } from "@/lib/phone-step-sheet";
 import { isTabletWidth, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
@@ -259,10 +260,7 @@ export function useDesignPagePlanPresentationModel({
         openingCount: exportState.openingCount,
         itemCount: exportState.itemCount,
         shoppableCount: exportState.shoppableCount,
-        hasRoomConnectionBlockers:
-          exportState.roomConnectionChecklistItems.some(
-            (item) => item.status !== "connected"
-          ),
+        hasRoomConnectionBlockers: exportState.roomConnectionChecklistItems.some(isConnectionBlocker),
         sceneReady: exportState.sceneReady,
         exportStylePreset: exportState.exportStylePreset,
       }),
@@ -322,10 +320,7 @@ export function useDesignPagePlanPresentationModel({
         presentation.floorPlanTraceOpeningPointCount,
       hasRooms: layout.housePlanRooms.length > 0,
       hasOpenings: exportState.openingCount > 0,
-      hasConnectionBlockers:
-        exportState.roomConnectionChecklistItems.some(
-          (item) => item.status !== "connected"
-        ),
+      hasConnectionBlockers: exportState.roomConnectionChecklistItems.some(isConnectionBlocker),
       hasFurniture: exportState.itemCount > 0,
     });
   }, [

@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Anima
   material_id: gardenia-flooring-anima-beige-0006056-60x60-196221-0
   product_name: Gardenia Anima Beige 60x60
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 14 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60006056-v102/), the lighter sRGB copies from the signed-in download of 2026-10-02, stored at 0.6 px per mm; the originals are sharper, see gardenia-anima-beige-faces.manifest.json. Each covers one whole 600x600 mm tile."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0006056/0/196221 for floor use.
     - "Configurator format: 60x60; surface destination: ENTRAMBE."
@@ -67,16 +68,62 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/anima/0006056.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/anima/0006056.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/anima/0006056_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/anima/0006056_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 60
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 600
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_01.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_02.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_03.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_04.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_05.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_06.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_07.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_08.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_09.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_10.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_11.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_12.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_13.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/anima/0006056_14.webp
+      width_mm: 600
+      height_mm: 600
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -103,12 +150,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

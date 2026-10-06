@@ -129,11 +129,6 @@ const TRANSACTIONS: Array<[file: string, pattern: RegExp, edit: string]> = [
   ],
   [
     "lib/useDesignPageZoneController.ts",
-    /runHistoryTransaction\("Create seating area", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);/,
-    "Create seating area",
-  ],
-  [
-    "lib/useDesignPageZoneController.ts",
     /runHistoryTransaction\("Ungroup zone", \(\) =>\s*setDesignSnapshot\(\(previous\) => updateActiveRoomZones\(previous, nextZones\)\)\s*\);/,
     "Ungroup zone",
   ],

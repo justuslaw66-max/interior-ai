@@ -37,6 +37,7 @@ import {
   FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, floorPlanUploadRequestOf, requestFloorPlanUpload,
 } from "@/lib/floor-plan-upload-request";
 import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
+import { isConnectionBlocker } from "@/lib/room-connection-checklist";
 import { FloorPlanImportArrivalNote } from "./FloorPlanImportArrivalNote";
 import { SurfaceMaterialCardActions } from "./design-controls-plan/SurfaceMaterialCardActions";
 import {
@@ -78,22 +79,21 @@ import {
 } from "./design-controls-plan/EmptyFloorPlanSurfacesActions";
 import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
 import { SurfaceMaterialCatalogBoundary } from "./design-controls-plan/SurfaceMaterialCatalogBoundary";
+import { SurfaceBrowserHeader } from "./design-controls-plan/SurfaceBrowserHeader";
+import { RoomSurfaceRows, openRoomSurfaceTarget, roomSurfaceRowsOf, type RoomSurfaceTarget } from "./design-controls-plan/RoomSurfaceRows";
 import {
   SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   SURFACE_MATERIAL_VISIBLE_INCREMENT,
   WALL_PAINT_INITIAL_VISIBLE_COUNT,
-  buildFacetOptions,
   buildSurfaceMaterialProductGroups,
   getFloorMaterialSwatchStyle,
   getSurfaceMaterialCollectionLabel,
-  getSurfaceMaterialColorLabel,
-  getSurfaceMaterialEffectLabel,
   getSurfaceMaterialGroupMetaLabel,
   getSurfaceMaterialGroupSizeLabels,
   getSurfaceMaterialPrimaryId,
   getSurfaceMaterialProductDisplayName,
+  getSurfaceMaterialModelName,
   getSurfaceMaterialSampleUrl,
-  getSurfaceMaterialSizeLabel,
   getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
@@ -105,6 +105,12 @@ import {
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
 import { buildSurfaceSummaryRows, getActiveSurfaceRoomFloorAreaSqm } from "./design-controls-plan/surfaceSummaryRows";
+import {
+  buildSurfaceFilterOptions,
+  filterSurfaceMaterialGroups,
+  hasActiveSurfaceFilters,
+  withSurfaceFilter,
+} from "./design-controls-plan/surfaceMaterialFilters";
 import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
@@ -574,9 +580,7 @@ export default function DesignControlsPlanPanel({
       Boolean(floorPlanUnderlay) ||
       floorPlanTraceRoomMode ||
       floorPlanTraceRoomPointCount > 0);
-  const connectionBlockerCount = roomConnectionChecklistItems.filter(
-    (item) => item.status !== "connected"
-  ).length;
+  const connectionBlockerCount = roomConnectionChecklistItems.filter(isConnectionBlocker).length;
   const missingDoorwayCount = roomConnectionChecklistItems.filter(
     (item) => item.status === "needs_doorway"
   ).length;
@@ -994,52 +998,15 @@ export default function DesignControlsPlanPanel({
     [favoriteSurfaceMaterialIds]
   );
   const surfaceFilterOptions = useMemo(
-    () => ({
-      effect: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialEffectLabel),
-      collection: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialCollectionLabel),
-      size: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialSizeLabel),
-      color: buildFacetOptions(visibleSurfaceMaterials, getSurfaceMaterialColorLabel),
-    }),
-    [visibleSurfaceMaterials]
+    () => buildSurfaceFilterOptions(visibleSurfaceMaterials, surfaceFilters.brand),
+    [visibleSurfaceMaterials, surfaceFilters.brand]
   );
-  const filteredSurfaceMaterialGroups = (() => {
-    const search = flooringSearch.trim().toLowerCase();
-    return surfaceMaterialProductGroups.filter((group) => {
-      return group.variants.some((material) => {
-        const materialId = material.surface_material.material_id;
-        const searchable = [
-          material.surface_material.product_name,
-          material.surface_material.material_id,
-          getSurfaceMaterialProductDisplayName(material),
-          getSurfaceMaterialSupplierLabel(material),
-          getSurfaceMaterialCollectionLabel(material),
-          getSurfaceMaterialSizeLabel(material),
-          getSurfaceMaterialSizeOptionLabel(material),
-          material.surface_material.material_family,
-          material.classification?.design_effect,
-          material.classification?.color_family,
-          ...(material.classification?.tone ?? []),
-          ...(material.classification?.style_cluster ?? []),
-          ...(material.classification?.room_suitability ?? []),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        const matchesSearch = !search || searchable.includes(search);
-        const matchesFilters =
-          (!surfaceFilters.effect || getSurfaceMaterialEffectLabel(material) === surfaceFilters.effect) &&
-          (!surfaceFilters.collection ||
-            getSurfaceMaterialCollectionLabel(material) === surfaceFilters.collection) &&
-          (!surfaceFilters.size || getSurfaceMaterialSizeLabel(material) === surfaceFilters.size) &&
-          (!surfaceFilters.color || getSurfaceMaterialColorLabel(material) === surfaceFilters.color) &&
-          (!surfaceFilters.favoritesOnly || favoriteSurfaceMaterialIdSet.has(materialId)) &&
-          (!surfaceFilters.recommendedOnly ||
-            (material.classification?.room_suitability ?? []).includes(activeRoomType) ||
-            (material.classification?.room_suitability ?? []).includes("living"));
-        return matchesSearch && matchesFilters;
-      });
-    });
-  })();
+  const filteredSurfaceMaterialGroups = filterSurfaceMaterialGroups(surfaceMaterialProductGroups, {
+    search: flooringSearch,
+    filters: surfaceFilters,
+    favoriteIds: favoriteSurfaceMaterialIdSet,
+    roomType: activeRoomType,
+  });
   const visibleFilteredSurfaceMaterialGroups = filteredSurfaceMaterialGroups.slice(
     0,
     surfaceVisibleLimit
@@ -1048,14 +1015,7 @@ export default function DesignControlsPlanPanel({
     0,
     filteredSurfaceMaterialGroups.length - visibleFilteredSurfaceMaterialGroups.length
   );
-  const hasSurfaceFilters =
-    Boolean(flooringSearch.trim()) ||
-    Boolean(surfaceFilters.effect) ||
-    Boolean(surfaceFilters.collection) ||
-    Boolean(surfaceFilters.size) ||
-    Boolean(surfaceFilters.color) ||
-    Boolean(surfaceFilters.favoritesOnly) ||
-    Boolean(surfaceFilters.recommendedOnly);
+  const hasSurfaceFilters = hasActiveSurfaceFilters(flooringSearch, surfaceFilters);
   const clearSurfaceFilters = () => {
     setFlooringSearch("");
     setSurfaceFilters({});
@@ -1187,6 +1147,10 @@ export default function DesignControlsPlanPanel({
       onResetActiveWallSurface={onResetActiveWallSurface}
     />
   );
+  // A room's Floor, Walls or Ceiling row opens the picker for that surface; walls open on Paint (UX audit ED8).
+  const openRoomSurface = (target: RoomSurfaceTarget) => {
+    onSurfaceTargetChange(target); setSurfaceTab("tiles"); setWallSurfaceMode("paint"); setRoomFinishPanelOpen(true); setPlanSectionCollapsed("selectedRoom", false);
+  };
   const openSurfaceSummary = (source: "header" | "information_fallback") => {
     setSurfaceSummaryOpen(true);
     track("surface_summary_opened", {
@@ -1216,10 +1180,7 @@ export default function DesignControlsPlanPanel({
     getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(materialId))
   );
   const setSurfaceFilter = (key: SurfaceFilterKey, value: string) => {
-    setSurfaceFilters((current) => ({
-      ...current,
-      [key]: value || undefined,
-    }));
+    setSurfaceFilters((current) => withSurfaceFilter(current, key, value, visibleSurfaceMaterials));
     track("floor_surface_filter_changed", {
       key,
       value: value || null,
@@ -1289,7 +1250,7 @@ export default function DesignControlsPlanPanel({
     ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 disabled:opacity-50"
     : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
   const activeFloorLabel =
-    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
+    floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
   const activeRoomPerimeter = Math.max(0, (roomWidth + roomDepth) * 2);
   const activeRoomAspectRatio = roomWidth > 0 && roomDepth > 0 ? roomWidth / roomDepth : 0;
@@ -1375,122 +1336,22 @@ export default function DesignControlsPlanPanel({
           onAddDesignerRoom={onAddDesignerRoom} />
       ) : null}
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-            Surfaces
-          </div>
-          <div className={progressMetaClass}>
-            {activeSurfaceTargetLabel} · {activeSurfaceDisplayName}
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-wrap justify-end gap-1">
-          <button
-            type="button"
-            data-testid="surface-brush-toggle"
-            className={
-              surfaceBrushActive
-                ? "rounded-lg bg-neutral-900 px-2 py-1.5 text-xs font-semibold text-white"
-                : progressSecondaryActionClass
+      <SurfaceBrowserHeader
+        pro={isDesigner} targetLabel={activeSurfaceTargetLabel} displayName={activeSurfaceDisplayName} target={activeSurfaceTarget}
+        selectedWallFaceId={selectedWallFaceId} tab={surfaceTab} secondaryActionClass={progressSecondaryActionClass} metaClass={progressMetaClass}
+        brush={{
+          active: surfaceBrushActive,
+          disabled: !canEdit || (!selectedSurfaceMaterialPrimaryId && !activeBrushPaintColorHex && !(activeSurfaceTarget !== "floor" && activeTargetSettings.paintColorHex)),
+          status: activeBrushPaintColorHex ? `Click walls or ceilings in 3D to apply ${activeBrushPaintName}` : activeBrushMaterialId ? "Click floor or walls in 3D to apply" : "Choose a material or paint first",
+          onToggle: () => {
+            if (!surfaceBrushActive && activeSurfaceTarget !== "floor" && !activeBrushPaintColorHex && activeTargetSettings.paintColorHex) {
+              onSurfacePaintSelected(activeTargetSettings.paintColorHex, getWallPaintDisplayName(activeTargetSettings.paintColorHex, activeTargetSettings.paintName));
             }
-            disabled={
-              !canEdit ||
-              (!selectedSurfaceMaterialPrimaryId &&
-                !activeBrushPaintColorHex &&
-                !(activeSurfaceTarget !== "floor" && activeTargetSettings.paintColorHex))
-            }
-            onClick={() => {
-              if (
-                !surfaceBrushActive &&
-                activeSurfaceTarget !== "floor" &&
-                !activeBrushPaintColorHex &&
-                activeTargetSettings.paintColorHex
-              ) {
-                onSurfacePaintSelected(
-                  activeTargetSettings.paintColorHex,
-                  getWallPaintDisplayName(activeTargetSettings.paintColorHex, activeTargetSettings.paintName)
-                );
-              }
-              onSurfaceBrushActiveChange(!surfaceBrushActive);
-            }}
-          >
-            Brush
-          </button>
-          <button
-            type="button"
-            data-testid="surface-summary-open"
-            className={progressSecondaryActionClass}
-            onClick={() => openSurfaceSummary("header")}
-          >
-            Summary
-          </button>
-        </div>
-      </div>
-
-      <div
-        data-testid="surface-target-bar"
-        className={dark ? "designer-raised mt-2 grid grid-cols-4 gap-1 rounded-lg p-1" : "mt-2 grid grid-cols-4 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1"}
-      >
-        {[
-          { id: "floor" as const, label: "Floor" },
-          { id: "walls" as const, label: "Walls" },
-          { id: "selected_wall" as const, label: "Selected wall" },
-          { id: "ceiling" as const, label: "Ceiling" },
-        ].map((target) => (
-          <button
-            key={target.id}
-            type="button"
-            data-testid={`surface-target-${target.id.replace("_", "-")}`}
-            aria-pressed={activeSurfaceTarget === target.id}
-            className={
-              activeSurfaceTarget === target.id
-                ? dark
-                  ? "flex h-11 min-w-0 items-center justify-center rounded-md bg-white px-1.5 text-center text-xs font-semibold leading-tight text-neutral-950"
-                  : "flex h-11 min-w-0 items-center justify-center rounded-md bg-neutral-950 px-1.5 text-center text-xs font-semibold leading-tight text-white"
-                : dark
-                  ? "flex h-11 min-w-0 items-center justify-center rounded-md px-1.5 text-center text-xs font-semibold leading-tight text-neutral-300 hover:bg-white/10"
-                  : "flex h-11 min-w-0 items-center justify-center rounded-md px-1.5 text-center text-xs font-semibold leading-tight text-neutral-600 hover:bg-neutral-100"
-            }
-            onClick={() => onSurfaceTargetChange(target.id)}
-          >
-            <span className="block max-w-full whitespace-normal">{target.label}</span>
-          </button>
-        ))}
-      </div>
-      {activeSurfaceTarget === "selected_wall" && !selectedWallFaceId ? (
-        <div className={progressMetaClass}>Click a wall in 3D, or use Brush after choosing paint or a material.</div>
-      ) : null}
-      {surfaceBrushActive ? (
-        <div className={progressMetaClass}>
-          Brush is on · {activeBrushPaintColorHex
-            ? `Click walls or ceilings in 3D to apply ${activeBrushPaintName}`
-            : activeBrushMaterialId
-              ? "Click floor or walls in 3D to apply"
-              : "Choose a material or paint first"}
-        </div>
-      ) : null}
-
-      <div className={dark ? "designer-raised mt-2 grid grid-cols-2 gap-1 rounded-lg p-1" : "mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1"}>
-        {(["tiles", "rooms"] as SurfaceBrowserTab[]).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            data-testid={`surfaces-tab-${tab}`}
-            className={
-              surfaceTab === tab
-                ? dark
-                  ? "rounded-md bg-white px-2 py-1.5 text-xs font-semibold text-neutral-950"
-                  : "rounded-md bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
-                : dark
-                  ? "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
-                  : "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
-            }
-            onClick={() => setSurfaceTab(tab)}
-          >
-            {tab === "tiles" ? "Tiles" : "Rooms"}
-          </button>
-        ))}
-      </div>
+            onSurfaceBrushActiveChange(!surfaceBrushActive);
+          },
+        }}
+        onBack={() => setRoomFinishPanelOpen(false)} onOpenSummary={() => openSurfaceSummary("header")} onTargetChange={onSurfaceTargetChange} onTabChange={setSurfaceTab}
+      />
 
       {surfaceTab === "tiles" ? (
         <>
@@ -1498,7 +1359,7 @@ export default function DesignControlsPlanPanel({
             <div className={dark ? "designer-raised mt-2 grid grid-cols-2 gap-1 rounded-lg p-1" : "mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1"}>
               {[
                 { id: "paint" as const, label: "Paint" },
-                { id: "materials" as const, label: "Tiles" },
+                { id: "materials" as const, label: "Materials" },
               ].map((mode) => (
                 <button
                   key={mode.id}
@@ -1602,8 +1463,9 @@ export default function DesignControlsPlanPanel({
 
           {surfaceFilterDrawerOpen ? (
             <div data-testid="surfaces-filter-drawer" className={dark ? "designer-recessed mt-2 grid gap-2 rounded-lg p-2" : "mt-2 grid gap-2 rounded-lg border border-neutral-200 bg-white p-2"}>
-              {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
+              {renderSurfaceFilterSelect("brand", "Brand", surfaceFilterOptions.brand)}
               {renderSurfaceFilterSelect("collection", "Collection", surfaceFilterOptions.collection)}
+              {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
               {renderSurfaceFilterSelect("size", "Size", surfaceFilterOptions.size)}
               {renderSurfaceFilterSelect("color", "Color", surfaceFilterOptions.color)}
             </div>
@@ -1642,6 +1504,7 @@ export default function DesignControlsPlanPanel({
                   <div
                     key={materialId}
                     data-testid={`surface-floor-material-${materialId}`}
+                    data-material-name={displayName}
                     className={surfaceMaterialCardClass(materialId, selected)}
                   >
                     <button
@@ -1655,8 +1518,9 @@ export default function DesignControlsPlanPanel({
                         style={getSurfaceMaterialSwatchStyle(material)}
                       />
                       <span className={surfaceViewMode === "grid" ? "mt-2 block min-w-0" : "block min-w-0"}>
-                        <span className={dark ? "block truncate text-xs font-semibold text-neutral-100" : "block truncate text-xs font-semibold text-neutral-900"} title={material.surface_material.product_name}>
-                          {displayName}
+                        <span className={dark ? "block truncate text-xs text-neutral-400" : "block truncate text-xs text-neutral-500"}>{getSurfaceMaterialCollectionLabel(material)}</span>
+                        <span className={dark ? "block truncate text-sm font-semibold text-neutral-100" : "block truncate text-sm font-semibold text-neutral-900"} title={material.surface_material.product_name}>
+                          {getSurfaceMaterialModelName(material)}
                         </span>
                         <span className={floorMaterialMetaClass}>
                           {getSurfaceMaterialGroupMetaLabel(group)}
@@ -1749,7 +1613,7 @@ export default function DesignControlsPlanPanel({
                 </div>
                 <div className={progressMetaClass}>
                   {selectedSurfaceMaterial
-                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialCollectionLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
+                    ? `${activeSurfaceTargetLabel} · ${getSurfaceMaterialSupplierLabel(selectedSurfaceMaterial)} · Size ${getSurfaceMaterialSizeOptionLabel(selectedSurfaceMaterial)}${
                         selectedSurfaceMaterialGroup
                           ? ` · ${getSurfaceMaterialGroupSizeLabels(selectedSurfaceMaterialGroup).length} sizes`
                           : ""
@@ -2616,27 +2480,12 @@ export default function DesignControlsPlanPanel({
             ) : null,
           })}
 
+          <RoomSurfaceRows rows={roomSurfaceRowsOf(activeSurfaceSummaryRows, activeRoomId)} disabled={!canEdit} onOpen={openRoomSurface}
+            hidden={Boolean(visiblePlanOpening)} openTarget={openRoomSurfaceTarget(roomFinishPanelOpen, activeSurfaceTarget)} />
           {!isPlanSectionCollapsed("selectedRoom") && (
             <>
               {!visiblePlanOpening && (
                 <>
-                  <div data-testid="selected-room-floor-finish" className={`${progressRowClass} mt-3`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className={progressLabelClass}>Floor finish</div>
-                        <div className={progressMetaClass}>{activeFloorDisplayName}</div>
-                      </div>
-                      <button
-                        type="button"
-                        data-testid="plan-change-floor-finish"
-                        className={progressSecondaryActionClass}
-                        disabled={!canEdit}
-                        onClick={() => setRoomFinishPanelOpen((open) => !open)}
-                      >
-                        {roomFinishPanelOpen ? "Hide" : "Change floor"}
-                      </button>
-                    </div>
-                  </div>
               {roomFinishPanelOpen && (
                 <>
                   {renderSurfaceMaterialBrowser()}
@@ -2789,7 +2638,7 @@ export default function DesignControlsPlanPanel({
         <div data-testid="floor-summary-panel" className={progressCardClass}>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className={titleClass}>Floor</div>
+              <div className={titleClass}>Levels</div>
               <div className={progressMetaClass}>
                 {activeFloorLabel} · {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"}
               </div>

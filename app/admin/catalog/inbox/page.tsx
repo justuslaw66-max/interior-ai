@@ -1,13 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { InboxFiltersUI, type InboxQueueFilter } from "@/components/admin/InboxFiltersUI";
 import {
   getAdminImportWorkflowData,
   getImportJobValidationBlockers,
 } from "@/lib/import-jobs/admin-workflow";
+import { AdminPageHeader } from "../../AdminPageHeader";
+import { adminSection, adminTitle } from "../../admin-navigation";
+import { auth } from "../../admin-session";
 
+const SECTION = adminSection("/admin/catalog/inbox");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 export default async function AdminCatalogInboxPage({
   searchParams,
@@ -15,9 +20,7 @@ export default async function AdminCatalogInboxPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const requestedQueue = resolvedSearchParams?.queue;
@@ -45,14 +48,11 @@ export default async function AdminCatalogInboxPage({
 
   return (
     <div className="space-y-6 p-6">
-      <header className="space-y-1">
-        <div className="text-xs uppercase tracking-[0.16em] text-neutral-500">Phase B</div>
-        <h1 className="text-2xl font-semibold">Catalog Inbox</h1>
-        <p className="max-w-3xl text-sm text-neutral-600">
-          This is the operations view for catalog growth: scrape queue, normalize queue, review queue,
-          publish queue, and validation blockers in one admin workflow.
-        </p>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Every import job by queue (scrape, normalize, review, publish), with the jobs that are blocked."
+      />
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <div className="rounded-xl border p-3">

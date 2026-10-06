@@ -20,7 +20,6 @@ import {
 } from "@/lib/onboarding";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, ZoneMin } from "@/lib/room-types";
-import type { AutoSeatingZoneCreationRequest } from "@/lib/design-page-zone-orchestration";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
@@ -61,10 +60,6 @@ export type DesignPageOnboardingState = {
 };
 
 export type DesignPageOnboardingActions = {
-  autoCreateSeatingZone: (
-    sofaItem: DesignItem,
-    request: AutoSeatingZoneCreationRequest
-  ) => boolean;
   clampToRoom: ClampToRoom;
   showConstraintsForMoment: (results: ConstraintResult[]) => void;
   showConfidenceSummary: (results: ConstraintResult[]) => void;
@@ -215,7 +210,6 @@ export function useDesignPageOnboarding({
   configuration,
 }: UseDesignPageOnboardingOptions) {
   const {
-    autoCreateSeatingZone,
     clampToRoom,
     showConstraintsForMoment,
     showConfidenceSummary,
@@ -389,10 +383,7 @@ export function useDesignPageOnboarding({
     });
     if (!sofaItem || firstSofaHandledRef.current) return;
 
-    const seatingZoneReady = autoCreateSeatingZone(sofaItem, {
-      source: "onboarding_post_placement",
-    });
-    if (!seatingZoneReady) return;
+    // The first sofa no longer makes a seating zone (UX 4g, FU6): the step just advances.
     firstSofaHandledRef.current = true;
 
     const results = evaluateConstraints({
@@ -402,13 +393,6 @@ export function useDesignPageOnboarding({
     });
     showConstraintsForMoment(results);
     showConfidenceSummary(results);
-
-    track("seating_zone_auto_created", {
-      design_id: state.designId,
-      isGuest: state.isGuest,
-      timeSinceStartMs:
-        Date.now() - (onboardingStartedAtRef.current ?? Date.now()),
-    });
 
     // The first sofa milestone advances the onboarding state synchronously.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -455,7 +439,6 @@ export function useDesignPageOnboarding({
       }
     }, 600);
   }, [
-    autoCreateSeatingZone,
     clampToRoom,
     roomDepth,
     roomWidth,

@@ -9,6 +9,7 @@ import {
 import {
   useDesignPageNamedCameraViewsController,
   type DesignPageNamedCameraViewsControllerActions,
+  type DesignPageNamedCameraViewsControllerRefs,
 } from "@/lib/useDesignPageNamedCameraViewsController";
 
 const MAXIMUM_SAVED_CAMERA_VIEWS = 6;
@@ -18,7 +19,7 @@ export type UseDesignPagePresentationStateRegistrationInput = {
   state: {
     cameraView: CameraView;
   };
-  refs: DesignPageLayoutVersionsRefs;
+  refs: DesignPageLayoutVersionsRefs & Pick<DesignPageNamedCameraViewsControllerRefs, "cameraView">;
   actions: {
     document: Pick<
       DesignPageNamedCameraViewsControllerActions,
@@ -28,7 +29,6 @@ export type UseDesignPagePresentationStateRegistrationInput = {
       DesignPageNamedCameraViewsControllerActions,
       | "setLegacySavedViews"
       | "handleEditorViewModeChange"
-      | "transitionToCameraView"
     >;
     history: Pick<DesignPageLayoutVersionsActions, "runHistoryTransaction">;
     selection: Pick<DesignPageLayoutVersionsActions, "updateSelection">;
@@ -61,7 +61,6 @@ export function useDesignPagePresentationStateRegistration({
       setLegacySavedViews: actions.camera.setLegacySavedViews,
       showToast: actions.feedback.showToast,
       handleEditorViewModeChange: actions.camera.handleEditorViewModeChange,
-      transitionToCameraView: actions.camera.transitionToCameraView,
     },
   });
 
