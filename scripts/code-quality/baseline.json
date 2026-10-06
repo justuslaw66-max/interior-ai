@@ -157,11 +157,11 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 541,
+      "lines": 538,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 406,
+      "lines": 394,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -185,7 +185,7 @@
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
-      "lines": 495,
+      "lines": 490,
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -253,15 +253,15 @@
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
-      "lines": 339,
+      "lines": 321,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1158,
+      "lines": 1116,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
-      "lines": 698,
+      "lines": 697,
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
@@ -297,7 +297,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 932,
+      "lines": 931,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -1665,7 +1665,7 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 230
+        "maximum": 222
       },
       "complexFunctions": {
         "count": 1,
@@ -1833,7 +1833,7 @@
     "components/editor/design-page/SceneItemsLayer.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 363
+        "maximum": 357
       },
       "complexFunctions": {
         "count": 1,
@@ -2151,7 +2151,7 @@
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 177
+        "maximum": 164
       }
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
@@ -2167,7 +2167,7 @@
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 457
+        "maximum": 455
       },
       "complexFunctions": {
         "count": 2,
@@ -2311,7 +2311,7 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 880
+        "maximum": 878
       },
       "complexFunctions": {
         "count": 1,

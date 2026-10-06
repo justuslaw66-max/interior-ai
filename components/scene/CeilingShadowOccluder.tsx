@@ -1,6 +1,9 @@
 "use client";
 
 import * as THREE from "three";
+import { noRaycast } from "./stableSceneProps";
+
+const OCCLUDER_USER_DATA = { testId: "ceiling-shadow-occluder" };
 
 type CeilingShadowOccluderProps = {
   geometry: THREE.BufferGeometry;
@@ -18,8 +21,8 @@ export function CeilingShadowOccluder({
       geometry={geometry}
       position={position}
       castShadow
-      raycast={() => null}
-      userData={{ testId: "ceiling-shadow-occluder" }}
+      raycast={noRaycast}
+      userData={OCCLUDER_USER_DATA}
     >
       <meshBasicMaterial
         colorWrite={false}

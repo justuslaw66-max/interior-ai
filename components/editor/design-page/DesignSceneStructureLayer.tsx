@@ -10,9 +10,9 @@ import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRe
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlays";
 import { useRoomRendererPlanOverlays } from "@/lib/useRoomRendererPlanOverlays";
 import { useLatestCallback } from "@/components/editor/renderers/useLatestCallback";
+import { resolveWallGestureControls, useWholeHomeRendererBindings } from "@/components/editor/design-page/useWholeHomeRendererBindings";
 import type { PlanZone2D } from "@/lib/design-page-zone-layout";
 import type { EditorScene2D } from "@/lib/editorScene";
 import type {
@@ -170,10 +170,6 @@ type DesignSceneStructureLayerProps = {
   focusRoomId?: string | null;
 };
 
-function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
-  return state && actions ? { ...state, ...actions } : undefined;
-}
-
 export function DesignSceneStructureLayer({
   state,
   configuration,
@@ -187,6 +183,7 @@ export function DesignSceneStructureLayer({
   // Stable, so the memoized room fills skip re-rendering when only the page's handlers changed.
   const selectRoom = useLatestCallback(actions.rooms.select);
   const selectSurfaceTarget = useLatestCallback(actions.rooms.selectSurfaceTarget);
+  const wholeHome = useWholeHomeRendererBindings(state, actions);
   const canonicalActiveFloorId =
     canonicalPlan?.floors.find((floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel)?.id ?? null;
   const canonicalStructureExpected = Boolean(state.plan.canonicalDocument);
@@ -354,20 +351,14 @@ export function DesignSceneStructureLayer({
     const visibleRooms = focusRoomId
       ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
       : state.wholeHome.rooms;
-    // Focus mode is a visibility filter, not a topology filter. Adjacent-room
-    // openings can cut a focused room's shared wall even when their owning
-    // room is hidden, so the legacy topology builder must always receive the
-    // complete whole-home room/opening graph.
-    const topologyOpenings = mapPlanOpeningsToRoomRenderer(
-      state.plan.scene.openings, state.wholeHome.rooms
-    );
-
+    // Focus mode is a visibility filter, not a topology filter: topologyRooms and
+    // wholeHome.topologyOpenings always carry the complete whole-home graph.
     return (
       <>
       <HousePlanRenderer3D
         rooms={visibleRooms}
         topologyRooms={state.wholeHome.rooms}
-        openings={topologyOpenings}
+        openings={wholeHome.topologyOpenings}
         activeRoomId={state.wholeHome.activeRoomId}
         focusRoomId={focusRoomId}
         activeFloorLevel={state.wholeHome.activeFloorLevel}
@@ -382,15 +373,12 @@ export function DesignSceneStructureLayer({
         selectedOpeningId={state.wholeHome.selectedOpeningId}
         selectedSurfaceTarget={state.wholeHome.selectedSurfaceTarget}
         onSelectSurfaceTarget={selectSurfaceTarget}
-        onSelectOpening={actions.overlays.select}
-        onMoveOpening={actions.overlays.moveOpening}
-        onResizeOpening={actions.overlays.resizeOpening}
-        onOpeningDragStateChange={(dragging, kind) => {
-          if (kind) actions.overlays.setDragging(dragging, kind);
-          else actions.wholeHome.setOpeningDragging(dragging);
-        }}
+        onSelectOpening={wholeHome.onSelectOpening}
+        onMoveOpening={wholeHome.onMoveOpening}
+        onResizeOpening={wholeHome.onResizeOpening}
+        onOpeningDragStateChange={wholeHome.onOpeningDragStateChange}
         canonicalPlan={canonicalPlan} canonicalStructureExpected={canonicalStructureExpected}
-        canonicalWallEditing={resolveWallGestureControls(state.plan.wallEditing, actions.walls)}
+        canonicalWallEditing={wholeHome.canonicalWallEditing}
       />
       {canonicalIntegrityWarning}
       {canonicalEditingNotice}

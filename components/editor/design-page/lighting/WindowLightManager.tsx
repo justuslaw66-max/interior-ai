@@ -57,15 +57,13 @@ export function WindowLightManager({
   lighting: ResolvedEditorLighting;
 }) {
   const activeWindows = selectWindowLightBudget(windows, lighting);
+  const activeWindowLights = activeWindows.length;
+  const maxWindowLights = lighting.windows.maxActiveLights;
+  // Stable user data: a page re-render that changes nothing here doesn't make R3F redraw.
+  const userData = useMemo(() => ({ activeWindowLights, maxWindowLights }), [activeWindowLights, maxWindowLights]);
 
   return (
-    <group
-      name="editor-window-light-manager"
-      userData={{
-        activeWindowLights: activeWindows.length,
-        maxWindowLights: lighting.windows.maxActiveLights,
-      }}
-    >
+    <group name="editor-window-light-manager" userData={userData}>
       {activeWindows.map((window) => (
         <WindowAreaLight key={window.id} window={window} />
       ))}
