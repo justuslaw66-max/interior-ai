@@ -1,4 +1,5 @@
 import { projectCanonicalFloorOpenings } from "@/lib/floor-plan-opening-projection";
+import { namedFloorPlanRooms } from "@/lib/floor-plan-void-rooms";
 import { transformSourceCalibration } from "./floor-plan-source-calibration-transform";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
@@ -15,8 +16,7 @@ import {
   type PersistedFloorPlanAddressBinding,
   type RoomSnapshot,
   type RoomSurfaceAssignments,
-  type RoomType,
-  type SurfaceSettings,
+  type RoomType, type SurfaceSettings,
 } from "@/lib/room-types";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 
@@ -345,7 +345,7 @@ export function canonicalFloorPlanToDesignSnapshot(
   const transform = options.addressTransform ?? "normal";
   const document = applyFloorPlanAddressTransformV2(authoredDocument, transform);
   const scene = compileFloorPlanDocumentV2(document);
-  if (!scene.floors.some((floor) => floor.rooms.length > 0)) {
+  if (!scene.floors.some((floor) => namedFloorPlanRooms(floor.rooms).length > 0)) {
     throw new Error("The canonical floor plan has no editable rooms");
   }
   const existingById = new Map(
@@ -354,7 +354,7 @@ export function canonicalFloorPlanToDesignSnapshot(
   const surfaceMigrationReviewIssues: SurfaceMigrationReviewIssue[] = [];
   const rooms: RoomSnapshot[] = scene.floors.flatMap((floor) => {
     const wallById = new Map(floor.walls.map((wall) => [wall.id, wall]));
-    return floor.rooms.map((compiledRoom, roomIndex) => {
+    return namedFloorPlanRooms(floor.rooms).map((compiledRoom, roomIndex) => {
       const outer = compiledRoom.wallLoops.find((loop) => loop.kind === "outer");
       if (!outer) throw new Error(`Room ${compiledRoom.id} has no outer loop`);
       const polygon = roomPolygon(outer, wallById);

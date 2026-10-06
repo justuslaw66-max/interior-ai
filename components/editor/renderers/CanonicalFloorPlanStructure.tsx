@@ -1151,7 +1151,7 @@ export function CanonicalFloorPlanWalls3D({
           if (cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id))) {
             return [];
           }
-          const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId);
+          const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
           const selected = wall.id === selectedWallId;
           return wall.solids.flatMap((solid) => {
             const hitTarget = interactive ? (

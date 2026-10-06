@@ -15,6 +15,8 @@ import type {
 import { PdfRasterFloorPlanSourceAdapter } from "@/lib/floor-plan-imports/pdf-raster-adapter";
 import { applyVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-pass";
 import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-adapter";
+import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
+import { closedSpacesProduced, isFloorPlanVoidRoom, voidRoomCrossDashes, voidRoomCrossSegments } from "@/lib/floor-plan-void-rooms";
 import {
   PythonFloorPlanVectorizerProvider,
   floorPlanVectorizerRuntimeConfiguration,
@@ -259,9 +261,61 @@ async function main() {
   assert.equal(marks.length, 5, "one reference mark per door opening the estimate offers");
   assert.ok(marks.every((mark) => mark.scope === "reference" && mark.geometry.kind === "source_drawing"));
   assert.match(marks[0].text, /about 970 mm if the estimated scale holds/);
+
+  // A box drawn with a dashed cross is a void (a duct): the exporter marks it as a shaft. It keeps its walls at their
+  // drawn thickness but is never named, listed, measured, floored or furnished.
+  const shafts = estimated.evidence.rooms.filter((room) => room.shaft);
+  assert.equal(shafts.length, 3, "c22: three voids, one beside COMMON, one beside MASTER BATH, one between KITCHEN and WC");
+  const voids = estimated.document.floors[0].rooms.filter((room) => isFloorPlanVoidRoom(room));
+  assert.equal(voids.length, shafts.length, "every shaft becomes a void room");
+  assert.ok(voids.every((room) => room.name === "" && room.roomType === "void"), "voids are unnamed and typed void");
+  assert.ok(
+    voids.every((room) => estimated.document.floors[0].walls.some((wall) => wall.adjacentRoomIds.includes(room.id))),
+    "a void keeps the walls round it"
+  );
+  assert.ok(
+    !validateFloorPlanDocumentV2(estimated.document).some((issue) => issue.code === "MISSING_ROOM_NAME"),
+    "an unnamed void is not a missing room name"
+  );
+  const inventory = estimated.issues.find((issue) => issue.code === "rooms_confirmation");
+  assert.match(inventory?.message ?? "", /and 3 voids drawn with a dashed cross, left unnamed/);
+  const editable = canonicalFloorPlanToDesignSnapshot(estimated.document);
+  assert.equal(
+    editable.snapshot.rooms.length,
+    estimated.document.floors[0].rooms.length - voids.length,
+    "the editor gets every room but the voids"
+  );
+  assert.ok(editable.snapshot.rooms.every((room) => !voids.some((v) => v.id === room.id)));
+  // ...and its dashed cross runs corner to corner of its box: two diagonals for a four-cornered void, and for an L the
+  // lines between its farthest corners, kept inside it. Given the walls' half thickness, the box is the clear inside.
+  const square = [{ xMm: 0, zMm: 0 }, { xMm: 1000, zMm: 0 }, { xMm: 1000, zMm: 800 }, { xMm: 0, zMm: 800 }];
+  assert.deepEqual(voidRoomCrossSegments(square), [[square[0], square[2]], [square[1], square[3]]]);
+  const inset = voidRoomCrossSegments(square, [50, 50, 50, 50]);
+  assert.equal(inset.length, 2);
+  assert.deepEqual(inset[0][0], { xMm: 50, zMm: 50 });
+  assert.deepEqual(inset[0][1], { xMm: 950, zMm: 750 });
+  const ell = [{ xMm: 0, zMm: 0 }, { xMm: 1000, zMm: 0 }, { xMm: 1000, zMm: 400 }, { xMm: 400, zMm: 400 }, { xMm: 400, zMm: 1000 }, { xMm: 0, zMm: 1000 }];
+  const ellCross = voidRoomCrossSegments(ell);
+  assert.ok(ellCross.length >= 2, "an L-shaped void still gets its cross");
+  assert.ok(
+    ellCross.every(([a, b]) => [a, b, { xMm: (a.xMm + b.xMm) / 2, zMm: (a.zMm + b.zMm) / 2 }].every((p) => p.xMm <= 1000 && p.zMm <= 1000 && !(p.xMm > 400.5 && p.zMm > 400.5))),
+    "an L's cross stays inside the L"
+  );
+  // walls thicker than the void is wide would turn it inside out: the cross falls back to the centre-lines
+  assert.equal(voidRoomCrossSegments(square, [600, 600, 600, 600]).length, 2);
+  // The plan drawing (SVG and PDF export) draws each void's cross in dashes, and a room none; the inventory counts the
+  // voids apart from the closed spaces.
+  const loop = (id: string) => [{ kind: "outer", walls: square.map((start, i) => ({ wallId: `${id}-w${i}`, start })) }];
+  const dashes = voidRoomCrossDashes({
+    rooms: [{ id: "duct", roomType: "void", wallLoops: loop("duct") }, { id: "store", roomType: "other", wallLoops: loop("store") }],
+    walls: [0, 1, 2, 3].map((i) => ({ id: `duct-w${i}`, thicknessMm: 100 })),
+  });
+  assert.ok(dashes.length > 2 && dashes.every(({ id }) => id.startsWith("duct:void-cross:")), "a void's cross in dashes, none for a room");
+  assert.equal(closedSpacesProduced([{ roomType: "other" }, { roomType: "void" }]), "1 closed spaces were produced (and 1 void drawn with a dashed cross, left unnamed)");
   summary.push(
     `c22: no printed dimension; ${estimated.document.floors[0].rooms.length} rooms placed at the vectorizer's estimated scale, marked assumed; scale_unresolved stays critical, 5 door openings are offered to confirm the width`
   );
+  summary.push(`c22: ${voids.length} voids kept for their walls, unnamed, typed void, left out of the editor's rooms; the dashed cross runs corner to corner inside them`);
 
   // The process boundary, with stand-in programs (the real ones need OpenCV and Tesseract): two programs run in a
   // private temporary folder, the evidence file is parsed, the folder is removed, a slow program is killed.

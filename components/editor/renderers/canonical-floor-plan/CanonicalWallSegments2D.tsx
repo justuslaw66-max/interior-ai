@@ -2,6 +2,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import type { CanonicalFloorPlanFloorRenderModel } from "@/lib/floor-plan-render-model";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { preferredRoomId, segmentTransform } from "./geometry";
+import { CanonicalVoidRooms2D } from "./CanonicalVoidRooms2D";
 
 type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 type Props = {
@@ -15,8 +16,9 @@ type Props = {
 export function CanonicalWallSegments2D({ floor, geometryHash, activeRoomId, theme, interactive,
   wallEditing, onSelectWall, onSelectRoom, onSelectOpening }: Props) {
   return <group>
+      <CanonicalVoidRooms2D floor={floor} geometryHash={geometryHash} />
       {floor.walls.flatMap((wall) => {
-        const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId);
+        const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
         const color = wallEditing?.enabled && wallEditing.selectedWallId === wall.id ? "#2563eb"
           : roomId === activeRoomId ? "#16a34a" : theme === "pro" ? "#a1a1aa" : "#b8b0a1";
         return wall.planSegments.map((segment) => {

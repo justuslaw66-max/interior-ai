@@ -5,6 +5,7 @@ import { buildFloorPlanVectorWalls } from "@/lib/floor-plan-vector-walls";
 import { windowFrameInkNormal } from "@/lib/floor-plan-vector-ink";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
 import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
+import { namedFloorPlanRooms, voidRoomCrossDashes } from "@/lib/floor-plan-void-rooms";
 
 export type PlanDrawingPrimitive =
   | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeWidth?: number; strokeInsetNormal?: { x: number; z: number } }
@@ -97,10 +98,12 @@ export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, optio
     if (wall.path.kind === "arc") unsupported.push(`${wall.id}: curved wall footprint currently sampled`);
   }
   primitives.push(...openingPrimitives(compiled));
+  // A void (duct, shaft) is drawn as the plan draws it: a dashed cross, no name.
+  primitives.push(...voidRoomCrossDashes(compiled).map(({ id, dash }) => line(id, dash, "void-cross")));
   if (options.dimensions) primitives.push(...dimensionPrimitives(compiled));
   if (options.labels) {
     primitives.push(...annotationPrimitives(compiled));
-    for (const room of compiled.rooms) {
+    for (const room of namedFloorPlanRooms(compiled.rooms)) {
       const points = room.wallLoops.find((loop) => loop.kind === "outer")?.walls.map((ref) => ref.start) ?? [];
       if (!points.length) continue;
       primitives.push({ id: `${room.id}:label`, kind: "text", text: room.name, point: {
