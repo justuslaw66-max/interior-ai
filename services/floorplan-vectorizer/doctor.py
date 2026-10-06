@@ -173,6 +173,28 @@ def check_settings():
         check("temporary folder", False, "%s: %s" % (tempfile.gettempdir(), cause))
 
 
+def check_seg_model():
+    """The learned reader (round 23) is off unless FV_SEG_MODEL names a model; then onnxruntime must be importable and the
+    model must load and answer a blank tile with one score per class."""
+    path = os.environ.get("FV_SEG_MODEL")
+    if not path:
+        check("FV_SEG_MODEL", True, "unset -- the learned reader is off (stage 1 as measured without it)")
+        return True
+    if not check("FV_SEG_MODEL", os.path.isfile(path), path + ("" if os.path.isfile(path) else "  <- no such file")):
+        return False
+    try:
+        import onnxruntime
+        import numpy
+        sess = onnxruntime.InferenceSession(path, providers=["CPUExecutionProvider"])
+        out = sess.run(["logits"], {"image": numpy.ones((1, 3, 64, 64), numpy.float32)})[0]
+        use = os.environ.get("FV_SEG_USE") or "prune"
+        return check("learned reader", out.shape[1] in (5, 6, 7), "onnxruntime %s, %d classes, FV_SEG_USE=%s" % (onnxruntime.__version__, out.shape[1], use))
+    except ImportError as cause:
+        return check("learned reader", False, "%s -- pip install onnxruntime (needed only with FV_SEG_MODEL)" % cause)
+    except Exception as cause:  # noqa: BLE001
+        return check("learned reader", False, "the model does not load or run: %s" % cause)
+
+
 def draw_plan(path):
     """A small two-room plan: filled walls, a partition with a door, an entrance, a window, two labels and a
     5000 + 5000 / 6000 mm dimension chain (10 mm per pixel)."""
@@ -263,6 +285,7 @@ def main():
     tesseract = modules and check_tesseract()
     programs = check_programs(directory, note)
     check_settings()
+    check_seg_model()
     if run is not None:
         if modules and tesseract and programs:
             run_programs(directory, None if run is True else run)
