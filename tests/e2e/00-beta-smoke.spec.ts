@@ -65,6 +65,31 @@ async function expectNumericAttributeAtLeast(locator: Locator, name: string, min
     .toBeGreaterThanOrEqual(minimum);
 }
 
+// The scene draws on demand, and its FPS sampler only measures a continuous run
+// of frames lasting a second or more. A loaded design that has settled draws none,
+// so pan the camera with the right button: OrbitControls' damping keeps it moving,
+// and drawing, for a couple of seconds after the release. Furniture and openings
+// only take the primary button, so the pan can't move anything in the design.
+async function panSceneCamera(page: Page) {
+  const scene = page.getByTestId("scene-canvas").first();
+  await scene.scrollIntoViewIfNeeded();
+  const box = await scene.boundingBox();
+  expect(box).toBeTruthy();
+  const start = await scene.evaluate((root, area) => {
+    for (const [fx, fy] of [[0.5, 0.5], [0.4, 0.6], [0.6, 0.4], [0.35, 0.35], [0.65, 0.65]] as const) {
+      const point = { x: area.x + area.width * fx, y: area.y + area.height * fy };
+      const hit = document.elementFromPoint(point.x, point.y);
+      if (hit instanceof HTMLCanvasElement && root.contains(hit)) return point;
+    }
+    return null;
+  }, box!);
+  expect(start, "A press on the scene must land on its canvas, not an overlay.").toBeTruthy();
+  await page.mouse.move(start!.x, start!.y);
+  await page.mouse.down({ button: "right" });
+  await page.mouse.move(start!.x + 140, start!.y + 60, { steps: 20 });
+  await page.mouse.up({ button: "right" });
+}
+
 async function expectCloudSaveSettled(page: Page) {
   const saveStatus = page.getByTestId("save-status");
   await expect(saveStatus).toHaveAttribute("data-source", "cloud", { timeout: 30000 });
@@ -339,6 +364,7 @@ test.describe("00. Beta Smoke Gate", () => {
         await expect(editorPerformance).toHaveAttribute("data-mode", "auto");
         await expect(editorPerformance).toHaveAttribute("data-effective-mode", /^(quality|lite)$/);
         await expectNumericAttributeAtLeast(editorPerformance, "data-scene-item-count", 9);
+        await panSceneCamera(page);
         await expectNumericAttributeAtLeast(editorPerformance, "data-fps-samples", 1);
         await expectNumericAttributeAtLeast(editorPerformance, "data-last-fps", 1);
       } else {

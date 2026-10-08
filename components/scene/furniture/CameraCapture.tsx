@@ -1,7 +1,9 @@
-import { useRef, type MutableRefObject } from "react";
+import { useEffect, useRef, type MutableRefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+
+import { requestSceneDemandFrame } from "../sceneDemandDiagnostics";
 
 type CameraCaptureProps = {
   cameraRef: MutableRefObject<THREE.Camera | null>;
@@ -102,6 +104,28 @@ function updateQaCameraRenderFrame(
   document.documentElement.dataset.qaCameraRenderFrame = value;
 }
 
+type QaFrameRequestWindow = typeof window & { __INTERIOR_AI_QA_REQUEST_FRAME__?: () => void };
+
+// QA builds only: lets a browser test ask the on-demand canvas for one more
+// frame, so drei Html markers that mounted without a frame after them are
+// placed from the current camera before the test reads their boxes.
+function useQaFrameRequest() {
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS !== "1") return;
+    const qaWindow = window as QaFrameRequestWindow;
+    const request = () => {
+      requestSceneDemandFrame(invalidate);
+    };
+    qaWindow.__INTERIOR_AI_QA_REQUEST_FRAME__ = request;
+    return () => {
+      if (qaWindow.__INTERIOR_AI_QA_REQUEST_FRAME__ === request) {
+        delete qaWindow.__INTERIOR_AI_QA_REQUEST_FRAME__;
+      }
+    };
+  }, [invalidate]);
+}
+
 export function CameraCapture({
   cameraRef,
   canvasRef,
@@ -112,6 +136,7 @@ export function CameraCapture({
   const { camera, gl, scene } = useThree();
   const lastQaState = useRef<QaCameraState | null>(null);
   const qaRenderFrame = useRef(0);
+  useQaFrameRequest();
 
   useFrame(() => {
     cameraRef.current = camera as THREE.Camera;
