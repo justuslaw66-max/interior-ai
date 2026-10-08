@@ -8,6 +8,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | --- | --- | --- | --- | --- |
 | Florim | Ardoise Blanc | 14 drafts | 34 | `catalog/surface-materials/flooring/florim/ardoise/florim-ardoise-blanc.manifest.json` |
 | Gardenia (ABK Group) | Anima, six colours | 38 drafts (19 floor, 19 wall) | 182 | `catalog/surface-materials/flooring/gardenia/anima/gardenia-anima-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Dorica, four colours | 24 drafts (13 floor, 11 wall) | 100 | `catalog/surface-materials/flooring/gardenia/dorica/gardenia-dorica-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Oxide, five colours | 38 drafts (19 floor, 19 wall) | 136 | `catalog/surface-materials/flooring/gardenia/oxide/gardenia-oxide-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -29,7 +31,7 @@ In `texture_assets` of its `catalog.yaml`:
 - **In the render data** (`lib/generated/surface-material-render.generated.ts`, loaded with every design page), faces named `<prefix>01.webp`, `<prefix>02.webp`, … with one size are written as a run: `[prefix, count, width_mm, height_mm]`. The app expands it back into the same face list (`lib/surface-texture-face-run.ts`), so pictures, order and sizes are unchanged. A face list that doesn't follow the pattern is written in full. Name new faces `<item>_<nn>.webp`, numbered from 01, to keep them compact.
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim and Anima entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica and Oxide entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -39,8 +41,9 @@ In `texture_assets` of its `catalog.yaml`:
 | --- | --- |
 | Floors as drawn today (`DEFAULT_TARGET_PIXELS_PER_METER` = 260 in `useSurfaceMaterialTexture.ts`, canvas up to 2048 px) | 0.26 |
 | Walls as drawn today (`WALL_SURFACE_TEXTURE_RESOLUTION` = 560 px per metre, canvas up to 4096 px) | 0.56 |
-| Gardenia Anima faces in this repository (decided 4 Oct 2026, to keep the repository small) | 0.6 |
+| Gardenia faces in this repository (decided 4 Oct 2026 for Anima, to keep the repository small; the same for every Gardenia collection) | 0.6 |
 | Gardenia Anima originals (ABK download area JPGs) | 1.3 to 3.9 |
+| Gardenia Dorica and Oxide originals | 0.83 to 3.4 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -62,3 +65,14 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
 - All sizes of a colour are cuts of one graphic at one scale (image matching between sizes, r 0.96 to 1.00), so the pictures are true to size. The Grigio 120x280 is its own graphic.
 - Grigio 120x280: ABK's pictures are 3.2% wider than 1200 x 2800 mm. The extra width (19 mm per side) is cut off, keeping the length at true scale.
 - The wall-only item codes 0007195 (Fango 60x120) and 0007196 (Grigio 60x120) have no pictures of their own. They are the same tiles as 0006049 and 0006050 and use those faces.
+
+## Gardenia Dorica and Oxide specifics (downloaded 6 Oct 2026)
+
+- These downloads hold one copy of each face (no lighter and darker pair). Every site picture was matched to its ZIP file by sha256. Pictures ABK lists twice with identical bytes are used once (five in Oxide).
+- Each colour's sizes were checked against each other by image matching, at the scale their labels imply and at other scales. Where a size's pictures are not true to their label, the entry uses a larger size's faces, and the renderer cuts true-scale tile windows from them:
+  - **Dorica 20x120** (0010518, 0010519): ABK's 32 plank pictures are the colour's 120x120 graphic at 0.75 scale (r 0.96 to 0.99), so drawn as 200x1200 mm they would be 1.33 times too large. The 120x120 faces are used, turned a quarter so the veins run along the plank, stored as `0010518_nn` and `0010519_nn`.
+  - **Oxide Iron 80x80** (g69332): its four pictures are the 120x120 pictures (three byte-identical). The 120x120 faces (1200x1200 mm) are used.
+  - **Oxide Aluminum 80x80** (g69330): three of its six pictures are its 120x120 graphic (r 0.82 to 0.96 at 1.5 scale) and are declared as 1200x1200 mm faces; the other three as 800x800 mm.
+- **Dorica 0010147 and 0010148** (60x120) are listed by the configurator as one visible variant with 0010588 and 0010589 (R11), whose pictures are 0010008's and 0010009's (15 of 16 and all 16). They use those faces.
+- ABK's 120x280 pictures are 3.2% wider than 1200x2800 mm, as for Anima Grigio; the extra width is cut off.
+- The tracking files (ZIPs' hashes, every picture, faces, contact sheets) are in J's `~/Developer/material-masters/gardenia/<collection>/`.

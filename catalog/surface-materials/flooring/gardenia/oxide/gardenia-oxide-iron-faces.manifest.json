@@ -1,0 +1,429 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/iron/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (OXIDE - IRON - minimali.zip, 28876873 bytes, sha256 e9b6e337597b0241a2e5e386a4d9f25f3b1fc891fd564c36ff0c59b314ebbe1a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/oxide/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g69302",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/iron/g69302-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g69302_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-iron-g69302-120x280-90835-0; wall gardenia-wall-tile-oxide-iron-g69302-120x280-90835-0",
+   "faces": [
+    {
+     "file": "g69302_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 163508,
+     "source_file": "120X280-Natural/OXIDE - IRON - 120X280 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1032,
+      2333
+     ],
+     "source_sha256": "078b1b7e27fe6de4f3778465df9ff157cf223d39168bf4816e98872cc7a5f045",
+     "source_px_per_mm": 0.833,
+     "orientation": "upright",
+     "cropped": "32 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE IRON 120X280 MK_1",
+      "id": "acfda077-661f-4ac7-9416-ba4cac94c181",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69302_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 139768,
+     "source_file": "120X280-Natural/OXIDE - IRON - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "73f7ed60233517c70888aeb52981c8dc38b2ae1e3c02d4e6d1162ef24d9c91f1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE IRON 120X280 MK_2",
+      "id": "cdc34c8f-3c86-44e8-935d-5b5706b2c861",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69302_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 163620,
+     "source_file": "120X280-Natural/OXIDE - IRON - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "85f207efefe8dd0335f5e1e6755d595980f99dac175394aa409f7d77bcce5686",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE IRON 120X280 MK_3",
+      "id": "ef49ba19-d7fd-42e7-9079-ba50855e616c",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g69312",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/iron/g69312-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g69312_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-iron-g69312-120x120-90840-0; floor gardenia-flooring-oxide-iron-g69332-80x80-90850-0 (for g69332: the 80x80 pictures are the 120x120 pictures; the 120x120 faces are used); wall gardenia-wall-tile-oxide-iron-g69312-120x120-90840-0; wall gardenia-wall-tile-oxide-iron-g69332-80x80-90850-0 (for g69332: the 80x80 pictures are the 120x120 pictures; the 120x120 faces are used)",
+   "faces": [
+    {
+     "file": "g69312_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 66834,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5793c9ea14078c7fcc3c83adfe716180e6df06af85cb1a3201958fc41faed39c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE IRON 120X120_1",
+      "id": "51f4c1ac-1ab8-493c-8454-c57857b93ced",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69312_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74756,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      1032,
+      1032
+     ],
+     "source_sha256": "d121ebe699530425d6624889b1406d35881069725713f1e521f99367e2015740",
+     "source_px_per_mm": 0.86,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE IRON 120X120_6",
+      "id": "49107924-91ca-4096-8688-6f2a8c79d243",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69312_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 52950,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd9c7a269a6083c45a49f96a2bc818eee1445054cfdf603af99cdf1827ab57ca",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE IRON 120X120_2",
+      "id": "a60cd977-7f36-4860-a383-7bca7fc7f16c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69312_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65072,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "812da8c10b58834158e89acc6f6a34640dfbe673da6710d71ee53b2188186d18",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE IRON 120X120_3",
+      "id": "5d0ee82f-f849-4e55-b2c8-845336ae5863",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69312_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76560,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "761cc7c7e08abb36b997d74313ae13a91434ec9c4f7838814915f60dd380517b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE IRON 120X120_4",
+      "id": "3e1ef271-5224-4a6c-93cc-b95fae4ce6f5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69312_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76398,
+     "source_file": "120X120-Natural/OXIDE - IRON - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      1032,
+      1032
+     ],
+     "source_sha256": "4ae43e703a13eeb8f17ef0e4e57db22d67a48c173545df162e3eac5450e470cc",
+     "source_px_per_mm": 0.86,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE IRON 120X120_5",
+      "id": "9fb794bc-3d30-4563-bceb-ee45dc29b4f1",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g69322",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/iron/g69322-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g69322_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-iron-g69322-60x120-90845-0; wall gardenia-wall-tile-oxide-iron-g69322-60x120-90845-0",
+   "faces": [
+    {
+     "file": "g69322_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34296,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "c60f846871bbd4a8382f4bdb9754f7b55d1b32a1b1da9b423480cba936278830",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE IRON 60X120_1",
+      "id": "c191c723-2ccd-4b26-8f89-9cbcab9ed48c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69322_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35846,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "07af58689371da59e4e75556a0304a30da5bdc38e4201c8c945022ec43b669d6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE IRON 60X120_7",
+      "id": "d8f44daa-d99c-441f-8bc4-0ff6df9cfb5c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69322_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28622,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "d73a64aa7ba66e8a74721056b2ea33ba9e91f7ec8d59f5688108ea723b31aacd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE IRON 60X120_4",
+      "id": "159011fa-99f9-4f41-81a0-f9ad03310e26",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69322_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32268,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "f2b835372a836697e191af593bceaf3c9829ae59ceb9ea897e87919ca05b5f52",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE IRON 60X120_3",
+      "id": "194db013-eda7-4c29-a99d-7ac9ec3cf7b8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69322_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31378,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "74b742016748097151974ac18d203499d9c09afdd5abd6b63dcc9f9cb4c4b690",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE IRON 60X120_6",
+      "id": "7ac2273c-d0b2-4595-bced-04aac67da6e1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69322_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34034,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "43973f8e4b8ada4d4bde5df69ca1ca6ab9a46066c0599de89e7b2a1300854bdb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE IRON 60X120_2",
+      "id": "bea6e8d3-414f-47e5-a7ba-6b13287375fa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69322_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34208,
+     "source_file": "60X120-Natural/OXIDE - IRON - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "d465b9af2379a4b1f2ea0e0926e6897cf23c59b8f95d4dcd0ac008669bce28d0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "OXIDE IRON 60X120_5",
+      "id": "e84c3fb4-b040-4918-bdb6-2311c933a2ca",
+      "site_position": 7
+     }
+    }
+   ]
+  }
+ ]
+}
