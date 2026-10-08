@@ -1397,6 +1397,36 @@
       }
     },
     {
+      "id": "advisory.window-opening-mounted",
+      "invariant": "The 12 mounted window-opening cases run on every pull request and push of the integration line through their sealable runner (own dev server, disposable database, exact inventory, no filter, skip or retry), visible as an informational check without being merge or release certification.",
+      "cadence": "advisory",
+      "blocking": false,
+      "command": "npm run test:window-opening-mounted",
+      "packageScript": "test:window-opening-mounted",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "3e0f287343bac3a92ed87cac851c40473f3fa6aeca7ec562e9c55bc715a8b95c" },
+      "runner": "node",
+      "requiredSources": [
+        "tests/e2e/window-opening-corrections.spec.ts",
+        "playwright.window-opening.config.ts",
+        "scripts/run-window-opening-mounted.mjs",
+        "scripts/window-opening-mounted-tests.json",
+        "scripts/window-opening-mounted-test-contract.mjs",
+        "scripts/provision-gate-a3-database.mjs"
+      ],
+      "requiredCommandSources": ["scripts/run-window-opening-mounted.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": {
+        "workflow": ".github/workflows/window-opening-mounted.yml",
+        "job": "window-opening-mounted",
+        "step": "Run mounted window-opening suite",
+        "afterSteps": ["Start runner PostgreSQL for the window role", "Install Playwright Chromium"]
+      }
+    },
+    {
       "id": "release.gate-a3",
       "invariant": "The complete checked-in Playwright spec inventory executes against one staged immutable artifact with no focus, filter, skip, retry, flake, failure, or not-run result.",
       "cadence": "release-blocking",
