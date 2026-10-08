@@ -59,12 +59,10 @@ jobs:
           psql "postgresql://justus@127.0.0.1:5432/postgres" -v ON_ERROR_STOP=1 -tAc \
             "SELECT current_user, host(inet_server_addr()), inet_server_port()"
 
+      # On Linux the runner reads the server's listener from /proc, not lsof
+      # (scripts/window-opening-process-ownership.mjs).
       - name: Install Playwright Chromium
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx playwright install --with-deps chromium
-          command -v lsof || sudo apt-get install -y lsof
+        run: npx playwright install --with-deps chromium
 
       - name: Run mounted window-opening suite
         env:

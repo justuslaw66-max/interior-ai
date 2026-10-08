@@ -36,6 +36,7 @@ import {
 import {
   assertPortHasNoListener,
   parseLsofListenerOutput,
+  parseProcNetTcpListeners,
   resolveOwnedPortListener,
 } from "./window-opening-process-ownership.mjs";
 import {
@@ -494,9 +495,11 @@ function ownedProcessFixture(listenerCwd = "/fixture/repository", includeListene
     throw new Error(`Unexpected fixture command: ${command} ${args.join(" ")}`);
   };
 }
+// macOS resolves the listener with lsof; these fixtures pin that path on any host.
+const lsofHost = (run) => ({ platform: "darwin", run });
 const ownership = await resolveOwnedPortListener({
   port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
-  run: ownedProcessFixture(),
+  ...lsofHost(ownedProcessFixture()),
 });
 assert.equal(ownership.launcherPid, 111);
 assert.equal(ownership.listenerPid, 222);
@@ -504,20 +507,93 @@ assert.notEqual(ownership.launcherPid, ownership.listenerPid);
 cover("launcher and actual listener PIDs are distinct and owned");
 await assert.rejects(() => resolveOwnedPortListener({
   port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
-  run: ownedProcessFixture("/different/worktree"),
+  ...lsofHost(ownedProcessFixture("/different/worktree")),
 }), /cwd mismatch/);
 cover("listener from another cwd fails");
-await assert.rejects(() => assertPortHasNoListener(45123, ownedProcessFixture()), /already has listener/);
+await assert.rejects(() => assertPortHasNoListener(45123, lsofHost(ownedProcessFixture())), /already has listener/);
 cover("pre-existing listener fails");
 await assert.rejects(() => resolveOwnedPortListener({
   port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
-  run: ownedProcessFixture("/fixture/repository", false),
+  ...lsofHost(ownedProcessFixture("/fixture/repository", false)),
 }), /found 0/);
 cover("missing listener after readiness fails");
 await assert.doesNotReject(() => assertPortHasNoListener(
-  45123, ownedProcessFixture("/fixture/repository", false)
+  45123, lsofHost(ownedProcessFixture("/fixture/repository", false))
 ));
 cover("listener absence verifies teardown");
+
+// Linux resolves the listener from /proc. Next's server title leaves "next-server (v1" in
+// /proc/<pid>/stat, and lsof 4.95 skips that process. The ps fixture answers ancestry, and
+// its lsof branches throw if the Linux path ever calls lsof.
+const procTcpHeader = "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode";
+function procHostFixture({ listenerCwd = "/fixture/repository", ownerVisible = true, includeListener = true } = {}) {
+  const listenLine = "   0: 0100007F:B043 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1001        0 9001 1 0000000000000000 100 0 0 10 0";
+  const files = new Map([
+    ["/proc/net/tcp", `${[procTcpHeader, ...(includeListener ? [listenLine] : [])].join("\n")}\n`],
+    ["/proc/222/comm", "next-server (v1\n"],
+  ]);
+  const directories = new Map([
+    ["/proc", ["1", "111", "222", "self"]], ["/proc/111/fd", ["0"]], ["/proc/222/fd", ["0", "19"]],
+  ]);
+  const links = new Map([
+    ["/proc/111/fd/0", "pipe:[100]"], ["/proc/222/fd/0", "/dev/null"],
+    ...(ownerVisible ? [["/proc/222/fd/19", "socket:[9001]"]] : []),
+    ["/proc/222/cwd", listenerCwd], ["/proc/222/exe", "/usr/bin/node"],
+  ]);
+  const read = async (entries, key) => {
+    if (!entries.has(key)) throw Object.assign(new Error(`ENOENT: ${key}`), { code: "ENOENT" });
+    return entries.get(key);
+  };
+  return {
+    platform: "linux",
+    run: ownedProcessFixture(),
+    proc: {
+      readText: (file) => read(files, file),
+      list: (directory) => read(directories, directory),
+      link: (file) => read(links, file),
+    },
+  };
+}
+const procOwnership = await resolveOwnedPortListener({
+  port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository", ...procHostFixture(),
+});
+assert.deepEqual([
+  procOwnership.launcherPid, procOwnership.listenerPid, procOwnership.listenerCommand,
+  procOwnership.listenerEndpoint, procOwnership.listenerCwd, procOwnership.listenerExecutable,
+], [111, 222, "next-server (v1", "127.0.0.1:45123", "/fixture/repository", "/usr/bin/node"]);
+cover("linux listener resolves from proc despite the truncated server title");
+await assert.rejects(() => resolveOwnedPortListener({
+  port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
+  ...procHostFixture({ listenerCwd: "/different/worktree" }),
+}), /cwd mismatch/);
+cover("linux listener from another cwd fails");
+await assert.rejects(() => assertPortHasNoListener(
+  45123, procHostFixture({ ownerVisible: false })
+), /already has listener PID unknown/);
+await assert.rejects(() => resolveOwnedPortListener({
+  port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
+  ...procHostFixture({ ownerVisible: false }),
+}), /cannot inspect/);
+cover("linux listener owned by another user is never free");
+await assert.doesNotReject(() => assertPortHasNoListener(
+  45123, procHostFixture({ includeListener: false })
+));
+await assert.rejects(() => resolveOwnedPortListener({
+  port: 45123, launcherPid: 111, repositoryRoot: "/fixture/repository",
+  ...procHostFixture({ includeListener: false }),
+}), /found 0/);
+cover("linux listener absence verifies teardown");
+assert.deepEqual(parseProcNetTcpListeners([
+  procTcpHeader,
+  "   0: 0100007F:B043 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1001        0 9001 1 0000000000000000 100 0 0 10 0",
+  "   1: 0100007F:B043 0100007F:D431 01 00000000:00000000 00:00000000 00000000  1001        0 9002 1 0000000000000000 20 4 30 10 -1",
+  "   2: 00000000000000000000000001000000:B043 00000000000000000000000000000000:0000 0A 00000000:00000000 00:00000000 00000000  1001        0 9003 1 0000000000000000 100 0 0 10 0",
+  "   3: 0100007F:B044 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1001        0 9004 1 0000000000000000 100 0 0 10 0",
+].join("\n"), 45123), [
+  { inode: "9001", endpoint: "127.0.0.1:45123" },
+  { inode: "9003", endpoint: "[::1]:45123" },
+]);
+cover("linux proc table keeps only listeners on the port");
 
 async function screenshotFixture() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "window-opening-screenshot-"));

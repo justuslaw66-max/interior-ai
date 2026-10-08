@@ -995,7 +995,15 @@ advisory and release inventories, so PRs pushed another way never ran it.
   exact target `scripts/provision-gate-a3-database.mjs` accepts. A service
   container would report its Docker address instead.
 - **Environment.** It sets `TMPDIR` and `WINDOW_OPENING_MOUNTED_PARENT` under
-  `runner.temp`, and makes sure `lsof` is installed.
+  `runner.temp`.
+- **Listener check on Linux.** `scripts/window-opening-process-ownership.mjs`
+  reads the server's listener, cwd and executable from `/proc` on Linux, and
+  keeps lsof on macOS. Next titles its server `next-server (v16.2.11)`, and
+  Linux keeps 15 bytes of that, `next-server (v1`. lsof 4.95 (Ubuntu 24.04)
+  cannot parse the unmatched `(` in `/proc/<pid>/stat` and skips the process.
+  The first run failed that way: the server answered `/api/health`, then lsof
+  found no listener. On Linux a listening socket owned by a process this user
+  cannot inspect still counts, so the port is never treated as free.
 - **Status.** The gate is advisory (`blocking: false`), and merge-gate does not
   wait for it. As a separate workflow it keeps its real conclusion, so a failure
   shows as a red check. It uploads the run folder only when it fails (7 days).
