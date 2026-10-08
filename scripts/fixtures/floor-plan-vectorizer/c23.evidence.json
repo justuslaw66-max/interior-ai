@@ -164,30 +164,15 @@
     "evidenceKind": "vectorizer"
    },
    {
-    "label": "AC",
-    "rawText": "AC",
+    "label": "AC LEDGE",
+    "rawText": "AC LEDGE",
     "roomType": "other",
-    "centerXRatio": 0.101804,
+    "centerXRatio": 0.129188,
     "centerYRatio": 0.430179,
     "bbox": {
      "leftRatio": 0.090851,
      "topRatio": 0.426786,
-     "rightRatio": 0.112758,
-     "bottomRatio": 0.433571
-    },
-    "confidence": 0.576,
-    "evidenceKind": "vectorizer"
-   },
-   {
-    "label": "LEDGE",
-    "rawText": "LEDGE",
-    "roomType": "other",
-    "centerXRatio": 0.143363,
-    "centerYRatio": 0.430357,
-    "bbox": {
-     "leftRatio": 0.118557,
-     "topRatio": 0.427143,
-     "rightRatio": 0.16817,
+     "rightRatio": 0.167526,
      "bottomRatio": 0.433571
     },
     "confidence": 0.77,
@@ -239,48 +224,18 @@
     "evidenceKind": "vectorizer"
    },
    {
-    "label": "RC",
-    "rawText": "RC",
+    "label": "RC TRELLIS AT 2ND STY",
+    "rawText": "RC TRELLIS AT 2ND STY",
     "roomType": "other",
-    "centerXRatio": 0.596005,
+    "centerXRatio": 0.677191,
     "centerYRatio": 0.53125,
     "bbox": {
-     "leftRatio": 0.585696,
-     "topRatio": 0.527857,
-     "rightRatio": 0.606314,
-     "bottomRatio": 0.534643
-    },
-    "confidence": 0.462,
-    "evidenceKind": "vectorizer"
-   },
-   {
-    "label": "TRELLIS AT",
-    "rawText": "TRELLIS AT",
-    "roomType": "other",
-    "centerXRatio": 0.653995,
-    "centerYRatio": 0.53125,
-    "bbox": {
-     "leftRatio": 0.610825,
-     "topRatio": 0.527857,
-     "rightRatio": 0.697165,
-     "bottomRatio": 0.534643
-    },
-    "confidence": 0.573,
-    "evidenceKind": "vectorizer"
-   },
-   {
-    "label": "2ND STY",
-    "rawText": "2ND STY",
-    "roomType": "other",
-    "centerXRatio": 0.734858,
-    "centerYRatio": 0.53125,
-    "bbox": {
-     "leftRatio": 0.701675,
+     "leftRatio": 0.58634,
      "topRatio": 0.527857,
      "rightRatio": 0.768041,
      "bottomRatio": 0.534643
     },
-    "confidence": 0.525,
+    "confidence": 0.462,
     "evidenceKind": "vectorizer"
    },
    {
@@ -770,7 +725,7 @@
     ]
    },
    {
-    "label": "LEDGE",
+    "label": "AC LEDGE",
     "roomType": "other",
     "confidence": 0.77,
     "evidenceKind": "vectorizer",
@@ -3949,7 +3904,7 @@
   },
   {
    "key": "room-9",
-   "label": "LEDGE",
+   "label": "AC LEDGE",
    "roomType": "other",
    "registrationKind": "assembled_wall_topology",
    "confidence": 0.77,
@@ -3999,7 +3954,7 @@
    ],
    "areaM2": 2.27,
    "sourceLabels": [
-    "LEDGE"
+    "AC LEDGE"
    ]
   },
   {

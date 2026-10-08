@@ -59,6 +59,12 @@ RESIDUAL = os.environ.get("FV_RESIDUAL", "1") != "0"
 # The other line of a two-line room name (round 25, J 6 Oct: "continue working on the remaining items"): 'BATH' under COMMON
 # with the door swing through it, 'BEDROOM' under MASTER in bold blurred lettering - read again beside the line that was read.
 SECOND_LINES = os.environ.get("FV_SECOND_LINES", "1") != "0"
+# round 26 (labels read the same by tesseract 5.3 and 5.5): each rule behind its own switch, "0" = off
+R26_STRIP = os.environ.get("FV_R26_STRIP", "1") != "0"      # a bracket / semicolon the reader puts on a word's ends ('(LIVING;') is not part of it
+R26_REFUSE = os.environ.get("FV_R26_REFUSE", "1") != "0"    # a cluster one letter from a plan word whose pixels refuse that word is linework ('LIVIN' on a wardrobe)
+R26_RINGS = os.environ.get("FV_R26_RINGS", "1") != "0"      # a one- or two-digit read far larger than the plan's lettering is a fixture's rings (c22's cooker '20')
+R26_TALL = os.environ.get("FV_R26_TALL", "1") != "0"        # a two-line stack's box narrower than its read word: look for the word a letter wider
+R26_JOIN = os.environ.get("FV_R26_JOIN", "1") != "0"        # two plan words read apart on one line, a word space apart, are one label ('JUNIOR' + 'SUITE')
 # The drawing (SVG only) cleaned where the trace's pieces meet: walls drawn as one, lines to where the drawing's lines end,
 # fixture outlines closed, a dashed line not cut by a stray short line (see clean_drawing).  Off: the SVG as before.
 CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
@@ -679,9 +685,30 @@ def _strip_edge_junk(s):
     return " ".join(tk for tk in toks if tk)
 
 
+def _is_ring(mask, g):
+    """Round 26: a glyph-sized component that is a round ring (a cooker's burner, a basin's drain), not a digit: about as wide
+    as tall (a printed 0 or 8 is clearly taller than wide) with an empty middle of at least a third of its box."""
+    x, y, w, h = [int(v) for v in g]
+    if h <= 0 or not (0.8 <= w / float(h) <= 1.25):
+        return False
+    sub = (mask[y:y + h, x:x + w] > 0).astype(np.uint8)
+    if sub.size == 0:
+        return False
+    inv = (1 - sub).astype(np.uint8)
+    ff = inv.copy(); fm = np.zeros((h + 2, w + 2), np.uint8)
+    for (sx, sy) in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)):
+        if ff[sy, sx]:
+            cv2.floodFill(ff, fm, (sx, sy), 0)
+    return float(ff.sum()) >= 0.33 * w * h                  # what is left of the background is enclosed by the ring
+
+
 def vocab_fix(st, loose=False):
     out = []
     for tok in st.split():
+        if R26_STRIP and tok not in PLAN_VOCAB and len(tok) >= 4:
+            core_ = tok.strip("(){}[];:,!|")
+            if core_ != tok and core_ in PLAN_VOCAB and len(core_) >= 3:   # '(LIVING;': the ring round a label read as brackets
+                tok = core_
         m_ = re.fullmatch(r"([A-Z][A-Z.\-]{2,})([0-9])", tok)
         if m_ and m_.group(1) in PLAN_VOCAB:                 # 'BATH2', 'BEDROOM3': the space was lost, nothing else
             out += [m_.group(1), m_.group(2)]; continue
@@ -2132,12 +2159,18 @@ def extract(path):
                         s2 = s2n if ok_fix else s2
                 s2_read = s2
                 s2 = vocab_fix(s2, loose=soft) if s2 else s2
+                refused_ = False
                 if s2 != s2_read and soft:
                     ok_fix, sc_fix = pixels_prefer_repair(gray, box, vertical, s2_read, s2)
                     if os.environ.get("FV_LOG_REPAIR"):
                         print("REPAIR cluster", repr(s2_read), "->", repr(s2), "conf", c2, sc_fix, "KEPT" if ok_fix else "REJECTED")
                     if not ok_fix:
                         s2 = s2_read
+                        # only the 'a letter lost from one end' repair (LIVIN -> LIVING): a real word one letter from a plan
+                        # word ('RAISED' of a ceiling note) is not refused
+                        refused_ = R26_REFUSE and any(len(tk) == 5 and tk.isalpha() and tk not in PLAN_VOCAB and
+                                                      any(len(v_) == 6 and (v_.startswith(tk) or v_.endswith(tk)) for v_ in PLAN_VOCAB)
+                                                      for tk in s2_read.split())
                 if soft and s2 and any(ch.isalpha() for ch in s2):
                     toks = [tk for tk in s2.split() if any(ch.isalpha() for ch in tk)]
                     long_ok = any(len(tk) >= 5 and c2 >= 75 for tk in toks)
@@ -2147,6 +2180,13 @@ def extract(path):
                         c2 = 0.0                            # two stray letters are not a label
                     elif toks and all(tk in PLAN_VOCAB for tk in toks) and sum(len(tk) for tk in toks) >= 4:
                         c2 = max(c2, 45.0)                  # a whole plan word: the vocabulary vouches for it
+                if R26_RINGS and soft and s2 and re.fullmatch(r"[0-9]{1,2}", s2.replace(" ", "")) and \
+                        (box[2] if vertical else box[3]) > 1.6 * th_main and all(_is_ring(rest, q) for q in grp):
+                    _dbg("cluster rejected: a short number far larger than the lettering", box[0], box[1], box[2], box[3], repr(s2), c2)
+                    continue                                # not lettering at all: leave the strokes to the tracer
+                if refused_:
+                    _dbg("cluster rejected: one letter from a plan word the pixels refuse", box[0], box[1], box[2], box[3], repr(s2), c2)
+                    c2 = 0.0                                # ('LIVIN' read off a wardrobe's hanger strokes; not LIVING by its pixels)
                 if s2 and c2 >= 45 and word_re.match(s2.replace(" ", "")) and len(s2) >= 2 and not any(ch.islower() for ch in s2):
                     t = {"s": s2, "box": box, "vertical": vertical, "conf": round(c2, 1), "second_chance": True}
                     texts.append(t); erase_text(t)
@@ -3310,11 +3350,29 @@ def split_tall_labels(m):
         x, y, w, h = t["box"]
         if h < 1.7 * cap or not re.match(r"^[A-Z0-9/.\-' ]+$", t["s"]):
             continue
-        sc, b = render_find(gray, (x - 0.3 * cap, y - 0.2 * cap, x + w + 0.3 * cap, y + h + 0.2 * cap), False, t["s"], cap, wfs_)
+        mx_ = 1.0 * cap if R26_TALL else 0.3 * cap          # (the reader's box of a two-line stack can be narrower than the word itself)
+        sc, b = render_find(gray, (x - mx_, y - 0.2 * cap, x + w + mx_, y + h + 0.2 * cap), False, t["s"], cap, wfs_)
         if not b or sc < 0.55:
             continue
         bx, by, bw, bh = b
         t["box"] = [x, by, w, bh]; t["cap_px"] = float(bh); t["ink"] = [bx, by, bx + bw, by + bh]; t["box_split"] = round(sc, 2)
+        if R26_JOIN and all(tk in PLAN_VOCAB for tk in t["s"].split()):
+            # the other word of this line, read on its own ('SUITE' beside 'JUNIOR'): one label, and the line below spans both
+            for o in list(m["texts"]):
+                if o is t or o["vertical"] or o.get("angle") is not None or o["box"][3] > 1.4 * cap \
+                        or not o["s"].split() or not all(tk in PLAN_VOCAB for tk in o["s"].split()):
+                    continue
+                ox, oy, ow, oh = o["box"]
+                if abs((oy + oh / 2.0) - (by + bh / 2.0)) > 0.4 * bh or abs(oh - bh) > 0.4 * bh:
+                    continue
+                gap_ = ox - (x + w) if ox >= x else x - (ox + ow)
+                if not (-0.2 * cap <= gap_ < 1.2 * cap):
+                    continue
+                t["s"] = (t["s"] + " " + o["s"]) if ox >= x else (o["s"] + " " + t["s"])
+                nx0, nx1 = min(x, ox), max(x + w, ox + ow)
+                x, w = nx0, nx1 - nx0
+                t["box"] = [x, by, w, bh]; t["ink"] = [x, by, x + w, by + bh]; t["joined"] = True
+                m["texts"].remove(o)
         for ya, yb in ((y - 0.2 * cap, by - 0.1 * cap), (by + bh + 0.1 * cap, y + h + 0.2 * cap)):
             ya, yb = int(max(0, ya)), int(min(gray.shape[0], yb))
             xa, xb = int(max(0, x - 0.5 * cap)), int(min(gray.shape[1], x + w + 0.5 * cap))
@@ -3344,8 +3402,61 @@ def split_tall_labels(m):
             m["texts"].append({"s": st, "box": [nx, ny, nw, nh], "vertical": False, "conf": round(cf, 1), "cap_px": float(nh),
                                "ink": [nx, ny, nx + nw, ny + nh], "split_from": t["s"], "pixel_match": round(sc2, 2)})
             split.append("%s | %s" % (t["s"], st))
+            if R26_TALL:                                    # the fragment of this line the cluster reader could not read is read now
+                for u_ in list(m.get("unread_text", [])):
+                    ux, uy, uw, uh = u_["box"]
+                    if not u_.get("vertical") and min(ux + uw, nx + nw) - max(ux, nx) > 0.5 * uw and min(uy + uh, ny + nh) - max(uy, ny) > 0.5 * uh:
+                        m["unread_text"].remove(u_)
     if split:
         m.setdefault("dimension_report_pre", {})["labels_split"] = split
+
+
+def join_line_words(m):
+    """Round 26: two plan words read apart on one line of lettering ('JUNIOR' and 'SUITE' by one release of the reader,
+    'JUNIOR SUITE' by another) are one label when they stand a word space apart - two labels are never lettered that close
+    on one line.  Only words of the plan vocabulary are joined; numbers are left to number_after_label."""
+    if not R26_JOIN:
+        return
+    caps = [float(t["box"][2] if t["vertical"] else t["box"][3]) for t in m["texts"] if t.get("angle") is None
+            and any(ch.isalpha() for ch in t["s"]) and len(t["s"].replace(" ", "")) >= 3]
+    if len(caps) < 3:
+        return
+    cap = float(np.median(caps))
+    joined = []
+    changed = True
+    while changed:
+        changed = False
+        ws = [t for t in m["texts"] if t.get("angle") is None and not t.get("title") and t["s"].split()
+              and all(tk in PLAN_VOCAB and any(ch.isalpha() for ch in tk) for tk in t["s"].split())
+              and (t["box"][2] if t["vertical"] else t["box"][3]) <= 1.4 * cap]
+        for a in ws:
+            for b in ws:
+                if a is b or a["vertical"] != b["vertical"]:
+                    continue
+                ax, ay, aw, ah = a["box"]; bx, by, bw, bh = b["box"]
+                if a["vertical"]:                           # along = y, across = x
+                    al0, al1, ac, ah_ = ay, ay + ah, ax + aw / 2.0, aw
+                    bl0, bl1, bc, bh_ = by, by + bh, bx + bw / 2.0, bw
+                    if a["vertical"] == "up":               # read bottom to top: the first word is the lower one
+                        al0, al1, bl0, bl1 = -al1, -al0, -bl1, -bl0
+                else:
+                    al0, al1, ac, ah_ = ax, ax + aw, ay + ah / 2.0, ah
+                    bl0, bl1, bc, bh_ = bx, bx + bw, by + bh / 2.0, bh
+                if abs(ac - bc) > 0.35 * min(ah_, bh_) or abs(ah_ - bh_) > 0.3 * max(ah_, bh_):
+                    continue
+                gap_ = bl0 - al1                            # b follows a
+                if not (-0.2 * cap <= gap_ < 1.0 * cap):
+                    continue
+                s_ = a["s"] + " " + b["s"]
+                x0, y0 = min(ax, bx), min(ay, by); x1, y1 = max(ax + aw, bx + bw), max(ay + ah, by + bh)
+                a["s"] = s_; a["box"] = [x0, y0, x1 - x0, y1 - y0]; a["ink"] = [x0, y0, x1, y1]; a["joined"] = True
+                a["conf"] = round(min(float(a.get("conf", 0)), float(b.get("conf", 0))), 1)
+                m["texts"].remove(b); joined.append(s_); changed = True
+                break
+            if changed:
+                break
+    if joined:
+        m.setdefault("dimension_report_pre", {})["labels_joined"] = joined
 
 
 def _ink_extent(g, box, vertical, cap, thr, limit):
@@ -9491,6 +9602,7 @@ if __name__ == "__main__":
         import pickle; pickle.dump(m, open(base + ".extract.pkl", "wb"))
     read_title_lines(m)
     split_tall_labels(m)
+    join_line_words(m)
     number_after_label(m)
     sanity_texts(m)
     vote_verify_numbers(m)
