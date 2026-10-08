@@ -1,0 +1,1477 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-sabbia/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - GENUINE SABBIA - minimali.zip (58362606 bytes, sha256 3a00eba1a2d881cf5cdbe76336ac3e4051371481fa45ff888dd979c1fe3e7955).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "23,4x148",
+   "item_code": "0021106",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-sabbia/pf60021106-v102/",
+   "face_mm": {
+    "width": 234,
+    "height": 1480
+   },
+   "swatch": "0021106_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-sab-nat-pf60021106-23-4x148-nat-92248-0; wall gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021106-23-4x148-nat-92248-0",
+   "faces": [
+    {
+     "file": "0021106_01.webp",
+     "face": 1,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10368,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_1 (2).jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "7d36270f16e12b2abf8c30f1c0764e5868eefbe7f1ebb235e566780a3d64a613",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_01",
+      "id": "cc63e209-a7d3-4d51-91d6-0051f4e85445",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021106_02.webp",
+     "face": 2,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13372,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_1.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "c63958a14417fcdbf3042d351ac71d5c85db23a0aa322b2b22b15a7653ad5e01",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_08",
+      "id": "256a74ae-efe3-462d-b489-eacb2ad384c1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021106_03.webp",
+     "face": 3,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13714,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_2.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "c9bf5df13ff9517075167742c5584a0f5beb280248ab378ed1e8c917a8d4cce2",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_09",
+      "id": "ee29f6ac-ea80-4831-88d3-f504398287fc",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021106_04.webp",
+     "face": 4,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13112,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_3.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "2293ba60d083d8fb41236e34ca2ed452500cdc5c0b85e232dbd59dfa1d494038",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_04",
+      "id": "c023b4f0-acfc-4b2d-bd1a-ccc864a4a445",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021106_05.webp",
+     "face": 5,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12504,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_4.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "e43b1de05771ae032483fe2287bf74b080a92a61bc80271f56b7fc7bd217b20d",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_17",
+      "id": "ca88eec5-d474-42dd-bfd6-17d88e88237c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021106_06.webp",
+     "face": 6,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12474,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_5.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "f8d7294c19e9386dfbc3ed8ffd578aff8a5b028381a847ecc08c9a1b39bdc914",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_13",
+      "id": "f6c8245d-e746-4f8e-b49e-b87d4e40efb2",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021106_07.webp",
+     "face": 7,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11460,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_6.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "d37f59a11b3c13c51ec51dec8656fab3d0ba8e99206ef6cb04bba15a10601e62",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_19",
+      "id": "0e4e32b6-0dd7-4a07-a49b-fb8df4c4d78a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021106_08.webp",
+     "face": 8,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11620,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_7.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "19542bd0ec655e4a47807a451a91f2f837eeeeaaf831c91112ceaa1c6c2f5c8e",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_18",
+      "id": "c7a930e0-a81c-49ce-a491-e52de3a55b81",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021106_09.webp",
+     "face": 9,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12282,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_8.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "b7aec38babdf09cbf7a813680118dc7ed1d96bc82da8a092a45836ee3df0cb26",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_14",
+      "id": "cdac9a72-52ed-41a5-a8ef-fdcaa1bc597c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021106_10.webp",
+     "face": 10,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12632,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_9.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "6395f32edf4862c907627dabed52569db21b0900b330d52e152d6fff0c49b8a9",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_16",
+      "id": "545ffaa7-aea1-4086-bee3-7215745d84f2",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021106_11.webp",
+     "face": 11,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12468,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_10.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "836006781a18c78bc24930d49e7ef84b01257ae29a6369198a9be2477516caaf",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_20",
+      "id": "144083c3-db9c-4662-bc49-947d19cc5cb2",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021106_12.webp",
+     "face": 12,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 14388,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_11.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "77aed28af8da90688e178679a83ce50cc7cd31128ddecccde72d04b845971958",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_12",
+      "id": "e78fb937-13e4-43ab-b311-445c6fd134eb",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021106_13.webp",
+     "face": 13,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10680,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_12.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "433fcb7881820cf3827102296d56d809d8eacf56afe49547f3d1f6e17f8a14f6",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_06",
+      "id": "91d0bfef-fd79-48cf-ab27-2891359c0602",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021106_14.webp",
+     "face": 14,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12738,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_13.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "264692bfc83a0ab9e4585e9c9f0583f75a13442c4e4428ad562e2eed82165b75",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_15",
+      "id": "9d280e84-1a06-47be-94ea-c80dfe310a69",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021106_15.webp",
+     "face": 15,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11268,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_14.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "a28614f31e31ddadfb5a8b49e3331d7651d50f1cc80785a514deb96709645bed",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_07",
+      "id": "82074dd7-2a4a-4c86-a57f-716a5f0415a7",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021106_16.webp",
+     "face": 16,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10386,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_15.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "33955f42f4322f67ee3e14a50aeaf13e6b43551fba6e9a39f7c46e33f9ab5f7e",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_11",
+      "id": "8c17fcb4-5d41-461c-907d-41d7da2bb133",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021106_17.webp",
+     "face": 17,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11260,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_16.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "ffed3f8fd09467ef8d9a63edc07b6b3cdc6c9b81ba2fa42731fcedb425fc077f",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_03",
+      "id": "2fb3ec76-dda1-4664-8dba-3950fb840f0b",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021106_18.webp",
+     "face": 18,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11298,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_18.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "17f255e1a3451753b43635e9f37f533a1075c6c35cd0b2490a67ba3d6910c5df",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_10",
+      "id": "546dffef-0dfb-492e-a2ed-9a30750329f6",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021106_19.webp",
+     "face": 19,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13650,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_19.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "f45267064088a50413804fb305b8d802ee0cfb054805c51f09f6cd01a15f64bc",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_05",
+      "id": "06d947bb-02c7-48c5-8576-a78b3cff1266",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021106_20.webp",
+     "face": 20,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11918,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE SABBIA - 23,4X148 - Natural - view_20.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "d393bfde5947b294ba8fb897f4ae91b786867b9a99c0fad5044e6ab47783932d",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE GENUINE SABBIA 23,4X148_02",
+      "id": "2b75ed4d-380e-4bac-9fc1-f82bcb62f5c5",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0021140",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-sabbia/pf60021140-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0021140_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "duplicates_dropped_site_positions": [
+    23
+   ],
+   "used_by": "floor gardenia-flooring-tabulae-genuine-sab-nat-pf60021140-20x120-nat-92252-0; floor gardenia-flooring-tabulae-genuine-sab-nat-pf60021155-20x120-92266-0 (uses 0021140's faces: ABK's 30 R11 pictures are 0021140's 30 Natural pictures, byte for byte); wall gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021140-20x120-nat-92252-0; wall gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021155-20x120-92266-0 (uses 0021140's faces: ABK's 30 R11 pictures are 0021140's 30 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0021140_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6604,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "c9616cce91b5bb732a96507e8a7a8c22c6f47a67acb7f6a8b9f229c27b37641f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE SABBIA 20X120_01",
+      "id": "b9123733-e13d-4435-9de6-adbb3470729a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021140_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8728,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_1.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "a5b65c5b8a3576c93b72cb7c1ea72c2159d4a83949349e5ab5e69316f68cc0f8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE SABBIA 20X120_24",
+      "id": "5df39369-fd3b-4e9a-9e1b-c599bfd0f256",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021140_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7708,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_2.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "e153dcecca872a05f5844045dca6d26fda4ff4e67bcfcac217fa1fd4e9d54b36",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE SABBIA 20X120_29",
+      "id": "da5ff630-f415-4e43-bf02-3a3cc3d4b91c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021140_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8236,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_3.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "5ac34c5a2b35279fa2ac4ba94f72967abc78770e4c85dedd0233a50a99604030",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE SABBIA 20X120_27",
+      "id": "332ec8de-af9e-4122-a643-9a5b27a71e22",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021140_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8322,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_4.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "adbfbf174a2fe71ac2d63c5adbfdc92738876492743ce4d24604a24a1bd923da",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE SABBIA 20X120_30",
+      "id": "fb885784-6581-4b87-8a59-8145a640cd3b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021140_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7490,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_5.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "0ac167d7b719dfdadfdd05daee4b15ef91289b38425f5971589999d49d4d14bc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE SABBIA 20X120_23",
+      "id": "8327deab-0937-45e5-a62d-313a8f493780",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021140_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7536,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_6.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "2c75334c652b8a30a8271ee6906b0d280526d7c70918636620beff8e79ef3ee0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE SABBIA 20X120_26",
+      "id": "403cb5d2-c511-47c6-a42b-d17990912635",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021140_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8776,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_7.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "8779b57681c07574c7dee656de08f7e5a4f62d750f8ccacd8afe496defc4fba7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE SABBIA 20X120_22",
+      "id": "f21a93c9-04b4-4406-a6c9-5b18b417b376",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021140_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8026,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_8.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "f6082614bba5e222c4cca698ca3906b1059c2027a45b2a6997b49e722816a77e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE SABBIA 20X120_28",
+      "id": "7b714e3b-10dc-464f-8354-8b9ed29759cf",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021140_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9582,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_9.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "2964862bdf4d5fd885c12d27a2e6bc7d28de96eb2441627fef4f1d4c6c47eced",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE SABBIA 20X120_25",
+      "id": "77ec1dab-8dff-4a36-886b-21b65ea80855",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021140_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7084,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_10.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "2dd2cf1e551ee1ae266ed7a5416312448272139f41bce39dbd51b9bd2fba2f55",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE SABBIA 20X120_21",
+      "id": "a01ffe47-496a-4e1a-9d02-cfa66bb748a4",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021140_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8874,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_11.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "8a828cfdec843377b923a6490936ca4a973a162bfc140b6cb7fa903e613b7687",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE SABBIA 20X120_11",
+      "id": "88574c80-0ef4-4c49-870f-c13ae03c482d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021140_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7704,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_12.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "8d1f5b9217969da205816d7aaa62fee1fb9a2dc99f798d15e316ba9009896c1f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE SABBIA 20X120_02",
+      "id": "f8e716ce-074d-4504-b8a4-555352061f3b",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021140_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8250,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_13.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "bc786dc0f6c6f3924621fbc4e542c716b5d361ec7ee64fafe43dd3f5e8202ffd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE SABBIA 20X120_07",
+      "id": "5ae47eb4-38d2-4c01-aaed-945932b79a9c",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021140_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9396,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_14.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "3d2b4e2b11130a4a694cfeda0459833280a6ce03d9b1fae8f2d2aa0546ed1f05",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE SABBIA 20X120_06",
+      "id": "a52719c2-a4c7-43e0-8226-1be1ad3100a0",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021140_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8918,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_15.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "38e963ba11df7ad6c775f269fa3e3753e4433e14cea560f8c5d423fd68cbf7a7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE GENUINE SABBIA 20X120_20",
+      "id": "3cdb6d75-8055-4859-8c74-69d06904beda",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021140_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9790,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_22.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "8fa15a5b7882c0040c1f1a0031a4e070c7e6fdeda9d164b6d0e5640e80b3c3eb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE GENUINE SABBIA 20X120_09",
+      "id": "47a292c9-1855-4399-96c1-a57646467026",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021140_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7160,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_17.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "6093a85c9b940adc2a88ad8a6e516457a67972f9de6680a8469b19377ba87102",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE GENUINE SABBIA 20X120_03",
+      "id": "e64b49ed-27eb-4035-a00c-467fe477921c",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021140_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7312,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_18.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "ed79154b798fbe219cc089a8d690b23ca08c6d877ef2546187a11f1cff08e3c4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE GENUINE SABBIA 20X120_15",
+      "id": "23b63e0c-d27f-4aef-8a52-d616399663f3",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021140_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8124,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_19.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "d7be53f1e4a37fecfa96a75631772fbecff4d1e3bebf53f779311dc3baaa2a71",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE GENUINE SABBIA 20X120_13",
+      "id": "7b032ad0-77c9-40aa-aba6-122e20766dfb",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021140_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8502,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_20.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "45cafc0834d31b0aeaedb6d3a023d7cac7357e38d070b396fc754627a22c94d2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE GENUINE SABBIA 20X120_04",
+      "id": "afc51f9d-0417-4bed-9d0d-a31afcc5ccfe",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021140_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8798,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_21.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "27a9c1e3983bf6a6301752923a2e498f01f106a340a07b693728fe4919affac1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE GENUINE SABBIA 20X120_16",
+      "id": "5cd7b913-57f7-4346-9db2-ed33783e29ac",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021140_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8258,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_23.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "eac415ae123d25923042943c2bb82d9fbe18d2173acc126c78cabe02baa1f035",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE GENUINE SABBIA 20X120_14",
+      "id": "30a09252-9853-4a97-b45c-3e86b364b8c0",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021140_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7036,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_24.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "8b6ae3f944d5ea5e6438eb30deaea065c74b2a46a5f02242e96b83a4e2f8673b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE GENUINE SABBIA 20X120_05",
+      "id": "e7921c5c-af1a-49a8-9681-290dd531f570",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021140_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6880,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_25.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "24225d5aa53f48ccd63de35f39a2680f808acf23842321a0d522c61023d25f60",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE GENUINE SABBIA 20X120_12",
+      "id": "cd838a09-8800-472a-aa8e-85762d9f3fae",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021140_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8716,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_26.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "483df0c588676ffb383a847bce04bc5f7ca14cfe570cd5e4181155f5371b9b01",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE GENUINE SABBIA 20X120_19",
+      "id": "17b83f79-e39e-462b-8caf-7065928e3cf5",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021140_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6896,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_27.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "d5b682878ec6fe98527a562c36bcb122d5a39bcffeddab896766b9f88c704ed8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE GENUINE SABBIA 20X120_08",
+      "id": "3430940c-9915-40bd-bcc4-44c746bc51f7",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021140_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7004,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_28.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "e4574d50fe5be5007ce15552c19064f45ab87625a41d89953310af1150246be9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE GENUINE SABBIA 20X120_17",
+      "id": "4c996501-7c80-4d1a-9f9e-dd9b65a9a2f5",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021140_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10240,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE SABBIA - 20X120 - R11 - view_30.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "f2b05798ed746c2e171506212e8e775debb61eb8de18ec470cb5c4d179638753",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE GENUINE SABBIA 20X120_18",
+      "id": "392c8c40-2eb4-4589-a4a1-6e0c2afc5fe9",
+      "site_position": 30
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0021144",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-sabbia/pf60021144-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0021144_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-sab-nat-pf60021144-10x60-nat-92256-0; wall gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021144-10x60-nat-92256-0",
+   "faces": [
+    {
+     "file": "0021144_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2072,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "66846d240eaad4b4238a8094293891a495f23d41c565c8351a74b8f209652c03",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE SABBIA 10X60_01",
+      "id": "84161a8d-a80f-41ff-9e88-25640ca78f0b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021144_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 3018,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "a5396947358aa025a6541b49572cd00ada04f842254a908ccb8a52bef849605c",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE SABBIA 10X60_08",
+      "id": "bdc6a5dd-ec8d-4650-ad29-941c4061f31e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021144_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2188,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "250b3f5065765780fac989eb9b8f7c22e9d88714f8a2f90ab0fcef4173fdcbff",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE SABBIA 10X60_05",
+      "id": "865aa42b-c6f1-4a4a-96f4-84456b4c659e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021144_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2198,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "3774b1f3de70836f9c20381692f1282a46effec128b74e451098ab473f2e4a76",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE SABBIA 10X60_09",
+      "id": "77877c08-0a57-42de-ac0b-bd8f27b113d1",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021144_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2762,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "2798e7c7126a42f2224908c42371f1aa71447c21f87f0873bf5d07fa8a4e7133",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE SABBIA 10X60_07",
+      "id": "fdd8b100-d60b-481a-badc-b9ed1145b5ce",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021144_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2192,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "2640fb92f6fee8578e9846126f86b5b15f564f7b46dc7ef3cb0a6a2501a2db88",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE SABBIA 10X60_04",
+      "id": "f181e36d-c047-430f-b49f-a21b9d7ba9bd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021144_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2620,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "8e4bb53535ed2125a22bc744a7223509b82f1c8ed669bc08743900942f90091b",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE SABBIA 10X60_10",
+      "id": "470e938d-5810-4a26-a0a2-96430515080e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021144_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1754,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "6e932d4797b8fa8f431b5917f06040060000d821a5b425f1dfcd91131fe3969f",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE SABBIA 10X60_03",
+      "id": "b9ca0e02-b26f-4028-8e4e-9973523c3495",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021144_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1970,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "3f5865d305014c3c385ff05706570905609fd9944f8fef4344722cf65f391101",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE SABBIA 10X60_02",
+      "id": "e2f343e7-0e59-48f3-bf85-4a8652f7ed85",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021144_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1884,
+     "source_zip": "TABULAE - GENUINE SABBIA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE SABBIA - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "1f49a7d13aab4199682bef0f89c14d03e1581b332420d2ba602e9bdbf82a64eb",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE SABBIA 10X60_06",
+      "id": "9a4d4eee-fb5c-4e41-a3ca-fe243500fcb1",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

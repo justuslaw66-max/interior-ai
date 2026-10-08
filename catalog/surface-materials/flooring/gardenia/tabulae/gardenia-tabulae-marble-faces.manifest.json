@@ -1,0 +1,124 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/marble/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - MARBLE - minimali.zip (4604476 bytes, sha256 44fea5e0a236d7f23c65c4fd5dacbe74909b587f2cdc9b1c29fe1cdbb0b91607).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0021154",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/marble/pf60021154-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021154_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-tabulae-refined-marble-3d-pf60021154-60x120-nat-92265-0; wall gardenia-wall-tile-tabulae-refined-marble-3d-pf60021154-60x120-nat-92265-0",
+   "faces": [
+    {
+     "file": "0021154_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35698,
+     "source_zip": "TABULAE - MARBLE - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - MARBLE - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1417,
+      2835
+     ],
+     "source_sha256": "3acf0b4df8c7125069a2d9674f97f00d81214e9da7155438006d34d6c9595f34",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MARBLE NAT 60X120_01",
+      "id": "6bfb6ed3-4c13-4a8f-a121-177b0de25a11",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021154_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34548,
+     "source_zip": "TABULAE - MARBLE - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - MARBLE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      1418,
+      2835
+     ],
+     "source_sha256": "1f5424f73cd211b96c29a642f0b8489561d3682bb7320088370946482b20ac3e",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MARBLE NAT 60X120_02",
+      "id": "7ebff4ab-0667-41bb-9f31-54d322371408",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021154_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35082,
+     "source_zip": "TABULAE - MARBLE - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - MARBLE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      1418,
+      2835
+     ],
+     "source_sha256": "39b800c04116f05108a2c911c058fbc6732c8f7604fd4660c212ffe9c3b11f79",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MARBLE NAT 60X120_03",
+      "id": "6799ad08-7017-4448-8e33-5727cd983d11",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021154_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39648,
+     "source_zip": "TABULAE - MARBLE - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - MARBLE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      1417,
+      2837
+     ],
+     "source_sha256": "7b6c22c4a73ada50fc758661b0c6b891e4b59a270905898da216fc0c542a9b6d",
+     "source_px_per_mm": 2.364,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MARBLE NAT 60X120_04",
+      "id": "8901ec59-a19a-4ec5-ad52-e7e8a719f6a6",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

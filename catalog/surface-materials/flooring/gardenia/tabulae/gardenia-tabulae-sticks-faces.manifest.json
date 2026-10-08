@@ -1,0 +1,178 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/sticks/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - STICKS - minimali.zip (6221977 bytes, sha256 ff0c498cf0911852252a698a45893c16b821f96444e8c6a6b33eaf89ad96f842).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0021153",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/sticks/pf60021153-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021153_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-sticks-3d-pf60021153-60x120-nat-92264-0; wall gardenia-wall-tile-tabulae-genuine-sticks-3d-pf60021153-60x120-nat-92264-0",
+   "faces": [
+    {
+     "file": "0021153_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32598,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1360,
+      2835
+     ],
+     "source_sha256": "dcfa74a8f7a8387c19596f7f348ad634d1774ef508b6ec304d7a30a516335e5f",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_01",
+      "id": "1be0412c-b8c8-4c85-bef5-50766fb907bf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021153_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37376,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      1360,
+      2835
+     ],
+     "source_sha256": "5f31a9dd4ac12b09abcf22a7e25a4ede1607bc86539e28aaa5d3fd1b0d8d8102",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_03",
+      "id": "aa849908-b379-4444-b336-824413d1ab01",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021153_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37960,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      1360,
+      2835
+     ],
+     "source_sha256": "e86e4c610e01993ed622e8b5c1a85c3a40320050a93689d711e7eb1c0c69b953",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_04",
+      "id": "42316d22-c6e9-45db-86e8-aaf29b7eafd4",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021153_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36180,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      1360,
+      2835
+     ],
+     "source_sha256": "ede1924b1cf9e0c6a12a5da50c7ef295a38d383cfaa60ba6aa5e647d7a26d22a",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_05",
+      "id": "5ca75452-b559-491b-8b4f-89a8c395fb4c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021153_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40600,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      1359,
+      2835
+     ],
+     "source_sha256": "65bffc3e30de56b12d4a23cdefa1ee4d744132742ef07750d550916e18dc70b4",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_06",
+      "id": "3ea6b599-6d09-4506-8e39-d3309514a165",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021153_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38468,
+     "source_zip": "TABULAE - STICKS - minimali.zip",
+     "source_file": "60X120-Natural/TABULAE - STICKS - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      1360,
+      2835
+     ],
+     "source_sha256": "f1a104a7fa2aadbe4fc95703974ed8a1ba91066058384c72d36ffd69aae8ad8e",
+     "source_px_per_mm": 2.362,
+     "orientation": "upright",
+     "cropped": "4.1% narrower than 600x1200 mm; drawn at the tile's width",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE STICKS NAT3D_60X120_02",
+      "id": "2942af4d-f452-4c87-a9cb-4b91b9099559",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

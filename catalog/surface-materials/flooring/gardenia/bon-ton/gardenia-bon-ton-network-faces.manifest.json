@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/network/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: BON TON - NETWORK - minimali.zip (665159 bytes, sha256 7158621398f04b8cef11424f3a41892b78a0fe8982fc52850ed9592846618036).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/bon-ton/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0020782",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/network/pf60020782-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020782_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-network-pf60020782-60x120-196255-0; wall gardenia-wall-tile-bon-ton-network-pf60020782-60x120-196255-0",
+   "faces": [
+    {
+     "file": "0020782_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44016,
+     "source_zip": "BON TON - NETWORK - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - NETWORK - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "98d036683b342978fcb91c84e0df2d2537cfa2466d0121a0339ad7fcbe30f91e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON NETWORK 60X120 ANTIQUE 3D",
+      "id": "046c6c12-63fc-4215-8bda-7ab3a4c5fa45",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

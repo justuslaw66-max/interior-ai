@@ -1,0 +1,1993 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - REFINED FIENO - minimali.zip (81472138 bytes, sha256 63e768c75409ef71e2a44c9bc7c3cbdfbb16f06c09983aba30184e6044ee9b9c).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "23,4x148",
+   "item_code": "0021108",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/pf60021108-v102/",
+   "face_mm": {
+    "width": 234,
+    "height": 1480
+   },
+   "swatch": "0021108_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-fieno-pf60021108-23-4x148-nat-92250-0; wall gardenia-wall-tile-tabulae-refined-fieno-pf60021108-23-4x148-nat-92250-0",
+   "faces": [
+    {
+     "file": "0021108_01.webp",
+     "face": 1,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12002,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_1 (2).jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "82c064839e99eda0e10456a04418aa23726183a5e7b4f3aaacc0289c9a53aaf9",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED FIENO 23,4X148_01",
+      "id": "b05204d5-ef00-402f-87bc-4762a5dce914",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021108_02.webp",
+     "face": 2,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8122,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_1.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "464e97ecbb58fe9c229342b1eb43c4295c9d0a44934fc18f6a61e42f482a1162",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED FIENO 23,4X148_12",
+      "id": "677e2dd4-eb4d-473f-9ca0-3d4b3f482969",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021108_03.webp",
+     "face": 3,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6838,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_2.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "60feb877094e83ff908108bbc8f04016e06ece606ad4529a932ae5c77e32061c",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED FIENO 23,4X148_20",
+      "id": "cc5fd889-fe02-428b-810e-e83ee8ca7130",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021108_04.webp",
+     "face": 4,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10082,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_3.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "9b7b2f45a1c3be27147a638cf65d8099a1351214e8427da8da116ee658b61076",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED FIENO 23,4X148_10",
+      "id": "3950b4a0-6b20-4ebc-86a1-0078b141bca5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021108_05.webp",
+     "face": 5,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7724,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_4.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "022c1f19e554c722444f1f85d06e23c5cce286efd3961e81e92e72115d6f849b",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED FIENO 23,4X148_11",
+      "id": "46df8859-23e3-4016-b20f-8fd8d7f976ec",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021108_06.webp",
+     "face": 6,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7866,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_5.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "8236cd1afc4afac22eb2645f8a8fae5c3603b89e36c0e0a4a1dc3ae6655ddba3",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED FIENO 23,4X148_14",
+      "id": "3ec25b27-6023-4acf-908a-2c6d10868d81",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021108_07.webp",
+     "face": 7,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8942,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_6.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "1517dc7338aa1f6e24f4cf3fbc3a331661f87d4a18214c3ae5b4ac19de4c5554",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED FIENO 23,4X148_19",
+      "id": "4c34af56-9d8e-40d0-b8d5-456c20b0352f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021108_08.webp",
+     "face": 8,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8984,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_7.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "9c485515e1a7860ca4cea2268dd770ca1c89ecdeea490a57440428f6f2600778",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED FIENO 23,4X148_09",
+      "id": "8f13df84-ed7c-431b-b630-5cd29ec96c20",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021108_09.webp",
+     "face": 9,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9592,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_8.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "6dc84c7e1bef3f5a46bdd646e5979d5ab80ed06b6a15918ff678e6a408598ac8",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED FIENO 23,4X148_16",
+      "id": "05df531d-b42d-46fd-a7e4-d50fc4ec4dd7",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021108_10.webp",
+     "face": 10,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7356,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_9.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "f2dab643f7a45f55a1f3bcb1d08076671fda7258a805a72a316bdd965f405625",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED FIENO 23,4X148_18",
+      "id": "4022097b-784d-4059-ad80-8f156ba17812",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021108_11.webp",
+     "face": 11,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11900,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_10.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "5a3b81ac34851875f50e8bc53757b1a079e103c15fab7be35d7fd6435dd3f0f4",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED FIENO 23,4X148_05",
+      "id": "1b171323-9103-4b5e-b822-0b74b5c0c43a",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021108_12.webp",
+     "face": 12,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 11540,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_11.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "e3cb13ca69f13640f8f82dcd19d689ef0f64dac119d98a82b4e03229e527393f",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED FIENO 23,4X148_08",
+      "id": "6c4271d6-3462-4716-b925-1a7b94815314",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021108_13.webp",
+     "face": 13,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10924,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_12.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "b04d08e5cf6f1c58a5b357b000e64d3a581bda4a827277fe0a82911ae89c0c48",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED FIENO 23,4X148_04",
+      "id": "0e670837-0b9c-43b8-9179-752585976cdd",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021108_14.webp",
+     "face": 14,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8286,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_13.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "a877a473b98584636cddb0b815afca91a948c7533bfa87091c454e8926d5dd2a",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED FIENO 23,4X148_13",
+      "id": "16da8fef-f82e-466c-aa18-7fb328212518",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021108_15.webp",
+     "face": 15,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7784,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_14.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "db3743c19f5f889728a6001ac23fde77b7c00a7ca1eead1342cb223918fdeb7d",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED FIENO 23,4X148_15",
+      "id": "f3c5913e-a33a-4d17-9eb8-a74949f7cea5",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021108_16.webp",
+     "face": 16,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6630,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_15.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "d6d27fb276441cd9857ac66af63f567d36f4fc8b5c5956a67081ed3a6de63a59",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE REFINED FIENO 23,4X148_17",
+      "id": "b15d9a27-6b20-4611-9047-0e3e913ad65f",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021108_17.webp",
+     "face": 17,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10754,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_16.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "01e297d73a6098ba50d1a53d1db43f81dd0dbc2128af2b36d8bcbadb9f5b3edf",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE REFINED FIENO 23,4X148_02",
+      "id": "10e53a82-554e-4031-821f-ec04e9f9dcd0",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021108_18.webp",
+     "face": 18,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9034,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_17.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "ada01d4765a0554c366cce4f05c7392a7d6a2a951bbe587c599cffaeba2848c4",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE REFINED FIENO 23,4X148_07",
+      "id": "171a6390-7fc2-49f9-8c6c-3d6cc332b2a4",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021108_19.webp",
+     "face": 19,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 10548,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_18.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "45d16989fd0703e94ce04973dec5990e2eebe30ae8428bee923ba839477b926b",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE REFINED FIENO 23,4X148_03",
+      "id": "05aca857-76f3-4f6a-b39e-98bfca21177e",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021108_20.webp",
+     "face": 20,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9276,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED FIENO - 23,4X148 - Natural - view_19.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "0c108b76ed5b13e4a60005289c1bfde0f21e607bc8e40b6690196d18d046aff1",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE REFINED FIENO 23,4X148_06",
+      "id": "ffff18a4-7c81-4066-9f30-320f08949e52",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0021142",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/pf60021142-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0021142_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-fieno-pf60021142-20x120-nat-92254-0; floor gardenia-flooring-tabulae-refined-fieno-pf60021157-20x120-92268-0 (uses 0021142's faces: ABK's 30 R11 pictures are 0021142's 30 Natural pictures, byte for byte); wall gardenia-wall-tile-tabulae-refined-fieno-pf60021142-20x120-nat-92254-0; wall gardenia-wall-tile-tabulae-refined-fieno-pf60021157-20x120-92268-0 (uses 0021142's faces: ABK's 30 R11 pictures are 0021142's 30 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0021142_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6634,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "cbde21f073354355ac91a5582f02504c9af381e23a5470d84d4bb860b5d403bb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED FIENO 20X120_01",
+      "id": "f6ca0c42-b932-4085-9fc6-7cbc0f0f068d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021142_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5218,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_1.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "618caad0f8393e471289bc4f10bac1b306495bcce94e0e01e03227bc04fc6a9d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED FIENO 20X120_25",
+      "id": "49974b91-b6a9-40e5-9b4b-2bfae16d6112",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021142_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3632,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_2.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "d340c238c1aac7df48be7677bfc15dc8bcae499b9fca2bb8ad4d421049a3079e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED FIENO 20X120_29",
+      "id": "e8cdc92a-877e-49c9-a4f2-cc3acf300821",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021142_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4768,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_3.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "a53b5f431bb182a9d22aa1414014a06ac5fc3436357450a88ac8f5f143015490",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED FIENO 20X120_26",
+      "id": "f49592d0-bd59-41a7-b77d-1d089084bbb8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021142_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5028,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_4.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "9a8733424479bd182496b99fa2d24ef3efd7c87f333cfb20759b370d5d5c8dc9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED FIENO 20X120_30",
+      "id": "89c2d84e-4c7f-40e8-a29a-ae442f397c34",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021142_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4690,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_5.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "a8f780ca1ca494f5f9fd42d37a55076b0f3018f8c8c1a0ab26c4a1d4a8647358",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED FIENO 20X120_28",
+      "id": "783454ee-169f-42ba-a71a-aeb07a7adbe3",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021142_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3432,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_6.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "0c10cd6c1fc070513011836414757359facdcdcd2d147af55883d6a97b1922e2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED FIENO 20X120_27",
+      "id": "c3ecba96-6664-489e-916d-9d027ff423c4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021142_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5686,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_7.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "440521eebb3f52f39bc840b94e284da472efb9c13aa58119a43aafba611095dd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED FIENO 20X120_19",
+      "id": "a41c9d10-9b69-424a-b56e-bfa72a5416b8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021142_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4780,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_8.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "2ad2c3437ae3661512fe9bfa3607970bf78eb8177fdd1010d2fdeecc3a2027d6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED FIENO 20X120_21",
+      "id": "9a4afbcc-d418-43d0-ac1f-33ee206e3a51",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021142_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5096,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_9.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "bcda3bc99a7f9c6e63571d9e02308435ab9147439df8e566666547935f5c8cb7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED FIENO 20X120_22",
+      "id": "f5e3b2e6-a918-42e8-bc31-06064e4a0bf0",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021142_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5814,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_10.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "0d7ede5a9b65152cba9f9ac223885f6223cf4fec2c31ca781979ed4bd12efa6f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED FIENO 20X120_18",
+      "id": "72730ee9-c147-4baf-b13c-c96c2a4cd288",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021142_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7362,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_11.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "996321e88516d999db0af7e2411b2898cf39081f566cf48690a7193610a04086",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED FIENO 20X120_04",
+      "id": "3ea800dc-7da4-42d3-b48b-8c127a43caac",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021142_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6164,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_12.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "52c459d323811c4a591761dcbf62dbf774b8428fd002550ccb572bc90fb2dc4b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED FIENO 20X120_09",
+      "id": "5136e683-58ec-4d48-8d2d-78b5448245b8",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021142_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6888,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_13.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "fe73531e027f5aeffd8f94aeda6e82eafa971dcbfd3f3517484c928200cb9fdd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED FIENO 20X120_07",
+      "id": "75748fd2-41ca-4dba-826a-d9ea7362cee5",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021142_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5136,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_15.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "8ffcda06caeee5d22aaefae398af1180b585b31f19bc3e41a25fe757b2467a1f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED FIENO 20X120_20",
+      "id": "458b9589-cca6-449c-89e1-744d281781ac",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021142_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6810,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_16.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "7eb851beca3fc42f7bd37db5c733094c02ca43b493283ec5fd3b5a361b9ae59b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE REFINED FIENO 20X120_11",
+      "id": "8081b3e3-5b21-4154-9e19-37fb958b9ac3",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021142_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6972,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_17.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "c7ecfe2c12de53fe1e5311531c1d7d2cc2797a00559f652cc5aa703541026bc4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE REFINED FIENO 20X120_06",
+      "id": "737a3171-e269-413d-8f96-735697956ef7",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021142_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5234,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_18.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "4cb61c56249b32b28a26c1e0c30ebb70be0ee7117a3e9d934aa01c3d433b418c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE REFINED FIENO 20X120_16",
+      "id": "7e074954-7c2d-40f5-b357-0a0d804bcdc9",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021142_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7534,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_19.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "d3f4997f5067c7c8625372d84edd2461dcd11296261f36fe6e2377521ad967ad",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE REFINED FIENO 20X120_03",
+      "id": "008efe8e-5857-44ff-bb1a-b602a0c39ebc",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021142_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6600,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_20.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "ded47ac03e8e2781271a47ea0fd414d437ed8ef810e98146484f8e788156ffe4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE REFINED FIENO 20X120_05",
+      "id": "c4230d76-af0b-42c6-89a4-110280b4963e",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021142_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7116,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_21.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "612435a6a61cb6d3aae10fd2edad3d3f2b9a9e9f78c2ec969b092a967d867e67",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE REFINED FIENO 20X120_02",
+      "id": "493f9d86-81ae-45ff-a98a-f90316a9a3aa",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021142_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5558,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_22.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "7bb5add6db75b8d738be36201629e506e28e698bdda79d09fc1f3fa71d2b4247",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE REFINED FIENO 20X120_14",
+      "id": "b756f098-6dc1-4f11-8c18-9b8ebff7a365",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021142_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6316,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_23.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "6dfbf00f29f4110f4b15b41c306cb04232c9fce97c2c77ef8c8fc5a96a8dda4e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE REFINED FIENO 20X120_10",
+      "id": "51d8921a-1f4c-4424-b8e8-51d2e41c6912",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021142_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6876,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_24.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f935ac503e20aa6a7b8f499d0a880bfab7accc751d7ba0d2c1f70e02b06d294b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE REFINED FIENO 20X120_15",
+      "id": "a278bdb2-0c6a-4063-a57a-535a362352b0",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021142_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6974,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_25.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "2a1d6af4c35d4251c592c9ed332756aeb60bffb4c617c9c1087fef0598298e5f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE REFINED FIENO 20X120_12",
+      "id": "8ac3bfee-ef5a-4d01-ad8d-d82381c6afb0",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021142_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5396,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_26.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f58f682ac4d0020b442ef195b70a2dc0ea951ff4c7fc99139330b5b6106d3d46",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE REFINED FIENO 20X120_23",
+      "id": "09db0f17-2901-43d6-a10d-2a6794c7a4c1",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021142_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5138,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_27.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "7a4e5f18e21f52406014eb40b995681fc93c148a823e408b6d432c8abfb7d0a5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE REFINED FIENO 20X120_17",
+      "id": "6787bf5b-d8e4-4c15-92a5-56ebab9700a0",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021142_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6986,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_28.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "398f8cd34a041707099ef976307b0544e22975ac1fb60035e5e69faa64f7620c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE REFINED FIENO 20X120_08",
+      "id": "9c4a1950-6eed-407f-82fa-43f04c48859b",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021142_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5200,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_29.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "610efd439f042f38d434b550cdc95f0d42c05a261655976edfe8d7c62986ad19",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE REFINED FIENO 20X120_24",
+      "id": "f4a3250d-a922-4b94-8274-e1057b77b574",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021142_30.webp",
+     "face": 30,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5154,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED FIENO - 20X120 - R11 - view_30.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f7a0ce9e202a42ffd28ad277bc45ce035a36fb0d1a33fea9a0c79f405a9e793c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE REFINED FIENO 20X120_13",
+      "id": "ee3d0b94-b6e9-468e-880d-a855eea31ef2",
+      "site_position": 30
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0021146",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/pf60021146-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0021146_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-fieno-pf60021146-10x60-nat-92258-0; wall gardenia-wall-tile-tabulae-refined-fieno-pf60021146-10x60-nat-92258-0",
+   "faces": [
+    {
+     "file": "0021146_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1676,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      440,
+      2640
+     ],
+     "source_sha256": "67dad2ef3e8e86bc9e9d3f2ec4fc31fef3c444d4b0be914eed3b3852c03fb738",
+     "source_px_per_mm": 4.4,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED FIENO 10X60_01",
+      "id": "71174db8-cc77-49b3-9c98-b5d90d71199f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021146_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1756,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "7ab37785930e260765c301ce627f7fdd92a14451354b74b074a0202802838673",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED FIENO 10X60_12",
+      "id": "a8325953-5428-4445-ba4b-9179fc35f2b7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021146_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1626,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "6c46864a5d79316ac5a7983108bd8f0e85ebca54b0d9b05251366a5c7ca95118",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED FIENO 10X60_10",
+      "id": "c6a5342d-3977-4246-9474-fdf1a70833b7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021146_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1402,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "c917fe0632a30d256f675f299c1b78300bc3c6064851127b0cdee9d813126c6d",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED FIENO 10X60_15",
+      "id": "ba6cf7f6-3774-4714-854f-962c3ffa7df6",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021146_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1360,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      440,
+      2640
+     ],
+     "source_sha256": "23a5254b5e528cc0e85b1c48c997e6ee2bc16f99a756cc659bc1933778c9c9ff",
+     "source_px_per_mm": 4.4,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED FIENO 10X60_14",
+      "id": "55e7efdb-710e-4f49-9b64-ccebefc9a778",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021146_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1318,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "39f6bf59a32d33dfb2f3cbc9417be901fcf833bcd6dfaebaecab5c121542c387",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED FIENO 10X60_11",
+      "id": "ceba7c86-7479-480e-899f-4c23b559f2b1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021146_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 882,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "08203e291f772382b5e9f8ab1d1c82332d1580d0e361364a9ddd703c65b3c525",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED FIENO 10X60_13",
+      "id": "c61d4366-ed31-4d4d-ab3c-dea7b2f57ab7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021146_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1856,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "ba474041fa91efb9349a3935cd6200ba343716492527d8fdca0d80261c240aac",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED FIENO 10X60_02",
+      "id": "75c79e20-0661-408f-bf8e-bca212b97e0e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021146_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1952,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "2b1e1ab377aa3300f7256e429a39699e2bff5162ce2524b5c1aa61d06bfbc969",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED FIENO 10X60_04",
+      "id": "550c18e3-7e8b-4655-8677-8ccc2c2d2574",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021146_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1550,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "ddbece727c60ae58e29f57c559dec8f84969c56aabc84af0b388a9a57a34dc34",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED FIENO 10X60_08",
+      "id": "54476869-a91a-4a22-a477-f9d9cb3c520a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021146_11.webp",
+     "face": 11,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2184,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      440,
+      2640
+     ],
+     "source_sha256": "fe1e733173ed10c44e7415943195e82962c513b516f6821309ba64ad947e9a11",
+     "source_px_per_mm": 4.4,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED FIENO 10X60_03",
+      "id": "19019d9f-1f0a-4084-8997-e9498a9b30ea",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021146_12.webp",
+     "face": 12,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1874,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_12.jpg",
+     "source_px": [
+      440,
+      2637
+     ],
+     "source_sha256": "9ec54d87d190e45976ad65529d6d2c67d3a4fb9631d96525b51e4df705e2b9e6",
+     "source_px_per_mm": 4.395,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED FIENO 10X60_05",
+      "id": "ad08c8c5-204d-4a16-b7cc-ba4d59012f9b",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021146_13.webp",
+     "face": 13,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1506,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_13.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "72abfc8418b2ce0e68e577b7ee603099f0e6c1685bc3f11d12467410ff6409e4",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED FIENO 10X60_06",
+      "id": "1f9c6796-be56-4727-abe7-65258d254128",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021146_14.webp",
+     "face": 14,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1792,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_14.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "dcb7c7d595715fc2ee4b0a55551b5b13cf985c30449132dd8739d720eefbfd3c",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED FIENO 10X60_07",
+      "id": "753109ae-302a-4cbc-92e0-910b870d122b",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021146_15.webp",
+     "face": 15,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1562,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED FIENO - 10X60 - Natural - view_15.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "008cd1b40584c149933460241ef3e63d9a0148dd1d30ff1ee1562061b90b503d",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED FIENO 10X60_09",
+      "id": "54dae16c-c557-41af-b20b-a809fd0fc8d6",
+      "site_position": 15
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0021148",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/pf60021148-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0021148_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 12 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-fieno-pf60021148-5x120-nat-92260-0; wall gardenia-wall-tile-tabulae-refined-fieno-pf60021148-5x120-nat-92260-0",
+   "faces": [
+    {
+     "file": "0021148_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1940,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      170,
+      4096
+     ],
+     "source_sha256": "4aa52efdecde556e536301fbc232823d23d5f2b8957556f07ca6d8d9f7794390",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED FIENO 5X120_01",
+      "id": "fb6cebda-58e5-4ca8-8f97-b3a221c85145",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021148_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1478,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_1.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "e07758790814de7e1f93533298ff72183a6a860530f9314b7c8d3505c8de5ada",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED FIENO 5X120_13",
+      "id": "cb3a6b57-8e91-44d3-b2bb-2817b237706e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021148_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2058,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_2.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "a16b0146784cd5bbc5ee418aeab98461a701c294ccc70750b16300a8eb5378dd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED FIENO 5X120_12",
+      "id": "377afbe0-9260-422f-b8c3-63fa853a874d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021148_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1760,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_3.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "9c12131d44e5b2073de997b38055771be3c724442e9d0ac993fadcb0da8076c4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED FIENO 5X120_09",
+      "id": "3793c150-7d86-42ed-88d6-7e60eff70180",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021148_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2392,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_4.jpg",
+     "source_px": [
+      170,
+      4096
+     ],
+     "source_sha256": "d0e21bcea841f4191a713ddcba759eae517ac8aed284e94d66a427c96dc4f203",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED FIENO 5X120_03",
+      "id": "927d399d-bb03-45df-bfa1-e4a4bff1f84a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021148_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2130,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_6.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "6fb1d83cc18d30f08cd2a03ce034e79ddf731acc29280b8c496931bcada6c38d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED FIENO 5X120_10",
+      "id": "d98fd8e8-4c8f-4613-91d6-644f72fd8412",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021148_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2178,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_7.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "416f9986a3e8d39e9ece7a34c4792ac3dd53d5010a42b9e9768ebe5d85f9a0ea",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED FIENO 5X120_07",
+      "id": "6b0cf07c-f9e9-4d5e-b240-fb956cbc8047",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021148_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2150,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_8.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "26e446bb86c895438fcd9ab4f42493203a23b1155ce8c455b5b9c94b23e266d1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED FIENO 5X120_08",
+      "id": "c7b33f42-8bd6-4aae-9b80-9cabf9cd4b10",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021148_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2044,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_9.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "6c74758c767afeab0b21e30072a993598e8c2181fdaad41ae4a29927d3f2a34a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED FIENO 5X120_11",
+      "id": "7595a20f-afbd-4005-957c-bdbd1c63a673",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021148_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1626,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_10.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "8852f14bb9317e12f0656c5777fc7dc0818ba8efd02aa0a9296d94776780e912",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED FIENO 5X120_14",
+      "id": "9bc42451-8204-4d77-8e87-bc23265e651c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021148_11.webp",
+     "face": 11,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2024,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_11.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "738d7dc9989014364780211336fed799d77c2ed020d855bf364b846957640db9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED FIENO 5X120_15",
+      "id": "09cf93d0-b1d5-4dcf-90b8-7418d8ac83ba",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021148_12.webp",
+     "face": 12,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1844,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_12.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "3fc576781ea6445fa8771735d13d81658a736e24fa1538c254470e73ca53d5b8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED FIENO 5X120_06",
+      "id": "f46eae23-f7aa-4a69-8f0f-9e4b5d6e75c0",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021148_13.webp",
+     "face": 13,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1994,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_13.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "895ecf0e03406fcd01cc10a2e179c25cc0de28ebb2fcb44679501a223ab8e9ba",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED FIENO 5X120_02",
+      "id": "ca9b03f8-96ca-4aec-a643-542d1b417031",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021148_14.webp",
+     "face": 14,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1906,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_14.jpg",
+     "source_px": [
+      170,
+      4096
+     ],
+     "source_sha256": "d2792745110aa8f0740980f4e8a4807cca27ecb533eda83b80e95ddf036f1865",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED FIENO 5X120_04",
+      "id": "0641c43a-9ebe-4bf2-bfb1-7c2b336bdd59",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021148_15.webp",
+     "face": 15,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1846,
+     "source_zip": "TABULAE - REFINED FIENO - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED FIENO - 5X120 - Natural - view_15.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "c4bb9b819885b015f137fcdd7df005af99455bf36d0136bb1889326b633dd35c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED FIENO 5X120_05",
+      "id": "2654b8ee-73e7-45fa-8d26-f0425af2a736",
+      "site_position": 15
+     }
+    }
+   ]
+  }
+ ]
+}
