@@ -613,7 +613,7 @@
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
-      "lines": 1213,
+      "lines": 1212,
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
@@ -645,7 +645,7 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 424,
+      "lines": 422,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -4067,7 +4067,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1079
+        "maximum": 1075
       },
       "complexFunctions": {
         "count": 1,
@@ -4395,11 +4395,11 @@
     "lib/useDesignPagePlanPresentationModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 210
+        "maximum": 209
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 19
       }
     },
     "lib/useDesignPagePlanQualityController.ts": {

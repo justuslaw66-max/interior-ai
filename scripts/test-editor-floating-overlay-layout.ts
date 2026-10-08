@@ -308,7 +308,7 @@ assert.match(
 
 assert.match(
   cameraControllerSource,
-  /const applyQueued2DPlanView = useCallback\(\s*\(attempt = 0\) => \{[\s\S]*if \(applyPlan2DCameraView\(\)\) return;[\s\S]*attempt >= 10[\s\S]*applyQueued2DPlanView\(attempt \+ 1\)/,
+  /const applyQueued2DPlanView = useCallback\(\s*\(attempt = 0, options\?: Plan2DCameraViewOptions\) => \{[\s\S]*if \(applyPlan2DCameraView\(options\)\) return;[\s\S]*attempt >= 10[\s\S]*applyQueued2DPlanView\(attempt \+ 1, options\)/,
   "2D plan fitting should retry until the orthographic camera and controls are mounted."
 );
 
