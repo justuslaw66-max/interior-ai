@@ -750,8 +750,8 @@ assert.deepEqual(phoneBarOffsetsByHand, [], "Place what sits under the phone hea
 
 assert.match(
   editorViewToggleSource,
-  /grid h-\[30px\] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0\.5[\s\S]*inline-flex h-\[26px\] items-center/,
-  "Present & export's view selector should combine centered 26px buttons with a balanced 30px shell."
+  /variant: "canvas" \| "pill";/,
+  "The view selector is the canvas toolbar's or the phone's: Present & export's 30px one retired with it."
 );
 assert.match(
   editorViewToggleSource,

@@ -212,21 +212,19 @@ test.describe("2. Editor Correctness", () => {
     await expect(chooser).toBeHidden();
     await expect(more).toBeFocused();
 
-    // Search by HDB address opens Plan's template list, which also hands focus back to More.
+    // Search by HDB address opens Plan's address search (its only template list is the chooser's,
+    // UX ST8), which also hands focus back to More.
     await chooseNewDesign(page);
     await expect(chooser).toBeVisible();
     await page.getByTestId("start-template-address-search").click();
     await expect(chooser).toBeHidden();
     const picker = page.getByTestId("starter-floor-plan-picker");
-    const pickerHeading = page.getByRole("heading", { name: "Choose a template" });
+    const pickerHeading = page.getByRole("heading", { name: "Find your home by address" });
     await expect(picker).toBeVisible();
     await expect(pickerHeading).toBeFocused();
 
     await page.keyboard.press("Tab");
-    const skipToLayouts = page.getByTestId("skip-to-starter-layouts");
-    await expect(skipToLayouts).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(page.getByTestId("apply-plan-template-studio")).toBeFocused();
+    await expect(page.getByTestId("floor-plan-address-search")).toBeFocused();
 
     await page.keyboard.press("Escape");
     await expect(picker).toBeHidden();

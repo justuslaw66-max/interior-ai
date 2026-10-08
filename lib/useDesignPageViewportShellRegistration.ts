@@ -129,7 +129,6 @@ export function useDesignPageViewportShellRegistration({
   const {
     boundaries: { surfaceState: surfaceStateController },
     state: {
-      presentation: { showPresentModal, presentModeRoomId },
       surface: {
         activeSurfaceTarget,
         selectedWallSurfaceTarget,
@@ -142,7 +141,6 @@ export function useDesignPageViewportShellRegistration({
       panel: { designControlsPanelMode, designControlsPanelVisible },
     },
     actions: {
-      presentation: { setShowPresentModal, setPresentModeRoomId },
       surface: surfaceStateActions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panel: { goPlan, goFurnish, goAiDesign, goShop },
@@ -196,7 +194,6 @@ export function useDesignPageViewportShellRegistration({
         selectedPlanRoomIds,
       },
       camera: { cameraView, savedViews, liveCameraView },
-      presentation: { showPresentModal, presentModeRoomId },
       surface: {
         activeSurfaceTarget,
         selectedWallSurfaceTarget,
@@ -237,7 +234,6 @@ export function useDesignPageViewportShellRegistration({
         transitionToCameraView,
         resolveGroundPointFromClient,
       },
-      presentation: { setShowPresentModal, setPresentModeRoomId },
       surface: surfaceStateActions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panels: { goPlan, goFurnish, goAiDesign, goShop },

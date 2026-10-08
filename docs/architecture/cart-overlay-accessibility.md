@@ -297,6 +297,14 @@ two visible layers but one incorrect keyboard/accessibility owner.
 
 ### Final nested contract and semantic focus hierarchy
 
+> **Since UX phase 4's small PR (October 2026)** Present/Export is retired. The
+> fallback opens only from the command bar's Share (`guest-share-action`), with
+> no parent dialog behind it: the rest of the editor is inert and `aria-hidden`
+> while it is open, and return goes to the current Share action. Design and
+> mode changes still start a new lifecycle generation, and unmount and a newer
+> registered modal still cancel stale restoration. The paragraphs below record
+> the nested contract as it was built.
+
 The fallback now composes `EditorDialog`. Closed state has no dialog or
 actionable DOM. Open state has exactly one `role="dialog"`, the accessible name
 `Share Link`, `aria-modal=true`, visible close-button initial focus,
@@ -624,7 +632,7 @@ restore callback cannot steal focus.
 | --- | --- | --- | --- |
 | More → Preview, pointer or keyboard | `editor-command-overflow-preview` | visible `client-preview-exit` | current Preview action; More fallback if removed |
 | Global `P` / `Shift+P` while a command action owns focus | current Preview, More, Save, or other command action | visible `client-preview-exit` | same current semantic action; More fallback |
-| Present & Export capture | current command action or current safe document focus | visible `client-preview-exit` when command focus becomes unavailable | current semantic opener; More fallback |
+| Download's pictures capture (Present & Export's until it retired) | the Download dialog's action | stays in Download; never the hidden command bar or `client-preview-exit` | Download closes after the file and returns focus to Download |
 | Route/design/plan/mode change | no new opener | preview is cancelled | restoration is cancelled |
 | Unmount | no new opener | no surviving preview owner | all pending entry/return work is cancelled |
 

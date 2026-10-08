@@ -20,8 +20,7 @@ export function resolvePlacementAwareRoomSelectionDecision({
     // Room selection is part of furnishing too. Preserve that workspace so a
     // route handoff such as `workspace=furnish` is not immediately undone
     // when the imported design selects its first active room.
-    shouldSetDesignMode:
-      editorMode !== "present" && editorMode !== "adjust",
+    shouldSetDesignMode: editorMode !== "adjust",
     shouldSwitchRoom:
       !pendingPlacementHandled && activeRoomId !== targetRoomId,
   };

@@ -6,7 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { LayoutVersionsSection } from "../components/editor/design-page/LayoutVersionsSection";
 import { PlanDisplaySection, PlanNotesSection, planStepFooter, type PlanDisplaySectionProps } from "../components/editor/design-page/PlanDisplaySection";
-import type { PresentExportDialogProps } from "../components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "../lib/design-page-presentation-tools";
+import { aiStepFooter, furnishStepFooter, stepPanelFooters } from "../components/editor/design-page/StepPanelFooters";
+import { AiNotesSection } from "../components/editor/design-page/AiNotesSection";
 import { createLayoutVersion } from "../lib/layout-versions";
 import type { RoomSnapshot } from "../lib/room-types";
 
@@ -63,7 +65,7 @@ assert.doesNotMatch(selectedNote, /<button[^>]*disabled=""[^>]*>Delete selected<
 
 // In Plan, while the 2D plan is on screen: Pro's plan display, or Free's notes. Not in 3D or other steps.
 const tools = (pro: boolean, viewMode: "2d" | "3d") =>
-  ({ configuration: { canUseAdvancedPlanControls: pro }, state: { ...planState, viewMode }, actions: planActions }) as unknown as PresentExportDialogProps;
+  ({ configuration: { canUseAdvancedPlanControls: pro }, state: { ...planState, viewMode }, actions: planActions }) as unknown as PresentationTools;
 const proFooter = planStepFooter("plan", tools(true, "2d"));
 assert.ok(proFooter && proFooter.type === PlanDisplaySection, "Pro has the plan display.");
 const freeFooter = planStepFooter("plan", tools(false, "2d"));
@@ -73,13 +75,51 @@ for (const pro of [true, false]) {
   assert.equal(planStepFooter("furnish", tools(pro, "2d")), null, "Only in Plan.");
 }
 assert.equal(planStepFooter("plan", null), null);
+
+// In Furnish, Pro's layout versions sit above Furnish's own foot (J, 5 Oct), in 2D and 3D alike.
+for (const viewMode of ["2d", "3d"] as const) {
+  const furnishFooter = furnishStepFooter("furnish", tools(true, viewMode));
+  assert.ok(furnishFooter && furnishFooter.type === LayoutVersionsSection, "Pro has layout versions in Furnish.");
+  assert.equal(furnishStepFooter("furnish", tools(false, viewMode)), null, "Layout versions are Pro's.");
+  assert.equal(furnishStepFooter("plan", tools(true, viewMode)), null, "Only in Furnish.");
+}
+assert.equal(furnishStepFooter("furnish", null), null);
+// In Suggest a layout, Pro's AI notes on the active room (J, 5 Oct).
+const aiTools = (pro: boolean) =>
+  ({ configuration: { canUseAdvancedExportStyles: pro }, state: { aiNotesLoading: false, hasItems: true }, actions: { onGenerateAiNotes: noop } }) as unknown as PresentationTools;
+const aiFooter = aiStepFooter("ai", aiTools(true));
+assert.ok(aiFooter && aiFooter.type === AiNotesSection, "Pro has AI notes in Suggest a layout.");
+assert.equal(aiStepFooter("ai", aiTools(false)), null, "AI notes are Pro's.");
+assert.equal(aiStepFooter("furnish", aiTools(true)), null, "Only in Suggest a layout.");
+assert.ok(stepPanelFooters("ai", aiTools(true)).stepFooter, "The AI notes take the step's foot.");
+const aiSection = (loading: boolean, hasItems: boolean) =>
+  renderToStaticMarkup(createElement(AiNotesSection, { loading, hasItems, onGenerate: noop }));
+assert.match(aiSection(false, true), /data-testid="ai-notes-section"[\s\S]*<h3 id="ai-notes-heading"[^>]*>AI notes<\/h3>/);
+assert.match(aiSection(false, true), /<button[^>]*data-testid="ai-notes-generate"[^>]*>Get AI notes<\/button>/);
+assert.doesNotMatch(aiSection(false, true), /disabled=""|Add products to the room first/);
+assert.match(aiSection(false, false), /data-testid="ai-notes-generate" disabled=""/);
+assert.match(aiSection(false, false), /Add products to the room first\./);
+assert.match(aiSection(true, true), /data-testid="ai-notes-generate" disabled=""[^>]*>Generating…<\/button>/);
+assert.match(
+  read("lib/useDesignPagePresentExportController.ts"),
+  /onGenerateAiNotes: actions\.presentation\.generateAiNotes,/,
+  "AI notes leave the step as it is: no closing to design mode."
+);
+
+const planFooters = stepPanelFooters("plan", tools(true, "2d"));
+assert.ok(planFooters.stepFooter && planFooters.furnishFooter === null);
+const furnishFooters = stepPanelFooters("furnish", tools(true, "2d"));
+assert.ok(furnishFooters.stepFooter === null && furnishFooters.furnishFooter);
 assert.match(
   read("components/editor/design-page/DesignPagePanelRegion.tsx"),
-  /<DesignControlsPanelAdapter \{\.\.\.state\.controls\} stepFooter=\{planStepFooter\(state\.controls\.configuration\.panelMode, planTools\)\} \/>/
+  /<DesignControlsPanelAdapter \{\.\.\.state\.controls\} \{\.\.\.stepPanelFooters\(state\.controls\.configuration\.panelMode, planTools\)\} \/>/
 );
 assert.match(read("components/editor/design-page/DesignPageWorkspace.tsx"), /<DesignPagePanelRegion \{\.\.\.panelRegionModel\} planTools=\{presentExportDialog\} \/>/);
-assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+\};/);
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
+assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+furnishFooter,\s+\};/);
+const controlsPanel = read("components/editor/DesignControlsPanel.tsx");
+assert.match(controlsPanel, /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
+assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
+assert.match(read("components/editor/DesignControlsFurnishPanel.tsx"), /<FurnishImportedModels[\s\S]*?\/>\n\s+\{props\.footer\}\n\s+<FurnishFooter/, "Above Furnish's own foot.");
 
 // Layout versions: save, compare, restore and delete, as their own section.
 const room: RoomSnapshot = {
@@ -109,11 +149,10 @@ assert.match(listed, /data-testid="layout-version-comparison"[\s\S]*Saved[\s\S]*
 assert.match(listed, new RegExp(`data-testid="layout-version-delete-${version.id}" aria-label="Delete Before TV wall"`));
 assert.match(listed, /Manual · /);
 
-// Present & export: no plan display, no lighting presets, no export style; layout versions for Pro.
-const presentExport = read("components/editor/design-page/PresentExportDialog.tsx");
-assert.doesNotMatch(presentExport, /plan-add-note|PresentExportProfessionalPlanControls|LightingPresetsUI|Export style preset|DisplayUnitSelect/);
-assert.match(presentExport, /\{canUseAdvancedPlanControls \? \(\s+<LayoutVersionsSection/);
-assert.match(presentExport, /data-testid="presentation-lighting-status"/);
+// Present & export retired (phase 4's small PR): its sections have homes in Plan, Furnish and
+// Suggest a layout, and Download shows the presentation lighting.
+assert.equal(existsSync(join(root, "components/editor/design-page/PresentExportDialog.tsx")), false);
+assert.match(read("components/editor/design-page/DownloadDialog.tsx"), /data-testid="presentation-lighting-status"/);
 assert.equal(existsSync(join(root, "components/LightingPresetsUI.tsx")), false, "Lighting has one home: the Lighting drawer.");
 assert.doesNotMatch(read("components/editor/design-page/LightingSettingsControls.tsx"), /lighting-quality-select|Presentation quality|onPerformanceModeChange/);
 assert.match(read("components/editor/design-page/DesignPageEditorCommandBar.tsx"), /data-testid=\{`scene-performance-\$\{option\}`\}/);

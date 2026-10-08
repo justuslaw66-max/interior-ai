@@ -24,7 +24,7 @@ Add these `data-testid` attributes to your UI for E2E test selectors.
 ```tsx
 <button data-testid="save-design">Save</button>
 <button data-testid="load-design">📂 Load Design</button>
-<button data-testid="create-share">🔗 Create Share Link</button>
+<button data-testid="editor-command-share">Share</button>
 <button data-testid="checkout-button">Checkout</button>
 <button data-testid="add-room">+ Add Room</button>
 <button data-testid="present-mode">👁️ Present Mode</button>
@@ -77,7 +77,7 @@ Use this to add test IDs to your components:
 - [ ] Placed items: `item-in-scene`
 - [ ] Save button: `save-design`
 - [ ] Load button: `load-design`
-- [ ] Share button: `create-share`
+- [ ] Share button: `editor-command-share`
 - [ ] Present button: `present-mode`
 - [ ] Room switcher: `room-switcher`
 - [ ] Cart panel: `cart-panel`

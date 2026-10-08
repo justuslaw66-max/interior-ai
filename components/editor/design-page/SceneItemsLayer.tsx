@@ -155,7 +155,6 @@ export function SceneItemsLayer({
         if (isParametricCabinetItem(item)) {
           const selected =
             isActiveSceneRoom &&
-            configuration.editorMode !== "present" &&
             state.selectedIds.has(item.instanceId);
           const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
             item.variantId ?? ""
@@ -181,7 +180,6 @@ export function SceneItemsLayer({
                 selected={selected}
                 interactive={
                   isActiveSceneRoom &&
-                  configuration.editorMode !== "present" &&
                   !configuration.isClientPreview
                 }
                 showPlanLabel={configuration.planShowLabels}
@@ -189,12 +187,7 @@ export function SceneItemsLayer({
                 onRenderReadyChange={actions.onRenderReadyChange}
                 onSelect={(id, additive) => {
                   if (!isActiveSceneRoom) return;
-                  if (
-                    configuration.editorMode === "buy" ||
-                    configuration.editorMode === "present"
-                  ) {
-                    return;
-                  }
+                  if (configuration.editorMode === "buy") return;
                   actions.onSelect(id, additive);
                 }}
                 locked={item.locked}
@@ -292,7 +285,6 @@ export function SceneItemsLayer({
             : item.materialPreset;
         const selected =
           isActiveSceneRoom &&
-          configuration.editorMode !== "present" &&
           state.selectedIds.has(item.instanceId);
         const continuity = resolveSceneItemViewContinuity(sceneEntry, {
           variantId: effectiveVariantId,
@@ -434,12 +426,7 @@ export function SceneItemsLayer({
               onRenderReadyChange={actions.onRenderReadyChange}
               onSelect={(id, additive) => {
                 if (!isActiveSceneRoom) return;
-                if (
-                  configuration.editorMode === "buy" ||
-                  configuration.editorMode === "present"
-                ) {
-                  return;
-                }
+                if (configuration.editorMode === "buy") return;
                 actions.onSelect(id, additive);
               }}
               onMove={(id, position) =>

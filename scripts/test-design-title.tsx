@@ -88,10 +88,9 @@ const barProps = {
   accountReady: true, accountName: "Justus", canUpgrade: false, planLabel: "Free", canManageBilling: false,
   isOpeningBillingPortal: false, canUndo: false, canRedo: false, undoName: null, redoName: null,
   designSidebarCollapsed: false, onToggleDesignSidebar: noop, onPlan: noop, onFurnish: noop, onShop: noop,
-  onExport: noop, onUndo: noop, onRedo: noop, onViewModeChange: noop, onToggleDesignerMode: noop,
+  onUndo: noop, onRedo: noop, onViewModeChange: noop, onToggleDesignerMode: noop,
   onToggleClientPreview: noop, onViewPlans: noop, onNewPlan: noop, onManageBilling: noop, onFeedback: noop,
   showLoadDesign: true, onOpenMyDesigns: noop, onSave: noop, onRetrySaveStatus: noop,
-  onOpenPresentExport: noop,
   saveStatus: {
     kind: "saved", source: "cloud", label: "Saved", detail: "Just now", tone: "saved",
     canRetry: false, lastSuccessfulSaveAt: null, cloudBacked: false,
@@ -130,11 +129,12 @@ const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
   dark: false, phone: true, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
   open: true, onToggle: noop, onClose: noop, menuButtonClass: "item", menuPanelClass: "panel",
   lightingSettingsOpen: false, showLoadDesign: true, isDesigner: false, isClientPreview: false,
-  presentModeActive: false, lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
-  onToggleDesignerMode: noop, onToggleClientPreview: noop, onOpenPresentExport: noop, onExport: noop,
+  lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
+  onToggleDesignerMode: noop, onToggleClientPreview: noop,
   onOpenLightingSettings: noop, onCloseLightingSettings: noop, onFeedback: noop, onRenameDesign: noop,
 } satisfies MoreProps));
 assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item md:hidden"[^>]*>Rename design</);
+assert.doesNotMatch(more, /editor-workflow-export|editor-command-overflow-present-export|Present &amp; export|Export &amp; Camera/, "Present & export retired: Share and Download are in the bar.");
 assert.deepEqual(DESIGN_RENAME_RETURN_FOCUS_IDS, [DESIGN_RENAME_OPENER_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID]);
 
 // The dialog: the current name to edit, the API's length limit, and no empty names.

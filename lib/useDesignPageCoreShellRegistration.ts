@@ -117,7 +117,6 @@ export function useDesignPageCoreShellRegistration({
     },
     actions: {
       plan: { setSimplePlanControls },
-      presentation: { setShowPresentModal, setPresentModeRoomId },
     },
   } = viewportShellRegistration;
 
@@ -213,8 +212,6 @@ export function useDesignPageCoreShellRegistration({
     actions: {
       setPlacementAddMode,
       setPlacementPreferencesLoaded,
-      setShowPresentModal,
-      setPresentModeRoomId,
     },
   });
 

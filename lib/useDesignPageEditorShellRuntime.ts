@@ -53,9 +53,6 @@ export function useDesignPageEditorShellRuntime({
     setShowLayoutDebugOverlay,
     setViewportSize,
   } = actions.diagnostics;
-  const [showPresentModal, setShowPresentModal] = useState(false);
-  const [presentModeRoomId, setPresentModeRoomId] =
-    useState<string | null>(null);
   const surfaceState = useDesignPageSurfaceStateController();
   const [editorMode, setEditorMode] =
     useState<DesignPageEditorMode>(
@@ -124,7 +121,6 @@ export function useDesignPageEditorShellRuntime({
   return {
     boundaries: { surfaceState },
     state: {
-      presentation: { showPresentModal, presentModeRoomId },
       surface: surfaceState.state,
       editor: { editorMode, guidedPlanStartMode },
       panel: {
@@ -133,7 +129,6 @@ export function useDesignPageEditorShellRuntime({
       },
     },
     actions: {
-      presentation: { setShowPresentModal, setPresentModeRoomId },
       surface: surfaceState.actions,
       editor: { setEditorMode, setGuidedPlanStartMode },
       panel: {

@@ -1,7 +1,7 @@
 import { test, expect } from "../fixtures";
 import {
   chooseDrawFromScratch,
-  chooseTemplateStart,
+  addOneRoom,
   expectDrawPointCount,
   expectPlan2DProjectionHealthy,
   isDrawPointCountVisible,
@@ -321,8 +321,7 @@ export function registerDrawingTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "2D", exact: true }).click();
     const guidedActionsToggle = page.getByTestId("plan-guided-actions-toggle");
     if ((await guidedActionsToggle.getAttribute("data-enabled")) === "true") {
@@ -395,8 +394,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "2D", exact: true }).click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");

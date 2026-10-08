@@ -117,8 +117,7 @@ export default function FloorPlanAddressSearch({
       className={`${dark ? "designer-recessed rounded-xl border border-white/10 p-3" : "rounded-xl border border-blue-100 bg-blue-50/70 p-3"} ph-no-capture`}
       data-testid="floor-plan-address-library"
     >
-      <div className="text-sm font-semibold">Find your home by address</div>
-      <p className={`mt-1 text-xs ${subtle}`}>
+      <p className={`text-xs ${subtle}`}>
         Add both floor and stack to search privately for an exact unit match.
       </p>
       <FloorPlanAddressFields

@@ -72,10 +72,6 @@ export function useDesignPageEditorInteractionRegistration({
         hasWholeHousePlan: sceneRoom.derived.scene.hasWholeHousePlan,
         designRoomCount: snapshotDocument.state.designSnapshot.rooms.length,
         rooms: housePlan2D.rooms,
-        items,
-        selectedItem: itemSelection.state.selectedItem ?? null,
-        selectedProduct:
-          selectionInspection.derived.selectedProduct ?? null,
       },
       canvas: {
         showGrid,
