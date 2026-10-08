@@ -875,6 +875,35 @@ async function openImportReview(page: Page, proMode: boolean) {
     .selectOption("mounted-protected-window");
 }
 
+type CameraWatchWindow = typeof window & {
+  __planCameraWatch?: { initial: string; seen: Set<string>; observer: MutationObserver };
+};
+
+// Records every camera state the canvas reports (data-qa-camera-state on <html>, written per
+// frame by CameraCapture) from now until the returned function is called.
+async function watchCameraStates(page: Page) {
+  await page.evaluate(() => {
+    const html = document.documentElement;
+    const initial = html.getAttribute("data-qa-camera-state") ?? "";
+    const seen = new Set([initial]);
+    const observer = new MutationObserver((records) => {
+      for (const record of records) seen.add(record.oldValue ?? "");
+      seen.add(html.getAttribute("data-qa-camera-state") ?? "");
+    });
+    observer.observe(html, {
+      attributes: true, attributeOldValue: true, attributeFilter: ["data-qa-camera-state"],
+    });
+    (window as CameraWatchWindow).__planCameraWatch = { initial, seen, observer };
+  });
+  return () => page.evaluate(() => {
+    const watch = (window as CameraWatchWindow).__planCameraWatch!;
+    watch.observer.disconnect();
+    watch.seen.add(document.documentElement.getAttribute("data-qa-camera-state") ?? "");
+    delete (window as CameraWatchWindow).__planCameraWatch;
+    return { initial: watch.initial, seen: [...watch.seen] };
+  });
+}
+
 async function assertOpeningMarkerInCanvas(page: Page, openingId: string) {
   const canvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
   const markerBox = await page.getByTestId(`qa-opening-anchor-3d-${openingId}`).boundingBox();
@@ -1066,6 +1095,7 @@ test("known unresolved marker selects, repairs, and remains discoverable in 3D",
   await page.locator('[data-testid="editor-view-2d"]:visible').first().click();
   await knownMarker.click();
   await expect(page.getByTestId("selection-inspector-opening-host-warning")).toBeVisible();
+  const repairCameraStates = await watchCameraStates(page);
   await page.getByTestId("selection-inspector-opening-wall-repair").selectOption("west");
   await expect(knownMarker).toHaveCount(0);
   await expect(issue).toHaveCount(0);
@@ -1073,6 +1103,10 @@ test("known unresolved marker selects, repairs, and remains discoverable in 3D",
     .toBe("west");
   await expect.poll(async () => (await storedOpening(page, "known-unresolved"))?.offsetMm)
     .toBe(1200);
+  // The repair closes the plan quality review. The plan was fitted around it and stays put: the
+  // camera never moves, not even for a frame.
+  const repairCamera = await repairCameraStates();
+  expect(repairCamera.seen, "Repairing the wall keeps the plan where it is.").toEqual([repairCamera.initial]);
   await dragOpening2D({ page, openingId: "known-unresolved", alongMeters: -0.8 });
   const repaired = await storedOpening(page, "known-unresolved");
   expect(repaired.id).toBe("known-unresolved");

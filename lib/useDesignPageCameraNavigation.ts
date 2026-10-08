@@ -33,6 +33,15 @@ type PlanFitBounds = {
   depthMeters: number;
 };
 
+type PlanFitInsetsPx = Parameters<typeof resolvePlanFitInsetsPx>[1];
+
+type Plan2DCameraViewOptions = {
+  centerX?: number; centerZ?: number; widthMeters?: number; depthMeters?: number; paddingMeters?: number;
+  fitOrientation?: Plan2DViewFitOrientation;
+  /** The insets to fit within: explicit fits pass the live ones (planSafeAreaLiveRightPx). */
+  insets?: PlanFitInsetsPx;
+};
+
 type ViewportSize = {
   width: number;
   height: number;
@@ -60,7 +69,8 @@ export type DesignPageCameraNavigationConfiguration = {
   viewportSize: ViewportSize;
   planFitBounds: PlanFitBounds;
   planSafeAreaLeftPx: number;
-  planSafeAreaRightPx: number;
+  planSafeAreaRightPx: number; // automatic 2D fits: the floating overlay stack as of the last fit
+  planSafeAreaLiveRightPx: number; // explicit 2D fits (Fit, a room's fit): the stack as it is now
   planSafeAreaTopPx: number;
   planSafeAreaBottomPx: number;
   floatingPlanOverlayStackVisible: boolean;
@@ -88,15 +98,8 @@ export type DesignPageCameraNavigationActions = {
   preserveCameraAfterPlanOverlaySelection: () => void;
   transitionToCameraView: (nextView: CameraView, durationMs?: number) => void;
   applyQueued3DView: (nextView: CameraView, durationMs?: number, attempt?: number) => void;
-  applyPlan2DCameraView: (options?: {
-    centerX?: number;
-    centerZ?: number;
-    fitOrientation?: Plan2DViewFitOrientation;
-    widthMeters?: number;
-    depthMeters?: number;
-    paddingMeters?: number;
-  }) => boolean;
-  applyQueued2DPlanView: (attempt?: number) => void;
+  applyPlan2DCameraView: (options?: Plan2DCameraViewOptions) => boolean;
+  applyQueued2DPlanView: (attempt?: number, options?: Plan2DCameraViewOptions) => void;
   prepareForPlanTemplate: () => void;
   handleEditorViewModeChange: (next: EditorViewMode, open3DView?: CameraView, durationMs?: number) => void;
   handleFitPlanView: () => void;
@@ -157,9 +160,7 @@ export function useDesignPageCameraNavigation({
     designId,
     viewportSize,
     planFitBounds,
-    planSafeAreaLeftPx,
-    planSafeAreaRightPx, planSafeAreaTopPx,
-    planSafeAreaBottomPx,
+    planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaLiveRightPx, planSafeAreaTopPx, planSafeAreaBottomPx,
     floatingPlanOverlayStackVisible,
     floatingPlanOverlayStackWidthPx,
     activeRoomFloorWorldY, activeRoomPlanOffset: { x: activeRoomPlanX, z: activeRoomPlanZ }, roomHeight,
@@ -223,6 +224,7 @@ export function useDesignPageCameraNavigation({
     () => ({ leftPx: planSafeAreaLeftPx, rightPx: planSafeAreaRightPx, topPx: planSafeAreaTopPx, bottomPx: planSafeAreaBottomPx }),
     [planSafeAreaBottomPx, planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaTopPx]
   );
+  const planFitLiveInsets = useMemo(() => ({ ...planFitInsets, rightPx: planSafeAreaLiveRightPx }), [planFitInsets, planSafeAreaLiveRightPx]);
   const plan2DWholeHomeViewFit = useMemo(() => {
     const viewportWidthPx = viewportSize.width;
     const viewportHeightPx = viewportSize.height;
@@ -561,14 +563,8 @@ export function useDesignPageCameraNavigation({
       depthMeters = planFitBounds.depthMeters,
       fitOrientation = wholeHomeFitOrientation,
       paddingMeters,
-    }: {
-      centerX?: number;
-      centerZ?: number;
-      fitOrientation?: Plan2DViewFitOrientation;
-      widthMeters?: number;
-      depthMeters?: number;
-      paddingMeters?: number;
-    } = {}) => {
+      insets: fitInsets = planFitInsets,
+    }: Plan2DCameraViewOptions = {}) => {
       const camera = cameraRef.current;
       const controls = controlsRef.current;
       if (!(camera instanceof THREE.OrthographicCamera) || !controls) return false;
@@ -577,7 +573,7 @@ export function useDesignPageCameraNavigation({
       const span = Math.max(widthMeters, depthMeters);
       const viewportWidthPx = canvas?.clientWidth ?? window.innerWidth;
       const viewportHeightPx = canvas?.clientHeight ?? window.innerHeight;
-      const insets = resolvePlanFitInsetsPx(viewportWidthPx, planFitInsets);
+      const insets = resolvePlanFitInsetsPx(viewportWidthPx, fitInsets);
       const fitPaddingMeters = paddingMeters ?? plan2DWholeHomeFitPaddingMeters;
       const fitZoomScale = paddingMeters == null ? WHOLE_HOME_FIT_ZOOM_SCALE : 1;
       const fit = resolvePlan2DViewFit({
@@ -621,11 +617,11 @@ export function useDesignPageCameraNavigation({
   );
 
   const applyQueued2DPlanView = useCallback(
-    (attempt = 0) => {
-      if (applyPlan2DCameraView()) return;
+    (attempt = 0, options?: Plan2DCameraViewOptions) => {
+      if (applyPlan2DCameraView(options)) return;
       if (attempt >= 10) return;
       window.requestAnimationFrame(() => {
-        applyQueued2DPlanView(attempt + 1);
+        applyQueued2DPlanView(attempt + 1, options);
       });
     },
     [applyPlan2DCameraView]
@@ -633,7 +629,7 @@ export function useDesignPageCameraNavigation({
 
   const handleFitPlanView = useCallback(() => {
     if (viewMode === "2d") {
-      applyQueued2DPlanView();
+      applyQueued2DPlanView(0, { insets: planFitLiveInsets });
       showRuleToast("Plan fitted");
     } else {
       transitionToCameraView(hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView, 420);
@@ -651,6 +647,7 @@ export function useDesignPageCameraNavigation({
     designRoomCount,
     getWholeHome3DView,
     hasWholeHousePlan,
+    planFitLiveInsets,
     planViewDepth,
     planViewWidth,
     showRuleToast,
@@ -707,6 +704,7 @@ export function useDesignPageCameraNavigation({
           widthMeters: paddedWidth,
           depthMeters: paddedDepth,
           paddingMeters: 1.2,
+          insets: planFitLiveInsets,
         })
       ) {
         transitionToCameraView(
@@ -729,6 +727,7 @@ export function useDesignPageCameraNavigation({
     [
       applyPlan2DCameraView,
       applyQueued3DView,
+      planFitLiveInsets,
       roomHeight,
       rooms,
       showRuleToast,

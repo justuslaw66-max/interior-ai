@@ -86,7 +86,7 @@ export function useDesignPageEditorInteractionRegistration({
         viewportSize: planViewport.state.diagnostics.viewportSize,
         planFitBounds: planWorkspace.derived.plan2DFitBounds,
         planSafeAreaLeftPx: planWorkspace.derived.plan2DSafeAreaLeftPx,
-        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx,
+        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx, planSafeAreaLiveRightPx: planWorkspace.derived.plan2DSafeAreaLiveRightPx,
         planSafeAreaTopPx: planWorkspace.derived.plan2DSafeAreaTopPx, planSafeAreaBottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
         floatingPlanOverlayStackVisible:
           planWorkspace.derived.floatingPlanOverlayStackVisible,

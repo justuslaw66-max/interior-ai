@@ -16,6 +16,7 @@ import { resolveDesignPagePlanCanvasOverlaysState } from "@/lib/design-page-plan
 import { isConnectionBlocker } from "@/lib/room-connection-checklist";
 import { resolvePhoneCanvasInsets, usePhoneSheetState } from "@/lib/phone-step-sheet";
 import { isTabletWidth, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
+import { plan2DFitKey, resolvePlan2DRightInsetsPx, usePlan2DFittedRightInsetPx } from "@/lib/plan-2d-fit-insets";
 import { resolvePlanCanvasGuidance } from "@/lib/plan-canvas-guidance";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
@@ -114,14 +115,12 @@ export function resolveDesignPageViewportLayout({
   const selectionInspectorWidthPx = selectionInspectorDockedWithRightRail
     ? floatingOverlayStackWidthPx
     : 288;
-  const plan2DSafeAreaRightPx =
-    !isClientPreview && viewMode === "2d" && viewportWidth >= 768
-      ? Math.max(
-          planQualityReviewVisible ? 344 : 0,
-          floatingFloorPropertiesPanelVisible ? 284 : 0,
-          tabletRightInsetPx
-        )
-      : 0;
+  const plan2DRightInsets = resolvePlan2DRightInsetsPx({
+    applies: !isClientPreview && viewMode === "2d" && viewportWidth >= 768,
+    planQualityReviewVisible,
+    floorPropertiesPanelVisible: floatingFloorPropertiesPanelVisible,
+    tabletRightInsetPx,
+  });
   const phoneInsets = resolvePhoneCanvasInsets({
     viewportWidth, isClientPreview, sheetOpen: designControlsPanelVisible, sheetHeightPx: phoneSheetHeightPx,
   });
@@ -138,7 +137,7 @@ export function resolveDesignPageViewportLayout({
     selectionInspectorRightPx,
     selectionInspectorTopPx,
     selectionInspectorWidthPx,
-    plan2DSafeAreaRightPx,
+    plan2DRightInsets, plan2DSafeAreaRightPx: plan2DRightInsets.rightPx,
     plan2DSafeAreaTopPx: phoneInsets.topPx,
     plan2DSafeAreaBottomPx: phoneInsets.bottomPx,
   };
@@ -245,13 +244,11 @@ export function useDesignPagePlanPresentationModel({
     tabletRightInsetPx: tablet.rightInsetPx,
   });
   const plan2DFitBounds = useMemo(
-    () =>
-      getPlan2DRoomFitBounds(
-        layout.housePlanRooms,
-        layout.roomWidth,
-        layout.roomDepth
-      ),
+    () => getPlan2DRoomFitBounds(layout.housePlanRooms, layout.roomWidth, layout.roomDepth),
     [layout.housePlanRooms, layout.roomDepth, layout.roomWidth]
+  );
+  const plan2DSafeAreaRightPx = usePlan2DFittedRightInsetPx(
+    plan2DFitKey(layout.viewMode, layout.viewportWidth, plan2DFitBounds, viewportLayout), viewportLayout.plan2DRightInsets
   );
   const exportReadinessItems = useMemo(
     () =>
@@ -405,6 +402,7 @@ export function useDesignPagePlanPresentationModel({
   return {
     derived: {
       ...viewportLayout,
+      plan2DSafeAreaRightPx, plan2DSafeAreaLiveRightPx: viewportLayout.plan2DSafeAreaRightPx,
       plan2DFitBounds,
       exportReadinessItems,
       exportReadinessReadyCount,
