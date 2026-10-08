@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from "react";
+import { useCallback, useState, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
@@ -11,14 +11,12 @@ import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import { getItemPrice } from "@/lib/design-page-utils";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
-import { IMAGES_UPGRADE_PROMPT, PDF_UPGRADE_PROMPT, promptUpgradeOnce, type ExportOptions } from "@/lib/export-upgrade-prompt";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import type { ExportStylePreset } from "@/lib/useDesignPagePlanState";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
-type ExportUpgradeReason = "designer" | "export_images" | "export_pdf" | null;
 
 type DesignPageExportState = {
   designId: string | null;
@@ -31,8 +29,6 @@ type DesignPageExportState = {
 
 type DesignPageExportActions = {
   setClientPreview: Dispatch<SetStateAction<boolean>>;
-  setUpgradeReason: Dispatch<SetStateAction<ExportUpgradeReason>>;
-  setShowUpgrade: Dispatch<SetStateAction<boolean>>;
   updateProjection: (camera: THREE.Camera | null) => void;
   showToast: (message: string) => void;
   logFunnelEvent: (eventType: FunnelEventName, meta?: Record<string, unknown>) => void;
@@ -90,7 +86,6 @@ export function useDesignPageExport({
 }) {
   const [isExporting, setIsExporting] = useState(false);
   const [isPdfExporting, setIsPdfExporting] = useState(false);
-  const upgradePromptedRef = useRef(false);
   const {
     designId,
     plan,
@@ -101,8 +96,6 @@ export function useDesignPageExport({
   } = state;
   const {
     setClientPreview,
-    setUpgradeReason,
-    setShowUpgrade,
     updateProjection,
     showToast,
     logFunnelEvent,
@@ -224,7 +217,9 @@ export function useDesignPageExport({
     updateProjection,
   ]);
 
-  const exportImages = useCallback(async ({ limitsShown = false }: ExportOptions = {}) => {
+  // Free users read the limits in Download before the file (audit findings SX2, PR6), so no export
+  // asks to upgrade afterwards.
+  const exportImages = useCallback(async () => {
     track("export_clicked", {
       design_id: designId,
       channel: "images",
@@ -305,9 +300,6 @@ export function useDesignPageExport({
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!canExportMultipleViews) {
-        promptUpgradeOnce(upgradePromptedRef, limitsShown, IMAGES_UPGRADE_PROMPT, { setUpgradeReason, setShowUpgrade });
-      }
       showToast(`Exported ${images.length} ${exportStylePreset} images`);
     } catch (error) {
       console.error("Export error:", error);
@@ -330,13 +322,11 @@ export function useDesignPageExport({
     plan,
     sceneReady,
     setClientPreview,
-    setShowUpgrade,
-    setUpgradeReason,
     showToast,
     updateProjection,
   ]);
 
-  const exportPdf = useCallback(async ({ limitsShown = false }: ExportOptions = {}) => {
+  const exportPdf = useCallback(async () => {
     track("export_clicked", {
       design_id: designId,
       channel: "pdf",
@@ -427,9 +417,6 @@ export function useDesignPageExport({
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!canExportPdf) {
-        promptUpgradeOnce(upgradePromptedRef, limitsShown, PDF_UPGRADE_PROMPT, { setUpgradeReason, setShowUpgrade });
-      }
     } catch (error) {
       const message =
         error instanceof Error && error.name === "AbortError"
@@ -450,8 +437,6 @@ export function useDesignPageExport({
     items,
     logFunnelEvent,
     plan,
-    setShowUpgrade,
-    setUpgradeReason,
     showToast,
   ]);
 

@@ -1,6 +1,8 @@
 import { test, expect } from "../fixtures";
 import { confirmPlanTemplateReplacementIfNeeded } from "../plan-template-test-utils";
+import { chooseStartTemplate } from "../variant-test-utils";
 import {
+  addOneRoom,
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
   clickWithFallback,
@@ -16,9 +18,10 @@ export function registerTemplateTests() {
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
-    await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
-    await expect(page.getByTestId("apply-plan-template-living_dining")).toBeVisible();
-    await page.getByTestId("apply-plan-template-compact_two_bed").click();
+    // Plan's "Choose a template" opens Start a new design's templates (UX ST8).
+    await expect(page.getByTestId("start-template-studio")).toBeVisible();
+    await expect(page.getByTestId("start-template-living_dining")).toBeVisible();
+    await chooseStartTemplate(page, "compact_two_bed");
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("6 rooms ready");
@@ -81,11 +84,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-
-    await expect(page.getByTestId("plan-template-dimensions-studio")).toContainText(
-      "Footprint 630 cm × 570 cm"
-    );
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
 
     const summary = page.locator('[data-testid="plan-room-summary"]:visible').first();
     await expect(summary).toBeVisible();
@@ -146,12 +145,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-
-    await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
-    await expect(
-      page.getByTestId(/plan-template-furnishing-marker-studio-.+/).first()
-    ).toBeVisible();
-    await page.getByTestId("apply-furnished-template-studio").click();
+    await chooseStartTemplate(page, "studio", { furnished: true });
     await confirmPlanTemplateReplacementIfNeeded(page);
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
@@ -211,7 +205,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("Review the shop list");
 
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-one_bedroom").click();
+    await chooseStartTemplate(page, "one_bedroom");
 
     const replaceDialog = page.getByRole("dialog", { name: "Start a new design?" });
     await expect(replaceDialog).toBeVisible();
@@ -222,7 +216,8 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
     await expect(page.getByTestId("room-setup-step-furnish-meta")).toHaveText(/[1-9]\d* items?/);
 
-    await page.getByTestId("apply-plan-template-one_bedroom").click();
+    await chooseTemplateStart(page);
+    await chooseStartTemplate(page, "one_bedroom");
     await expect(replaceDialog).toBeVisible();
     await page.getByTestId("new-plan-replace-current").click();
 
@@ -244,8 +239,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("editor-design-steps").getByRole("button")).toHaveCount(3);
     await expect(page.getByTestId("house-room-3d-label")).toHaveCount(0);
 
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByRole("button", { name: "Focus Living Room" })).toBeVisible({

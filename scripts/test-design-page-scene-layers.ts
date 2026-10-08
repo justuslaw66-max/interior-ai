@@ -227,8 +227,6 @@ assertSourceOrder(
 assertSourceOrder(
   shellRuntimeSource,
   [
-    "showPresentModal, setShowPresentModal",
-    "presentModeRoomId, setPresentModeRoomId",
     "useDesignPageSurfaceStateController()",
     "editorMode, setEditorMode",
     "guidedPlanStartMode, setGuidedPlanStartMode",
@@ -238,7 +236,7 @@ assertSourceOrder(
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
   ],
-  "Editor shell runtime should preserve presentation-through-camera-diagnostics hook order"
+  "Editor shell runtime should preserve surface-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,
@@ -246,7 +244,7 @@ assertSourceOrder(
     'localStorage.getItem("placement_add_mode")',
     'localStorage.setItem("placement_add_mode"',
     "preloadCoreAssets()",
-    'if (state.editorMode === "present")',
+    'if (state.editorMode === "buy")',
     "const signInWithReturn",
   ],
   "Editor client lifecycle should preserve hydration-through-sign-in hook order"
@@ -600,8 +598,8 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /interactive=\{\s*configuration\.editorMode !== "present" &&\s*!configuration\.isClientPreview\s*\}/,
-  "Whole-home structure interaction should remain disabled in present and client-preview modes."
+  /interactive=\{!configuration\.isClientPreview\}/,
+  "Whole-home structure interaction should remain disabled in Client Preview."
 );
 assert.match(
   housePlanRenderer3DSource,
@@ -756,11 +754,11 @@ assert.doesNotMatch(
 );
 const structureConfigurationSource =
   adapterSource.match(
-    /structure:\s*\{\s*editorMode: editor\.editorMode,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
+    /structure:\s*\{\s*isClientPreview: editor\.isClientPreview,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
   )?.[0] ?? "";
 assert.match(
   structureConfigurationSource,
-  /editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
+  /isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
   "The scene adapter should map editor and plan structure configuration."
 );
 assert.doesNotMatch(

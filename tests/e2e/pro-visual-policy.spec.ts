@@ -430,6 +430,10 @@ const SHARE_FALLBACK_DESIGN_ID = "ch0015e-design";
 const SHARE_FALLBACK_NEXT_DESIGN_ID = "ch0015e-next-design";
 const SHARE_FALLBACK_TOKEN = "ch0015e-share-token";
 const SHARE_FALLBACK_URL = `http://127.0.0.1:3000/share/${SHARE_FALLBACK_TOKEN}`;
+const SHARE_FALLBACK_DESIGN_TITLES: Record<string, string> = {
+  [SHARE_FALLBACK_DESIGN_ID]: "CH-0015E Share Fallback",
+  [SHARE_FALLBACK_NEXT_DESIGN_ID]: "CH-0015E Next Design",
+};
 
 type ShareFallbackClipboardMode =
   | "missing"
@@ -441,7 +445,7 @@ type ShareFallbackClipboardMode =
 function shareFallbackDesignPayload(id: string) {
   return {
     id,
-    title: "CH-0015E Share Fallback",
+    title: SHARE_FALLBACK_DESIGN_TITLES[id],
     roomWidth: 4,
     roomDepth: 4,
     items: [],
@@ -459,6 +463,7 @@ function shareFallbackDesignPayload(id: string) {
 
 async function mockShareFallbackDesign(page: Page) {
   let shareRequestCount = 0;
+  const shareRequestCountByDesign = new Map<string, number>();
   for (const designId of [
     SHARE_FALLBACK_DESIGN_ID,
     SHARE_FALLBACK_NEXT_DESIGN_ID,
@@ -477,6 +482,7 @@ async function mockShareFallbackDesign(page: Page) {
   ]) {
     await page.route(`**/api/designs/${designId}/share`, (route) => {
       shareRequestCount += 1;
+      shareRequestCountByDesign.set(designId, (shareRequestCountByDesign.get(designId) ?? 0) + 1);
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -529,7 +535,24 @@ async function mockShareFallbackDesign(page: Page) {
       },
     });
   });
-  return { getShareRequestCount: () => shareRequestCount };
+  return {
+    getShareRequestCount: () => shareRequestCount,
+    getDesignShareRequestCount: (designId: string) => shareRequestCountByDesign.get(designId) ?? 0,
+  };
+}
+
+/**
+ * Pro's designer workspace shares a design by itself once it has loaded (`useDesignPagePersistence`),
+ * a moment after the title shows; in WebKit it once landed just after a count was taken. Counts of
+ * Share's own requests start after that one.
+ */
+async function waitForDesignerAutoShare(
+  shareMock: Awaited<ReturnType<typeof mockShareFallbackDesign>>,
+  designId = SHARE_FALLBACK_DESIGN_ID
+) {
+  await expect
+    .poll(() => shareMock.getDesignShareRequestCount(designId), { timeout: FIRST_LOAD_TIMEOUT_MS })
+    .toBeGreaterThan(0);
 }
 
 async function setShareFallbackClipboardMode(
@@ -595,76 +618,44 @@ async function settleAndExpectLiveCopyFeedback(page: Page) {
   });
 }
 
-async function openPresentExport(
-  page: Page,
-  activation: "keyboard" | "pointer"
-) {
-  // Present & export lives in the More menu.
-  const more = page.getByTestId("editor-command-overflow");
-  if (activation === "keyboard") {
-    await more.focus();
-    await more.press("Enter");
-  } else {
-    await more.click();
-  }
-  const exportAction = page.getByTestId("editor-workflow-export");
-  await expect(exportAction).toBeVisible();
-  if (activation === "keyboard") {
-    await exportAction.focus();
-    await exportAction.press("Enter");
-  } else {
-    await exportAction.click();
-  }
-  const parent = page.getByRole("dialog", {
-    name: "Present & Export",
-    includeHidden: true,
+// The bar's Share shares the design's cloud copy, so it waits for the requested design to load;
+// otherwise Share would save a new design first.
+async function waitForSharedDesign(page: Page, designId = SHARE_FALLBACK_DESIGN_ID) {
+  await expect(page.getByTestId("editor-design-title")).toHaveText(SHARE_FALLBACK_DESIGN_TITLES[designId], {
+    timeout: FIRST_LOAD_TIMEOUT_MS,
   });
-  await expect(parent).toBeVisible();
-  await expectPresentExportInteractive(parent);
-  // Initial focus belongs to the first opening, not a nested child's dismissal.
-  await expect(parent.getByRole("button", { name: "Close export panel" })).toBeFocused();
-  return parent;
 }
 
-async function expectPresentExportInteractive(parent: Locator) {
-  await expect(parent).toHaveAttribute("data-editor-dialog-state", "interactive");
-  await expect(parent).toHaveAttribute("data-editor-dialog-focus-trap", "active");
-  await expect(parent).not.toHaveAttribute("aria-hidden", "true");
-  expect(await parent.evaluate((element) => {
-      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
-      return element.inert;
-    })).toBe(false);
-}
-
-async function activateCreateShare(
+async function activateShare(
   page: Page,
   activation: "keyboard" | "pointer"
 ) {
-  const parent = page.getByTestId("present-export-dialog");
-  await expectPresentExportInteractive(parent);
-  const createShare = page.getByTestId("create-share");
-  await createShare.scrollIntoViewIfNeeded();
-  await expect(createShare).toBeVisible();
-  await expect(createShare).toBeEnabled();
-  await expect(createShare).toBeInViewport();
-  expect(await createShare.evaluate((element) => ({
-    owner: element.closest('[role="dialog"]')?.getAttribute("data-testid"),
+  const share = page.getByTestId("editor-command-share");
+  await expect(share).toBeVisible();
+  await expect(share).toHaveAttribute("aria-disabled", "false");
+  await expect(share).toBeInViewport();
+  expect(await share.evaluate((element) => ({
+    owner: element.closest('[role="dialog"]')?.getAttribute("data-testid") ?? null,
     excluded: Boolean(element.closest('[inert], [hidden], [aria-hidden="true"]')),
-  }))).toEqual({ owner: "present-export-dialog", excluded: false });
-  proVisualMark(page, "create-share-action-start", { activation });
+  }))).toEqual({ owner: null, excluded: false });
+  proVisualMark(page, "share-action-start", { activation });
   if (activation === "keyboard") {
-    await createShare.focus();
-    await expect(createShare).toBeFocused();
+    await share.focus();
+    await expect(share).toBeFocused();
     await page.keyboard.press("Enter");
   } else {
-    await createShare.click();
+    await share.click();
   }
-  proVisualMark(page, "create-share-action-returned", { activation });
+  proVisualMark(page, "share-action-returned", { activation });
   await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
-  return createShare;
+  return share;
 }
 
-async function expectShareFallbackTopmost(page: Page, parent: Locator) {
+async function isOutsideTheAccessibilityTree(locator: Locator) {
+  return locator.evaluate((element) => Boolean(element.closest('[inert], [aria-hidden="true"]')));
+}
+
+async function expectShareFallbackTopmost(page: Page) {
   const fallback = page.getByTestId("share-fallback-modal");
   const namedFallback = page.getByRole("dialog", { name: "Share Link" });
   const close = page.getByTestId("share-fallback-close");
@@ -675,14 +666,11 @@ async function expectShareFallbackTopmost(page: Page, parent: Locator) {
   await expect(fallback).toHaveAttribute("data-editor-dialog-focus-trap", "active");
   await expect(close).toBeVisible();
   await expect(close).toBeFocused();
-  await expect(parent).toHaveAttribute("aria-hidden", "true");
-  expect(await parent.evaluate((element) => {
-      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
-      return element.inert;
-    })).toBe(true);
+  // The editor behind it, the bar's Share included, is out of reach and out of the tree.
+  expect(await isOutsideTheAccessibilityTree(page.getByTestId("editor-command-share"))).toBe(true);
   const accessibilityTree = await page.locator("body").ariaSnapshot();
   expect(accessibilityTree).toContain("Share Link");
-  expect(accessibilityTree).not.toContain("Present & Export");
+  expect(accessibilityTree).not.toMatch(/button "Share"(?=[\s:[]|$)/m);
   expect(
     await page.evaluate(() => {
       const ids = Array.from(document.querySelectorAll<HTMLElement>("[id]"))
@@ -694,17 +682,12 @@ async function expectShareFallbackTopmost(page: Page, parent: Locator) {
   return { fallback, close };
 }
 
-async function expectShareFallbackClosed(page: Page, parent: Locator) {
+async function expectShareFallbackClosed(page: Page) {
+  const share = page.getByTestId("editor-command-share");
   await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
   await expect(page.getByRole("dialog", { name: "Share Link" })).toHaveCount(0);
-  await expect(parent).toBeVisible();
-  await expect(parent).not.toHaveAttribute("aria-hidden", "true");
-  await expect(parent).toHaveAttribute("data-editor-dialog-focus-trap", "active");
-  expect(await parent.evaluate((element) => {
-      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
-      return element.inert;
-    })).toBe(false);
-  await expect(page.getByTestId("create-share")).toBeFocused();
+  expect(await isOutsideTheAccessibilityTree(share)).toBe(false);
+  await expect(share).toBeFocused();
 }
 
 async function openPlansFromAccount(
@@ -1794,7 +1777,7 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
   });
 
-  test("gives Consumer pointer Share Link Fallback exclusive nested ownership and preserved actions", async ({
+  test("gives Consumer pointer Share Link Fallback from Share exclusive ownership and preserved actions", async ({
     page,
   }, testInfo) => {
     const identity = await mockAuthenticatedPlan(page, "free");
@@ -1804,14 +1787,14 @@ test.describe("Pro visual policy", () => {
     });
     await identity.sessionReady;
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
-    const parent = await openPresentExport(page, "pointer");
+    await waitForSharedDesign(page);
     await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
     await expect(page.getByTestId("share-copy-button")).toHaveCount(0);
     await expect(page.getByTestId("share-open-button")).toHaveCount(0);
 
     await setShareFallbackClipboardMode(page, "missing");
-    await activateCreateShare(page, "pointer");
-    let child = await expectShareFallbackTopmost(page, parent);
+    await activateShare(page, "pointer");
+    let child = await expectShareFallbackTopmost(page);
     await expect(page.getByTestId("share-url-input")).toHaveValue(
       SHARE_FALLBACK_URL
     );
@@ -1824,20 +1807,20 @@ test.describe("Pro visual policy", () => {
       animations: "disabled",
     });
     await child.close.press("Escape");
-    await expectShareFallbackClosed(page, parent);
+    await expectShareFallbackClosed(page);
 
-    await activateCreateShare(page, "pointer");
-    child = await expectShareFallbackTopmost(page, parent);
+    await activateShare(page, "pointer");
+    child = await expectShareFallbackTopmost(page);
     await child.fallback.click({ position: { x: 2, y: 2 } });
-    await expectShareFallbackClosed(page, parent);
+    await expectShareFallbackClosed(page);
 
-    await activateCreateShare(page, "pointer");
-    child = await expectShareFallbackTopmost(page, parent);
+    await activateShare(page, "pointer");
+    child = await expectShareFallbackTopmost(page);
     await child.close.click();
-    await expectShareFallbackClosed(page, parent);
+    await expectShareFallbackClosed(page);
 
-    await activateCreateShare(page, "pointer");
-    await expectShareFallbackTopmost(page, parent);
+    await activateShare(page, "pointer");
+    await expectShareFallbackTopmost(page);
     const feedback = page.getByTestId("share-fallback-modal").getByRole("status");
     await expect(feedback).toHaveText("");
     await setShareFallbackClipboardMode(page, "rejected");
@@ -1879,7 +1862,7 @@ test.describe("Pro visual policy", () => {
       ch0015eShareFallback?: { writes: string[] };
     }).ch0015eShareFallback?.writes.length)).toBe(3);
     await page.getByTestId("share-open-button").click();
-    await expectShareFallbackClosed(page, parent);
+    await expectShareFallbackClosed(page);
     await page.evaluate(() => {
       const state = (window as typeof window & {
         ch0015eShareFallback?: { settleWrite: (() => void) | null };
@@ -1902,7 +1885,7 @@ test.describe("Pro visual policy", () => {
     expect(shareMock.getShareRequestCount()).toBe(4);
   });
 
-  test("gives Pro keyboard and narrow Share Link Fallback semantic return and parent guards", async ({
+  test("gives Pro keyboard and narrow Share Link Fallback from Share semantic return and focus containment", async ({
     page,
   }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -1915,19 +1898,20 @@ test.describe("Pro visual policy", () => {
     await identity.sessionReady;
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await setShareFallbackClipboardMode(page, "permission-denied");
-    const parent = await openPresentExport(page, "keyboard");
+    await waitForSharedDesign(page);
+    await waitForDesignerAutoShare(shareMock);
     const requestCountBeforeActivation = shareMock.getShareRequestCount();
     proVisualMark(page, "explicit-share-activation-baseline", { requestCountBeforeActivation });
-    const createShare = await activateCreateShare(page, "keyboard");
-    const child = await expectShareFallbackTopmost(page, parent);
+    const share = await activateShare(page, "keyboard");
+    const child = await expectShareFallbackTopmost(page);
     const activationEvents = proVisualEventsSince(page, "explicit-share-activation-baseline");
     const keyboardEvents = activationEvents.filter((event) => event.event === "keydown");
     expect(keyboardEvents).toEqual([expect.objectContaining({
-      key: "Enter", target: expect.objectContaining({ testId: "create-share" }),
-      active: expect.objectContaining({ testId: "create-share" }),
+      key: "Enter", target: expect.objectContaining({ testId: "editor-command-share" }),
+      active: expect.objectContaining({ testId: "editor-command-share" }),
     })]);
     expect(activationEvents.filter((event) => event.event === "click")).toEqual([
-      expect.objectContaining({ control: expect.objectContaining({ testId: "create-share" }) }),
+      expect.objectContaining({ control: expect.objectContaining({ testId: "editor-command-share" }) }),
     ]);
     expect(activationEvents.filter((event) => event.event === "share-request")).toEqual([
       expect.objectContaining({ method: "POST", requestSequence: requestCountBeforeActivation + 1 }),
@@ -1964,34 +1948,20 @@ test.describe("Pro visual policy", () => {
       animations: "disabled",
     });
 
-    const parentClose = parent.getByRole("button", {
-      name: "Close export panel",
-      includeHidden: true,
-    });
-    const parentBack = parent.getByRole("button", {
-      name: "Back to Design Mode",
-      includeHidden: true,
-    });
-    await expect(parentClose).toBeDisabled();
-    await expect(parentBack).toBeDisabled();
-    await parentClose.evaluate((element) => (element as HTMLButtonElement).click());
-    await parentBack.evaluate((element) => (element as HTMLButtonElement).click());
-    await expect(parent).toBeAttached();
-    await expect(child.fallback).toBeVisible();
-
-    await createShare.evaluate((element) => (element as HTMLElement).focus());
+    // Share, behind the fallback, can't take focus; Tab and Shift+Tab stay inside the fallback.
+    await share.evaluate((element) => (element as HTMLElement).focus());
     await expect(child.close).toBeFocused();
     await page.keyboard.press("Tab");
     await expectFocusInside(child.fallback);
     await page.keyboard.press("Shift+Tab");
     await expectFocusInside(child.fallback);
 
-    await createShare.evaluate((element) => {
+    // Focus goes back to Share by its id, even when the button was replaced meanwhile.
+    await share.evaluate((element) => {
       element.replaceWith(element.cloneNode(true));
     });
     await page.getByTestId("share-done-button").click();
-    await expectShareFallbackClosed(page, parent);
-    await expect(page.getByTestId("create-share")).toBeFocused();
+    await expectShareFallbackClosed(page);
     expect(shareMock.getShareRequestCount()).toBe(
       requestCountBeforeActivation + 1
     );
@@ -2008,13 +1978,14 @@ test.describe("Pro visual policy", () => {
     );
     await identity.sessionReady;
     await setShareFallbackClipboardMode(page, "rejected");
-    const parent = await openPresentExport(page, "pointer");
+    await waitForSharedDesign(page);
+    await waitForDesignerAutoShare(shareMock);
     let requestCountBeforeActivation = shareMock.getShareRequestCount();
-    await activateCreateShare(page, "pointer");
+    await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
       requestCountBeforeActivation + 1
     );
-    let child = await expectShareFallbackTopmost(page, parent);
+    let child = await expectShareFallbackTopmost(page);
 
     // Download is the newer modal: its command-bar button stays in the (inert) editor behind Share.
     const downloadTrigger = page.getByTestId("editor-command-download");
@@ -2042,25 +2013,23 @@ test.describe("Pro visual policy", () => {
     await expect(downloadClose).toBeFocused();
     await downloadClose.press("Escape");
     await expect(download).toHaveCount(0);
-    await expect(parent).toBeVisible();
-    await expect(page.getByTestId("create-share")).not.toBeFocused();
+    // The superseded fallback gives up returning focus to Share.
+    await expect(page.getByTestId("editor-command-share")).not.toBeFocused();
 
     requestCountBeforeActivation = shareMock.getShareRequestCount();
-    await activateCreateShare(page, "pointer");
+    await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
       requestCountBeforeActivation + 1
     );
-    await expectShareFallbackTopmost(page, parent);
+    await expectShareFallbackTopmost(page);
     await page.evaluate((nextDesignId) => {
-      const createShare = document.getElementById(
-        "present-export-create-share-action"
-      );
-      if (!(createShare instanceof HTMLElement)) {
-        throw new Error("Current Create Share semantic action was not found");
+      const share = document.getElementById("guest-share-action");
+      if (!(share instanceof HTMLElement)) {
+        throw new Error("Current Share semantic action was not found");
       }
-      createShare.id = "present-export-create-share-action-retired";
+      share.id = "guest-share-action-retired";
       const sentinel = document.createElement("button");
-      sentinel.id = "present-export-create-share-action";
+      sentinel.id = "guest-share-action";
       sentinel.dataset.testid = "share-fallback-project-focus-sentinel";
       sentinel.textContent = "Project focus sentinel";
       sentinel.style.position = "fixed";
@@ -2087,13 +2056,14 @@ test.describe("Pro visual policy", () => {
       )
     ).toBe(0);
 
-    await expect(page.getByTestId("create-share")).toBeEnabled();
+    await waitForSharedDesign(page, SHARE_FALLBACK_NEXT_DESIGN_ID);
+    await waitForDesignerAutoShare(shareMock, SHARE_FALLBACK_NEXT_DESIGN_ID);
     requestCountBeforeActivation = shareMock.getShareRequestCount();
-    await activateCreateShare(page, "pointer");
+    await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
       requestCountBeforeActivation + 1
     );
-    child = await expectShareFallbackTopmost(page, parent);
+    child = await expectShareFallbackTopmost(page);
     await child.fallback.evaluate((element) => {
       element.dataset.shareFallbackLifecycleGeneration = "before-mode-change";
     });
@@ -2115,10 +2085,10 @@ test.describe("Pro visual policy", () => {
     ).toBe(0);
 
     await page.evaluate(() => {
-      const current = document.getElementById("present-export-create-share-action");
-      if (current) current.id = "present-export-create-share-action-unmount-retired";
+      const current = document.getElementById("guest-share-action");
+      if (current) current.id = "guest-share-action-unmount-retired";
       const sentinel = document.createElement("button");
-      sentinel.id = "present-export-create-share-action";
+      sentinel.id = "guest-share-action";
       sentinel.dataset.testid = "share-fallback-unmount-focus-sentinel";
       sentinel.textContent = "Unmount focus sentinel";
       sentinel.style.position = "fixed";
@@ -2664,7 +2634,7 @@ test.describe("Pro visual policy", () => {
     await stopClientPreviewFocusRecorder(page);
   });
 
-  test("uses the same Client Preview focus contract from presentation export", async ({
+  test("uses the same Client Preview focus contract from Download's pictures", async ({
     page,
   }) => {
     await mockPlan(page, "pro");
@@ -2672,54 +2642,49 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await dismissBlockingPrompt(page);
 
-    const more = page.getByTestId("editor-command-overflow");
-    await more.focus();
-    await more.press("Enter");
-    await page.getByTestId("editor-workflow-export").click();
-    const dialog = page.getByRole("dialog", { name: "Present & Export" });
+    // Download stays open while its pictures are captured in Client Preview, so focus stays in it
+    // and never reaches the hidden command bar or Client Preview's exit.
+    const downloadTrigger = page.getByTestId("editor-command-download");
+    await downloadTrigger.focus();
+    await downloadTrigger.press("Enter");
+    const dialog = page.getByRole("dialog", { name: "Download" });
     await expect(dialog).toBeVisible();
-    const exportImages = dialog.getByRole("button", { name: /Export Images/ });
-    await expect(exportImages).toBeEnabled();
+    // Until its entry finishes, Download's panel is inert and focus stays on the dialog itself;
+    // then it focuses Close. In WebKit, Pictures was once focused and Enter pressed mid-entry,
+    // so neither reached it.
+    await expect(dialog).toHaveAttribute("data-editor-dialog-state", "interactive");
+    await expect(dialog.getByTestId("download-dialog-close")).toBeFocused();
+    const pictures = dialog.getByTestId("download-images");
+    await expect(pictures).toBeEnabled({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await page.evaluate(() => {
-      document.body.dataset.clientPreviewConcealmentObserved = "false";
-      document.body.dataset.clientPreviewExitFocusObserved = "false";
+      const body = document.body;
+      body.dataset.clientPreviewConcealmentObserved = "false";
+      body.dataset.clientPreviewFocusEscapes = "";
       const commandBar = document.querySelector('[data-testid="editor-command-bar"]');
       const observer = new MutationObserver(() => {
-        if (commandBar?.getAttribute("aria-hidden") === "true") {
-          document.body.dataset.clientPreviewConcealmentObserved = "true";
-        }
-      });
-      if (commandBar) observer.observe(commandBar, { attributes: true });
-      document.addEventListener("focusin", (event) => {
         if (
-          event.target instanceof HTMLElement &&
-          event.target.dataset.testid === "client-preview-exit"
+          commandBar?.getAttribute("aria-hidden") === "true" &&
+          document.querySelector('[data-testid="client-preview-exit"]')
         ) {
-          document.body.dataset.clientPreviewExitFocusObserved = "true";
+          body.dataset.clientPreviewConcealmentObserved = "true";
+        }
+      });
+      observer.observe(body, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-hidden"] });
+      document.addEventListener("focusin", (event) => {
+        const target = event.target instanceof HTMLElement ? event.target : null;
+        if (!target) return;
+        if (target.dataset.testid === "client-preview-exit" || (commandBar?.contains(target) && commandBar.getAttribute("aria-hidden") === "true")) {
+          body.dataset.clientPreviewFocusEscapes += `${target.dataset.testid ?? target.id};`;
         }
       });
     });
-    await exportImages.click();
-    await expect(dialog).toHaveCount(0);
-    await page.waitForFunction(() => {
-      const commandBar = document.querySelector('[data-testid="editor-command-bar"]');
-      return (
-        document.body.dataset.clientPreviewConcealmentObserved === "true" &&
-        document.body.dataset.clientPreviewExitFocusObserved === "true" &&
-        commandBar?.getAttribute("aria-hidden") !== "true"
-      );
-    });
-    expect(
-      await page.evaluate(
-        () => document.body.dataset.clientPreviewConcealmentObserved
-      )
-    ).toBe("true");
-    expect(
-      await page.evaluate(
-        () => document.body.dataset.clientPreviewExitFocusObserved
-      )
-    ).toBe("true");
+    await pictures.focus();
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.body.dataset.clientPreviewConcealmentObserved === "true");
+    await expect(dialog).toHaveCount(0, { timeout: FIRST_LOAD_TIMEOUT_MS });
+    await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
+    expect(await page.evaluate(() => document.body.dataset.clientPreviewFocusEscapes)).toBe("");
     await expectEditingCommandBarActive(page);
-    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+    await expect(downloadTrigger).toBeFocused();
   });
 });

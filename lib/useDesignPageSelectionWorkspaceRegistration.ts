@@ -32,7 +32,7 @@ function replaceActiveItemsSnapshot(
 }
 
 function selectionKeyboardShortcutsEnabled(editorMode: DesignPageEditorMode) {
-  return editorMode !== "buy" && editorMode !== "present";
+  return editorMode !== "buy";
 }
 
 /**

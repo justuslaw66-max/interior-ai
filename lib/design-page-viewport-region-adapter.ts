@@ -124,7 +124,6 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     selectionInspectorTopPx: number;
     selectionInspectorWidthPx: number;
     planQualityReviewTopPx: number;
-    editorMode: "design" | "adjust" | "ai" | "buy" | "present";
     importedWallEditor: DesignPageViewportRegionModel["configuration"]["importedWallEditor"];
   };
   references: ViewportReferences;
@@ -314,7 +313,6 @@ export function buildDesignPageViewportRegionAdapter({
       },
       aiLayoutPreview: { dark: configuration.dark },
       navigator: {
-        disabled: configuration.editorMode === "present",
         dark: configuration.dark,
       },
       floorProperties: {

@@ -8,7 +8,7 @@ import type {
   DesignPageEditorChromeProps,
   DesignPageEditorChromeState,
 } from "@/components/editor/design-page/DesignPageEditorChrome";
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 import { PLANS_GET_PRO_OPENER_ID } from "@/lib/plans-dialog-focus";
@@ -67,7 +67,6 @@ export type UseDesignPageEditorChromeControllerInput = {
       openDesignRename: () => void;
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
       setDownloadOpen: Dispatch<SetStateAction<boolean>>;
-      setPresentOpen: Dispatch<SetStateAction<boolean>>;
       setUpgradeReason: (reason: "designer") => void;
       setUpgradeOpen: Dispatch<SetStateAction<boolean>>;
     };
@@ -100,9 +99,9 @@ export type UseDesignPageEditorChromeControllerInput = {
   };
 };
 
-/** Present & export's saved-view actions, for Views on the 3D view (UX 4e, SX4). */
+/** The saved-view actions, for Views on the 3D view (UX 4e, SX4). */
 export function savedViewActions(
-  actions: Pick<PresentExportDialogProps["actions"], "onCameraViewNameChange" | "onSaveCameraView" | "onOpenCameraView" | "onDeleteCameraView">
+  actions: Pick<PresentationTools["actions"], "onCameraViewNameChange" | "onSaveCameraView" | "onOpenCameraView" | "onDeleteCameraView">
 ): DesignPageEditorChromeActions["savedViews"] {
   return {
     onNameChange: actions.onCameraViewNameChange,
@@ -119,15 +118,6 @@ export function useDesignPageEditorChromeController({
 }: UseDesignPageEditorChromeControllerInput): DesignPageEditorChromeProps {
   const commandState = state.commandBar.commandBar;
   const leave = useLeaveForMyDesigns({ saveBeforeLeaving: actions.persistence.saveBeforeLeaving, myDesigns: actions.navigation.myDesigns });
-
-  const togglePresentMode = () => {
-    if (commandState.editorMode === "present") {
-      actions.dialogs.setPresentOpen(false);
-      actions.editor.setMode("design");
-      return;
-    }
-    actions.editor.setMode("present");
-  };
 
   const toggleDesignerMode = () => {
     if (!configuration.canUseDesigner && !commandState.isDesigner) {
@@ -166,7 +156,6 @@ export function useDesignPageEditorChromeController({
     if (!commandState.isAuthed) return actions.persistence.openGuestPrompt("share", () => {});
     void actions.persistence.shareDesign();
   };
-  const openPresentExport = () => { actions.dialogs.setPresentOpen(true); };
 
   // Downloads capture the 3D view, so the 3D view shows behind the Download dialog.
   const openDownload = () => {
@@ -216,7 +205,6 @@ export function useDesignPageEditorChromeController({
           onPlan: actions.navigation.plan,
           onFurnish: actions.navigation.furnish,
           onShop: actions.navigation.shop,
-          onExport: togglePresentMode,
           onUndo: actions.history.undo,
           onRedo: actions.history.redo,
           onToggleDesignSidebar: toggleDesignSidebar,
@@ -231,7 +219,6 @@ export function useDesignPageEditorChromeController({
           onShare: share,
           onDownload: openDownload,
           onRetrySaveStatus: actions.persistence.retrySaveStatus,
-          onOpenPresentExport: openPresentExport,
         },
         room: {
           onViewModeChange: actions.navigation.changeViewMode,
@@ -251,7 +238,6 @@ export function useDesignPageEditorChromeController({
         onAdjust: openAdjustTools,
         onAi: openAiTools,
         onCart: openCart,
-        onPresent: togglePresentMode,
         onFitPlan: actions.navigation.fitPlan,
       },
     },

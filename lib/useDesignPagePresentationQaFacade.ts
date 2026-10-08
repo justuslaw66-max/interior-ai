@@ -8,9 +8,10 @@ import type { DesignRenameDialogProps } from "@/components/editor/design-page/De
 import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } from "@/lib/design-page-beta-feedback";
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
 import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
+import type { ExportReadinessItem } from "@/lib/design-page-export-readiness";
 import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import { areRuntimeQaHooksEnabled } from "@/lib/qa";
-import { getAllRoomNames } from "@/lib/room-hooks";
+import type { DesignSnapshot } from "@/lib/room-types";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageDesignRename } from "@/lib/useDesignPageDesignRename";
 import { savedViewActions, useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
@@ -19,7 +20,7 @@ import { useDesignPagePresentExportController, type UseDesignPagePresentExportCo
 import { useDesignPageQaReadModel, type UseDesignPageQaReadModelInput } from "@/lib/useDesignPageQaReadModel";
 
 type PresentInput = UseDesignPagePresentExportControllerInput;
-type PresentDialogState = PresentInput["state"]["dialog"];
+type PresentDialogState = PresentInput["state"]["tools"];
 type PresentActions = PresentInput["actions"];
 type QaInput = UseDesignPageQaReadModelInput;
 type CommandActions = DesignPageCommandPaletteActions;
@@ -49,7 +50,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       redoName: ChromeCommandState["redoName"];
     };
     document: {
-      snapshot: PresentInput["state"]["document"]["snapshot"];
+      snapshot: DesignSnapshot;
       activeRoom: PresentDialogState["activeRoom"];
       activeRoomItemCount: number;
       roomWidth: number;
@@ -64,10 +65,11 @@ export type UseDesignPagePresentationQaFacadeInput = {
       saveStatus: ChromeCommandState["saveStatus"];
     };
     presentation: Pick<PresentDialogState,
-      "cameraViewNameInput" | "layoutVersionNameInput" | "exportReadiness" | "simplePlanControls" |
-      "sharingDesign" | "exportStylePreset" | "isExporting" | "isPdfExporting" | "aiNotesLoading"
+      "layoutVersionNameInput" | "simplePlanControls" | "exportStylePreset" | "isExporting" | "isPdfExporting" | "aiNotesLoading"
     > & {
-      presentModeRoomId: string | null;
+      cameraViewNameInput: string;
+      exportReadiness: { items: ExportReadinessItem[]; readyCount: number; score: number };
+      sharingDesign: boolean;
       lightingSettings: DesignLightingSettings;
       lightingStatus: {
         placedFixtureCount: number;
@@ -115,23 +117,19 @@ export type UseDesignPagePresentationQaFacadeInput = {
     };
   };
   configuration: {
-    commandPaletteScopeKey: string; presentOpen: boolean;
+    commandPaletteScopeKey: string;
     designerTheme: boolean;
     canUseAdvancedPlanControls: boolean;
     canUseAdvancedExportStyles: boolean;
     canUseDesigner: ChromeInput["configuration"]["canUseDesigner"];
     compactRoomStatus: ChromeInput["configuration"]["commandBar"]["compactRoomStatus"];
     showRoomHealth: ChromeInput["configuration"]["commandBar"]["showRoomHealth"];
-    eyeLevelTransitionDurationMs: number;
-    focusTransitionDurationMs: number;
   };
   actions: {
     shell: {
-      setPresentModalOpen: ChromeActions["dialogs"]["setPresentOpen"];
       setEditorMode: ChromeActions["editor"]["setMode"];
-      setPresentModeRoomId: PresentActions["shell"]["setPresentModeRoomId"];
-      setDesignSnapshot: PresentActions["shell"]["setDesignSnapshot"];
-      changeViewMode: PresentActions["shell"]["changeViewMode"];
+      setDesignSnapshot: (snapshot: DesignSnapshot) => void;
+      changeViewMode: ChromeActions["navigation"]["changeViewMode"];
       setUpgradeReason: PresentActions["shell"]["setUpgradeReason"];
       setUpgradeOpen: ChromeActions["dialogs"]["setUpgradeOpen"];
       setDesignPanelOpen: ChromeActions["editor"]["setDesignPanelOpen"];
@@ -203,15 +201,8 @@ export function useDesignPagePresentationQaFacade({
     runTransaction: actions.history.runTransaction, setDesignSnapshot: actions.shell.setDesignSnapshot, showToast: actions.feedback.showToast });
   const presentExport = useDesignPagePresentExportController({
     state: {
-      dialog: {
-        exportReadiness: state.presentation.exportReadiness,
-        rooms: getAllRoomNames(state.document.snapshot),
-        currentRoomId:
-          state.presentation.presentModeRoomId ??
-          state.document.snapshot.activeRoomId ??
-          null,
+      tools: {
         viewMode: state.editor.viewMode,
-        cameraViewNameInput: state.presentation.cameraViewNameInput,
         activeRoom: state.document.activeRoom,
         layoutVersionNameInput: state.presentation.layoutVersionNameInput,
         simplePlanControls: state.presentation.simplePlanControls,
@@ -221,9 +212,7 @@ export function useDesignPagePresentationQaFacade({
         planTheme: state.plan.planTheme,
         annotationToolKind: state.plan.annotationToolKind,
         selectedPlanOverlayId: state.plan.selectedPlanOverlayId,
-        sharingDesign: state.presentation.sharingDesign,
         designId: state.identity.designId,
-        shareToken: state.identity.shareToken,
         exportStylePreset: state.presentation.exportStylePreset,
         isExporting: state.presentation.isExporting,
         isPdfExporting: state.presentation.isPdfExporting,
@@ -231,24 +220,13 @@ export function useDesignPagePresentationQaFacade({
         aiNotesLoading: state.presentation.aiNotesLoading,
         hasItems: state.document.activeRoomItemCount > 0,
       },
-      document: { snapshot: state.document.snapshot },
     },
     configuration: {
-      open: configuration.presentOpen,
-      designerTheme: configuration.designerTheme,
       canUseAdvancedPlanControls: configuration.canUseAdvancedPlanControls,
       canUseAdvancedExportStyles: configuration.canUseAdvancedExportStyles,
-      eyeLevelTransitionDurationMs:
-        configuration.eyeLevelTransitionDurationMs,
-      focusTransitionDurationMs: configuration.focusTransitionDurationMs,
     },
     actions: {
       shell: {
-        setPresentModalOpen: actions.shell.setPresentModalOpen,
-        setEditorMode: actions.shell.setEditorMode,
-        setPresentModeRoomId: actions.shell.setPresentModeRoomId,
-        setDesignSnapshot: actions.shell.setDesignSnapshot,
-        changeViewMode: actions.shell.changeViewMode,
         setUpgradeReason: actions.shell.setUpgradeReason,
         setUpgradeOpen: actions.shell.setUpgradeOpen,
       },
@@ -418,7 +396,7 @@ export function useDesignPagePresentationQaFacade({
       editor: { setMode: actions.shell.setEditorMode, setDesignPanelOpen: actions.shell.setDesignPanelOpen,
         setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
         setClientPreview: actions.shell.setClientPreview, setUrlMode: actions.shell.setUrlMode },
-      dialogs: { ...actions.dialogs, openDesignRename: designRename.openRename, setPresentOpen: actions.shell.setPresentModalOpen,
+      dialogs: { ...actions.dialogs, openDesignRename: designRename.openRename,
         setUpgradeReason: actions.shell.setUpgradeReason, setUpgradeOpen: actions.shell.setUpgradeOpen },
       billing: actions.billing,
       persistence: actions.persistence,

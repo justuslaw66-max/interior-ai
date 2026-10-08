@@ -85,15 +85,15 @@ assert.deepEqual(
 assert.deepEqual(
   resolvePlacementAwareRoomSelectionDecision({
     pendingPlacementHandled: false,
-    editorMode: "present",
+    editorMode: "design",
     activeRoomId: "room-current",
     targetRoomId: "room-target",
   }),
   {
-    shouldSetDesignMode: false,
+    shouldSetDesignMode: true,
     shouldSwitchRoom: true,
   },
-  "presentation mode should be preserved while normal room switching remains available"
+  "normal room switching remains available"
 );
 assert.equal(
   resolvePlacementAwareRoomSelectionDecision({

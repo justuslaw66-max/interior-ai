@@ -10,8 +10,6 @@ import {
   WHOLE_HOME_FIT_ZOOM_SCALE,
   type Plan2DViewFitOrientation,
 } from "@/components/editor/camera/EditorCamera2D";
-import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
@@ -23,8 +21,6 @@ import {
   applyPlan2DCameraInvariant, isPlan2DCameraDegenerate,
   type Plan2DCameraControls,
 } from "@/lib/plan-camera-2d";
-import type { DesignItem } from "@/lib/room-types";
-import { mapToTopCategory } from "@/lib/catalog/view-builders";
 
 const PLAN_2D_WHOLE_HOME_FIT_PADDING_MIN_METERS = 3.2;
 const PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO = 0.24;
@@ -56,9 +52,6 @@ export type DesignPageCameraNavigationState = {
   hasWholeHousePlan: boolean;
   designRoomCount: number;
   rooms: HousePlanRoom2D[];
-  items: DesignItem[];
-  selectedItem: DesignItem | null;
-  selectedProduct: CatalogItemSchema | null;
 };
 
 export type DesignPageCameraNavigationConfiguration = {
@@ -115,8 +108,6 @@ export type DesignPageCameraNavigationActions = {
   handleWholeHomeNavigatorZoom: (direction: "in" | "out") => void;
   handleWholeHomeFocusRoom: (roomId: string) => void;
   getWholeHome3DView: () => CameraView;
-  getEyeLevelView: () => CameraView;
-  getFocusView: () => CameraView;
 };
 
 export type DesignPageCameraNavigationController = {
@@ -160,9 +151,6 @@ export function useDesignPageCameraNavigation({
     hasWholeHousePlan,
     designRoomCount,
     rooms,
-    items,
-    selectedItem,
-    selectedProduct,
   } = state;
   const {
     defaultCameraView,
@@ -1189,63 +1177,6 @@ export function useDesignPageCameraNavigation({
     viewMode,
   ]);
 
-  const getEyeLevelView = useCallback((): CameraView => {
-    const sofa =
-      items.find((item) => {
-        const catalogItem = CATALOG_ITEMS[item.productId];
-        return catalogItem
-          ? mapToTopCategory(catalogItem.category, catalogItem) === "sofa"
-          : false;
-      }) ?? null;
-    if (!sofa) {
-      return singleRoomDefaultCameraView;
-    }
-
-    const product = CATALOG_ITEMS[sofa.productId];
-    const sofaX = sofa.position?.[0] ?? 0;
-    const sofaZ = sofa.position?.[2] ?? 0;
-    const targetY = Math.max(0.8, (product.dimsMm.h / 1000) * 0.5);
-    const offsetBack = Math.max(2.2, (product.dimsMm.d / 1000) * 2.8);
-
-    return resolveCameraViewForRoomOrigin({
-      target: [sofaX, targetY, sofaZ],
-      pos: [sofaX, 1.5, sofaZ + offsetBack],
-      fov: 45,
-    }, activeRoomOrigin);
-  }, [activeRoomOrigin, items, singleRoomDefaultCameraView]);
-
-  const getFocusView = useCallback((): CameraView => {
-    if (!selectedItem || !selectedProduct) {
-      return getEyeLevelView();
-    }
-
-    const rotation = selectedItem.rotationY ?? 0;
-    const normalizedQuarterTurns =
-      ((Math.round(rotation / (Math.PI / 2)) % 4) + 4) % 4;
-    const isOddRot = normalizedQuarterTurns % 2 !== 0;
-    const width = isOddRot
-      ? selectedProduct.dimsMm.d / 1000
-      : selectedProduct.dimsMm.w / 1000;
-    const depth = isOddRot
-      ? selectedProduct.dimsMm.w / 1000
-      : selectedProduct.dimsMm.d / 1000;
-    const centerX = selectedItem.position?.[0] ?? 0;
-    const centerZ = selectedItem.position?.[2] ?? 0;
-    const centerY = Math.max(0.4, (selectedProduct.dimsMm.h / 1000) * 0.52);
-    const itemSize = Math.max(width, depth, selectedProduct.dimsMm.h / 1000);
-    const distance = Math.max(1.8, Math.min(4.4, itemSize * 2.4));
-
-    return resolveCameraViewForRoomOrigin({
-      target: [centerX, centerY, centerZ],
-      pos: [
-        centerX + distance * 0.42,
-        centerY + Math.max(0.5, itemSize * 0.45),
-        centerZ + distance,
-      ],
-      fov: 45,
-    }, activeRoomOrigin);
-  }, [activeRoomOrigin, getEyeLevelView, selectedItem, selectedProduct]);
-
   return {
     state: {
       plan2DWholeHomeViewFit,
@@ -1277,8 +1208,6 @@ export function useDesignPageCameraNavigation({
       handleWholeHomeNavigatorZoom,
       handleWholeHomeFocusRoom,
       getWholeHome3DView,
-      getEyeLevelView,
-      getFocusView,
     },
   };
 }

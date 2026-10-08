@@ -793,7 +793,9 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   await page.keyboard.press("Escape");
   await expect(launcher).toBeFocused();
 
+  // Plan's "Choose a template" opens Start a new design at Templates, whose address link opens Plan's search (ST8).
   await page.getByRole("button", { name: "Choose a template", exact: true }).click();
+  await page.getByRole("button", { name: "Search by HDB address", exact: true }).click();
   const sentinel = {
     address: "867A C1 Exact Privacy Sentinel Street",
     floor: "73",
@@ -918,7 +920,9 @@ test("directory cancellation, malformed responses and exact canonical selection 
   });
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
+  // Plan's "Choose a template" opens Start a new design at Templates, whose address link opens Plan's search (ST8).
   await page.getByRole("button", { name: "Choose a template", exact: true }).click();
+  await page.getByRole("button", { name: "Search by HDB address", exact: true }).click();
   await page.getByRole("button", { name: /Browse.*plan/i }).click();
   await expect(page.getByTestId("floor-plan-orientation")).toContainText("not established");
   const fingerprint = await page.getByTestId("qa-editor-snapshot-fingerprint").getAttribute("data-fingerprint");

@@ -59,17 +59,6 @@ async function openDownload(page: Page) {
   return { download, dialog };
 }
 
-async function exportImagesFromPresentExport(page: Page) {
-  await page.getByTestId("editor-command-overflow").click();
-  await page.getByTestId("editor-workflow-export").click();
-  const present = page.getByRole("dialog", { name: "Present & Export" });
-  const images = present.getByRole("button", { name: /Export Images/ });
-  await expect(images).toBeEnabled({ timeout: 30_000 });
-  const file = page.waitForEvent("download");
-  await images.click();
-  await file;
-}
-
 test.describe("command bar Download", () => {
   test("guests read the Free limits, download pictures, and get focus back on Download", async ({ page }) => {
     await openEditor(page, false);
@@ -128,20 +117,5 @@ test.describe("command bar Download", () => {
     await expect(dialog).toHaveCount(0);
     await expect(download).toBeFocused();
     await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
-  });
-
-  test("Present & export asks Free users to upgrade once a session, not after every export", async ({ page }) => {
-    test.setTimeout(120_000);
-    await openEditor(page, false);
-    await exportImagesFromPresentExport(page);
-    const upgrade = page.getByTestId("upgrade-dialog");
-    await expect(upgrade).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(upgrade).toHaveCount(0);
-
-    await exportImagesFromPresentExport(page);
-    // The prompt would open in the same task as the download, so give it a moment to show.
-    await page.waitForTimeout(750);
-    await expect(upgrade).toHaveCount(0);
   });
 });

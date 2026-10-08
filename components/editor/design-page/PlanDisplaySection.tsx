@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import { Button } from "@/components/ui/Button";
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 
 const PresentExportProfessionalPlanControls = dynamic(
   () => import("@/components/editor/design-page/PresentExportProfessionalPlanControls"),
@@ -17,8 +17,8 @@ const PresentExportProfessionalPlanControls = dynamic(
   }
 );
 
-type DialogState = PresentExportDialogProps["state"];
-type DialogActions = PresentExportDialogProps["actions"];
+type DialogState = PresentationTools["state"];
+type DialogActions = PresentationTools["actions"];
 
 export type PlanDisplaySectionProps = {
   state: Pick<
@@ -161,7 +161,7 @@ export function PlanNotesSection({ state, actions }: PlanNotesSectionProps) {
  * The foot of Plan's panel while the 2D plan is on screen (UX 4e): Pro's plan display, or Free's
  * notes. The other steps, and the 3D view, get none.
  */
-export function planStepFooter(step: string | undefined, tools: PresentExportDialogProps | null | undefined) {
+export function planStepFooter(step: string | undefined, tools: PresentationTools | null | undefined) {
   if (!tools || step !== "plan" || tools.state.viewMode !== "2d") return null;
   return tools.configuration.canUseAdvancedPlanControls
     ? <PlanDisplaySection state={tools.state} actions={tools.actions} />

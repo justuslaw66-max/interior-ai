@@ -1233,8 +1233,13 @@ const planPanelSource = fs.readFileSync(
 );
 assert.match(
   planPanelSource,
-  /\{filteredPlanTemplates\.length\} templates[\s\S]*?Or browse templates/,
-  "The picker should distinguish starter-layout counts from imported floor plans."
+  /Find your home by address\s*<\/h2>\s*<div className="mt-3">\s*<FloorPlanAddressSearch/,
+  "Plan's address search is a region of its own; the starter layouts are Start a new design's (ST8)."
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components", "editor", "FloorPlanAddressFields.tsx"), "utf8"),
+  /data-testid="floor-plan-library-browse-toggle" hidden=\{browseStatus === "ready" && browseCount === 0\}/,
+  "An empty library hides its browse toggle once its first page has answered."
 );
 
 console.log("Floor-plan library and address search checks passed.");
