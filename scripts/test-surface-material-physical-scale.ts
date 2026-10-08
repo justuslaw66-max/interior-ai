@@ -179,12 +179,14 @@ const isGardeniaCollection = (collection: string) => (material: { surface_materi
   new RegExp(`^gardenia-(flooring|wall-tile)-${collection}-`).test(material.surface_material.material_id);
 const isDorica = isGardeniaCollection("dorica");
 const isOxide = isGardeniaCollection("oxide");
+const isFalaise = isGardeniaCollection("falaise");
+const isMake = isGardeniaCollection("make");
+const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake];
 assert.ok(
   physicalMaterials.every(
-    (material) =>
-      material.surface_material.supplier === "florim" || isAnima(material) || isDorica(material) || isOxide(material)
+    (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
-  "only the Florim materials and Gardenia Anima, Dorica and Oxide declare physical-scale data"
+  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise and Make declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -197,7 +199,8 @@ for (const material of physicalMaterials) {
   const sources = getSurfacePhysicalImageSources(material.texture_assets);
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
-  // ABK supplies three faces for Oxide's 120x280 slabs; every other format has at least four.
+  // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
+  // are dropped); no size has fewer.
   assert.ok(sources.length >= 3, `${id} has at least three faces`);
   for (const source of sources) {
     // Pixel size does not matter here: the mode depends only on millimetres.
@@ -362,7 +365,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide)-([a-z-]+?)-(?:g|\d)/.exec(material.surface_material.material_id)?.[1],
+      /-(?:dorica|oxide|falaise|make)-([a-z-]+?)-(?:g|\d)/.exec(material.surface_material.material_id)?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
       material.texture_assets.faces?.length,
       [...new Set(material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`))].join("+"),
@@ -405,15 +408,113 @@ assert.deepEqual(collectionFaceRows(isOxide), [
   ["steel", "1200x600", 10, "600x1200", "g69321_01.webp"],
   ["steel", "800x800", 14, "800x800", "g69331_01.webp"],
 ]);
+// Gardenia Falaise and Make (downloaded 8 Oct 2026). Falaise's R11 items show byte-identical copies
+// of the Natural item's pictures (some on ABK's Plein Air pages), so they use the Natural item's faces.
+// Make's 80x80 pictures are a 1000x1000 mm graphic squeezed to 800 mm (image matching against the
+// colour's other sizes) and are declared 1000x1000 mm; the renderer cuts true-scale 800x800 windows.
+// Make's T36 mosaics have no pictures in the download area and keep their previews.
+for (const [filter, label, faced, count] of [[isFalaise, "Falaise", 44, 44], [isMake, "Make", 48, 60]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, faced, `${label} entries on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+assert.ok(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isMake(material) && !physicalMaterials.includes(material)).every(
+    (material) => material.surface_material.material_id.includes("-mos-t36-")
+  ),
+  "only Make's mosaics keep their previews"
+);
+assert.deepEqual(collectionCards(isFalaise, "flooring"), [
+  ["Falaise Beige", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise Grey", ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
+  ["Falaise Mint", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise White", ["120x280 Nat", "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
+]);
+const falaiseNat = ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
+assert.deepEqual(collectionCards(isFalaise, "wall_tile"), [
+  ["Falaise Art Beige", ["60x120"]],
+  ["Falaise Art Grey", ["60x120"]],
+  ["Falaise Beige", falaiseNat],
+  ["Falaise Grey", falaiseNat],
+  ["Falaise Mint", falaiseNat],
+  ["Falaise White", ["120x280 Nat", "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
+]);
+const makeColours = ["Antr Corten", "Ash", "Bianco", "Corda", "Grigio Corten", "Nero Corten"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isMake, category),
+    makeColours.map((colour) => [`Make ${colour}`, ["100x100", "60x120", "80x80", "60x60"]])
+  );
+}
+assert.deepEqual(collectionFaceRows(isFalaise), [
+  ["beige", "1200x1200", 9, "1200x1200", "0017197_01.webp"],
+  ["beige", "1200x600", 18, "600x1200", "0017200_01.webp"],
+  ["beige", "1200x600", 18, "600x1200", "0017200_01.webp"],
+  ["beige", "600x600", 34, "600x600", "0017526_01.webp"],
+  ["beige", "600x600", 34, "600x600", "0017526_01.webp"],
+  ["beige", "800x800", 9, "800x800", "0017203_01.webp"],
+  ["grey", "1200x1200", 9, "1200x1200", "0017198_01.webp"],
+  ["grey", "1200x600", 18, "600x1200", "0017201_01.webp"],
+  ["grey", "600x600", 36, "600x600", "0017527_01.webp"],
+  ["grey", "800x800", 9, "800x800", "0017204_01.webp"],
+  ["mint", "1200x1200", 9, "1200x1200", "0017754_01.webp"],
+  ["mint", "1200x600", 18, "600x1200", "0017755_01.webp"],
+  ["mint", "1200x600", 18, "600x1200", "0017755_01.webp"],
+  ["mint", "600x600", 36, "600x600", "0017756_01.webp"],
+  ["mint", "600x600", 36, "600x600", "0017756_01.webp"],
+  ["mint", "800x800", 9, "800x800", "0017758_01.webp"],
+  ["white", "1200x1200", 9, "1200x1200", "0017196_01.webp"],
+  ["white", "1200x1200", 9, "1200x1200", "0017196_01.webp"],
+  ["white", "1200x600", 18, "600x1200", "0017199_01.webp"],
+  ["white", "1200x600", 18, "600x1200", "0017199_01.webp"],
+  ["white", "2800x1200", 3, "1200x2800", "0017338_01.webp"],
+  ["white", "600x600", 36, "600x600", "0017525_01.webp"],
+  ["white", "800x800", 9, "800x800", "0017202_01.webp"],
+]);
+assert.deepEqual(collectionFaceRows(isMake), [
+  ["antr-corten", "1000x1000", 4, "1000x1000", "g73044_01.webp"],
+  ["antr-corten", "1200x600", 4, "600x1200", "g73224_01.webp"],
+  ["antr-corten", "600x600", 4, "600x600", "g73214_01.webp"],
+  ["antr-corten", "800x800", 4, "1000x1000", "g73024_01.webp"],
+  ["ash", "1000x1000", 4, "1000x1000", "g73042_01.webp"],
+  ["ash", "1200x600", 4, "600x1200", "g73222_01.webp"],
+  ["ash", "600x600", 4, "600x600", "g73212_01.webp"],
+  ["ash", "800x800", 4, "1000x1000", "g73022_01.webp"],
+  ["bianco", "1000x1000", 3, "1000x1000", "g73040_01.webp"],
+  ["bianco", "1200x600", 4, "600x1200", "g73220_01.webp"],
+  ["bianco", "600x600", 4, "600x600", "g73210_01.webp"],
+  ["bianco", "800x800", 4, "1000x1000", "g73020_01.webp"],
+  ["corda", "1000x1000", 4, "1000x1000", "g73041_01.webp"],
+  ["corda", "1200x600", 3, "600x1200", "g73221_01.webp"],
+  ["corda", "600x600", 3, "600x600", "g73211_01.webp"],
+  ["corda", "800x800", 4, "1000x1000", "g73021_01.webp"],
+  ["grigio-corten", "1000x1000", 4, "1000x1000", "g73045_01.webp"],
+  ["grigio-corten", "1200x600", 3, "600x1200", "g73225_01.webp"],
+  ["grigio-corten", "600x600", 4, "600x600", "g73215_01.webp"],
+  ["grigio-corten", "800x800", 4, "1000x1000", "g73025_01.webp"],
+  ["nero-corten", "1000x1000", 4, "1000x1000", "g73043_01.webp"],
+  ["nero-corten", "1200x600", 4, "600x1200", "g73223_01.webp"],
+  ["nero-corten", "600x600", 4, "600x600", "g73213_01.webp"],
+  ["nero-corten", "800x800", 4, "1000x1000", "g73023_01.webp"],
+]);
+const makeSqueezed = physicalMaterials
+  .filter((material) => isMake(material) && material.surface_material.surface_category === "flooring")
+  .flatMap((material) => material.texture_assets.faces ?? [])
+  .filter((face) => /\/g7302\d_/.test(face.url) && face.width_mm === 1000);
+assert.equal(makeSqueezed.length, 24, "all 24 of Make's 80x80 pictures are declared 1000x1000 mm");
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
-// floor entry with the same item code.
+// floor entry with the same item code (Falaise Art Beige and Art Grey are wall-only).
 const sharedFaces = new Map([
   ["0010147", "0010008"], ["0010148", "0010009"], ["g69332", "g69312"],
+  ["0017583", "0017200"], ["0017586", "0017526"], ["0017716", "0017199"],
+  ["0017717", "0017196"], ["0017767", "0017755"], ["0017768", "0017756"],
 ]);
-const itemCode = (id: string) => /-((?:g|pf)?\d{5,7})-\d+x\d+/.exec(id)?.[1] ?? "?";
+const wallOnly = new Set(["0010804", "0017607"]);
+// Make's ids carry ABK's zero-padded code (g0073022); its faces drop the zeros (g73022_nn).
+const itemCode = (id: string) => (/-((?:g|pf)?\d{5,7})-\d+x\d+/.exec(id)?.[1] ?? "?").replace(/^g0+/, "g");
 const collectionById = new Map(
   physicalMaterials
-    .filter((material) => isDorica(material) || isOxide(material))
+    .filter((material) => [isDorica, isOxide, isFalaise, isMake].some((filter) => filter(material)))
     .map((material) => [material.surface_material.material_id, material])
 );
 for (const material of collectionById.values()) {
@@ -421,12 +522,20 @@ for (const material of collectionById.values()) {
   const code = itemCode(id);
   const firstFace = material.texture_assets.faces?.[0]?.url.split("/").pop() ?? "";
   assert.ok(firstFace.startsWith(`${sharedFaces.get(code) ?? code}_`), `${id} draws ${sharedFaces.get(code) ?? code}'s faces`);
-  if (material.surface_material.surface_category !== "wall_tile") continue;
+  if (material.surface_material.surface_category !== "wall_tile" || wallOnly.has(code)) continue;
   const floor = [...collectionById.values()].find(
     (other) => other.surface_material.surface_category === "flooring" && itemCode(other.surface_material.material_id) === code
   );
   assert.ok(floor, `${id} has a floor entry with item ${code}`);
   assert.deepEqual(material.texture_assets.faces, floor.texture_assets.faces, `${id} uses the floor entry's faces`);
+}
+for (const code of wallOnly) {
+  const entries = [...collectionById.values()].filter((material) => itemCode(material.surface_material.material_id) === code);
+  assert.deepEqual(
+    entries.map((material) => [material.surface_material.surface_category, material.texture_assets.faces?.length]),
+    [["wall_tile", 8]],
+    `${code} is a wall-only Falaise Art item with eight faces`
+  );
 }
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.

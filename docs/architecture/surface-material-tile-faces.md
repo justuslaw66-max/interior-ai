@@ -10,6 +10,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Anima, six colours | 38 drafts (19 floor, 19 wall) | 182 | `catalog/surface-materials/flooring/gardenia/anima/gardenia-anima-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Dorica, four colours | 24 drafts (13 floor, 11 wall) | 100 | `catalog/surface-materials/flooring/gardenia/dorica/gardenia-dorica-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Oxide, five colours | 38 drafts (19 floor, 19 wall) | 136 | `catalog/surface-materials/flooring/gardenia/oxide/gardenia-oxide-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Falaise, six colours | 44 drafts (23 floor, 21 wall) | 305 | `catalog/surface-materials/flooring/gardenia/falaise/gardenia-falaise-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Make, six colours | 48 of its 60 drafts (24 floor, 24 wall); the 12 T36 mosaics keep their previews | 92 | `catalog/surface-materials/flooring/gardenia/make/gardenia-make-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -31,7 +33,7 @@ In `texture_assets` of its `catalog.yaml`:
 - **In the render data** (`lib/generated/surface-material-render.generated.ts`, loaded with every design page), faces named `<prefix>01.webp`, `<prefix>02.webp`, … with one size are written as a run: `[prefix, count, width_mm, height_mm]`. The app expands it back into the same face list (`lib/surface-texture-face-run.ts`), so pictures, order and sizes are unchanged. A face list that doesn't follow the pattern is written in full. Name new faces `<item>_<nn>.webp`, numbered from 01, to keep them compact.
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica and Oxide entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise and Make entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -44,6 +46,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia faces in this repository (decided 4 Oct 2026 for Anima, to keep the repository small; the same for every Gardenia collection) | 0.6 |
 | Gardenia Anima originals (ABK download area JPGs) | 1.3 to 3.9 |
 | Gardenia Dorica and Oxide originals | 0.83 to 3.4 |
+| Gardenia Falaise and Make originals | 1.46 to 4.3 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -76,3 +79,14 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
 - **Dorica 0010147 and 0010148** (60x120) are listed by the configurator as one visible variant with 0010588 and 0010589 (R11), whose pictures are 0010008's and 0010009's (15 of 16 and all 16). They use those faces.
 - ABK's 120x280 pictures are 3.2% wider than 1200x2800 mm, as for Anima Grigio; the extra width is cut off.
 - The tracking files (ZIPs' hashes, every picture, faces, contact sheets) are in J's `~/Developer/material-masters/gardenia/<collection>/`.
+
+## Gardenia Falaise and Make specifics (downloaded 8 Oct 2026)
+
+- As for Dorica and Oxide: one copy of each face, every site picture matched to its ZIP file by sha256, and each colour's sizes checked against each other by image matching. Pictures ABK lists twice with identical bytes are used once (four in Make, none in Falaise).
+- **Falaise:** 60x60, 60x120 and 80x80 are true-scale cuts of the colour's 120x120 graphic (r 0.99 to 1.00 at the labelled scale, nothing at 0.67 or 1.5). The White 120x280 graphic overlaps the other sizes only at the labelled scale (r 0.70 to 0.86).
+  - The R11 items show byte-identical copies of the Natural item's pictures (for Beige and Mint on ABK's Plein Air pages), so they use the Natural item's faces: 0017583 and 0017586 use 0017200's and 0017526's, 0017716 and 0017717 use 0017199's and 0017196's, 0017767 and 0017768 use 0017755's and 0017756's.
+  - The 120x280 pictures (White, 0017338) are 1773 x 4096 px, 1% wider than 1200 x 2800 mm; that is under the 3% tolerance, so nothing is cut.
+  - Art Beige (0010804) and Art Grey (0017607) are wall-only entries with eight faces each. Each comes in one size only, so there is nothing to match against; they are taken as labelled.
+- **Make:** 60x60 is a true-scale cut of 60x120 for every colour (r 0.97 to 0.99). Make is a plain concrete look, so matching between sizes is weaker than for veined collections: 100x100 holds a 60x60 picture at true scale for Antracite and Nero Corten (r 0.78 to 0.79); for Ash, Bianco, Corda and Grigio Corten the 60x60 pictures match no 100x100 picture at any scale, so 100x100 is taken as labelled.
+  - **Make 80x80** (g73020 to g73025): ABK's pictures show a 1000 x 1000 mm graphic squeezed to 800 mm. 300 mm crops from nine places in each picture, drawn as if the picture covered 700, 800, 900, 1000 or 1100 mm, were looked for in the colour's 60x60, 60x120 and 100x100 pictures. 20 of the 24 pictures match at 1000 mm (r 0.47 to 0.99; eight are whole 100x100 pictures) and none at 800 mm (r 0.14 to 0.22); the other four (two Bianco, two Corda) are too plain to match at any scale. Every Make 80x80 picture is declared as a 1000x1000 mm face; the renderer cuts true-scale 800x800 windows from them.
+  - The T36 mosaics (g73250 to g73255) have no pictures in the download area and keep their configurator previews.

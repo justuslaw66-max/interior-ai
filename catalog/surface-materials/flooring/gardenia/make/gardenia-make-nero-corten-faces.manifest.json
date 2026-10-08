@@ -1,0 +1,457 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/nero-corten/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - NERO CORTEN - minimali.zip (37455234 bytes, sha256 9c2ebd21bfb149fc40d81874ff98ae0e26408f0b65357f11933843f7cd3cd60c).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73023",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/nero-corten/g0073023-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73023_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-nero-corten-g0073023-80x80-90776-0; wall gardenia-wall-tile-make-nero-corten-g0073023-80x80-90776-0",
+   "faces": [
+    {
+     "file": "g73023_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 30028,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - NERO CORTEN - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "082b9f854268e66a39f1771c57072da36c39dca4070c3ade9c4d823d3c28012c",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_NERO_CORTEN_80X80_1",
+      "id": "9ead5090-6e28-4c57-93e9-0df6cd275480",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73023_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 42316,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - NERO CORTEN - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "27fbbe1dd9c3f1069ea7fe11d69724b5367ce285803f1149d83ce897d316d2e7",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_NERO_CORTEN_80X80_2",
+      "id": "a95e3d55-31b3-4dad-aa09-7d8c0eb3cce6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73023_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 32606,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - NERO CORTEN - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "531d6a7fe7b4c9b8f0103d3709b8bf5cf2d09a004978c23a87c2a98922765470",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_NERO_CORTEN_80X80_3",
+      "id": "5a63bd6b-22a3-4727-b8d8-5c6cd1281599",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73023_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 35524,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - NERO CORTEN - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f0aadaf9e4e786cde8fe446a4cecb56963f0a56aa6432524019c1e551d1904ec",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_NERO_CORTEN_80X80_4",
+      "id": "049855e5-2336-4d50-b8eb-afb9cce97773",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73043",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/nero-corten/g0073043-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73043_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-nero-corten-g0073043-100x100-90782-0; wall gardenia-wall-tile-make-nero-corten-g0073043-100x100-90782-0",
+   "faces": [
+    {
+     "file": "g73043_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 19322,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - NERO CORTEN - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bf024558abc320bce3c6fed2f6634ed63d52edf5572ca48788d0336d40c75c35",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_NERO_CORTEN_100X100_1",
+      "id": "851bc66b-6c42-43ac-b08c-b8b6ea5bb07c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73043_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 25176,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - NERO CORTEN - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1492871c6c22ee9db2618618d5757b9f73253dab4a44f544fe8e49bb3ea14f9f",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_NERO_CORTEN_100X100_2",
+      "id": "bd9f5ed4-9b64-4f9d-ac94-6b28aaa5cdea",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73043_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 21036,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - NERO CORTEN - 100X100 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4f25f29d79a0bc2ad8add82c0431144851cd93ec507bf063d256eacf16bba327",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_NERO_CORTEN_100X100_3",
+      "id": "635ac273-66d7-45be-9d64-95d4f31415cc",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73043_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 21184,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - NERO CORTEN - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "95917371a5ac87bfff09965e071508e4298370aa888a28de662d6064b80c7af5",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_NERO_CORTEN_100X100_4",
+      "id": "89679cec-65c9-4aff-a06c-6b89da1a8570",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73223",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/nero-corten/g0073223-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73223_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-nero-corten-g0073223-60x120-90808-0; wall gardenia-wall-tile-make-nero-corten-g0073223-60x120-90808-0",
+   "faces": [
+    {
+     "file": "g73223_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24096,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - NERO CORTEN - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "100da1cd4d8d471bf6c67fc623fd948514b50ff607d838d1508299d5e2e7e2a5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_NERO_CORTEN_60X120_1",
+      "id": "9ccf8406-f901-4ca0-b053-d335979aa8d2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73223_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14272,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - NERO CORTEN - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4f76f81b08622d2cbdb46f489ad13a475f9b25d7359ed6dcf64b246a9d196b70",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_NERO_CORTEN_60X120_2",
+      "id": "a414ad48-a43e-400a-996e-f6c3b4cdea0d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73223_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16950,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - NERO CORTEN - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "06a3316a78fbeae843bba4ee3b31e371156ef7054a1eec3deff626e6f6cad8a9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_NERO_CORTEN_60X120_3",
+      "id": "d8609d20-7cd1-4798-8b03-7b9132fe4494",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73223_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18716,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - NERO CORTEN - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "128730d62b89f2af352059a5b54e10f2f86ed70108994f8b964e6127a0aded8d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_NERO_CORTEN_60X120_4",
+      "id": "e4c6d092-3954-4b82-826d-fe8bb3a4e828",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73213",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/nero-corten/g0073213-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73213_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-nero-corten-g0073213-60x60-90802-0; wall gardenia-wall-tile-make-nero-corten-g0073213-60x60-90802-0",
+   "faces": [
+    {
+     "file": "g73213_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9748,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - NERO CORTEN - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1887e822326d819007bd8e9ab3d374f856ed1d368a2f90d0399b4f92e5d05a58",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_NERO_CORTEN_60X60_1",
+      "id": "f032dd10-4971-4213-8b0e-09f9b3e9d262",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73213_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7992,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - NERO CORTEN - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bf2622754a27ca6765593565aabc651246798ebebc1444c97af9033e332a58c4",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_NERO_CORTEN_60X60_2",
+      "id": "4e417f9b-2960-421f-a7dc-25118f60275d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73213_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11042,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - NERO CORTEN - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b5ffb16e471b375da6f4e56dbfcd4e4da52cea68ae1948489fd953de96841231",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_NERO_CORTEN_60X60_3",
+      "id": "ecbc7683-13b0-4afb-b760-bddafc0c36ce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73213_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 8688,
+     "source_zip": "MAKE - NERO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - NERO CORTEN - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "51cd24c85b78e527270647103e27cd08ed8fda2b72c35ae1075f682bb60bc0fc",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_NERO_CORTEN_60X60_4",
+      "id": "69a359a8-b805-46c1-b988-7b87050f6edd",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

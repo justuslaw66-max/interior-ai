@@ -1,0 +1,1801 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/grey/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: FALAISE - GREY - minimali.zip (60900599 bytes, sha256 cbae5478d7889747680b89babe4b3f2b82dd3dc6b70e46b7143f2521fee3676a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/falaise/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0017198",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/grey/pf60017198-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0017198_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-grey-0017198-120x120-nat-196287-0; wall gardenia-wall-tile-falaise-grey-0017198-120x120-nat-196287-0",
+   "faces": [
+    {
+     "file": "0017198_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98814,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "783405436ce678bd1d3a3e9ad347bb1724ba2da8f102386d03c4d54c3fdc5118",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE GREY 120X120_03",
+      "id": "ca3a161d-284b-4b40-b462-2e98188cfd6a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017198_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108080,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "7b8cd7e6bdab5d6076b07cfbf14f0d3453ef255ccb281b505c768a2aa2ddc22a",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE GREY 120X120_02",
+      "id": "248f5ade-b739-4448-aaec-3d7168f7f171",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017198_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109578,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "3806492f68f3deefb3f7d647f8ef7179cc66b5f6c160d165d19f40101394e5b7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE GREY 120X120_07",
+      "id": "b22e8215-fb59-4359-a428-5a828045f920",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017198_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101630,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "90c59c58cad53d04387c1dbb8a77d27b47c3cf1aca4507039d53e0fed8ba92b9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE GREY 120X120_01",
+      "id": "04d18c3e-aee4-42c3-81dd-4728cb4ac2b2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017198_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107170,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "eb1d6d0870cc7dbabd6ec5843c3689afbffde284d3a9ffbc9272cdcd9bd7e840",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE GREY 120X120_08",
+      "id": "27c45648-d2e5-4b8a-b9d6-024fb7443d69",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017198_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110576,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "59882cc291263d591a8e3c5b11556df8a61038b780325b0e5178499ab0ddcdec",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE GREY 120X120_09",
+      "id": "c8205315-078d-4aec-9452-60669dac7662",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017198_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 105404,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "360b1a5e90d5bd7a67133a56b5dd7733d5e2c9294cf5c616ee071d3da05c420e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE GREY 120X120_06",
+      "id": "32dba6cc-4e3b-40db-94b2-db722c09ed2a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017198_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92898,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "79e702f50f3b543de28af18a215e6cda3e6543cc8033aa3c8eaa663c05484f13",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE GREY 120X120_05",
+      "id": "df325fea-f426-463e-9cdb-bd37d979589c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017198_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 95352,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - GREY - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f6acbae8eec60cc44122d9f507ad2dd1b60f51bfb773e50526b2ff911e1e50d3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE GREY 120X120_04",
+      "id": "77801082-565c-4d9a-969e-de517202c6c0",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0017201",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/grey/pf60017201-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0017201_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-grey-0017201-60x120-nat-196290-0; wall gardenia-wall-tile-falaise-grey-0017201-60x120-nat-196290-0",
+   "faces": [
+    {
+     "file": "0017201_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50878,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7157f40a4e2c2332da013aa6a7ed143b75335bb6453f4cda11c62e81925e192e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "FALAISE GREY 60X120_01",
+      "id": "b9200f36-b0de-45f3-9c3d-68041707a60e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017201_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50838,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "f878726aeea77443a413cd58bfbb790df5204105dc96c3309e8921247c83985f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE GREY 60X120_05",
+      "id": "d499366b-5b91-4365-97d9-96d4431465c3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017201_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54784,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "41401ccf9271c8102b78f1dddeb4cc01600855a31dfee2c958755920565ac95e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE GREY 60X120_17",
+      "id": "756d8509-4270-4c23-88ab-d53a7f92480b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017201_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46960,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "d781b36716a401ba6d244385812bd6cec59140f8128e794c9614423c7db52b48",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE GREY 60X120_09",
+      "id": "7528b431-f6fa-4581-8941-3c2878503d99",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017201_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51554,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "549ae413a6e755f692c8ade7776490e77b1aafc68c33452f87e0c34d57f4963b",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE GREY 60X120_16",
+      "id": "6b5b7b80-3087-43a8-851a-58ba2614ddf9",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017201_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48368,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "970393ca2c649df16e4896a84d790433703ef60badd74dbb6deb220357beb662",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE GREY 60X120_08",
+      "id": "4ae449f6-b622-48c2-b9dc-737702ca9d14",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017201_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49998,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "6bf09b7d7d971994da6312dd99139bfeab3fc5de43ed03e54b5447f7c2e04b4d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE GREY 60X120_11",
+      "id": "81b11a08-eb93-45cd-87e5-37a884780213",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017201_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55468,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b3a28f7a828cfccf0fd5f5d1e5eb78515bc79f80f89ad6140873b5869bf5d350",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE GREY 60X120_04",
+      "id": "a51afb1e-6fa1-4bd0-a579-19caa048ba2d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017201_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47782,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7bc301babcb062f650f4dc15fedb4793e8468881a9723f9d92e176a90f74fad1",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE GREY 60X120_07",
+      "id": "e1b032c0-6096-4c30-8136-966589a3f506",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017201_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55548,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7b2131a8a6731817ae15784d889c78129fae4fcfb208eecbc981a513999c5041",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "FALAISE GREY 60X120_13",
+      "id": "1ae07bec-b76f-4721-870b-877a3ce3c74c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017201_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47760,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "47581fa90d0b9ac09eeb2947fff0ffd0f70c0726333f172d7068e624e22c4ce7",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "FALAISE GREY 60X120_10",
+      "id": "66256868-0ddd-46a2-93c3-3f883d85f9a8",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017201_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55202,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "ea6f795ca6b6b80970da9a034d56bd81560fb4f35f5e6766e6aba6a65e97b976",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "FALAISE GREY 60X120_14",
+      "id": "d75cb4c3-e539-437e-aa73-b65dfaa5f6b5",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017201_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56208,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "67ed4c80b192e16f31957d56aa30c3543a1c83a0018aef6e6d6ea51f08d556f4",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "FALAISE GREY 60X120_12",
+      "id": "db493416-03d1-4ff3-b13a-94d9ae98e21a",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017201_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56544,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a057edafabb2090c91605d89ed86214258c7f7a0e9d44b8d9d21d04f0638cbe5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "FALAISE GREY 60X120_03",
+      "id": "30c634c1-ee9e-43ca-992d-d0cf43c35f52",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017201_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53828,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "22f95240389126ba5ada541259b7c16569d53743a14348cf0d83235b9858e909",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "FALAISE GREY 60X120_15",
+      "id": "ca8c21a1-3358-423b-abd6-5f88b61b0f0b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017201_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58260,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "d0078553fccf51c1020b74a9e3ef540bdad7ccd3e42e52c1e8fdafd4c040f2e5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "FALAISE GREY 60X120_18",
+      "id": "1b5938b8-6b25-4b7f-a939-f5364bf79cc2",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0017201_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49122,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "2e2409c0c57ad440ae8c341ec20bc120da6ab27dab0f4f71c11fe282086d3b5a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "FALAISE GREY 60X120_06",
+      "id": "a280739b-4352-408c-933e-24e43225408e",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0017201_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53610,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - GREY - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "773510bd999ac092e456f9cbb83c2c85eb24a11a7a695ec1f02dcf3dd3981756",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "FALAISE GREY 60X120_02",
+      "id": "b5f3113c-d5bb-4ebc-bedc-caedb8bb67ff",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0017204",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/grey/pf60017204-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0017204_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-grey-0017204-80x80-nat-196293-0; wall gardenia-wall-tile-falaise-grey-0017204-80x80-nat-196293-0",
+   "faces": [
+    {
+     "file": "0017204_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41622,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4ca1bdb745ce5d0de738c1b2a6dea31c8f1e3578bdb11d1fa565affdd06a69ea",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE GREY 80X80_05",
+      "id": "cb1f0f68-72a5-4728-950d-c9ca89f56b97",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017204_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46152,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "59bfd8c68cf396416857a2ea396f984492218900909af8baa0f88da20c84df15",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE GREY 80X80_01",
+      "id": "ddeca1ce-d18c-42c3-97d6-dcde55372d83",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017204_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41394,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "507a2f62330ad77dba1705f9582571f270b3724d3218ffc65266a56500a6c332",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE GREY 80x80_04",
+      "id": "1ca8c102-e847-4e7a-aaba-df231b2b932a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017204_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 43706,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "48e2378c094e46f6ab3832def0dc8e135e21b2cb2d6e3f4e2b6e48bd1d8aa7b7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE GREY 80X80_03",
+      "id": "acdadc58-2045-4e78-8282-5a605106112f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017204_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50908,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d71933169812c88a9ef52e9ed3c7fe1f1f566bae66a87900cd658e169e825be3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE GREY 80X80_02",
+      "id": "8937ca08-6bc0-46ba-86ef-0a6ec811587b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017204_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47450,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7f06a2dcd064623ce9d9a4c81f7526ca99bae58ecab2b4caf352a0258747b8fd",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE GREY 80X80_06",
+      "id": "38310359-bacc-46be-adbc-9a4d3c7249bd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017204_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49812,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0d739b41fc9c3068eb86be2ce668154ee1e63fd674fb791fcf881dc2dfe7e91c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE GREY 80X80_09",
+      "id": "fa87f388-3238-4b67-9fb6-50e076abefbe",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017204_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46626,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "5269bca92e855593e762fb5cfb25f6612ea042ff3b8c31c0ab8def3a4721c9dc",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE GREY 80X80_08",
+      "id": "deac9d05-a654-47bb-8c97-57f78139624c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017204_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51524,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - GREY - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "389705f3bd3318a02f4f3d9ba68242e2805a01b964ff1b7392e1db8d8252573a",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE GREY 80X80_07",
+      "id": "b9f388b7-0689-4561-b73f-6ad671dfce00",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0017527",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/grey/pf60017527-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0017527_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-grey-0017527-60x60-nat-196297-0; wall gardenia-wall-tile-falaise-grey-0017527-60x60-nat-196297-0",
+   "faces": [
+    {
+     "file": "0017527_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26312,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "c629d2508fc32cb6a14e35c984e6999b1f9672bb5e82917ecf7d7150ccb2f643",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE GREY 60X60_04",
+      "id": "27ed2dac-1025-4fb0-ba09-36e6697035f6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017527_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31250,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "e2c2feff9e442a4762de72f7228f65921d3d3245dbac07371239a875145b8d03",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE GREY 60X60_27",
+      "id": "fd9f2c6a-75eb-4ccd-940c-d9af19d15157",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017527_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30122,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "1b3162de305cb4a79bdafad0d8f89fc068102694913460b68043b8945e1d1e65",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE GREY 60X60_25",
+      "id": "d8f53281-0ffd-4928-9610-06ceb736b988",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017527_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29528,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "bb80d14ef2a72575e156de9b869ca37d5da5417be07f6b51dc47cdc704c01748",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE GREY 60X60_06",
+      "id": "31a77a01-ee4d-40f5-b253-acf7552c9c58",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017527_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25728,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "d1aae2344d49b9b4eafa934e419b8d494c9d0eb17bce6dc0089b0febba070d28",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE GREY 60X60_24",
+      "id": "7d1785d4-6675-4b6e-a088-a41525c1d7fa",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017527_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26966,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "740eb8776a37a20647e785de6a5336df44444b842dc95a72343e833859e17d9c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE GREY 60X60_12",
+      "id": "3476f958-2db3-43f7-9e2a-30901b5a619d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017527_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25332,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "8b5df4ce02e68e7880623219af51ce6980f2ec6acf11f0222b7226b88236df2a",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE GREY 60X60_10",
+      "id": "b1849bf4-e9cd-4f18-a70b-47869d9f1d65",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017527_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26458,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "297662cfc4d070b71699bdce9a3a6922db3d8089d7ca1e72768aa2ba2d5a065b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE GREY 60X60_05",
+      "id": "583c6fea-ad52-490b-b6f2-9db56bcd7c55",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017527_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22382,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "36a88b8536ebf65e0c30e5e11088816a474a9304bd7752eb3e93184643da632d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE GREY 60X60_15",
+      "id": "37f2f260-79f4-4f16-ba5c-2cb760dffa48",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017527_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28192,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "ac32e0de2bc032eacb27bd4f916554cac607c76227adb905eee64afde7560035",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "FALAISE GREY 60X60_31",
+      "id": "a1f7d6c5-f596-4839-9758-27824e5730ed",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017527_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29612,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "8e1bec617115adabe9e8cf2fa5d8406a91b0244b7ec7e93452f2ec955b228bfd",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "FALAISE GREY 60X60_29",
+      "id": "c5e9e2a3-5a94-4a7b-a453-1dfb373ef2c0",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017527_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27078,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "c88765ef7144f5af4ed5b2aa19a39368bc6530427b96df234ed2504a78d16c93",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "FALAISE GREY 60X60_26",
+      "id": "901fb706-fcaa-4b21-8aae-e49d4ab56054",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017527_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28798,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_13.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "3b805d381360afcd587ea4a1f934f0789c840cfc56564d992f560dd309db5265",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "FALAISE GREY 60X60_07",
+      "id": "fe1b5b82-bcc6-4106-a9fd-63679df0cf01",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017527_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22254,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_14.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "7f0c55139de8f007cdac40a2cb1e26eb71558aba7a0a804f1412bb9f8ddc53c6",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "FALAISE GREY 60X60_14",
+      "id": "aefab94a-634d-4b05-b66e-d7862f679e2b",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017527_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26596,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_15.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "3b81e3c632eb721d94b02b6e2224a7418e221c7cd8eedf6c436395c5da7de0cc",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "FALAISE GREY 60X60_22",
+      "id": "026365a5-f0d9-487e-8804-f62164c2a783",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017527_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31354,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_16.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "749496993bbf5b8589acb9047018c9d7c42517fa2bb3f923bc2c0e13326cb6b3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "FALAISE GREY 60X60_23",
+      "id": "0040571a-7016-48ee-ad9a-c9d17be67758",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0017527_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23380,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_17.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "3031dc69051df9ae83bca1ba036ae91efda89b09ef123d0ceaabda90a276f60a",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "FALAISE GREY 60X60_28",
+      "id": "f557fa56-8462-4303-8f53-46ec1d07b65c",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0017527_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22544,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_18.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "7f84ab4786552dc5bbeb3660e16232c5e05c6f45c970a055b302ebfa17140135",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "FALAISE GREY 60X60_19",
+      "id": "931ff579-2ebf-448a-8343-2b861db01d06",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0017527_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22728,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_19.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "562826cd10b63b37b6d30ec7a57532f83e33c73c4ab44ffdd96eb07a0b2c7298",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "FALAISE GREY 60X60_17",
+      "id": "5db573df-0c52-4aab-b5dd-fa64091ac7f3",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0017527_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25860,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_20.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "5346282a90a0044ee7ba75bf546806fb6b981b8a69d9c4e2490081420f0a70ac",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "FALAISE GREY 60X60_20",
+      "id": "8dc43f8c-a1e1-4065-9a24-0e736bf70e28",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0017527_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24484,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_21.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "cda6795266f1690c50abfe148a61b4f0c1912e13cfbdca4906f34e0ac78f32ba",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "FALAISE GREY 60X60_21",
+      "id": "767830e1-019f-4447-bbe8-574fca271552",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0017527_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23126,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_22.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "b977e31e1df1e11f8c2a778e11409bbdde7a0b64cb5c92278c120926c2eb9db2",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "FALAISE GREY 60X60_11",
+      "id": "e8427778-3579-48d0-866f-6d0f95d09843",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0017527_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25316,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_23.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "caeb1aeb0402a39a70b72695a9cd4b773ecd0b8ff8f8592d6c3269a570275603",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "FALAISE GREY 60X60_16",
+      "id": "9e0f0bb9-7ecf-4522-9c63-150c003d474e",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0017527_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24906,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_24.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "4ce2e791c56c53091320ff75f63b9aa08ddcd6b6b4706fc4d7ac1c8aa10bc543",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "FALAISE GREY 60X60_13",
+      "id": "50559800-a32a-43bc-a1b1-ea1d336387cd",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0017527_25.webp",
+     "face": 25,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24824,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_25.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "d46df4438a50359015830b900b293bd55e0d5e76fb3874a72779fbedcb73f282",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "FALAISE GREY 60X60_18",
+      "id": "3c7fa1c3-da28-402c-b968-81ce8fe30210",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0017527_26.webp",
+     "face": 26,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26334,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_26.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "34e71d6994be3d726df83bd035ccca6cc076df46c69f6c6647427fafc4af81b8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "FALAISE GREY 60X60_09",
+      "id": "5f84368a-f1b6-471a-bf57-59151e518956",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0017527_27.webp",
+     "face": 27,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24844,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_27.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "004f8a71ba72eee5ffd26473493b1f2167ae6da03fed5d7c92c407b2bcf3a4a4",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "FALAISE GREY 60X60_30",
+      "id": "25d8d368-0423-405d-9d41-0ffa333a35c6",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0017527_28.webp",
+     "face": 28,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31374,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_28.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "443bc5da88547eb9c30f0ba4bbd3eb9e12704530335d279f994bdd0a6bcd0be7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "FALAISE GREY 60X60_36",
+      "id": "36a4c865-7b2a-4071-92ed-b4da7c1b0aec",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0017527_29.webp",
+     "face": 29,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25004,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_29.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "e2095cd0bea1f4fd28829f4007dd0abe619ef7f0ce7bb1adeeaf658f1eb4c502",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "FALAISE GREY 60X60_02",
+      "id": "0942c329-dd5a-44ad-a633-19b52fe80ccd",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0017527_30.webp",
+     "face": 30,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26564,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_30.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "03cfedbda757a1ba80f27409f3cbd75dafa9864e917d90cd39c5261a6f14c31f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "FALAISE GREY 60X60_35",
+      "id": "91abadc0-663c-40e8-9142-9c1bb1cc41bb",
+      "site_position": 30
+     }
+    },
+    {
+     "file": "0017527_31.webp",
+     "face": 31,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27862,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_31.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "9e6521e0ed534e1fffb1f45edbcc415f3f352ae066d04873b96f74d112b0b51c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 31",
+      "name": "FALAISE GREY 60X60_33",
+      "id": "0a30293c-53e9-4750-b4e3-301c8d2caa19",
+      "site_position": 31
+     }
+    },
+    {
+     "file": "0017527_32.webp",
+     "face": 32,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26804,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_32.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "6f9316b5d7bffd43db54f13079d0e345a0b0b2397365958c663c14b6da5ff728",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 32",
+      "name": "FALAISE GREY 60X60_08",
+      "id": "a4a56bed-8fc9-482b-8756-9e8e131d7f1e",
+      "site_position": 32
+     }
+    },
+    {
+     "file": "0017527_33.webp",
+     "face": 33,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24690,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_33.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "11c7b74ee4ba544bf0c278001ef97dfd66fea6c4abc64885820cb502c1ecab68",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 33",
+      "name": "FALAISE GREY 60X60_01",
+      "id": "25f385e7-e1e2-4ec7-b357-790b22aabb36",
+      "site_position": 33
+     }
+    },
+    {
+     "file": "0017527_34.webp",
+     "face": 34,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27924,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_34.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "e60fcda95db13d08ba47780e52e8defabc7578538430dc4710a042e1411e83e4",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 34",
+      "name": "FALAISE GREY 60X60_03",
+      "id": "2b8c1993-7ba9-4ecd-a652-c6acfff5bf73",
+      "site_position": 34
+     }
+    },
+    {
+     "file": "0017527_35.webp",
+     "face": 35,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24818,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_35.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "b8ea8afb0acc965f00d9c7a6a83f8f5e5dcdb88ea3862d78eca86d103c3fdfd5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 35",
+      "name": "FALAISE GREY 60X60_32",
+      "id": "b349c05e-5e91-4102-a12d-bf35da300c23",
+      "site_position": 35
+     }
+    },
+    {
+     "file": "0017527_36.webp",
+     "face": 36,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26516,
+     "source_zip": "FALAISE - GREY - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - GREY - 60X60 - Natural - view_36.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "98c58dec637790016310a58d389f51c21b9640a96f71efaa700dd9b96a0f9ef5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 36",
+      "name": "FALAISE GREY 60X60_34",
+      "id": "6a0717f1-6bda-40b2-afe9-7217590065ff",
+      "site_position": 36
+     }
+    }
+   ]
+  }
+ ]
+}
