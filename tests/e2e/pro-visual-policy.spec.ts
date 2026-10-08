@@ -2167,6 +2167,11 @@ test.describe("Pro visual policy", () => {
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
+    // Free asking for designer mode gets the upgrade prompt. On a slow dev server it can
+    // open after dismissBlockingPrompt's one-time check, so wait for it and close it here.
+    await expect(page.getByTestId("upgrade-dialog")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
     const consumerTokens = await readThemeTokens(page);
     expect(consumerTokens).toEqual(proTokens);
     await expect(page.getByTestId("scene-canvas").first()).toHaveCSS(
