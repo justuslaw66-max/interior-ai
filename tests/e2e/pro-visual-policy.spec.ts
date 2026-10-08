@@ -463,6 +463,7 @@ function shareFallbackDesignPayload(id: string) {
 
 async function mockShareFallbackDesign(page: Page) {
   let shareRequestCount = 0;
+  const shareRequestCountByDesign = new Map<string, number>();
   for (const designId of [
     SHARE_FALLBACK_DESIGN_ID,
     SHARE_FALLBACK_NEXT_DESIGN_ID,
@@ -481,6 +482,7 @@ async function mockShareFallbackDesign(page: Page) {
   ]) {
     await page.route(`**/api/designs/${designId}/share`, (route) => {
       shareRequestCount += 1;
+      shareRequestCountByDesign.set(designId, (shareRequestCountByDesign.get(designId) ?? 0) + 1);
       return route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -533,7 +535,24 @@ async function mockShareFallbackDesign(page: Page) {
       },
     });
   });
-  return { getShareRequestCount: () => shareRequestCount };
+  return {
+    getShareRequestCount: () => shareRequestCount,
+    getDesignShareRequestCount: (designId: string) => shareRequestCountByDesign.get(designId) ?? 0,
+  };
+}
+
+/**
+ * Pro's designer workspace shares a design by itself once it has loaded (`useDesignPagePersistence`),
+ * a moment after the title shows; in WebKit it once landed just after a count was taken. Counts of
+ * Share's own requests start after that one.
+ */
+async function waitForDesignerAutoShare(
+  shareMock: Awaited<ReturnType<typeof mockShareFallbackDesign>>,
+  designId = SHARE_FALLBACK_DESIGN_ID
+) {
+  await expect
+    .poll(() => shareMock.getDesignShareRequestCount(designId), { timeout: FIRST_LOAD_TIMEOUT_MS })
+    .toBeGreaterThan(0);
 }
 
 async function setShareFallbackClipboardMode(
@@ -1880,6 +1899,7 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await setShareFallbackClipboardMode(page, "permission-denied");
     await waitForSharedDesign(page);
+    await waitForDesignerAutoShare(shareMock);
     const requestCountBeforeActivation = shareMock.getShareRequestCount();
     proVisualMark(page, "explicit-share-activation-baseline", { requestCountBeforeActivation });
     const share = await activateShare(page, "keyboard");
@@ -1959,6 +1979,7 @@ test.describe("Pro visual policy", () => {
     await identity.sessionReady;
     await setShareFallbackClipboardMode(page, "rejected");
     await waitForSharedDesign(page);
+    await waitForDesignerAutoShare(shareMock);
     let requestCountBeforeActivation = shareMock.getShareRequestCount();
     await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
@@ -2036,6 +2057,7 @@ test.describe("Pro visual policy", () => {
     ).toBe(0);
 
     await waitForSharedDesign(page, SHARE_FALLBACK_NEXT_DESIGN_ID);
+    await waitForDesignerAutoShare(shareMock, SHARE_FALLBACK_NEXT_DESIGN_ID);
     requestCountBeforeActivation = shareMock.getShareRequestCount();
     await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
@@ -2627,6 +2649,11 @@ test.describe("Pro visual policy", () => {
     await downloadTrigger.press("Enter");
     const dialog = page.getByRole("dialog", { name: "Download" });
     await expect(dialog).toBeVisible();
+    // Until its entry finishes, Download's panel is inert and focus stays on the dialog itself;
+    // then it focuses Close. In WebKit, Pictures was once focused and Enter pressed mid-entry,
+    // so neither reached it.
+    await expect(dialog).toHaveAttribute("data-editor-dialog-state", "interactive");
+    await expect(dialog.getByTestId("download-dialog-close")).toBeFocused();
     const pictures = dialog.getByTestId("download-images");
     await expect(pictures).toBeEnabled({ timeout: FIRST_LOAD_TIMEOUT_MS });
     await page.evaluate(() => {
