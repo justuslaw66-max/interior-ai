@@ -1,6 +1,5 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import {
   getRelativeCatalogPath,
@@ -17,7 +16,14 @@ import {
   getRelativeSurfaceMaterialPath,
   runSurfaceMaterialAudit,
 } from "@/lib/surface-material-audit";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
 import AuditActions from "./AuditActions";
+
+const SECTION = adminSection("/admin/audit");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 function toneClass(hasIssue: boolean) {
   return hasIssue
@@ -144,9 +150,7 @@ export default async function AdminAuditPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const activeSurfaceMaterialFilter = normalizeSurfaceMaterialFilter(
@@ -187,21 +191,17 @@ export default async function AdminAuditPage({
 
   return (
     <div className="p-6 space-y-6">
-      <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">Catalog Audit</h1>
-          <Link href="/admin" className="text-sm text-blue-600 hover:text-blue-700">
-            Back to overview
-          </Link>
-          <AuditActions />
-        </div>
-        <p className="text-sm text-neutral-600">
-          Shared view of the same governance and quality checks enforced in local audit scripts and CI.
-        </p>
-        <p className="text-xs text-neutral-500" title={refreshedAt.toISOString()}>
-          Last refreshed: {refreshedAt.toLocaleString()}
-        </p>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description={
+          <>
+            The same governance and quality checks the audit scripts and CI run.{" "}
+            <span title={refreshedAt.toISOString()}>Last refreshed {refreshedAt.toLocaleString()}.</span>
+          </>
+        }
+        actions={<AuditActions />}
+      />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-7">
         <div className={`rounded-xl border p-4 ${toneClass(governance.hasFailures)}`}>

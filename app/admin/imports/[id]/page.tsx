@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../../AdminPageHeader";
+import { adminSection, adminTitle } from "../../admin-navigation";
+import { auth } from "../../admin-session";
 import ImportJobActions from "./ImportJobActions";
 
 type ImportJobDetail = {
@@ -53,13 +56,18 @@ function parseReport(value: unknown): ParsedImportReport | null {
   return value as ParsedImportReport;
 }
 
-export default async function ImportJobDetailPage(
-  { params }: { params: Promise<{ id: string }> }
-) {
+type ImportJobDetailPageProps = { params: Promise<{ id: string }> };
+
+const SECTION = adminSection("/admin/imports");
+
+export async function generateMetadata({ params }: ImportJobDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  return { title: adminTitle(`Import job ${id}`) };
+}
+
+export default async function ImportJobDetailPage({ params }: ImportJobDetailPageProps) {
   const session = await auth();
-  if (!canAccessAdmin(session?.user?.email)) {
-    redirect("/");
-  }
+  if (!canAccessAdmin(session?.user?.email)) return null;
 
   const { id } = await params;
 
@@ -129,11 +137,11 @@ export default async function ImportJobDetailPage(
 
   return (
     <div className="p-6 space-y-6">
-      <header className="space-y-1">
-        <Link href="/admin/imports" className="text-xs text-blue-600 hover:text-blue-700">Back to imports</Link>
-        <h1 className="text-2xl font-semibold">Import Job {job.id}</h1>
-        <p className="text-sm text-neutral-600">Status: {job.status}</p>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title, href: SECTION.href }, { title: job.id }]}
+        title={`Import job ${job.id}`}
+        description={`Status: ${job.status}`}
+      />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-xl border p-4 text-sm">

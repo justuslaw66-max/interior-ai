@@ -1,3 +1,6 @@
+import { notFound } from "next/navigation";
+import { isAdminEmail } from "@/lib/admin";
+import { auth } from "@/lib/auth";
 import { LightingReferenceClient } from "./LightingReferenceClient";
 
 export const metadata = {
@@ -5,6 +8,9 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function LightingReferencePage() {
+/** An internal rendering reference: admins only, like /tools (UX audit AD8). */
+export default async function LightingReferencePage() {
+  const session = await auth();
+  if (!isAdminEmail(session?.user?.email)) notFound();
   return <LightingReferenceClient />;
 }

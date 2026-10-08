@@ -1509,3 +1509,89 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+/* UX phase 4i: breadcrumbs above every admin page's heading, and the access page. */
+.breadcrumbList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  color: var(--ops-ink-secondary);
+  list-style: none;
+  gap: 6px;
+}
+
+.breadcrumbList li + li::before {
+  margin-right: 6px;
+  color: var(--ops-border-strong);
+  content: "/";
+}
+
+.breadcrumbList a {
+  color: var(--ops-ink-secondary);
+  text-decoration: none;
+}
+
+.breadcrumbList a:hover {
+  color: var(--ops-ink);
+  text-decoration: underline;
+}
+
+.accessState {
+  display: flex;
+  align-items: flex-start;
+  max-width: 640px;
+  padding: 28px;
+  gap: 14px;
+}
+
+.accessState > svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin-top: 4px;
+  color: var(--ops-ink-muted);
+}
+
+.accessState h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+}
+
+.accessState p {
+  margin: 8px 0 0;
+  color: var(--ops-ink-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.accessActions {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  gap: 10px;
+}
+
+.quietAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--ops-border-strong);
+  border-radius: var(--ops-radius-sm);
+  background: var(--ops-surface);
+  color: var(--ops-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.quietAction:hover {
+  background: var(--ops-surface-hover);
+}
