@@ -22,7 +22,8 @@ export function projectCanonicalFloorOpenings(
   return floor.openings.map((opening) => {
     const wall = walls.get(opening.wallId);
     if (!wall) throw new Error(`Compiled opening ${opening.id} has no host wall.`);
-    const roomId = wall.adjacentRoomIds[0];
+    // The room on either side that the editor has (a void beside it is not one).
+    const roomId = wall.adjacentRoomIds.find((id) => roomMap.has(id)) ?? wall.adjacentRoomIds[0];
     const center = { x: (opening.start.xMm + opening.end.xMm) / 2, z: (opening.start.zMm + opening.end.zMm) / 2 };
     const line = getCanonicalPlanLine({ x1: wall.start.xMm, z1: wall.start.zMm, x2: wall.end.xMm, z2: wall.end.zMm });
     const centeredOffsetMm = line ? center.x * line.tangent.x + center.z * line.tangent.z - (line.low + line.high) / 2 : 0;

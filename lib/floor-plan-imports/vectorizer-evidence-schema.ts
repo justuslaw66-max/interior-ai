@@ -169,6 +169,8 @@ const vectorizerEvidenceSchema = z.object({
           .min(3)
           .max(256),
         edgeIds: z.array(z.string().max(40)).min(3).max(256),
+        // A void - a duct or shaft drawn as a dashed cross - kept only for the walls around it (exporter 0.20.1+).
+        shaft: z.boolean().optional(),
       })
     )
     .max(200),

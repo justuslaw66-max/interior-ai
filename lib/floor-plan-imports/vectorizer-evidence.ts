@@ -315,17 +315,20 @@ export function vectorizerRoomBoundaries(
     const xs = room.sourcePoints.map((value) => value.x);
     const ys = room.sourcePoints.map((value) => value.y);
     const named = sourceLabels[0];
+    // A void (duct, shaft) keeps no name - not a printed one, not a generic "Room N" - and
+    // holds any label printed in it, so that label is not offered again as an area label.
     return [
       {
         key: `room-${index + 1}`,
-        label: named?.label ?? (room.label || `Room ${index + 1}`),
-        roomType: named?.roomType ?? room.roomType,
+        label: room.shaft ? "" : named?.label ?? (room.label || `Room ${index + 1}`),
+        roomType: room.shaft ? "other" : named?.roomType ?? room.roomType,
         confidence: room.confidence,
         pathId: `vectorizer:${room.key}`,
         bbox: { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) },
         sourcePoints: room.sourcePoints,
         sourceLabels,
         registrationKind: "vectorizer_wall_topology",
+        ...(room.shaft ? { void: true as const } : {}),
         sourceEdges: edges.map((edge) => registeredSourceEdge(edge!, millimetresPerPixel)),
       },
     ];
