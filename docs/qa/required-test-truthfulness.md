@@ -1,5 +1,22 @@
 # Required-test truthfulness
 
+## Cart and Retailer matrices serve CI's strict build — 2026-10-08
+
+In CI, `ci.cart-overlay-accessibility` and `ci.retailer-confirmation-accessibility`
+now run against the strict production-equivalent build the job makes first, as
+`ci.pro-visual-policy` does. Their steps set `PLAYWRIGHT_USE_PRODUCTION_SERVER=1`,
+and their configs then start `npm run start` (cart, on another port: `next start
+--hostname 127.0.0.1 --port <port>`). Each gate's `ci.afterSteps` names the build.
+
+The reason: on `next dev` an on-demand compile sometimes forced a Fast Refresh
+full reload in the middle of a test (#97 and #98, the cart's "Pro Shop" test).
+
+Nothing else changes:
+- the ids, `cart` and `retailer` owners, specs, package scripts and their closures;
+- the zero retry, skip and flake rules;
+- runs without the variable, locally and in certification, keep the canonical
+  development server. The retailer config no longer refuses the variable.
+
 ## UX phase 3c-2 Cart owner re-pin — 2026-09-27
 
 The Selection Tray is gone, and `ci.cart-overlay-accessibility` now owns the

@@ -354,10 +354,17 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      # CI serves the strict build above, as the Pro visual matrix does: on `next dev` an
+      # on-demand compile sometimes forced a Fast Refresh full reload mid-test (#97, #98).
+      # Local and certification runs keep the canonical development server.
       - name: Run required cart overlay accessibility matrix
+        env:
+          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:cart-overlay-accessibility-required
 
       - name: Run required Retailer Confirmation accessibility matrix
+        env:
+          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:retailer-confirmation-accessibility-required
 
       - name: Run required Guest Save Prompt accessibility matrix
