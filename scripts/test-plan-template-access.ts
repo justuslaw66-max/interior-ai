@@ -220,8 +220,35 @@ const consumerRoomSetupE2ESource = fs.readFileSync(
 
 assert.match(
   source,
-  /const templatePickerRef = useRef<HTMLDivElement \| null>\(null\);[\s\S]*?const openTemplatePicker = \(\) => \{[\s\S]*?setPlanStartMode\("template"\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?planStartMode !== "template"[\s\S]*?requestAnimationFrame[\s\S]*?templatePickerRef\.current\?\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\);/,
-  "Opening templates from either the panel or command bar should scroll to the starter floor plan picker."
+  /const templatePickerRef = useRef<HTMLDivElement \| null>\(null\);[\s\S]*?useEffect\(\(\) => \{[\s\S]*?planStartMode !== "template"[\s\S]*?requestAnimationFrame[\s\S]*?templatePickerRef\.current\?\.scrollIntoView\(\{ behavior: "smooth", block: "start" \}\);/,
+  "Start a new design's \"Search by HDB address\" scrolls to Plan's address search."
+);
+// One template list (ST8): Plan's "Choose a template" buttons open Start a new design at Templates,
+// handing focus back to the button that opened it.
+assert.match(source, /const openStartTemplates = \(openerId: string\) => \(\) => requestStartTemplates\(\{ openerId \}\);/);
+assert.match(source, /chooseTemplate: openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\),/);
+assert.match(
+  source,
+  /id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,\s*testId: "plan-tool-template-library",[\s\S]*?onClick: openStartTemplates\(PLAN_TEMPLATE_LIBRARY_ACTION_ID\),\s*\}\)\}\s*<\/div>\s*<AddRoomTemplateTiles dark=\{dark\} canEdit=\{canEdit\} measurementUnit=\{measurementUnit\}\s*onAddRoomTemplate=\{onAddRoomTemplate\} \/>/,
+  "The palette's Templates hold Choose a template, then Add one room."
+);
+assert.match(
+  source,
+  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"[\s\S]*?onClick=\{openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\)\}/,
+  "Pro's empty plan opens the same template list."
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components", "editor", "RoomSetupStartActions.tsx"), "utf8"),
+  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"/
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-controls-plan", "EmptyFloorPlanSurfacesActions.tsx"), "utf8"),
+  /id=\{SURFACES_START_TEMPLATE_ACTION_ID\}[\s\S]*?onClick=\{\(\) => requestStartTemplates\(\{ openerId: SURFACES_START_TEMPLATE_ACTION_ID \}\)\}>\s*Templates/
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-controls-plan", "AddRoomTemplateTiles.tsx"), "utf8"),
+  /role="group"\s*aria-labelledby="add-room-templates-title"[\s\S]*?Add one room[\s\S]*?HOUSE_ROOM_TEMPLATES\.map[\s\S]*?data-testid=\{`add-room-template-\$\{template\.id\}`\}\s*onClick=\{\(\) => onAddRoomTemplate\(template\)\}\s*disabled=\{!canEdit\}/,
+  "Add one room stays in Plan, in the palette's Templates."
 );
 
 const planToolSectionContracts = [
@@ -366,11 +393,19 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /track\("launch_path_selected", \{[\s\S]*?path: "template"[\s\S]*?source: isDesigner \? "pro_plan_tools" : "consumer_room_setup"/,
+  /track\("launch_path_selected", \{[\s\S]*?path: "draw"[\s\S]*?source: isDesigner \? "pro_plan_tools" : "consumer_room_setup"/,
   "Room-setup path selection should emit privacy-safe source telemetry."
 );
+// A template is recorded once, when it's chosen in Start a new design (lib/useDesignPageStartChooser.ts).
+assert.doesNotMatch(source, /path: "template"/);
+assert.doesNotMatch(betaStartControllerSource, /path: "template"/);
+assert.match(
+  betaStartControllerSource,
+  /const chooseTemplate = useCallback\(\(\) => \{\s*requestStartTemplates\(\{ openerId: null \}\);\s*dismiss\(\);\s*\}, \[dismiss\]\);/,
+  "The beta panel's Choose a template opens Start a new design's templates."
+);
 
-for (const pathName of ["template", "draw", "upload", "ai"] as const) {
+for (const pathName of ["draw", "upload", "ai"] as const) {
   assert.match(
     betaStartControllerSource,
     new RegExp(`track\\("launch_path_selected", \\{ path: "${pathName}", source: "beta_start" \\}\\)`),
@@ -502,26 +537,13 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="template-filter-panel"[\s\S]*?data-testid="template-bedroom-filter"[\s\S]*?<select[\s\S]*?data-testid="template-footprint-filter"[\s\S]*?<select[\s\S]*?data-testid="template-style-filter"/,
-  "Template filters should use one simple bedroom row plus compact select menus."
+  /aria-labelledby="starter-floor-plan-picker-title"[\s\S]*?<h2[\s\S]*?id="starter-floor-plan-picker-title"[\s\S]*?Find your home by address\s*<\/h2>\s*<div className="mt-3">\s*<FloorPlanAddressSearch[\s\S]*?\/>\s*<\/div>\s*<\/div>\s*\)\}/,
+  "Plan keeps only the address search; the templates are Start a new design's (ST8)."
 );
-
-assert.match(
+assert.doesNotMatch(
   source,
-  /Choose a template[\s\S]*?\{filteredPlanTemplates\.length\} templates/,
-  "Template picker heading should be concise and show the filtered option count."
-);
-
-assert.match(
-  source,
-  /data-testid="template-bedroom-filter"/,
-  "Template picker should expose bedroom filters."
-);
-
-assert.match(
-  source,
-  /data-testid="template-footprint-filter"/,
-  "Template picker should expose footprint filters."
+  /HOUSE_PLAN_TEMPLATES|filteredPlanTemplates|template-filter-panel|apply-plan-template-|apply-furnished-template-|skip-to-starter-layouts/,
+  "Plan has no template list of its own (ST8)."
 );
 
 assert.match(
@@ -542,47 +564,6 @@ assert.doesNotMatch(
   "Starter finish swatches should not be exposed in the floor material picker."
 );
 
-assert.match(
-  source,
-  /data-testid=\{`plan-template-preview-\$\{template\.id\}`\}/,
-  "Template cards should include mini floor-plan previews."
-);
-
-assert.match(
-  source,
-  /data-testid=\{`plan-template-furnishing-marker-\$\{template\.id\}-\$\{intent\.id\}`\}/,
-  "Template mini previews should show furnished starter markers."
-);
-
-assert.match(
-  source,
-  /data-testid=\{`apply-plan-template-\$\{template\.id\}`\}[\s\S]*?Empty\s*<\/button>/,
-  "Template cards should keep a clear empty-layout action."
-);
-
-assert.match(
-  source,
-  /data-testid=\{`apply-furnished-template-\$\{template\.id\}`\}[\s\S]*?furnishingPackId/,
-  "Template cards should expose a furnished starter action."
-);
-
-assert.match(
-  source,
-  /Good for: \{template\.bestFor\}/,
-  "Template cards should explain who each layout is good for."
-);
-
-assert.match(
-  source,
-  /Zones: \{template\.zones\.slice\(0, 3\)\.join\(" · "\)\}/,
-  "Template cards should show starter furniture zones."
-);
-
-assert.match(
-  source,
-  /template\.realLifeChecks\.slice\(0, 2\)[\s\S]*?\{template\.windows\.length\} windows/,
-  "Template cards should surface real-life planning checks and window counts."
-);
 
 assert.match(
   planTemplateDocumentSource,
@@ -770,7 +751,7 @@ assert.match(
 
 assert.match(
   newPlanControllerSource,
-  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Search by address or choose a template"\);\s*\},/,
+  /const openNewPlanPicker = useCallback\(\(\) => \{\s*requestPlanChoiceForNextTemplate\(\);\s*setGuidedPlanStartMode\("template"\);\s*goPlan\(\);\s*setViewMode\("2d"\);\s*setDesignPanelOpen\(true\);\s*setDesignPanelCollapsed\(false\);\s*showToast\("Find your home by address"\);\s*\},/,
   "The controller-owned New plan action should retain explicit choice intent before opening the template workflow."
 );
 

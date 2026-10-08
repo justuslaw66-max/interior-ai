@@ -790,9 +790,11 @@ test.describe("23. Consumer room setup", () => {
     await page.getByTestId("plan-focus-done").click();
 
     const addressAttemptCount = (await readAddressAvailabilityAttempts(page)).length;
+    // "Choose a template" opens Start a new design's templates (UX ST8), whose address link opens Plan's search.
     await page.getByTestId("plan-start-template").click();
+    await expect(page.getByTestId("start-template-studio")).toBeVisible();
+    await page.getByTestId("start-template-address-search").click();
     await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
-    await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
     await expect.poll(
       async () => (await readAddressAvailabilityAttempts(page)).length,
     ).toBeGreaterThan(addressAttemptCount);

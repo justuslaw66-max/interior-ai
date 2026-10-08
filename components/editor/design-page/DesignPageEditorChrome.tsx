@@ -83,7 +83,7 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
           leftInsetPx={leftInsetPx}
           viewMode={bar.viewMode}
           onViewModeChange={barActions.onViewModeChange}
-          canFit={Boolean(state.commandBar.room) && bar.editorMode !== "present"}
+          canFit={Boolean(state.commandBar.room)}
           onFit={actions.commandBar.room.onFitPlan}
           canUndo={bar.canUndo}
           canRedo={bar.canRedo}

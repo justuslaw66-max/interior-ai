@@ -1,6 +1,7 @@
 import { test, expect } from "../fixtures";
 import {
   boxesOverlap,
+  addOneRoom,
   chooseTemplateStart,
   clickWithFallback,
 } from "./helpers";
@@ -18,9 +19,11 @@ export function registerStartAndFloorTests() {
       await chooseTemplateStart(page);
     }
 
-    await expect(page.getByRole("button", { name: "2D", exact: true })).toBeVisible();
-    await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
-    await expect(page.getByTestId("apply-plan-template-compact_two_bed")).toBeVisible();
+    // Start a new design opens at its Templates, the one template list (UX ST8).
+    await expect(page.getByTestId("start-design-chooser")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Templates", exact: true })).toBeFocused();
+    await expect(page.getByTestId("start-template-studio")).toBeVisible();
+    await expect(page.getByTestId("start-template-living_dining")).toBeVisible();
 
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
@@ -94,8 +97,7 @@ export function registerStartAndFloorTests() {
     await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
     await expect(page.getByTestId("floor-summary-panel")).toBeVisible();
 
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByTestId("room-pan-navigator")).toHaveCount(0);
@@ -110,8 +112,7 @@ export function registerStartAndFloorTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await clickWithFallback(page.getByTestId("editor-workflow-shop"));
 

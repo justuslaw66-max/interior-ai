@@ -20,10 +20,10 @@ const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
 assert.deepEqual(
-  (["design", "adjust", "ai", "buy", "present"] as const).map((mode) => showsItemPanel(mode)),
-  [true, true, true, false, false]
+  (["design", "adjust", "ai", "buy"] as const).map((mode) => showsItemPanel(mode)),
+  [true, true, true, false]
 );
-const visible = (editorMode: "design" | "adjust" | "ai" | "present", hasSelectedProduct: boolean) =>
+const visible = (editorMode: "design" | "adjust" | "ai", hasSelectedProduct: boolean) =>
   isDesignPageSelectionInspectorVisible({ editorMode, hasInspectorSummary: true, hasSelectedProduct, isClientPreview: false });
 assert.equal(visible("design", true), false, "Plan shows a product in the item panel, not the inspector.");
 assert.equal(visible("ai", true), false);

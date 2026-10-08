@@ -1,5 +1,5 @@
 import type { DownloadDialogProps } from "@/components/editor/design-page/DownloadDialog";
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import type { EditorCapabilities } from "@/lib/editor-capabilities";
 import type { BuildDesignPageDialogLayerAdapterInput } from "@/lib/design-page-dialog-layer-adapter";
 
@@ -90,7 +90,7 @@ export type BuildDesignPageDialogLayerModelInput = {
       onClose: Dialogs["aiNotes"]["onClose"];
     };
   };
-  presentation: { presentExport: PresentExportDialogProps; download: DownloadModel };
+  presentation: { presentExport: PresentationTools; download: DownloadModel };
   editing: {
     designRename: Dialogs["designRename"];
     roomRename: {
@@ -130,7 +130,6 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
   sharing: {
     url: Overlays["shareFallback"]["url"];
-    standalone: Overlays["shareFallback"]["standalone"];
     onClose: Overlays["shareFallback"]["onClose"];
     onCopy: Overlays["shareFallback"]["onCopy"];
     onOpen: Overlays["shareFallback"]["onOpen"];
@@ -147,7 +146,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   };
 };
 
-/** Download reads the scene and export state that Present & export already carries. */
+/** Download reads the scene and export state the presentation tools carry. */
 function buildDownloadDialog(
   access: BuildDesignPageDialogLayerModelInput["access"],
   presentation: BuildDesignPageDialogLayerModelInput["presentation"]
@@ -227,7 +226,6 @@ export function buildDesignPageDialogLayerModel({
         onApplySuggestion: ai.notes.onApplySuggestion,
         onClose: ai.notes.onClose,
       },
-      presentExport: presentation.presentExport,
       download: buildDownloadDialog(access, presentation),
       designRename: editing.designRename,
       roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
@@ -260,7 +258,7 @@ export function buildDesignPageDialogLayerModel({
       },
       toasts: feedback.toasts,
       shareFallback: {
-        url: sharing.url, standalone: sharing.standalone, dark: access.designerTheme,
+        url: sharing.url, designId: presentation.presentExport.state.designId, dark: access.designerTheme,
         lifecycleMode: access.isDesigner ? "designer" : "consumer",
         onClose: sharing.onClose, onCopy: sharing.onCopy, onOpen: sharing.onOpen,
       },

@@ -327,7 +327,7 @@ export function useDesignPageSelectionKeyboardController({
   }, [actions, refs, state]);
 
   useEffect(() => {
-    if (state.isClientPreview || state.editorMode === "present") return;
+    if (state.isClientPreview) return;
     const input = { state, refs, actions };
     const handleSelectedPlanObjectShortcut = (event: KeyboardEvent) =>
       routeSelectedPlanKeyboardEvent(event, input);

@@ -19,7 +19,6 @@ type CommandBarMoreMenuProps = {
   showLoadDesign: boolean;
   isDesigner: boolean;
   isClientPreview: boolean;
-  presentModeActive: boolean;
   lightingAvailable: boolean;
   overflowSlot?: ReactNode;
   /** Goes to the My designs page, saving the design's latest edits first. */
@@ -27,8 +26,6 @@ type CommandBarMoreMenuProps = {
   onNewPlan: () => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
-  onOpenPresentExport: () => void;
-  onExport: () => void;
   onOpenLightingSettings: () => void;
   onCloseLightingSettings: () => void;
   onFeedback: () => void;
@@ -158,38 +155,15 @@ function MoreMenuModeItems({
   );
 }
 
+// Present & export retired (phase 4's small PR): Share and Download are in the bar.
 function MoreMenuViewItems({
   menuButtonClass,
   onClose,
-  presentModeActive,
   lightingAvailable,
-  onOpenPresentExport,
-  onExport,
   onOpenLightingSettings,
 }: CommandBarMoreMenuProps) {
   return (
     <>
-      <button
-        type="button"
-        role="menuitem"
-        data-testid="editor-workflow-export"
-        data-active={presentModeActive ? "true" : "false"}
-        className={menuButtonClass}
-        onClick={() => {
-          onClose();
-          onExport();
-        }}
-      >
-        {presentModeActive ? "Back to editing" : "Present & export"}
-      </button>
-      {presentModeActive && (
-        <button
-          type="button" data-testid="editor-command-overflow-present-export" className={menuButtonClass}
-          onClick={() => { onClose(); onOpenPresentExport(); }}
-        >
-          Export & Camera
-        </button>
-      )}
       {lightingAvailable ? (
         <button
           type="button"

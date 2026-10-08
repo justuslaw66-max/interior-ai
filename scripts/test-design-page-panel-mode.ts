@@ -13,7 +13,6 @@ const panelModeCases: Array<[DesignPageEditorMode, ReturnType<typeof resolveDesi
   ["adjust", "furnish"],
   ["ai", "ai"],
   ["buy", "plan"],
-  ["present", "plan"],
 ];
 
 for (const [editorMode, expectedPanelMode] of panelModeCases) {
@@ -28,7 +27,6 @@ assert.equal(isDesignControlsPanelMode("design"), true);
 assert.equal(isDesignControlsPanelMode("adjust"), true);
 assert.equal(isDesignControlsPanelMode("ai"), true);
 assert.equal(isDesignControlsPanelMode("buy"), false);
-assert.equal(isDesignControlsPanelMode("present"), false);
 
 // Choosing a step shows its panel even when the sidebar was collapsed to its edge strip (ST13).
 type PanelModeSteps = ReturnType<typeof useDesignPagePanelMode>;

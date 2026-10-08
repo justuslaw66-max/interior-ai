@@ -93,7 +93,6 @@ export function useDesignPageSelectionInspectionRuntime({
     itemDocument,
     importedModels,
   } = boundaries;
-  const { editorMode } = editorShell.state.editor;
   const { items, activeRoom } = documentRoom.derived.room;
   const { housePlan2D } = documentRoom.derived.plan;
   const { activeFloorLevel } = documentRoom.derived.floor;
@@ -103,7 +102,6 @@ export function useDesignPageSelectionInspectionRuntime({
 
   const selectionCoordinator = useDesignPageSelectionCoordinator({
     state: {
-      editorMode,
       housePlanRooms: housePlan2D.rooms,
       isClientPreview: state.isClientPreview,
       items,

@@ -24,8 +24,6 @@ export type UseDesignPageEditorClientLifecycleInput = {
       SetStateAction<DesignPagePlacementAddMode>
     >;
     setPlacementPreferencesLoaded: Dispatch<SetStateAction<boolean>>;
-    setShowPresentModal: Dispatch<SetStateAction<boolean>>;
-    setPresentModeRoomId: Dispatch<SetStateAction<string | null>>;
   };
 };
 
@@ -39,8 +37,6 @@ export function useDesignPageEditorClientLifecycle({
   const {
     setPlacementAddMode,
     setPlacementPreferencesLoaded,
-    setShowPresentModal,
-    setPresentModeRoomId,
   } = actions;
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -77,16 +73,11 @@ export function useDesignPageEditorClientLifecycle({
   }, []);
 
   useEffect(() => {
-    if (state.editorMode === "present") {
-      setShowPresentModal(true);
-      setPresentModeRoomId(null);
-    } else if (state.editorMode === "buy") {
+    if (state.editorMode === "buy") {
       resetSelectionState.current();
     }
   }, [
     resetSelectionState,
-    setPresentModeRoomId,
-    setShowPresentModal,
     state.editorMode,
   ]);
 

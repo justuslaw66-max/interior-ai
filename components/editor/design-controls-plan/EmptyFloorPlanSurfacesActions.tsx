@@ -2,6 +2,7 @@ import {
   FLOOR_PLAN_PRO_START_UPLOAD_ACTION_ID,
   FLOOR_PLAN_SURFACES_UPLOAD_ACTION_ID,
 } from "@/lib/floor-plan-upload-dialog-focus";
+import { requestStartTemplates, SURFACES_START_TEMPLATE_ACTION_ID } from "@/lib/start-templates-request";
 import { FloorPlanWorkspaceOpener } from "../FloorPlanWorkspaceOpener";
 
 type EmptyFloorPlanProUploadActionProps = {
@@ -37,7 +38,6 @@ type EmptyFloorPlanSurfacesActionsProps = {
   progressActionClass: string;
   progressSecondaryActionClass: string;
   progressMetaClass: string;
-  onOpenTemplatePicker: () => void;
   onStartDrawRoomSetup: () => void;
   onSelectUploadMode: () => void;
   onAddDesignerRoom: () => void;
@@ -49,7 +49,6 @@ export function EmptyFloorPlanSurfacesActions({
   progressActionClass,
   progressSecondaryActionClass,
   progressMetaClass,
-  onOpenTemplatePicker,
   onStartDrawRoomSetup,
   onSelectUploadMode,
   onAddDesignerRoom,
@@ -64,7 +63,8 @@ export function EmptyFloorPlanSurfacesActions({
       </div>
       <div className={progressMetaClass}>Choose a template, draw a room, or upload a floor plan.</div>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button type="button" className={progressActionClass} onClick={onOpenTemplatePicker}>
+        <button id={SURFACES_START_TEMPLATE_ACTION_ID} type="button" className={progressActionClass}
+          onClick={() => requestStartTemplates({ openerId: SURFACES_START_TEMPLATE_ACTION_ID })}>
           Templates
         </button>
         <button type="button" className={progressSecondaryActionClass} onClick={onStartDrawRoomSetup}>

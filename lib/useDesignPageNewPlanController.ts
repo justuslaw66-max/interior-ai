@@ -128,7 +128,7 @@ export function useDesignPageNewPlanController({
     setViewMode("2d");
     setDesignPanelOpen(true);
     setDesignPanelCollapsed(false);
-    showToast("Search by address or choose a template");
+    showToast("Find your home by address");
   }, [
     goPlan,
     requestPlanChoiceForNextTemplate,

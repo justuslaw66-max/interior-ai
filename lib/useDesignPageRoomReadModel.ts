@@ -44,7 +44,6 @@ import {
   ROOM_DIMENSION_DEFAULTS,
 } from "@/lib/design-page-house-plan";
 import { clampEditorOpacity } from "@/lib/design-page-floor-plan-utils";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import {
   useDesignPageSurfaceInspectorContext,
 } from "@/lib/useDesignPageSurfaceInspector";
@@ -82,7 +81,6 @@ export type UseDesignPageRoomReadModelInput = {
   };
   actions: {
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
-    setEditorMode: Dispatch<SetStateAction<DesignPageEditorMode>>;
     goPlan: () => void;
     goFurnish: () => void;
     goShop: () => void;
@@ -111,7 +109,6 @@ export function useDesignPageRoomReadModel({
   const { roomSnapshotById } = derived;
   const {
     setDesignPanelOpen,
-    setEditorMode,
     goPlan,
     goFurnish,
     goShop,
@@ -171,9 +168,10 @@ export function useDesignPageRoomReadModel({
       return;
     }
 
+    // A room with nothing to export has nothing in it yet; products are added in Furnish.
     if (target === "export") {
-      setEditorMode("present");
-      showToast("Review export readiness for this room");
+      goFurnish();
+      showToast("Add furniture to start this room");
       return;
     }
 
@@ -191,7 +189,6 @@ export function useDesignPageRoomReadModel({
     goPlan,
     goShop,
     setDesignPanelOpen,
-    setEditorMode,
     showToast,
   ]);
   const activeRoomSurfaces =

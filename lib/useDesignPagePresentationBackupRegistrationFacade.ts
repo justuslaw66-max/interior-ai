@@ -54,8 +54,6 @@ export function useDesignPagePresentationBackupRegistrationFacade({
     },
     actions: {
       setClientPreview: base.actions.access.setClientPreview,
-      setUpgradeReason: base.actions.paywall.setUpgradeReason,
-      setShowUpgrade: base.actions.dialogs.setShowUpgrade,
       updateProjection:
         planViewport.actions.camera.navigation.updateProjection,
       showToast: showRuleToast,

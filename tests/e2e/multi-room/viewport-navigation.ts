@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures";
 import {
-  chooseTemplateStart,
+  addOneRoom,
   clickWithFallback,
   expectPlan2DProjectionHealthy,
   getActiveRoomBodyProbe,
@@ -20,8 +20,7 @@ export function registerViewportNavigationTests() {
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
 
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
@@ -57,8 +56,7 @@ export function registerViewportNavigationTests() {
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
-    await chooseTemplateStart(page);
-    await page.getByTestId("add-room-template-bedroom").click();
+    await addOneRoom(page);
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
 
