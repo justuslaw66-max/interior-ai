@@ -1,0 +1,457 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ANTRACITE CORTEN - minimali.zip (29473985 bytes, sha256 9e9e71e492958e357ba02a41a9642039dde9264a4d384e929b3e03943ea5b511).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73024",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/g0073024-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73024_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-antr-corten-g0073024-80x80-90777-0; wall gardenia-wall-tile-make-antr-corten-g0073024-80x80-90777-0",
+   "faces": [
+    {
+     "file": "g73024_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 12416,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ANTRACITE CORTEN - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cdb3724e310a57efbed5170c87b4993b1d2a560b9648d91df683662bb06f48bc",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ANTRACITE_CORTEN_80X80_1",
+      "id": "ee05f50f-fa68-49eb-93b5-00351ceb514b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73024_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 11956,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ANTRACITE CORTEN - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8cd2a10c8f98ed047e478d970d191f71a7ecc3d09e9e5a401c89e68275f0ac2b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ANTRACITE_CORTEN_80X80_2",
+      "id": "d1604ce2-6397-4995-a810-d6ce84542af6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73024_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 20776,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ANTRACITE CORTEN - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6df3cf25eabaacf889fe6015e0a486acdef20308f3dae79a41acdef55816b68e",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ANTRACITE_CORTEN_80X80_3",
+      "id": "2d85efda-9bc7-42cc-95b4-9d92c1e90dd6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73024_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 13566,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ANTRACITE CORTEN - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5b429b0f0aae9b5e7421201391b7b059f6bdf68a7491197dcdada7e2503e6a27",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ANTRACITE_CORTEN_80X80_4",
+      "id": "386766c1-60f8-473a-b11a-aace1ce4dbad",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73044",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/g0073044-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73044_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-antr-corten-g0073044-100x100-90783-0; wall gardenia-wall-tile-make-antr-corten-g0073044-100x100-90783-0",
+   "faces": [
+    {
+     "file": "g73044_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 10734,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ANTRACITE CORTEN - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "16bb25a3453051991d5d0a7e79697a1d1789eab5c94e43bf5ca787353465175b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ANTRACITE_CORTEN_100X100_1",
+      "id": "e380dbd0-5aba-4ec7-ad5c-69b8878bd43f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73044_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 17992,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ANTRACITE CORTEN - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4c16f8eff2ce33d89ddb0aba20f82e235c90b3886423066c85e72f58b82682e0",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ANTRACITE_CORTEN_100X100_2",
+      "id": "d2a95e15-cfc2-45e6-90be-e0738e849809",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73044_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 13388,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ANTRACITE CORTEN - 100X100 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9241aeadc75ca4c4c744ded3bec7420a6bbceb47d0599740d33315935a0d2c07",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ANTRACITE_CORTEN_100X100_3",
+      "id": "9856cc59-a73b-4a27-a4aa-dc6c3d704e09",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73044_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 10836,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ANTRACITE CORTEN - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3ae71f4784ae694c4fd1c4c26eba947ef6bc89bb6e1739269bfd3a411ed7183b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ANTRACITE_CORTEN_100X100_4",
+      "id": "f0532adb-7ba2-429f-a055-c1a36347d69d",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73224",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/g0073224-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73224_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-antr-corten-g0073224-60x120-90809-0; wall gardenia-wall-tile-make-antr-corten-g0073224-60x120-90809-0",
+   "faces": [
+    {
+     "file": "g73224_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8504,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ANTRACITE CORTEN - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "206773b2160895efc6ed7e74918313ec1f984977cf461a6649e661b2ad0c27c7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X120_1",
+      "id": "e3579ced-9555-4dc5-9366-9d9b83543d46",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73224_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13380,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ANTRACITE CORTEN - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0107acc6841993e3238ea0edc9fe8f4b5549f3f929e48ed04e1771d3ee7f09a7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X120_2",
+      "id": "4d9a8fbb-3cf6-4eb5-8c9c-356f9877e95a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73224_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7340,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ANTRACITE CORTEN - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f294fc6184960bc5fde6e881e5cef1654a0d68caf1ae6e96a8c08922c8a0b982",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X120_3",
+      "id": "0b74dc3f-388f-49e5-8eb2-548da52872d0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73224_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10070,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ANTRACITE CORTEN - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b6696b062b3481d8652e5b1a3945a839fdd877339579e006e91373420b9bc477",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X120_4",
+      "id": "62438f99-2676-4d9a-9a2b-5ce802edcc22",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73214",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/g0073214-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73214_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-antr-corten-g0073214-60x60-90803-0; wall gardenia-wall-tile-make-antr-corten-g0073214-60x60-90803-0",
+   "faces": [
+    {
+     "file": "g73214_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3362,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ANTRACITE CORTEN - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a1b1ad5b84449ac2742e79ac2323fbb4288a33483a90ce0aaa437e497a2df381",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X60_1",
+      "id": "e634ac2b-ef79-474e-972f-95ac6861db74",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73214_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 8496,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ANTRACITE CORTEN - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e3c8d789239062a50507ac8a0e8eeddfcf36ced99881625d49f495d73a3eaef3",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X60_2",
+      "id": "9d8da72d-0c0c-4dcd-9b97-13e4ecf4a297",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73214_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4432,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ANTRACITE CORTEN - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e46ff958dc0456ee9e07e1c88e4ce1cae126719b5e5608bb0cf5a76d057260fc",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X60_3",
+      "id": "e925b022-6f46-4979-80e9-1628c443dfc4",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73214_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6178,
+     "source_zip": "MAKE - ANTRACITE CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ANTRACITE CORTEN - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dcc57caf25fb1d241703c49114b8f03ec68c57a20df1c00af8a3a4cb2b65e50d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ANTRACITE_CORTEN_60X60_4",
+      "id": "584c0eb8-22bc-44e4-bc11-d60e888d04ec",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

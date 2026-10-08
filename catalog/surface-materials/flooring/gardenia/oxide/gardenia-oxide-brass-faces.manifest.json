@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/brass/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (OXIDE - BRASS - minimali.zip, 22376070 bytes, sha256 4379346015e16c159d7cced17946620f5f9a7cb62d248f21f1a9276c52b6d4da).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06: OXIDE - BRASS - minimali.zip (22376070 bytes, sha256 4379346015e16c159d7cced17946620f5f9a7cb62d248f21f1a9276c52b6d4da).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -30,6 +30,7 @@
      "width_px": 720,
      "height_px": 1680,
      "bytes": 309034,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X280-Natural/OXIDE - BRASS - 120X280 - Natural - view_1 (2).jpg",
      "source_px": [
       1238,
@@ -54,6 +55,7 @@
      "width_px": 720,
      "height_px": 1680,
      "bytes": 306864,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X280-Natural/OXIDE - BRASS - 120X280 - Natural - view_1.jpg",
      "source_px": [
       1238,
@@ -78,6 +80,7 @@
      "width_px": 720,
      "height_px": 1680,
      "bytes": 272516,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X280-Natural/OXIDE - BRASS - 120X280 - Natural - view_3.jpg",
      "source_px": [
       1238,
@@ -117,6 +120,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 128924,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_1 (2).jpg",
      "source_px": [
       1238,
@@ -140,6 +144,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 126086,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_1.jpg",
      "source_px": [
       1238,
@@ -163,6 +168,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 134920,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_2.jpg",
      "source_px": [
       1238,
@@ -186,6 +192,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 118868,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_3.jpg",
      "source_px": [
       1238,
@@ -209,6 +216,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 131828,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_4.jpg",
      "source_px": [
       1238,
@@ -232,6 +240,7 @@
      "width_px": 720,
      "height_px": 720,
      "bytes": 108088,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "120X120-Natural/OXIDE - BRASS - 120X120 - Natural - view_6.jpg",
      "source_px": [
       1238,
@@ -245,6 +254,189 @@
       "name": "BRASS 120X120_3",
       "id": "590c8993-b0e1-423a-9b34-78eb6a9950c5",
       "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g69334",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/brass/g0069334-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g69334_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-brass-g69334-80x80-90852-0; wall gardenia-wall-tile-oxide-brass-g69334-80x80-90852-0",
+   "faces": [
+    {
+     "file": "g69334_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63840,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4187ea856ac01c25a9bd8e968010cec344d603ef671d1e1c0b82b23d6777940a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE_BRASS_80x80_1",
+      "id": "5cf4961f-c67f-490a-95b9-4ea931874b04",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69334_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 68098,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dd4005e725e015376071570e6ab50362b9173af257ba638f1d6ae8a054dbc5ac",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE_BRASS_80x80_4",
+      "id": "abd3fa29-f6ef-4491-bf62-7210bfefa1c7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69334_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92508,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e2acb913418717f3eb979f020655f821bcc1d36345076d987cf1048d53305f5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE_BRASS_80x80_6",
+      "id": "c7ad5db7-7858-434e-8ddf-a2fe8ba50225",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69334_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 60924,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "034136466637e25cd4ddfd5991aea085b4a99d7e413cfde6f3da863d59760aa0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE_BRASS_80x80_3",
+      "id": "c2442b05-a4eb-4a93-976b-5126163b3a06",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69334_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 88864,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e285d6c079e432c68f22c180c06ebcf150a48fc15afa561cb7aae36aeb367303",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE_BRASS_80x80_7",
+      "id": "0c3519ca-fa2d-4254-b8b1-d07080ece9ba",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69334_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63488,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ca96dceabda5520802e92641dba411bfbf18cebf91a55a56da1b750b5b831ff7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE_BRASS_80x80_5",
+      "id": "1460a88e-6fed-48c6-aed2-8f289a466488",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69334_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64040,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
+     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "15df9e080cfafd637423f80e7db6c92540024f3085ed8ad6a89a53e17f5a6022",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "OXIDE_BRASS_80x80_2",
+      "id": "90ee470b-f934-422d-a72c-a1aa3d60bb57",
+      "site_position": 7
      }
     }
    ]
@@ -273,6 +465,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 64790,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_1 (2).jpg",
      "source_px": [
       1238,
@@ -296,6 +489,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 66010,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_1.jpg",
      "source_px": [
       1238,
@@ -319,6 +513,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 58818,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_2.jpg",
      "source_px": [
       1238,
@@ -342,6 +537,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 65044,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_5.jpg",
      "source_px": [
       1238,
@@ -365,6 +561,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 67982,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_4.jpg",
      "source_px": [
       1238,
@@ -388,6 +585,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 56062,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_6.jpg",
      "source_px": [
       1238,
@@ -411,6 +609,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 74070,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_7.jpg",
      "source_px": [
       1238,
@@ -434,6 +633,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 60886,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_9.jpg",
      "source_px": [
       1238,
@@ -457,6 +657,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 63990,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_10.jpg",
      "source_px": [
       1238,
@@ -480,6 +681,7 @@
      "width_px": 360,
      "height_px": 720,
      "bytes": 63314,
+     "source_zip": "OXIDE - BRASS - minimali.zip",
      "source_file": "60X120-Natural/OXIDE - BRASS - 60X120 - Natural - view_11.jpg",
      "source_px": [
       1238,
@@ -493,182 +695,6 @@
       "name": "BRASS 60X120_2",
       "id": "32460c5b-bbb8-49f8-bca3-5e5dcefb0476",
       "site_position": 11
-     }
-    }
-   ]
-  },
-  {
-   "format": "80x80",
-   "item_code": "g69334",
-   "finish": "Natural",
-   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/brass/g0069334-v102/",
-   "face_mm": {
-    "width": 800,
-    "height": 800
-   },
-   "swatch": "g69334_swatch.webp",
-   "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-oxide-brass-g69334-80x80-90852-0; wall gardenia-wall-tile-oxide-brass-g69334-80x80-90852-0",
-   "faces": [
-    {
-     "file": "g69334_01.webp",
-     "face": 1,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 25088,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_1 (2).jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "4187ea856ac01c25a9bd8e968010cec344d603ef671d1e1c0b82b23d6777940a",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 1 (view_01)",
-      "name": "OXIDE_BRASS_80x80_1",
-      "id": "5cf4961f-c67f-490a-95b9-4ea931874b04",
-      "site_position": 1
-     }
-    },
-    {
-     "file": "g69334_02.webp",
-     "face": 2,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 23522,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_1.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "dd4005e725e015376071570e6ab50362b9173af257ba638f1d6ae8a054dbc5ac",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 2",
-      "name": "OXIDE_BRASS_80x80_4",
-      "id": "abd3fa29-f6ef-4491-bf62-7210bfefa1c7",
-      "site_position": 2
-     }
-    },
-    {
-     "file": "g69334_03.webp",
-     "face": 3,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 32188,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_2.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "0e2acb913418717f3eb979f020655f821bcc1d36345076d987cf1048d53305f5",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 3",
-      "name": "OXIDE_BRASS_80x80_6",
-      "id": "c7ad5db7-7858-434e-8ddf-a2fe8ba50225",
-      "site_position": 3
-     }
-    },
-    {
-     "file": "g69334_04.webp",
-     "face": 4,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 22226,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_3.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "034136466637e25cd4ddfd5991aea085b4a99d7e413cfde6f3da863d59760aa0",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 4",
-      "name": "OXIDE_BRASS_80x80_3",
-      "id": "c2442b05-a4eb-4a93-976b-5126163b3a06",
-      "site_position": 4
-     }
-    },
-    {
-     "file": "g69334_05.webp",
-     "face": 5,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 32676,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_5.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "e285d6c079e432c68f22c180c06ebcf150a48fc15afa561cb7aae36aeb367303",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 5",
-      "name": "OXIDE_BRASS_80x80_7",
-      "id": "0c3519ca-fa2d-4254-b8b1-d07080ece9ba",
-      "site_position": 5
-     }
-    },
-    {
-     "file": "g69334_06.webp",
-     "face": 6,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 24796,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_6.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "ca96dceabda5520802e92641dba411bfbf18cebf91a55a56da1b750b5b831ff7",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 6",
-      "name": "OXIDE_BRASS_80x80_5",
-      "id": "1460a88e-6fed-48c6-aed2-8f289a466488",
-      "site_position": 6
-     }
-    },
-    {
-     "file": "g69334_07.webp",
-     "face": 7,
-     "width_mm": 800,
-     "height_mm": 800,
-     "width_px": 480,
-     "height_px": 480,
-     "bytes": 23496,
-     "source_file": "80X80-Natural/OXIDE - BRASS - 80X80 - Natural - view_7.jpg",
-     "source_px": [
-      2560,
-      2560
-     ],
-     "source_sha256": "15df9e080cfafd637423f80e7db6c92540024f3085ed8ad6a89a53e17f5a6022",
-     "source_px_per_mm": 3.2,
-     "orientation": "upright",
-     "abk_picture": {
-      "label": "Faccia 7",
-      "name": "OXIDE_BRASS_80x80_2",
-      "id": "90ee470b-f934-422d-a72c-a1aa3d60bb57",
-      "site_position": 7
      }
     }
    ]
