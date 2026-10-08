@@ -10,7 +10,12 @@ import {
 import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   decodeSurfaceMaterialRenderTuple,
+  getRuntimeSurfaceMaterialById,
 } from "../lib/surface-material-runtime";
+import {
+  compactSurfaceTextureFaces,
+  expandSurfaceTextureFaces,
+} from "../lib/surface-texture-face-run";
 import { PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES } from "../lib/generated/surface-material-render.generated";
 import {
   buildSurfaceMaterialProductGroups,
@@ -318,6 +323,44 @@ const tupleWithFaces = [...baseTuple, { width: 1200, height: 2400 }, faces] as u
 const decodedWithFaces = decodeSurfaceMaterialRenderTuple(tupleWithFaces);
 assert.deepEqual(decodedWithFaces.texture_assets.faces, faces);
 assert.deepEqual(decodedWithFaces.texture_assets.image_physical_size_mm, { width: 1200, height: 2400 });
+
+// Render data: numbered faces of one size are written as a run, and every run expands to
+// exactly the faces its catalogue YAML declares (same pictures, order and sizes).
+const decodedRun = decodeSurfaceMaterialRenderTuple([
+  ...baseTuple,
+  { width: 600, height: 1200 },
+  ["/assets/a_", 2, 600, 1200],
+] as unknown as SurfaceMaterialRenderTuple);
+assert.deepEqual(decodedRun.texture_assets.faces, faces, "a run decodes to the full face list");
+assert.deepEqual(compactSurfaceTextureFaces(faces), ["/assets/a_", 2, 600, 1200]);
+assert.deepEqual(expandSurfaceTextureFaces(faces), faces, "a full list passes through unchanged");
+const notRuns = [
+  [{ url: "/assets/a_02.webp", width_mm: 600, height_mm: 1200 }],
+  [faces[0], { url: "/assets/a_03.webp", width_mm: 600, height_mm: 1200 }],
+  [faces[0], { url: "/assets/b_02.webp", width_mm: 600, height_mm: 1200 }],
+  [faces[0], { ...faces[1], width_mm: 1200 }],
+  [faces[0], { url: "/assets/a_02.jpg", width_mm: 600, height_mm: 1200 }],
+  [{ ...faces[0], extra: true } as (typeof faces)[number]],
+  [],
+];
+for (const list of notRuns) {
+  assert.equal(compactSurfaceTextureFaces(list), null, `not a run: ${JSON.stringify(list)}`);
+}
+const yamlFaces = getAllSurfaceMaterialYamlEntries().filter((entry) => entry.texture_assets.faces?.length);
+const runTuples = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.filter(
+  (tuple) => tuple[32] && typeof tuple[32][0] === "string"
+);
+const runnableFaces = yamlFaces.filter((entry) => compactSurfaceTextureFaces(entry.texture_assets.faces ?? []));
+assert.equal(runTuples.length, runnableFaces.length, "every numbered face list of one size is written as a run");
+assert.ok(runnableFaces.length > 0, "the catalogue has face lists written as runs");
+for (const entry of yamlFaces) {
+  const id = entry.surface_material.material_id;
+  assert.deepEqual(
+    getRuntimeSurfaceMaterialById(id)?.texture_assets.faces,
+    entry.texture_assets.faces,
+    `${id} decodes to its YAML faces`
+  );
+}
 
 // Import gate: a face smaller than the tile it is sold as fails.
 const templateSource = getAllSurfaceMaterialYamlEntries().find((entry) => entry.surface_material.supplier !== "florim");
