@@ -1,20 +1,28 @@
-import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
+
+const SECTION = adminSection("/admin/models");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 export default async function ModelsPage() {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const assets = await prisma.modelAsset.findMany({ orderBy: { updatedAt: "desc" } });
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-semibold">Model Assets</h1>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Every 3D model, newest change first. Open one to check it and approve it."
+      />
       <div className="mt-4 grid grid-cols-4 gap-4">
         {assets.map((a: (typeof assets)[number]) => (
           <Link key={a.id} href={`/admin/models/${a.id}`} className="rounded-xl border p-3 hover:bg-muted">

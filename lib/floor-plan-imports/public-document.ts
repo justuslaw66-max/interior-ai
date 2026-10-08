@@ -6,6 +6,7 @@ import type {
   FloorPlanEntityProvenanceV2,
 } from "@/lib/floor-plan-document-v2";
 import { assertPublicFloorPlanEntityIdsOpaque } from "@/lib/floor-plan-imports/public-entity-ids";
+import { FLOOR_PLAN_VOID_ROOM_TYPE, isFloorPlanVoidRoom, namedFloorPlanRooms } from "@/lib/floor-plan-void-rooms";
 import {
   projectPublicFloorPlanAuthoredVariantGroups,
   type PersistedFloorPlanAuthoredVariantGroup,
@@ -205,10 +206,10 @@ export function projectPublicFloorPlanDocumentV2(
       const mapProvenance = (provenance: FloorPlanEntityProvenanceV2) =>
         publicProvenance(provenance, sourceIds, calibrationIds);
       const publicRoomTypes = new Map(
-        floor.rooms.map((room) => [room.id, requirePublicRoomType(room.roomType)] as const)
+        namedFloorPlanRooms(floor.rooms).map((room) => [room.id, requirePublicRoomType(room.roomType)] as const)
       );
       const roomNames = publicEntityNames(
-        floor.rooms.map((room) => ({
+        namedFloorPlanRooms(floor.rooms).map((room) => ({
           id: room.id,
           baseName: PUBLIC_ROOM_DISPLAY_NAMES[publicRoomTypes.get(room.id)!],
         }))
@@ -256,8 +257,8 @@ export function projectPublicFloorPlanDocumentV2(
         })),
         rooms: floor.rooms.map((entity) => ({
           ...entity,
-          name: roomNames.get(entity.id)!,
-          roomType: publicRoomTypes.get(entity.id)!,
+          name: isFloorPlanVoidRoom(entity) ? "" : roomNames.get(entity.id)!,
+          roomType: isFloorPlanVoidRoom(entity) ? FLOOR_PLAN_VOID_ROOM_TYPE : publicRoomTypes.get(entity.id)!,
           provenance: mapProvenance(entity.provenance),
         })),
         openings: floor.openings.map((entity) => ({

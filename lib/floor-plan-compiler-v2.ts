@@ -18,8 +18,7 @@ import type {
   FloorPlanRoomWallLoopV2,
   FloorPlanStructureV2,
   FloorPlanVertexV2,
-  FloorPlanWallPathV2,
-  FloorPlanWallV2,
+  FloorPlanWallPathV2, FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
 import {
   FLOOR_PLAN_GEOMETRY_VALIDATION_LIMITS,
@@ -29,6 +28,7 @@ import {
   type FloorPlanValidationCanonicalWallSegment,
 } from "@/lib/floor-plan-geometry-validation";
 import { buildUnverifiedConstructionOpeningIssues } from "@/lib/floor-plan-opening-construction-evidence";
+import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
 
 export type FloorPlanValidationSeverityV2 = "error" | "warning";
 
@@ -982,7 +982,7 @@ export function validateFloorPlanDocumentV2(
     const roomsByWall = new Map<string, Set<string>>();
     floor.rooms.forEach((room, index) => {
       const roomPath = `${path}.rooms[${index}]`;
-      if (!room.name.trim()) addIssue(issues, "MISSING_ROOM_NAME", `${roomPath}.name`, "Room name is required.");
+      if (!room.name.trim() && !isFloorPlanVoidRoom(room)) addIssue(issues, "MISSING_ROOM_NAME", `${roomPath}.name`, "Room name is required.");
       if (!room.roomType.trim()) addIssue(issues, "MISSING_ROOM_TYPE", `${roomPath}.roomType`, "Room type is required.");
       validateProvenance(room.provenance, `${roomPath}.provenance`, sourceIds, issues);
       const outerLoops = room.wallLoops.filter((loop) => loop.kind === "outer");

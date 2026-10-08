@@ -1,4 +1,5 @@
-import type { SurfaceMaterial, SurfaceTextureFace } from "./surface-material-schema";
+import type { SurfaceMaterial } from "./surface-material-schema";
+import type { SurfaceTextureFacesData } from "./surface-texture-face-run";
 
 export type SurfaceMaterialRenderRecord = {
   surface_material: Pick<
@@ -98,11 +99,14 @@ export type SurfaceMaterialRenderBaseTuple = readonly [
   publishBlockers: string[],
 ];
 
-/** The trailing fields are emitted only for materials with physical-scale image data. */
+/**
+ * The trailing fields are emitted only for materials with physical-scale image data. Faces
+ * are written as a run where their file names allow it (see surface-texture-face-run.ts).
+ */
 export type SurfaceMaterialRenderTuple = readonly [
   ...SurfaceMaterialRenderBaseTuple,
   imagePhysicalSizeMm?: { width: number; height: number } | null,
-  faces?: SurfaceTextureFace[] | null,
+  faces?: SurfaceTextureFacesData | null,
 ];
 
 export type SurfaceMaterialRenderInfo = SurfaceMaterialRenderRecord;

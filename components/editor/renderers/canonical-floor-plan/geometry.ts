@@ -11,6 +11,7 @@ import type {
 } from "@/lib/floor-plan-compiler-v2";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
 import type { PlanarUnionPolygonMm } from "@/lib/floor-plan-planar-union";
+import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
 import type {
   CanonicalFloorPlanLineSegment,
   CanonicalFloorPlanWallSolid,
@@ -136,8 +137,14 @@ export function wallSurfaceGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 
   return geometry;
 }
 
-export function preferredRoomId(roomIds: string[], activeRoomId: string | null) {
-  return (activeRoomId && roomIds.includes(activeRoomId) ? activeRoomId : roomIds[0]) ?? null;
+/** The room a wall click selects. Given the floor's rooms, never a void (duct, shaft): the editor does not offer one. */
+export function preferredRoomId(
+  roomIds: string[],
+  activeRoomId: string | null,
+  rooms?: readonly { id: string; roomType: string }[]
+) {
+  const selectable = rooms ? roomIds.filter((id) => !rooms.some((room) => room.id === id && isFloorPlanVoidRoom(room))) : roomIds;
+  return (activeRoomId && selectable.includes(activeRoomId) ? activeRoomId : selectable[0]) ?? null;
 }
 
 export function structureShape(points: CompiledFloorPlanStructureV2["points"]) {

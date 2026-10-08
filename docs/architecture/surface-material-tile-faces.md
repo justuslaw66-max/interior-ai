@@ -28,6 +28,7 @@ In `texture_assets` of its `catalog.yaml`:
 ```
 
 - `width_mm` and `height_mm` say how much of the tile the picture covers, with the long side upright. A landscape tile turns the picture a quarter turn.
+- **In the render data** (`lib/generated/surface-material-render.generated.ts`, loaded with every design page), faces named `<prefix>01.webp`, `<prefix>02.webp`, … with one size are written as a run: `[prefix, count, width_mm, height_mm]`. The app expands it back into the same face list (`lib/surface-texture-face-run.ts`), so pictures, order and sizes are unchanged. A face list that doesn't follow the pattern is written in full. Name new faces `<item>_<nn>.webp`, numbered from 01, to keep them compact.
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica and Oxide entries.

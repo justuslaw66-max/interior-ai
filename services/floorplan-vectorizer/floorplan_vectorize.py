@@ -21,7 +21,7 @@ recognised as a primitive and re-drawn:
 usage: python3 floorplan_vectorize.py input.png out_basename
 """
 import os
-import sys, json, math, re
+import sys, json, math, re, copy
 import cv2
 import numpy as np
 if int(cv2.__version__.split(".")[0]) >= 5:
@@ -46,6 +46,77 @@ from skimage.morphology import skeletonize
 # Speed switches (round 17).  Each gives the same output to the byte; "0" turns it off.
 FAST_SWING = os.environ.get("FV_FAST_SWING", "1") != "0"    # the swing search's fine pass as one array operation per candidate
 OCR_THREADS = int(os.environ.get("FV_OCR_THREADS", "0") or 0) or max(1, min(8, (os.cpu_count() or 2)))   # tesseract calls in parallel
+# Blur (round 24).  A bold scan has every stroke dark and fat; a blurred or low-resolution picture has fat dark WALLS while its
+# thin lines fade lighter than the ink threshold, so only the walls are left to measure and it looked bold too - and was
+# shrunk to a third.  "1": a bold scan also needs most of its line work dark (measured: the bold scan 1.0, blurred copies and
+# plans with grey hairlines 0.07 - 0.47).
+BOLD_NEEDS_DARK = os.environ.get("FV_BOLD_NEEDS_DARK", "1") != "0"
+# Nothing left out (round 24, J 6 Oct: "trace it out exactly how it is first, do not leave anything out").  After every
+# reading, the drawing is compared with what the trace draws; drawn ink the trace has nowhere near (a duct's dashed cross, a
+# floor-drain triangle, a tap dot, lettering that could not be read) is traced as it is - plain strokes and small filled
+# shapes in an "unclassified" group of the SVG - so it is never lost.  The room model (app_evidence.py) does not read it.
+RESIDUAL = os.environ.get("FV_RESIDUAL", "1") != "0"
+# The other line of a two-line room name (round 25, J 6 Oct: "continue working on the remaining items"): 'BATH' under COMMON
+# with the door swing through it, 'BEDROOM' under MASTER in bold blurred lettering - read again beside the line that was read.
+SECOND_LINES = os.environ.get("FV_SECOND_LINES", "1") != "0"
+# The drawing (SVG only) cleaned where the trace's pieces meet: walls drawn as one, lines to where the drawing's lines end,
+# fixture outlines closed, a dashed line not cut by a stray short line (see clean_drawing).  Off: the SVG as before.
+CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
+
+# The learned reader (round 23), behind a switch.  FV_SEG_MODEL=<model.onnx> (made by the untracked tools/train/train.py) reads
+# the picture into a class per pixel - other / wall / door / window / text / rack / railing - and FV_SEG_USE says which of
+# stage 1's own readings it then informs (comma list, default "prune"):
+#   prune   a wall the threshold finds (thick ink) is dropped when the model does not call most of it wall
+#           (lettering, furniture or a fat symbol taken for a wall) - but not when the model calls most of it a door,
+#           window or railing (a window's dark band taken for a wall is left to the later steps, as without the model)
+#   add     thick-enough dark ink the model calls wall but the threshold's opening dropped (walls thinner than half the
+#           thickest column) is added to the walls
+#   fill    the walls ARE the model's wall class (outline walls become solid walls)
+# With FV_SEG_MODEL unset nothing below runs and the output is the same to the byte.  Needs onnxruntime (CPU).
+# Measured 6 Oct (corpus gate, 15 dev + gate and 5 sealed plans, model 20261006-011605-railing3): prune drops nothing on
+# the corpus (every piece the model disputes it calls an opening) - scores unchanged; add and fill lower the dev + gate
+# and sealed scores (fill: rooms 127 -> 94 of 138) and can stop refine_soft on a zero division.  Not kept as an input yet.
+SEG_MODEL = os.environ.get("FV_SEG_MODEL") or None
+SEG_USE = set(v for v in (os.environ.get("FV_SEG_USE") or "prune").replace(" ", "").split(",") if v) if SEG_MODEL else set()
+SEG_WALL, SEG_DOOR, SEG_WINDOW, SEG_TEXT, SEG_RACK, SEG_RAILING = 1, 2, 3, 4, 5, 6
+
+
+def seg_read(bgr, size=512, overlap=64):
+    """The model's class per pixel of the picture AS LOADED (before any of stage 1's own steps), read exactly as in
+    training (tools/train/data.py prep(): grey, the paper level brought to white; tiles of 512 px overlapping 64, the
+    logits summed where they overlap).  -> uint8 class map of the picture's size."""
+    try:
+        import onnxruntime as ort
+    except ImportError:
+        sys.exit("FV_SEG_MODEL is set but onnxruntime is not installed (pip install onnxruntime) - unset FV_SEG_MODEL to run without the model")
+    if not os.path.exists(SEG_MODEL):
+        sys.exit("FV_SEG_MODEL=%s: no such file" % SEG_MODEL)
+    so = ort.SessionOptions()
+    so.intra_op_num_threads = max(1, min(4, os.cpu_count() or 1))
+    sess = ort.InferenceSession(SEG_MODEL, so, providers=["CPUExecutionProvider"])
+    g = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:])) if hist[128:].sum() else 255
+    if paper < 250:
+        g = np.clip(g.astype(np.float32) * (255.0 / paper), 0, 255).astype(np.uint8)
+    H, W = g.shape
+    ph, pw = max(size, H), max(size, W)
+    canvas = np.full((ph, pw), 255, np.uint8)
+    canvas[:H, :W] = g
+    def cuts(n):
+        if n <= size:
+            return [0]
+        step = size - overlap
+        return sorted(set(list(range(0, n - size, step)) + [n - size]))
+    acc = None
+    for y in cuts(ph):
+        for x in cuts(pw):
+            t = np.repeat((canvas[y:y + size, x:x + size].astype(np.float32) / 255.0)[None, None], 3, axis=1)
+            out = sess.run(["logits"], {"image": t})[0][0]
+            if acc is None:
+                acc = np.zeros((out.shape[0], ph, pw), np.float32)
+            acc[:, y:y + size, x:x + size] += out
+    return acc.argmax(0).astype(np.uint8)[:H, :W]
 
 # ----------------------------------------------------------------- helpers
 
@@ -934,10 +1005,70 @@ def stated_area(page_gray, exclude=None):
     return {"m2": main["m2"], "text": main["text"], "parts": [f_ for f_ in found if f_ is not main], "inclusiveNote": inc.group(0).strip() if inc else None}
 
 
+def seg_walls(seg_map, wall_mask, ink_wall, k, ws, model):
+    """Stage 1's walls (thick ink, opened with a k x k square) informed by the model's wall class, as FV_SEG_USE says
+    (see SEG_MODEL above).  Returns the new wall mask; what was done goes into model["seg"]."""
+    wall_m = ((seg_map == SEG_WALL) * 255).astype(np.uint8)
+    before = wall_mask.copy()
+    info = {"use": sorted(SEG_USE), "model_md5": _md5_file(SEG_MODEL)[:12],
+            "wall_px_model": int((wall_m > 0).sum()), "wall_px_threshold": int((wall_mask > 0).sum())}
+    if "fill" in SEG_USE:
+        out = cv2.morphologyEx(wall_m, cv2.MORPH_OPEN, np.ones((2 * ws + 1, 2 * ws + 1), np.uint8))
+        n, lab, st, _ = cv2.connectedComponentsWithStats(out)
+        for i in range(1, n):
+            if st[i, cv2.CC_STAT_AREA] < 2 * k * k or max(st[i, cv2.CC_STAT_WIDTH], st[i, cv2.CC_STAT_HEIGHT]) < 3.5 * k:
+                out[lab == i] = 0                           # the threshold's own size rule: a wall is a long, fat thing
+    else:
+        out = wall_mask.copy()
+        if "prune" in SEG_USE:
+            near = cv2.dilate(wall_m, np.ones((2 * ws + 3, 2 * ws + 3), np.uint8)) > 0
+            opening = cv2.dilate((((seg_map == SEG_DOOR) | (seg_map == SEG_WINDOW) | (seg_map == SEG_RAILING)) * 255)
+                                 .astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+            n, lab, st, _ = cv2.connectedComponentsWithStats(out)
+            dropped, spared = [], []
+            for i in range(1, n):
+                sel = lab == i
+                w_ = float(near[sel].mean())
+                if w_ >= 0.5:
+                    continue
+                o_ = float(opening[sel].mean())
+                box = [int(st[i, cv2.CC_STAT_LEFT]), int(st[i, cv2.CC_STAT_TOP]), int(st[i, cv2.CC_STAT_WIDTH]), int(st[i, cv2.CC_STAT_HEIGHT])]
+                if o_ >= 0.5:
+                    spared.append(box + [round(w_, 2), round(o_, 2)]); continue   # an opening's band: as without the model
+                out[sel] = 0; dropped.append(box + [round(w_, 2), round(o_, 2)])
+            info["pruned"] = len(dropped); info["pruned_boxes"] = dropped; info["spared_openings"] = spared
+        if "add" in SEG_USE:
+            kk = max(3, int(round(0.45 * k)))
+            cand = cv2.morphologyEx(cv2.bitwise_and(wall_m, ink_wall), cv2.MORPH_OPEN, np.ones((kk, kk), np.uint8))
+            cand[cv2.dilate(out, np.ones((3, 3), np.uint8)) > 0] = 0
+            n, lab, st, _ = cv2.connectedComponentsWithStats(cand)
+            added = 0
+            for i in range(1, n):
+                if st[i, cv2.CC_STAT_AREA] >= k * k and max(st[i, cv2.CC_STAT_WIDTH], st[i, cv2.CC_STAT_HEIGHT]) >= 3.5 * kk:
+                    out[lab == i] = 255; added += 1
+            info["added"] = added
+    info["wall_px"] = int((out > 0).sum())
+    model["seg"] = info
+    if os.environ.get("FV_SEG_PNG"):
+        cv2.imwrite(os.environ["FV_SEG_PNG"], np.dstack([before, wall_m, out]))
+        np.save(os.environ["FV_SEG_PNG"] + ".npy", seg_map)
+    return out
+
+
+def _md5_file(p):
+    import hashlib
+    h = hashlib.md5()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
 def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
         sys.exit("cannot read an image from %r (no such file, or not a PNG / JPEG / WebP)" % path)
+    seg_map = seg_read(bgr0) if SEG_MODEL else None       # the model's reading, carried through every resize / turn / crop below
     gray0, flattened = flatten_background(bgr0)
     if not flattened:
         gray0 = cv2.imread(path, cv2.IMREAD_GRAYSCALE)      # (exactly the decode used so far: a JPEG's own grey differs by 1 from BGR->grey)
@@ -950,10 +1081,21 @@ def extract(path):
     sw0_ = float(np.median(cv2.distanceTransform(ink0_, cv2.DIST_L2, 5)[sk0_]) * 2 - 1) if sk0_.any() else 1.0
     pre_scale = 1.0
     orig_size = [int(gray0.shape[1]), int(gray0.shape[0])]
-    if sw0_ >= 4.0:
+    bold = sw0_ >= 4.0
+    if bold and BOLD_NEEDS_DARK:
+        hist_ = np.bincount(gray0.ravel(), minlength=256)
+        paper_ = 128 + int(np.argmax(hist_[128:]))
+        skl_ = int(skeletonize(gray0 < paper_ - 25).sum())       # every line, the faint ones too
+        bold = int(sk0_.sum()) >= 0.8 * skl_
+    if bold:
         pre_scale = max(0.35, 2.5 / sw0_)
         gray0 = cv2.resize(gray0, None, fx=pre_scale, fy=pre_scale, interpolation=cv2.INTER_AREA)
+        if seg_map is not None:
+            seg_map = cv2.resize(seg_map, (gray0.shape[1], gray0.shape[0]), interpolation=cv2.INTER_NEAREST)
     gray, skew = deskew(gray0)
+    if seg_map is not None and skew != 0.0:
+        seg_map = cv2.warpAffine(seg_map, cv2.getRotationMatrix2D((gray0.shape[1] / 2, gray0.shape[0] / 2), skew, 1.0),
+                             (gray0.shape[1], gray0.shape[0]), flags=cv2.INTER_NEAREST, borderValue=0)
     hatch = detect_hatched_walls(gray)
     if hatch is not None:
         gray = gray.copy(); gray[hatch["solid"] > 0] = 0    # from here on a hatched wall is a wall like any other; it is DRAWN hatched again at the end
@@ -962,6 +1104,8 @@ def extract(path):
     crop = plan_region(gray)
     if crop is not None and (crop[2] - crop[0]) * (crop[3] - crop[1]) < 0.5 * W0 * H0:
         gray = gray[crop[1]:crop[3], crop[0]:crop[2]]
+        if seg_map is not None:
+            seg_map = seg_map[crop[1]:crop[3], crop[0]:crop[2]]
     else:
         crop = None
     # A graphic scale bar (brochure pages) gives the scale before anything is traced: it is read off the whole page, and
@@ -992,6 +1136,8 @@ def extract(path):
     if work_scale > 1:
         gray = cv2.resize(gray, None, fx=work_scale, fy=work_scale, interpolation=cv2.INTER_CUBIC)
     H, W = gray.shape
+    if seg_map is not None and seg_map.shape != (H, W):
+        seg_map = cv2.resize(seg_map, (W, H), interpolation=cv2.INTER_NEAREST)
     otsu, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
     # clean digital backgrounds: keep faint anti-aliased hairlines (door arcs, dimension lines)
     clean_bg = np.percentile(gray, 60) >= 250 and (np.abs(gray.astype(int) - 255) < 6).mean() > 0.7
@@ -1041,6 +1187,8 @@ def extract(path):
             wall_mask[lab == i] = 0
         elif soft and float(np.median(gray[lab == i])) > 62:
             wall_mask[lab == i] = 0                         # a dark-grey (80-110) lightweight wall is not structural black: grey solid
+    if seg_map is not None:
+        wall_mask = seg_walls(seg_map, wall_mask, ink_wall, k, work_scale, model)
     wall_dt = cv2.distanceTransform(wall_mask, cv2.DIST_L2, 5)
     T = float(np.median(wall_dt[skeletonize(wall_mask > 0)]) * 2) if wall_mask.any() else 20.0
     if soft:
@@ -3324,6 +3472,165 @@ def reread_crossed_labels(m):
         m.setdefault("dimension_report_pre", {})["labels_reread_over_arcs"] = added
 
 
+def _second_line_apart(m, t, box, v, cap):
+    """Why a word found one line away from a room name is NOT that name's other line, or None.  The two lines of one name
+    are lettered as one block - centred on each other or flush at one end - with nothing drawn between them; a word across
+    a wall or a line from the name belongs to the next space."""
+    x, y, w, h = [float(q) for q in t["box"]]
+    bx, by, bw, bh = [float(q) for q in box]
+    pa0, pa1, na0, na1 = (y, y + h, by, by + bh) if v else (x, x + w, bx, bx + bw)       # along the lettering
+    pc0, pc1, nc0, nc1 = (x, x + w, bx, bx + bw) if v else (y, y + h, by, by + bh)       # across it (the stacking direction)
+    off = min(abs((pa0 + pa1) - (na0 + na1)) / 2.0, abs(pa0 - na0), abs(pa1 - na1))
+    if off > 0.6 * cap:
+        return "not lettered as one block with it (%.1f letter heights off)" % (off / cap)
+    a0, a1 = max(pa0, na0), min(pa1, na1)
+    g0, g1 = (pc1, nc0) if nc0 >= pc1 else ((nc1, pc0) if pc0 >= nc1 else (min(pc1, nc1), max(pc0, nc0)))
+    g0, g1 = min(g0, g1) - 1.0, max(g0, g1) + 1.0
+    for l in m.get("lines", []):
+        if (l["o"] == "v") != bool(v) or (l["b"] - l["a"]) < cap:
+            continue
+        hw = 0.5 * float(l.get("w", 1.0))
+        if g0 - hw <= l["c"] <= g1 + hw and min(l["b"], a1) - max(l["a"], a0) > 0:
+            return "a line runs between them"
+    if m.get("walls"):
+        H, W = m["_gray"].shape
+        X0, Y0, X1, Y1 = (g0, a0, g1, a1) if v else (a0, g0, a1, g1)
+        X0, Y0, X1, Y1 = max(0, int(math.floor(X0))), max(0, int(math.floor(Y0))), min(W, int(math.ceil(X1))), min(H, int(math.ceil(Y1)))
+        if X1 > X0 and Y1 > Y0:
+            msk = np.zeros((Y1 - Y0, X1 - X0), np.uint8)
+            for wp in m["walls"]:
+                pts = np.asarray(wp.get("pts", []), np.float64)
+                if len(pts) < 3 or wp.get("hole"):
+                    continue
+                if pts[:, 0].max() < X0 or pts[:, 0].min() > X1 or pts[:, 1].max() < Y0 or pts[:, 1].min() > Y1:
+                    continue
+                cv2.fillPoly(msk, [np.round(pts - [X0, Y0]).astype(np.int32)], 1)
+            if msk.any():
+                return "a wall runs between them"
+    return None
+
+
+def read_second_lines(m, log=False):
+    """A room name on two lines whose second (or first) line was not read - 'BATH' under COMMON with the door swing through
+    it, 'BEDROOM' under MASTER drawn bold on a blurred picture.  Beside every name that WAS read, one line away in the
+    direction names stack, the lettering is read again from the grey image with arcs and long lines painted out.  Only a
+    plan word is taken (a two-letter one only from a confident read), and only where the word's own letters match the ink."""
+    gray = m.get("_gray")
+    if gray is None:
+        return []
+    H, W = gray.shape
+    thr = int(m.get("ink_threshold", 180)); sw = float(m.get("stroke_px") or 2.0)
+    g2 = gray.copy()
+    for a_ in m["arcs"]:
+        cv2.ellipse(g2, (int(round(a_["cx"])), int(round(a_["cy"]))), (int(round(a_["r"])), int(round(a_["r"]))), 0,
+                    a_["start"] - 2, a_["start"] + a_["span"] + 2, 255, max(3, int(round(sw + 2))))
+    added = []
+    texts0 = list(m["texts"])
+    for t in texts0:
+        s0 = (t.get("s") or "").strip()
+        v = t.get("vertical")
+        if t.get("angle") is not None or not any(ch.isalpha() for ch in s0) or v not in (False, None, "up", "down"):
+            continue
+        if not any(tk in PLAN_VOCAB for tk in s0.upper().split()):
+            continue
+        x, y, w, h = [float(q) for q in t["box"]]
+        cap = float(t.get("cap_px") or (w if v else h))
+        if cap < 8:
+            continue
+        # long lines painted out around this word only (a letter stroke is never a long line)
+        gl = g2
+        for side in (1, -1):
+            if v:                                           # lines of an upright-turned name stack along x
+                along0, along1 = y - 0.3 * cap, y + h + 0.3 * cap
+                c0, c1 = (x + w + 0.12 * cap, x + w + 1.7 * cap) if side > 0 else (x - 1.7 * cap, x - 0.12 * cap)
+                bx0, by0, bx1, by1 = c0, along0, c1, along1
+            else:
+                along0, along1 = x - 0.3 * cap, x + w + 0.3 * cap
+                c0, c1 = (y + h + 0.12 * cap, y + h + 1.7 * cap) if side > 0 else (y - 1.7 * cap, y - 0.12 * cap)
+                bx0, by0, bx1, by1 = along0, c0, along1, c1
+            X0, Y0, X1, Y1 = max(0, int(bx0)), max(0, int(by0)), min(W, int(math.ceil(bx1))), min(H, int(math.ceil(by1)))
+            if X1 - X0 < 6 or Y1 - Y0 < 6:
+                continue
+            # the run of lettering on that line, grown along it from beside the word (a longer word than the one read)
+            gx, gy, gw, gh = _ink_extent(g2, [X0, Y0, X1 - X0, Y1 - Y0], v, cap, thr, int(4 * cap))
+            X0, Y0, X1, Y1 = max(0, int(gx)), max(0, int(gy)), min(W, int(math.ceil(gx + gw))), min(H, int(math.ceil(gy + gh)))
+            # anything already read there?
+            if any(min(o["box"][0] + o["box"][2], X1) - max(o["box"][0], X0) > 0.3 * o["box"][2] and
+                   min(o["box"][1] + o["box"][3], Y1) - max(o["box"][1], Y0) > 0.3 * o["box"][3] for o in m["texts"] if o is not t):
+                if log:
+                    print("second line of %r side %+d: lettering already read there" % (s0, side))
+                continue
+            sub = g2[Y0:Y1, X0:X1].copy()
+            for l in m.get("lines", []):                   # long strokes through the band: not lettering
+                if (l["b"] - l["a"]) < 3 * cap:
+                    continue
+                if l["o"] == "h":
+                    p0, p1 = (l["a"] - X0, l["c"] - Y0), (l["b"] - X0, l["c"] - Y0)
+                else:
+                    p0, p1 = (l["c"] - X0, l["a"] - Y0), (l["c"] - X0, l["b"] - Y0)
+                cv2.line(sub, (int(round(p0[0])), int(round(p0[1]))), (int(round(p1[0])), int(round(p1[1]))), 255, max(3, int(round(l.get("w", sw) + 2))))
+            ink = sub < thr
+            if ink.sum() < 0.03 * ink.size:
+                continue
+            ys_, xs_ = np.nonzero(ink)
+            tx0, ty0, tx1, ty1 = xs_.min(), ys_.min(), xs_.max() + 1, ys_.max() + 1
+            across = (tx1 - tx0) if v else (ty1 - ty0)
+            if not (0.55 * cap <= across <= 1.6 * cap):
+                continue
+            pad = int(0.3 * cap)
+            crop = sub[max(0, ty0 - pad):ty1 + pad, max(0, tx0 - pad):tx1 + pad]
+            if v == "up":
+                crop = cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
+            elif v == "down":
+                crop = cv2.rotate(crop, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            best = None
+            for zf in (2.0, 3.0):
+                big = cv2.copyMakeBorder(cv2.resize(crop, None, fx=zf, fy=zf, interpolation=cv2.INTER_CUBIC), 30, 30, 30, 30, cv2.BORDER_CONSTANT, value=255)
+                for psm in (7, 8):
+                    d = pytesseract.image_to_data(big, config="--psm %d" % psm, output_type=pytesseract.Output.DICT)
+                    ws = [(tk.strip(), float(c_)) for tk, c_ in zip(d["text"], d["conf"]) if tk.strip() and float(c_) >= 0]
+                    if ws and (best is None or float(np.mean([w_[1] for w_ in ws])) > best[1]):
+                        best = (" ".join(w_[0] for w_ in ws), float(np.mean([w_[1] for w_ in ws])))
+            if not best:
+                continue
+            raw, cf = best
+            st = vocab_fix(" ".join(tk for tk in _strip_edge_junk(raw.replace(",", ".")).upper().split()), loose=True)
+            toks = [tk for tk in st.split() if any(ch.isalnum() for ch in tk)]
+            st = " ".join(toks)
+            ok = bool(toks) and all(tk in PLAN_VOCAB or (re.fullmatch(r"[1-9]", tk) and i_ > 0 and toks[i_ - 1] in NUMBERED_LABELS)
+                                    for i_, tk in enumerate(toks)) and sum(len(tk) for tk in toks if tk in PLAN_VOCAB) >= 3
+            if ok and sum(len(tk) for tk in toks if tk in PLAN_VOCAB) <= 3 and cf < 70:
+                ok = False                                  # (a short word only from a confident read)
+            box = [float(X0 + max(0, tx0 - pad)), float(Y0 + max(0, ty0 - pad)), float(tx1 - tx0 + 2 * pad), float(ty1 - ty0 + 2 * pad)]
+            sc_ = -1.0
+            if ok:
+                e_ = 0.5 * cap
+                sc_, b_ = render_find(g2, (box[0] - e_, box[1] - e_, box[0] + box[2] + e_, box[1] + box[3] + e_), v, st, cap, (0.8, 0.9, 1.0, 1.1))
+                if b_ and sc_ >= 0.45:
+                    box = [float(q) for q in b_]
+                elif not (cf >= 85 and st == raw.strip().upper() and sum(len(tk) for tk in toks if tk in PLAN_VOCAB) >= 5):
+                    ok = False                              # (a confident read of a long plan word, as read, needs no pixel match: bold blurred lettering)
+            if log:
+                print("second line of %r side %+d: read %r (%.0f) -> %r match %.2f %s" % (s0, side, raw, cf, st, sc_, "TAKEN" if ok else ""))
+            if ok:
+                why_ = _second_line_apart(m, t, box, v, cap)
+                if why_:
+                    ok = False
+                    if log:
+                        print("  ... not a second line: %s" % why_)
+            if not ok:
+                continue
+            bx, by, bw, bh = box
+            t_new = {"s": st, "box": [bx, by, bw, bh], "vertical": v, "conf": round(cf, 1), "cap_px": cap, "ink": [bx, by, bx + bw, by + bh],
+                     "second_line_of": s0, "pixel_match": round(sc_, 2)}
+            m["texts"].append(t_new); added.append(st)
+            for u_ in list(m.get("unread_text", [])):
+                ux, uy, uw, uh = u_["box"]
+                if min(ux + uw, bx + bw) - max(ux, bx) > 0.5 * uw and min(uy + uh, by + bh) - max(uy, by) > 0.5 * uh:
+                    m["unread_text"].remove(u_)
+    return added
+
+
 NUMBERED_LABELS = {"BEDROOM", "BATH", "BATHROOM", "WC", "W.C.", "STORE", "BALCONY", "STUDY"}
 
 
@@ -5181,6 +5488,8 @@ def refine_soft(m):
     for d_ in m.get("diagonals", []):
         ok = True
         for (x0, y0), (x1, y1) in zip(d_, d_[1:]):
+            if x1 == x0 and y1 == y0:
+                continue                                    # (a repeated point: no segment to test - it divided by zero on blurred copies)
             n_ = max(8, int(math.hypot(x1 - x0, y1 - y0)))
             xs = np.clip(np.rint(np.linspace(x0, x1, n_)).astype(int), 0, W - 1); ys = np.clip(np.rint(np.linspace(y0, y1, n_)).astype(int), 0, H - 1)
             k_ = slice(int(0.06 * n_), int(0.94 * n_))
@@ -7769,13 +8078,25 @@ def to_svg(m):
     for n_, g_ in enumerate(m.get("grey_solids", []), 1):  # under the walls: sills, parapets, lightweight walls drawn in grey
         d = "M" + " L".join(f(p[0]) + "," + f(p[1]) for p in g_["pts"]) + " Z"
         o.append('<path id="grey-%d" fill="#%02x%02x%02x" stroke="#000" stroke-width="%s" stroke-linejoin="miter" d="%s"/>' % ((n_,) + (int(g_["grey"]),) * 3 + (f(sw), d)))
-    for n_, r_ in enumerate([r_ for r_ in m.get("partitions", []) if r_.get("fill")], 1):
+    pfill_ = ((m.get("residual") or {}).get("svg") or {}).get("partition_fill", {})
+    for n_, (pi_, r_) in enumerate([(pi_, r_) for pi_, r_ in enumerate(m.get("partitions", [])) if r_.get("fill")], 1):
         x0, x1, y0, y1 = (r_["a"], r_["b"], r_["c0"], r_["c1"]) if r_["o"] == "h" else (r_["c0"], r_["c1"], r_["a"], r_["b"])
         o.append('<rect id="partition-fill-%d" fill="#%02x%02x%02x" stroke="none" x="%s" y="%s" width="%s" height="%s"/>'
-                 % ((n_,) + (int(r_["fill"]),) * 3 + (f(x0), f(y0), f(x1 - x0), f(y1 - y0))))
+                 % ((n_,) + (int(pfill_.get(str(pi_), r_["fill"])),) * 3 + (f(x0), f(y0), f(x1 - x0), f(y1 - y0))))
+    wface_ = {}                                             # (see clean_drawing: a wall's end face moved onto a line's edge)
+    for wi_, i_, v_ in (((m.get("residual") or {}).get("svg") or {}).get("wall_face") or []):
+        wface_.setdefault(wi_, []).append((i_, v_))
+    pts_of = {}
+    for wi_, w_ in enumerate(m["walls"]):
+        P_ = [list(p) for p in w_["pts"]]
+        for i_, v_ in wface_.get(wi_, []):
+            j_ = (i_ + 1) % len(P_)
+            k_ = 0 if abs(P_[i_][0] - P_[j_][0]) < 1e-6 else 1
+            P_[i_][k_] = v_; P_[j_][k_] = v_
+        pts_of[id(w_)] = P_
     for n_, w in enumerate([w for w in m["walls"] if not w["hole"]], 1):
         rings = [w] + [h for h in m["walls"] if h["hole"] and h["parent"] == w["idx"]]
-        d = " ".join("M" + " L".join(f(p[0]) + "," + f(p[1]) for p in r["pts"]) + " Z" for r in rings)
+        d = " ".join("M" + " L".join(f(p[0]) + "," + f(p[1]) for p in pts_of.get(id(r), r["pts"])) + " Z" for r in rings)
         ws_ = m.get("wall_style")
         if ws_ and ws_.get("hatch"):
             # drawn as it was drawn: heavy outline (its OUTER edge is the wall face, so the path runs half a stroke inside) + hatch
@@ -7788,9 +8109,15 @@ def to_svg(m):
             continue
         o.append('<path id="wall-%d" fill="#000" fill-rule="evenodd" stroke="none" d="%s"/>' % (n_, d))
     cnt = {}
-    for l in m["lines"]:
-        if l.get("role") == "door-leaf":
+    svg_fix_ = (m.get("residual") or {}).get("svg") or {}
+    skip_ = set(svg_fix_.get("skip_lines", [])); span_ = svg_fix_.get("line_span", {}); cfix_ = svg_fix_.get("line_c", {})
+    for li_, l in enumerate(m["lines"]):
+        if l.get("role") == "door-leaf" or li_ in skip_:
             continue
+        if str(li_) in span_:                               # (drawn to where the drawing's own line ends: see clean_drawing)
+            l = dict(l, a=span_[str(li_)][0], b=span_[str(li_)][1])
+        if str(li_) in cfix_:                               # (flush with the face of the wall it runs into)
+            l = dict(l, c=cfix_[str(li_)])
         kind = "dashed-line" if "dash" in l else {"dimension": "dim-line", "extension": "dim-ext"}.get(l.get("role"), "line")
         cnt[kind] = cnt.get(kind, 0) + 1
         o.append(line_el(l, "%s-%d" % (kind, cnt[kind])))
@@ -7804,7 +8131,11 @@ def to_svg(m):
     for n_, dd in enumerate(m.get("dashed_diagonals", []), 1):
         o.append('<line id="dashed-diagonal-%d" %s stroke-dasharray="%s %s" x1="%s" y1="%s" x2="%s" y2="%s"/>' %
                  (n_, ST % f(sw), f(dd["dash"][0]), f(dd["dash"][1]), f(dd["p"][0]), f(dd["p"][1]), f(dd["q"][0]), f(dd["q"][1])))
+    arc_fit_ = (m.get("residual") or {}).get("arc_fit") or {}
     for n_, a in enumerate(m["arcs"], 1):
+        fit_ = arc_fit_.get(str(n_ - 1))
+        if fit_:                                            # (drawn where the drawing's own arc is: see fit_arcs_to_ink)
+            a = dict(a, cx=fit_[0], cy=fit_[1], r=fit_[2]); a.pop("rx", None); a.pop("ry", None)
         a0, a1 = math.radians(a["start"]), math.radians(a["start"] + a["span"])
         x0, y0 = a["cx"] + a["r"] * math.cos(a0), a["cy"] + a["r"] * math.sin(a0)
         x1, y1 = a["cx"] + a["r"] * math.cos(a1), a["cy"] + a["r"] * math.sin(a1)
@@ -7816,21 +8147,44 @@ def to_svg(m):
             o.append('<g id="door-%d">' % n_); o.append("  " + arc); o.append(line_el(m["lines"][a["leaf_line"]], "door-%d-leaf" % n_, "  ")); o.append("</g>")
         else:
             o.append(arc)
-    def fixture_part(kind, i, id_):
+    fxp_ = ((m.get("residual") or {}).get("svg") or {}).get("fixture_paths", {})
+    drawn_lines_ = [l_ for li_, l_ in enumerate(m["lines"]) if l_.get("role") != "door-leaf" and li_ not in skip_ and "dash" not in l_]
+    def held_ends(p, sh):
+        """A fixture moved onto its drawing (see fit_fixtures_to_ink) whose open outline ends ON a line - a WC's tank lines
+        stopping at the wall's face line - keeps those ends on that line: the move across the line is taken back there."""
+        if not sh or p.get("closed") or not p.get("segs"):
+            return p
+        p = copy.deepcopy(p)
+        def hold(pt):
+            for l_ in drawn_lines_:
+                ax_ = 1 if l_["o"] == "h" else 0             # (the coordinate across the line)
+                if abs(pt[ax_] - l_["c"]) <= 1.5 and l_["a"] - 1.5 <= pt[1 - ax_] <= l_["b"] + 1.5:
+                    pt[ax_] = pt[ax_] - sh[ax_]
+                    return
+        hold(p["start"])
+        last = p["segs"][-1]
+        hold(last[-1] if last[0] == "C" else last[1])
+        return p
+    def fixture_part(kind, i, id_, sh=None):
         if kind == "rect":
             r = m["rects"][i]
             return '<rect id="%s" %s x="%s" y="%s" width="%s" height="%s"/>' % (id_, ST % f(r["w_px"]), f(r["x"]), f(r["y"]), f(r["w"]), f(r["h"]))
         if kind == "solid":
             return '<path id="%s" fill="#000" fill-rule="evenodd" stroke="none" d="%s"/>' % (id_, " ".join(path_d(r) for r in m["fixture_solids"][i]))
-        p = m["fixtures"][i]
+        p = held_ends(fxp_.get(str(i), m["fixtures"][i]), sh)
         return '<path id="%s" %s stroke-linejoin="round" stroke-linecap="round" d="%s"/>' % (id_, ST % f(sw), path_d(p))
     sym_of = {s_["group"]: s_ for s_ in m.get("symbols", [])}
     sym_n = {}
+    fx_shift = (m.get("residual") or {}).get("fixture_shift") or {}
+    fx_parts = (m.get("residual") or {}).get("fixture_part_shift") or {}
+    def fg_attr(i_):                                        # (which fixture group; moved onto the drawing: see fit_fixtures_to_ink)
+        sh_ = fx_shift.get(str(i_))
+        return (' data-fg="%d"' % i_ if m.get("_fg_ids") else "") + (' transform="translate(%s,%s)"' % (f(sh_[0]), f(sh_[1])) if sh_ else "")
     for n_, grp in enumerate(m.get("fixture_groups", []), 1):
         if n_ - 1 in sym_of:
             s_ = sym_of[n_ - 1]; sym_n[s_["type"]] = sym_n.get(s_["type"], 0) + 1
             gid = "%s-%d" % (s_["type"], sym_n[s_["type"]])
-            o.append('<g id="%s">' % gid)
+            o.append('<g id="%s"%s>' % (gid, fg_attr(n_ - 1)))
             for pt_ in s_["parts"]:
                 head = '  <%s id="%s-%s" %s stroke-linejoin="round"' % ({"path": "path", "line": "line", "circle": "circle", "rect": "rect"}[pt_["kind"]],
                                                                        gid, pt_["id"], ST % f(s_["stroke"]))
@@ -7844,11 +8198,17 @@ def to_svg(m):
                     o.append('%s x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s"/>' % (head, f(pt_["x"]), f(pt_["y"]), f(pt_["w"]), f(pt_["h"]), f(pt_["rx"]), f(pt_["rx"])))
             o.append("</g>")
             continue
+        sh_ = fx_shift.get(str(n_ - 1))
         if len(grp) == 1:
-            o.append(fixture_part(grp[0][0], grp[0][1], "fixture-%d" % n_)); continue
-        o.append('<g id="fixture-%d">' % n_)
+            o.append(re.sub(r'^<(\w+) ', lambda mo: '<%s%s ' % (mo.group(1), fg_attr(n_ - 1)), fixture_part(grp[0][0], grp[0][1], "fixture-%d" % n_, sh_), count=1)); continue
+        o.append('<g id="fixture-%d"%s>' % (n_, fg_attr(n_ - 1)))
         for k_, (kind, i) in enumerate(grp, 1):
-            o.append("  " + fixture_part(kind, i, "fixture-%d-part-%d" % (n_, k_)))
+            ps_ = fx_parts.get("%d:%d" % (n_ - 1, k_))
+            tot_ = [(sh_ or [0, 0])[0] + (ps_ or [0, 0])[0], (sh_ or [0, 0])[1] + (ps_ or [0, 0])[1]] if ps_ else sh_
+            el_ = fixture_part(kind, i, "fixture-%d-part-%d" % (n_, k_), tot_)
+            if ps_:                                         # (the part moved a little further onto its own drawing)
+                el_ = re.sub(r'^<(\w+) ', lambda mo: '<%s transform="translate(%s,%s)" ' % (mo.group(1), f(ps_[0]), f(ps_[1])), el_, count=1)
+            o.append("  " + el_)
         o.append("</g>")
     for s_ in m.get("free_symbols", []):                   # fixtures recognised from the pixels and drawn clean
         nm_ = {"wc": "wc", "oval": "basin", "basin_d": "basin", "bifold": "bifold-door"}[s_["type"]]
@@ -7868,6 +8228,21 @@ def to_svg(m):
         o.append("</g>")
     for n_, d in enumerate(m["dots"], 1):
         o.append('<circle id="dim-dot-%d" fill="#000" cx="%s" cy="%s" r="%s"/>' % (n_, f(d["cx"]), f(d["cy"]), f(m["dot_r"])))
+    res_ = m.get("residual") or {}
+    if res_.get("paths") or res_.get("solids") or res_.get("dashed"):   # drawn, but not recognised as anything: kept as it is (see RESIDUAL)
+        o.append('<g id="unclassified">')
+        for n_, p_ in enumerate(res_.get("paths", []), 1):
+            o.append('  <polyline id="unclassified-%d" fill="none" stroke="#%02x%02x%02x" stroke-width="%s" stroke-linejoin="round" stroke-linecap="round" points="%s"/>'
+                     % ((n_,) + (p_.get("tone", 0),) * 3 + (f(p_["w"]), " ".join(f(x) + "," + f(y) for x, y in p_["pts"]))))
+        for n_, p_ in enumerate(res_.get("solids", []), 1):
+            ws_ = m.get("wall_style") or {}
+            fill_ = ("url(#wall-hatch)" if ws_.get("hatch") else "#%02x%02x%02x" % ((int(ws_["fill"]),) * 3) if ws_.get("fill") is not None else "#000") if p_.get("wall") \
+                else "#%02x%02x%02x" % ((p_.get("tone", 0),) * 3)
+            o.append('  <path id="unclassified-solid-%d" fill="%s" stroke="none" d="M%s Z"/>' % (n_, fill_, " L".join(f(x) + "," + f(y) for x, y in p_["pts"])))
+        for n_, d_ in enumerate(res_.get("dashed", []), 1):
+            o.append('  <line id="unclassified-dashed-%d" fill="none" stroke="#%02x%02x%02x" stroke-width="%s" stroke-dasharray="%s %s" x1="%s" y1="%s" x2="%s" y2="%s"/>'
+                     % ((n_,) + (d_.get("tone", 0),) * 3 + (f(d_["w"]), f(d_["dash"][0]), f(d_["dash"][1]), f(d_["p"][0]), f(d_["p"][1]), f(d_["q"][0]), f(d_["q"][1]))))
+        o.append('</g>')
     for n_, u in enumerate(m.get("unread_text", []) if (not m.get("soft_input") or "--show-unread" in sys.argv) else [], 1):
         x, y, w, h = u["box"]
         o.append('<rect id="needs-review-%d" fill="none" stroke="#e0007a" stroke-width="1" stroke-dasharray="4 3" x="%s" y="%s" width="%s" height="%s"/>' % (n_, f(x), f(y), f(w), f(h)))
@@ -7897,6 +8272,1198 @@ def to_svg(m):
             o.append('%s x="%s" y="%s">%s</text>' % (head, f((x0 + x1) / 2), f(y1), s))
     o.append("</svg>")
     return "\n".join(o)
+
+
+def _svg_arc_pts(x0, y0, rx, ry, rot, large, sweep, x1, y1, n=24):
+    """SVG elliptical arc (endpoint form) -> points, the SVG spec's conversion to the centre form"""
+    if rx == 0 or ry == 0 or (x0 == x1 and y0 == y1):
+        return [(x1, y1)]
+    rx, ry = abs(rx), abs(ry); ph = math.radians(rot); c, s_ = math.cos(ph), math.sin(ph)
+    dx, dy = (x0 - x1) / 2.0, (y0 - y1) / 2.0
+    x1p, y1p = c * dx + s_ * dy, -s_ * dx + c * dy
+    lam = (x1p / rx) ** 2 + (y1p / ry) ** 2
+    if lam > 1:
+        rx, ry = rx * math.sqrt(lam), ry * math.sqrt(lam)
+    num = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p
+    den = rx * rx * y1p * y1p + ry * ry * x1p * x1p
+    k = math.sqrt(max(0.0, num / den)) if den else 0.0
+    if large == sweep:
+        k = -k
+    cxp, cyp = k * rx * y1p / ry, -k * ry * x1p / rx
+    cx, cy = c * cxp - s_ * cyp + (x0 + x1) / 2.0, s_ * cxp + c * cyp + (y0 + y1) / 2.0
+    def ang(u, v):
+        a = math.atan2(u[0] * v[1] - u[1] * v[0], u[0] * v[0] + u[1] * v[1]); return a
+    t1 = ang((1, 0), ((x1p - cxp) / rx, (y1p - cyp) / ry))
+    dt = ang(((x1p - cxp) / rx, (y1p - cyp) / ry), ((-x1p - cxp) / rx, (-y1p - cyp) / ry))
+    if not sweep and dt > 0:
+        dt -= 2 * math.pi
+    elif sweep and dt < 0:
+        dt += 2 * math.pi
+    out = []
+    for i in range(1, n + 1):
+        t = t1 + dt * i / n
+        out.append((cx + rx * math.cos(t) * c - ry * math.sin(t) * s_, cy + rx * math.cos(t) * s_ + ry * math.sin(t) * c))
+    return out
+
+
+def _svg_path_polys(d):
+    """an SVG path of M / L / A / C / Z (absolute, as this file writes them) -> list of (points, closed)"""
+    toks = re.findall(r"[MLACZ]|-?\d*\.?\d+(?:e-?\d+)?", d)
+    polys, cur, i, pos, cmd = [], [], 0, (0.0, 0.0), None
+    nums = lambda k: [float(t_) for t_ in toks[i:i + k]]
+    while i < len(toks):
+        t = toks[i]
+        if t in "MLACZ":
+            cmd = t; i += 1
+            if cmd == "Z":
+                if cur:
+                    polys.append((cur, True)); cur = []
+                continue
+        if cmd == "M":
+            if cur:
+                polys.append((cur, False))
+            x, y = nums(2); i += 2; pos = (x, y); cur = [pos]; cmd = "L"
+        elif cmd == "L":
+            x, y = nums(2); i += 2; pos = (x, y); cur.append(pos)
+        elif cmd == "A":
+            rx, ry, rot, large, sweep, x, y = nums(7); i += 7
+            cur += _svg_arc_pts(pos[0], pos[1], rx, ry, rot, int(large), int(sweep), x, y); pos = (x, y)
+        elif cmd == "C":
+            x1_, y1_, x2_, y2_, x, y = nums(6); i += 6
+            for k_ in range(1, 13):
+                u = k_ / 12.0; v = 1 - u
+                cur.append((v ** 3 * pos[0] + 3 * v * v * u * x1_ + 3 * v * u * u * x2_ + u ** 3 * x,
+                            v ** 3 * pos[1] + 3 * v * v * u * y1_ + 3 * v * u * u * y2_ + u ** 3 * y))
+            pos = (x, y)
+        else:
+            i += 1
+    if cur:
+        polys.append((cur, False))
+    return polys
+
+
+def _raster_svg(svg, W, H):
+    """what the SVG draws, as a bitmap of the working image's size (strokes at their width, fills filled; text is left to
+    the caller: it is set in a font, not traced)"""
+    R = np.zeros((H, W), np.uint8)
+    S16 = 16.0
+    num = lambda e, k, d=0.0: float(e.get(k, d) or d)
+    TR = r'transform="translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)"'
+    def moved(mo):                                          # a group moved as a whole: drawn by itself, then shifted
+        inner = _raster_svg(mo.group(3), W, H)
+        M_ = np.float32([[1, 0, float(mo.group(1))], [0, 1, float(mo.group(2))]])
+        np.maximum(R, cv2.warpAffine(inner, M_, (W, H), flags=cv2.INTER_NEAREST), out=R)
+        return ""
+    svg = re.sub(r"<g\b[^>]*" + TR + r"[^>]*>(.*?)</g>", moved, svg, flags=re.S)
+    for e in re.finditer(r"<(path|line|polyline|rect|circle|ellipse)\b([^>]*)/?>", svg):
+        tag, attrs = e.group(1), dict(re.findall(r'([\w-]+)="([^"]*)"', e.group(2)))
+        tr_ = re.match(r"translate\(([-\d.e]+)[ ,]+([-\d.e]+)\)", attrs.get("transform", ""))
+        ox_, oy_ = (float(tr_.group(1)), float(tr_.group(2))) if tr_ else (0.0, 0.0)
+        P = lambda pts: np.rint((np.array(pts, np.float64) + (ox_, oy_)) * S16).astype(np.int32).reshape(-1, 1, 2)
+        fill = attrs.get("fill", "#000") not in ("none",)
+        stroke = attrs.get("stroke", "none") not in ("none",)
+        w = max(1, int(round(num(attrs, "stroke-width", 1.0))))
+        polys = []
+        if tag == "path":
+            polys = _svg_path_polys(attrs.get("d", ""))
+        elif tag == "line":
+            polys = [([(num(attrs, "x1"), num(attrs, "y1")), (num(attrs, "x2"), num(attrs, "y2"))], False)]
+            fill = False
+        elif tag == "polyline":
+            pts = [tuple(float(v) for v in q.split(",")) for q in attrs.get("points", "").split()]
+            polys = [(pts, False)]; fill = attrs.get("fill", "none") != "none"
+        elif tag == "rect":
+            x, y, rw, rh = num(attrs, "x"), num(attrs, "y"), num(attrs, "width"), num(attrs, "height")
+            polys = [([(x, y), (x + rw, y), (x + rw, y + rh), (x, y + rh)], True)]
+        elif tag in ("circle", "ellipse"):
+            cx, cy = num(attrs, "cx"), num(attrs, "cy"); rx = num(attrs, "r", num(attrs, "rx")); ry = num(attrs, "r", num(attrs, "ry"))
+            polys = [([(cx + rx * math.cos(t), cy + ry * math.sin(t)) for t in np.linspace(0, 2 * math.pi, 32)], True)]
+        if fill and tag == "path":                          # all the sub-paths in one go: a hole stays open (even-odd)
+            rings = [P(pts) for pts, _c in polys if len(pts) >= 3]
+            if rings:
+                cv2.fillPoly(R, rings, 255, lineType=cv2.LINE_8, shift=4)
+        for pts, closed in polys:
+            if len(pts) < 2 and not fill:
+                continue
+            if fill and tag != "path" and len(pts) >= 3 and closed:
+                cv2.fillPoly(R, [P(pts)], 255, lineType=cv2.LINE_8, shift=4)
+            if stroke or not fill:
+                cv2.polylines(R, [P(pts)], closed, 255, w, lineType=cv2.LINE_8, shift=4)
+    return R
+
+
+def fit_arcs_to_ink(m, gray, ink_thr):
+    """A swing or curve traced a few pixels off the arc drawn (the radius read from the leaf, the centre from the jamb):
+    for the DRAWING (the SVG) it is moved onto the drawn arc - the darkest ink across the arc, all along it, fitted as a
+    circle.  The model's own arc (the door's leaf and hinge) is left as it is.  Returns {arc index: [cx, cy, r]}."""
+    H, W = gray.shape; out = {}
+    for i, a in enumerate(m["arcs"]):
+        rx, ry = arc_radii(a)
+        if a.get("from") == "angle-note" or abs(rx - ry) > 0.5 or a["r"] < 8 or abs(a["span"]) < 20:
+            continue
+        r = float(a["r"]); n = max(12, int(math.radians(abs(a["span"])) * r))
+        pts = []
+        for k in range(n):
+            t = a["start"] + a["span"] * (0.06 + 0.88 * k / max(1, n - 1))
+            c, s = math.cos(math.radians(t)), math.sin(math.radians(t))
+            best = None
+            for d10 in range(-60, 61, 5):
+                d = d10 / 10.0
+                x, y = a["cx"] + (r + d) * c, a["cy"] + (r + d) * s
+                xi, yi = int(round(x)), int(round(y))
+                if 0 <= xi < W and 0 <= yi < H:
+                    v = int(gray[yi, xi])
+                    if v < ink_thr and (best is None or v < best[0] or (v == best[0] and abs(d) < abs(best[1]))):
+                        best = (v, d, x, y)
+            if best is not None:
+                pts.append((best[2], best[3], best[1]))
+        if len(pts) < 0.7 * n:
+            continue
+        P = np.array([(p[0], p[1]) for p in pts]); ds = np.array([p[2] for p in pts])
+        if abs(float(np.median(ds))) < 1.0:
+            continue                                        # (on the drawn arc already)
+        A_ = np.c_[2 * P[:, 0], 2 * P[:, 1], np.ones(len(P))]; b_ = (P ** 2).sum(1)
+        try:
+            (cx, cy, cc), *_ = np.linalg.lstsq(A_, b_, rcond=None)
+        except np.linalg.LinAlgError:
+            continue
+        rf = math.sqrt(max(1e-6, cc + cx * cx + cy * cy))
+        rms = float(np.sqrt(np.mean((np.hypot(P[:, 0] - cx, P[:, 1] - cy) - rf) ** 2)))
+        if rms <= 1.2 and math.hypot(cx - a["cx"], cy - a["cy"]) <= 6.0 and abs(rf - r) <= 6.0:
+            out[str(i)] = [round(float(cx), 2), round(float(cy), 2), round(rf, 2)]
+        elif float(np.percentile(ds, 75) - np.percentile(ds, 25)) <= 1.5:
+            out[str(i)] = [round(float(a["cx"]), 2), round(float(a["cy"]), 2), round(r + float(np.median(ds)), 2)]
+    return out
+
+
+def fit_fixtures_to_ink(m, gray, svg, ink_thr, parts=None):
+    """A fixture traced a few pixels off its drawing (a WC bowl read from a stroke's edge): for the DRAWING it is moved
+    onto the drawn one - the shift of at most 5 px that brings its strokes nearest the drawing's ink, when that at least
+    halves their distance from it.  The model is left as it is.  Returns {fixture group: [dx, dy]}."""
+    H, W = gray.shape; out = {}
+    ink_d = cv2.distanceTransform((gray >= ink_thr).astype(np.uint8), cv2.DIST_L2, 3)
+    head = re.match(r"<svg[^>]*>", svg)
+    snips = [(int(mo.group(1)), mo.group(0)) for mo in re.finditer(r'<g\b[^>]*data-fg="(\d+)"[^>]*>.*?</g>', svg, re.S)]
+    snips += [(int(mo.group(2)), mo.group(0)) for mo in re.finditer(r'<(path|rect|line|circle|ellipse|polyline)\b[^>]*data-fg="(\d+)"[^>]*/>', svg)]
+    for gi, sn in snips:
+        mk = _raster_svg(sn, W, H)
+        ys, xs = np.nonzero(mk)
+        if ys.size < 20:
+            continue
+        def score(dx, dy):
+            yy = np.clip(ys + dy, 0, H - 1); xx = np.clip(xs + dx, 0, W - 1)
+            return float(ink_d[yy, xx].mean())
+        zero = score(0, 0)
+        if zero < 0.45:
+            continue                                        # (on its drawing already)
+        best = min(((score(dx, dy), dx, dy) for dx in range(-5, 6) for dy in range(-5, 6)), key=lambda t: (t[0], abs(t[1]) + abs(t[2])))
+        gdx, gdy = 0, 0
+        if best[0] <= 0.45 * zero and best[0] <= 1.0 and (best[1], best[2]) != (0, 0):
+            out[str(gi)] = [best[1], best[2]]; gdx, gdy = best[1], best[2]
+        if parts is not None:
+            # each part of the group then onto its own drawing (a WC's seat drawn a little apart from its bowl), at most
+            # 3 px further, when that at least halves its own distance
+            for pm in re.finditer(r'<(?:path|rect|line|circle|ellipse)\b[^>]*id="fixture-\d+-part-(\d+)"[^>]*/>', sn):
+                pk = _raster_svg(pm.group(0), W, H)
+                pys, pxs = np.nonzero(pk)
+                if pys.size < 20:
+                    continue
+                def pscore(dx, dy):
+                    yy = np.clip(pys + gdy + dy, 0, H - 1); xx = np.clip(pxs + gdx + dx, 0, W - 1)
+                    return float(ink_d[yy, xx].mean())
+                z_ = pscore(0, 0)
+                if z_ < 0.45:
+                    continue
+                pb = min(((pscore(dx, dy), dx, dy) for dx in range(-3, 4) for dy in range(-3, 4)), key=lambda t: (t[0], abs(t[1]) + abs(t[2])))
+                if pb[0] <= 0.5 * z_ and pb[0] <= 1.0 and (pb[1], pb[2]) != (0, 0):
+                    parts["%d:%d" % (gi, int(pm.group(1)))] = [pb[1], pb[2]]
+    return out
+
+
+def _wall_fill_mask(m, W, H):
+    """the traced walls and the filled partitions drawn like them, as a bitmap"""
+    msk = np.zeros((H, W), np.uint8)
+    rings = [np.round(np.array(w_["pts"], np.float64) * 8).astype(np.int32) for w_ in m["walls"] if not w_["hole"] and len(w_["pts"]) >= 3]
+    holes = [np.round(np.array(w_["pts"], np.float64) * 8).astype(np.int32) for w_ in m["walls"] if w_["hole"] and len(w_["pts"]) >= 3]
+    if rings:
+        cv2.fillPoly(msk, rings, 1, shift=3)
+    if holes:
+        cv2.fillPoly(msk, holes, 0, shift=3)
+    for pi_ in ((m.get("residual") or {}).get("svg") or {}).get("partition_as_wall", []):
+        r_ = m["partitions"][pi_]
+        x0, x1, y0, y1 = (r_["a"], r_["b"], r_["c0"], r_["c1"]) if r_["o"] == "h" else (r_["c0"], r_["c1"], r_["a"], r_["b"])
+        msk[max(0, int(round(y0))):max(0, int(round(y1))), max(0, int(round(x0))):max(0, int(round(x1)))] = 1
+    return msk.astype(bool)
+
+
+def _as_bar(comp, x, y, ink, R, textbox, sw):
+    """A residual piece that is a short straight bar of ink - a mullion's tick across a sill, blurred into a bow-tie where
+    it meets the sill's lines - as a bar's four corners: as wide as its middle (not the blur at its ends), as long as the
+    ink runs, on to the trace at each end.  Its middle third is one width all along and its ends are no narrower (a
+    triangle or an arrow's head narrows to a point: not a bar).  None if it is not one."""
+    H, W = R.shape
+    ys, xs = np.nonzero(comp)
+    if ys.size < 6:
+        return None
+    pts = np.stack([xs + x, ys + y], 1).astype(np.float64)
+    (cx, cy), (rw, rh), ang = cv2.minAreaRect(pts.astype(np.float32))
+    th = math.radians(ang)
+    cands = [np.array([math.cos(th), math.sin(th)]), np.array([-math.sin(th), math.cos(th)]), np.array([1.0, 0.0]), np.array([0.0, 1.0])]
+    C = np.array([cx, cy]); reach = max(6.0, 3.0 * sw) + 3.0
+    best = None
+    for u in cands:
+        for ax_ in (np.array([1.0, 0.0]), np.array([0.0, 1.0])):    # (near level or plumb: level or plumb)
+            if abs(float(u @ ax_)) >= math.cos(math.radians(4.0)):
+                u = ax_.copy()
+        v = np.array([-u[1], u[0]])
+        rel = pts - C; ta = rel @ u; tv = rel @ v
+        t0, t1 = float(ta.min()) - 0.5, float(ta.max()) + 0.5
+        bins = np.floor(ta - t0).astype(int)
+        nb = int(bins.max()) + 1
+        if nb < 6:
+            continue
+        widths = np.bincount(bins, minlength=nb).astype(float)
+        k3 = nb // 3
+        mid = widths[k3:nb - k3]
+        core = float(np.median(mid))
+        if core < 1.0 or float(np.percentile(mid, 90)) > 1.6 * max(1.0, float(np.percentile(mid, 10))):
+            continue
+        if float(widths[:k3].min()) < 0.75 * core or float(widths[nb - k3:].min()) < 0.75 * core:
+            continue
+        mids = [float(np.median(tv[bins == k])) for k in range(nb) if widths[k] > 0]
+        vc = float(np.median(mids))
+        if float(np.std(mids)) > 0.75 or float(np.max(np.abs(np.array(mids) - vc))) > 1.5:
+            continue                                     # (bent along its length - an arc's piece - not a bar)
+        ends = [t0, t1]
+        for k_, sg in ((0, -1.0), (1, 1.0)):
+            t, hit = ends[k_], None
+            while abs(t - ends[k_]) < reach:
+                t += sg * 0.5
+                X_, Y_ = C + u * t + v * vc
+                xi, yi = int(round(X_)), int(round(Y_))
+                if not (0 <= xi < W and 0 <= yi < H) or not ink[yi, xi] or textbox[yi, xi]:
+                    break
+                if R[yi, xi]:
+                    hit = t; break
+            if hit is not None:
+                ends[k_] = hit
+        L = ends[1] - ends[0]
+        if L < 1.8 * core:
+            continue
+        if best is None or L / core > best[0]:
+            best = (L / core, u, v, ends, vc, core)
+    if best is None:
+        return None
+    _r, u, v, ends, vc, core = best
+    return [[float(q[0]), float(q[1])] for q in (C + u * ends[0] + v * (vc - core / 2), C + u * ends[1] + v * (vc - core / 2),
+                                                 C + u * ends[1] + v * (vc + core / 2), C + u * ends[0] + v * (vc + core / 2))]
+
+
+def _rectilinear(pts, W, H, T, tol_deg=20.0):
+    """A piece of wall traced from blurred ink - corners cut on a slant, a pixel's ear where another stroke met it - as
+    the level-and-plumb outline it is drawn with: two-pixel ears taken off, near-level / near-plumb sides set level /
+    plumb, a short slanted cut between two sides replaced by the corner they meet at.  None when the piece has a real
+    slanted side (longer than a quarter of a wall's thickness), or the result strays from it."""
+    a_ = np.asarray(pts, np.float64)
+    X0, Y0 = max(0, int(a_[:, 0].min()) - 3), max(0, int(a_[:, 1].min()) - 3)
+    X1, Y1 = min(W, int(math.ceil(a_[:, 0].max())) + 4), min(H, int(math.ceil(a_[:, 1].max())) + 4)
+    if X1 - X0 < 4 or Y1 - Y0 < 4:
+        return None
+    M = _cover_mask([(pts, [])], W, H, box=(X0, Y0, X1, Y1)).astype(np.uint8)
+    Mo = cv2.morphologyEx(M, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    if int(Mo.sum()) < 0.8 * int(M.sum()) or not Mo.any():
+        return None
+    cs, _h = cv2.findContours(Mo, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    if len(cs) != 1:
+        return None
+    Q = cv2.approxPolyDP(cs[0], 1.5, True)[:, 0, :].astype(np.float64)
+    n = len(Q)
+    if n < 4:
+        return None
+    tn = math.tan(math.radians(tol_deg))
+    edges = []                                              # (kind, p, q)
+    for i in range(n):
+        p, q = Q[i], Q[(i + 1) % n]
+        dx, dy = abs(q[0] - p[0]), abs(q[1] - p[1])
+        L = math.hypot(dx, dy)
+        if L < 1e-6:
+            continue
+        kind = "h" if dy <= tn * dx else "v" if dx <= tn * dy else "d"
+        if kind == "d" and L > max(4.0, 0.25 * T):
+            return None
+        edges.append([kind, p, q, L])
+    if not edges or all(e[0] == "d" for e in edges):
+        return None
+    k0 = next(i for i, e in enumerate(edges) if e[0] != "d")   # (start on a level or plumb side)
+    edges = edges[k0:] + edges[:k0]
+    sides = []                                              # [kind, coordinate, weight]
+    pend = None
+    for kind, p, q, L in edges:
+        if kind == "d":
+            pend = 0.5 * (p + q)
+            continue
+        c_ = 0.5 * (p[1] + q[1]) if kind == "h" else 0.5 * (p[0] + q[0])
+        if sides and sides[-1][0] == kind:
+            if pend is not None:                            # (h, slant, h: a step - the slant's middle is the riser)
+                sides.append(["v" if kind == "h" else "h", float(pend[0] if kind == "h" else pend[1]), 0.0])
+                sides.append([kind, c_, L])
+            else:                                           # (one side in two pieces)
+                k_, cc, ww = sides[-1]
+                sides[-1] = [k_, (cc * ww + c_ * L) / (ww + L), ww + L]
+        else:
+            sides.append([kind, c_, L])
+        pend = None
+    if len(sides) >= 2 and sides[0][0] == sides[-1][0]:
+        if pend is not None:
+            sides.append(["v" if sides[0][0] == "h" else "h", float(pend[0] if sides[0][0] == "h" else pend[1]), 0.0])
+        else:
+            k_, cc, ww = sides.pop()
+            sides[0] = [k_, (cc * ww + sides[0][1] * sides[0][2]) / (ww + sides[0][2]), ww + sides[0][2]]
+    if len(sides) < 4 or len(sides) % 2:
+        return None
+    out = []
+    for i in range(len(sides)):
+        s1, s2 = sides[i], sides[(i + 1) % len(sides)]
+        if s1[0] == s2[0]:
+            return None
+        x_ = s1[1] if s1[0] == "v" else s2[1]; y_ = s1[1] if s1[0] == "h" else s2[1]
+        out.append([float(x_ + X0), float(y_ + Y0)])
+    R_ = np.zeros_like(M)                                   # (in the contour's own terms: its corners on pixels)
+    cv2.fillPoly(R_, [np.round((np.asarray(out) - (X0, Y0)) * 8).astype(np.int32)], 1, shift=3)
+    inter, uni = int((R_ & M).sum()), int((R_ | M).sum())
+    if uni == 0 or inter < 0.85 * uni:
+        return None
+    return out
+
+
+def _cover_mask(shapes, W, H, S=4, box=None):
+    """Filled shapes - (outline, [its holes]) in SVG coordinates, pixel i spanning i..i+1 - as the SVG shows them: a pixel
+    is set when at least half of it is covered by them together.  box (x0, y0, x1, y1): only that window of the image."""
+    if box is not None:
+        bx0, by0, bx1, by1 = box
+        sh_ = lambda pts: [[q[0] - bx0, q[1] - by0] for q in pts]
+        return _cover_mask([(sh_(r), [sh_(h) for h in hs]) for r, hs in shapes], bx1 - bx0, by1 - by0, S)
+    out = np.zeros((H, W), bool)
+    def P(pts, x0, y0):
+        a_ = (np.asarray(pts, np.float64) - (x0, y0)) * S - 0.5   # (a sub-pixel's centre at an integer)
+        return np.round(a_ * 8).astype(np.int32)
+    boxes = []
+    for ring, _holes in shapes:
+        a_ = np.asarray(ring, np.float64)
+        boxes.append((float(a_[:, 0].min()), float(a_[:, 1].min()), float(a_[:, 0].max()), float(a_[:, 1].max())))
+    step = 128
+    for y0 in range(0, H, step):
+        y1 = min(H, y0 + step)
+        sub = np.zeros(((y1 - y0) * S, W * S), np.uint8)
+        for (ring, holes), (bx0, by0, bx1, by1) in zip(shapes, boxes):
+            if by1 < y0 - 1 or by0 > y1 + 1:
+                continue
+            cx0, cx1 = max(0, int(math.floor(bx0)) - 1), min(W, int(math.ceil(bx1)) + 2)
+            if cx1 <= cx0:
+                continue
+            tmp = np.zeros(((y1 - y0) * S, (cx1 - cx0) * S), np.uint8)
+            cv2.fillPoly(tmp, [P(ring, cx0, y0)], 1, shift=3)
+            for h_ in holes:
+                if len(h_) >= 3:
+                    cv2.fillPoly(tmp, [P(h_, cx0, y0)], 0, shift=3)
+            sub[:, cx0 * S:cx1 * S] |= tmp
+        cover = cv2.resize(sub.astype(np.float32), (W, y1 - y0), interpolation=cv2.INTER_AREA)
+        out[y0:y1] = cover >= 0.5
+    return out
+
+
+def _line_onto_ink(o_, c, a, b, gray, other, wallm, textbox, thr, sw, T):
+    """A level or plumb line traced a few pixels beside the drawing's own line - no ink under it, and the drawn line
+    beside it, along all its length, traced by nothing - is drawn on the drawing's line.  Returns the new c, or None."""
+    H, W = gray.shape
+    ts = np.arange(math.ceil(a + 1.0), math.floor(b - 1.0) + 1).astype(int)
+    if ts.size < 4:
+        return None
+    def look(cc):                                           # (the pixels at c = cc along the line, clipped to the image)
+        ci = int(round(cc))
+        if o_ == "h":
+            ok = (0 <= ci < H) & (ts >= 0) & (ts < W); return np.full(ts.shape, min(H - 1, max(0, ci))), np.clip(ts, 0, W - 1), ok
+        ok = (0 <= ci < W) & (ts >= 0) & (ts < H); return np.clip(ts, 0, H - 1), np.full(ts.shape, min(W - 1, max(0, ci))), ok
+    u_ = max(2.0, float(sw))                                # (its own ink: within a stroke's width either side - a line a
+    under = np.zeros(ts.shape, bool)                        #  pixel or two off its ink is left where it is)
+    for d_ in np.arange(-math.floor(u_), math.floor(u_) + 0.01, 1.0):
+        ys, xs, ok = look(c + d_)
+        under |= ok & (gray[ys, xs] < thr)
+    if float(under.mean()) >= 0.3:
+        return None
+    lim = min(0.75 * T, max(6.0, 5.0 * sw))
+    best = None
+    for d_ in np.arange(-math.floor(lim), math.floor(lim) + 0.01, 1.0):
+        if abs(d_) <= u_:
+            continue
+        ys, xs, ok = look(c + d_)
+        free = ok & (gray[ys, xs] < thr) & (other[ys, xs] == 0) & ~wallm[ys, xs] & ~textbox[ys, xs]
+        fr = float(free.mean())
+        if best is None or fr > best[0] + 1e-9 or (abs(fr - best[0]) <= 1e-9 and abs(d_) < abs(best[1])):
+            best = (fr, float(d_))
+    if best is None or best[0] < 0.75:
+        return None
+    # (the drawn line's middle: its darkness across, weighted, over the run of inked offsets around the best one)
+    wsum = csum = 0.0
+    for d_ in np.arange(best[1] - 3.0, best[1] + 3.01, 0.5):
+        if abs(d_) < u_ or (d_ > 0) != (best[1] > 0):
+            continue
+        ys, xs, ok = look(c + d_)
+        g_ = gray[ys, xs].astype(np.float64)
+        dk = np.where(ok & (other[ys, xs] == 0), np.clip(thr - g_, 0, None), 0.0)
+        wv = float(dk.mean())
+        wsum += wv; csum += wv * d_
+    if wsum <= 0:
+        return None
+    return float(c + csum / wsum)
+
+
+def clean_drawing(m, gray, R, svg=None):
+    """The DRAWING (the SVG; the model is left as it is) made to read like the plan where the trace's pieces meet:
+    - a partition filled like the walls is a wall: drawn in the walls' fill, without its two face lines on top;
+    - a line runs to where the drawing's line runs, no further: the part of it inside a wall is not drawn (a counter's
+      edge line stopping at the wall's face, not across the wall);
+    - a line stopping a few pixels short of the element it meets in the drawing (a door frame's line short of the door
+      leaf) is drawn on to it, where the drawing's ink runs on.
+    R: the current trace as a bitmap.  Writes m["residual"]["svg"]."""
+    H, W = gray.shape
+    sw = float(m.get("stroke_px", 1.0)); T = float(m["wall_thickness_px"]); thr = float(m.get("ink_threshold", 128))
+    fix = m.setdefault("residual", {}).setdefault("svg", {})
+    ws_ = m.get("wall_style") or {}
+    if ws_.get("fill") is not None:
+        as_wall = [pi_ for pi_, r_ in enumerate(m.get("partitions", [])) if r_.get("fill") is not None and abs(int(r_["fill"]) - int(ws_["fill"])) <= 30]
+        if as_wall:
+            fix["partition_as_wall"] = as_wall
+            fix["partition_fill"] = {str(pi_): int(ws_["fill"]) for pi_ in as_wall}
+    wallm = _wall_fill_mask(m, W, H)
+    skip = set(fix.get("skip_lines", [])); span = dict(fix.get("line_span", {}))
+    for pi_ in fix.get("partition_as_wall", []):            # (its two face lines: the wall is drawn without outlines)
+        r_ = m["partitions"][pi_]
+        for li_, l in enumerate(m["lines"]):
+            if l["o"] == r_["o"] and "dash" not in l and l.get("role") != "door-leaf" and min(abs(l["c"] - r_["c0"]), abs(l["c"] - r_["c1"])) <= 1.0 \
+                    and min(l["b"], r_["b"] + 1.0) - max(l["a"], r_["a"] - 1.0) >= 0.8 * max(1.0, l["b"] - l["a"]):
+                skip.add(li_)
+    def dark(o_, c, t):                                      # is the drawing inked at (t along, c across), a pixel either side?
+        for d_ in (-1, 0, 1):
+            cc = int(round(c + d_)); tt = int(round(t))
+            x, y = (tt, cc) if o_ == "h" else (cc, tt)
+            if 0 <= x < W and 0 <= y < H and gray[y, x] < thr:
+                return True
+        return False
+    def at(o_, c, t, M):                                   # (inside M a pixel either side too: a line ALONG a wall's face is not in it)
+        for d_ in (-1, 0, 1):
+            x, y = (int(round(t)), int(round(c + d_))) if o_ == "h" else (int(round(c + d_)), int(round(t)))
+            if not (0 <= x < W and 0 <= y < H and bool(M[y, x])):
+                return False
+        return True
+    other = R.copy()
+    cfix = {}
+    wall_face = []                                          # ([wall, side, where]: an end face drawn elsewhere, SVG only)
+    thr2 = max(thr, float(os.environ.get("FV_RESIDUAL_INK", 200)))   # (the drawing's ink down to a light grey, as RESIDUAL)
+    textbox = np.zeros((H, W), bool)
+    for t_ in m.get("texts", []):
+        x0_, y0_, x1_, y1_ = t_.get("ink") or [t_["box"][0], t_["box"][1], t_["box"][0] + t_["box"][2], t_["box"][1] + t_["box"][3]]
+        if t_.get("angle") is not None:
+            bx_, by_, bw_, bh_ = t_["box"]; x0_, y0_, x1_, y1_ = bx_, by_, bx_ + bw_, by_ + bh_
+        textbox[max(0, int(y0_) - 2):max(0, int(math.ceil(y1_)) + 3), max(0, int(x0_) - 2):max(0, int(math.ceil(x1_)) + 3)] = True
+    wall_edges = []                                         # (the walls' level / plumb sides: o, c, from, to)
+    for w_ in m["walls"]:
+        P_ = w_["pts"]
+        for i_ in range(len(P_)):
+            (x1_, y1_), (x2_, y2_) = P_[i_], P_[(i_ + 1) % len(P_)]
+            if abs(x1_ - x2_) < 1e-6 and abs(y1_ - y2_) > 1.0:
+                wall_edges.append(("v", float(x1_), min(y1_, y2_), max(y1_, y2_)))
+            elif abs(y1_ - y2_) < 1e-6 and abs(x1_ - x2_) > 1.0:
+                wall_edges.append(("h", float(y1_), min(x1_, x2_), max(x1_, x2_)))
+    for pi_ in fix.get("partition_as_wall", []):
+        r_ = m["partitions"][pi_]
+        for cc_ in (r_["c0"], r_["c1"]):
+            wall_edges.append((r_["o"], float(cc_), float(r_["a"]), float(r_["b"])))
+    arcs_r = None
+    if svg is not None:                                     # (the swings and curves as drawn)
+        arcs_svg = "".join(re.findall(r'<path id="(?:door-\d+-swing|curve-\d+)"[^>]*/>', svg))
+        if arcs_svg:
+            arcs_r = cv2.dilate((_raster_svg(arcs_svg, W, H) > 0).astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    for li_, l in enumerate(m["lines"]):
+        if li_ in skip or "dash" in l or l.get("role") in ("door-leaf", "dimension", "extension"):
+            continue
+        a, b, o_, c = float(l["a"]), float(l["b"]), l["o"], float(l["c"])
+        if arcs_r is not None and b - a <= 2.0 * T:
+            # a short line along a swing's flat end (the top of a door's swing read as a stroke of its own): the swing
+            ts_ = np.arange(a, b + 0.01, 1.0)
+            on_ = [arcs_r[min(H - 1, max(0, int(round(c)))), min(W - 1, max(0, int(round(t_))))] if o_ == "h" else
+                   arcs_r[min(H - 1, max(0, int(round(t_)))), min(W - 1, max(0, int(round(c))))] for t_ in ts_]
+            if len(on_) and float(np.mean(on_)) >= 0.8:
+                skip.add(li_); continue
+        # the ends inside a wall go (only the ends: a line drawn across a wall, both ends outside, stays)
+        a2, b2 = a, b
+        while a2 < b2 and at(o_, c, a2 + 0.5, wallm):
+            a2 += 1.0
+        while b2 > a2 and at(o_, c, b2 - 0.5, wallm):
+            b2 -= 1.0
+        if b2 - a2 < max(2.0, sw):
+            skip.add(li_); continue
+        # an end a few pixels short of the element it meets in the drawing: drawn on to it, along the drawing's ink
+        own = np.zeros((H, W), np.uint8)
+        x0_, y0_, x1_, y1_ = (a, c, b, c) if o_ == "h" else (c, a, c, b)
+        cv2.line(own, (int(round(x0_)), int(round(y0_))), (int(round(x1_)), int(round(y1_))), 1, max(1, int(round(l.get("w", sw)))) + 2)
+        for end, step in ((a2, -1.0), (b2, 1.0)):
+            if end != (a if step < 0 else b):
+                continue                                     # (an end trimmed back to a wall face stays there)
+            t, run = end, 0
+            while run < T:
+                t += step; run += 1
+                if not dark(o_, c, t) or at(o_, c, t, wallm):
+                    break
+                x, y = (int(round(t)), int(round(c))) if o_ == "h" else (int(round(c)), int(round(t)))
+                if not (0 <= x < W and 0 <= y < H):
+                    break
+                if other[y, x] and not own[y, x]:            # reached another traced element: joined to it
+                    if step < 0:
+                        a2 = t
+                    else:
+                        b2 = t
+                    break
+        # a line running into a wall's end a pixel off that wall's face (a thin wall's face line meeting the column at
+        # its end): drawn flush with the face, as drawn - its stroke's outer edge on the face
+        c2 = None
+        for end, sgn in ((a2, -1.0), (b2, 1.0)):
+            tp = end + sgn * 2.0
+            faces = []
+            for fe in wall_edges:
+                eo, ec, e0, e1 = fe
+                # (a face beginning where the line ends - a column's side - not one the line runs along)
+                if eo == o_ and e0 - 0.5 <= tp <= e1 + 0.5 and abs(ec - c) <= 1.5 + 0.5 * l.get("w", sw) and min(e1, b2) - max(e0, a2) <= 2.0:
+                    faces.append(ec)
+            if not faces:
+                continue
+            fc = min(faces, key=lambda v: abs(v - c))
+            # (inside the wall on the + side of the face: the line's stroke goes on that side)
+            x_, y_ = (int(round(tp)), int(round(fc + 1.0))) if o_ == "h" else (int(round(fc + 1.0)), int(round(tp)))
+            side = 1.0 if (0 <= x_ < W and 0 <= y_ < H and wallm[y_, x_]) else -1.0
+            want = fc + side * 0.5 * float(l.get("w", sw))
+            if abs(want - c) <= 1.5 and abs(want - c) >= 0.5 and not ws_.get("hatch"):
+                c2 = want if c2 is None else (c2 if abs(c2 - want) > 0.5 else 0.5 * (c2 + want))
+        if c2 is None and b2 - a2 >= max(6.0, 4.0 * sw) and not ws_.get("hatch"):
+            c2 = _line_onto_ink(o_, c, a2, b2, gray, other, wallm, textbox, thr2, sw, T)
+        if c2 is not None:
+            cfix[str(li_)] = round(c2, 2)
+        if (a2, b2) != (a, b):
+            span[str(li_)] = [round(a2, 2), round(b2, 2)]
+        if not ws_.get("hatch"):
+            # a wall's end a pixel or two wider than the line running into it (the outer line of a ledge's double line
+            # meeting the wall's end, flush in the drawing): the wall's end face drawn on the line's outer edge
+            cc_ = c2 if c2 is not None else c; hw_ = 0.5 * float(l.get("w", sw))
+            for end in (a2, b2):
+                for wi_, w_ in enumerate(m["walls"]):
+                    P_ = w_["pts"]
+                    for i_ in range(len(P_)):
+                        (x1_, y1_), (x2_, y2_) = P_[i_], P_[(i_ + 1) % len(P_)]
+                        if o_ == "v" and abs(x1_ - x2_) < 1e-6:
+                            ec, e0, e1 = float(x1_), min(y1_, y2_), max(y1_, y2_)
+                        elif o_ == "h" and abs(y1_ - y2_) < 1e-6:
+                            ec, e0, e1 = float(y1_), min(x1_, x2_), max(x1_, x2_)
+                        else:
+                            continue
+                        if e1 - e0 > 1.5 * T or min(abs(e0 - end), abs(e1 - end)) > 1.5:
+                            continue                         # (an end face, beginning where the line ends)
+                        sg_ = 1.0 if ec > cc_ else -1.0
+                        gap_ = sg_ * (ec - cc_) - hw_       # (how far the face stands beyond the line's outer edge)
+                        if 0.5 <= gap_ <= 2.5:
+                            # (the face's own ink: it stands no further out than the drawing's wall end)
+                            wall_face.append([wi_, i_, round(cc_ + sg_ * hw_, 2)])
+    fix["skip_lines"] = sorted(skip); fix["line_span"] = span
+    if cfix:
+        fix["line_c"] = cfix
+    if wall_face:
+        fix["wall_face"] = wall_face
+    return len(skip), len(span)
+
+
+def _seg_pts(p):
+    """an open fixture outline's corners: [start, end of each part] and each part's chord length"""
+    pts, lens, cur = [list(p["start"])], [], p["start"]
+    for sg in p["segs"]:
+        e = sg[-1] if sg[0] == "C" else sg[1]
+        lens.append(math.hypot(e[0] - cur[0], e[1] - cur[1])); pts.append(list(e)); cur = e
+    return pts, lens
+
+
+def clean_fixture_outlines(m, gray):
+    """A fixture outline traced open where the drawing's is closed - a WC seat whose straight side was broken by the dot
+    drawn on it, leaving a stub at each end - is closed along the drawing's ink: the stubs (parts under three strokes long)
+    go and the two ends are joined straight, when they line up and the drawing is inked all along between them.  A short
+    line traced on that side is then the same stroke and is not drawn again."""
+    H, W = gray.shape
+    sw = float(m.get("stroke_px", 1.0)); thr = float(m.get("ink_threshold", 128))
+    fix = m.setdefault("residual", {}).setdefault("svg", {}); fxp = fix.setdefault("fixture_paths", {})
+    skip = set(fix.get("skip_lines", []))
+    shifts = m["residual"].get("fixture_shift") or {}
+    sym_groups = {s_["group"] for s_ in m.get("symbols", [])}
+    gidx = {i: gi for gi, grp in enumerate(m.get("fixture_groups", [])) for kind, i in grp if kind == "path"}
+    def inked(x, y):
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                xi, yi = int(round(x + dx)), int(round(y + dy))
+                if 0 <= xi < W and 0 <= yi < H and gray[yi, xi] < thr:
+                    return True
+        return False
+    closed_ = 0
+    for i, p in enumerate(m.get("fixtures", [])):
+        if p.get("type") != "path" or p.get("closed") or len(p.get("segs", [])) < 3:
+            continue
+        gi = gidx.get(i)
+        if gi is None or gi in sym_groups:
+            continue
+        sh = shifts.get(str(gi)) or [0, 0]
+        pts, lens = _seg_pts(p)
+        segs = list(p["segs"]); start = list(p["start"])
+        if lens[0] <= 3.0 * sw:
+            start = pts[1]; segs = segs[1:]; pts = pts[1:]
+        if lens[-1] <= 3.0 * sw and len(segs) > 2:
+            segs = segs[:-1]; pts = pts[:-1]
+        a, b = pts[0], pts[-1]
+        dx, dy = abs(a[0] - b[0]), abs(a[1] - b[1])
+        if min(dx, dy) > 1.5 or max(dx, dy) < 4.0 * sw:
+            continue
+        n_ = int(max(dx, dy))
+        along = [(a[0] + (b[0] - a[0]) * k / n_ + sh[0], a[1] + (b[1] - a[1]) * k / n_ + sh[1]) for k in range(n_ + 1)]
+        if np.mean([inked(x, y) for x, y in along]) < 0.85:
+            continue
+        o_ = "v" if dx <= 1.5 else "h"
+        c_ = (0.5 * (a[0] + b[0]) if o_ == "v" else 0.5 * (a[1] + b[1])) + (sh[0] if o_ == "v" else sh[1])
+        lo_, hi_ = sorted((a[1], b[1]) if o_ == "v" else (a[0], b[0]))
+        lo_ += sh[1] if o_ == "v" else sh[0]; hi_ += sh[1] if o_ == "v" else sh[0]
+        drawn = [li_ for li_, l in enumerate(m["lines"]) if li_ not in skip and l["o"] == o_ and "dash" not in l and l.get("role") != "door-leaf"
+                 and abs(l["c"] - c_) <= 2.0]
+        cover = sum(max(0.0, min(m["lines"][li_]["b"], hi_) - max(m["lines"][li_]["a"], lo_)) for li_ in drawn)
+        if cover >= 0.6 * (hi_ - lo_):
+            continue                                         # (that side is a line of its own in the drawing: left to it)
+        if o_ == "v":                                        # (the closing side level or plumb, as drawn)
+            x_ = 0.5 * (a[0] + b[0]); a = [x_, a[1]]; b = [x_, b[1]]
+        else:
+            y_ = 0.5 * (a[1] + b[1]); a = [a[0], y_]; b = [b[0], y_]
+        last = segs[-1]
+        segs[-1] = (last[:-1] + [b]) if last[0] == "C" else ([last[0], b] + list(last[2:]))
+        fxp[str(i)] = {"type": "path", "start": a, "segs": segs, "closed": True}
+        for li_ in drawn:                                    # (a piece of that side traced as a line: the same stroke)
+            l = m["lines"][li_]
+            if l["a"] >= lo_ - 2.0 and l["b"] <= hi_ + 2.0:
+                skip.add(li_)
+        closed_ += 1
+    fix["skip_lines"] = sorted(skip)
+    return closed_
+
+
+def dashes_through_short_lines(m, gray):
+    """A dashed line whose last dash was traced as a short level or plumb line (the first dash of a void's cross, read as
+    a stroke on its own and drawn upright): that line is the dash, slanted.  It is not drawn; the dashed line runs on to
+    where its dashes end."""
+    res = m["residual"]; fix = res.setdefault("svg", {}); skip = set(fix.get("skip_lines", []))
+    H, W = gray.shape; thr = float(m.get("ink_threshold", 128))
+    wallm = _wall_fill_mask(m, W, H)
+    def inked(x, y):
+        return any(0 <= int(round(x + ox)) < W and 0 <= int(round(y + oy)) < H and gray[int(round(y + oy)), int(round(x + ox))] < thr
+                   for ox, oy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)))
+    n_ = 0
+    for d in res.get("dashed", []):
+        p, q = np.array(d["p"], float), np.array(d["q"], float)
+        L = float(np.hypot(*(q - p)))
+        if L < 1e-6:
+            continue
+        period = float(d["dash"][0] + d["dash"][1])
+        for key_, end, u in (("p", p, (p - q) / L), ("q", q, (q - p) / L)):
+            hit = None
+            for li_, l in enumerate(m["lines"]):
+                if li_ in skip or "dash" in l or l.get("role") in ("door-leaf", "dimension", "extension", "partition"):
+                    continue
+                if l["b"] - l["a"] > 1.5 * period:
+                    continue
+                mid = np.array([0.5 * (l["a"] + l["b"]), l["c"]] if l["o"] == "h" else [l["c"], 0.5 * (l["a"] + l["b"])], float)
+                rel = mid - end
+                along = float(rel @ u); perp = abs(float(rel[0] * u[1] - rel[1] * u[0]))
+                if not (0.0 <= along <= 2.0 * period and perp <= 4.0):
+                    continue
+                # (the line's own ink slants away from it: under three quarters of it is inked on the line)
+                ts = np.arange(math.ceil(l["a"]), math.floor(l["b"]) + 1)
+                on = [inked(t, l["c"]) if l["o"] == "h" else inked(l["c"], t) for t in ts]
+                if len(on) and float(np.mean(on)) < 0.75:
+                    hit = li_; break
+            if hit is None:
+                continue
+            skip.add(hit)
+            t, last, gap = 0.0, 0.0, 0.0                     # the dashed line runs on to its last dash
+            while t < 2.5 * period:
+                t += 0.5; x, y = end + u * t
+                if wallm[min(H - 1, max(0, int(round(y)))), min(W - 1, max(0, int(round(x))))]:
+                    break
+                if inked(x, y):
+                    last, gap = t, 0.0
+                else:
+                    gap += 0.5
+                    if gap > d["dash"][1] + 3.0:
+                        break
+            if last > 0:
+                d[key_] = [round(float(end[0] + u[0] * last), 2), round(float(end[1] + u[1] * last), 2)]
+                n_ += 1
+    fix["skip_lines"] = sorted(skip)
+    return n_
+
+
+def close_wall_seams(m, gray):
+    """Hairline gaps between the pieces the walls are drawn in (a wall's polygon, a bump grown onto it, a partition drawn
+    as wall) where the drawing is one inked wall: filled as wall, so the wall reads as one."""
+    ws_ = m.get("wall_style") or {}
+    if ws_.get("hatch"):
+        return 0
+    H, W = gray.shape; thr = float(m.get("ink_threshold", 128))
+    wallm = _wall_fill_mask(m, W, H).astype(np.uint8)
+    res = m["residual"]
+    T = float(m["wall_thickness_px"])
+    # (a grey piece filling a notch in a wall - the wall's inside drawn lighter there, so the wall was traced round it -
+    #  is the wall: it lies in the wall's band, walled on two opposite sides)
+    k_ = max(5, int(math.ceil(T)) | 1)
+    band = cv2.morphologyEx(wallm, cv2.MORPH_CLOSE, np.ones((k_, 1), np.uint8)) | cv2.morphologyEx(wallm, cv2.MORPH_CLOSE, np.ones((1, k_), np.uint8))
+    for s_ in res.get("solids", []):
+        if s_.get("wall") or len(s_["pts"]) < 3:
+            continue
+        sm = np.zeros((H, W), np.uint8)
+        cv2.fillPoly(sm, [np.round(np.array(s_["pts"], np.float64) * 8).astype(np.int32)], 1, shift=3)
+        n_px = int(sm.sum())
+        if 0 < n_px <= 2.0 * T * T and int((sm & band & (wallm == 0)).sum()) >= 0.8 * int((sm & (wallm == 0)).sum()):
+            s_["wall"] = True
+    # (a piece drawn as wall standing a pixel proud of the wall's face - it took in the drawing's outline there, which
+    #  the wall's own face lies inside of - is trimmed back to the face: a sliver, never a pier standing out of the wall)
+    walls_c = _cover_mask([(w_["pts"], [h_["pts"] for h_ in m["walls"] if h_["hole"] and h_.get("parent") == w_.get("idx")])
+                           for w_ in m["walls"] if not w_["hole"] and len(w_["pts"]) >= 3], W, H).astype(np.uint8)
+    band_c = cv2.morphologyEx(walls_c, cv2.MORPH_CLOSE, np.ones((k_, 1), np.uint8)) | cv2.morphologyEx(walls_c, cv2.MORPH_CLOSE, np.ones((1, k_), np.uint8))
+    for s_ in res.get("solids", []):
+        if not s_.get("wall") or s_.get("seam") or len(s_["pts"]) < 3:
+            continue
+        a_ = np.asarray(s_["pts"], np.float64)
+        X0, Y0 = max(0, int(a_[:, 0].min()) - 3), max(0, int(a_[:, 1].min()) - 3)
+        X1, Y1 = min(W, int(math.ceil(a_[:, 0].max())) + 4), min(H, int(math.ceil(a_[:, 1].max())) + 4)
+        P_ = _cover_mask([(s_["pts"], [])], W, H, box=(X0, Y0, X1, Y1)).astype(np.uint8)
+        out_ = P_ & (band_c[Y0:Y1, X0:X1] == 0)
+        out_ &= (cv2.morphologyEx(out_, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) == 0).astype(np.uint8)   # (its thin part)
+        n_o, lab_o, st_o, _c = cv2.connectedComponentsWithStats(out_, connectivity=8)
+        for i_ in range(1, n_o):                         # (a strip along the face: a stroke's end stuck to it is not one)
+            if not (min(st_o[i_][2], st_o[i_][3]) <= 2 and max(st_o[i_][2], st_o[i_][3]) >= 4):
+                out_[lab_o == i_] = 0
+        if not out_.any() or int(out_.sum()) > 0.25 * int(P_.sum()):
+            continue
+        keep_ = (P_ & (out_ == 0)).astype(np.uint8)
+        cs, _h = cv2.findContours(keep_, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        polys_ = [cv2.approxPolyDP(c_, 0.5, True)[:, 0, :] for c_ in sorted(cs, key=cv2.contourArea, reverse=True)]
+        polys_ = [[[float(px + X0), float(py + Y0)] for px, py in ap] for ap in polys_ if len(ap) >= 3]
+        if polys_:
+            s_["pts"] = polys_[0]
+            for q_ in polys_[1:]:                            # (a piece the trim cut off stays, as a piece of its own)
+                res["solids"].append(dict(s_, pts=q_))
+    for s_ in res.get("solids", []):                         # (drawn level and plumb, as the walls are)
+        if s_.get("wall") and not s_.get("seam") and len(s_["pts"]) >= 3:
+            r_ = _rectilinear(s_["pts"], W, H, T)
+            if r_ is not None:
+                s_["pts"] = r_
+    # (a line drawn as such a piece's outline - a door frame's side running down the face of the wall bump it stands on -
+    #  traced a pixel or two off the piece: drawn on the piece's face, its outer edge on the face, as drawn)
+    pieces_l = [s_["pts"] for s_ in res.get("solids", []) if s_.get("wall") and not s_.get("seam") and len(s_["pts"]) >= 3]
+    if pieces_l:
+        PM = _cover_mask([(p_, []) for p_ in pieces_l], W, H)
+        sw_ = float(m.get("stroke_px", 1.0))
+        fix_ = res.setdefault("svg", {}); cf_ = dict(fix_.get("line_c", {})); sk_ = set(fix_.get("skip_lines", [])); sp_ = dict(fix_.get("line_span", {}))
+        for li_, l in enumerate(m["lines"]):
+            if li_ in sk_ or "dash" in l or l.get("role") in ("door-leaf", "dimension", "extension"):
+                continue
+            a, b = sp_.get(str(li_), [l["a"], l["b"]]); c = float(cf_.get(str(li_), l["c"])); o_ = l["o"]; w_ = float(l.get("w", sw_))
+            ts = np.arange(math.ceil(a), math.floor(b) + 1).astype(int)
+            if ts.size < 4:
+                continue
+            def at_(cc, M_):
+                ci = int(math.floor(cc))
+                if o_ == "h":
+                    ok = (0 <= ci < H); return M_[min(H - 1, max(0, ci)), np.clip(ts, 0, W - 1)] & ok
+                ok = (0 <= ci < W); return M_[np.clip(ts, 0, H - 1), min(W - 1, max(0, ci))] & ok
+            if float(at_(c, PM).mean()) > 0.2:
+                continue                                     # (already on it)
+            best = None
+            for sg in (-1.0, 1.0):
+                for g in np.arange(0.5, 2.51, 0.5):         # (the piece's face g pixels beyond the line's edge)
+                    on_ = at_(c + sg * (w_ / 2 + g + 0.5), PM)
+                    if float(on_.mean()) >= 0.5:
+                        gap_ = np.mean([float(np.mean(at_(c + sg * (w_ / 2 + gg), gray < thr))) for gg in np.arange(0.5, g + 0.01, 0.5)])
+                        if gap_ >= 0.6 and (best is None or g < best[0]):
+                            best = (g, sg)
+                        break
+            if best is not None:
+                g, sg = best
+                face = c + sg * (w_ / 2 + g)
+                c1 = round(face + sg * (w_ / 2), 2)
+                cf_[str(li_)] = c1
+                for lj_, lo in enumerate(m["lines"]):           # (a line ending on it ends on it where it now is)
+                    if lj_ == li_ or lj_ in sk_ or lo["o"] == o_ or "dash" in lo or lo.get("role") in ("dimension", "extension"):
+                        continue
+                    if not (a - 1.5 <= float(cf_.get(str(lj_), lo["c"])) <= b + 1.5):
+                        continue
+                    aj, bj = sp_.get(str(lj_), [lo["a"], lo["b"]])
+                    if abs(bj - c) <= 1.5:
+                        sp_[str(lj_)] = [round(aj, 2), round(c1, 2)]
+                    elif abs(aj - c) <= 1.5:
+                        sp_[str(lj_)] = [round(c1, 2), round(bj, 2)]
+        if cf_:
+            fix_["line_c"] = cf_
+        fix_["line_span"] = sp_
+    for s_ in res.get("solids", []):
+        if s_.get("wall") and len(s_["pts"]) >= 3:
+            cv2.fillPoly(wallm, [np.round(np.array(s_["pts"], np.float64) * 8).astype(np.int32)], 1, shift=3)
+    # (the walls as the SVG shows them - a pixel is wall when at least half of it is covered: a filled polygon's bitmap
+    #  takes in every pixel its edge touches, so a hairline seam between two pieces would not be seen)
+    extra_ = [s_["pts"] for s_ in res.get("solids", []) if s_.get("wall") and len(s_["pts"]) >= 3]
+    for pi_ in ((res.get("svg") or {}).get("partition_as_wall") or []):
+        r_ = m["partitions"][pi_]
+        x0, x1, y0, y1 = (r_["a"], r_["b"], r_["c0"], r_["c1"]) if r_["o"] == "h" else (r_["c0"], r_["c1"], r_["a"], r_["b"])
+        extra_.append([[x0, y0], [x1, y0], [x1, y1], [x0, y1]])
+    shapes_ = [(w_["pts"], [h_["pts"] for h_ in m["walls"] if h_["hole"] and h_.get("parent") == w_.get("idx")])
+               for w_ in m["walls"] if not w_["hole"] and len(w_["pts"]) >= 3] + [(p_, []) for p_ in extra_]
+    wallm = _cover_mask(shapes_, W, H).astype(np.uint8)
+    closed = cv2.morphologyEx(wallm, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    seam = (closed > 0) & (wallm == 0) & (gray < thr)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(seam.astype(np.uint8), connectivity=8)
+    added = 0
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        if a < 2:
+            continue
+        pad = 2
+        X0, Y0, X1, Y1 = max(0, x - pad), max(0, y - pad), min(W, x + w + pad), min(H, y + h + pad)
+        cm = (lab[Y0:Y1, X0:X1] == i).astype(np.uint8)
+        cm = cv2.dilate(cm, np.ones((3, 3), np.uint8)) & (closed[Y0:Y1, X0:X1] > 0).astype(np.uint8)   # (overlapping the wall it joins)
+        cs, _h = cv2.findContours(cm, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        for c_ in cs:
+            ap = cv2.approxPolyDP(c_, 0.5, True)[:, 0, :]
+            if len(ap) >= 3:
+                res.setdefault("solids", []).append({"pts": [[float(px + X0), float(py + Y0)] for px, py in ap], "tone": 0, "wall": True, "seam": True})
+                added += 1
+    # Where a piece drawn as wall (a bump grown onto a wall, a partition drawn as wall) meets the wall, the two edges lie
+    # on - or a fraction of a pixel either side of - the same line, and a smoothed drawing shows a pale hairline there
+    # (each edge half covers its pixel; the two halves never add up to the fill).  A patch over the joint, reaching a
+    # couple of pixels into both, makes them one fill.
+    pieces_ = [s_["pts"] for s_ in res.get("solids", []) if s_.get("wall") and not s_.get("seam") and len(s_["pts"]) >= 3]
+    for pi_ in ((res.get("svg") or {}).get("partition_as_wall") or []):
+        r_ = m["partitions"][pi_]
+        x0, x1, y0, y1 = (r_["a"], r_["b"], r_["c0"], r_["c1"]) if r_["o"] == "h" else (r_["c0"], r_["c1"], r_["a"], r_["b"])
+        pieces_.append([[x0, y0], [x1, y0], [x1, y1], [x0, y1]])
+    if pieces_:
+        walls_only = _cover_mask([(w_["pts"], [h_["pts"] for h_ in m["walls"] if h_["hole"] and h_.get("parent") == w_.get("idx")])
+                                  for w_ in m["walls"] if not w_["hole"] and len(w_["pts"]) >= 3], W, H).astype(np.uint8)
+        k5 = np.ones((5, 5), np.uint8)
+        for j_, p_ in enumerate(pieces_):
+            a_ = np.asarray(p_, np.float64)
+            X0, Y0 = max(0, int(a_[:, 0].min()) - 6), max(0, int(a_[:, 1].min()) - 6)
+            X1, Y1 = min(W, int(math.ceil(a_[:, 0].max())) + 7), min(H, int(math.ceil(a_[:, 1].max())) + 7)
+            if X1 <= X0 or Y1 <= Y0:
+                continue
+            P_ = _cover_mask([(p_, [])], W, H, box=(X0, Y0, X1, Y1)).astype(np.uint8)
+            others_ = [(q_, []) for k_, q_ in enumerate(pieces_) if k_ != j_]
+            O_ = walls_only[Y0:Y1, X0:X1].copy()
+            if others_:
+                O_ |= _cover_mask(others_, W, H, box=(X0, Y0, X1, Y1)).astype(np.uint8)
+            G_ = cv2.morphologyEx(P_ | O_, cv2.MORPH_CLOSE, k5) & (P_ | O_ | (gray[Y0:Y1, X0:X1] < thr).astype(np.uint8))   # (paper between them stays paper)
+            joint = cv2.dilate(P_, k5) & cv2.dilate(O_, k5) & G_
+            joint |= cv2.dilate(joint, np.ones((7, 7), np.uint8)) & G_   # (its edges well inside both, never on theirs)
+            if int(joint.sum()) < 3:
+                continue
+            cs, _h = cv2.findContours(joint, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            for c_ in cs:
+                ap = cv2.approxPolyDP(c_, 0.5, True)[:, 0, :]
+                if len(ap) >= 3 and cv2.contourArea(ap.astype(np.float32)) >= 1.0:
+                    res.setdefault("solids", []).append({"pts": [[float(px + X0), float(py + Y0)] for px, py in ap], "tone": 0, "wall": True, "seam": True, "joint": True})
+                    added += 1
+    return added
+
+
+def trace_residual(m, svg):
+    """Drawn ink the trace has nowhere near, traced as it is (see RESIDUAL).  Returns the number of pieces added."""
+    gray = m.get("_gray")
+    if gray is None:
+        return 0
+    un = m.get("_unrect")
+    if un:                                                  # the drawing in the model's coordinates (as save_work_image)
+        H, W = gray.shape
+        ident = (np.array([0.0]), np.array([0.0]))
+        xs = np.arange(W, dtype=np.float32); ys = np.arange(H, dtype=np.float32)
+        cx, dx = un.get("x", ident); cy, dy = un.get("y", ident)
+        mx = (xs - np.interp(xs, cx, dx)).astype(np.float32); my = (ys - np.interp(ys, cy, dy)).astype(np.float32)
+        gray = cv2.remap(gray, np.tile(mx, (H, 1)), np.tile(my[:, None], (1, W)), cv2.INTER_LINEAR, borderValue=255)
+    H, W = gray.shape
+    sw = float(m.get("stroke_px", 1.0)); T = float(m["wall_thickness_px"])
+    arc_fit = fit_arcs_to_ink(m, gray, float(m.get("ink_threshold", 128)))
+    m["residual"] = {"arc_fit": arc_fit}                    # (what is left out is looked for against the arcs and fixtures as drawn)
+    if CLEAN_DRAWING:
+        svg0_ = to_svg(m)
+        clean_drawing(m, gray, _raster_svg(svg0_, W, H), svg0_)
+    m["_fg_ids"] = True                                     # (the SVG names its fixture groups, for the fit only)
+    try:
+        fx_parts = {} if CLEAN_DRAWING else None
+        fx_shift = fit_fixtures_to_ink(m, gray, to_svg(m), float(m.get("ink_threshold", 128)), fx_parts)
+    finally:
+        m.pop("_fg_ids", None)
+    m["residual"]["fixture_shift"] = fx_shift
+    if fx_parts:
+        m["residual"]["fixture_part_shift"] = fx_parts
+    if CLEAN_DRAWING:
+        clean_fixture_outlines(m, gray)
+    svg = to_svg(m)
+    R = _raster_svg(svg, W, H)
+    Rw0 = _raster_svg("".join(re.findall(r'<path id="wall-\d+"[^>]*/>', svg)), W, H) > 0     # the traced walls alone
+    kT = max(3, int(T / 2) * 2 + 1)
+    Rw_near = cv2.dilate(Rw0.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kT, kT))) > 0
+    wf_ = (m.get("wall_style") or {}).get("fill")
+    wt_ = float(np.median(gray[Rw0])) if wf_ is not None and Rw0.any() else None   # the walls' own grey in THIS image
+    textbox = np.zeros((H, W), bool)
+    for t_ in m["texts"]:                                   # live text: set in a font where the lettering was
+        x0, y0, x1, y1 = t_.get("ink") or [t_["box"][0], t_["box"][1], t_["box"][0] + t_["box"][2], t_["box"][1] + t_["box"][3]]
+        if t_.get("angle") is not None:
+            bx, by, bw, bh = t_["box"]; x0, y0, x1, y1 = bx, by, bx + bw, by + bh
+        cv2.rectangle(R, (int(x0) - 2, int(y0) - 2), (int(math.ceil(x1)) + 2, int(math.ceil(y1)) + 2), 255, -1)
+        textbox[max(0, int(y0) - 2):int(math.ceil(y1)) + 3, max(0, int(x0) - 2):int(math.ceil(x1)) + 3] = True
+    # (light grey lines count: a balcony's outline, furniture drawn pale - the drawing's ink, down to a light grey)
+    ink = gray < max(float(m.get("ink_threshold", 128)), float(os.environ.get("FV_RESIDUAL_INK", 200)))
+    # (distance to the trace, and WHICH traced pixel is the nearest)
+    dist, near_lab = cv2.distanceTransformWithLabels((R == 0).astype(np.uint8), cv2.DIST_L2, 3, labelType=cv2.DIST_LABEL_PIXEL)
+    cov_y, cov_x = np.nonzero(R != 0)
+    ink_d = cv2.distanceTransform((~ink).astype(np.uint8), cv2.DIST_L2, 3)   # how far each pixel is from drawn ink
+    miss = ink & (dist > 2.0 + 0.5 * sw)
+    copies = 0
+    if CLEAN_DRAWING:
+        # The blurred fringe of what IS traced (a black wall end's grey halo, a sill's pale edge a few pixels outside the
+        # traced bar): pale, within a few pixels of the trace, and joined to it through ink - no paper between.  Taken
+        # out pixel by pixel before the pieces are found, so a halo never joins a real stroke into one piece.
+        # (a halo darkens steadily toward what it surrounds; a pale stroke of its own beside it - a sill drawn as a thin
+        #  box against a wall - has a lighter gap between: kept)
+        reach_ = max(6.0, 3.0 * sw)
+        cand_ = miss & (gray >= 110) & (dist <= reach_)
+        cys_, cxs_ = np.nonzero(cand_)
+        if cys_.size and cov_y.size:
+            g16_ = gray.astype(np.int16); fr_ = np.zeros(cys_.size, bool)
+            for j_ in range(cys_.size):
+                py_, px_ = int(cys_[j_]), int(cxs_[j_])
+                k_ = int(near_lab[py_, px_]) - 1
+                if not (0 <= k_ < cov_y.size):
+                    continue
+                ty_, tx_ = int(cov_y[k_]), int(cov_x[k_])
+                n_s = max(2, int(math.hypot(tx_ - px_, ty_ - py_) * 2))
+                mx_ = max(int(g16_[int(round(py_ + (ty_ - py_) * t_ / n_s)), int(round(px_ + (tx_ - px_) * t_ / n_s))]) for t_ in range(1, n_s))
+                fr_[j_] = mx_ <= min(225, int(g16_[py_, px_]) + 25)
+            miss[cys_[fr_], cxs_[fr_]] = False
+    n, lab, st, _ = cv2.connectedComponentsWithStats(miss.astype(np.uint8), connectivity=8)
+    paths, solids = [], []
+    min_len = max(4.0, 2.0 * sw)
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        if max(w, h) < min_len or a < max(5, 1.2 * sw * sw):
+            continue                                        # a speck
+        comp = lab[y:y + h, x:x + w] == i
+        dc_ = dist[y:y + h, x:x + w][comp]
+        if float(dc_.max()) <= 2.5 + sw or float(np.percentile(dc_, 80)) <= 2.0 + sw:
+            continue                                        # the edge of something traced: not a lost element
+        # The same element traced a few pixels off (a door swing, a bowl): the traced pixels nearest this ink lie on no
+        # ink of their own.  Tracing the ink again would draw the element twice; it is left to the trace (and counted).
+        # A second line drawn beside a traced one - a window's third line, a kerb - has its nearest traced line on ink,
+        # and is kept.
+        if float(np.percentile(dc_, 90)) <= max(8.0, 4.0 * sw) and cov_y.size:
+            nl = near_lab[y:y + h, x:x + w][comp] - 1
+            nl = nl[(nl >= 0) & (nl < cov_y.size)]
+            if nl.size:
+                ny, nx = cov_y[nl], cov_x[nl]
+                in_text = textbox[ny, nx]
+                on_ink = (ink_d[ny, nx] <= 1.5 + 0.5 * sw) | in_text
+                if float(on_ink.mean()) < 0.35:
+                    copies += 1
+                    continue
+        # The blurred fringe of a stroke that IS traced (a door swing's grey halo, a pale ghost a few pixels beside a
+        # dark line): pale, close to the trace, and joined to it by ink all the way - one stroke, already drawn.  A second
+        # stroke drawn beside a traced one has paper between them, and is kept.
+        if CLEAN_DRAWING and cov_y.size and float(np.percentile(dc_, 90)) <= max(6.0, 3.0 * sw) and float(np.median(gray[y:y + h, x:x + w][comp])) >= 110:
+            cys, cxs = np.nonzero(comp)
+            pick = np.linspace(0, cys.size - 1, min(40, cys.size)).astype(int)
+            joined = 0
+            for j_ in pick:
+                py_, px_ = int(cys[j_] + y), int(cxs[j_] + x)
+                k_ = int(near_lab[py_, px_]) - 1
+                if not (0 <= k_ < cov_y.size):
+                    continue
+                ty_, tx_ = int(cov_y[k_]), int(cov_x[k_])
+                n_s = max(2, int(math.hypot(tx_ - px_, ty_ - py_) * 2))
+                line_ = [int(gray[int(round(py_ + (ty_ - py_) * t_ / n_s)), int(round(px_ + (tx_ - px_) * t_ / n_s))]) for t_ in range(1, n_s)]
+                if not line_ or max(line_) <= 225:
+                    joined += 1
+            if joined >= 0.7 * len(pick):
+                copies += 1
+                continue
+        # (its tone: the stroke's core, not its blurred edge - a black dot drawn small stays black)
+        tone = int(min(200, max(0, float(np.percentile(gray[y:y + h, x:x + w][comp], 30 if (CLEAN_DRAWING and int(comp.sum()) <= 10.0 * sw * sw) else 50)))))
+        tone = 0 if tone < 60 else tone                     # black stays black; a grey drawing (a wall's fill) stays grey
+        if max(w, h) > 6 * T and a > 0.5 * w * h:
+            continue                                        # a big dark area (a filled block the trace draws its own way)
+        dt = cv2.distanceTransform(np.pad(comp, 1).astype(np.uint8), cv2.DIST_L2, 3)[1:-1, 1:-1]
+        # A bump of wall the traced wall does not follow (a pier standing proud of its face): wall-grey fill, a band of it
+        # at least three pixels across (a symbol's anti-aliased edge never is), beside a traced wall.  Drawn as wall, grown
+        # back onto the wall it stands on.
+        if wt_ is not None and bool(Rw_near[y:y + h, x:x + w][comp].any()):
+            fill_ = comp & (np.abs(gray[y:y + h, x:x + w].astype(np.int16) - int(wt_)) <= 30)
+            ke_ = 2 * int(math.ceil(sw)) + 1                  # (wider than any stroke: a symbol's lines never survive it)
+            core_ = cv2.erode(fill_.astype(np.uint8), np.ones((ke_, ke_), np.uint8)) > 0
+            # (or the bump's own outline a few pixels off the traced face, wall-grey between: the grey lies next to the wall)
+            p4 = 4
+            X0_, Y0_, X1_, Y1_ = max(0, x - p4), max(0, y - p4), min(W, x + w + p4), min(H, y + h + p4)
+            cm_ = np.zeros((Y1_ - Y0_, X1_ - X0_), np.uint8); cm_[y - Y0_:y - Y0_ + h, x - X0_:x - X0_ + w] = comp
+            ring_ = (cv2.dilate(cm_, np.ones((2 * p4 + 1, 2 * p4 + 1), np.uint8)) > 0) & (cm_ == 0) & ~Rw0[Y0_:Y1_, X0_:X1_]
+            between_ = int((ring_ & (np.abs(gray[Y0_:Y1_, X0_:X1_].astype(np.int16) - int(wt_)) <= 30)).sum())
+            if core_.sum() >= max(6, 0.25 * comp.sum()) or between_ >= max(12, 0.6 * comp.sum()):
+                pad = 4
+                X0, Y0, X1, Y1 = max(0, x - pad), max(0, y - pad), min(W, x + w + pad), min(H, y + h + pad)
+                cm = np.zeros((Y1 - Y0, X1 - X0), np.uint8); cm[y - Y0:y - Y0 + h, x - X0:x - X0 + w] = comp
+                cm = cv2.dilate(cm, np.ones((2 * pad - 1, 2 * pad - 1), np.uint8)) & (ink[Y0:Y1, X0:X1] | Rw0[Y0:Y1, X0:X1]).astype(np.uint8)
+                cs, _h = cv2.findContours(cm, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+                for c_ in cs:
+                    ap = cv2.approxPolyDP(c_, 0.7, True)[:, 0, :]
+                    if len(ap) >= 3:
+                        solids.append({"pts": [[float(px + X0), float(py + Y0)] for px, py in ap], "tone": tone, "wall": True})
+                continue
+        ring_ = False
+        if CLEAN_DRAWING:                                    # (an outline round paper - a sill drawn as a thin box - is a stroke)
+            _cs, hier_ = cv2.findContours(comp.astype(np.uint8), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+            if hier_ is not None:
+                ring_ = any(hier_[0][j_][3] >= 0 and cv2.contourArea(_cs[j_]) >= 2.0 * sw * sw for j_ in range(len(_cs)))
+        solid_ = not ring_ and float(dt.max()) > max(2.0, 1.2 * sw) and float(dt.max()) * 2.5 >= min(w, h) * 0.6
+        if CLEAN_DRAWING and solid_:
+            # A short straight bar of ink (a mullion's tick across a sill, blurred into a bow-tie): drawn as the bar it is,
+            # run on along its length to what it meets
+            bar_ = _as_bar(comp, x, y, ink, R, textbox, sw)
+            if bar_ is not None:
+                solids.append({"pts": bar_, "tone": tone, "bar": True})
+                continue
+            # A filled piece is only found where its ink is more than a few pixels from anything traced, so it ends short
+            # of what it meets: it is grown back along its own ink (pixel by pixel, never over the trace) to touch it -
+            # the growth kept only where it is filled, not along the thin strokes leaving it (an arrow's two lines, a
+            # leader), which would stick out of it as spikes.
+            rg_ = int(math.ceil(2.0 + 0.5 * sw)) + 1
+            X0g, Y0g, X1g, Y1g = max(0, x - rg_), max(0, y - rg_), min(W, x + w + rg_), min(H, y + h + rg_)
+            cg = np.zeros((Y1g - Y0g, X1g - X0g), np.uint8); cg[y - Y0g:y - Y0g + h, x - X0g:x - X0g + w] = comp
+            c0_ = cg.copy()
+            free_ = (ink[Y0g:Y1g, X0g:X1g] & (R[Y0g:Y1g, X0g:X1g] == 0) & ~textbox[Y0g:Y1g, X0g:X1g]).astype(np.uint8)
+            for _k in range(rg_):
+                cg = cg | (cv2.dilate(cg, np.ones((3, 3), np.uint8)) & free_)
+            ko_ = 2 * int(math.ceil(sw)) + 1
+            cg = c0_ | (cv2.morphologyEx(cg, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ko_, ko_))) & cg)
+            x, y, w, h = X0g, Y0g, X1g - X0g, Y1g - Y0g; comp = cg > 0
+            dt = cv2.distanceTransform(np.pad(comp, 1).astype(np.uint8), cv2.DIST_L2, 3)[1:-1, 1:-1]
+        if not ring_ and float(dt.max()) > max(2.0, 1.2 * sw) and float(dt.max()) * 2.5 >= min(w, h) * 0.6:
+            if CLEAN_DRAWING:                                # (its tone: its inside's, not its blurred edge's)
+                in_ = cv2.erode(comp.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+                if int(in_.sum()) >= 4:
+                    tone = int(min(200, max(0, float(np.median(gray[y:y + h, x:x + w][in_])))))
+                    tone = 0 if tone < 60 else tone
+            cs, _h = cv2.findContours(comp.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            for c_ in cs:
+                ap = cv2.approxPolyDP(c_, 0.7, True)[:, 0, :]
+                if len(ap) >= 3:
+                    solids.append({"pts": [[float(px + x), float(py + y)] for px, py in ap], "tone": tone})
+            continue
+        skel = skeletonize(comp)
+        wid = float(np.median(dt[skel]) * 2.0) if skel.any() else sw
+        if CLEAN_DRAWING:                                    # (drawn at the drawing's own stroke width, not its blur)
+            # (a stroke's tone is its core's, whatever its length: most of a stroke's pixels are its blurred edge)
+            tone = int(min(200, max(0, float(np.percentile(gray[y:y + h, x:x + w][comp], 30)))))
+            tone = 0 if tone < 60 else tone
+            wid = min(wid, 1.5 * sw)
+            nbc_ = cv2.filter2D(skel.astype(np.uint8), -1, np.ones((3, 3), np.float32), borderType=cv2.BORDER_CONSTANT) - skel.astype(np.uint8)
+        for chain in trace_skeleton(skel):
+            if len(chain) < 2:
+                continue
+            if CLEAN_DRAWING:                                # (a spur off a junction - a blurred corner's whisker - is not a stroke)
+                (cx0_, cy0_), (cx1_, cy1_) = [(int(q_[0]), int(q_[1])) for q_ in (chain[0], chain[-1])]
+                d0_ = int(nbc_[cy0_, cx0_]) if 0 <= cy0_ < skel.shape[0] and 0 <= cx0_ < skel.shape[1] else 0
+                d1_ = int(nbc_[cy1_, cx1_]) if 0 <= cy1_ < skel.shape[0] and 0 <= cx1_ < skel.shape[1] else 0
+                if len(chain) < 2.5 * sw and ((d0_ == 1 and d1_ >= 3) or (d1_ == 1 and d0_ >= 3)):
+                    continue
+            pts = np.array([[px + x, py + y] for px, py in chain], np.float32)
+            ap = cv2.approxPolyDP(pts.reshape(-1, 1, 2), 0.8, False)[:, 0, :]
+            if CLEAN_DRAWING and len(ap) >= 2:
+                # an end stopping just short of the trace (it is only found where its ink is a few pixels clear of it):
+                # drawn on along its own direction to what it meets, where the drawing's ink runs on
+                ap = ap.astype(np.float32)
+                if len(ap) >= 3:                             # (a skeleton's end curling off into the blur: the stroke runs straight on)
+                    for e_, e2_, e3_ in ((0, 1, 2), (len(ap) - 1, len(ap) - 2, len(ap) - 3)):
+                        s_v, n_v = ap[e_] - ap[e2_], ap[e2_] - ap[e3_]
+                        Ls_, Ln_ = float(np.hypot(*s_v)), float(np.hypot(*n_v))
+                        if Ls_ < 1e-6 or Ln_ < Ls_ or Ls_ > max(6.0, 3.0 * sw):
+                            continue
+                        cos_ = float(s_v @ n_v) / (Ls_ * Ln_)
+                        if math.cos(math.radians(35.0)) <= cos_ <= math.cos(math.radians(6.0)):
+                            un_ = n_v / Ln_
+                            ap[e_] = ap[e2_] + un_ * float(s_v @ un_)
+                for e_, e2_ in ((0, 1), (len(ap) - 1, len(ap) - 2)):
+                    P_, Q_ = ap[e_], ap[e2_]; d_ = P_ - Q_; Ld_ = float(np.hypot(*d_))
+                    if Ld_ < 1e-6:
+                        continue
+                    u_ = d_ / Ld_; reach2_ = max(6.0, 3.0 * sw) + 3.0; t_ = 0.0; hit_ = None
+                    while t_ < reach2_:
+                        t_ += 0.5; X_, Y_ = P_ + u_ * t_; xi_, yi_ = int(round(X_)), int(round(Y_))
+                        if not (0 <= xi_ < W and 0 <= yi_ < H) or not ink[yi_, xi_]:
+                            break
+                        if R[yi_, xi_]:
+                            hit_ = t_; break
+                    if hit_ is not None:
+                        ap[e_] = P_ + u_ * hit_
+            if len(ap) >= 2 and float(np.hypot(*(ap[-1] - ap[0]))) + float(np.sum(np.hypot(*np.diff(ap, axis=0).T))) >= 2.0 * sw:
+                paths.append({"pts": [[float(px), float(py)] for px, py in ap], "w": round(max(sw, min(wid, 3.0 * sw)), 2), "tone": tone})
+    # short straight strokes in a row, evenly spaced, are one dashed line (the cross in a duct, a hidden edge): one object
+    segs = [(k_, p_) for k_, p_ in enumerate(paths) if len(p_["pts"]) == 2 and math.hypot(p_["pts"][1][0] - p_["pts"][0][0], p_["pts"][1][1] - p_["pts"][0][1]) <= 1.2 * T]
+    used, dashed = set(), []
+    for k_, a_ in segs:
+        if k_ in used:
+            continue
+        (ax, ay), (bx, by) = a_["pts"]; La = math.hypot(bx - ax, by - ay)
+        if La < 2.0:
+            continue
+        ux, uy = (bx - ax) / La, (by - ay) / La
+        row = [(0.0, La, k_)]
+        for j_, b_ in segs:
+            if j_ == k_ or j_ in used:
+                continue
+            ts_ = [(q_[0] - ax) * ux + (q_[1] - ay) * uy for q_ in b_["pts"]]; off_ = [abs((q_[0] - ax) * -uy + (q_[1] - ay) * ux) for q_ in b_["pts"]]
+            Lb = abs(ts_[1] - ts_[0])
+            if max(off_) <= max(2.0, 1.2 * sw) and 0.4 * La <= Lb <= 2.5 * La:
+                row.append((min(ts_), max(ts_), j_))
+        row.sort()
+        runs, cur = [], [row[0]]
+        for r_ in row[1:]:
+            if 0 < r_[0] - cur[-1][1] <= 2.5 * La:
+                cur.append(r_)
+            else:
+                runs.append(cur); cur = [r_]
+        runs.append(cur)
+        best = max(runs, key=len)
+        if len(best) >= 3 and any(r_[2] == k_ for r_ in best):
+            t0, t1 = best[0][0], best[-1][1]
+            dl = float(np.median([r_[1] - r_[0] for r_ in best])); gp = float(np.median([b2[0] - b1[1] for b1, b2 in zip(best, best[1:])]))
+            dashed.append({"p": [ax + ux * t0, ay + uy * t0], "q": [ax + ux * t1, ay + uy * t1], "dash": [round(dl, 1), round(max(1.5, gp), 1)],
+                           "w": round(float(np.median([paths[r_[2]]["w"] for r_ in best])), 2), "tone": int(np.median([paths[r_[2]]["tone"] for r_ in best]))})
+            used.update(r_[2] for r_ in best)
+    paths = [p_ for k_, p_ in enumerate(paths) if k_ not in used]
+    svg_fix = m["residual"].get("svg")
+    fx_parts_ = m["residual"].get("fixture_part_shift")
+    m["residual"] = {"paths": paths, "solids": solids, "dashed": dashed, "offset_copies": copies, "arc_fit": arc_fit, "fixture_shift": fx_shift}
+    if fx_parts_:
+        m["residual"]["fixture_part_shift"] = fx_parts_
+    if svg_fix:
+        m["residual"]["svg"] = svg_fix
+    if CLEAN_DRAWING:
+        dashes_through_short_lines(m, gray)
+        close_wall_seams(m, gray)
+    return len(paths) + len(solids) + len(dashed)
 
 
 def save_work_image(m, path):
@@ -7933,6 +9500,10 @@ if __name__ == "__main__":
     diagonal_dimensions(m)
     complete_labels(m)
     reread_crossed_labels(m)
+    if SECOND_LINES:
+        sl_ = read_second_lines(m)
+        if sl_:
+            m.setdefault("dimension_report_pre", {})["label_lines_reread"] = sl_
     number_after_label(m, only="reread_over_arc")
     validate_slash_labels(m)
     read_level_notes(m)
@@ -7954,6 +9525,10 @@ if __name__ == "__main__":
     finish_soft(m)
     structure(m)
     match_symbols(m)
+    if os.environ.get("FV_DUMP_PRE_RESIDUAL"):            # (development: the model just before this pass, to iterate on it alone)
+        import pickle; pickle.dump(m, open(os.environ["FV_DUMP_PRE_RESIDUAL"], "wb"))
+    if RESIDUAL and "--grouped" not in sys.argv:
+        trace_residual(m, to_svg(m))
     save_work_image(m, base + ".work.png")
     m.pop("_gray", None); m.pop("_unrect", None); m.pop("_page_gray", None)
     m["round_numbers"] = m.pop("_round_plan", None)

@@ -1,10 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { getCatalogPreset } from "@/lib/catalog-presets";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
+import { AdminPageHeader } from "../../AdminPageHeader";
+import { adminSection, adminTitle } from "../../admin-navigation";
+import { auth } from "../../admin-session";
 import CatalogAuthoringEditor from "./CatalogAuthoringEditor";
 
 type CatalogItemDetail = {
@@ -23,15 +26,20 @@ type CatalogItemDetail = {
   updatedAt: Date;
 };
 
+type CatalogItemPageProps = { params: Promise<{ catalogItemId: string }> };
+
+const SECTION = adminSection("/admin/catalog/review");
+
+export async function generateMetadata({ params }: CatalogItemPageProps): Promise<Metadata> {
+  const { catalogItemId } = await params;
+  return { title: adminTitle(`Catalog item ${catalogItemId}`) };
+}
+
 export default async function CatalogItemPage({
   params,
-}: {
-  params: Promise<{ catalogItemId: string }>;
-}) {
+}: CatalogItemPageProps) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const { catalogItemId } = await params;
 
@@ -84,14 +92,16 @@ export default async function CatalogItemPage({
 
   return (
     <div className="space-y-6 p-6">
-      <header className="space-y-1">
-        <Link href="/admin" className="text-xs text-blue-600 hover:text-blue-700">Back to admin</Link>
-        <h1 className="text-2xl font-semibold">Catalog Item {item.id}</h1>
-        <div className="text-sm text-neutral-600">Updated {item.updatedAt.toLocaleString()}</div>
-        <div className="flex flex-wrap gap-4 text-xs text-blue-700">
-          <Link href={`/admin/models/${item.assetId}`} className="hover:underline">Open linked model</Link>
-        </div>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title, href: SECTION.href }, { title: item.id }]}
+        title={`Catalog item ${item.id}`}
+        description={`Updated ${item.updatedAt.toLocaleString()}`}
+        actions={
+          <Link href={`/admin/models/${item.assetId}`} className="text-xs text-blue-700 hover:underline">
+            Open linked model
+          </Link>
+        }
+      />
 
       <CatalogAuthoringEditor
         initialDb={{
