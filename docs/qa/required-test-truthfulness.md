@@ -1004,6 +1004,13 @@ advisory and release inventories, so PRs pushed another way never ran it.
   The first run failed that way: the server answered `/api/health`, then lsof
   found no listener. On Linux a listening socket owned by a process this user
   cannot inspect still counts, so the port is never treated as free.
+- **The spec's check at each capture.** `window-opening-capture-provenance.mjs`
+  reads the listener through the same module (`readListenerObservation`), not
+  its own lsof calls. On Linux the raw listener and cwd outputs it records are
+  `/proc` readings written in lsof's field format (`p`, `c`, `n`), so the
+  evidence verifier reads them as it reads lsof's. Each listener observation
+  record names its source in `listenerSource` (`lsof` or `linux-proc`), outside
+  the unchanged binding digest.
 - **Status.** The gate is advisory (`blocking: false`), and merge-gate does not
   wait for it. As a separate workflow it keeps its real conclusion, so a failure
   shows as a red check. It uploads the run folder only when it fails (7 days).

@@ -37,6 +37,7 @@ import {
   assertPortHasNoListener,
   parseLsofListenerOutput,
   parseProcNetTcpListeners,
+  readListenerObservation,
   resolveOwnedPortListener,
 } from "./window-opening-process-ownership.mjs";
 import {
@@ -594,6 +595,36 @@ assert.deepEqual(parseProcNetTcpListeners([
   { inode: "9003", endpoint: "[::1]:45123" },
 ]);
 cover("linux proc table keeps only listeners on the port");
+
+// Each capture records the raw listener and cwd readings. On Linux they are /proc readings
+// in lsof's field format, and the evidence verifier must accept them as it accepts lsof's.
+async function listenerObservationRecord(host) {
+  const reading = await readListenerObservation({ port: 45123, pid: 222, ...host });
+  const binding = { screenshotId: "capture-01", serverContextSha256: "b".repeat(64),
+    observedAt: "2026-09-02T00:00:02.000Z", pid: 222, port: 45123, cwd: "/fixture/repository",
+    listenerOutputSha256: sha256(reading.listenerOutput) };
+  return { reading, record: { schemaVersion: "window-opening-listener-observation/v1", ...binding,
+    listenerSource: reading.source, listenerOutput: reading.listenerOutput, cwdOutput: reading.cwdOutput,
+    bindingSha256: sha256(JSON.stringify(binding)) } };
+}
+{
+  const linux = await listenerObservationRecord(procHostFixture());
+  assert.deepEqual(linux.reading, { source: "linux-proc",
+    listenerOutput: "p222\ncnext-server (v1\nn127.0.0.1:45123\n", cwdOutput: "p222\nn/fixture/repository\n" });
+  assert.doesNotThrow(() => assertWindowOpeningListenerObservation(linux.record, {
+    screenshotId: "capture-01", serverContextSha256: "b".repeat(64), pid: 222, port: 45123,
+    cwd: "/fixture/repository",
+  }));
+  cover("linux listener observation passes the evidence verifier");
+  const mac = await listenerObservationRecord(lsofHost(ownedProcessFixture()));
+  assert.deepEqual(mac.reading, { source: "lsof",
+    listenerOutput: "p222\ncnode\nnTCP 127.0.0.1:45123\n", cwdOutput: "p222\nn/fixture/repository\n" });
+  cover("macos listener observation keeps the raw lsof output");
+  await assert.rejects(() => readListenerObservation({
+    port: 45123, pid: 222, ...procHostFixture({ ownerVisible: false }),
+  }), /cannot inspect/);
+  cover("linux listener observation refuses an uninspectable listener");
+}
 
 async function screenshotFixture() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "window-opening-screenshot-"));

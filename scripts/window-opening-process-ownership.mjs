@@ -13,6 +13,8 @@ function capture(command, args) {
     const stderr = [];
     child.stdout.on("data", (chunk) => stdout.push(chunk));
     child.stderr.on("data", (chunk) => stderr.push(chunk));
+    // A command that cannot start (missing lsof or ps) reads as a failed run, not a crash.
+    child.on("error", (error) => resolve({ code: 127, stdout: "", stderr: String(error) }));
     child.on("close", (code) => resolve({
       code: code ?? 1,
       stdout: Buffer.concat(stdout).toString("utf8"),
@@ -35,16 +37,17 @@ export function parseLsofListenerOutput(output) {
   return listeners.filter((entry) => Number.isSafeInteger(entry.pid) && entry.pid > 1);
 }
 
+const lsofListenerArgs = (port) => ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-Fpcn"];
+const lsofCwdArgs = (pid) => ["-a", "-p", String(pid), "-d", "cwd", "-Fn"];
+
 async function listenerEntries(port, run = capture) {
-  const result = await run("lsof", [
-    "-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-Fpcn",
-  ]);
+  const result = await run("lsof", lsofListenerArgs(port));
   if (result.code !== 0 && !result.stdout.trim()) return [];
   return parseLsofListenerOutput(result.stdout);
 }
 
 async function processCwd(pid, run = capture) {
-  const result = await run("lsof", ["-a", "-p", String(pid), "-d", "cwd", "-Fn"]);
+  const result = await run("lsof", lsofCwdArgs(pid));
   if (result.code !== 0) return null;
   return result.stdout.split("\n").find((line) => line.startsWith("n"))?.slice(1) ?? null;
 }
@@ -134,15 +137,40 @@ async function procListenerEntries(port, proc) {
 function processInspector({ run = capture, platform = process.platform, proc = linuxProc } = {}) {
   if (platform === "linux") {
     return {
+      source: "linux-proc",
       listeners: (port) => procListenerEntries(port, proc),
       cwd: (pid) => optional(() => proc.link(`/proc/${pid}/cwd`)),
       executable: (pid) => optional(() => proc.link(`/proc/${pid}/exe`)),
     };
   }
   return {
+    source: "lsof",
     listeners: (port) => listenerEntries(port, run),
     cwd: (pid) => processCwd(pid, run),
     executable: (pid) => processExecutable(pid, run),
+  };
+}
+
+// The raw listener and cwd readings a capture records, in lsof's -F field format (p, c, n):
+// lsof's own output on macOS, and /proc readings written in that format on Linux, so the
+// evidence verifier reads both. `source` says which.
+export async function readListenerObservation({ port, pid, ...host }) {
+  const inspector = processInspector(host);
+  if (inspector.source === "lsof") {
+    const run = host.run ?? capture;
+    const listener = await run("lsof", lsofListenerArgs(port));
+    const cwd = await run("lsof", lsofCwdArgs(pid));
+    return { source: inspector.source, listenerOutput: listener.stdout, cwdOutput: cwd.stdout };
+  }
+  const listeners = await inspector.listeners(port);
+  if (listeners.some((entry) => entry.pid === null)) {
+    throw new Error(`The listener on port ${port} belongs to a process this user cannot inspect.`);
+  }
+  const cwd = await inspector.cwd(pid);
+  return {
+    source: inspector.source,
+    listenerOutput: listeners.map((entry) => `p${entry.pid}\nc${entry.command ?? ""}\nn${entry.endpoint}\n`).join(""),
+    cwdOutput: cwd ? `p${pid}\nn${cwd}\n` : "",
   };
 }
 
