@@ -882,6 +882,9 @@ report, or run inputs fail with a window-opening prerequisite error.
   the suite and at every capture. Existing v2 screenshots, listener records,
   traces, source binding, fixed 12-case inventory and resource cleanup remain
   owned by the mounted runner and its unchanged evidence verifier.
+- `advisory.window-opening-mounted` runs that same mounted runner in GitHub
+  Actions on every pull request and push of the integration line, against the
+  runner's own PostgreSQL with the local `justus` role, as an informational check.
 - `test:e2e:release` selects `release.gate-a3` and the exact HTTPS origin in
   `PLAYWRIGHT_RELEASE_BASE_URL`. Before launch, and when Playwright loads its
   config, the context adapter calls the existing physical
@@ -974,6 +977,31 @@ safe data prerequisites from `vercel-prebuilt-release.md`. Missing external
 inputs block real release execution without invalidating synthetic/local
 contract coverage. No history or earlier development result is recertified by
 this integration.
+
+### Runs in CI, informational — 2026-10-08
+
+`advisory.window-opening-mounted` runs the 12 mounted window-opening cases on
+every pull request and push of `integration/deep-clean-v1`, in its own workflow
+(`.github/workflows/window-opening-mounted.yml`, job `window-opening-mounted`).
+
+Before this the suite only ran locally (the push script) and inside the broad
+advisory and release inventories, so PRs pushed another way never ran it.
+
+- **Runner.** It calls `npm run test:window-opening-mounted` unchanged. The
+  runner refuses arguments and filters, and keeps its fixed 12-case inventory,
+  its own development server and its disposable database.
+- **Database.** The job starts the runner's own PostgreSQL and creates the
+  passwordless local role `justus` with CREATEDB and trust on 127.0.0.1, the
+  exact target `scripts/provision-gate-a3-database.mjs` accepts. A service
+  container would report its Docker address instead.
+- **Environment.** It sets `TMPDIR` and `WINDOW_OPENING_MOUNTED_PARENT` under
+  `runner.temp`, and makes sure `lsof` is installed.
+- **Status.** The gate is advisory (`blocking: false`), and merge-gate does not
+  wait for it. As a separate workflow it keeps its real conclusion, so a failure
+  shows as a red check. It uploads the run folder only when it fails (7 days).
+- **Not evidence.** A run here is not certification evidence: window database
+  receipts are still refused inside Actions. Making it required is a later,
+  separate change once it has a record of passing on Linux.
 
 ## Truthful pass contract
 
