@@ -329,7 +329,8 @@ for (const material of animaById.values()) {
 //    0010518_nn / 0010519_nn: ABK's plank pictures are that graphic at 0.75 scale;
 //  - Dorica 0010147 / 0010148 use 0010008's / 0010009's faces (the same visible variant as R11);
 //  - Oxide Iron 80x80 uses the 120x120 faces: its 80x80 pictures are the 120x120 pictures.
-// Three of Oxide Aluminum's 80x80 pictures are its 120x120 graphic and are declared 1200x1200 mm.
+// Oxide Aluminum's and Brass's 80x80 pictures are their 120x120 graphic squeezed to 800 mm and are
+// declared 1200x1200 mm (re-checked 8 Oct 2026; 6 Oct had found three of Aluminum's).
 const collectionCards = (filter: (material: { surface_material: { material_id: string } }) => boolean, category: string) =>
   buildSurfaceMaterialProductGroups(
     physicalMaterials.filter((material) => filter(material) && material.surface_material.surface_category === category) as never
@@ -391,11 +392,11 @@ assert.deepEqual(collectionFaceRows(isOxide), [
   ["alluminum", "1200x1200", 7, "1200x1200", "g69310_01.webp"],
   ["alluminum", "1200x600", 14, "600x1200", "g69320_01.webp"],
   ["alluminum", "2800x1200", 3, "1200x2800", "g69300_01.webp"],
-  ["alluminum", "800x800", 6, "1200x1200+800x800", "g69330_01.webp"],
+  ["alluminum", "800x800", 6, "1200x1200", "g69330_01.webp"],
   ["brass", "1200x1200", 6, "1200x1200", "g69314_01.webp"],
   ["brass", "1200x600", 10, "600x1200", "g69324_01.webp"],
   ["brass", "2800x1200", 3, "1200x2800", "g69304_01.webp"],
-  ["brass", "800x800", 7, "800x800", "g69334_01.webp"],
+  ["brass", "800x800", 7, "1200x1200", "g69334_01.webp"],
   ["green", "1200x1200", 6, "1200x1200", "g69313_01.webp"],
   ["green", "1200x600", 12, "600x1200", "g69323_01.webp"],
   ["green", "2800x1200", 3, "1200x2800", "g69303_01.webp"],

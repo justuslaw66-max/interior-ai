@@ -15,7 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: 7 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/brass/g0069334-v102/), downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-oxide-brass-faces.manifest.json. Each covers 800x800 mm."
+    - "Tile faces: 7 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/brass/g0069334-v102/), downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-oxide-brass-faces.manifest.json. Each covers 1200x1200 mm. ABK's 80x80 pictures are this colour's 120x120 graphic squeezed to 800 mm: all seven match the colour's other sizes best when drawn as 1200 mm (r 0.30 to 0.77; 0.13 to 0.31 as 800 mm). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/G69334/0/90852 for floor use.
     - "Configurator format: 80x80; surface destination: ENTRAMBE."
@@ -73,30 +73,30 @@ texture_assets:
     width: 80
     height: 80
   image_physical_size_mm:
-    width: 800
-    height: 800
+    width: 1200
+    height: 1200
   faces:
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_01.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_02.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_03.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_04.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_05.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_06.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69334_07.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62

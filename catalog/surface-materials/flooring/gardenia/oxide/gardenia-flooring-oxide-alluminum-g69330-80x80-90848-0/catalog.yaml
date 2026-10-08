@@ -15,7 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: 6 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g0069330-v102/), downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-oxide-aluminum-faces.manifest.json. Each covers 800x800 mm and 1200x1200 mm. Three of ABK's 80x80 pictures are this colour's 120x120 graphic, so they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
+    - "Tile faces: 6 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/aluminum/g0069330-v102/), downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-oxide-aluminum-faces.manifest.json. Each covers 1200x1200 mm. ABK's 80x80 pictures are this colour's 120x120 graphic squeezed to 800 mm: all six match the colour's 120x120 and 60x120 pictures when drawn as 1200 mm (r 0.85 to 0.96). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/G69330/0/90848 for floor use.
     - "Configurator format: 80x80; surface destination: ENTRAMBE."
@@ -85,14 +85,14 @@ texture_assets:
       width_mm: 1200
       height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69330_04.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69330_05.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
     - url: /assets/catalog/surface-materials/gardenia/oxide/g69330_06.webp
-      width_mm: 800
-      height_mm: 800
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
