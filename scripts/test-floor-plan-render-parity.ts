@@ -450,6 +450,118 @@ assert.deepEqual(
   "A wall-ownership span shorter than its thickness must retain a safe swept footprint instead of an inverted miter."
 );
 
+// Level and plumb walls meet in a square corner whatever their thicknesses. A plain L of two long walls keeps its
+// mitre (above: the north and east walls share both corner points). Where a mitre cannot close the corner - a T or X
+// junction, or an L with a wall shorter than the other is thick, as the ownership steps and jogs of imported plans
+// have - each wall runs on past the vertex by half the thickness of the thickest wall crossing it, so the united
+// footprints close the corner with no spike and no notch. A vertex with a slanted wall keeps the mitre.
+{
+  type JoinWall = Parameters<typeof applyCanonicalWallFootprintJoins>[0][number];
+  const point = (xMm: number, zMm: number) => ({ xMm, zMm });
+  const joinWall = (
+    start: { xMm: number; zMm: number },
+    end: { xMm: number; zMm: number },
+    thicknessMm: number,
+    startVertexId: string,
+    endVertexId: string
+  ): JoinWall => {
+    const segment = {
+      start,
+      end,
+      startOffsetMm: 0,
+      endOffsetMm: Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm),
+    };
+    return {
+      path: { kind: "line" as const, startVertexId, endVertexId },
+      thicknessMm,
+      centerlineSegments: [segment],
+      solids: [
+        {
+          ...segment,
+          bottomMm: 0,
+          topMm: 2600,
+          footprint: buildRectangularWallFootprint(segment, thicknessMm),
+        },
+      ],
+    } as unknown as JoinWall;
+  };
+  const corners = (wall: JoinWall) => {
+    const footprint = wall.solids[0].footprint;
+    return [footprint.startLeft, footprint.endLeft, footprint.endRight, footprint.startRight];
+  };
+  const box = (wall: JoinWall) => {
+    const points = corners(wall);
+    return {
+      minX: Math.min(...points.map((entry) => entry.xMm)),
+      maxX: Math.max(...points.map((entry) => entry.xMm)),
+      minZ: Math.min(...points.map((entry) => entry.zMm)),
+      maxZ: Math.max(...points.map((entry) => entry.zMm)),
+    };
+  };
+  const hasCorner = (wall: JoinWall, target: { xMm: number; zMm: number }) =>
+    corners(wall).some((entry) => Math.hypot(entry.xMm - target.xMm, entry.zMm - target.zMm) < 0.01);
+
+  // A plain L of a thick and a thin wall, both long: the mitre, sharing the outer and the inner corner.
+  const [lThick, lThin] = applyCanonicalWallFootprintJoins([
+    joinWall(point(0, 0), point(1000, 0), 200, "l-corner", "l-a"),
+    joinWall(point(0, 0), point(0, 1000), 100, "l-corner", "l-b"),
+  ]);
+  for (const target of [point(-50, -100), point(50, 100)]) {
+    assert(
+      hasCorner(lThick, target) && hasCorner(lThin, target),
+      "A plain L of two long walls must keep one shared mitre at its outer and inner corner."
+    );
+  }
+
+  // A jog: a thick wall, a step shorter than that wall is thick, and the next thick wall. The walls each side run
+  // on past the step by half its thickness and close the corner; the step itself stays its plain rectangle.
+  const [jogBefore, jogStep, jogAfter] = applyCanonicalWallFootprintJoins([
+    joinWall(point(-1000, 0), point(0, 0), 200, "jog-a", "jog-b"),
+    joinWall(point(0, 0), point(0, 60), 100, "jog-b", "jog-c"),
+    joinWall(point(0, 60), point(1000, 60), 200, "jog-c", "jog-d"),
+  ]);
+  assert.deepEqual(box(jogBefore), { minX: -1000, maxX: 50, minZ: -100, maxZ: 100 });
+  assert.deepEqual(box(jogAfter), { minX: -50, maxX: 1000, minZ: -40, maxZ: 160 });
+  assert.deepEqual(
+    jogStep.solids[0].footprint,
+    buildRectangularWallFootprint(jogStep.centerlineSegments[0], 100),
+    "A jog's step shorter than its thickness keeps its plain rectangle; the walls each side close the corner."
+  );
+
+  // A T of a thick through wall and a thin stem: the through wall's halves run on into each other by half the stem's
+  // thickness, and the stem reaches the through wall's far face - never past it.
+  const [tLeft, tRight, tStem] = applyCanonicalWallFootprintJoins([
+    joinWall(point(-1000, 0), point(0, 0), 200, "t-l", "t-joint"),
+    joinWall(point(0, 0), point(1000, 0), 200, "t-joint", "t-r"),
+    joinWall(point(0, 0), point(0, 1000), 100, "t-joint", "t-s"),
+  ]);
+  assert.deepEqual(box(tLeft), { minX: -1000, maxX: 50, minZ: -100, maxZ: 100 });
+  assert.deepEqual(box(tRight), { minX: -50, maxX: 1000, minZ: -100, maxZ: 100 });
+  assert.deepEqual(
+    box(tStem),
+    { minX: -50, maxX: 50, minZ: -100, maxZ: 1000 },
+    "A T junction's walls must close the junction in square corners without a mitre spike."
+  );
+
+  // Two walls straight on, of different thickness, nothing crossing: plain ends, as before.
+  const [straightThick, straightThin] = applyCanonicalWallFootprintJoins([
+    joinWall(point(-1000, 0), point(0, 0), 200, "s-a", "s-joint"),
+    joinWall(point(0, 0), point(1000, 0), 100, "s-joint", "s-b"),
+  ]);
+  assert.deepEqual(box(straightThick), { minX: -1000, maxX: 0, minZ: -100, maxZ: 100 });
+  assert.deepEqual(box(straightThin), { minX: 0, maxX: 1000, minZ: -50, maxZ: 50 });
+
+  // A slanted wall at the vertex: the mitre, the two walls sharing the corner where their faces meet.
+  const [slantLevel, slantWall] = applyCanonicalWallFootprintJoins([
+    joinWall(point(0, 0), point(1000, 0), 200, "x-corner", "x-a"),
+    joinWall(point(0, 0), point(700, 700), 200, "x-corner", "x-b"),
+  ]);
+  assert(
+    corners(slantLevel).some((entry) => hasCorner(slantWall, entry)),
+    "A vertex with a slanted wall must keep the shared mitre point."
+  );
+}
+
 assert.throws(
   () => compileCanonicalFloorPlanRenderModel(document, "0".repeat(64)),
   /CANONICAL_GEOMETRY_HASH_MISMATCH/,

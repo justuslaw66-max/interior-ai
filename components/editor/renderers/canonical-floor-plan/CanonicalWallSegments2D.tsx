@@ -7,6 +7,7 @@ import type {
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { useLatestCallback } from "../useLatestCallback";
 import { preferredRoomId, segmentTransform } from "./geometry";
+import { CanonicalVoidRooms2D } from "./CanonicalVoidRooms2D";
 
 type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 type Props = {
@@ -62,8 +63,9 @@ export function CanonicalWallSegments2D({ floor, geometryHash, activeRoomId, the
     onSelectOpening?.(null);
   });
   return <group>
+      <CanonicalVoidRooms2D floor={floor} geometryHash={geometryHash} />
       {floor.walls.map((wall) => {
-        const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId);
+        const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
         const color = wallEditing?.enabled && wallEditing.selectedWallId === wall.id ? "#2563eb"
           : roomId === activeRoomId ? "#16a34a" : theme === "pro" ? "#a1a1aa" : "#b8b0a1";
         return <CanonicalWall2D key={`${floor.id}:wall:${wall.id}`} wall={wall} floorId={floor.id}
