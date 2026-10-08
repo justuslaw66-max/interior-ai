@@ -944,7 +944,11 @@
         "args": ["playwright", "test", "-c", "playwright.cart-overlay.config.ts"],
         "exactConfigOnly": true
       },
-      "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required cart overlay accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
     },
     {
       "id": "ci.retailer-confirmation-accessibility",
@@ -1051,7 +1055,11 @@
         "args": ["playwright", "test", "-c", "playwright.retailer-confirmation.config.ts"],
         "exactConfigOnly": true
       },
-      "ci": { "job": "stable-checks", "step": "Run required Retailer Confirmation accessibility matrix" }
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Retailer Confirmation accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
     },
     {
       "id": "ci.guest-save-overlay-accessibility",

@@ -6,6 +6,13 @@ if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65_535) {
   throw new Error("CART_OVERLAY_TEST_PORT must be a TCP port from 1 to 65535.");
 }
 const localBaseURL = `http://127.0.0.1:${port}`;
+// CI sets this to serve the strict build it made, as the Pro visual matrix does; local and
+// certification runs keep the canonical development server.
+const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
+const developmentServerCommand = port === "3000" ? "npm run dev" :
+  `node scripts/dev-preflight.mjs && env -u DEBUG node node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port ${port}`;
+const productionServerCommand = port === "3000" ? "npm run start" :
+  `node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port ${port}`;
 const requiredEvidence = requiredTestPlaywrightEvidence({
   repositoryRoot: process.cwd(),
   expectedGateId: "ci.cart-overlay-accessibility",
@@ -45,8 +52,7 @@ export default defineConfig({
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   webServer: {
-    command: port === "3000" ? "npm run dev" :
-      `node scripts/dev-preflight.mjs && env -u DEBUG node node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port ${port}`,
+    command: useProductionServer ? productionServerCommand : developmentServerCommand,
     url: localBaseURL,
     reuseExistingServer: requiredTestGateId ? false : !process.env.CI,
     timeout: 120_000,

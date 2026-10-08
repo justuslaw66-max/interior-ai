@@ -13,7 +13,9 @@ exists.
 
 CH-0015A's gate keeps its id (`ci.cart-overlay-accessibility`), its owner
 (`cart`, the development server), its files, package scripts and CI step, as
-the My designs and Retailer gates did (J, 27 Sep). It now pins the Shopping
+the My designs and Retailer gates did (J, 27 Sep). Since 8 Oct CI serves its
+strict build to this gate (`PLAYWRIGHT_USE_PRODUCTION_SERVER=1` in the step);
+other runs keep the development server. It now pins the Shopping
 list in the real editor, opened on a design kept in this browser (three
 Castlery products in the Living Room, seeded as the local backup before the
 page loads):

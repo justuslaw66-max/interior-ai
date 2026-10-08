@@ -9,9 +9,9 @@ const requiredEvidence = requiredTestPlaywrightEvidence({
 });
 const requiredTestGateId = requiredEvidence.gateId;
 
-if (process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER) {
-  throw new Error("Retailer confirmation evidence owns the canonical Cart development server.");
-}
+// CI sets this to serve the strict build it made, as the Pro visual matrix does; local and
+// certification runs keep the canonical development server.
+const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
 
 export default defineConfig({
   testDir: "./tests/required",
@@ -42,7 +42,7 @@ export default defineConfig({
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   webServer: {
-    command: "npm run dev",
+    command: useProductionServer ? "npm run start" : "npm run dev",
     url: localBaseURL,
     reuseExistingServer: requiredTestGateId ? false : !process.env.CI,
     timeout: 120_000,
