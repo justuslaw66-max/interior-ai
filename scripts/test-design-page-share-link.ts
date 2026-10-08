@@ -126,18 +126,25 @@ async function main() {
   );
   assert.match(
     read("lib/useDesignPageShareLink.ts"),
-    /setShareLinkFallback\(fallback && \{ \.\.\.fallback, standalone: true \}\)/,
-    "A link from the Share button should open its fallback dialog on its own.",
+    /shareDesignSavingFirst\(designId, saveFirst, \(id\) => createAndCopyShareLink\(id, updates\)\)/,
+    "The Share button saves a new design first, then creates and copies its link.",
+  );
+  assert.doesNotMatch(read("lib/useDesignPageShareLink.ts"), /standalone|createShareLinkAndCopy/, "Share is the one way to make a link.");
+  const dialogLayer = read("components/editor/design-page/DesignPageDialogLayer.tsx");
+  assert.match(
+    dialogLayer,
+    /const open = Boolean\(overlays\.shareFallback\.url\);/,
+    "The fallback dialog opens whenever the clipboard refused Share's link.",
   );
   assert.match(
-    read("components/editor/design-page/DesignPageDialogLayer.tsx"),
-    /const open = \(parentOpen \|\| overlays\.shareFallback\.standalone\) && Boolean\(overlays\.shareFallback\.url\);/,
-    "The fallback dialog should open for the Share button without Present & export.",
+    dialogLayer,
+    /scopeKey: `\$\{overlays\.shareFallback\.designId \?\? "unsaved"\}:\$\{overlays\.shareFallback\.lifecycleMode\}`/,
+    "Another design or mode starts a new fallback, so an old one never returns focus.",
   );
   assert.match(
     read("lib/share-link-fallback-dialog-focus.ts"),
-    /PRESENT_EXPORT_CLOSE_ACTION_ID,\s*GUEST_SHARE_OPENER_ID,/,
-    "Closing a Share button fallback should return focus to Share.",
+    /SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS = \[GUEST_SHARE_OPENER_ID\] as const;/,
+    "Closing the fallback returns focus to Share.",
   );
 
   const persistenceSource = readFileSync(

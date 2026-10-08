@@ -48,7 +48,7 @@ type RoomPanNavigatorState = Omit<
 >;
 type RoomPanNavigatorConfiguration = Pick<
   RoomPanNavigatorProps,
-  "dark" | "disabled"
+  "dark"
 >;
 type RoomPanNavigatorActions = Pick<
   RoomPanNavigatorProps,

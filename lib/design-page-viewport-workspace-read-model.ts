@@ -240,7 +240,6 @@ function buildViewportConfiguration(
     selectionInspectorTopPx: planWorkspace.derived.selectionInspectorTopPx,
     selectionInspectorWidthPx: planWorkspace.derived.selectionInspectorWidthPx,
     planQualityReviewTopPx: quality.reviewPanelTopPx,
-    editorMode: viewportShell.state.editor.editorMode,
     importedWallEditor: { dark, vectorExport: { underlay: viewportShell.state.floorPlan.floorPlanUnderlay,
       sourceJobId: coreShell.state.document.designSnapshot.floorPlan?.sourceJobId,
       furniture: { rooms: coreShell.state.document.designSnapshot.rooms,

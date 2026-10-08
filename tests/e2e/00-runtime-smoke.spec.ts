@@ -2204,8 +2204,11 @@ test.describe("00. Runtime smoke", () => {
       }
       checkpoint("entry-selected");
 
-      const studioTemplate = page.getByTestId("apply-furnished-template-studio");
-      if (await studioTemplate.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      // "Choose a template" opens Start a new design at its Templates (UX ST8).
+      if (await page.getByTestId("start-design-chooser").isVisible({ timeout: 5_000 }).catch(() => false)) {
+        await page.getByTestId("start-template-furnished").click();
+        const studioTemplate = page.getByTestId("start-template-studio");
+        await expect(studioTemplate).toBeEnabled({ timeout: 30_000 });
         await studioTemplate.click();
         await confirmPlanTemplateReplacementIfNeeded(page);
       }

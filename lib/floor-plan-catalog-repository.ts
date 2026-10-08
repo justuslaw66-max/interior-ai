@@ -6,12 +6,10 @@ import {
   type FloorPlanLibrarySearchResult,
 } from "@/lib/floor-plan-address-search";
 import type { FloorPlanExactSearch } from "@/lib/floor-plan-directory-contract";
-import type {
-  FloorPlanAddressTransform,
-  FloorPlanVerificationTier,
-} from "@/lib/floor-plan-imports/types";
+import type { FloorPlanAddressTransform, FloorPlanVerificationTier } from "@/lib/floor-plan-imports/types";
 import { hasPublicFloorPlanPublicationEvidence } from "@/lib/floor-plan-imports/publication-evidence";
 import { publicFloorPlanRoomDisplayName } from "@/lib/floor-plan-imports/public-document";
+import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
 import {
   floorPlanPublicDisplayMetadataSchema,
   type FloorPlanPublicDisplayMetadata,
@@ -168,6 +166,7 @@ function extractPublicRoomMetadata(documentValue: unknown) {
         safe = false;
         return [];
       }
+      if (isFloorPlanVoidRoom({ roomType: room.roomType })) return []; // a void (duct, shaft) is not a room to list
       const name = publicFloorPlanRoomDisplayName(room.roomType);
       if (!name) {
         safe = false;

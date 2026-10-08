@@ -26,6 +26,8 @@ export type DownloadDialogProps = {
 /**
  * Download (audit findings SX2 and PR6): pictures of the 3D view, or a PDF with them and the
  * shopping list. Free limits are stated here, instead of in an upgrade pop-up after the download.
+ * While it's open the 3D view shows the presentation lighting the files use (J, 30 Sep: it took
+ * this over from Present & export).
  */
 export function DownloadDialog(props: DownloadDialogProps) {
   const { open, dark, onClose } = props;
@@ -47,6 +49,9 @@ export function DownloadDialog(props: DownloadDialogProps) {
       contentClassName="space-y-3"
     >
       <DownloadChoices {...props} />
+      <p data-testid="presentation-lighting-status" className="text-xs opacity-80">
+        While this is open, the 3D view shows presentation lighting and quality, which pictures and PDFs use.
+      </p>
       {props.freeLimits ? <FreeLimitsNote {...props} /> : null}
     </EditorDialog>
   );

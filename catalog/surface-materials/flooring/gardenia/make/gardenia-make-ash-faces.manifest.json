@@ -1,0 +1,457 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ASH - minimali.zip (18625064 bytes, sha256 d880127f9823420ee116d2f909795a77f4012c8512b543c3e4d3d5bc88b9d405).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73022",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/g0073022-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73022_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-ash-g0073022-80x80-90775-0; wall gardenia-wall-tile-make-ash-g0073022-80x80-90775-0",
+   "faces": [
+    {
+     "file": "g73022_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9222,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ASH - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "097db491c2066be58c76790b3b75dfa40802ba915127b0040787ebf0bc08f877",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ASH_80X80_1",
+      "id": "9e2d9c57-3aa7-420c-9b5a-280c12c61c2e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73022_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8200,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ASH - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "85daf4a105ee43e014039af4cea1f9ff30f19c703950b060a8411ce5abca6d73",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ASH_80X80_2",
+      "id": "70832f3a-a0c0-41e8-92f9-cf878a80c417",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73022_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9982,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ASH - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a3bd968221f8c245771ae4e56bd67bebcf39831814d20b3a421dc35963ca02d7",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ASH_80X80_3",
+      "id": "56929870-d6eb-4642-8016-5c285b0fbad6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73022_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8954,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - ASH - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e2d82183a05480373e7d518b424edef4ad7f2b9ff70c375f0a2547f38c6cd61e",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ASH_80X80_4",
+      "id": "fd94b858-510b-4ecd-9d12-9387454dbe99",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73042",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/g0073042-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73042_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-ash-g0073042-100x100-90781-0; wall gardenia-wall-tile-make-ash-g0073042-100x100-90781-0",
+   "faces": [
+    {
+     "file": "g73042_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8502,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ASH - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5c848e795b9092e73d8441741a123cbbd54daba9ab5243e4fc72bc51880b655a",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ASH_100X100_1",
+      "id": "711bf288-de73-4a24-b095-bfa458f18dba",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73042_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 4604,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ASH - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "22860ffc65115d7cc42d58e9d452d9bbaed675dd3693748e166d094364c92c5f",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ASH_100X100_2",
+      "id": "e5caea5c-70c0-4852-8db6-98a04e237026",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73042_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 6598,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ASH - 100X100 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2ea25cd61557f7247241abc6c102171c074b167927c517860a76846614781996",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ASH_100X100_3",
+      "id": "0673105f-d8c0-4c1d-a056-125e422c5157",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73042_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 7140,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - ASH - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5200fae4bb286c422e53ef1b0b58b3fdaa629a24c30ef40874f71f3eb0b328f9",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ASH_100X100_4",
+      "id": "ade9e84b-236f-4ca3-be17-de2acdcf9991",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73222",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/g0073222-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73222_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-ash-g0073222-60x120-90807-0; wall gardenia-wall-tile-make-ash-g0073222-60x120-90807-0",
+   "faces": [
+    {
+     "file": "g73222_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5922,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ASH - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bbb21828a85c7ae39c2260ebac6d030488900e05e48e275a30471dd9eb3eaead",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ASH_60X120_1",
+      "id": "d5052ddb-777f-4ab8-a5ec-88d813882fc8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73222_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7066,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ASH - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "113af0df09ebade4175d05ebad32d8cc19971b6b7f30b73579a321c886b27ef5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ASH_60X120_2",
+      "id": "9d5e37df-6726-4c4a-8adb-6383829e504a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73222_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5620,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ASH - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c2bebf876950f93701129110994143504bd832d2f06c5c89d605ed218efb45a6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ASH_60X120_3",
+      "id": "a3a37754-e15d-476e-b508-f11c6c512e9a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73222_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10274,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - ASH - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "402c6685a140404299c355c726e2b2e99ae3aefda0c842b4ad7127e46c031040",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ASH_60X120_4",
+      "id": "b616e846-1848-48f4-b800-d44c218953e8",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73212",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/g0073212-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73212_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-ash-g0073212-60x60-90801-0; wall gardenia-wall-tile-make-ash-g0073212-60x60-90801-0",
+   "faces": [
+    {
+     "file": "g73212_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3174,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ASH - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "94c8830b30097e6e57fa5dd8db3f04ef362fe72027c86073096390c5098aeb0d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_ASH_60X60_1",
+      "id": "9aa585ab-c37f-47cf-a520-b41be29351aa",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73212_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2820,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ASH - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ec5ae8450c5815685a6f3676b64e8ce6b362b21090b6e2012a7ed16d4ff4f1b6",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_ASH_60X60_2",
+      "id": "119d5c8e-095f-48fb-b2c9-2660c14d7be4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73212_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3642,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ASH - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "19fce25bb071e60fbba717197ad15700af3968675a609e22fc6ca478acd313d0",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_ASH_60X60_3",
+      "id": "4166bf98-6ab5-47ef-a5e8-2c8531a670b3",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73212_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3476,
+     "source_zip": "MAKE - ASH - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - ASH - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "90e04e884c68e45d645862a1461fd8b26e121fa0f1af2841335b8fba61e734ee",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_ASH_60X60_4",
+      "id": "6ca8a50e-6b90-48f4-84c4-c5ee38df9978",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

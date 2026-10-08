@@ -1,0 +1,436 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/bianco/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - BIANCO - minimali.zip (17284038 bytes, sha256 4557ba2b9c08a53edcc9b31e0e2b714a112c9f1930a8c309aa53d14e1d1b1ada).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73020",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/bianco/g0073020-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73020_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-bianco-g0073020-80x80-90773-0; wall gardenia-wall-tile-make-bianco-g0073020-80x80-90773-0",
+   "faces": [
+    {
+     "file": "g73020_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 7380,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - BIANCO - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "74ddc0c4807185cf01ed250cb70a865a24ac1b9904bea0658a7e835d60b5eea1",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_BIANCO_80X80_1",
+      "id": "af8db352-7d81-4d07-85c9-7f2a61fca266",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73020_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 6314,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - BIANCO - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ce0a5a6e3205572acbee7f8ddd7050b3ca25561d49910cb5a37a65256dcfa665",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_BIANCO_80X80_2",
+      "id": "f61f3e95-58d3-472d-a53d-1aabb3728d65",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73020_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8824,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - BIANCO - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e80ad15f2d09f3ae314f67aa32d259aecc69f88ae3463a7f64d49e816e23c8d6",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_BIANCO_80X80_3",
+      "id": "e66ac2a4-0c46-4c93-a7cb-4e3cb5d436c3",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73020_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 7112,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - BIANCO - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "16605c0842d08c673c845e4ffe7585d1ab5b3bdf4c0863e5fb2f6f07cb6df088",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_BIANCO_80X80_4",
+      "id": "76f41172-9da6-41a4-b39e-e05ad5be897d",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73040",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/bianco/g0073040-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73040_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    4
+   ],
+   "used_by": "floor gardenia-flooring-make-bianco-g0073040-100x100-90779-0; wall gardenia-wall-tile-make-bianco-g0073040-100x100-90779-0",
+   "faces": [
+    {
+     "file": "g73040_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 5442,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - BIANCO - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fbb9ee8cd7e6aa5d80b2b611b5e6976fcfe71f5005c9f41cb497e667d18536e6",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_BIANCO_100X100_1",
+      "id": "cffe9a12-158c-4421-95df-6c41e18046c7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73040_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 6928,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - BIANCO - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cd2516b7331851bdde887c34e6fa2fef3f8145a91784d7dbdcbe3144fedf09e0",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_BIANCO_100X100_2",
+      "id": "052a64c3-9aa4-47fc-b666-eb032dde011a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73040_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 7128,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - BIANCO - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "676df3eebe1af943c1c58ab25f1672d9e694538300149298035d25ff09e3431e",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_BIANCO_100X100_3",
+      "id": "993c995c-b710-44b0-85b7-e343eeee0698",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73220",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/bianco/g0073220-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73220_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-bianco-g0073220-60x120-90805-0; wall gardenia-wall-tile-make-bianco-g0073220-60x120-90805-0",
+   "faces": [
+    {
+     "file": "g73220_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5896,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - BIANCO - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "74667b4f353124d4ceaacc41d4d9d5c4b13e8343aea2155eb17f9645c97dedca",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_BIANCO_60X120_1",
+      "id": "7688bb63-68d0-4fe6-b3a6-c867c590e6af",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73220_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4586,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - BIANCO - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "23ded59a190f3fa848fd2e166ed4ed2bf722b5d6c26480d3b3a5b2148eb93196",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_BIANCO_60X120_2",
+      "id": "2672c924-16e1-4cfb-8b63-18e731cdcbe0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73220_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3996,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - BIANCO - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7b6b051432ffdb388cb9cb9ec45007fcd195e1546d3abd7f3c04189ef1776910",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_BIANCO_60X120_3",
+      "id": "f25c123b-c7e7-4afc-ba97-8bab0fac7150",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73220_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6628,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - BIANCO - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cde1bd333db29254d72051ab2594e0c1f1e4c53915918d7270117a3531f5ad4b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_BIANCO_60X120_4",
+      "id": "f0fbe829-5574-4bfc-83e7-d6911032b18f",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73210",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/bianco/g0073210-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73210_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-bianco-g0073210-60x60-90799-0; wall gardenia-wall-tile-make-bianco-g0073210-60x60-90799-0",
+   "faces": [
+    {
+     "file": "g73210_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3184,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - BIANCO - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a896cb545ae6f07c2cdf05e367c2a890d36f62be9751660278d2ce6e1a8397e9",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_BIANCO_60X60_1",
+      "id": "08593523-6ff3-4b05-a02b-2814fd68031b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73210_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2758,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - BIANCO - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "373d6b5e70ce9718a38df631c3b8603145e27fe56ca4ec2cc633aeafa5ef8590",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_BIANCO_60X60_2",
+      "id": "cddd9573-9648-4f15-884f-f418e733d639",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73210_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2154,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - BIANCO - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "40afaac92e4c413978ce747c66910e4ea4c5f24dde4b9cc935f9c437e229dc3d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_BIANCO_60X60_3",
+      "id": "f553bc2f-2133-4155-b569-1485e5dce911",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73210_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3472,
+     "source_zip": "MAKE - BIANCO - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - BIANCO - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0395eff7b8dffb05522ac0f175b39afa5aabaf784f6c38f4f59d7e4ca677530a",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_BIANCO_60X60_4",
+      "id": "3f455bd4-2106-4090-bb6c-08c9d95500e8",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

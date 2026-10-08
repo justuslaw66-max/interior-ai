@@ -72,10 +72,6 @@ export function useDesignPageEditorInteractionRegistration({
         hasWholeHousePlan: sceneRoom.derived.scene.hasWholeHousePlan,
         designRoomCount: snapshotDocument.state.designSnapshot.rooms.length,
         rooms: housePlan2D.rooms,
-        items,
-        selectedItem: itemSelection.state.selectedItem ?? null,
-        selectedProduct:
-          selectionInspection.derived.selectedProduct ?? null,
       },
       canvas: {
         showGrid,
@@ -90,7 +86,7 @@ export function useDesignPageEditorInteractionRegistration({
         viewportSize: planViewport.state.diagnostics.viewportSize,
         planFitBounds: planWorkspace.derived.plan2DFitBounds,
         planSafeAreaLeftPx: planWorkspace.derived.plan2DSafeAreaLeftPx,
-        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx,
+        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx, planSafeAreaLiveRightPx: planWorkspace.derived.plan2DSafeAreaLiveRightPx,
         planSafeAreaTopPx: planWorkspace.derived.plan2DSafeAreaTopPx, planSafeAreaBottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
         floatingPlanOverlayStackVisible:
           planWorkspace.derived.floatingPlanOverlayStackVisible,

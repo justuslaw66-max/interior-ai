@@ -9,7 +9,9 @@ and one "Buy at <shop>" per shop. `CartSidebar`, `ShoppingOverviewPanel`,
 
 CH-0015G's gate keeps its id (`ci.retailer-confirmation-accessibility`), its
 owner (`retailer`, the development server), its files, package scripts and CI
-step, as the My designs gate did in 3b-3b. It now owns the buy list.
+step, as the My designs gate did in 3b-3b. It now owns the buy list. Since
+8 Oct CI serves its strict build to this gate (`PLAYWRIGHT_USE_PRODUCTION_SERVER=1`
+in the step); other runs keep the development server.
 
 ### Why a buy list, not a burst of tabs
 

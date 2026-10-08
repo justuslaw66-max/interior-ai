@@ -1,0 +1,220 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/art-beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: FALAISE - ART BEIGE - minimali.zip (11085321 bytes, sha256 28de63d59a71f6898539cca941f7b86d592947b55af56836dd17795e92c0827b).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/falaise/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0010804",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/art-beige/pf60010804-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010804_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-falaise-art-beige-0010804-60x120-196284-0",
+   "faces": [
+    {
+     "file": "0010804_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 85320,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "30aae14aad90cb87b702fc2d027a0260c3135d11cdf362f373cada238335d2f2",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE ART BEIGE 60X120_04",
+      "id": "5aea8835-e068-42b1-a1e1-1bc1af34e07e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010804_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 84490,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "22d678b0b7c302d7bccc092b746f6dc956879d0b8660eec0c3dbd2850cfb1c8e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE ART BEIGE 60X120_05",
+      "id": "36938941-a555-440a-b022-46b77b969d61",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010804_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 87686,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "12e88af43f0432e8d151f7404e75342b648c60be1cfadba8f872cdc3053460e4",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE ART BEIGE 60X120_03",
+      "id": "9e9191cb-ccfe-4ca7-b3eb-b1b4c9465acb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010804_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86566,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "36ee7755f43e663cf35b3eb5d656a857fefc16477835e5ef592c05c736b0b14a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE ART BEIGE 60X120_01",
+      "id": "5c288841-0ef7-46d9-9810-235a78fdebbc",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010804_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86342,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "bda83ca1286b691288e3ce138ce4a4aa5ce74f1c8aceb2bca3e5cbe543a58b26",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE ART BEIGE 60X120_02",
+      "id": "0e70cdaf-f795-42b8-8321-47089b2ea946",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010804_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 83782,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "6c08b1e54b09d4a8d82a9febe0df3a26cfdd830f77dd99b862bf6dc0f6d4a4f4",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE ART BEIGE 60X120_06",
+      "id": "4cedaead-415c-4c16-bda7-e2b2a759c09f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010804_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 85948,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "dc1185357aa8e52852f7ec236c00b4b1693d16d1545aae236b673d62419e895e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE ART BEIGE 60X120_07",
+      "id": "5f760e3f-2f69-48e5-926a-a542ece943db",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010804_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 89238,
+     "source_zip": "FALAISE - ART BEIGE - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - ART BEIGE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2400,
+      1213
+     ],
+     "source_sha256": "f5bce93f0f344bfac21ef7dd9c9e2116436353ca8c36fc8df15b624ace990008",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE ART BEIGE 60X120_08",
+      "id": "73fe7381-d62b-4117-82e5-90eddb21ce76",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

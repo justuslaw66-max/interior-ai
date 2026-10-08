@@ -27,8 +27,6 @@ export type UseDesignPagePresentationExportRuntimeInput = {
   };
   actions: {
     setClientPreview: ExportActions["setClientPreview"];
-    setUpgradeReason: ExportActions["setUpgradeReason"];
-    setShowUpgrade: ExportActions["setShowUpgrade"];
     updateProjection: ExportActions["updateProjection"];
     showToast: ExportActions["showToast"];
     logFunnelEvent: ExportActions["logFunnelEvent"];
@@ -68,8 +66,6 @@ export function useDesignPagePresentationExportRuntime({
     state: { ...state.presentation, items: state.document.items },
     actions: {
       setClientPreview,
-      setUpgradeReason: actions.setUpgradeReason,
-      setShowUpgrade: actions.setShowUpgrade,
       updateProjection: actions.updateProjection,
       showToast: actions.showToast,
       logFunnelEvent: actions.logFunnelEvent,

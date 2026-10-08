@@ -1,0 +1,881 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/green/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (OXIDE - GREEN - minimali.zip, 25257351 bytes, sha256 0a6826d0e44861c9a2d9084e678e03cca724ed6ff286045caa23516703dcd240).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/oxide/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g69303",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/green/g69303-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g69303_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-green-g69303-120x280-90836-0; wall gardenia-wall-tile-oxide-green-g69303-120x280-90836-0",
+   "faces": [
+    {
+     "file": "g69303_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 258336,
+     "source_file": "120X280-Natural/OXIDE - GREEN - 120X280 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "8bafb8c30388b3ebe5dd01c84d34ebb0defea5067d4a3fccd7c6fa70436055aa",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "GREEN 120X280_1",
+      "id": "29adf96b-d85a-4216-996c-cb4702b8f1b0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69303_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 194876,
+     "source_file": "120X280-Natural/OXIDE - GREEN - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "caa1dc217bcafe5a70070a3b9eb3cab7beca91cc435e8736d0b351df662acdcc",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "GREEN 120X280_3",
+      "id": "0edeaa25-3956-4fbf-a2ab-d4a94f141b9a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69303_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 241230,
+     "source_file": "120X280-Natural/OXIDE - GREEN - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1238,
+      2800
+     ],
+     "source_sha256": "b4da565dac6cb58039364f76d1787410b5fc8d4c50e2645150748bf6b47d01e8",
+     "source_px_per_mm": 1.0,
+     "orientation": "upright",
+     "cropped": "38 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "GREEN 120X280_2",
+      "id": "445f0f3f-59c0-4d3f-8a3b-88213911496e",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g69313",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/green/g69313-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g69313_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-green-g69313-120x120-90841-0; wall gardenia-wall-tile-oxide-green-g69313-120x120-90841-0",
+   "faces": [
+    {
+     "file": "g69313_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106394,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "20ac58d8f5ff749bea5e24335dba408c361a53299950d574cc9af827b834b2f4",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "GREEN 120X120_1",
+      "id": "73624014-cdbd-4905-8b40-ad4398a4d498",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69313_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108816,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "f8ddb661ceb99736f7a7f53ed125db326acb033c1fde39a76262527ae2faefab",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "GREEN 120X120_3",
+      "id": "90a431e0-70df-48be-adc7-7b30996e7ff5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69313_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96892,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "476f55656cf04a7966f2c1748bf68e005cf11173304ee36a2b9e70f58edb00fb",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "GREEN 120X120_4",
+      "id": "ddae297c-81c8-4954-a73d-ded6e5ef8636",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69313_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 88852,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "eb2b88ce90bd3f833106b4e8ac07abfdfd27746772371895c29bb4d09c57acfa",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "GREEN 120X120_5",
+      "id": "a1b363b7-32b4-48c0-bd4d-cb18f25d3aa8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69313_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85982,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "a83f916ebc7add9ae97d0194565f9bf8d0f98c418df6e56d44a1452c272d5067",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "GREEN 120X120_6",
+      "id": "6e86b322-b280-4613-aef5-89829d979b14",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69313_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 115480,
+     "source_file": "120X120-Natural/OXIDE - GREEN - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      1238,
+      1238
+     ],
+     "source_sha256": "4ba1ca6229c95793ccfd3ca038a4e898b83a17db6b1818ae5bdb760d2a527a92",
+     "source_px_per_mm": 1.032,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "GREEN 120X120_2",
+      "id": "23f6b69e-95f0-4b03-9e6c-b44908a08b39",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g69323",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/green/g69323-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g69323_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-green-g69323-60x120-90846-0; wall gardenia-wall-tile-oxide-green-g69323-60x120-90846-0",
+   "faces": [
+    {
+     "file": "g69323_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54874,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "a7ef49f71d0c99f068a32479423bfca22dad5958cde730d20477a4085ba221de",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "GREEN 60X120_1",
+      "id": "4404cf89-18fa-45ec-a8b9-cc7c4533aebb",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69323_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39948,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "3b3e51f242b8ed0ec0dad2e0bf1cabec8b45ebee8bf8d547e5c272e612eafbca",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "GREEN 60X120_10",
+      "id": "a1b95955-d372-4f8d-977e-d4e3db41defe",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69323_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47948,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "b41b1880b3bb84f69ba1c1f9f317906a4da413c2d1de596e49bc4e0e4bfcab09",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "GREEN 60X120_9",
+      "id": "1bc6630c-7b1c-4a00-8513-1d3f96329e3f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69323_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45784,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "e81b4dd35e9bb0e3e6c5b898c77e269324c83888444f99986d420e0f651f1aa4",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "GREEN 60X120_12",
+      "id": "78879d56-4047-41b5-8b6e-b7c933f5b9d2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69323_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41506,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "2d25da0d5a174e8037e4dc4b99805bee872c0c2bb4526ea57c744ff50f2b9227",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "GREEN 60X120_11",
+      "id": "198ae9b3-ff09-4202-928d-631513c88f23",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69323_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48720,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "2e80d855286f94bde4bb0a7bedd20d3922723283adfc9790f738fc66b17eedd8",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "GREEN 60X120_8",
+      "id": "ed2629dc-7543-4cf4-9f94-2f4c37914438",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69323_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54430,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "95da406ed81711a876c08ed90ba0ca2276b50aeac4afc96198f0724d4d2181b0",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "GREEN 60X120_5",
+      "id": "785848f2-05c8-4b75-b624-91fbe467c057",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g69323_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55172,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "61c26cbf5c83a9a8a7f64b3f5edfa4a78a5a89ad254a5c83b847666410f40e20",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "GREEN 60X120_3",
+      "id": "3ca0ad6c-7cb2-4ca7-84c2-0fbb2466e258",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g69323_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62630,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "b9ae91c112d8bd772aa37104eec5ced9ffb3c7a1b785a08238da82fdff08db80",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "GREEN 60X120_4",
+      "id": "a16e4f51-83bf-4991-89f0-c7cb9e4bb86e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g69323_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53822,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "d70bbf122d1dcf1e150467b69c4e7c44391e266b532828ee2e33b4b0f834aa04",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "GREEN 60X120_2",
+      "id": "5fe6b86d-9425-495e-a8eb-23b09a70d39a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g69323_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53516,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "28cb61a1022d1e2cce0d50bcc7484479e0e29b28479604bea8cc78bd7d636363",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "GREEN 60X120_6",
+      "id": "7bc79c33-d069-46dc-a7b0-b481b3486c3c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g69323_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45704,
+     "source_file": "60X120-Natural/OXIDE - GREEN - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      1238,
+      619
+     ],
+     "source_sha256": "cd5f5d8fae93ddc7e17bfaaf8d258c764da1a60866059e596e4ac8f88b6ff470",
+     "source_px_per_mm": 1.032,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "GREEN 60X120_7",
+      "id": "14fb0cbd-b905-4743-862d-ae2be0c49df3",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g69333",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/green/g0069333-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g69333_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-oxide-green-g69333-80x80-90851-0; wall gardenia-wall-tile-oxide-green-g69333-80x80-90851-0",
+   "faces": [
+    {
+     "file": "g69333_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21884,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "ae422675c9833b77c677ad142d431c57b744ec8f1601a0b029cd7b78c47eb1d4",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "OXIDE_GREEN_80x80@1",
+      "id": "899ccb76-be37-467b-973e-f40b2e5fd9d2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g69333_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24362,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "10fd62dff89c7af39604a40463fa3fe78c515d223e7a6e09de087babadfbc642",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "OXIDE_GREEN_80x80@9",
+      "id": "408d4ee6-e760-4c7e-9093-1d7ed82089fe",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g69333_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31864,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "db6ab81eebafc7e6e6230f27f67f5e7d352403845abeb7bfb505df4c3f5731c7",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "OXIDE_GREEN_80x80@12",
+      "id": "d71ff4e0-0e1b-475f-a4ed-2391533bbd44",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g69333_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22986,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "7bcace05b921cf4e534b6c30162ea23a038ae233283ba2acb05b13bc79d05f8b",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "OXIDE_GREEN_80x80@2",
+      "id": "ab8d7bb6-d851-4a5c-a078-4b06983b24a5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g69333_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22430,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "efb1dcb06bb912f3ca7ea34e33ee794ca18e52c32ca04c12aa3b58e190f8f14f",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "OXIDE_GREEN_80x80@3",
+      "id": "1a7a71a9-f4b7-4be1-bead-2199667eac37",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g69333_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23882,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "25ee54cede8d1b3b8be8fccf1798ca390012cd39ece3c5f62b7b8140e2a6c5bb",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "OXIDE_GREEN_80x80@7",
+      "id": "dbe8da35-c13f-46a9-be91-3e43395e4166",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g69333_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34594,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2046,
+      2046
+     ],
+     "source_sha256": "a71d6f8dc8d3b909f934a1913936eafd06d0f7b97f816202bcdf5f7d0552328e",
+     "source_px_per_mm": 2.558,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "OXIDE_GREEN_80x80@14",
+      "id": "153bc8ed-a003-4e95-88e4-8761d1d07807",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g69333_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34030,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "0efb44ef92eb8215631a26204ac3e5289307cef3a505ecd3367585328cb83dc4",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "OXIDE_GREEN_80x80@11",
+      "id": "c4009c25-f820-46fe-a8c7-b7be4f3326d2",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g69333_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27360,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "c1bd6e5fd5873112ddd04039682c58b2f5c90c8fa25e48d7e2c0d803103abf9a",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "OXIDE_GREEN_80x80@8",
+      "id": "a5597375-9034-47d7-90a7-f69ef3a13a62",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g69333_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32634,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "efc51257fd399b2e42db723b1613dd2bcb234eb585fc7a9bfeba2b9badff85da",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "OXIDE_GREEN_80x80@13",
+      "id": "abbe1f83-f91f-4491-8aa7-cc060b496c17",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g69333_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22428,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "46e60fa5b9c3d8dedbe550dcaaebf58780bf88b3d2c27b02e7274f90c8b4b775",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "OXIDE_GREEN_80x80@6",
+      "id": "2d46075b-65d9-4670-9009-c81d45140f57",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g69333_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24790,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "67a6ab66cfb613c277bd3453f28dc5dadad8b4fc690008e4e51af761319d754c",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "OXIDE_GREEN_80x80@10",
+      "id": "5e80981b-163a-4303-9245-bd995b779eec",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g69333_13.webp",
+     "face": 13,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24486,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_13.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "5728de1e00552e409e1cd2923d7ad741f4cc004cc1b4bde36052d509790eff67",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "OXIDE_GREEN_80x80@4",
+      "id": "04948fcc-300d-4c5b-a24a-455c635ee65f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g69333_14.webp",
+     "face": 14,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24570,
+     "source_file": "80X80-Natural/OXIDE - GREEN - 80X80 - Natural - view_14.jpg",
+     "source_px": [
+      2047,
+      2047
+     ],
+     "source_sha256": "3cf2e066112f27d5c859c053511e9ae262d03dd1f718f137911dc8162e97bb06",
+     "source_px_per_mm": 2.559,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "OXIDE_GREEN_80x80@5",
+      "id": "34bd09f4-d297-48cd-9b7f-c34e11471337",
+      "site_position": 14
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,436 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - GRIGIO CORTEN - minimali.zip (29410351 bytes, sha256 c57dd2bd0e52ef287faa0cb72af69aa8a542cece5680be17b2df18f5cc2c3c62).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73025",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/g0073025-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73025_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-grigio-corten-g0073025-80x80-90778-0; wall gardenia-wall-tile-make-grigio-corten-g0073025-80x80-90778-0",
+   "faces": [
+    {
+     "file": "g73025_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 14652,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - GRIGIO CORTEN - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cb720a483819135131f56731705b95e71b4213f7c2cb94b60d3931bee7f0789d",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_GRIGIO CORTEN_80X80_1",
+      "id": "c586fb49-0ff1-402a-8684-07f7fec18197",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73025_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 26928,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - GRIGIO CORTEN - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "af52fc125e8345f8c0925ee88807430129084937b026d891e562fc778ceb5c94",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_GRIGIO CORTEN_80X80_2",
+      "id": "1245e45f-1bef-4675-b874-7a7d43697fa7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73025_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 19464,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - GRIGIO CORTEN - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f47da443105f93547d49699ddb6e7e3963c8faaeba629722bdc0f184141af768",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_GRIGIO CORTEN_80X80_3",
+      "id": "a33b5b6e-9f06-4147-a65e-4c2f425d8d27",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73025_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 18858,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - GRIGIO CORTEN - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab8c80467d5b2dd04142a30c823888019551a11e6f3dfc890df65d1cff4fc8a7",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_GRIGIO CORTEN_80X80_4",
+      "id": "5b9d37bd-fc29-4205-b6ba-c6581b1b9c33",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73045",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/g0073045-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73045_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-grigio-corten-g0073045-100x100-90784-0; wall gardenia-wall-tile-make-grigio-corten-g0073045-100x100-90784-0",
+   "faces": [
+    {
+     "file": "g73045_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 12104,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - GRIGIO CORTEN - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e407e6492fce24ae28e4addbf3756a4654dec15605b82d318d9a642e44ca8cf0",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_GRIGIO_CORTEN_100x100_1",
+      "id": "2405f544-8417-44b0-b6e4-75ef92603086",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73045_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 16006,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - GRIGIO CORTEN - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "96bcd75f8b26c73709d64ed69dedb3a3dd6756c08f5e3ea0d114bafb9f9ff7a9",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_GRIGIO_CORTEN_100x100_2",
+      "id": "61d11fbc-5d4b-42c1-a514-c855bee09378",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73045_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 15302,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - GRIGIO CORTEN - 100X100 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "af19817ecc714c4fd22c9c13b90cad5521baaf7a951f1783685b085e291770a9",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_GRIGIO_CORTEN_100x100_3",
+      "id": "57b0dedc-eda1-4d5b-8deb-471ddeeb3aef",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73045_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 13268,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - GRIGIO CORTEN - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d838b8dcab8421453a18f43b278659c04cdba90934ae1c2cd0406bbedefe30ef",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_GRIGIO_CORTEN_100x100_4",
+      "id": "ba23cc1a-21e1-4d84-8c57-a2b6ba793bda",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73225",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/g0073225-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73225_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    3
+   ],
+   "used_by": "floor gardenia-flooring-make-grigio-corten-g0073225-60x120-90810-0; wall gardenia-wall-tile-make-grigio-corten-g0073225-60x120-90810-0",
+   "faces": [
+    {
+     "file": "g73225_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16820,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - GRIGIO CORTEN - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ee3e3436e40b70bfaf0e0c7ba1d7d4174b6b65b68da9ba597377a016f1e023e8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_GRIGIO CORTEN_60X120_1",
+      "id": "87b1a368-3564-4d0b-be72-57d7a54ccd7f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73225_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7766,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - GRIGIO CORTEN - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "68013e4056e473934772df7db922fd9b193458c7c969068a522791eda6314f35",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_GRIGIO CORTEN_60X120_2",
+      "id": "1b3bcd53-1dd5-4809-88f3-b512869af250",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73225_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11818,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - GRIGIO CORTEN - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4dc0d680a4e98dea20f997626aad2ca59e8a5f73e16163c624cbdb31d0fc0d17",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_GRIGIO CORTEN_60X120_4",
+      "id": "89c1ce2e-a928-441d-ae4f-8d0b8b8cb41c",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73215",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/g0073215-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73215_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-grigio-corten-g0073215-60x60-90804-0; wall gardenia-wall-tile-make-grigio-corten-g0073215-60x60-90804-0",
+   "faces": [
+    {
+     "file": "g73215_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11372,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - GRIGIO CORTEN - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "814c380b1e3258f2654ad774fa7f61a0e8555e492ff639d97fc6cd3a38702841",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MAKE_GRIGIO CORTEN_60X60_1",
+      "id": "c0d42be2-e0bc-44a1-8ab7-d6e8e3829c0d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73215_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5848,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - GRIGIO CORTEN - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fe45b9457d4580a3256886e0c4bb1ba7bccd39b0090ba31f7d75e7effe6d47d1",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MAKE_GRIGIO CORTEN_60X60_2",
+      "id": "c7312fae-0dc4-4d1f-80ed-eb303e5bd6ec",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73215_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3252,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - GRIGIO CORTEN - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0f9f830ab2c378e16dc78833297c83506cbc8d5c032a5ad030b7a52da82711ab",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MAKE_GRIGIO CORTEN_60X60_3",
+      "id": "987a921d-3791-4c3a-b80f-ec88b1071274",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73215_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4674,
+     "source_zip": "MAKE - GRIGIO CORTEN - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - GRIGIO CORTEN - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2695ff03e7e49d2e977f834e84090d2e4044c0a845b437330717e4c2a618906e",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MAKE_GRIGIO CORTEN_60X60_4",
+      "id": "c209a01f-ba23-47e2-b993-18f0d63e758a",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -21,11 +21,18 @@ import {
   applyEntryLink,
   applyStartParam,
   buildStartChooserProps,
+  chooserAtTemplates,
   type StartChooserState,
   type UseDesignPageStartChooserInput,
 } from "../lib/useDesignPageStartChooser";
 import { answerFloorPlanUploadRequest, type FloorPlanUploadEntryInput } from "../lib/useFloorPlanUploadEntry";
 import type { FloorPlanUploadRequest } from "../lib/floor-plan-upload-request";
+import {
+  PLAN_TEMPLATE_LIBRARY_ACTION_ID,
+  requestStartTemplates,
+  START_TEMPLATES_REQUESTED_EVENT,
+  startTemplatesRequestOf,
+} from "../lib/start-templates-request";
 
 // Start a new design (audit findings FR1, FR3, ST2, ST3, ST7, ST8): the start links, the template
 // cards, the chooser's markup, what each choice does, and how the editor wires it.
@@ -111,6 +118,8 @@ assert.ok(cards.filter((card) => matchesStartTemplateFilter(card, 2)).every((car
 const noop = () => undefined;
 const chooserProps = (overrides: Partial<StartDesignChooserProps> = {}): StartDesignChooserProps => ({
   open: true,
+  atTemplates: false,
+  openerId: null,
   ready: true,
   isAuthenticated: false,
   onClose: noop,
@@ -181,7 +190,9 @@ type Recorder = {
   setChooser: Dispatch<SetStateAction<StartChooserState>>;
   last: () => StartChooserState | null;
 };
-const closedChooser: StartChooserState = { open: false, asNewDesign: false, signIn: false, signInOpenerId: null };
+const closedChooser: StartChooserState = {
+  open: false, asNewDesign: false, signIn: false, signInOpenerId: null, atTemplates: false, openerId: null,
+};
 function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}, chooser = closedChooser): Recorder {
   const calls: string[] = [];
   let latest: StartChooserState | null = null;
@@ -229,8 +240,8 @@ Object.assign(globalThis, {
     },
   },
 });
-const firstVisit: StartChooserState = { open: true, asNewDesign: false, signIn: false, signInOpenerId: null };
-const newDesign: StartChooserState = { open: true, asNewDesign: true, signIn: false, signInOpenerId: null };
+const firstVisit: StartChooserState = { ...closedChooser, open: true };
+const newDesign: StartChooserState = { ...closedChooser, open: true, asNewDesign: true };
 type ChooserInputState = Partial<UseDesignPageStartChooserInput["state"]>;
 const choose = (chooser: StartChooserState, run: (props: StartDesignChooserProps) => void, state: ChooserInputState = {}) => {
   const { input, calls, setChooser } = recorder(state, chooser);
@@ -261,6 +272,27 @@ assert.deepEqual(
 );
 assert.deepEqual(choose(newDesign, (props) => props.onChooseBlank()), ["chooser:closed", "requireChoice", "apply:blank_room"]);
 assert.deepEqual(choose(newDesign, (props) => props.onSearchAddress()), ["chooser:closed", "newDesignTemplatePicker"]);
+// Plan's "Choose a template" (ST8): the chooser at Templates, focus back to that button; a template
+// replaces a design with content only after asking (applyPlanTemplate's own check), as Plan's list did.
+const atTemplates = chooserAtTemplates(PLAN_TEMPLATE_LIBRARY_ACTION_ID);
+assert.deepEqual(atTemplates, { ...firstVisit, atTemplates: true, openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID });
+const atTemplatesProps = buildStartChooserProps(atTemplates, noop, recorder().input);
+assert.equal(atTemplatesProps.atTemplates, true);
+assert.equal(atTemplatesProps.openerId, PLAN_TEMPLATE_LIBRARY_ACTION_ID);
+assert.equal(buildStartChooserProps(newDesign, noop, recorder().input).atTemplates, false);
+assert.deepEqual(
+  choose(atTemplates, (props) => props.onChooseTemplate(firstCard, false), { designIsEmpty: false }),
+  ["chooser:closed", `apply:${firstCard.template.id}`]
+);
+assert.deepEqual(choose(atTemplates, (props) => props.onSearchAddress()), ["chooser:closed", "templatePicker"]);
+requestStartTemplates({ openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID });
+assert.deepEqual(dispatched.splice(0), [START_TEMPLATES_REQUESTED_EVENT]);
+assert.deepEqual(dispatchedDetails.splice(0), [{ openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID }]);
+assert.deepEqual(
+  startTemplatesRequestOf(new CustomEvent(START_TEMPLATES_REQUESTED_EVENT, { detail: { openerId: "plan-start-template-action" } })),
+  { openerId: "plan-start-template-action" }
+);
+assert.deepEqual(startTemplatesRequestOf(new Event(START_TEMPLATES_REQUESTED_EVENT)), { openerId: null });
 // A design with content, reached without New design (a guest's upload link): the template flow asks.
 assert.deepEqual(choose(firstVisit, (props) => props.onChooseDraw(), { designIsEmpty: false }), ["chooser:closed", "apply:blank_room+then", "drawRoom"]);
 // Upload: guests sign in first (ST3), and focus comes back to the Upload card; members get Plan
@@ -379,11 +411,26 @@ assert.match(
 assert.match(read("lib/design-page-dialog-layer-model.ts"), /startChooser: persistence\.startChooser,/);
 assert.match(read("lib/design-page-dialog-layer-adapter.ts"), /startChooser: dialogs\.startChooser,/);
 assert.match(read("components/editor/design-page/DesignPageDialogLayer.tsx"), /<StartDesignChooser \{\.\.\.dialogs\.startChooser\} \/>/);
+assert.match(
+  chooserHook,
+  /window\.addEventListener\(START_TEMPLATES_REQUESTED_EVENT, open\);[\s\S]*?useStartTemplatesRequest\(setChooser\);/,
+  "Plan's \"Choose a template\" opens the chooser wherever it is."
+);
 const chooserComponent = read("components/editor/start/StartDesignChooser.tsx");
 assert.match(
   chooserComponent,
-  /focusRestorationEnabledRef\.current = false;\s*handOverToAddressSearch\(onClose, props\.onSearchAddress\);/,
-  "Search by HDB address hands focus to Plan's template list, which returns it to More."
+  /focusRestorationEnabledRef\.current = false;\s*handOverToAddressSearch\(onClose, props\.onSearchAddress, props\.openerId\);/,
+  "Search by HDB address hands focus to Plan's address search, which returns it to the chooser's opener or More."
+);
+assert.match(
+  chooserComponent,
+  /\(openerId \? \[openerId, CLIENT_PREVIEW_FALLBACK_ACTION_ID\] : START_DESIGN_RETURN_FOCUS_IDS\)/,
+  "Closing hands focus back to Plan's \"Choose a template\", else More."
+);
+assert.match(
+  chooserComponent,
+  /if \(open && atTemplates\) templatesHeadingRef\.current\?\.scrollIntoView\(\{ block: "start" \}\);[\s\S]*?initialFocusRef: atTemplates \? templatesHeadingRef : undefined,/,
+  "Opened at Templates, it scrolls to them and focuses their heading."
 );
 
 console.log("Start a new design tests passed.");

@@ -19,7 +19,7 @@ import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { useCallback, useRef, useState, type ReactNode } from "react";
-type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
+type EditorMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorCommandBarProps = {
   isClientPreview: boolean;
@@ -44,7 +44,6 @@ type EditorCommandBarProps = {
   millworkActive?: boolean;
   onFurnish: () => void;
   onShop: () => void;
-  onExport: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onViewModeChange: (next: EditorViewMode) => void;
@@ -64,7 +63,6 @@ type EditorCommandBarProps = {
   designTitle?: string; onRenameDesign?: () => void;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
-  onOpenPresentExport: () => void;
   contextSlot?: ReactNode;
   overflowSlot?: ReactNode;
   lightingSettingsSlot?: ReactNode;
@@ -107,7 +105,7 @@ function commandBarMenuClasses(dark: boolean, wide: boolean) {
  * status, Save and Share; the steps are a bar along the bottom.
  */
 export default function EditorCommandBar(props: EditorCommandBarProps) {
-  const { isClientPreview, dark = false, editorMode, viewMode, isDesigner } = props;
+  const { isClientPreview, dark = false, viewMode, isDesigner } = props;
   const { designSidebarCollapsed, onToggleDesignSidebar, onOpenMyDesigns, showLoadDesign } = props;
   const { saveStatus, onRetrySaveStatus, contextSlot, overflowSlot, lightingSettingsSlot } = props;
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
@@ -152,13 +150,11 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       showLoadDesign={showLoadDesign}
       isDesigner={isDesigner}
       isClientPreview={isClientPreview}
-      presentModeActive={editorMode === "present"}
-      onExport={props.onExport}
       lightingAvailable={viewMode === "3d" && Boolean(lightingSettingsSlot)}
       overflowSlot={overflowSlot}
       onOpenMyDesigns={onOpenMyDesigns} onNewPlan={props.onNewPlan}
       onToggleDesignerMode={props.onToggleDesignerMode} onToggleClientPreview={props.onToggleClientPreview}
-      onOpenPresentExport={props.onOpenPresentExport} onFeedback={props.onFeedback} onDownload={props.onDownload}
+      onFeedback={props.onFeedback} onDownload={props.onDownload}
       onRenameDesign={props.onRenameDesign}
       onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
     />

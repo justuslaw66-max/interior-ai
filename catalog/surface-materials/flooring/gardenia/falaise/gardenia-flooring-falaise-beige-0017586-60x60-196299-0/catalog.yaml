@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 34 single item pictures of item 0017526 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/beige/pf60017526-v102/), because ABK's 10 R11 pictures (on Plein Air's page) are 10 of 0017526's 34 Natural pictures, byte for byte. Downloaded signed in on 2026-10-08, stored at 0.6 px per mm; the originals are sharper, see gardenia-falaise-beige-faces.manifest.json. Each covers 600x600 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0017586/0/196299 for floor use.
     - "Configurator format: 60x60; surface destination: PAVIMENTO."
@@ -67,16 +68,122 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/falaise/0017526.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/falaise/0017526.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/falaise/0017526_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/falaise/0017526_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 60
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 600
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_01.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_02.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_03.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_04.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_05.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_06.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_07.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_08.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_09.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_10.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_11.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_12.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_13.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_14.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_15.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_16.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_17.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_18.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_19.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_20.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_21.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_22.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_23.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_24.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_25.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_26.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_27.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_28.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_29.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_30.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_31.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_32.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_33.webp
+      width_mm: 600
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017526_34.webp
+      width_mm: 600
+      height_mm: 600
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -104,12 +211,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

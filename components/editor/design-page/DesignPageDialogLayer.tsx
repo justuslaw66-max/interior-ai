@@ -45,10 +45,6 @@ import {
   type PlanTemplateChoiceDialogProps,
 } from "@/components/editor/design-page/PlanTemplateChoiceDialog";
 import {
-  PresentExportDialog,
-  type PresentExportDialogProps,
-} from "@/components/editor/design-page/PresentExportDialog";
-import {
   RoomRenameDialog,
   type RoomRenameDialogProps,
 } from "@/components/editor/design-page/RoomRenameDialog";
@@ -67,7 +63,6 @@ export type DesignPageDialogLayerDialogs = {
   guestSave: GuestSavePromptDialogProps;
   plans: PlansDialogProps;
   aiNotes: AiNotesDialogProps;
-  presentExport: PresentExportDialogProps;
   download: DownloadDialogProps;
   designRename: DesignRenameDialogProps;
   roomRename: RoomRenameDialogProps;
@@ -82,8 +77,8 @@ export type DesignPageDialogLayerOverlays = {
   toasts: DesignPageToastsProps;
   shareFallback: Omit<ShareLinkFallbackDialogProps, "copied" | "errorMessage"> & {
     lifecycleMode: "consumer" | "designer";
-    /** From the Share button: it opens without Present & export behind it. */
-    standalone: boolean;
+    /** The design whose link it is: another design, or another mode, starts a new fallback. */
+    designId: string | null;
   };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
@@ -94,23 +89,19 @@ export type DesignPageDialogLayerProps = {
   overlays: DesignPageDialogLayerOverlays;
 };
 
-function getShareFallbackLayerState(
-  dialogs: DesignPageDialogLayerDialogs,
-  overlays: DesignPageDialogLayerOverlays
-) {
-  const parentOpen = dialogs.presentExport.configuration.open;
-  const open = (parentOpen || overlays.shareFallback.standalone) && Boolean(overlays.shareFallback.url);
+// The bar's Share opens the fallback when the clipboard refuses its link; its copy feedback shows
+// in the fallback, not in a toast behind it.
+function getShareFallbackLayerState(overlays: DesignPageDialogLayerOverlays) {
+  const open = Boolean(overlays.shareFallback.url);
   return {
     open,
     toasts: open ? { ...overlays.toasts, shareCopied: false, shareErrorMessage: null } : overlays.toasts,
-    scopeKey: `${dialogs.presentExport.state.designId ?? "unsaved"}:${
-      overlays.shareFallback.lifecycleMode
-    }:${parentOpen ? "parent-open" : "parent-closed"}`,
+    scopeKey: `${overlays.shareFallback.designId ?? "unsaved"}:${overlays.shareFallback.lifecycleMode}`,
   };
 }
 
 export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLayerProps) {
-  const shareFallback = getShareFallbackLayerState(dialogs, overlays);
+  const shareFallback = getShareFallbackLayerState(overlays);
 
   return (
     <>
@@ -119,13 +110,6 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
       <DownloadDialog {...dialogs.download} />
-      <PresentExportDialog
-        {...dialogs.presentExport}
-        configuration={{
-          ...dialogs.presentExport.configuration,
-          shareFallbackOpen: shareFallback.open,
-        }}
-      />
       <DesignRenameDialog {...dialogs.designRename} />
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />

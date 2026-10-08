@@ -1,5 +1,22 @@
 # Required-test truthfulness
 
+## Cart and Retailer matrices serve CI's strict build — 2026-10-08
+
+In CI, `ci.cart-overlay-accessibility` and `ci.retailer-confirmation-accessibility`
+now run against the strict production-equivalent build the job makes first, as
+`ci.pro-visual-policy` does. Their steps set `PLAYWRIGHT_USE_PRODUCTION_SERVER=1`,
+and their configs then start `npm run start` (cart, on another port: `next start
+--hostname 127.0.0.1 --port <port>`). Each gate's `ci.afterSteps` names the build.
+
+The reason: on `next dev` an on-demand compile sometimes forced a Fast Refresh
+full reload in the middle of a test (#97 and #98, the cart's "Pro Shop" test).
+
+Nothing else changes:
+- the ids, `cart` and `retailer` owners, specs, package scripts and their closures;
+- the zero retry, skip and flake rules;
+- runs without the variable, locally and in certification, keep the canonical
+  development server. The retailer config no longer refuses the variable.
+
 ## UX phase 3c-2 Cart owner re-pin — 2026-09-27
 
 The Selection Tray is gone, and `ci.cart-overlay-accessibility` now owns the
@@ -882,6 +899,9 @@ report, or run inputs fail with a window-opening prerequisite error.
   the suite and at every capture. Existing v2 screenshots, listener records,
   traces, source binding, fixed 12-case inventory and resource cleanup remain
   owned by the mounted runner and its unchanged evidence verifier.
+- `advisory.window-opening-mounted` runs that same mounted runner in GitHub
+  Actions on every pull request and push of the integration line, against the
+  runner's own PostgreSQL with the local `justus` role, as an informational check.
 - `test:e2e:release` selects `release.gate-a3` and the exact HTTPS origin in
   `PLAYWRIGHT_RELEASE_BASE_URL`. Before launch, and when Playwright loads its
   config, the context adapter calls the existing physical
@@ -974,6 +994,46 @@ safe data prerequisites from `vercel-prebuilt-release.md`. Missing external
 inputs block real release execution without invalidating synthetic/local
 contract coverage. No history or earlier development result is recertified by
 this integration.
+
+### Runs in CI, informational — 2026-10-08
+
+`advisory.window-opening-mounted` runs the 12 mounted window-opening cases on
+every pull request and push of `integration/deep-clean-v1`, in its own workflow
+(`.github/workflows/window-opening-mounted.yml`, job `window-opening-mounted`).
+
+Before this the suite only ran locally (the push script) and inside the broad
+advisory and release inventories, so PRs pushed another way never ran it.
+
+- **Runner.** It calls `npm run test:window-opening-mounted` unchanged. The
+  runner refuses arguments and filters, and keeps its fixed 12-case inventory,
+  its own development server and its disposable database.
+- **Database.** The job starts the runner's own PostgreSQL and creates the
+  passwordless local role `justus` with CREATEDB and trust on 127.0.0.1, the
+  exact target `scripts/provision-gate-a3-database.mjs` accepts. A service
+  container would report its Docker address instead.
+- **Environment.** It sets `TMPDIR` and `WINDOW_OPENING_MOUNTED_PARENT` under
+  `runner.temp`.
+- **Listener check on Linux.** `scripts/window-opening-process-ownership.mjs`
+  reads the server's listener, cwd and executable from `/proc` on Linux, and
+  keeps lsof on macOS. Next titles its server `next-server (v16.2.11)`, and
+  Linux keeps 15 bytes of that, `next-server (v1`. lsof 4.95 (Ubuntu 24.04)
+  cannot parse the unmatched `(` in `/proc/<pid>/stat` and skips the process.
+  The first run failed that way: the server answered `/api/health`, then lsof
+  found no listener. On Linux a listening socket owned by a process this user
+  cannot inspect still counts, so the port is never treated as free.
+- **The spec's check at each capture.** `window-opening-capture-provenance.mjs`
+  reads the listener through the same module (`readListenerObservation`), not
+  its own lsof calls. On Linux the raw listener and cwd outputs it records are
+  `/proc` readings written in lsof's field format (`p`, `c`, `n`), so the
+  evidence verifier reads them as it reads lsof's. Each listener observation
+  record names its source in `listenerSource` (`lsof` or `linux-proc`), outside
+  the unchanged binding digest.
+- **Status.** The gate is advisory (`blocking: false`), and merge-gate does not
+  wait for it. As a separate workflow it keeps its real conclusion, so a failure
+  shows as a red check. It uploads the run folder only when it fails (7 days).
+- **Not evidence.** A run here is not certification evidence: window database
+  receipts are still refused inside Actions. Making it required is a later,
+  separate change once it has a record of passing on Linux.
 
 ## Truthful pass contract
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
+import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
 import { CanonicalWallJoin } from "./CanonicalWallJoin";
@@ -56,9 +57,10 @@ function AddPartition({ floor, commit }: Omit<Props, "wall">) {
 
 function WallRemoval({ floor, wall, commit }: Props) {
   const [confirmed, setConfirmed] = useState(false);
-  const [keepRoomId, setKeepRoomId] = useState(wall.adjacentRoomIds[0] ?? "");
+  // A void (duct, shaft) is never the room kept: taking its wall away opens it into the room beside it.
+  const rooms = floor.rooms.filter((room) => wall.adjacentRoomIds.includes(room.id) && !isFloorPlanVoidRoom(room));
+  const [keepRoomId, setKeepRoomId] = useState(rooms[0]?.id ?? wall.adjacentRoomIds[0] ?? "");
   const openings = floor.openings.filter((opening) => opening.wallId === wall.id);
-  const rooms = floor.rooms.filter((room) => wall.adjacentRoomIds.includes(room.id));
   return <details><summary className="cursor-pointer font-semibold">Remove selected wall</summary>
     <p className="my-2 text-amber-700">Structural status is not established by this drawing. Removing a wall here is a conceptual proposal and does not authorize demolition. Consult the relevant qualified professional before physical work.</p>
     <p>Affected openings: {openings.map((opening) => `${opening.kind} ${opening.id}`).join(", ") || "none"}. Their removal is part of this transaction. Attached furniture stays at its world position for review.</p>

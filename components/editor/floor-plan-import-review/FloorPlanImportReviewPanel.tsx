@@ -2,9 +2,9 @@
 
 import { createImportReviewMutationMetadata,importReviewSummary,photoReviewRequired } from "./import-review-summary";
 
-
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { namedFloorPlanRooms } from "@/lib/floor-plan-void-rooms";
 import {
   floorPlanMvpIssueLevel,
   isFloorPlanMvpBlockingIssue,
@@ -132,7 +132,7 @@ export default function FloorPlanImportReviewPanel({
   );
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
   if (!floor) return null;
-
+  const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
   const control = dark
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
@@ -348,7 +348,7 @@ export default function FloorPlanImportReviewPanel({
                 : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
             }
           >
-            {floor.rooms.length} room{floor.rooms.length === 1 ? "" : "s"}
+            {namedRooms.length} room{namedRooms.length === 1 ? "" : "s"}
           </span>
           <span
             className={
@@ -449,7 +449,7 @@ export default function FloorPlanImportReviewPanel({
         dark={dark}
         disabled={disabled}
       />
-      {floor.rooms.length > 0 ? (
+      {namedRooms.length > 0 ? (
         <details
           className={
             dark
@@ -461,7 +461,7 @@ export default function FloorPlanImportReviewPanel({
             Edit room names (optional)
           </summary>
           <div className="mt-2 grid gap-2">
-            {floor.rooms.map((room) => (
+            {namedRooms.map((room) => (
               <label
                 key={room.id}
                 className={`grid grid-cols-[1fr_1.4fr] items-center gap-2 text-[11px] ${subtle}`}

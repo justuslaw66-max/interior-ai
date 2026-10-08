@@ -217,8 +217,8 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /disabled=\{state\.commandBar\.editorMode === "present"\}[\s\S]*?dark=\{configuration\.dark\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
-  "Room status should preserve presentation disabling, theme, compact layout, and command variant."
+  /viewMode=\{room\.viewMode\}\s*dark=\{configuration\.dark\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
+  "Room status should preserve theme, compact layout, and command variant."
 );
 assert.match(
   commandBarSource,

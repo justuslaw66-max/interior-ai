@@ -1,0 +1,905 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/avorio/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (DORICA - AVORIO - minimali.zip, 135619201 bytes, sha256 91aa9612c675fe73ab1cf68cac875d4f1a3a9297417b0539032d1d2396c54b99).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/dorica/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0009999",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/avorio/pf60009999-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0009999_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-avorio-0009999-120x280-nat-196266-0; wall gardenia-wall-tile-dorica-avorio-0009999-120x280-nat-196266-0",
+   "faces": [
+    {
+     "file": "0009999_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 184352,
+     "source_file": "120X280-Naturale/DORICA - AVORIO - 120X280 - Naturale - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "9a0d52dc905fc7a8d6da6f5aeae864d5f47a305470eb37789d6a6e1d97fa0955",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA AVORIO 120X280_04",
+      "id": "b72b089a-c88f-4e06-bea9-386e73ca3c28",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009999_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 181238,
+     "source_file": "120X280-Naturale/DORICA - AVORIO - 120X280 - Naturale - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "0e7b7f75cca6cfb5d6f1ccac05b3c623b3cb051b9a2537466b05c7a612987f8d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA AVORIO 120X280_02",
+      "id": "28669465-6d67-4c13-92ca-cc7dc16f5716",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009999_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 182776,
+     "source_file": "120X280-Naturale/DORICA - AVORIO - 120X280 - Naturale - view_3.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "63c42814a0f8dd95847000b8436e56d2db94973544288397ee2d5e2bbae44ad3",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA AVORIO 120X280_03",
+      "id": "9980a90b-aed5-47e8-8b24-bb46dd435f7c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009999_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 184018,
+     "source_file": "120X280-Naturale/DORICA - AVORIO - 120X280 - Naturale - view_4.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "a044e7914ad548bbfc2ff7042d7fab634c841469b87799a41ff23b1e39c40239",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA AVORIO 120X280_01",
+      "id": "5f6b8eae-71b5-4cee-91cd-29eb623c3c3b",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010005",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/avorio/pf60010005-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010005_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-avorio-0010005-120x120-nat-196269-0; floor gardenia-flooring-dorica-avorio-0010518-20x120-nat-196277-0 (for 0010518: ABK's plank pictures are the 120x120 graphic at 0.75 scale; the 120x120 faces are used, turned so the veins run along the plank); wall gardenia-wall-tile-dorica-avorio-0010005-120x120-nat-196269-0; wall gardenia-wall-tile-dorica-avorio-0010518-20x120-nat-196277-0 (for 0010518: ABK's plank pictures are the 120x120 graphic at 0.75 scale; the 120x120 faces are used, turned so the veins run along the plank)",
+   "faces": [
+    {
+     "file": "0010005_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76028,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "705c06d7829b7da343b9db922b25542aff4d6ef0c89d37648e731e0f07e53260",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA AVORIO 120X120_07",
+      "id": "e2d513d8-392d-4269-9b7f-a827fa615a1b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010005_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 75812,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "07bda3a7768930d13970aff7328e0d9fa65e837438cc35b49e44688f8bb3185d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA AVORIO 120X120_05",
+      "id": "a1abbfbd-670f-4235-9cd9-d4dfeb266f88",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010005_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74330,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a5aff84022698d35bc7d208d9e206419755d8120f3d51285ef1fdfd9a5198fc8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA AVORIO 120X120_03",
+      "id": "2e0a9c72-0531-4734-bb4e-4327c04836fe",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010005_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 78330,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd15d4a295f2aa6524128185c9148e35b547bd9bd5752c6f8dc7386602b4d202",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA AVORIO 120X120_01",
+      "id": "957b038a-547c-402b-b19c-722e9853f8c2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010005_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72966,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f75eb5bf58b6eedbba6388c9626707a40ea80a2db3b70dd453108f485d4c4de6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA AVORIO 120X120_04",
+      "id": "fdf3d934-e0bd-4f97-aeca-16706fec95a0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010005_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72960,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fb1ca5afa2a04fd8c1da3566e99053361da14e99076673a24aded46147d5d04b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA AVORIO 120X120_06",
+      "id": "47c87408-0d2f-4e9b-8fa3-9218d6f44b7f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010005_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76838,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "69bda274ae76376a5f4dac950c84c35cf7423a878d732a510843a2761da50709",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA AVORIO 120X120_08",
+      "id": "7940fe4d-3239-4049-8b13-adb9e852c47b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010005_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72934,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c8bb774240683c6624b3a391a9ff8b3dcc8a8420d7f98aebc2711f4a0b70f536",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA AVORIO 120X120_02",
+      "id": "eb9b98e6-441c-4050-9879-30c024fbe689",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010518",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/avorio/pf60010005-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010518_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "not in the catalogue",
+   "faces": [
+    {
+     "file": "0010518_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76498,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "705c06d7829b7da343b9db922b25542aff4d6ef0c89d37648e731e0f07e53260",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA AVORIO 120X120_07",
+      "id": "e2d513d8-392d-4269-9b7f-a827fa615a1b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010518_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74716,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "07bda3a7768930d13970aff7328e0d9fa65e837438cc35b49e44688f8bb3185d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA AVORIO 120X120_05",
+      "id": "a1abbfbd-670f-4235-9cd9-d4dfeb266f88",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010518_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74572,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a5aff84022698d35bc7d208d9e206419755d8120f3d51285ef1fdfd9a5198fc8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA AVORIO 120X120_03",
+      "id": "2e0a9c72-0531-4734-bb4e-4327c04836fe",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010518_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 78538,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd15d4a295f2aa6524128185c9148e35b547bd9bd5752c6f8dc7386602b4d202",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA AVORIO 120X120_01",
+      "id": "957b038a-547c-402b-b19c-722e9853f8c2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010518_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74672,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f75eb5bf58b6eedbba6388c9626707a40ea80a2db3b70dd453108f485d4c4de6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA AVORIO 120X120_04",
+      "id": "fdf3d934-e0bd-4f97-aeca-16706fec95a0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010518_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72970,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fb1ca5afa2a04fd8c1da3566e99053361da14e99076673a24aded46147d5d04b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA AVORIO 120X120_06",
+      "id": "47c87408-0d2f-4e9b-8fa3-9218d6f44b7f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010518_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76738,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "69bda274ae76376a5f4dac950c84c35cf7423a878d732a510843a2761da50709",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA AVORIO 120X120_08",
+      "id": "7940fe4d-3239-4049-8b13-adb9e852c47b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010518_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73322,
+     "source_file": "120X120-Nat P.tech/DORICA - AVORIO - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c8bb774240683c6624b3a391a9ff8b3dcc8a8420d7f98aebc2711f4a0b70f536",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA AVORIO 120X120_02",
+      "id": "eb9b98e6-441c-4050-9879-30c024fbe689",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0010008",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/avorio/pf60010008-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010008_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-avorio-0010008-60x120-nat-196272-0; floor gardenia-flooring-dorica-avorio-0010147-60x120-196275-0 (for 0010147: same visible variant as 0010588 (R11), whose pictures are 0010008's but one); wall gardenia-wall-tile-dorica-avorio-0010008-60x120-nat-196272-0",
+   "faces": [
+    {
+     "file": "0010008_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40956,
+     "source_file": "60X120-Nat P.tech/DORICA - AVORIO - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "38925557cdf9bfc2e401a06c7ba7c40df4f9c2a1dfcff899f0e60a752b655e7b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "DORICA AVORIO 60X120_01",
+      "id": "fccc4bc1-b34e-4f4f-b1a1-de0f2ac82da8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010008_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38058,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "86bc2f2898d64efe55c9a638a3ebac6ba2e5b4e63dcc1044f7e1c806829451ba",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA AVORIO 60X120_10",
+      "id": "a0339e1a-91ba-4765-8464-bbef1ba8202c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010008_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38020,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6eabc1277089025506fce1a9ba9e720c80d4085193e749389c27cd859653e501",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA AVORIO 60X120_16",
+      "id": "6e3cf38e-d1a5-411a-86d2-efbfe07b88e2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010008_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41752,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2c056510a1ff301590d6be15bc385b3c3871bf2d1f64d71ed37bad4561c112e9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA AVORIO 60X120_04",
+      "id": "e5c8e1a8-fd67-46a7-900b-ea6bda8d1cd1",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010008_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36212,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6c44f3f05510ebaaa58a573db1b237c4e63c0e9827a2a1d59927cd69a3188477",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA AVORIO 60X120_03",
+      "id": "99044e63-42f3-42bf-b5e0-1d54de46a958",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010008_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37928,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "dda293a628ab793b2da64ef5debcf6235c8c4dbe914477217c9a455209fe8629",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA AVORIO 60X120_02",
+      "id": "ee847bc0-63cd-4e9e-bbd2-66b766b3324f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010008_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36084,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "38efdb0018ffe4bc0bce9b3d0080c7e6db75579d578c3b9ae2784b44f4aa664b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA AVORIO 60X120_14",
+      "id": "a72d7f75-afd9-4ec7-9a7f-234ea2ef2a8c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010008_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41658,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "136e3c44babcd1741389725693cf4fee7666006c40081a7f192164ca3b826b10",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA AVORIO 60X120_05",
+      "id": "8c7114b3-261c-4db2-9750-f733a8ddde1b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0010008_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39486,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "abaefa79d321bfaa0b1e363db0161442563b814339af7311e164d9cecfb4d745",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "DORICA AVORIO 60X120_08",
+      "id": "9082358e-c7a2-4ea9-b0bc-76272114d11d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0010008_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35694,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9ba1c80bb1788dde05afcc5b4a291a7056dc0fd5aece241f2d82e21427287ecb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "DORICA AVORIO 60X120_13",
+      "id": "e7be070e-7c87-4f18-87e7-672a7d156bcf",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010008_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37110,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6903b25c541610ea476f3b468366e4312f0af7becdf43fed7225f7292c6a545d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "DORICA AVORIO 60X120_15",
+      "id": "4be84e69-5637-44ff-a8ac-18ffa438a8db",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0010008_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36726,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1a02b658ee8c959bedca969ec8d07d9fd9a065177ee5e39332597d7d6cb0e762",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "DORICA AVORIO 60X120_11",
+      "id": "40a7cb54-1057-4767-aa1a-05326ca8f52a",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0010008_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35006,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "21abda97137cd936d85fb6b967b8e9389aef81d1e482272ba79ad924bf02f216",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "DORICA AVORIO 60X120_12",
+      "id": "19b9e1a5-37d8-4cfc-a722-a977ae18760c",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0010008_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38688,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "01e8d34eb0a442e3e1a0c6a2d04d8a0326eb6ca1339db6739894cfa44ece883a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "DORICA AVORIO 60X120_09",
+      "id": "1bad55d3-db26-46a8-ba82-136fe86eeb50",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0010008_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37252,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e027ae5cbe650f335ac11c848e196539bfe12914fec12ddacd16f200aaae5b36",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "DORICA AVORIO 60X120_06",
+      "id": "2c5deac7-9f59-411d-8c48-8204986f964e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0010008_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38952,
+     "source_file": "60X120-R11/DORICA - AVORIO - 60X120 - R11 - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2516130de4adfeb54b3b2d06ee52d52197ee51a41042a7fc78505864694f7d21",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "DORICA AVORIO 60X120_07",
+      "id": "3547a0a9-dba1-47a0-95a2-2580a8112905",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

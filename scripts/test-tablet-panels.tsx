@@ -12,6 +12,11 @@ import {
   setTabletRightPanel,
   toggleStepPanel,
 } from "../lib/tablet-panel-policy";
+import {
+  nextPlan2DFloatingInsetLatch,
+  plan2DFitKey,
+  resolvePlan2DRightInsetsPx,
+} from "../lib/plan-2d-fit-insets";
 
 // Tablets (UX 4d, audit AX11): at 768-1023px a right panel (the item or cabinet panel, or the
 // inspector for a wall, door or window) makes the step panel step aside while it's open, and the
@@ -82,8 +87,56 @@ assert.match(model, /const tablet = useTabletPanelPolicy\(isTabletWidth\(layout\
 assert.match(model, /designPanelCollapsed: tablet\.collapsed,[\s\S]*?tabletRightInsetPx: tablet\.rightInsetPx,/);
 assert.match(
   model,
-  /const plan2DSafeAreaRightPx =\s*!isClientPreview && viewMode === "2d" && viewportWidth >= 768\s*\? Math\.max\(\s*planQualityReviewVisible \? 344 : 0,\s*floatingFloorPropertiesPanelVisible \? 284 : 0,\s*tabletRightInsetPx\s*\)/
+  /const plan2DRightInsets = resolvePlan2DRightInsetsPx\(\{\s*applies: !isClientPreview && viewMode === "2d" && viewportWidth >= 768,\s*planQualityReviewVisible,\s*floorPropertiesPanelVisible: floatingFloorPropertiesPanelVisible,\s*tabletRightInsetPx,\s*\}\);/
 );
+assert.match(
+  model,
+  /const plan2DSafeAreaRightPx = usePlan2DFittedRightInsetPx\(\s*plan2DFitKey\(layout\.viewMode, layout\.viewportWidth, plan2DFitBounds, viewportLayout\), viewportLayout\.plan2DRightInsets\s*\);/
+);
+assert.match(model, /\.\.\.viewportLayout,\s*plan2DSafeAreaRightPx, plan2DSafeAreaLiveRightPx: viewportLayout\.plan2DSafeAreaRightPx,/);
+
+// The plan's right inset: a tablet's docked panel always reframes the plan; the floating overlay
+// stack (the plan quality review, the floor panel) is fitted around but never moves the plan by
+// itself. Repairing the last window closed the review and used to shift the plan 1.4 m.
+assert.deepEqual(
+  resolvePlan2DRightInsetsPx({ applies: true, planQualityReviewVisible: true, floorPropertiesPanelVisible: true, tabletRightInsetPx: 0 }),
+  { floatingRightPx: 344, dockedRightPx: 0, rightPx: 344 }
+);
+assert.deepEqual(
+  resolvePlan2DRightInsetsPx({ applies: true, planQualityReviewVisible: false, floorPropertiesPanelVisible: false, tabletRightInsetPx: 356 }),
+  { floatingRightPx: 0, dockedRightPx: 356, rightPx: 356 }
+);
+assert.deepEqual(
+  resolvePlan2DRightInsetsPx({ applies: false, planQualityReviewVisible: true, floorPropertiesPanelVisible: true, tabletRightInsetPx: 356 }),
+  { floatingRightPx: 0, dockedRightPx: 0, rightPx: 0 }
+);
+const fitLayout = (dockedRightPx: number) => ({
+  plan2DSafeAreaLeftPx: 318, plan2DRightInsets: { dockedRightPx }, plan2DSafeAreaTopPx: 184, plan2DSafeAreaBottomPx: 0,
+});
+const fitBounds = { centerX: 0, centerZ: 0, widthMeters: 4, depthMeters: 4 };
+const fitKey = plan2DFitKey("2d", 1440, fitBounds, fitLayout(0));
+const fitted = { fitKey, floatingRightPx: 344 };
+assert.equal(
+  nextPlan2DFloatingInsetLatch(fitted, { fitKey, floatingRightPx: 0 }),
+  fitted,
+  "The review closing keeps the fitted inset: the plan doesn't move."
+);
+for (const changedKey of [
+  plan2DFitKey("3d", 1440, fitBounds, fitLayout(0)),
+  plan2DFitKey("2d", 1280, fitBounds, fitLayout(0)),
+  plan2DFitKey("2d", 1440, { ...fitBounds, widthMeters: 5 }, fitLayout(0)),
+  plan2DFitKey("2d", 1440, fitBounds, fitLayout(356)),
+]) {
+  assert.notEqual(changedKey, fitKey);
+  assert.deepEqual(
+    nextPlan2DFloatingInsetLatch(fitted, { fitKey: changedKey, floatingRightPx: 0 }),
+    { fitKey: changedKey, floatingRightPx: 0 },
+    "Opening 2D, the canvas width, the plan's extent or a docked panel fits again with the stack as it is."
+  );
+}
+const camera = read("lib/useDesignPageCameraNavigation.ts");
+assert.match(camera, /applyQueued2DPlanView\(0, \{ insets: planFitLiveInsets \}\);\s*showRuleToast\("Plan fitted"\);/, "Fit uses the panels open now.");
+assert.match(camera, /paddingMeters: 1\.2,\s*insets: planFitLiveInsets,/, "So does a room's fit.");
 assert.match(
   read("components/editor/design-page/DesignPagePanelRegion.tsx"),
   /useReportTabletRightPanel\("item", !isClientPreview && Boolean\(state\.selectedItem \|\| state\.selectedCabinet\), TABLET_ITEM_PANEL_INSET_PX\);/

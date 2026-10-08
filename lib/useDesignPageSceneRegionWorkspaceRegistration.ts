@@ -86,7 +86,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         lightingSettings,
         lightingItems: scene.sceneRoomItems,
         lightingModeOverride:
-          viewportShell.state.editor.editorMode === "present"
+          base.state.dialogs.downloadOpen
             ? "presentation"
             : undefined,
         activeRoomId: coreShell.state.document.designSnapshot.activeRoomId,

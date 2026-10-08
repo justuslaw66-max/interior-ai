@@ -308,7 +308,7 @@ assert.match(
 
 assert.match(
   cameraControllerSource,
-  /const applyQueued2DPlanView = useCallback\(\s*\(attempt = 0\) => \{[\s\S]*if \(applyPlan2DCameraView\(\)\) return;[\s\S]*attempt >= 10[\s\S]*applyQueued2DPlanView\(attempt \+ 1\)/,
+  /const applyQueued2DPlanView = useCallback\(\s*\(attempt = 0, options\?: Plan2DCameraViewOptions\) => \{[\s\S]*if \(applyPlan2DCameraView\(options\)\) return;[\s\S]*attempt >= 10[\s\S]*applyQueued2DPlanView\(attempt \+ 1, options\)/,
   "2D plan fitting should retry until the orthographic camera and controls are mounted."
 );
 
@@ -750,8 +750,8 @@ assert.deepEqual(phoneBarOffsetsByHand, [], "Place what sits under the phone hea
 
 assert.match(
   editorViewToggleSource,
-  /grid h-\[30px\] grid-cols-2 gap-1 rounded-full bg-neutral-100 p-0\.5[\s\S]*inline-flex h-\[26px\] items-center/,
-  "Present & export's view selector should combine centered 26px buttons with a balanced 30px shell."
+  /variant: "canvas" \| "pill";/,
+  "The view selector is the canvas toolbar's or the phone's: Present & export's 30px one retired with it."
 );
 assert.match(
   editorViewToggleSource,

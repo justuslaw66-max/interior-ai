@@ -229,17 +229,38 @@ test.describe("Start a new design", () => {
     }
   });
 
-  test("Search by HDB address opens Plan's template list without a forced choice on a first visit", async ({ page }) => {
+  test("Plan's Choose a template opens it at Templates, and its address link opens Plan's search", async ({ page }) => {
     await clearEditorStorage(page);
     await page.goto("/design?start=choose", { waitUntil: "domcontentloaded" });
     await expect(chooser(page)).toBeVisible({ timeout: 30_000 });
+    await page.getByTestId("start-design-close").click();
+    await expect(chooser(page)).toBeHidden();
+
+    // Plan's one template list is this one (UX ST8), and focus comes back to the button that opened it.
+    const chooseTemplate = page.getByTestId("plan-start-template");
+    await expect(chooseTemplate).toBeEnabled({ timeout: 30_000 });
+    await chooseTemplate.click();
+    await expect(chooser(page)).toBeVisible();
+    const templatesHeading = page.getByRole("heading", { name: "Templates", exact: true });
+    await expect(templatesHeading).toBeFocused();
+    await expect(templatesHeading).toBeInViewport();
+    await page.keyboard.press("Escape");
+    await expect(chooser(page)).toBeHidden();
+    await expect(chooseTemplate).toBeFocused();
+
+    // Search by HDB address opens Plan's address search, which hands focus back to the same button.
+    await chooseTemplate.click();
     await page.getByTestId("start-template-address-search").click();
     await expect(chooser(page)).toBeHidden();
     await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Choose a template" })).toBeFocused();
-    const studio = page.getByTestId("apply-plan-template-studio");
-    await expect(studio).toBeEnabled({ timeout: 30_000 });
-    await studio.click();
+    await expect(page.getByRole("heading", { name: "Find your home by address" })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("starter-floor-plan-picker")).toBeHidden();
+    await expect(chooseTemplate).toBeFocused();
+
+    // On a first visit a template from it replaces the untouched room without asking.
+    await chooseTemplate.click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("new-plan-choice-dialog")).toHaveCount(0);
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("4 rooms");
   });

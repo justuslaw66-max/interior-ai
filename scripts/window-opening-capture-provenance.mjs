@@ -1,11 +1,9 @@
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { windowOpeningPrerequisite, windowOpeningTarget } from "./window-opening-browser-context.mjs";
+import { readListenerObservation } from "./window-opening-process-ownership.mjs";
 
-const execute = promisify(execFile);
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 async function inspectLocalListener(context) {
@@ -17,20 +15,20 @@ async function inspectLocalListener(context) {
       server.sourceCompleteStateIdentitySha256 !== context.sourceIdentity) {
     throw windowOpeningPrerequisite("local server context changed after setup.");
   }
-  const listener = await execute("lsof", ["-nP", `-iTCP:${server.port}`, "-sTCP:LISTEN", "-Fpcn"]);
-  const pids = listener.stdout.split("\n").filter((line) => line.startsWith("p")).map((line) => Number(line.slice(1)));
+  const { source, listenerOutput, cwdOutput } = await readListenerObservation({
+    port: server.port, pid: server.listenerPid,
+  });
+  const pids = listenerOutput.split("\n").filter((line) => line.startsWith("p")).map((line) => Number(line.slice(1)));
   if (pids.length !== 1 || pids[0] !== server.listenerPid) {
     throw windowOpeningPrerequisite("local listener PID/port/cwd no longer belongs to the mounted run.");
   }
-  const cwdResult = await execute("lsof", ["-a", "-p", String(server.listenerPid), "-d", "cwd", "-Fn"]);
-  const cwd = cwdResult.stdout.split("\n").find((line) => line.startsWith("n"))?.slice(1);
-  if (pids.length !== 1 || pids[0] !== server.listenerPid || !cwd ||
-      await fs.realpath(cwd) !== await fs.realpath(server.serverCwd)) {
+  const cwd = cwdOutput.split("\n").find((line) => line.startsWith("n"))?.slice(1);
+  if (!cwd || await fs.realpath(cwd) !== await fs.realpath(server.serverCwd)) {
     throw windowOpeningPrerequisite("local listener PID/port/cwd no longer belongs to the mounted run.");
   }
   return { server, bytes, observation: { observedAt: new Date().toISOString(),
-    pid: server.listenerPid, port: server.port, cwd, listenerOutput: listener.stdout,
-    cwdOutput: cwdResult.stdout, listenerOutputSha256: sha256(listener.stdout) } };
+    pid: server.listenerPid, port: server.port, cwd, source, listenerOutput,
+    cwdOutput, listenerOutputSha256: sha256(listenerOutput) } };
 }
 
 export async function observeWindowOpeningLocalListener(context) {
@@ -56,7 +54,10 @@ export async function windowOpeningCaptureProvenance(context, screenshotId, targ
   const binding = { screenshotId, serverContextSha256: sha256(bytes), observedAt: observation.observedAt,
     pid: observation.pid, port: observation.port, cwd: observation.cwd,
     listenerOutputSha256: observation.listenerOutputSha256 };
+  // listenerSource says whether the raw outputs are lsof's (macOS) or /proc readings in
+  // lsof's field format (Linux). It sits outside the binding, which is unchanged.
   const record = { schemaVersion: "window-opening-listener-observation/v1", ...binding,
+    listenerSource: observation.source,
     listenerOutput: observation.listenerOutput, cwdOutput: observation.cwdOutput,
     bindingSha256: sha256(JSON.stringify(binding)) };
   const recordPath = path.join(context.runRoot, "listener-observations", `${screenshotId}.json`);

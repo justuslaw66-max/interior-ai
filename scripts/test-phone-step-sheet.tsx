@@ -188,7 +188,12 @@ assert.match(model, /const phoneSheetHeightPx = usePhoneSheetState\(\)\.heightPx
 assert.match(model, /plan2DSafeAreaTopPx: phoneInsets\.topPx,\s*plan2DSafeAreaBottomPx: phoneInsets\.bottomPx,/);
 assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /safeAreaTopPx=\{configuration\.planSafeArea\.topPx\}/);
 const navigation = read("lib/useDesignPageCameraNavigation.ts");
-assert.equal(navigation.match(/resolvePlanFitInsetsPx\(viewportWidthPx, planFitInsets\)/g)?.length, 2, "Both 2D fits use the same insets.");
+assert.equal(navigation.match(/resolvePlanFitInsetsPx\(viewportWidthPx, planFitInsets\)/g)?.length, 1, "The memoized 2D fit uses the insets.");
+assert.match(
+  navigation,
+  /insets: fitInsets = planFitInsets,\s*\}: Plan2DCameraViewOptions = \{\}\) => \{[\s\S]*?resolvePlanFitInsetsPx\(viewportWidthPx, fitInsets\)/,
+  "So does the applied 2D fit, unless an explicit fit passes the live ones."
+);
 assert.match(navigation, /Math\.max\(72, planFitInsets\.topPx\)[\s\S]{0,120}?Math\.max\(96, planFitInsets\.bottomPx\)/, "The 3D fit clears them too.");
 
 console.log("Phone step sheet checks passed.");

@@ -7,6 +7,7 @@ import { track } from "@/lib/analytics";
 import type { HousePlanTemplate, HousePlanTemplateApplyOptions } from "@/lib/design-page-house-plan";
 import { BLANK_ROOM_TEMPLATE } from "@/lib/start-design";
 import { parseStartDesignParam, type StartDesignParam } from "@/lib/start-design-link";
+import { START_TEMPLATES_REQUESTED_EVENT, startTemplatesRequestOf } from "@/lib/start-templates-request";
 import {
   answerFloorPlanUploadRequest,
   signInForFloorPlanUpload,
@@ -28,7 +29,7 @@ export type UseDesignPageStartChooserInput = {
   actions: {
     applyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
     requirePlanChoiceForNextTemplate: () => void;
-    /** Plan's template list, which has the address search. */
+    /** Plan's address search. */
     openTemplatePicker: () => void;
     /** The same from New design: the next template asks before replacing. */
     openNewDesignTemplatePicker: () => void;
@@ -40,10 +41,18 @@ export type UseDesignPageStartChooserInput = {
   };
 };
 
-/** `signIn` is the upload's sign-in dialog, over the choices when they're open, else on its own. */
-export type StartChooserState = { open: boolean; asNewDesign: boolean; signIn: boolean; signInOpenerId: string | null };
+/**
+ * `signIn` is the upload's sign-in dialog, over the choices when they're open, else on its own.
+ * `atTemplates`: Plan's "Choose a template" opened it, at Templates, and gets focus back.
+ */
+export type StartChooserState = {
+  open: boolean; asNewDesign: boolean; signIn: boolean; signInOpenerId: string | null;
+  atTemplates: boolean; openerId: string | null;
+};
 type SetChooser = Dispatch<SetStateAction<StartChooserState>>;
-const CLOSED: StartChooserState = { open: false, asNewDesign: false, signIn: false, signInOpenerId: null };
+const CLOSED: StartChooserState = {
+  open: false, asNewDesign: false, signIn: false, signInOpenerId: null, atTemplates: false, openerId: null,
+};
 
 /**
  * One `launch_path_selected` per choice: a click in Start a new design, or a `?start=` link.
@@ -156,6 +165,7 @@ export function buildStartChooserProps(
   };
   return {
     open: chooser.open,
+    atTemplates: chooser.atTemplates, openerId: chooser.openerId,
     // The choices wait for the session too, so Upload never asks a member to sign in.
     ready: state.canEdit && state.sessionKnown,
     isAuthenticated: state.isAuthenticated,
@@ -188,13 +198,31 @@ export function buildStartChooserProps(
 }
 
 /**
- * Start a new design (audit findings FR1, FR3, ST2): New design opens it, and `?start=` opens
- * the editor at one of its choices. Guests sign in before uploading (ST3).
+ * Plan's "Choose a template" (ST8): the chooser at Templates, over the design that's open. A
+ * template there replaces a design with content only after asking, as Plan's own list did.
+ */
+export const chooserAtTemplates = (openerId: string | null): StartChooserState => ({
+  ...CLOSED, open: true, atTemplates: true, openerId,
+});
+
+function useStartTemplatesRequest(setChooser: SetChooser) {
+  useEffect(() => {
+    const open = (event: Event) => setChooser(chooserAtTemplates(startTemplatesRequestOf(event).openerId));
+    window.addEventListener(START_TEMPLATES_REQUESTED_EVENT, open);
+    return () => window.removeEventListener(START_TEMPLATES_REQUESTED_EVENT, open);
+  }, [setChooser]);
+}
+
+/**
+ * Start a new design (audit findings FR1, FR3, ST2, ST8): New design opens it, Plan's "Choose a
+ * template" opens it at Templates, and `?start=` opens the editor at one of its choices. Guests
+ * sign in before uploading (ST3).
  */
 export function useDesignPageStartChooser(input: UseDesignPageStartChooserInput) {
   const [chooser, setChooser] = useState<StartChooserState>(CLOSED);
   useFloorPlanUploadEntry(uploadEntryInput(input, setChooser));
   useStartParam(input, setChooser);
+  useStartTemplatesRequest(setChooser);
   const openAsNewDesign = () => setChooser({ ...CLOSED, open: true, asNewDesign: true });
   return { chooserProps: buildStartChooserProps(chooser, setChooser, input), openAsNewDesign };
 }

@@ -478,6 +478,14 @@ assert.match(
   /const firstRunActivationState = useMemo/,
   "the design-page onboarding controller should compute first-run activation state."
 );
+// Present & export retired (phase 4's small PR): opening Download is the export step, and a room
+// review that once opened Present & export for an empty room goes to Furnish, where products go.
+assert.match(designPageOnboardingSource, /exportOpened: state\.downloadOpen,/);
+assert.match(
+  readFileSync(join(process.cwd(), "lib/useDesignPageRoomReadModel.ts"), "utf8"),
+  /if \(target === "export"\) \{\s*goFurnish\(\);\s*showToast\("Add furniture to start this room"\);/,
+  "an empty room's export review should send the user to Furnish."
+);
 assert.match(
   designPageOnboardingSource,
   /templateChosen: state\.designRoomCount > 1 \|\| state\.items\.length > 0,/,

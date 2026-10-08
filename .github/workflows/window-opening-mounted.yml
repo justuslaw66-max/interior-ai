@@ -1,0 +1,80 @@
+name: Window-opening suite (informational)
+
+# The 12 mounted window-opening tests (tests/e2e/window-opening-corrections.spec.ts) through
+# their own sealable runner, on every pull request and push of the integration line. It is
+# advisory: merge-gate doesn't wait for it, but a failure shows as a red check. The runner's
+# local evidence on the owner's Mac is unchanged; a run here is not certification evidence.
+
+on:
+  push:
+    branches: [integration/deep-clean-v1]
+  pull_request:
+    branches: [integration/deep-clean-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  window-opening-mounted:
+    name: Window-opening suite (informational)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: window-opening-mounted-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      # The fixtures hold rooms and openings only, so the suite needs no LFS models.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify checked-out source identity
+        env:
+          GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/gitleaks-artifact.mjs verify-source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The runner creates and drops its own database as the local role `justus`, with no
+      # password, at exactly 127.0.0.1:5432 (scripts/provision-gate-a3-database.mjs). A service
+      # container reports its Docker address, so this uses the runner's own PostgreSQL.
+      - name: Start runner PostgreSQL for the window role
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo systemctl start postgresql.service
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE ROLE justus LOGIN CREATEDB"
+          hba_file="$(sudo -u postgres psql -tAc 'SHOW hba_file')"
+          sudo sed -i '1i host all justus 127.0.0.1/32 trust' "$hba_file"
+          sudo systemctl reload postgresql.service
+          psql "postgresql://justus@127.0.0.1:5432/postgres" -v ON_ERROR_STOP=1 -tAc \
+            "SELECT current_user, host(inet_server_addr()), inet_server_port()"
+
+      # On Linux the runner reads the server's listener from /proc, not lsof
+      # (scripts/window-opening-process-ownership.mjs).
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run mounted window-opening suite
+        env:
+          TMPDIR: ${{ runner.temp }}
+          WINDOW_OPENING_MOUNTED_PARENT: ${{ runner.temp }}/window-opening-runs
+        run: npm run test:window-opening-mounted
+
+      - name: Upload the window-opening run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: window-opening-run-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/window-opening-runs/
+          if-no-files-found: warn
+          retention-days: 7

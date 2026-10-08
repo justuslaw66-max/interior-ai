@@ -5,8 +5,6 @@ import { track } from "@/lib/analytics";
 import type { RoomSizePresetId } from "@/lib/design-page-house-plan";
 import {
   HOUSE_ROOM_SHAPES,
-  HOUSE_PLAN_TEMPLATES,
-  HOUSE_ROOM_TEMPLATES,
   HOUSE_ROOM_TYPES,
   ROOM_DIMENSION_DEFAULTS,
   ROOM_SIZE_PRESETS,
@@ -37,9 +35,11 @@ import {
   FLOOR_PLAN_UPLOAD_REQUESTED_EVENT, floorPlanUploadRequestOf, requestFloorPlanUpload,
 } from "@/lib/floor-plan-upload-request";
 import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
+import { PLAN_START_TEMPLATE_ACTION_ID, PLAN_TEMPLATE_LIBRARY_ACTION_ID, requestStartTemplates } from "@/lib/start-templates-request";
 import { isConnectionBlocker } from "@/lib/room-connection-checklist";
 import { FloorPlanImportArrivalNote } from "./FloorPlanImportArrivalNote";
 import { SurfaceMaterialCardActions } from "./design-controls-plan/SurfaceMaterialCardActions";
+import { AddRoomTemplateTiles } from "./design-controls-plan/AddRoomTemplateTiles";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
@@ -296,9 +296,6 @@ export default function DesignControlsPlanPanel({
   const [favoriteSurfaceMaterialIds, setFavoriteSurfaceMaterialIds] = useState<string[]>([]);
   const [selectedSurfaceMaterialId, setSelectedSurfaceMaterialId] = useState<string | null>(null);
   const [surfaceSummaryOpen, setSurfaceSummaryOpen] = useState(false);
-  const [templateBedroomFilter, setTemplateBedroomFilter] = useState<"all" | "studio" | "one" | "two">("all");
-  const [templateFootprintFilter, setTemplateFootprintFilter] = useState<"all" | "compact" | "narrow" | "wide">("all");
-  const [templateStyleFilter, setTemplateStyleFilter] = useState<"all" | "open" | "separated" | "adu">("all");
   const [collapsedPlanSections, setCollapsedPlanSections] = useState<Record<CollapsiblePlanSection, boolean>>(() => ({
     floorPlan: false,
     drawRoom: !isDesigner,
@@ -310,7 +307,6 @@ export default function DesignControlsPlanPanel({
   }));
   const templatePickerRef = useRef<HTMLDivElement | null>(null);
   const templatePickerHeadingRef = useRef<HTMLHeadingElement | null>(null);
-  const firstTemplateActionRef = useRef<HTMLButtonElement | null>(null);
   const templatePickerOpenerRef = useRef<HTMLElement | null>(null);
   const floorFinishPanelOpenSignalRef = useRef(0);
   const pendingSurfaceRevealRef = useRef(false);
@@ -321,13 +317,8 @@ export default function DesignControlsPlanPanel({
     setLocalPlanStartMode(mode);
     onPlanStartModeChange?.(mode);
   };
-  const openTemplatePicker = () => {
-    track("launch_path_selected", {
-      path: "template",
-      source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
-    });
-    setPlanStartMode("template");
-  };
+  // Plan's "Choose a template" opens Start a new design at Templates, the one template list (ST8).
+  const openStartTemplates = (openerId: string) => () => requestStartTemplates({ openerId });
   // Upload floor plan, from anywhere, once its entry has let it through (lib/floor-plan-upload-request.ts).
   useEffect(() => {
     const handleUploadRequest = (event: Event) => {
@@ -550,30 +541,6 @@ export default function DesignControlsPlanPanel({
       Boolean(floorPlanUnderlay) ||
       hasActivePlanTrace ||
       Boolean(visiblePlanOpening));
-  const filteredPlanTemplates = HOUSE_PLAN_TEMPLATES.filter((template) => {
-    const bedroomMatches =
-      templateBedroomFilter === "all" ||
-      (templateBedroomFilter === "studio" && template.bedroomCount === 0) ||
-      (templateBedroomFilter === "one" && template.bedroomCount === 1) ||
-      (templateBedroomFilter === "two" && template.bedroomCount >= 2);
-    const footprintMatches =
-      templateFootprintFilter === "all" ||
-      template.footprint === templateFootprintFilter ||
-      (templateFootprintFilter === "wide" &&
-        (template.footprint === "wide" ||
-          template.footprint === "corner" ||
-          template.footprint === "long"));
-    const styleMatches =
-      templateStyleFilter === "all" ||
-      (templateStyleFilter === "open" &&
-        (template.tags.includes("open plan") || template.layoutType === "studio")) ||
-      (templateStyleFilter === "separated" &&
-        !template.tags.includes("open plan") &&
-        template.layoutType !== "studio" &&
-        template.layoutType !== "adu") ||
-      (templateStyleFilter === "adu" && template.layoutType === "adu");
-    return bedroomMatches && footprintMatches && styleMatches;
-  });
   const showDrawTools =
     viewMode === "2d" &&
     (planStartMode === "draw" ||
@@ -825,20 +792,6 @@ export default function DesignControlsPlanPanel({
     onFloorPlanTraceRoomDrawModeChange(mode);
     onFloorPlanTraceRoomModeChange(true);
   };
-  const templateBedroomButtonClass = (active: boolean) =>
-    [
-      "h-9 rounded-full px-2 text-xs font-semibold transition disabled:opacity-50",
-      active
-        ? dark
-          ? "bg-white text-neutral-950"
-          : "bg-neutral-950 text-white"
-        : dark
-          ? "designer-control border text-neutral-200"
-          : "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100",
-    ].join(" ");
-  const templateFilterSelectClass = dark
-    ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100"
-    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800";
   const activeFloorSettings = normalizeFloorSurfaceSettings(
     {
       floorPattern: activeRoomFloorPattern,
@@ -1331,7 +1284,7 @@ export default function DesignControlsPlanPanel({
       {!hasRooms ? (
         <EmptyFloorPlanSurfacesActions dark={dark} isDesigner={isDesigner}
           progressActionClass={progressActionClass} progressSecondaryActionClass={progressSecondaryActionClass}
-          progressMetaClass={progressMetaClass} onOpenTemplatePicker={openTemplatePicker}
+          progressMetaClass={progressMetaClass}
           onStartDrawRoomSetup={startDrawRoomSetup} onSelectUploadMode={() => setPlanStartMode("upload")}
           onAddDesignerRoom={onAddDesignerRoom} />
       ) : null}
@@ -2006,7 +1959,7 @@ export default function DesignControlsPlanPanel({
                     onNewRoomShapeChange("rectangle");
                     onAddDesignerRoom();
                   },
-                  chooseTemplate: openTemplatePicker,
+                  chooseTemplate: openStartTemplates(PLAN_START_TEMPLATE_ACTION_ID),
                   drawRoom: startDrawRoomSetup,
                   uploadFloorPlan: () =>
                     requestFloorPlanUpload({ source: "plan_panel", openerId: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID }),
@@ -2107,16 +2060,20 @@ export default function DesignControlsPlanPanel({
                 section: "templates",
                 title: "Templates",
                 children: (
-                  <div className={planToolGridClass}>
-                    {renderPlanToolTile({
-                      testId: "plan-tool-template-library",
-                      icon: "template",
-                      label: "Choose a template",
-                      active: planStartMode === "template",
-                      disabled: !canEdit,
-                      onClick: openTemplatePicker,
-                    })}
-                  </div>
+                  <>
+                    <div className={planToolGridClass}>
+                      {renderPlanToolTile({
+                        id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,
+                        testId: "plan-tool-template-library",
+                        icon: "template",
+                        label: "Choose a template",
+                        disabled: !canEdit,
+                        onClick: openStartTemplates(PLAN_TEMPLATE_LIBRARY_ACTION_ID),
+                      })}
+                    </div>
+                    <AddRoomTemplateTiles dark={dark} canEdit={canEdit} measurementUnit={measurementUnit}
+                      onAddRoomTemplate={onAddRoomTemplate} />
+                  </>
                 ),
               })}
             </>
@@ -2276,11 +2233,12 @@ export default function DesignControlsPlanPanel({
                 canEdit={canEdit}
               />
               <button
+                id={PLAN_START_TEMPLATE_ACTION_ID}
                 type="button"
                 data-testid="plan-start-template"
                 className={planStartButtonClass("template")}
                 disabled={!canEdit}
-                onClick={openTemplatePicker}
+                onClick={openStartTemplates(PLAN_START_TEMPLATE_ACTION_ID)}
               >
                 Choose a template
               </button>
@@ -2296,17 +2254,6 @@ export default function DesignControlsPlanPanel({
               }
             >
               Upload your floor plan, then trace rooms, doors, and windows over it.
-            </div>
-          )}
-          {planStartMode === "template" && !isDesigner && (
-            <div
-              className={
-                dark
-                  ? "designer-recessed mt-3 rounded-lg p-3 text-xs text-neutral-300"
-                  : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
-              }
-            >
-              Choose a template below. Resize rooms and add doors when ready.
             </div>
           )}
         </div>
@@ -3097,331 +3044,20 @@ export default function DesignControlsPlanPanel({
               : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
           }
         >
-          <div className="flex items-center justify-between gap-3">
-            <h2
-              ref={templatePickerHeadingRef}
-              id="starter-floor-plan-picker-title"
-              tabIndex={-1}
-              className={`${titleClass} rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
-            >
-              Choose a template
-            </h2>
-            <div className="flex items-center gap-2">
-              <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
-                {filteredPlanTemplates.length} templates
-              </div>
-              <button
-                type="button"
-                data-testid="skip-to-starter-layouts"
-                className={
-                  dark
-                    ? "rounded-md border border-white/15 px-2 py-1 text-xs font-semibold text-neutral-100 outline-hidden hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400"
-                    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500"
-                }
-                onClick={() => firstTemplateActionRef.current?.focus()}
-              >
-                Skip to templates
-              </button>
-            </div>
-          </div>
+          <h2
+            ref={templatePickerHeadingRef}
+            id="starter-floor-plan-picker-title"
+            tabIndex={-1}
+            className={`${titleClass} rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
+          >
+            Find your home by address
+          </h2>
           <div className="mt-3">
             <FloorPlanAddressSearch
               dark={dark}
               canEdit={canEdit} measurementUnit={measurementUnit}
               onApplyPlanTemplate={onApplyPlanTemplate}
             />
-          </div>
-          <div className={dark ? "mt-4 text-xs font-semibold text-neutral-300" : "mt-4 text-xs font-semibold text-neutral-600"}>
-            Or browse templates
-          </div>
-          <div
-            data-testid="template-filter-panel"
-            className="mt-3 grid gap-2"
-          >
-            <div className="grid grid-cols-4 gap-1" data-testid="template-bedroom-filter">
-              {[
-                ["all", "All"],
-                ["studio", "Studio"],
-                ["one", "1 bed"],
-                ["two", "2 bed"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setTemplateBedroomFilter(value as typeof templateBedroomFilter)}
-                  className={templateBedroomButtonClass(templateBedroomFilter === value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                aria-label="Template size"
-                data-testid="template-footprint-filter"
-                value={templateFootprintFilter}
-                onChange={(event) =>
-                  setTemplateFootprintFilter(event.target.value as typeof templateFootprintFilter)
-                }
-                className={templateFilterSelectClass}
-              >
-                <option value="all">Any size</option>
-                <option value="compact">Compact</option>
-                <option value="narrow">Narrow</option>
-                <option value="wide">Spacious</option>
-              </select>
-              <select
-                aria-label="Template style"
-                data-testid="template-style-filter"
-                value={templateStyleFilter}
-                onChange={(event) =>
-                  setTemplateStyleFilter(event.target.value as typeof templateStyleFilter)
-                }
-                className={templateFilterSelectClass}
-              >
-                <option value="all">Any style</option>
-                <option value="open">Open plan</option>
-                <option value="separated">More private</option>
-                <option value="adu">Guest house</option>
-              </select>
-            </div>
-          </div>
-          <div className="mt-2 grid gap-2">
-            {filteredPlanTemplates.map((template, templateIndex) => {
-              const areaSqm = template.rooms.reduce(
-                (sum, room) => sum + room.width * room.depth,
-                0
-              );
-              const bounds = template.rooms.reduce(
-                (acc, room) => ({
-                  left: Math.min(acc.left, room.x - room.width / 2),
-                  right: Math.max(acc.right, room.x + room.width / 2),
-                  top: Math.min(acc.top, room.z - room.depth / 2),
-                  bottom: Math.max(acc.bottom, room.z + room.depth / 2),
-                }),
-                { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity }
-              );
-              const previewWidth = 112;
-              const previewHeight = 74;
-              const planWidth = Math.max(1, bounds.right - bounds.left);
-              const planDepth = Math.max(1, bounds.bottom - bounds.top);
-              const scale = Math.min((previewWidth - 12) / planWidth, (previewHeight - 12) / planDepth);
-              const roomPreview = template.rooms
-                .map((room) => room.name.replace(" / ", "/"))
-                .join(" · ");
-              const furnishedPack =
-                template.furnishingPacks.find((pack) => pack.id === "styled_starter") ??
-                template.furnishingPacks[0];
-              const furnishedItemCount = furnishedPack?.intents.length ?? 0;
-              return (
-                <div
-                  key={template.id}
-                  className={
-                    dark
-                      ? "designer-control grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium text-neutral-100"
-                      : "grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm"
-                  }
-                >
-                  <span
-                    className={
-                      dark
-                        ? "block self-start overflow-hidden rounded-md border border-white/10 bg-[#10131b]"
-                        : "block self-start overflow-hidden rounded-md border border-neutral-200 bg-neutral-50"
-                    }
-                    aria-hidden="true"
-                  >
-                    <svg
-                      data-testid={`plan-template-preview-${template.id}`}
-                      viewBox={`0 0 ${previewWidth} ${previewHeight}`}
-                      className="h-[86px] w-full"
-                    >
-                      {template.rooms.map((room) => {
-                        const x = 6 + (room.x - room.width / 2 - bounds.left) * scale;
-                        const y = 6 + (room.z - room.depth / 2 - bounds.top) * scale;
-                        const width = room.width * scale;
-                        const height = room.depth * scale;
-                        const fill =
-                          room.roomType === "toilet"
-                            ? "#dbeafe"
-                            : room.roomType === "kitchen"
-                              ? "#dcfce7"
-                              : room.roomType === "bedroom"
-                                ? "#ede9fe"
-                                : room.roomType === "dining"
-                                  ? "#fef3c7"
-                                  : "#e5e7eb";
-                        return (
-                          <rect
-                            key={room.id}
-                            x={x}
-                            y={y}
-                            width={width}
-                            height={height}
-                            fill={fill}
-                            stroke="#9ca3af"
-                            strokeWidth="1.4"
-                            rx="1.5"
-                          />
-                        );
-                      })}
-                      {furnishedPack?.intents.slice(0, 9).map((intent) => {
-                        const room = template.rooms.find((entry) => entry.id === intent.roomId);
-                        if (!room) return null;
-                        const x = 6 + (room.x + intent.x - bounds.left) * scale;
-                        const y = 6 + (room.z + intent.z - bounds.top) * scale;
-                        const markerFill =
-                          intent.category === "sofa" || intent.category === "accent_chair"
-                            ? "#2563eb"
-                            : intent.category === "dining_table" || intent.category === "dining_bench"
-                              ? "#d97706"
-                              : intent.category === "rug"
-                                ? "#14b8a6"
-                                : "#111827";
-                        const markerSize =
-                          intent.category === "sofa"
-                            ? 5
-                            : intent.category === "rug"
-                              ? 6
-                              : 3.5;
-
-                        return intent.category === "rug" ? (
-                          <rect
-                            key={intent.id}
-                            data-testid={`plan-template-furnishing-marker-${template.id}-${intent.id}`}
-                            x={x - markerSize / 2}
-                            y={y - markerSize / 2}
-                            width={markerSize}
-                            height={markerSize}
-                            fill={markerFill}
-                            fillOpacity="0.32"
-                            rx="1"
-                          />
-                        ) : (
-                          <circle
-                            key={intent.id}
-                            data-testid={`plan-template-furnishing-marker-${template.id}-${intent.id}`}
-                            cx={x}
-                            cy={y}
-                            r={markerSize / 2}
-                            fill={markerFill}
-                            fillOpacity="0.85"
-                          />
-                        );
-                      })}
-                    </svg>
-                  </span>
-                  <span className="min-w-0">
-                    <span className="flex items-center justify-between gap-2">
-                      <span>{template.label}</span>
-                      <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
-                        {formatDisplayArea(areaSqm, measurementUnit)}
-                      </span>
-                    </span>
-                    <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                      {template.summary}
-                    </span>
-                    <span
-                      data-testid={`plan-template-dimensions-${template.id}`}
-                      className={dark ? "mt-1 block text-[11px] font-semibold text-neutral-300" : "mt-1 block text-[11px] font-semibold text-neutral-700"}
-                    >
-                      Footprint {formatPlanDimensionsLabel(planWidth, planDepth, measurementUnit)} · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
-                    </span>
-                    <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
-                      Good for: {template.bestFor}
-                    </span>
-                    <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
-                      Spaces: {roomPreview}
-                    </span>
-                    <span className="mt-1 flex flex-wrap gap-1">
-                      {template.realLifeChecks.slice(0, 2).map((check) => (
-                        <span
-                          key={check}
-                          className={dark ? "rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-100" : "rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700"}
-                        >
-                          {check}
-                        </span>
-                      ))}
-                      <span className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}>
-                        {template.doorways.length} doors
-                      </span>
-                      <span className={dark ? "rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-neutral-300" : "rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] text-neutral-600"}>
-                        {template.windows.length} windows
-                      </span>
-                    </span>
-                    <span className={dark ? "mt-1 block truncate text-[11px] text-neutral-400" : "mt-1 block truncate text-[11px] text-neutral-500"}>
-                      Zones: {template.zones.slice(0, 3).join(" · ")}
-                    </span>
-                    <span className="mt-2 grid grid-cols-2 gap-2">
-                      <button
-                        ref={templateIndex === 0 ? firstTemplateActionRef : undefined}
-                        type="button"
-                        data-testid={`apply-plan-template-${template.id}`}
-                        onClick={() => onApplyPlanTemplate(template)}
-                        disabled={!canEdit}
-                        className={
-                          dark
-                            ? "rounded-md border border-white/10 px-2 py-1.5 text-center text-xs font-semibold text-neutral-100 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-                            : "rounded-md border border-neutral-200 px-2 py-1.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                        }
-                      >
-                        Empty
-                      </button>
-                      <button
-                        type="button"
-                        data-testid={`apply-furnished-template-${template.id}`}
-                        onClick={() =>
-                          furnishedPack
-                            ? onApplyPlanTemplate(template, { furnishingPackId: furnishedPack.id })
-                            : onApplyPlanTemplate(template)
-                        }
-                        disabled={!canEdit || !furnishedPack || furnishedItemCount === 0}
-                        className={
-                          dark
-                            ? "rounded-md bg-emerald-300 px-2 py-1.5 text-center text-xs font-semibold text-emerald-950 hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-50"
-                            : "rounded-md bg-neutral-900 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-                        }
-                      >
-                        <span className="block">Furnished</span>
-                        <span className={dark ? "block text-[10px] text-emerald-950/80" : "block text-[10px] text-white/90"}>
-                          {furnishedItemCount} items
-                        </span>
-                      </button>
-                    </span>
-                  </span>
-                </div>
-              );
-            })}
-            {filteredPlanTemplates.length === 0 && (
-              <div className={dark ? "rounded-lg border border-white/10 p-3 text-xs text-neutral-400" : "rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500"}>
-                No templates match those filters.
-              </div>
-            )}
-          </div>
-
-          <div className={`${titleClass} mt-4`}>Add one room</div>
-          <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-            Use these when you only need one extra room.
-          </div>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {HOUSE_ROOM_TEMPLATES.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                data-testid={`add-room-template-${template.id}`}
-                onClick={() => onAddRoomTemplate(template)}
-                disabled={!canEdit}
-                className={
-                  dark
-                    ? "designer-control rounded-lg border px-3 py-2 text-left text-sm font-medium text-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                    : "rounded-lg bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 shadow-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                }
-              >
-                <span className="block">{template.label}</span>
-                <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                  {formatPlanDimensionsLabel(template.width, template.depth, measurementUnit)}
-                </span>
-              </button>
-            ))}
           </div>
         </div>
       )}

@@ -78,7 +78,7 @@ export default function FloorPlanAddressFields({
       </div>
       <button
         type="button"
-        data-testid="floor-plan-library-browse-toggle"
+        data-testid="floor-plan-library-browse-toggle" hidden={browseStatus === "ready" && browseCount === 0}
         aria-expanded={browseOpen}
         aria-controls="floor-plan-library-browse-results"
         onClick={onToggleBrowse}

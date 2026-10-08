@@ -129,9 +129,8 @@ export async function chooseStartTemplate(
 }
 
 // Plan, Furnish and Shop are always-visible steps in the command bar. Suggest a layout and
-// Built-ins open from inside the Furnish step, and Present & export sits in the More menu.
+// Built-ins open from inside the Furnish step.
 const FURNISH_STEP_ENTRIES = new Set(["editor-workflow-ai", "editor-workflow-millwork"]);
-const MORE_MENU_ENTRIES = new Set(["editor-workflow-export"]);
 
 export async function selectEditorWorkspace(
   page: Page,
@@ -141,8 +140,6 @@ export async function selectEditorWorkspace(
   if (!(await item.isVisible().catch(() => false))) {
     if (FURNISH_STEP_ENTRIES.has(itemTestId)) {
       await selectEditorWorkspace(page, "editor-workflow-furnish");
-    } else if (MORE_MENU_ENTRIES.has(itemTestId)) {
-      await openMoreMenuFor(page, item);
     }
   }
   await expect(item).toBeVisible({ timeout: 20_000 });

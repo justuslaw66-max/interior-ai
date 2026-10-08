@@ -33,7 +33,6 @@ type CommitDesignPageItems = (
 ) => void;
 
 export type DesignPageSelectionCoordinatorState = {
-  editorMode: DesignPageEditorMode;
   housePlanRooms: HousePlanRoom2D[];
   isClientPreview: boolean;
   items: readonly DesignItem[];
@@ -97,7 +96,6 @@ export type DesignPageSelectionCoordinatorResult = {
 
 export function useDesignPageSelectionCoordinator({
   state: {
-    editorMode,
     housePlanRooms,
     isClientPreview,
     items,
@@ -258,13 +256,12 @@ export function useDesignPageSelectionCoordinator({
         clearZoneSelection();
         setSelectedPlanRoomId(null);
         setSelectedRendererSurfaceTarget(null);
-        if (editorMode !== "present") setEditorMode("design");
+        setEditorMode("design");
       }
     },
     [
       clearSelection,
       clearZoneSelection,
-      editorMode,
       preserveCameraAfterPlanOverlaySelection,
       setEditorMode,
       setSelectedPlanOverlayId,

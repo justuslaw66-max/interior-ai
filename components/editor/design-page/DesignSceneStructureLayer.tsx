@@ -21,7 +21,6 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { resolveCanonicalSceneModel } from "@/lib/floor-plan-scene-model-resolution";
@@ -76,7 +75,6 @@ export type DesignSceneStructureLayerState = {
   };
 };
 export type DesignSceneStructureLayerConfiguration = {
-  editorMode: DesignPageEditorMode;
   isClientPreview: boolean;
   plan: {
     measurementUnit: NonNullable<PlanRendererProps["measurementUnit"]>;
@@ -209,7 +207,7 @@ export function DesignSceneStructureLayer({
     </Html>
   ) : null;
   const canonicalEditingNotice =
-    canonicalPlan && configuration.editorMode !== "present" ? (
+    canonicalPlan ? (
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
@@ -296,7 +294,7 @@ export function DesignSceneStructureLayer({
           showZones={layers.zones}
           planViewOrientation={configuration.plan.orientation}
           gridBounds={configuration.plan.gridBounds}
-          interactive={configuration.editorMode !== "present"}
+          interactive
           selectedOverlayId={plan.selectedOverlayId}
           onSelectOverlay={actions.overlays.select}
           onDeleteOverlay={actions.overlays.delete}
@@ -365,10 +363,7 @@ export function DesignSceneStructureLayer({
         wallHeight={state.wholeHome.wallHeight}
         stackedFloors={state.wholeHome.stackedFloors}
         fadeInactiveFloors
-        interactive={
-          configuration.editorMode !== "present" &&
-          !configuration.isClientPreview
-        }
+        interactive={!configuration.isClientPreview}
         onSelectRoom={selectRoom}
         selectedOpeningId={state.wholeHome.selectedOpeningId}
         selectedSurfaceTarget={state.wholeHome.selectedSurfaceTarget}

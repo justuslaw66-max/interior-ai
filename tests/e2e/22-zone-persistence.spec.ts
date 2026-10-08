@@ -34,14 +34,8 @@ async function clickWithDomFallback(locator: Locator) {
   });
 }
 
-async function chooseTemplateStart(page: Page) {
-  const betaTemplate = page.locator('[data-testid="beta-start-template"]:visible').first();
-  if (await betaTemplate.isVisible().catch(() => false)) {
-    await expect(betaTemplate).toBeEnabled({ timeout: 30_000 });
-    await clickWithDomFallback(betaTemplate);
-    return;
-  }
-
+// Add one room is in the consumer palette's Templates (UX ST8), which starts collapsed.
+async function addOneBedroom(page: Page) {
   const planTab = page.getByTestId("editor-workflow-plan").first();
   if ((await planTab.getAttribute("data-active")) !== "true") {
     await selectEditorWorkspace(page, "editor-workflow-plan");
@@ -56,10 +50,13 @@ async function chooseTemplateStart(page: Page) {
     await clickWithDomFallback(tipsSwitch);
   }
 
-  const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
-  await expect(planStartTemplate).toBeVisible({ timeout: 30_000 });
-  await expect(planStartTemplate).toBeEnabled({ timeout: 30_000 });
-  await clickWithDomFallback(planStartTemplate);
+  const templates = page.getByTestId("plan-tool-section-templates").getByRole("button", { name: "Templates", exact: true });
+  await expect(templates).toBeVisible({ timeout: 30_000 });
+  if ((await templates.getAttribute("aria-expanded")) !== "true") await clickWithDomFallback(templates);
+  const addBedroom = page.getByTestId("add-room-template-bedroom");
+  await expect(addBedroom).toBeVisible({ timeout: 30_000 });
+  await expect(addBedroom).toBeEnabled({ timeout: 30_000 });
+  await addBedroom.click();
 }
 
 async function readStoredZoneState(page: Page): Promise<StoredZoneState | null> {
@@ -234,10 +231,7 @@ async function buildStoredFixtureForLocalHydration(page: Page, withSeatingZone =
 }
 
 async function placeArmchairSetInBedroom(page: Page) {
-  await chooseTemplateStart(page);
-  const addBedroom = page.getByTestId("add-room-template-bedroom");
-  await expect(addBedroom).toBeVisible({ timeout: 30_000 });
-  await addBedroom.click();
+  await addOneBedroom(page);
 
   const catalogReady = await waitForCatalogReady(page);
   expect(catalogReady, "The live catalog must be ready for the zone fixture").toBe(
