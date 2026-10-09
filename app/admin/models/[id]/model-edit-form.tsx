@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
+import { ModelStatusField } from "./ModelStatusField";
 
 type EditableModelAsset = {
   id: string;
@@ -301,23 +302,10 @@ export default function ModelEditForm({
         </div>
       )}
 
-      <label className="block text-xs">
-        <div className="mb-1 font-medium">Status</div>
-        <select
-          className="w-full rounded-md border px-2 py-1"
-          value={form.assetStatus}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              assetStatus: e.target.value as "draft" | "needs_fix" | "approved",
-            }))
-          }
-        >
-          <option value="draft">draft</option>
-          <option value="needs_fix">needs_fix</option>
-          <option value="approved">approved</option>
-        </select>
-      </label>
+      <ModelStatusField
+        value={form.assetStatus}
+        onChange={(assetStatus) => setForm((prev) => ({ ...prev, assetStatus }))}
+      />
 
       <label className="block text-xs">
         <div className="mb-1 font-medium">Notes</div>

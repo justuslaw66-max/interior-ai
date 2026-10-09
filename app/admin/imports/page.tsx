@@ -3,6 +3,7 @@ import Link from "next/link";
 import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../AdminPageHeader";
+import { AdminStatusBadge } from "../AdminStatusBadge";
 import { adminSection, adminTitle } from "../admin-navigation";
 import { auth } from "../admin-session";
 
@@ -24,17 +25,6 @@ type ImportJobListResult = {
   jobs: ImportJobListItem[];
   errorMessage: string | null;
 };
-
-const STATUS_TONE: Record<string, string> = {
-  failed: "bg-red-50 text-red-700 border-red-200",
-  needs_review: "bg-amber-50 text-amber-800 border-amber-200",
-  needs_mapping: "bg-blue-50 text-blue-700 border-blue-200",
-  published: "bg-green-50 text-green-700 border-green-200",
-};
-
-function statusTone(status: string): string {
-  return STATUS_TONE[status] ?? "bg-neutral-50 text-neutral-700 border-neutral-200";
-}
 
 async function loadImportJobs(): Promise<ImportJobListResult> {
   const prismaCompat = prisma as unknown as {
@@ -160,9 +150,7 @@ export default async function AdminImportsPage() {
                   </Link>
                 </td>
                 <td className="px-3 py-2">
-                  <span className={`inline-flex rounded border px-2 py-0.5 text-xs ${statusTone(job.status)}`}>
-                    {job.status}
-                  </span>
+                  <AdminStatusBadge kind="importJob" status={job.status} />
                 </td>
                 <td className="px-3 py-2">{job.sourceFileName}</td>
                 <td className="px-3 py-2">{job.sourceBrand ?? "-"}</td>

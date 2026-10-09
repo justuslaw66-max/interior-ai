@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { allowedImportStatusesFrom } from "@/lib/import-jobs/status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
+import { describeAdminStatus } from "../../admin-status";
 
 type ImportJobActionsProps = {
   jobId: string;
@@ -78,7 +79,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
           >
             {statusOptions.map((nextStatus) => (
               <option key={nextStatus} value={nextStatus}>
-                {nextStatus}
+                {describeAdminStatus("importJob", nextStatus).label}
               </option>
             ))}
           </select>

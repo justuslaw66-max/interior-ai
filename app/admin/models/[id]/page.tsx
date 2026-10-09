@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
+import { getModelAssetStatus } from "@/lib/modelAssetStatus";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../../AdminPageHeader";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
 import { adminSection, adminTitle } from "../../admin-navigation";
 import { auth } from "../../admin-session";
 import ModelViewer from "./viewer";
@@ -58,7 +60,7 @@ export default async function ModelPage({ params }: ModelPageProps) {
             {asset.aabbCenterY.toFixed(3)}, {asset.aabbCenterZ.toFixed(3)}
           </div>
           <div className="mt-3">
-            <b>Approved</b>: {asset.approved ? "Yes" : "No"}
+            <b>Status</b>: <AdminStatusBadge kind="modelAsset" status={getModelAssetStatus(asset)} />
           </div>
           <ModelEditForm asset={asset} catalogEntry={linkedCatalogEntry} />
         </div>

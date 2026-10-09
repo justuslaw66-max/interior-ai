@@ -1,19 +1,6 @@
 import Link from "next/link";
 import type { AdminFloorPlanQueueJob } from "@/lib/floor-plan-imports/admin-queue";
-
-const STATUS_TONES: Record<string, string> = {
-  received: "border-neutral-200 bg-neutral-50 text-neutral-700",
-  rendered: "border-blue-200 bg-blue-50 text-blue-700",
-  extracted: "border-blue-200 bg-blue-50 text-blue-700",
-  scale_solved: "border-blue-200 bg-blue-50 text-blue-700",
-  topology_built: "border-blue-200 bg-blue-50 text-blue-700",
-  validating: "border-violet-200 bg-violet-50 text-violet-700",
-  needs_review: "border-amber-200 bg-amber-50 text-amber-800",
-  ready: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  applied: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  published: "border-green-200 bg-green-50 text-green-800",
-  failed: "border-red-200 bg-red-50 text-red-700",
-};
+import { AdminStatusBadge } from "../AdminStatusBadge";
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -74,13 +61,7 @@ export default function AdminFloorPlanQueueTable({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${
-                        STATUS_TONES[job.status] ?? STATUS_TONES.received
-                      }`}
-                    >
-                      {job.status.replaceAll("_", " ")}
-                    </span>
+                    <AdminStatusBadge kind="floorPlanJob" status={job.status} />
                     {attention ? (
                       <div className="mt-2 text-xs font-semibold text-red-700">{attention}</div>
                     ) : null}
@@ -109,7 +90,7 @@ export default function AdminFloorPlanQueueTable({
                   <td className="px-4 py-3 text-xs text-neutral-600">
                     {job.revision ? (
                       <>
-                        <div className="font-medium">{job.revision.publicationStatus}</div>
+                        <AdminStatusBadge kind="floorPlanPublication" status={job.revision.publicationStatus} />
                         <div>{job.revision.verificationTier.replaceAll("_", " ")}</div>
                       </>
                     ) : (

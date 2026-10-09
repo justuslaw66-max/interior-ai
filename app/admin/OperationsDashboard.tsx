@@ -119,10 +119,6 @@ function cx(...classNames: Array<string | undefined | false>) {
   return classNames.filter(Boolean).join(" ");
 }
 
-function formatStatus(status: string) {
-  return status.replaceAll("_", " ");
-}
-
 function formatRelativeTime(date: Date) {
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60_000));
   if (elapsedMinutes < 1) return "Just now";
@@ -413,7 +409,7 @@ function RecentOperationsTable({
                     <Link className={styles.operationLink} href={operation.href}>{operation.label}</Link>
                   </td>
                   <td data-label="Workflow">{operation.workflow}</td>
-                  <td data-label="Status"><StatusBadge tone={operation.statusTone}>{formatStatus(operation.status)}</StatusBadge></td>
+                  <td data-label="Status"><StatusBadge tone={operation.statusTone}>{operation.statusLabel}</StatusBadge></td>
                   <td className={styles.ownerCell} data-label="Owner">
                     <UserRound aria-hidden="true" />
                     <span title={operation.owner}>{operation.owner}</span>

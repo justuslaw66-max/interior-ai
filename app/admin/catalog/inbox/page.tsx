@@ -7,6 +7,8 @@ import {
   getImportJobValidationBlockers,
 } from "@/lib/import-jobs/admin-workflow";
 import { AdminPageHeader } from "../../AdminPageHeader";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
+import { describeAdminStatus } from "../../admin-status";
 import { adminSection, adminTitle } from "../../admin-navigation";
 import { auth } from "../../admin-session";
 
@@ -111,7 +113,7 @@ export default async function AdminCatalogInboxPage({
                       {job.id}
                     </Link>
                   </td>
-                  <td className="px-3 py-2 capitalize">{job.workflowStage}</td>
+                  <td className="px-3 py-2"><AdminStatusBadge kind="workflowStage" status={job.workflowStage} /></td>
                   <td className="px-3 py-2">
                     <div>{job.sourceFileName}</div>
                     <div className="text-xs text-neutral-500">{job.sourceBrand ?? "Unknown brand"}</div>
@@ -166,11 +168,9 @@ export default async function AdminCatalogInboxPage({
                           {job.sourceSku ? ` · SKU ${job.sourceSku}` : ""}
                         </div>
                       </div>
-                      <div className="rounded-full border border-neutral-200 px-2 py-0.5 text-[11px] text-neutral-700">
-                        {job.status}
-                      </div>
+                      <AdminStatusBadge kind="importJob" status={job.status} />
                     </div>
-                    <div className="mt-2 text-xs text-neutral-600">Stage: {job.workflowStage}</div>
+                    <div className="mt-2 text-xs text-neutral-600">Stage: {describeAdminStatus("workflowStage", job.workflowStage).label}</div>
                     <div className="mt-1 text-xs text-neutral-600">Next: {job.nextAction ?? "-"}</div>
                     {validationBlockers.length > 0 ? (
                       <div className="mt-2 text-xs text-red-700">

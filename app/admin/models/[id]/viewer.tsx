@@ -8,6 +8,7 @@ import { Html } from "@react-three/drei/web/Html";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
 
 // Accept objects with the required properties (matches Prisma ModelAsset)
 type Asset = {
@@ -396,13 +397,6 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
     };
   }, [stats]);
 
-  const statusBadgeClass =
-    approvalStatus === "approved"
-      ? "bg-green-100 text-green-800 border-green-200"
-      : approvalStatus === "needs_fix"
-        ? "bg-amber-100 text-amber-900 border-amber-300"
-        : "bg-neutral-100 text-neutral-700 border-neutral-300";
-
   return (
     <div className="relative h-full w-full">
       <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-2 rounded-xl border bg-white/90 p-2 text-xs backdrop-blur">
@@ -475,9 +469,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
       <div className="absolute bottom-3 right-3 z-20 w-85 max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">
         <div className="mb-2 flex items-center justify-between">
           <div className="font-semibold">Asset QA</div>
-          <span className={`rounded-full border px-2 py-0.5 text-[11px] ${statusBadgeClass}`}>
-            {approvalStatus}
-          </span>
+          <AdminStatusBadge kind="modelAsset" status={approvalStatus} />
         </div>
 
         <div><b>File size</b>: {formatFileSize(fileSizeBytes)}</div>

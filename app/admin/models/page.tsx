@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { isAdminEmail } from "@/lib/admin";
+import { getModelAssetStatus } from "@/lib/modelAssetStatus";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../AdminPageHeader";
+import { AdminStatusBadge } from "../AdminStatusBadge";
 import { adminSection, adminTitle } from "../admin-navigation";
 import { auth } from "../admin-session";
 
@@ -31,7 +33,9 @@ export default async function ModelsPage() {
             <div className="mt-2 text-xs">
               {a.dimsWmm}×{a.dimsDmm}×{a.dimsHmm} mm
             </div>
-            <div className="mt-1 text-xs">{a.approved ? "✅ Approved" : "⚠️ Not approved"}</div>
+            <div className="mt-2">
+              <AdminStatusBadge kind="modelAsset" status={getModelAssetStatus(a)} />
+            </div>
           </Link>
         ))}
       </div>

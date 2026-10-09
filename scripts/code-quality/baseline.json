@@ -9,7 +9,7 @@
   },
   "oversizedFiles": {
     "app/admin/audit/page.tsx": {
-      "lines": 728,
+      "lines": 720,
       "limit": 250
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
@@ -25,7 +25,7 @@
       "limit": 250
     },
     "app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx": {
-      "lines": 319,
+      "lines": 318,
       "limit": 250
     },
     "app/admin/floor-plans/[id]/FloorPlanCandidateReviewPanel.tsx": {
@@ -41,19 +41,19 @@
       "limit": 250
     },
     "app/admin/models/[id]/model-edit-form.tsx": {
-      "lines": 421,
+      "lines": 409,
       "limit": 250
     },
     "app/admin/models/[id]/viewer.tsx": {
-      "lines": 573,
+      "lines": 565,
       "limit": 250
     },
     "app/admin/operations-data.ts": {
-      "lines": 512,
+      "lines": 511,
       "limit": 400
     },
     "app/admin/OperationsDashboard.tsx": {
-      "lines": 504,
+      "lines": 500,
       "limit": 250
     },
     "app/api/admin/catalog/[catalogItemId]/route.ts": {
@@ -701,7 +701,7 @@
     "app/admin/audit/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 582
+        "maximum": 580
       },
       "complexFunctions": {
         "count": 1,
@@ -727,13 +727,13 @@
     "app/admin/catalog/inbox/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 178
+        "maximum": 176
       }
     },
     "app/admin/catalog/review/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 144
+        "maximum": 136
       }
     },
     "app/admin/clicks/page.tsx": {
@@ -761,7 +761,7 @@
     "app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 303
+        "maximum": 301
       },
       "complexFunctions": {
         "count": 1,
@@ -873,7 +873,7 @@
     "app/admin/floor-plans/AdminFloorPlanQueueTable.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 114
+        "maximum": 108
       }
     },
     "app/admin/floor-plans/page.tsx": {
@@ -911,13 +911,13 @@
     "app/admin/imports/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 101
+        "maximum": 99
       }
     },
     "app/admin/models/[id]/model-edit-form.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 373
+        "maximum": 360
       },
       "complexFunctions": {
         "count": 1,
@@ -927,11 +927,11 @@
     "app/admin/models/[id]/viewer.tsx": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 296
+        "maximum": 287
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 28
       }
     },
     "app/admin/operations-data.ts": {
