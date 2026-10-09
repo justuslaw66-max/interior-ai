@@ -1,0 +1,2113 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-havana/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip (20549058 bytes, sha256 51b9f6093a0e7d2e2f6c45d66325126406aa8341ca7db4a951316c1733928776); TABULAE - GENUINE HAVANA - minimali.zip (59477396 bytes, sha256 b373630e9912a135624ed8ab64537d0512cf3417e7afb5f502b0b0962abdd0df).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0021253",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/tabulae-genuine-havana/pf60021253-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0021253_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-hav-pf60021253-30x120-92270-0",
+   "faces": [
+    {
+     "file": "0021253_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 10572,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "d0644722431a02833e4b35677383eeb9e11127ee97d8ee2eacbd12610f0b2c38",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_01",
+      "id": "d23ed3cd-5c8c-4412-a361-548480acf401",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021253_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12084,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "f09dbf1072dd5aee7ed2bc0590c7c9607c58af918b5df69b86982fed713fd067",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_09",
+      "id": "90366532-8dc0-43ea-a209-e305312e828d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021253_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 13078,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "f9513ca0dd8325fcc9fa33cf3c8d2a9a0d4fe690b68c68af7669cd309520a131",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_04",
+      "id": "7241206e-9fe9-45a5-818e-98507d058214",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021253_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12936,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "795e21316b5df1d1ebbfe909d9e8d2f7ec85f13b8576905e0ddb18be5ac26a29",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_15",
+      "id": "8a6da3eb-a0c5-44d0-86c2-2de900c59307",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021253_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11940,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "9b84de577107adafc34c71b5e98f0c16d199445fcb424aa37d8cbb3d53d2aa75",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_11",
+      "id": "e3157b97-c9a6-4f1c-849d-172b09e7d838",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021253_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11688,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_5.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "4168a9ed02473f4d63905e6e93466eb9c95e537938dcfbe85ff5cc14241a3816",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_02",
+      "id": "d2cc0ef4-fdc4-4216-936d-4393b6d26363",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021253_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11366,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "783468780c4b049b0e0916913db96300120429a16ce199642064a43670239924",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_16",
+      "id": "51db816a-0553-435c-a84f-2fec09d95637",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021253_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11566,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "676d3cc23b542204088e935d74a265bc9c1ddbc8b3a98b2eab28f73fa06908f9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_10",
+      "id": "15721ba8-2a28-43f5-85ee-fdfe813838d7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021253_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 10666,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "4f1812923bc7f6e6a07dee323f2fa7356d119988225ae4cd546c13b94d937429",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_06",
+      "id": "ef057aa0-652e-4a36-b6cf-d7ab38432939",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021253_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11256,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "0e3874f7d411579485af9da915220cf0bfba0ac1a0a5b295c0326660d9faa2d9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_07",
+      "id": "50d526fb-7d41-4e53-9331-fc1621307fff",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021253_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 13016,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "8576e32a39177bb05208bac8d429eb8c721653b944c8feed1013d8b574b39572",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_17",
+      "id": "673a84c1-7840-4bee-9e4c-0b6989baf73e",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021253_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12152,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "36437f36c4f29f2fab97331b11748c82ab15478d6caf576ed095c800cb44371c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_13",
+      "id": "d2af5316-f779-4e7b-b1b5-74d2cdb1b69c",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021253_13.webp",
+     "face": 13,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12002,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "2a7e359790eb516d41df246e4970a63e5bfaa49aae38bae89bccd50620e2d27c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_20",
+      "id": "b27d2b9b-a63c-4bed-a146-8e15fdc88ded",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021253_14.webp",
+     "face": 14,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 13728,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_13.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "15b63ac566a7ccd42e7350279c08dab01b8ddd8b1daa01a93465add1a7d9a733",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_05",
+      "id": "162ec5cd-0201-48a4-84d0-2b6008e3dba6",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021253_15.webp",
+     "face": 15,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 10994,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_14.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "025d771e0964c3b7fd29225b835d4f8c8f61f2cf41690efa741deb878fdbccea",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_18",
+      "id": "7233952b-0011-4bd0-b198-73733d3f7117",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021253_16.webp",
+     "face": 16,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11304,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_15.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "88e75fbd45a0b4138d60e86b97c45ace679656e0ae97556e1f00201ea3939254",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_19",
+      "id": "9702ad7a-5df2-4692-a185-7787997056bd",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021253_17.webp",
+     "face": 17,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12158,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_16.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "e2bc56d3bc1289921c26b243eabca30e7f7b390783c646da170b7e8779b237fe",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_03",
+      "id": "a7ec1b68-3c69-4967-86c3-41ed8533666b",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021253_18.webp",
+     "face": 18,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 13996,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_17.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "c53ac72621469c9b5bacb5a841377fb72849d44ae247aa0bbc3a3806f8f39f44",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_12",
+      "id": "09f5e97d-f388-4ef5-87c6-1dab24da6b7f",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021253_19.webp",
+     "face": 19,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12798,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_18.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "ed1196a31e27f6a2b0a5f5417f3c3827b6dbfea6f2c37eb965f75bb917213723",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_08",
+      "id": "eab8233e-d592-4382-9528-c2bb3ba8632f",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021253_20.webp",
+     "face": 20,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12008,
+     "source_zip": "PLEIN AIR - TABULAE GENUINE HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE GENUINE HAVANA - 30X120 - R11 - view_19.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "63d9067a37de455640ee5d57c1a9c8262d9f7c19e83fb41bda4c958099e7adee",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE GENUINE HAVANA 30X120 R11_20 MM_14",
+      "id": "af8451e7-83a9-4703-a0d6-7538a2028178",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "23,4x148",
+   "item_code": "0021107",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-havana/pf60021107-v102/",
+   "face_mm": {
+    "width": 234,
+    "height": 1480
+   },
+   "swatch": "0021107_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-hav-pf60021107-23-4x148-nat-92249-0; wall gardenia-wall-tile-tabulae-genuine-hav-pf60021107-23-4x148-nat-92249-0",
+   "faces": [
+    {
+     "file": "0021107_01.webp",
+     "face": 1,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12108,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_1 (2).jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "1452125643b10be737d8f68e74a5e306169521c577c54283118c8b20c1d9e310",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_01",
+      "id": "85d9f078-8d8a-42a9-80b5-eb2af6f9b18a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021107_02.webp",
+     "face": 2,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13058,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_1.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "77c5a749bfeb653e171383db181603f469bc8d3007f2cc9ea7e584e188c749de",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_18",
+      "id": "23f2fe0d-59b0-483d-802b-9e6f23d9c56f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021107_03.webp",
+     "face": 3,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13802,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_2.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "11f79f08da39a0e4ff907290bc0bd8a8e6c40d74513ec90211bf85b9c8a0ca12",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_13",
+      "id": "b7aa19c1-b179-42ca-97d3-0e47e1189ad2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021107_04.webp",
+     "face": 4,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13440,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_3.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "110e62be1a109f1dce061608bf090445e0f6ee68e616fd3b5853b153f85db552",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_17",
+      "id": "b5e6ef18-e550-47a1-90e1-46a61e31a2e0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021107_05.webp",
+     "face": 5,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 14166,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_4.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "1a493b403286d825d6283e61a2edb4eec408146cc57e5023e7b6362ee2d7cfaf",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_15",
+      "id": "fed037bf-0591-44dc-bb52-c7ade01dc2bf",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021107_06.webp",
+     "face": 6,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12500,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_5.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "8a7c9107357a76da024662aa4c3dff63320daf3bde8cfa525479671adba471da",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_19",
+      "id": "e5a178c9-f657-4033-94f3-1b3363f190f2",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021107_07.webp",
+     "face": 7,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13660,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_6.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "61e14c112fa5d7d1743c8173fd55b0cb26ffbe3cad6063288777d3b9612c5fef",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_16",
+      "id": "faa81adc-f667-491f-8492-41a1ad0f11e2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021107_08.webp",
+     "face": 8,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 16732,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_7.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "f1d347d51600869742c667a3e560f64c0139956d0ce311ab41979bfc93ec59b2",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_12",
+      "id": "72e50b29-d4da-44cc-9269-a8dfbbc57816",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021107_09.webp",
+     "face": 9,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12714,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_8.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "319433ed56107c0a33a6b4876e1553c6dee1155a8845525a6d018b0c63dc1808",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_11",
+      "id": "73d22773-e3ac-46cd-bb72-9dcda770c9ec",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021107_10.webp",
+     "face": 10,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13578,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_9.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "18212d2f2c05293e1778426405d00fe7e8f686a58b15f167e13b638be80425cc",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_20",
+      "id": "9a99661e-6a4b-43dd-851d-f38bdbb350ab",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021107_11.webp",
+     "face": 11,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13330,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_10.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "bb90bb3dad4884afd4dd9cc3a72722790ac25f0a0c5ca661d943c7755abd6875",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_14",
+      "id": "6ae68583-2fae-420a-9204-c933d974458b",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021107_12.webp",
+     "face": 12,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 14590,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_11.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "f5ca8ab02cbf7fe871c4632b4929f0c0339a6dddcb4be44f8db2e3ef3acaa0cb",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_08",
+      "id": "5b0db03e-de1d-458d-ac73-5697ccdb0c67",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021107_13.webp",
+     "face": 13,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 14880,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_13.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "45b712a934377a6ad18ef09c6ce2be129c0c26c1af6ce44d8d1220cfc2ed73ee",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_09",
+      "id": "cbdaa8aa-b207-49e7-83ba-e9a61c15f38e",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021107_14.webp",
+     "face": 14,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12424,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_14.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "1b351fa577a6e7475c0b9a8b6cdcef8f6aa2ea1ad0bb7fd60fb6230df3d43586",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_06",
+      "id": "18cde40a-2076-4344-8947-0897a8feaec4",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021107_15.webp",
+     "face": 15,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12306,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_15.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "b39c16fe947c859feba072bcf113ce7bd66e46eaa31f09a2bd7b3f46a152ba38",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_10",
+      "id": "82180211-7cba-4c05-8d97-1d5c5ac6d30b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021107_16.webp",
+     "face": 16,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 14454,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_16.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "726348aa83a4816f05bd70f5f35efd20d6a6f03793b8d59c205e3691763f6784",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_04",
+      "id": "846e2cba-1da7-4ac7-a09d-3f7b4c7adf19",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021107_17.webp",
+     "face": 17,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13346,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_17.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "63e1496a6c051613411fbfeabe65b9ef521d808628e99e7db78446f056db837e",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_02",
+      "id": "7bb56d9a-1bd2-4d8d-b8b3-0e48327a15cd",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021107_18.webp",
+     "face": 18,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 12498,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_18.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "8293ece5147f7180de27fe0f1474210c49a55574486806e67fa8456029f5afe3",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_07",
+      "id": "3755c146-45dc-4092-af62-8d54066b5e6b",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021107_19.webp",
+     "face": 19,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 15170,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_19.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "0d12d4c5e5f1841052a1823a39d2d609e9921cb0e0b1e128daa49296de289410",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_05",
+      "id": "4fd3de9c-ec6e-4afd-8348-bef61abd6784",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021107_20.webp",
+     "face": 20,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 13172,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - GENUINE HAVANA - 23,4X148 - Natural - view_20.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "d3bbe23b04513262d79b12a78116c29f6617ec69ad95fb44b97f8353b2983fc2",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE GENUINE HAVANA 23,4X148_03",
+      "id": "d068ec57-3409-4c63-b573-c0df39a56ae4",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0021141",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-havana/pf60021141-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0021141_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-hav-pf60021141-20x120-nat-92253-0; floor gardenia-flooring-tabulae-genuine-hav-pf60021156-20x120-92267-0 (uses 0021141's faces: ABK's 30 R11 pictures are 0021141's 30 Natural pictures, byte for byte); wall gardenia-wall-tile-tabulae-genuine-hav-pf60021141-20x120-nat-92253-0; wall gardenia-wall-tile-tabulae-genuine-hav-pf60021156-20x120-92267-0 (uses 0021141's faces: ABK's 30 R11 pictures are 0021141's 30 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0021141_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7154,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "cd6f804457e0b7ca6de0538f4b6be5b24a2eb76ff4863c6f41a292e16094b774",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE HAVANA 20X120_01",
+      "id": "a25b324e-e177-4810-966c-3b8f4d05ab76",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021141_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7428,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_1.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "b28bf32dbe8ee2bb2ffdf496e23834d849085368f5b523b811fc2b3e9fd21a7a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE HAVANA 20X120_29",
+      "id": "9be496c7-d8f7-443d-a258-dad5f008d762",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021141_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7516,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_2.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f1f16dd1c860d5e519a7f01a81dcf4c3dd5ca474c5c77c3536efaeb7a2714710",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE HAVANA 20X120_20",
+      "id": "da2868ac-55f1-4d29-a4ff-40515809b895",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021141_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8498,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_3.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "7d2b32b6946f1cdfb027419e07f4fde6a6954c0fd5d662d85cee41970f004c5f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE HAVANA 20X120_21",
+      "id": "e0a2871a-4707-40b1-a440-9ccb010a1e50",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021141_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7332,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_4.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "14a87167ead6469b166a860e58446a27f77dd614493dba74faca250ed4340ad2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE HAVANA 20X120_24",
+      "id": "7d3944b7-fb3b-4ff0-bdf6-3cbf3a975646",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021141_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8440,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_5.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "0a845f14f391c5e683a91762395c7b72cac16ce11f335b4ee83ce7961402e93f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE HAVANA 20X120_13",
+      "id": "4ccb6111-f652-44e3-b882-52d256f96397",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021141_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7998,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_6.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "17813ddcc638f2ee3ef10e8cda4e6a110b703f8ff0f27665f18fdfe590a779bf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE HAVANA 20X120_30",
+      "id": "9fa3cee0-7f7f-42d1-88d5-8bf5a79255d9",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021141_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7742,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_7.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "992822e6470a2eb35d60fa8c19b761a6f72866aceef3f4d404d3e8889cff3eed",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE HAVANA 20X120_25",
+      "id": "e7cac401-81d3-41dc-af2a-e900f2f9403a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021141_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8196,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_8.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "061165537c20650919b5b3da1be5f44aec56944cd23fbfaf3d667051b7aa869a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE HAVANA 20X120_19",
+      "id": "7c679f59-f56e-4a45-bf61-90cd7d170af7",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021141_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8758,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_9.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "222d36812437c24680ff7a2aeb966b4518de1c038c40d74724c05df8a9f68ca7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE HAVANA 20X120_22",
+      "id": "6bbabc81-01c3-43d6-9cf8-387e3b904053",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021141_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9126,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_10.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "af149b1999c5d38e10cc0c4a7deec47cc59f5b76b30082417313557f91d4ef29",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE HAVANA 20X120_28",
+      "id": "21b1da89-f3a5-4c79-be2a-fcf59bca58b2",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021141_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8742,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_11.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "cc2e47581bdbca27bb36e4ce1117dfda84427f5d553d86d8075060c25bf39989",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE HAVANA 20X120_23",
+      "id": "b90cf597-ea4d-468d-9b55-a6365469c147",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021141_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8294,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_12.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "6608b44be52b560db02e299bbb47ab80b53ed93e791790c6a561e278a3823b5b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE HAVANA 20X120_27",
+      "id": "04229beb-6d32-4a8b-bb02-d2cbbf2a65aa",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021141_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7866,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_13.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "ae84c798b891855f48d121b0b993a982be82c938e5ba8e8eb561652d835ff064",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE HAVANA 20X120_16",
+      "id": "b4cf8b28-0ca5-4ed0-ba2f-edee31f212ad",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021141_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7536,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_14.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "414ee8572e6f22bf6a55e110bff3e086f5bd7d4b6576d89de16faf1411c131f6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE HAVANA 20X120_26",
+      "id": "9b6e94dd-585f-40d4-815f-d9887b2ed02e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021141_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6968,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_15.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "274486e3ea631986060508065b6852d37c1a0170aa3f572fc209b7da6b96c230",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE GENUINE HAVANA 20X120_12",
+      "id": "8dcc2fef-8ba7-400b-b713-54f4459865a2",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021141_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8486,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_16.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "51e5a156ada3f895068eecc09962a2d871bc866e20e4ebd87a8bd7aab5f491c0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE GENUINE HAVANA 20X120_11",
+      "id": "17264cb0-d341-4e9c-aceb-bcf4a42a185d",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021141_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9696,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_17.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "54a633fab1388a3671ca853d549ff37fe1feef5a45db4ed3d9703a6bc7f882b4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE GENUINE HAVANA 20X120_15",
+      "id": "feed0f34-7d65-415e-94ef-b9f30f2ee0ba",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021141_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8040,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_18.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "52a78213e9c7ef97fee1c49913dfddd0d18d84b5780ae2bdd1780f68679983f5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE GENUINE HAVANA 20X120_18",
+      "id": "66c0cfec-453c-42b6-9e5c-87e6a2ee44d7",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021141_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8162,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_19.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "897b11ccf0b19d240aab27fc6198fbbddef96702dd6969fc9c562b5dae0071bc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE GENUINE HAVANA 20X120_17",
+      "id": "c51351d8-0f3c-466b-b730-9082e7e37a82",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021141_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8242,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_20.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "ec00d9d21f3ab2335b2e97b0cdaaf914d471ad99a0c8da5e7b07050f09866ada",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE GENUINE HAVANA 20X120_14",
+      "id": "d09f24df-265c-4ed1-b065-162c0bd769bb",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021141_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9054,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_21.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "4776b3430efcedefb57d15de05c4dc31d062949f00425b0c33d687d8fa5d4ad6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE GENUINE HAVANA 20X120_10",
+      "id": "bd38e665-7577-4c45-9ee0-dfef889b0683",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021141_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8332,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_22.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f659feea6bf58496540942f40a0fa53a4b533f12f43a0241dd4b485c68b5fc71",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE GENUINE HAVANA 20X120_04",
+      "id": "71316150-5611-4be6-ae97-29a84c43bc2e",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021141_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8000,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_23.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "cfadecbdc5c66b1b23d26e2938ed33ff009411b09fb592f0181ba8d2495e3ded",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE GENUINE HAVANA 20X120_03",
+      "id": "94e34cd2-6a92-4040-83b3-ac525e297233",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021141_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7784,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_24.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "8dcb3a835668d57548d92b3c8964dfab061e911669d6ec6ea4de99820cc054cf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE GENUINE HAVANA 20X120_02",
+      "id": "56338efd-2322-46b2-b8e1-54bdf19474e6",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021141_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9098,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_26.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "76bc28cf9c60db483cf1b078972db0adaef3eae636d21fcdc0bd315a8e1907fa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE GENUINE HAVANA 20X120_06",
+      "id": "2d945251-22eb-4b0e-ae59-0591825410af",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021141_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9728,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_27.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "ea2bb9b40f3757d99a4bac243574a437a1a9f8a9ed5a15a1b0085a1be5bf27a1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE GENUINE HAVANA 20X120_09",
+      "id": "38089f09-c2df-4e63-a655-f0da8551f5ee",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021141_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8032,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_28.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "604cac48806883c1ce0b23e085b588b9d6e8dda80b7cf1ef5e0453d058e7af87",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE GENUINE HAVANA 20X120_05",
+      "id": "703cdfdc-69ab-455b-97ff-f6cf53acf5a2",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021141_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7036,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_29.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "7d2d4bfb85d576b2e81f627188916c0ed8d6ae57b1a065ca66d89638e5e46723",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE GENUINE HAVANA 20X120_08",
+      "id": "bb0608d3-0856-4b5a-b385-234980eb4407",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021141_30.webp",
+     "face": 30,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8120,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - GENUINE HAVANA - 20X120 - R11 - view_30.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "8d5e5aceecb612fedaada9d688bc21a14f3e2ef66966fa7fd59032759d9ba04b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE GENUINE HAVANA 20X120_07",
+      "id": "20191fac-2dcf-46de-9c73-02f3acbe1f54",
+      "site_position": 30
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0021145",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/genuine-havana/pf60021145-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0021145_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-hav-pf60021145-10x60-nat-92257-0; wall gardenia-wall-tile-tabulae-genuine-hav-pf60021145-10x60-nat-92257-0",
+   "faces": [
+    {
+     "file": "0021145_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2238,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "13259dde48876325b04a28eaf0b05603acb2878b545ff4a29350c65a015448be",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE HAVANA 10X60_01",
+      "id": "380deb6c-853c-42b1-a4c3-e522250c0509",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021145_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2484,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "30f63de0f4717e5ad0b5dae45a4f66d1a650fe5dc2cfafabb008c6fdd0b15b57",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE HAVANA 10X60_15",
+      "id": "1eb2a5ca-867d-4654-a424-dd0a0e24e671",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021145_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1912,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "f473d145c5cd496c6f8b683e23140c38f66d72d5192ff70a8cbcf81e64d7feee",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE HAVANA 10X60_12",
+      "id": "8451a947-24b4-43bb-9cce-d1648886a20d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021145_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2340,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "5d3ca8f57e807ad4b4694097cfcf1f9abbb2992f2c5dd88b9c3512afa2d7a267",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE HAVANA 10X60_07",
+      "id": "eb069ef8-acbd-4094-b2ba-29bf16fa00f9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021145_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1760,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "51b66927500e045855d5f6645e926462f165bc14dfb1c55e04b2d58d2a8ffea4",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE HAVANA 10X60_14",
+      "id": "13ed78b3-831c-48b1-9c37-7883f735e76c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021145_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2018,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "79cb9ed51fe833891b8e056ac8f3ea705d6f04424f6029116b0e781ad2d0660a",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE HAVANA 10X60_13",
+      "id": "f1e478ce-5578-4e6f-96b1-6a4e5c17d4be",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021145_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1836,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "5e4bcdfa1c876c3e7e1d1f4bd569cb963c64c523f3457e0a46b6054e5a7e8fd9",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE GENUINE HAVANA 10X60_04",
+      "id": "ad322d1a-f9fa-4f70-8385-c45ff0fc7e21",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021145_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2280,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "810efc0d77ab71a3f826aed15df916b01a31cf230f6127d218a26547b0477e75",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE GENUINE HAVANA 10X60_09",
+      "id": "25117580-440c-43c7-9cc6-1dd59faf84ac",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021145_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2146,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "0f3c24c9344bc4971dbe266d2516f19f5a771f18e8ca53b6d615912fd47230bc",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE GENUINE HAVANA 10X60_05",
+      "id": "8dab3464-2f59-4143-bfde-c60fb911cc7c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021145_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2052,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "ed7f452f38353e526036888ccfb576c27f492c92741f11e5c7bd112b24a7d4f1",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE GENUINE HAVANA 10X60_10",
+      "id": "07e5e808-58c1-4da2-b573-a67d57b9410e",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021145_11.webp",
+     "face": 11,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2568,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "0eeae8a19ce814129ff73d1bcde4771c5483f79e9ec93209e30ca60761d65ca6",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE GENUINE HAVANA 10X60_11",
+      "id": "c68b0524-3041-4618-bfa5-d72feb62d225",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021145_12.webp",
+     "face": 12,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2176,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_11.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "1481cca1fdb82a6857963a7cf726d981900e1f8dcc77ec68f466c21d8e1ddf36",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE GENUINE HAVANA 10X60_02",
+      "id": "f592db8d-744d-455d-a89e-9e9b41a8def3",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021145_13.webp",
+     "face": 13,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2690,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_12.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "ed5b7e88c990b28ed5b57da9aecaabd094fd1402ca214fe142aa096c67a9218f",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE GENUINE HAVANA 10X60_03",
+      "id": "1fa7a755-a202-4c80-80cd-66af92c3f36e",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021145_14.webp",
+     "face": 14,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2106,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_13.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "f09b2e79579734b02bbb7216fd634ac5e653f671839dcd3c25da37e28207628e",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE GENUINE HAVANA 10X60_06",
+      "id": "b5fc17d1-511e-49e2-9ed3-6f6cca044cbd",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021145_15.webp",
+     "face": 15,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 2408,
+     "source_zip": "TABULAE - GENUINE HAVANA - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - GENUINE HAVANA - 10X60 - Natural - view_14.jpg",
+     "source_px": [
+      440,
+      2639
+     ],
+     "source_sha256": "4344663489813da9589d3ec770004331fca7b2330f77557d503507828a8fc95a",
+     "source_px_per_mm": 4.398,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE GENUINE HAVANA 10X60_08",
+      "id": "9049bdf5-8906-40bb-abd0-daf2672d3957",
+      "site_position": 15
+     }
+    }
+   ]
+  }
+ ]
+}

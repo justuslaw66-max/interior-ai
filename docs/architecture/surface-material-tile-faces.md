@@ -12,6 +12,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Oxide, five colours | 38 drafts (19 floor, 19 wall) | 136 | `catalog/surface-materials/flooring/gardenia/oxide/gardenia-oxide-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Falaise, six colours | 44 drafts (23 floor, 21 wall) | 305 | `catalog/surface-materials/flooring/gardenia/falaise/gardenia-falaise-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Make, six colours | 48 of its 60 drafts (24 floor, 24 wall); the 12 T36 mosaics keep their previews | 92 | `catalog/surface-materials/flooring/gardenia/make/gardenia-make-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Tabulae, four woods and four decors | 46 of its 54 drafts (24 floor, 22 wall); the 8 chevron entries keep their previews | 336 | `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-tabulae-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Bon Ton, four marbles and three decors | 53 drafts (23 floor, 30 wall) | 284 | `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-bon-ton-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -33,7 +35,8 @@ In `texture_assets` of its `catalog.yaml`:
 - **In the render data** (`lib/generated/surface-material-render.generated.ts`, loaded with every design page), faces named `<prefix>01.webp`, `<prefix>02.webp`, … with one size are written as a run: `[prefix, count, width_mm, height_mm]`. The app expands it back into the same face list (`lib/surface-texture-face-run.ts`), so pictures, order and sizes are unchanged. A face list that doesn't follow the pattern is written in full. Name new faces `<item>_<nn>.webp`, numbered from 01, to keep them compact.
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise and Make entries.
+- **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae and Bon Ton entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -47,6 +50,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia Anima originals (ABK download area JPGs) | 1.3 to 3.9 |
 | Gardenia Dorica and Oxide originals | 0.83 to 3.4 |
 | Gardenia Falaise and Make originals | 1.46 to 4.3 |
+| Gardenia Tabulae and Bon Ton originals | 0.91 (Bon Ton 120x280) to 4.4 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -90,3 +94,13 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
 - **Make:** 60x60 is a true-scale cut of 60x120 for every colour (r 0.97 to 0.99). Make is a plain concrete look, so matching between sizes is weaker than for veined collections. With the crop test below, 100x100 matches the colour's 60x60 and 60x120 pictures at the labelled scale for Antracite and Nero Corten (r 0.80 to 0.91), more weakly for Bianco and Grigio Corten (r 0.37 to 0.56), and at no other scale; Ash's and Corda's 100x100 pictures are too plain to match and are taken as labelled.
   - **Make 80x80** (g73020 to g73025): ABK's pictures show a 1000 x 1000 mm graphic squeezed to 800 mm. 300 mm crops from nine places in each picture, drawn as if the picture covered 700, 800, 900, 1000 or 1100 mm, were looked for in the colour's 60x60, 60x120 and 100x100 pictures. 20 of the 24 pictures match at 1000 mm (r 0.47 to 0.99; eight are whole 100x100 pictures) and none at 800 mm (r 0.14 to 0.22); the other four (two Bianco, two Corda) are too plain to match at any scale. Every Make 80x80 picture is declared as a 1000x1000 mm face; the renderer cuts true-scale 800x800 windows from them.
   - The T36 mosaics (g73250 to g73255) have no pictures in the download area and keep their configurator previews.
+
+## Gardenia Tabulae and Bon Ton specifics (downloaded 9 Oct 2026)
+
+- As for the collections before: one copy of each face, every site picture (890) matched to its ZIP file by sha256, and each colour's sizes checked against each other with the crop test.
+- **Every size is true to its label where it can be checked.** Tabulae's 10x60 and 5x120 planks match the 20x120 and 30x120 pictures best at the labelled scale (r 0.66 to 1.00), and 20x120 sits in 30x120 the same way (r 0.83 to 0.99). The 23,4x148 planks are a graphic of their own, so they are taken as labelled. Bon Ton's 5x120, 60x120, 120x120 and 120x280 match each other best at the labelled scale (r 0.81 to 1.00).
+- **Byte-identical pictures:** Tabulae's 20x120 R11 items show the Natural item's 30 pictures; Bon Ton's 120x280 Soft items show the Lux item's 3 (Biancone, Botticino, Perlino); Carrara's and Perlino's 120x120 Antique items show the Nat item's 9. Those entries use the other item's faces. The 60x120 Antique and Nat items share only some pictures and keep their own.
+- **Tabulae's chevrons** (15x85, `par-dx-sx`) keep their previews: ABK's pictures are single parallelogram pieces with slanted ends, and the renderer lays rectangular tiles in a straight grid. They need a chevron layout first.
+- **Decors** come in one size each, so there is nothing to match them against; each picture is the whole tile. Bon Ton Network, Octagon and Tricot have a single face each. Tabulae Sticks' 6 pictures are 4% narrower than 600x1200 mm and are drawn at the tile's width.
+- **Planks:** the 30x120 R11 planks (0021253, 0021254) are on ABK's Plein Air pages, not Tabulae's. Bon Ton's 120x280 pictures are 1% wider than 1200x2800 mm (under the 3% tolerance, not cut).
+- The catalogue names Carrara 0020758 "120x280 Soft"; ABK's page lists 0020758 as Lux (and 0020766, not in the catalogue, as Soft). The entry uses 0020758's own pictures.

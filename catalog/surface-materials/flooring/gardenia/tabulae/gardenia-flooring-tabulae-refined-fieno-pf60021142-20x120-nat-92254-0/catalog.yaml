@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 30 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-fieno/pf60021142-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-tabulae-refined-fieno-faces.manifest.json. Each covers 200x1200 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60021142/0/92254 for floor use.
     - "Configurator format: 20x120 Nat; surface destination: ENTRAMBE."
@@ -65,16 +66,110 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/pf60021108.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/tabulae/pf60021108.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 20
+  image_physical_size_mm:
+    width: 200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_01.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_02.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_03.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_04.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_05.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_06.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_07.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_08.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_09.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_10.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_11.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_12.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_13.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_14.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_15.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_16.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_17.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_18.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_19.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_20.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_21.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_22.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_23.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_24.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_25.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_26.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_27.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_28.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_29.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021142_30.webp
+      width_mm: 200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -101,12 +196,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

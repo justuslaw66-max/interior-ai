@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
-      "lines": 1074,
+      "lines": 1073,
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {

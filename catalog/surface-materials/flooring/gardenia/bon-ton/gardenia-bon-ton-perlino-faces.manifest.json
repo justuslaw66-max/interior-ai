@@ -1,0 +1,1672 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: BON TON - PERLINO - minimali.zip (41624249 bytes, sha256 fe7875002afe6007591d568bba25b2ea193184511041a928f61cb68f37d9a61a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/bon-ton/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0020760",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/pf60020760-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0020760_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-bon-ton-perlino-pf60020760-120x280-lux-196242-0; wall gardenia-wall-tile-bon-ton-perlino-pf60020768-120x280-soft-196246-0 (uses 0020760's faces: ABK's 3 Soft pictures are 0020760's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0020760_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 94962,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - PERLINO - 120X280 - Soft 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "ba23020c88c759f7a70fbe70f2f4fdd18e5470f5c5d53565f940ab62a052132b",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON PERLINO 120X280 LUX 3D_01",
+      "id": "9c09fa71-0352-4429-8aed-2fdf47bc391b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020760_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 105164,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - PERLINO - 120X280 - Soft 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "7e4524eeacbc94908d3fce43acf8088746baaf845b34a637342f5827698a8f12",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON PERLINO 120X280 LUX 3D_02",
+      "id": "fe035d59-8ea3-4372-bb35-bca885ff346d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020760_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 95436,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - PERLINO - 120X280 - Soft 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "a1976abdf7afdb12eb20f97fea5f43aeaabbfb954102b16499bf9ad4a7b90702",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON PERLINO 120X280 LUX 3D_03",
+      "id": "170e8909-b485-4336-943f-da47a6c846f1",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020801",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/pf60020801-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020801_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-perlino-pf60020777-120x120-196250-0 (uses 0020801's faces: ABK's 9 Antique pictures are 0020801's 9 Nat pictures, byte for byte); floor gardenia-flooring-bon-ton-perlino-pf60020801-120x120-nat-196261-0; wall gardenia-wall-tile-bon-ton-perlino-pf60020777-120x120-196250-0 (uses 0020801's faces: ABK's 9 Antique pictures are 0020801's 9 Nat pictures, byte for byte); wall gardenia-wall-tile-bon-ton-perlino-pf60020801-120x120-nat-196261-0",
+   "faces": [
+    {
+     "file": "0020801_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38774,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b2039514f8eb05f282241cb1a79cb67b49a04663f573fe2675ee69e224e7427a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON PERLINO 120X120 NAT 3D_01",
+      "id": "ac7f1d33-965e-4019-96c9-7d20e1633471",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020801_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41204,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "57e6048a52d0b654a9672fa02edc5603768cf8fed83526aad17ea26dcf0bbeb7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON PERLINO 120X120 NAT 3D_03",
+      "id": "9dd986fd-c9f6-40d5-82a2-5106e6745909",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020801_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43156,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e68d8d47ac4d7b9cb81d5ae825585a8c6bae5f6bcfa14ff985942435887b4ce8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON PERLINO 120X120 NAT 3D_06",
+      "id": "9d1ccda1-9252-4eed-86f2-a5cfd1856b74",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020801_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42720,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ad83647d69a03e7f760ebce6db13141c8d8e3626e43ee33ba1c2f32918e541d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON PERLINO 120X120 NAT 3D_08",
+      "id": "a4b3fa34-1678-49d3-885b-95de79a30969",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020801_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42848,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7cfa6d87d289f023bc0b51a7408de75ce102b1c06be70f87e87e076dd392a0ce",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON PERLINO 120X120 NAT 3D_04",
+      "id": "d59159df-a6bb-4fd6-8ef5-3c4c96e4f516",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020801_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37348,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1a9a26f03ad265cae6e4934b22558aed2196d590fb4d5874480ef00d66c872a6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON PERLINO 120X120 NAT 3D_05",
+      "id": "3f676572-a746-4417-b040-fb860919c204",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020801_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42442,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "93cf1c9606c034cbced3d5b32bdc9bc2d01ea0eacafae891b70f8321851f22fe",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON PERLINO 120X120 NAT 3D_09",
+      "id": "020d2a99-d500-4bfc-8fb1-4424245e407d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020801_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43770,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c40860bc571ef15f95157bbb6006146711fb222d76deccd24ed53040fe05fa71",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON PERLINO 120X120 NAT 3D_07",
+      "id": "c07ecb2a-4582-4af4-a563-37f4670b4ad1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020801_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 39016,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - PERLINO - 120X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "17d658551dbf7b961f8aca6f7e7c28990f89563fda8222ad3855240752dfb660",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON PERLINO 120X120 NAT 3D_02",
+      "id": "dae720cd-a391-45a6-a031-d46fde56577e",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020781",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/pf60020781-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020781_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-perlino-pf60020781-60x120-196254-0; wall gardenia-wall-tile-bon-ton-perlino-pf60020781-60x120-196254-0",
+   "faces": [
+    {
+     "file": "0020781_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23022,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bc01782f014957c16b4b07d90d71b0cedcf79142d9f5ae4972d96ef112fb3df1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_01",
+      "id": "49a2e32e-0532-4653-89b7-a4731288734a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020781_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24446,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "27911e1a7b90e8af5a77a8c5272d1202f75780b34cf179eb6457314008ac7f16",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_18",
+      "id": "a3fa168e-5714-432d-af5e-3bcb6b198135",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020781_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23120,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "61632ce547c7660c50595c2c9687a542118008a7ee8aef1b73682feb7e60c850",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_07",
+      "id": "7d97a3b7-822b-40de-834d-91736afd0bce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020781_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23186,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8b43b7f72405f3ffd582fc60facad7fcf7fe165f5f05b3e9744a9d8d44d4539e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_12",
+      "id": "4e1c715f-0efb-4c80-b6f2-49d0caca994c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020781_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21506,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6530dd30bf65afc9e872604e598541ec739903d3bfd5aead26554f1c5d659444",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_15",
+      "id": "678c96ba-b905-40c1-8d45-624a48f045a9",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020781_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20294,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ecf3b742f5f1a01cf03862ea1f8da4f840ffce5731becccb19aca409dd211c7a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_08",
+      "id": "51286b7a-4676-462d-8db1-9cf9db5e82a4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020781_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21162,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "94ca69a772f467563f40a4bada8bc00598ad5cdd53a6249128c2405d266a02f6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_04",
+      "id": "e94c3e2b-da47-4c2e-9354-00bb6751b532",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020781_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20870,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e56c7fa99e151a3d62e1d8c389fb777e3fd6c4bc03b7332d29f43ead9ca81594",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_11",
+      "id": "4e734504-4e1f-4322-96b6-8061ef1a2dd6",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020781_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21266,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a12a8f21debea1422c41bb2761f31874cd8b679655b361e2a797181c83e2dd0c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_10",
+      "id": "71c1931c-fcd6-4f71-8e6d-586b15d06f20",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020781_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21106,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "30ce0d35008e78cb4d57cc997806ea293c38c5c24645cc0716edbbcdf4c94c29",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_14",
+      "id": "f6f2baef-16c9-4470-a8d2-676d9a97c838",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020781_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23292,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f51774a156398a5e55dfafc18ed54f2c2b84b0b4e7295d1a8965ad7f3ea6f697",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_13",
+      "id": "1353f768-3a14-4740-81f0-4878aed994d1",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020781_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19558,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7302649920bb456a4f690d3053225aa6011661440328cc0524e1f33b9bebc55f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_16",
+      "id": "c095533a-99b4-4f2a-aa97-e1c5e42450d1",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020781_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23074,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7d5d0b1e0b6c72274cc77c83064328caeb48b9590a58f1b3085fcac83df0e9da",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_05",
+      "id": "ab072109-af27-460b-ab2f-a1f693bc1709",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020781_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21018,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "384f906402a60cbdef52faeed6b56c548ed137138188a33c7e7d3c3ae830b336",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_17",
+      "id": "7b95d028-0cd4-4890-8b60-f6a9a19972d9",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020781_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20132,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "784d53122894c4af38a9d5fd28cde1cb83f287ae6d0671928b35cc38d997f013",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_03",
+      "id": "4b8ad1a4-49af-459a-b1c2-b2b59e8a170d",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020781_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19430,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c2256c004bf8897256e284f6e1efa6f591749a1f8f53fa8aeaff9e0925a03097",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_06",
+      "id": "ef9ba2b0-a3f8-4a21-b395-46fe01ce3f80",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020781_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17186,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - PERLINO - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cbff0a79402c34cb4ab0147a6d37892e458f2799f5f27a4f6a1deb61d98d445b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_09",
+      "id": "5d288604-b26b-4841-8ac8-cc6aa098c504",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020781_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16534,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bfcc1c1e7459449cdf3a8407349ef05690cc93b7aea6d678bc18c719976e646a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON PERLINO 60X120 ANTIQUE 3D_02",
+      "id": "0c48a183-c8c1-4528-8d98-b04e071353a5",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020805",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/pf60020805-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020805_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-perlino-pf60020805-60x120-nat-196265-0; wall gardenia-wall-tile-bon-ton-perlino-pf60020805-60x120-nat-196265-0",
+   "faces": [
+    {
+     "file": "0020805_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23022,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bc01782f014957c16b4b07d90d71b0cedcf79142d9f5ae4972d96ef112fb3df1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON PERLINO 60X120 NAT 3D_01",
+      "id": "2ce6f961-1802-4e28-aca2-9809dd7e27a4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020805_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21106,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "30ce0d35008e78cb4d57cc997806ea293c38c5c24645cc0716edbbcdf4c94c29",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON PERLINO 60X120 NAT 3D_14",
+      "id": "4b7a1d51-0112-4ac2-9ec5-9480363a9e49",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020805_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21316,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e08ea8435fe1bb213ed3b17955fe8500cbf588687fdac363bf3d8b76cda4a7b8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON PERLINO 60X120 NAT 3D_06",
+      "id": "d08555b3-56e6-4167-8da2-53cf97bfb9fa",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020805_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24446,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "27911e1a7b90e8af5a77a8c5272d1202f75780b34cf179eb6457314008ac7f16",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON PERLINO 60X120 NAT 3D_18",
+      "id": "f575dfd0-aff4-42cd-aa59-84b24d445ee2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020805_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20294,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ecf3b742f5f1a01cf03862ea1f8da4f840ffce5731becccb19aca409dd211c7a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON PERLINO 60X120 NAT 3D_08",
+      "id": "aa0404ea-c743-414f-883f-5301023894f1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020805_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21018,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "384f906402a60cbdef52faeed6b56c548ed137138188a33c7e7d3c3ae830b336",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON PERLINO 60X120 NAT 3D_17",
+      "id": "0bf09054-12ef-43e2-997a-b1ef57a46999",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020805_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23186,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8b43b7f72405f3ffd582fc60facad7fcf7fe165f5f05b3e9744a9d8d44d4539e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON PERLINO 60X120 NAT 3D_12",
+      "id": "3667dfa3-c4e5-459a-9dde-8404acf4697d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020805_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22106,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5dfb5e531d269b1bdfc42f2669b3773abe9948d6a330d9f7c8fe427802f925d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON PERLINO 60X120 NAT 3D_16",
+      "id": "fb08bd9c-7672-4661-ab41-64d6e3b736f5",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020805_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18392,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "547259c098dab485e05f1b7cc163ecc721a8aa6a2679bab1af9595e2bd5ef1dc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON PERLINO 60X120 NAT 3D_10",
+      "id": "786c48fa-eee2-4c8a-ae34-4a97e5656865",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020805_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22330,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "26a92613756e962f569d0c8bcb233b027e7d0f60c8cd60bcb41c1e538a1ed85d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON PERLINO 60X120 NAT 3D_04",
+      "id": "c00a6918-eba1-4cfb-b720-ad643d9ce965",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020805_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20870,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e56c7fa99e151a3d62e1d8c389fb777e3fd6c4bc03b7332d29f43ead9ca81594",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON PERLINO 60X120 NAT 3D_11",
+      "id": "e44f992d-f13f-4de5-b9fa-d5947b9b3b90",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020805_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23292,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f51774a156398a5e55dfafc18ed54f2c2b84b0b4e7295d1a8965ad7f3ea6f697",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON PERLINO 60X120 NAT 3D_13",
+      "id": "4d2e3dca-9f49-405f-b642-d61ef7c47e24",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020805_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22420,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "38a6357f60ca4f9ad4a1aa50357a609374a3a7dd87caf41b5cc5a38b6d520e15",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON PERLINO 60X120 NAT 3D_05",
+      "id": "fc8162ec-7ccc-4ba9-a498-25ca36b08473",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020805_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19750,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "52c46aac1b8a2bb0b166add175aa939622141cd231cba010d33dcdfda2d3e57b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON PERLINO 60X120 NAT 3D_09",
+      "id": "d7c64a7a-e8e3-413e-af2f-8b42af91894c",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020805_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23120,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "61632ce547c7660c50595c2c9687a542118008a7ee8aef1b73682feb7e60c850",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON PERLINO 60X120 NAT 3D_07",
+      "id": "db26d292-e9f3-47dd-8edc-4791f22689a2",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020805_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19476,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "25de6bd824523aa0156d176c4be9d34cafb568b8d11f3894fb0871af79f22de4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON PERLINO 60X120 NAT 3D_15",
+      "id": "41832779-56f1-4827-b9c3-02db9d6ca73d",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020805_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16534,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bfcc1c1e7459449cdf3a8407349ef05690cc93b7aea6d678bc18c719976e646a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON PERLINO 60X120 NAT 3D_02",
+      "id": "0f84c19d-d5be-468d-82ad-5f970aa2731b",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020805_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17704,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - PERLINO - 60X120 - Nat 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "10d63d0fc61f4e69815e287153d48819d231a790f50700bcbef3070a4ecfd863",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON PERLINO 60X120 NAT 3D_03",
+      "id": "36c82057-e710-4e66-8efe-14d9c02805d9",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0020849",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/perlino/pf60020849-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0020849_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 12 laid side by side",
+   "used_by": "floor gardenia-flooring-bon-ton-perlino-pf60020849-5x120-197636-0; wall gardenia-wall-tile-bon-ton-perlino-pf60020849-5x120-197636-0",
+   "faces": [
+    {
+     "file": "0020849_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2302,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "17daec2c9bdf92380f1cc13f1d323b4834d2d8bb5648efd8ffcf65390ca01a6b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_01",
+      "id": "50f6fce4-a082-413b-94a9-684cf760708a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020849_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1486,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "a0adb81fee56da5f48d16186446adfeba0b7dd93bd369ad149b8eb6171dcc0ec",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_08",
+      "id": "545e0f6c-4ec7-41df-9f30-31c0888548fa",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020849_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2132,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "f4756f474b86bef9bb272b179a367e1cae57a7610c5a12a7006041b6c47cd349",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_17",
+      "id": "31ce74da-2f86-426d-94c7-7b5f17e4cd46",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020849_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2096,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "de56e329d685b48d5b30441d2e16f1f17fed4de647f5e295da68a95d72506e52",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_07",
+      "id": "7e70bf02-dd7d-4d34-943f-a278852c782c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020849_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2422,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "df0a0fc13f2dd1d057abf3847b10cde786b86257a6f0c70c5cfe47f8851a4668",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_12",
+      "id": "14b27566-37b3-4484-8ab4-ebbeec930e87",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020849_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2288,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "67be6eec000c4dc16086da64881d2f27359a7c38c5cd606bc27924a4c53df0ed",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_10",
+      "id": "ee3c2be7-b52f-40cd-9226-ccfaeeab5076",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020849_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2362,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "ea3deb217ed92b75a7c3a211bcd947330838af0433282b4a5df54f62e2c30dc7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_09",
+      "id": "24874aea-58b9-4287-9fdd-485ba9bcab4e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020849_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2484,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "84cfffdb2cd9ec9284e377ec96fd7a5f91f35fae79e28191a510e5ffd6eedfee",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_15",
+      "id": "5c47e979-fb4b-4a93-9e0d-f86db77d1b20",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020849_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2284,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "b1ed499a78fae16929560e5b05d208dd904b3757a7f68d2721509cc38820420d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_06",
+      "id": "c1d9d177-cbe5-4ff9-886a-591d026933c4",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020849_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1936,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "97ad44f4b0692517e59afd25fa129205fdf13d022d11b0d82cd6cfe6375d2dc2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_14",
+      "id": "12b1d40d-6734-4066-92d0-5ad84a52dcd3",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020849_11.webp",
+     "face": 11,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2218,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "3560e1d430ffe79f764a397939dd01c64af951fbd7f74ea4c362ab1c08ad1e1d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_13",
+      "id": "9bc9f23b-29fb-4aaf-a4f5-54b6f71735b6",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020849_12.webp",
+     "face": 12,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1976,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "93939c225c94dc133b45f2f0c09dbf5436f14b6b201ffab609eb0116e006d218",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_11",
+      "id": "8fb1c3b5-c173-4184-9f5e-6a587881e781",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020849_13.webp",
+     "face": 13,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2254,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "d926adb576c15426ed38417634b9e3caadd795db89f937c063b676b94471a980",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_18",
+      "id": "8f838ee8-07a0-4447-8ff0-f649d6b6e73c",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020849_14.webp",
+     "face": 14,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1960,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "c445cb55c5012164560d08c2929790549de7015971e282cd4ea4d3a6750467f8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_16",
+      "id": "0b4ff054-a771-41f9-a51f-2b941a918efd",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020849_15.webp",
+     "face": 15,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2168,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "7faf78614d26c4ffc7781aa2ee72557e754111fb3e25f67bb721f8cbe9018255",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_04",
+      "id": "63b3d94d-258b-461d-8517-bcfd356124e4",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020849_16.webp",
+     "face": 16,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1768,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "67eabe8af7d14e9e5f02b236b21bf7017b25b840e6d0d77a5891830bc49072dc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_02",
+      "id": "5df4b9d9-9d01-4d52-8d72-91e40b047780",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020849_17.webp",
+     "face": 17,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1804,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "d4632fc4304c6b834f369f0a63e991d2dfa7cee94a5b393ca961265d2b5c38a6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_03",
+      "id": "5aac6ca2-21c3-4243-9efc-c9c76174f071",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020849_18.webp",
+     "face": 18,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2234,
+     "source_zip": "BON TON - PERLINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - PERLINO - 5X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "50ee142bcc22ff355675822b073ed763a3458b090876ad49ed4cfa10fb093123",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON PERLINO 5X120 ANTIQUE 3D_05",
+      "id": "4c23c092-2491-4aba-b15d-88d612278e33",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

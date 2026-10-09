@@ -1,0 +1,172 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/mesh/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - MESH - minimali.zip (17516446 bytes, sha256 f9eaa22002b75131bc69f34dfb0f2eed6f27d70fb0859f4751a85f866ab16d12).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x60",
+   "item_code": "0021152",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/mesh/pf60021152-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0021152_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-tabulae-refined-mesh-3d-pf60021152-60x60-nat-92263-0; wall gardenia-wall-tile-tabulae-refined-mesh-3d-pf60021152-60x60-nat-92263-0",
+   "faces": [
+    {
+     "file": "0021152_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16658,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dfda5031eaf93e0a33ca84d587539d2d2389be332f2fa61b7afbd8f183fcc6e4",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_01",
+      "id": "d53abd8c-4ddd-4ff1-ace4-dfa8363f5786",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021152_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15908,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "76c78c3b116a8464fafbec57c6599e9211b2c47a01eb2a7c2c3308baca02d89b",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_06",
+      "id": "1d30cf95-09b1-4c6c-8b44-ba4f03df509a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021152_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16874,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7b3db99a20da61395f3b536fbf1daabfd45d9b70444966a7022c551c9e4dd5fc",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_03",
+      "id": "6025fdeb-452b-468d-98b4-af111d04ba8e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021152_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15092,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d274632454c0f4d53b6dac78ec3f8f1b5633e8f864742ddba4bb31f7e6c5627d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_05",
+      "id": "2648aa13-951e-4804-beab-9f9299390e88",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021152_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16232,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6df2e1e35f42690d50a9000f04249ce40a5c789fc23ad7459962b1b6815157d8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_02",
+      "id": "3aa3f208-b960-4d8c-8a02-d007d20adb02",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021152_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14150,
+     "source_zip": "TABULAE - MESH - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - MESH - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a89fc243b48dc881c01ae1734bdabf84b646b9e4d34ab07a7ae64b7e3cc7922f",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MESH NAT3D 60X60_04",
+      "id": "7c1b71a4-f1f5-415c-8360-b18e91b7ac2b",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}
