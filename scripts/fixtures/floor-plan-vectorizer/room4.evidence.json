@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.20.3",
+ "exporterVersion": "app-evidence-0.21.0",
  "page": {
   "widthPx": 828,
   "heightPx": 957,
@@ -4540,6 +4540,9 @@
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 1,
+  "leafRowsReadAsCasements": 0,
+  "doorsNotPlacedBeyondOpenSpace": 0,
+  "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 1,
   "stripsThatAreNoSlidingPanels": 0,
