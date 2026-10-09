@@ -1028,6 +1028,20 @@ advisory and release inventories, so PRs pushed another way never ran it.
   evidence verifier reads them as it reads lsof's. Each listener observation
   record names its source in `listenerSource` (`lsof` or `linux-proc`), outside
   the unchanged binding digest.
+- **Server warm-up.** Once the runner has confirmed it owns the listener, and
+  before `readyAt`, `scripts/window-opening-server-warm-up.mjs` requests
+  `/design?debug_layout=1`, each `/_next/` script the page names, and
+  `/api/catalog/live`, `/api/models/imported` and `/api/auth/session`, one at a
+  time. Next's development server compiles each route on its first request, so
+  the first test no longer pays for that (26 s for `/design` on CI). On #109's
+  run `37894799114` the second test's scripts then took 13 s to arrive instead
+  of about 2 s, and its fixture room missed the 20 s wait. Every request is a
+  read-only GET; an answer that isn't OK fails the run. `result.json` records
+  each request in `serverWarmUp`.
+- **Fixture room wait.** The spec waits up to 60 s for each fixture's room
+  after a page load (`FIXTURE_ROOM_TIMEOUT_MS`). It is a setup step: on CI the
+  room shows about 10 s after navigation. The tests' own checks keep the 20 s
+  expect timeout.
 - **Status.** The gate is advisory (`blocking: false`), and merge-gate does not
   wait for it. As a separate workflow it keeps its real conclusion, so a failure
   shows as a red check. It uploads the run folder only when it fails (7 days).
