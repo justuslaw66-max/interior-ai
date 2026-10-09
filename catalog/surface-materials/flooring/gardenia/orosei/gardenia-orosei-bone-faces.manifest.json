@@ -1,0 +1,1024 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - BONE - minimali.zip (98255228 bytes, sha256 aedc7a67ec750f70aac01fa280f7c57a2f64f82f7b8ad66eda33ea4c1f22e4bf).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0021723",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/pf60021723-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0021723_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-bone-pf60021723-120x280-nat-197543-0; wall gardenia-wall-tile-orosei-bone-pf60021723-120x280-nat-197543-0",
+   "faces": [
+    {
+     "file": "0021723_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 153334,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - BONE - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "549d11c7949fd8f8af09ebf02d2cc51769af62c3069f314af59398aaed5ff2a2",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "OROSEI BONE 120X280_02",
+      "id": "8003e30b-df9a-4f67-8fa9-3f33981bacac",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021723_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 151788,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - BONE - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "f77e9e291b18e257a1c1415ede1c5c8531f9ea1fa996a22785d4c9431b2e7394",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "OROSEI BONE 120X280_01",
+      "id": "5439a20b-8bf3-400d-a95a-a76e61da1a6f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021723_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 160004,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - BONE - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "7948ba52514370d386878240182e4c6b144160def63114603065e30166eab686",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 3",
+      "name": "OROSEI BONE 120X280_03",
+      "id": "1d37f969-b1d2-45f7-8ff5-eff8e1c64a79",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0021733",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/pf60021733-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021733_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-bone-pf60021692-120x120-197531-0 (uses 0021733's faces: ABK's 9 Antique 3D pictures are 0021733's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-bone-pf60021733-120x120-nat-197548-0; wall gardenia-wall-tile-orosei-bone-pf60021692-120x120-197531-0 (uses 0021733's faces: ABK's 9 Antique 3D pictures are 0021733's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-bone-pf60021733-120x120-nat-197548-0",
+   "faces": [
+    {
+     "file": "0021733_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 88000,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7179e3e045168a9dd5c8d4b80dd8ee2fb8b1c4c201c1bc7ff51c1824aa70cb44",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "OROSEI BONE 120X120_01",
+      "id": "ab49ab14-d419-40c0-8cf1-a13b63d42bb1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021733_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85484,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e43de56718e6e6135b9bbf69afdc298197260b4f74a659b15cf5e51f2677e9c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "OROSEI BONE 120X120_04",
+      "id": "dd23b55f-d899-4466-9f27-09ede9603e01",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021733_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82332,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1bff702182f732d8a73364e92bef6c3ba0041852351adaa87f6f3bbc27a8144c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "OROSEI BONE 120X120_08",
+      "id": "149cb52d-1884-4bd7-af1b-c24c1fbfe902",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021733_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84924,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4d9bb661b949bea10cbe86233f302f880ab7d3e959e5d4641db5c19d37ff2474",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "OROSEI BONE 120X120_05",
+      "id": "1c29911f-0ad7-49c5-8acc-d83007c192e6",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021733_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 80756,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5de83a108913600208c19500e8c040ec9d35609f9e268a9ad99fbf064c9772a4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "OROSEI BONE 120X120_06",
+      "id": "09334033-f92c-4584-8cd9-40bc0850b442",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021733_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 79326,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "89aa403230a7bde2275d7450d034df408bfb9f222030fab3da32bb8876e0aa9b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "OROSEI BONE 120X120_03",
+      "id": "883bd542-3460-499a-b18b-686d9031c0ea",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021733_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92324,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab77bb86b7b03253c6d04cb35f0affa681991ee4de6a3e8576f32c1424d9cdd9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "OROSEI BONE 120X120_02",
+      "id": "17049a5c-2ebe-4e8a-a339-5a6f68eb2927",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021733_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82514,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ca824abf3a47f9e9fc3d52b70f4c2eaf36023b055533d6a2ec172aeb2de51b40",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "OROSEI BONE 120X120_09",
+      "id": "261a15d3-570c-43b5-9c25-0db5a2e0a6ea",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021733_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86200,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - BONE - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "06c570e4009ab7e101f97b6c65a6b7d0196fff4f1bf1d2e363a0325e5e529a98",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "OROSEI BONE 120X120_07",
+      "id": "d9f667ac-1fe8-465c-8f0e-2a5bcfe61dc8",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0030223",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/pf60030223-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030223_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-bone-pf60030223-60x60-nat-197558-0; wall gardenia-wall-tile-orosei-bone-pf60030223-60x60-nat-197558-0",
+   "faces": [
+    {
+     "file": "0030223_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23756,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "aa07f0a891b34640401f6d0c5d5e58cf036e7bcaeb582d32225e6ae268724d73",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "OROSEI BONE 60x60_08",
+      "id": "fc43872c-b3cf-4486-9696-166d2c55738d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030223_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21436,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8bc903ec3431cafcb37c80c7a1ede9883f5f2862781c9b06abfd72b52b2e59b5",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "OROSEI BONE 60x60_09",
+      "id": "e69d4cc9-6653-49bf-8cb7-e78925550c0e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030223_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 89448,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d48da38058b049ee4831015482953a3a90a2db46dbc9819aa39358e930fe5b19",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "OROSEI BONE 60x60_07",
+      "id": "9ed2ede2-ac37-435c-9b0d-99aa8bb523e6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030223_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 94584,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "329763bd3eb1ccd66691d7291f7f4dd75ac44df260c29e087fbbbf0d65d37a14",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "OROSEI BONE 60x60_02",
+      "id": "841c92d0-055e-4c26-bde3-86a92f5516be",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030223_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87480,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "dfe940b82facc2eb4b53cb419f26399a331b365277d168b41a42b4886828280a",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "OROSEI BONE 60x60_05",
+      "id": "dd8f638b-9409-4563-a81e-e374db8d1d7f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030223_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84398,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "80e2a0c8911267977deedf76c861cbb566982fa48f95d622becff648c45bafb9",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "OROSEI BONE 60x60_03",
+      "id": "3f133762-677b-4ba0-99b5-1fd204a78a18",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030223_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87858,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "075f0cf8ecc2433c00269b9ce5986d2159a420943d62186ff2a532f9be1eb24a",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "OROSEI BONE 60x60_04",
+      "id": "8e2f423a-5228-473f-88e2-51bb9f71e319",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030223_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 90094,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "35b8ca7c09d60234555db30effc511143e06ca9627b5701966318ff287c90633",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "OROSEI BONE 60x60_01",
+      "id": "96270579-5604-479f-9c61-084786d37a2e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030223_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86780,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - BONE - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9b4da21f4c1f8deab84182c7c200f0aacbee9b7a40a4b23d5de49887e6af4702",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "OROSEI BONE 60x60_06",
+      "id": "27029b48-48d4-43dd-ba6e-8b3296231626",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0021738",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/pf60021738-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021738_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-bone-pf60021699-60x120-197538-0 (uses 0021738's faces: ABK's 9 Antique 3D pictures are 0021738's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-bone-pf60021738-60x120-nat-197553-0; wall gardenia-wall-tile-orosei-bone-pf60021699-60x120-197538-0 (uses 0021738's faces: ABK's 9 Antique 3D pictures are 0021738's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-bone-pf60021738-60x120-nat-197553-0",
+   "faces": [
+    {
+     "file": "0021738_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42248,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "973fbb00a6b536e5d996dce2e00a10daa5016163ae1343db81af0a482c2099bd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "OROSEI BONE 60X120_02",
+      "id": "e8cafb64-ecde-4282-b527-2ddaac04e6f8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021738_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43268,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "948fff2e509aea44ca64035b53343b1d3857707bb0dbeeffdfde67f95da6d20a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "OROSEI BONE 60X120_09",
+      "id": "5ab2f83e-9920-48a1-a721-927c33c1ea2d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021738_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44186,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5db4f3bf2bf9c7489bfb4f424dbb2075a03a89dd866e0aaf62cd028f7036350e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "OROSEI BONE 60X120_07",
+      "id": "2ab612b3-2abc-400a-9ca1-f9b78ed70c27",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021738_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44728,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8692b8e71ce83b0e953112d664ee2f4ca86b4e44e132a83b8e6ff277589deab7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "OROSEI BONE 60X120_08",
+      "id": "1270ac64-9f8a-499d-872f-958180e03740",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021738_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42482,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "58449f5c09071d5924ab342b26a48ebaf277f1a0b293240138c339f72c4d10e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "OROSEI BONE 60X120_01",
+      "id": "3afaf1cb-bed2-4908-a038-0f702fee2ee6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021738_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40296,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e0a6897594b31dd3f330c65d1efa8292149f05cfda1f8e0295f303300bbed63f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "OROSEI BONE 60X120_06",
+      "id": "0f5439df-0a87-411d-bde4-1e44919cb6cc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021738_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42332,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5a99284c08ccaef5d2d280bbb347c18af652578fecf57257cb3d2d53a3e14de2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "OROSEI BONE 60X120_03",
+      "id": "539c50f1-42f4-4319-9f74-d1a39c6233a2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021738_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43380,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c1540fcefaab3699c5dcc7cf005e414f98cdb166087d50f71e60842366d9bec5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "OROSEI BONE 60X120_05",
+      "id": "dd91ce0f-8756-4e01-8809-a11b9f389faf",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021738_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43190,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - BONE - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0f9fce73ba831107285aa19c756ab2e668e720ab34489a8e63b938d1c6c49685",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "OROSEI BONE 60X120_04",
+      "id": "33943bf3-d881-44ca-8b4b-22ee65bdca16",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0030228",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/bone/pf60030228-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0030228_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-bone-pf60030228-80x80-nat-197563-0; wall gardenia-wall-tile-orosei-bone-pf60030228-80x80-nat-197563-0",
+   "faces": [
+    {
+     "file": "0030228_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37438,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b2409d91d97dee614deab16b124092212152fc0e41c1e8241c72f0c2097852aa",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "OROSEI BONE_8 80X80",
+      "id": "6e9e7474-5e04-4a1d-bc52-0663f97603ed",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030228_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36020,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e3f807d558b346266e687016a94edbdb104a136ea82e38bfafb431cb7e86ebc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "OROSEI BONE_9 80X80",
+      "id": "1c6b7bd8-5766-4c16-b428-df5fa773d6ed",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030228_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34318,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5102dc06e1d9ba1b91d4f243246de07440bae11c3385e0343bf5a4e04d7d5c5a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "OROSEI BONE_4 80X80",
+      "id": "86526b62-f45e-40dd-9fe5-d6e0195b2e03",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030228_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37634,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3c6691c5f6dac4010cfb82a120a24fa2aaa3697844adc6b0210326d650a3091f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "OROSEI BONE_5 80X80",
+      "id": "5441ac2d-1ff4-4221-930a-4a9d81de1ab9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030228_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36644,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6421e6aab012a0072f48fe453e5a1c53e7bbdc33ce76a1c7594e58484f517c48",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "OROSEI BONE_2 80X80",
+      "id": "130390b7-1da8-44d4-a189-f24a26d47d8e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030228_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37926,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ccd2f0ddd356d1349f75d262248095359517a92265da02298d1cfd92dd41a9f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "OROSEI BONE_7 80X80",
+      "id": "921b8425-d06b-4274-8395-188391afc9f3",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030228_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36802,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8aaebfc687d13117a473f3d9112069c79b8904b8eaf0b23684add94254b31eac",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "OROSEI BONE_3 80X80",
+      "id": "098db123-556c-4b51-920b-a31a33135cbe",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030228_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38382,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "78a12ab6e9300e85e7f365dd4260de19888a048209bfebf82a2327e6ebad6764",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "OROSEI BONE_6 80X80",
+      "id": "11f52528-725b-45e9-be52-28d55a8e47a1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030228_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37266,
+     "source_zip": "OROSEI - BONE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - BONE - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "95760e01c3c9cb6f2c9d5f052e8422d2a8618c67a8dfe2eed7fa48b5673c427b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "OROSEI BONE_1 80X80",
+      "id": "8c507c82-7b32-40fe-a875-7f2a3b05161c",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

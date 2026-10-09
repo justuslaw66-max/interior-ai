@@ -1,0 +1,691 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-ecru/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - TESSERA ECRU - minimali.zip (38737173 bytes, sha256 3e300df0fb23353f5665abee36441efd5312460b4645e29a15df5ba3d77470c5).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0021698",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-ecru/pf60021698-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021698_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-tessera-pf60021698-120x120-197537-0; wall gardenia-wall-tile-orosei-ecru-tessera-pf60021698-120x120-197537-0",
+   "faces": [
+    {
+     "file": "0021698_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101524,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f738611d740f53298cd81d52b4eddf7b8c981a879e99838f5dbe04ed16b40e50",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 1",
+      "name": "OROSEI TESSERA ECRU 120X120_04",
+      "id": "e500e089-4019-49f8-82c9-40c2c687d24b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021698_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98346,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3325afb6cc0319f0a08f8d0aabfa20b5ec0b8b16e69d88a4d4141eead3f9964b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 2",
+      "name": "OROSEI TESSERA ECRU 120X120_05",
+      "id": "d1bb1833-e884-4511-a438-3cb687458f7f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021698_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106362,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3bec8e314c4e2120db9a71b6a2c07b046ff82c83238bad621179d4ea04c3a879",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 3",
+      "name": "OROSEI TESSERA ECRU 120X120_02",
+      "id": "28404419-a884-4572-b0ba-1ea0e716f0e7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021698_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98692,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ce6994d9c4dc4feea2c0f0a3723a1af7d46dce087dc3bff9f578562814deebc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 4",
+      "name": "OROSEI TESSERA ECRU 120X120_03",
+      "id": "b7df9368-e6d5-4210-b1cb-b11ce6846054",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021698_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101772,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "36092c77aa511d61eed1123bfec78febe044ecbbdfb1a6cefc359d18f58b916d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 5",
+      "name": "OROSEI TESSERA ECRU 120X120_08",
+      "id": "a40eecc8-b09b-4bfe-93c3-2c47f3bc40ab",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021698_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97760,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6cba1bf4b2049dfaa5c9e3a38dd4bc8c6475ecedf58ef316ffec08fea09fca45",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 6",
+      "name": "OROSEI TESSERA ECRU 120X120_09",
+      "id": "6d1b87d8-ebbd-420c-b06f-6794064e2574",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021698_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98568,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "af4d4922f93f822a52055a73390051de58afc503a75c07f5dbb2e499d5c520c3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 7",
+      "name": "OROSEI TESSERA ECRU 120X120_06",
+      "id": "72ae3a93-5af4-4478-a30f-4d6e8798025b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021698_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98018,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2110e9217d389c693ea9bb9ba61445a309cdaefe63ace17036e555143684d875",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 8",
+      "name": "OROSEI TESSERA ECRU 120X120_07",
+      "id": "83b7b8c2-447b-4c30-aaf0-f0a4c8208511",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021698_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101142,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA ECRU - 120X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "34e1fc8d6e62c56b2ba48eb1c35360c755535afe0f64b330d52644c0df039cdb",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 9",
+      "name": "OROSEI TESSERA ECRU 120X120_01",
+      "id": "7307cf90-d0df-4e80-9f5f-697287973f40",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030241",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-ecru/pf60030241-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030241_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-tessera-pf60030241-60x120-197575-0; wall gardenia-wall-tile-orosei-ecru-tessera-pf60030241-60x120-197575-0",
+   "faces": [
+    {
+     "file": "0030241_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50732,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c2e44adbdaa2fd03e2d459dcd6ef9d2bec119258e4565df640082b98930e39aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "OROSEI TESSERA ECRU 60X120_01",
+      "id": "9d80e49b-1ed2-4eb8-9110-c10bce0d46fd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030241_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50584,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4914353624783b6c2aee1d88d5ad9f68e19823f949c07d5b0957535b78aac3e8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2",
+      "name": "OROSEI TESSERA ECRU 60X120_10",
+      "id": "b19a323c-d18d-44dc-a67f-82f564acd2e9",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030241_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52052,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "55c7fdf3e7992405976245d56e04e9c8809ef1914ced96d6e4ec62039fa8432b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3",
+      "name": "OROSEI TESSERA ECRU 60X120_03",
+      "id": "ec0b334e-728d-4985-97bf-a0c2496be48a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030241_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50800,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cde27d93a955606ad158483bf671f2e33d60091eb860df72d224dc7c5d4e31a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4",
+      "name": "OROSEI TESSERA ECRU 60X120_14",
+      "id": "95721640-f3fa-49a2-b2dc-4d0f49f361d2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030241_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50854,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ea3c52c547a54ae98ad89f9e21175f81f2700c3a5fe3050c1d78dc9da2b1bf3a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5",
+      "name": "OROSEI TESSERA ECRU 60X120_17",
+      "id": "aff6ea25-9fb4-4d73-bdc8-2204c15d605b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030241_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50772,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a88d39007bfec5e1d39ec1e11b05725df958e7d827902956f70fdb2d8fbc1940",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6",
+      "name": "OROSEI TESSERA ECRU 60X120_05",
+      "id": "f686fb66-ee9b-43e1-896d-eefc7c468111",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030241_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48056,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b69ab6823d0df7d45de83453653f3cc89153b9828f8dab1f9337f81136c45845",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7",
+      "name": "OROSEI TESSERA ECRU 60X120_12",
+      "id": "07f9ba5e-d846-4bd0-b6b5-41fa02044105",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030241_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50276,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ed728a938fb0caaf768f36dcb252b0f9bb71f86923cfdbee71add99c00815d0b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8",
+      "name": "OROSEI TESSERA ECRU 60X120_13",
+      "id": "4ae18c77-2324-4f2f-a4cf-d26d50eb05ab",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030241_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51546,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3daa81fef679222f5250105a038d599e37498738992fd68715617f0061680b01",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9",
+      "name": "OROSEI TESSERA ECRU 60X120_08",
+      "id": "efe87200-3366-4fc3-bd76-d00e9ae1ad54",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030241_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48244,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ad6aed23672981116c59524a93a7eec08327f65ce58fd25d091c42e55951bfc8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10",
+      "name": "OROSEI TESSERA ECRU 60X120_07",
+      "id": "da23c4fd-41a1-43e6-b89f-9f27e993d279",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030241_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48414,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "073796e691314f5ea85cbad8944e28428eaf2da99e67b8f71df934d2a4315b46",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11",
+      "name": "OROSEI TESSERA ECRU 60X120_06",
+      "id": "55bf9853-2787-43f0-a1c2-041af77fc37c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030241_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54820,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "36928efe6b58019808d947c44427e4a1f56dcf5ed269d6aaa49480d6a1e1ea24",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12",
+      "name": "OROSEI TESSERA ECRU 60X120_04",
+      "id": "9601bb45-beb0-4707-8cb7-56591ba93338",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030241_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52178,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a23d7d3fb60ac730ac1791e752d97f0cf2be2ee465472469527ef980e1d71095",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13",
+      "name": "OROSEI TESSERA ECRU 60X120_15",
+      "id": "aef7e49e-2d9c-44cc-82d5-951608227a31",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030241_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49268,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ac4f8aca6cdcb59edb03ca7956edc2ca3a63a84905dee952076fbd9b66ee1093",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14",
+      "name": "OROSEI TESSERA ECRU 60X120_09",
+      "id": "c11da99d-86ee-45a8-aa9b-f1edab4a1fce",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030241_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49942,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5c376fb65b4097137008a3d30c90c4f04c310c30e6af5bd81011b125f303f792",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15",
+      "name": "OROSEI TESSERA ECRU 60X120_16",
+      "id": "7fe11edf-87ad-4cab-97e9-1769ee2b57ac",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030241_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53326,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "30b3c7ab73febe60a5db67441c83cb9163ccbfc249f5239304cba34a0de2d1bd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16",
+      "name": "OROSEI TESSERA ECRU 60X120_02",
+      "id": "7289e7e7-447f-4bd0-94ed-25da6c00d7d2",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030241_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51422,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "808ba75a20e45bf2b9f9a569594f361e69b51d5b1ce8f4f635966f596061bde5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17",
+      "name": "OROSEI TESSERA ECRU 60X120_11",
+      "id": "a10bca06-3e6e-4809-9543-fd8bb82d6b00",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030241_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49072,
+     "source_zip": "OROSEI - TESSERA ECRU - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA ECRU - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c0fe8aaed1dd29054e3480c378acdaf0fe38e5037d001675b38fa5d6b7b6878b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 18",
+      "name": "OROSEI TESSERA ECRU 60X120_18",
+      "id": "9a2841ab-29dd-419b-9385-a44f3b5b93d8",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

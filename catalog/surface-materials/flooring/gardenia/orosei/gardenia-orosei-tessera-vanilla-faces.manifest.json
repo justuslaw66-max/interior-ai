@@ -1,0 +1,670 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-vanilla/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - TESSERA VANILLA - minimali.zip (42822619 bytes, sha256 928f19e087077c9aa7c71183ecc94de0e0c95e4aa87d25c22e2b9d539ec7d78e).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0021697",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-vanilla/pf60021697-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021697_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-tessera-pf60021697-120x120-197536-0; wall gardenia-wall-tile-orosei-vanilla-tessera-pf60021697-120x120-197536-0",
+   "faces": [
+    {
+     "file": "0021697_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108540,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ea8078e8052c247998fd7ae402611825cbe32304e5de82a2cc0ac44df7600433",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 1",
+      "name": "OROSEI TESSERA VANILLA 120X120_09",
+      "id": "6942a478-5cc0-4317-824e-4eafc7b286e7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021697_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112666,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "993d6a93b10e20a5c392d7ae9ae5f18ae936870aaf646e7cc67af22cfb3632a1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 2",
+      "name": "OROSEI TESSERA VANILLA 120X120_08",
+      "id": "614ad26a-6943-4ed1-b65e-aa1899ab0a64",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021697_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113948,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6bec42184eb168946f240cf202a65bf8faafffd730bc71528bce550ece1e7794",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 3",
+      "name": "OROSEI TESSERA VANILLA 120X120_07",
+      "id": "bfc9f91d-4e49-48d6-adbd-8c0c3658927b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021697_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 117302,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "612e7e088f8348cbeefc7eacb465b67ee36fbd4d6d577f8aaec65a90019471b6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 4",
+      "name": "OROSEI TESSERA VANILLA 120X120_02",
+      "id": "1cd2732a-66fc-4a8a-9754-7a71701dcfe6",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021697_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 115626,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "da0285c4cf17e08faed919cdfd621a09b4eb923dae8588a04460d29a136515ef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 5",
+      "name": "OROSEI TESSERA VANILLA 120X120_01",
+      "id": "84e2e15f-82c0-4c44-bd0b-7743b17cc58c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021697_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107090,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a2d4428f65cad72a16c57caf7073757635046537f895640fb67d6e7266b66e00",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 6",
+      "name": "OROSEI TESSERA VANILLA 120X120_03",
+      "id": "d837efe0-6607-45ac-9342-09238ad9f338",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021697_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110778,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c2553964a64ee9ab6ed1a72fb36de046cabb4f86132b02b27f0a28c96e5db110",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 7",
+      "name": "OROSEI TESSERA VANILLA 120X120_06",
+      "id": "88550d1a-ec5f-4c2d-8138-da53869b5f2b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021697_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110224,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d878367508f9d32f792e3e45ce23a1247876ce08bee4cfefaaf45c6b51730534",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 8",
+      "name": "OROSEI TESSERA VANILLA 120X120_05",
+      "id": "4234f469-c73c-407e-9ab5-388a013b3e95",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021697_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112598,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "120X120-Antique 3D/OROSEI - TESSERA VANILLA - 120X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "20af6210a41ae157311a89ba5ab76fc457d3fb26a6de7a801f668f46d33cb737",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Antique 3D · Faccia 9",
+      "name": "OROSEI TESSERA VANILLA 120X120_04",
+      "id": "28278a09-bff2-49a0-aa87-3ade28a2e7a7",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030240",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/tessera-vanilla/pf60030240-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030240_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    18
+   ],
+   "used_by": "floor gardenia-flooring-orosei-vanilla-tessera-pf60030240-60x120-197574-0; wall gardenia-wall-tile-orosei-vanilla-tessera-pf60030240-60x120-197574-0",
+   "faces": [
+    {
+     "file": "0030240_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56676,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5ec62dfc0da7180010e006e603d166f2a894df81f782c97559429a404db16354",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "OROSEI TESSERA VANILLA 60X120_01",
+      "id": "6932cd17-8f8e-42aa-9f04-cf33a6bdc469",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030240_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58952,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b3e1acaf087b4e0df129d586cba9f2b92f2780e8132fa42d101ff2b1784ce106",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2",
+      "name": "OROSEI TESSERA VANILLA 60X120_04",
+      "id": "f9400eb4-64f7-4fe6-bb3a-61077b138fef",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030240_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55456,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d06e0e0748ecc82c1d5c7d2fe7aa54a619e8d0a72e97cfb68845514a36b3adca",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3",
+      "name": "OROSEI TESSERA VANILLA 60X120_14",
+      "id": "f6b7c9b3-555b-4b02-9bb0-c84a966e6fdc",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030240_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56300,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a8b2b37190ec34243222b801ed58359bb471cc1857a92c2b297e4883f686d256",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4",
+      "name": "OROSEI TESSERA VANILLA 60X120_11",
+      "id": "723e9952-3133-4703-9f45-85d7c6ec6d9a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030240_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56648,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d0a37b9fc1b15c7afb325536be04aad215d6e49d4f083a80641ffe27899dcea5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5",
+      "name": "OROSEI TESSERA VANILLA 60X120_08",
+      "id": "7e3a2662-506d-441a-8e44-9cdcae0bf909",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030240_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57668,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8e4d0d7eb17f0aab67c5fa6c7fa47011b1c4e581fef8bdc11d5cf8a3e432b2ea",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6",
+      "name": "OROSEI TESSERA VANILLA 60X120_02",
+      "id": "5fe03518-fc38-42d5-ac54-dc0e4776287b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030240_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56146,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ca04bf6bdaa36ecbd209ab5f2a830ca41edafab64f3ee279b1177c4c17073d93",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7",
+      "name": "OROSEI TESSERA VANILLA 60X120_13",
+      "id": "f8a69d79-2342-4495-bcbf-dc917d07f19e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030240_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53856,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c5d25784ed3d68f5e7a39670b14592f5e1d0d5986b22fb5791ceb36ac9309a78",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8",
+      "name": "OROSEI TESSERA VANILLA 60X120_09",
+      "id": "ee2fe533-f626-4221-b120-06c60d8b17eb",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030240_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53434,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "851c5d156e5dc787c7e5d0011c670493f65724355b1f67b71eeb645c799d351d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9",
+      "name": "OROSEI TESSERA VANILLA 60X120_12",
+      "id": "656a1ec1-7748-4925-8d4e-8fa62428b079",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030240_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53130,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a6e20ec4767757e7b3ecc6060ce634cfac55ec147504d334a628ea64667ec6c0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10",
+      "name": "OROSEI TESSERA VANILLA 60X120_05",
+      "id": "92aa7ef2-a975-4b62-8925-0ea7c2baef2d",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030240_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57554,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f89e7afa520f10cf9097885ef9ead8f4821c95fca0cc07337e50040e575d10fc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11",
+      "name": "OROSEI TESSERA VANILLA 60X120_15",
+      "id": "853122a6-58ea-4ffd-bb01-4124740c58f0",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030240_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55436,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ca6970a213f41a4b1b27d8bce84135e62e967c2438a97fb3f8ddcc444845ee8d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12",
+      "name": "OROSEI TESSERA VANILLA 60X120_10",
+      "id": "7fa7787a-edb3-48ad-95a5-14191e9e82a9",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030240_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51906,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e368b05255386b9cea206fc3a460d09c838b14feb911af7d62abcb0d2e0580d1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13",
+      "name": "OROSEI TESSERA VANILLA 60X120_18",
+      "id": "7137d5c1-ea88-4cc2-8198-c9a8c9843530",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030240_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52644,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a2ad3d0a169ac03a4c1b0f964eff7447a13d13ae14a807e7c2034d4eaa947b1a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14",
+      "name": "OROSEI TESSERA VANILLA 60X120_07",
+      "id": "4ff39168-3a8a-4e1d-a720-f1f0caf85618",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030240_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56940,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2f583d5a7d0ff929c292a83121ff7f25cd63c44b40fbe68297442ccb85908f1d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15",
+      "name": "OROSEI TESSERA VANILLA 60X120_03",
+      "id": "4fc41951-c5b0-4899-8363-ba39878e0208",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030240_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57444,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "910e3d8292b8a2cbcceb5303185dace74d486ea8039cb9dc2a2d06903aeca4be",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16",
+      "name": "OROSEI TESSERA VANILLA 60X120_17",
+      "id": "c8d90737-9073-4e81-9622-147278503237",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030240_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55000,
+     "source_zip": "OROSEI - TESSERA VANILLA - minimali.zip",
+     "source_file": "60X120-Antique 3D/OROSEI - TESSERA VANILLA - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "84a6ffc5cc7c0e3783b3e4cb82791a6191bf53387dafb430341ba592cefc1ddf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17",
+      "name": "OROSEI TESSERA VANILLA 60X120_16",
+      "id": "e5d19f02-f5ad-446e-8c8d-a2a095dba529",
+      "site_position": 17
+     }
+    }
+   ]
+  }
+ ]
+}
