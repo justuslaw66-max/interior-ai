@@ -35,7 +35,7 @@ Use these as current gold-standard examples for future imports:
 - Template examples are under `catalog/furniture/_templates/canonical/` and should be promoted to live references once real assets are imported.
 
 ## Surface Materials On Real Tile Faces
-Florim Ardoise Blanc and Gardenia Anima, Dorica, Oxide, Falaise, Make (all but its mosaics), Tabulae (all but its chevrons), Bon Ton, Pietra Viva and La Geoteca (all but two Negresco sizes) are drawn from the manufacturer's whole-tile pictures (`texture_assets.faces`). The Gardenia faces are stored at 0.6 px per mm; the originals are sharper, so sharper faces can be re-exported later. See `docs/architecture/surface-material-tile-faces.md`.
+Florim Ardoise Blanc and Gardenia Anima, Dorica, Oxide, Falaise, Make (all but its mosaics), Tabulae (all but its chevrons), Bon Ton, Pietra Viva, La Geoteca (all but two Negresco sizes), Orosei and Gioia are drawn from the manufacturer's whole-tile pictures (`texture_assets.faces`). The Gardenia faces are stored at 0.6 px per mm; the originals are sharper, so sharper faces can be re-exported later. See `docs/architecture/surface-material-tile-faces.md`.
 
 ## Recommended Folder Pattern
 ```text

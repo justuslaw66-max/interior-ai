@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile face: the single item picture from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/gioia/primavera/pf60010527-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the original is sharper, see gardenia-gioia-primavera-faces.manifest.json. It covers 600x1200 mm. ABK's picture is the whole tile, printed so the pattern runs on across the tile's edges. Its motif stands upright with the tile's long side vertical, so this entry lays the tile 600 mm wide and 1200 mm tall (J, 9 Oct 2026)."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60010527/0/90243 for wall use.
     - "Configurator format: 60x120; surface destination: RIVESTIMENTO."
@@ -47,8 +48,8 @@ physical_specs:
   plank_or_tile_format: tile
   plank_width_mm: null
   plank_length_mm: null
-  tile_width_mm: 1200
-  tile_length_mm: 600
+  tile_width_mm: 600
+  tile_length_mm: 1200
   total_thickness_mm: null
   wear_layer_mm: null
   installation_method:
@@ -59,16 +60,23 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/gioia/pf60010527.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/gioia/pf60010527.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/gioia/0010527_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/gioia/0010527_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
-    width: 120
-    height: 60
+    width: 60
+    height: 120
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/gioia/0010527_01.webp
+      width_mm: 600
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -94,12 +102,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
