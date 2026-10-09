@@ -1,0 +1,865 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/marfil/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - MARFIL - minimali.zip (15187048 bytes, sha256 5c6b063ad22fa00b8e6295a6b7f649395810a4b46b75c396d55a2933f0d8291a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0011724",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/marfil/pf60011724-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0011724_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-marfil-pf60011724-120x280-nat-90387-0; wall gardenia-wall-tile-la-geoteca-marfil-pf60011724-120x280-nat-90387-0",
+   "faces": [
+    {
+     "file": "0011724_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 71398,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - MARFIL - 120X280 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "1c3aca412b1de8a6e52f7582ceaf66040496010578eb1b01df8e87b69054eea7",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA MARFIL RETT 120X280_01",
+      "id": "907026e3-b6ae-40ab-879c-05a33083d14c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011724_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 64214,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - MARFIL - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "0975bb375972a3e7ea3521d0b3432f06f616c6776d5556d1a3b5be62032a3491",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA MARFIL RETT 120X280_02",
+      "id": "daead080-b4ea-4052-b80f-d14e02f1851c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011724_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 59622,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - MARFIL - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "c5fdb917d86e9c19d5acffa198b256a440eb779920d0dd111d160efdbdaeec10",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA MARFIL RETT 120X280_03",
+      "id": "fcf7406d-834d-4467-9150-b55112bc165a",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0011732",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/marfil/pf60011732-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0011732_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-marfil-pf60011732-120x120-nat-90394-0; wall gardenia-wall-tile-la-geoteca-marfil-pf60011732-120x120-nat-90394-0",
+   "faces": [
+    {
+     "file": "0011732_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29898,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "26c034a6701c83c6d7d4cb9f235e548ba3f4577c708b80c55d58e187e2981ff1",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA MARFIL RETT 120X120_01",
+      "id": "b4ed7fd6-2c69-4f1d-82c4-dca4127b54b0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011732_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 25914,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "084c5d6b123adb9a59fcd6fd0a9ce120389a37f9161700594d6fe2b2437d1dfd",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA MARFIL RETT 120X120_07",
+      "id": "829d9892-c77c-43f3-b6e8-66c086cf4b4a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011732_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26172,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "59e3e3589eb7907aacfcfd6e7f6c356f8ff75ef4f021145089bec20b2db02067",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA MARFIL RETT 120X120_09",
+      "id": "ba5db982-75f3-40bc-b2c0-13a5e4c1c3f7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011732_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 30284,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "49dc4f92a36b9d73d12c40abf690078b7753d26258683df68cf1c5223dd7afb5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA MARFIL RETT 120X120_08",
+      "id": "c1c3308f-82d4-4937-b10d-e8652fd79703",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011732_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22354,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "6a58235e09f5327f7fba6488c082fd07cc6ad15fa983fbea3273c217a2fbf901",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA MARFIL RETT 120X120_05",
+      "id": "6b65c9f8-b0c2-4ec6-a29e-f5dcdd5649b9",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011732_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 32406,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "3920baa458f1df2ddc4eb07de683f497f2cdad5f2711e8a7a3f92d820747dcdc",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA MARFIL RETT 120X120_02",
+      "id": "42b6f951-1c43-4344-90e3-b391e45ced4b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011732_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29710,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "cdf16775c0d949deb1f7b9ff5527a715eaa1b9531297def86a731c5a07e1bd01",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA MARFIL RETT 120X120_04",
+      "id": "818dfd4b-f723-47b4-8e62-bf9149ed676e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011732_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 23808,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "cb06219c237e4fff4c96a1ebfc278d67e30be55f22c4fe8ae21e92d9ee74b866",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA MARFIL RETT 120X120_06",
+      "id": "f7adb930-6d27-4a1b-a74d-5e489ff00a17",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0011732_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21116,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - MARFIL - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d4598ec6e8cddf52b678d94421557842797fe8b6cf42316321f99625709d2d28",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA MARFIL RETT 120X120_03",
+      "id": "fc57ba04-6c64-4312-9733-aad0b78093b9",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0011741",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/marfil/pf60011741-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0011741_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-marfil-pf60011741-60x120-nat-90401-0; wall gardenia-wall-tile-la-geoteca-marfil-pf60011741-60x120-nat-90401-0",
+   "faces": [
+    {
+     "file": "0011741_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16334,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b001212d9f90c803c72a0e539c4d24668f31abdcfe4cfad9cd9373632f8b1dd7",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA MARFIL RETT 60X120_01",
+      "id": "d76fcf4a-866c-46c7-bd9f-ccc2e244f24c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011741_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12638,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "367cd879cca3cc3fe6821b699b587d279924ad9307a3ef89060e4a702b5d305f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA MARFIL RETT 60X120_12",
+      "id": "2b48470b-82b4-43c9-9b03-4d52f9c2e646",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011741_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17260,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "77edc0b3fc795bd35144c265741a46ae7b48df0a3273fff4d1f8c19fb17820b6",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA MARFIL RETT 60X120_08",
+      "id": "81e1229c-d483-4c6f-a08f-3a3587c2928a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011741_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11910,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7b5bbe07c00a817fb7da7d3cc26f00af0a3ccfab2a9e28e8bdd41031c875959b",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA MARFIL RETT 60X120_10",
+      "id": "88ab6fa8-36dd-44d4-8e4b-c26f81574545",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011741_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14032,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "5aa1a681cd2e2e60f0ebd0f84c8f08b3de744a973fbfbc2b3fdfce95fb848307",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA MARFIL RETT 60X120_11",
+      "id": "5498938c-5f49-4df3-b17b-cc826a31ee06",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011741_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11706,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "cec6ceeade49941a6d1c6e920ec7ec92f965b0785abc892ffd6a1c4d56738ee2",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA MARFIL RETT 60X120_06",
+      "id": "fb6575e5-be25-4e9e-82c5-ddd2febadf57",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011741_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11410,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b6669cbace9f8bc1f783c5a91dfa5febd1dda11e71a4704299fc24981172c5b7",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA MARFIL RETT 60X120_05",
+      "id": "99cc665c-b0ef-4509-8c7c-a3c611e77587",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011741_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12264,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7aef1e5bf15a73f1a1b66ca578d13a06c7fc1ee73de332c14abc7059c8cb9e7c",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA MARFIL RETT 60X120_09",
+      "id": "68f36749-255e-42d4-a71a-5ae81a3aa086",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0011741_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13582,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a5a294a1dac0ecd352aa134bc75bb92e58a3fdb506667c4402c5555ea9291c65",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA MARFIL RETT 60X120_02",
+      "id": "49a9ecd3-fae1-4b17-974e-66937b8b08cb",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0011741_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15130,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "d29a88524ec3c8bfc74cc2ea88884166a00f72ab35a2e77dfcea024632c3a8d0",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA MARFIL RETT 60X120_03",
+      "id": "45026601-0299-4fb6-92b2-5ca8edab44e7",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0011741_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15562,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a275bbae0b0d6046d89fa69d8d0eccca1c9884c3ce042f65cc98f23888566d9d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA MARFIL RETT 60X120_04",
+      "id": "41e31323-cc5b-4fdb-921a-5a9354c6333f",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0011741_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16194,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - MARFIL - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "bdbf82b38a16065053dc4c454fdfc153c50e66fa1fdff833f8abaf766f6283d5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA MARFIL RETT 60X120_07",
+      "id": "9336bff9-f213-4233-aa59-36eb771a730a",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012156",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/marfil/pf60012156-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012156_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-marfil-pf60012156-80x80-nat-90419-0; wall gardenia-wall-tile-la-geoteca-marfil-pf60012156-80x80-nat-90419-0",
+   "faces": [
+    {
+     "file": "0012156_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15150,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "842b397321fdd62de539963fd6a510f2805fb9aa775a7bfb796d44a4d65171d8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA MARFIL RETT 80X80_01",
+      "id": "f1896600-707e-4706-a8e8-d6261cd128cb",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012156_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11806,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d75df77b6bce80b65f5ed88f1c0d0d8edaac3900b7ea2502d7a4559aace5c0d7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA MARFIL RETT 80X80_02",
+      "id": "6d31228b-b243-4a5e-9249-4944d0bc359e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012156_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10412,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0b72a3847fdefa674bca5b6c82d50627b3f43bcf1b157218f3da8c339241b0e0",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA MARFIL RETT 80X80_08",
+      "id": "03ed4092-ceb7-4c4e-b8fc-a71401322d27",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012156_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11468,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "67f4057fb0bcd2484fd566bbcb93f819a52da5a5a9e2b28eb82df9c39f1bbe87",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA MARFIL RETT 80X80_05",
+      "id": "3b88a0de-e394-445d-bdec-a5c925207f23",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012156_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14504,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7a5f03935f08f122083766af65cd10d1b930571bc3b84aa878dd0d35b0651e68",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA MARFIL RETT 80X80_04",
+      "id": "c0d67462-a9c1-4e4a-8076-2381a010f9d5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012156_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9182,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "292152e8e311122b45be14e34efcc12ef1d4290d59671be7dc4e71bf183371f9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA MARFIL RETT 80X80_06",
+      "id": "76700941-1ecf-4c9e-bfed-38651903d5c4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012156_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10674,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "394c6a44b869a2485a61eed7e3c6e9ac4182e1dc93e8db11d0f7427e43b63bd6",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA MARFIL RETT 80X80_07",
+      "id": "1b4b68d1-66f0-499c-86dd-ff729ae9cd63",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012156_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11826,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "cd8b041478dee4ea3b525a669c6a0fd511b3fe9bdd313d07912484be159c180d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA MARFIL RETT 80X80_09",
+      "id": "b8f38afb-8211-4f38-bb79-d41dd3d288f6",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012156_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14456,
+     "source_zip": "LA GEOTECA - MARFIL - minimali.zip",
+     "source_file": "80X80-Nat P.tech/LA GEOTECA - MARFIL - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4e2cc49ff7460b86111221586d091b4e9072b928b89d647cdccf7c1bbdc85441",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA MARFIL RETT 80X80_03",
+      "id": "54d49f0c-c574-47b1-ab01-f5949f032a4a",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

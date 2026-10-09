@@ -1,0 +1,581 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/limestone/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - LIMESTONE - minimali.zip (7579111 bytes, sha256 dfc7e5c9eedaaff983fdae167745b442886c1b49bfd686d6a2daa0483781800e); PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip (3256288 bytes, sha256 9223336413385e684627c750649825d4b8bf7153d25b14ae4ad61024f6de7627).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0011763",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/limestone/pf60011763-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0011763_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-limestone-pf60011763-120x280-nat-90402-0; wall gardenia-wall-tile-la-geoteca-limestone-pf60011763-120x280-nat-90402-0",
+   "faces": [
+    {
+     "file": "0011763_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 33306,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - LIMESTONE - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "49ec2b282f54997fb8a83469de1dabf5102028f2bf81f9c580976f88775dd372",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA LIMESTONE RETT 120X280_01",
+      "id": "1ee30a74-8de1-466f-9118-f6addc09b9d8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011763_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 46282,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - LIMESTONE - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "ca7537d3608f545441469f2c6ce0807beadd146275d42fa43e2c0fb891365641",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA LIMESTONE RETT 120X280_02",
+      "id": "0edda7b2-eb51-4297-99cc-8e994bdc9eb9",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010537",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/limestone/pf60010537-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010537_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-limestone-pf60011775-120x120-nat-90403-0 (uses 0010537's faces: ABK lists Limestone 120x120 Nat P.tech as 0010537; the configurator's 0011775 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-limestone-pf60011775-120x120-nat-90403-0 (uses 0010537's faces: ABK lists Limestone 120x120 Nat P.tech as 0010537; the configurator's 0011775 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0010537_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12522,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "11b95bc2ec101009bc8b2105be870c301d5bfc6631b630341b0d605e46fe6b54",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_01",
+      "id": "b0d17a9d-cbfa-46ad-98ea-6dedd1ece578",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010537_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18698,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "5340468f9dbff5faf0cc7b2c8fdd8c1213154019def2d0cfdd0b73603c3cb8b2",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_05",
+      "id": "f8738b78-61e3-48ea-a40d-8c33ad3e8f2d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010537_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21572,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d0664f1e01a6c5233ddbd23669321956209a6d9e60dfd3f2761ee262a8f4fe2c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_04",
+      "id": "3a594f5d-3e9a-42ae-8d1d-7b5153166443",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010537_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13534,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "c312d8e15a2b2a1ff502f84cecf5523b21b5084075bc464278a5afd542d0013e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_03",
+      "id": "4cfad2ad-f14e-42f5-944b-46a39fc3e0d9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010537_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 14834,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "2b291f237e485ea6bb99386f5d471c7ba2d0573010dd18bfcdc7219ad68d72d5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_02",
+      "id": "daa26c96-c363-41d4-bc8f-377c8d1ae740",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010537_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20348,
+     "source_zip": "LA GEOTECA - LIMESTONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - LIMESTONE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "e64d28960f58ecfe4e54d12754f076a755ea21b325b6dd5aa0de753658b8ba47",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA LIMESTONE RETT 120X120_06",
+      "id": "fdf40055-1f99-4008-b845-d31d2f0257a2",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0010539",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/limestone/pf60010539-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010539_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    5,
+    9
+   ],
+   "used_by": "floor gardenia-flooring-la-geoteca-limestone-pf60011776-60x120-nat-90404-0 (uses 0010539's faces: ABK lists Limestone 60x120 Nat P.tech as 0010539; the configurator's 0011776 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-limestone-pf60011776-60x120-nat-90404-0 (uses 0010539's faces: ABK lists Limestone 60x120 Nat P.tech as 0010539; the configurator's 0011776 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0010539_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7134,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "8d684e36c90f96a321cba5a4bab051f0ee3741dc1b20ceb6362dfe0ea93fc30a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_01",
+      "id": "ea3321d6-c07d-4443-8522-4ed944db1bac",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010539_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7092,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "955c0c25225c07015b87d05fdef62651f6572f15ca5756d36082994bdf684000",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_04",
+      "id": "1e961241-9c4d-4ad8-8567-3aa39b5e0bda",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010539_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10968,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a4e2c5024b1f76e262f10ca1306343c791f2ef78f842a69c5143e96f3c99664d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_06",
+      "id": "851a3d0d-9a7d-4fb5-ad30-61c4b27b6681",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010539_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5448,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "def0812dce5afd8ebf6fecdc79068c154216b31ffe9d90768bc3b4066dd59abc",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_03",
+      "id": "607d5511-d43b-423f-b69d-29fe65502a7a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010539_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9934,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "218ea8775e66c4ab72b46654b84ebdc165aacdd9eb8d2a47da0dc23a8efcce09",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_09",
+      "id": "58710b1d-dbce-4ac5-8b20-4fe88a728fc3",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010539_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11056,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "374b8ed75beb33a46b0e2b876dc6583f09cbcf3711811a3ae3e83776080edcf1",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_05",
+      "id": "d826b0f4-9755-42bb-9f39-aca3f3cd9cfc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010539_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10428,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b48ac605dfb31c591d5ad366a23c2603f04847c642fd90c4674b1a651b67ad66",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA LIMESTONE RETT 60X120_08",
+      "id": "dcc7c83a-30bb-4ebc-9638-057abee8a6e5",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012080",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/limestone/pf60012080-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012080_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-limestone-pf60012080-80x80-nat-90411-0; floor gardenia-flooring-la-geoteca-limestone-pf60012086-80x80-90416-0 (uses 0012080's faces: ABK's 6 R11 pictures (on Plein Air's page) are 0012080's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-la-geoteca-limestone-pf60012080-80x80-nat-90411-0",
+   "faces": [
+    {
+     "file": "0012080_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6078,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "2bfef98d11c7c35b14345f73aa71fc7189982dcfb2922e97f871a1140fc55916",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_01",
+      "id": "2a7b0422-9519-49d9-898e-0ee6dedb2031",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012080_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10726,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "957b1577c90a0b75353dfc6f10d10c5540927b902fae1063777c5c150065f661",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_04",
+      "id": "47ffd27d-9c96-4a3f-a2d1-6186c8905d15",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012080_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 7950,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "54b19fa22dbe29c43bddde3e3f47d6251030d606afc055edfdbaac8f4a7c807f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_05",
+      "id": "14253b80-2940-4bd5-9094-af62ba23942d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012080_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5808,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7e7da46e44df71f1e2921e915eedc76b1237dea09a2f81baef55ace6139e88e4",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_03",
+      "id": "4fbc32bd-ebc6-4b9c-8055-f4b44f40d535",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012080_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6006,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "58d4be500075e282207e764a52f08d98d3d53df0ef58082f337f34e388abcc52",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_02",
+      "id": "6e7f9599-7913-49e4-983c-aeee40d3c713",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012080_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10480,
+     "source_zip": "PLEIN AIR - LA GEOTECA LIMESTONE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA LIMESTONE - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "94fa39a3cb8a6b4c654ad556f869bcb6cf9295d8e72207e3d60b40dd32956c33",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA LIMESTONE RETT 80X80_06",
+      "id": "bf1d9cf9-6c63-43e0-bb22-c91b0a5d0a2d",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

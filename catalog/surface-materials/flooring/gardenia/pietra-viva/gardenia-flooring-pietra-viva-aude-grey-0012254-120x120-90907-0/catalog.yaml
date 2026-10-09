@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 4 single item pictures of item 0012908 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-grey/pf60012908-v102/), because ABK's 4 Antique 3D pictures are 0012908's Nat P.tech pictures, byte for byte. Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-aude-grey-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0012254/0/90907 for floor use.
     - "Configurator format: 120x120; surface destination: ENTRAMBE."
@@ -66,16 +67,32 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012254.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012254.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 120
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012908_04.webp
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -101,12 +118,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

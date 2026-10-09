@@ -1,0 +1,991 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/ceppo-di-gre/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - CEPPO DI GRE - minimali.zip (60986360 bytes, sha256 36a259dcba34a2d5eb7c0a3cdc6629b20fde519d07e74f98edf60604f125d3f5); PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip (21847893 bytes, sha256 be6593adf72d68bfc1d3422c772633070273412dbc7abb45e6052fb3fe113b79).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008674",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/ceppo-di-gre/pf60008674-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008674_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60008674-120x280-nat-90380-0; wall gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60008674-120x280-nat-90380-0",
+   "faces": [
+    {
+     "file": "0008674_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 405898,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "b040ae2867ce9d70f0db57462bfe8986d9f9ead16329c6ff0ed4436b7e0f6dab",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_01",
+      "id": "79a6be85-dfb9-4210-ada7-614405fe51e8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008674_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 406546,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_2 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "42a5e29433e17ce2bd20b6dcc52ed62de41a3f202c31853787853f40a9e300ae",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4 (view_02)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_02",
+      "id": "63c78a53-1a56-47eb-a365-9ed70464b6ca",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0008674_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 407048,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_3 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "3c5409249e7224ab70062a717006fe8bc358269bd62c5a21b8b255f7a844dc86",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6 (view_03)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_03",
+      "id": "83031690-30d9-4779-889d-aa8cf6080948",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0008674_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 407894,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_4.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "894f4827195232e9899c50d458cc0f0c33a86087c9ebe99e0035ce81735274a8",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7 (view_04)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_04",
+      "id": "42a78ea0-d27d-4a43-ac65-68bef25b9656",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0008674_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 403878,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_5.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "878559a10545a06226565705c7918e3436921419240c8e679dc4220faa0194fa",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 9 (view_05)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_05",
+      "id": "523829e1-868f-40cf-bb58-3f1617ac5d19",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0008674_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 404596,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X280-Natural/LA GEOTECA - CEPPO DI GRE - 120X280 - Natural - view_6 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "8c54152c8e9be583e0c511c1dea4e3e5918fef07fc96d78d0d77556b43a9fd3f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm: 57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 12 (view_06)",
+      "name": "GEOTECA CEPPO DI GRE 120X280_06",
+      "id": "d4b6198a-eb86-4e64-9d84-5f6f0546d822",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0013072",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-ceppo-di-gre/pf60013072-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0013072_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013072-80x80-90428-0",
+   "faces": [
+    {
+     "file": "0013072_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 173238,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "00b28e5ed75a90b02d3c924c71506d6b22a64624204e41c1a52fcd0b5efa08db",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_01",
+      "id": "3c4ea4c9-e681-42a5-b2a1-8fb67a1ba76f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013072_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171742,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6bee61cfac5ded60fd52134cf5430fe019c06993f9839c82b1bdee0db0d5f95b",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_03",
+      "id": "670edf0d-5403-428d-b6f7-de7b00944269",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013072_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 168338,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "f257218fd6e5378925eef52358f5a6efdf0fe5da28d9d5040a969f5c957176fe",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_05",
+      "id": "e1b19fd5-f98d-4278-97d8-604050603988",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013072_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 170614,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7d2e9362ac30978a8f6b58f0fdb0ed436d159d5175e4fe757cd3817aa9ac0c45",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_06",
+      "id": "fb9dd71e-13b3-4b63-88e4-7e9e41bf959b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0013072_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 173048,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "75a40ddc90bc9dc2d3bdc1610a14a225a9f5d67699b9c623a046d9054059568f",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_04",
+      "id": "c1672eae-130a-46fb-9f66-4df6ab124c33",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0013072_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171350,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3566df71e0e8c59e5a64ade871e968bace74d7a28d9711092be6f946ac3381a8",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_02",
+      "id": "8c5996c3-aa9a-43de-8b3e-713763546ee5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0013072_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171034,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7499d0f2157c4d5872e8460de71ac70a0cb98b1420fbe29c83bfbd4f0f181ac6",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_11",
+      "id": "5cecc75b-3af7-4097-ab82-c0e202594e98",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0013072_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 168804,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b5792a40410f8d064417c3ad9ed4be802be38c90577c9588fe01561f083b3659",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_12",
+      "id": "91cf186e-7209-4ff7-a3a3-3314b362b070",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013072_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 172196,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "bee7cc83924bd8041685319578f908c69ba7a589e74f53d8e4a5396c8e98d2b3",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_07",
+      "id": "1b3c105e-2d62-4961-8e12-8d3bf62c93be",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0013072_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 167276,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b11914a87b4a04763f3734fc63b4e3fb02ce75730f1cb93980f083574a69ac36",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_10",
+      "id": "4016eec9-936a-45e4-b7a7-10c91a0f8730",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0013072_11.webp",
+     "face": 11,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171378,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3771963baeb78b678af7ab8364ba000b3a94aa02222dda66ef80708e1392cf29",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_09",
+      "id": "c6e7bbc2-a105-4d81-8173-cd9a4a9b0388",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0013072_12.webp",
+     "face": 12,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 170388,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 80X80 - R11 - view_12.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "045e426f1ff7adf5b19fde4d6f26e9269bbd01cb7964ab04f9fed23a4b2214cf",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA CEPPO DI GRE 80X80 R11 20 MM_08",
+      "id": "a044b510-7d1c-41e6-9015-4d63bf43859e",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0013116",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/ceppo-di-gre/pf60013116-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0013116_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013116-120x120-nat-90429-0; wall gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013116-120x120-nat-90429-0",
+   "faces": [
+    {
+     "file": "0013116_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 146400,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f4e7fc7b6d5dd0b1d5f45196a16720dbba2c6eccc9e03cb26b5f1ec98ce8affa",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_01",
+      "id": "0b801057-d007-4454-a2ea-515443241088",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013116_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 148378,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "41b749e590321f0ce6bcd562920630cec4b14d76e63002991b55faa9b18d1f61",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_03",
+      "id": "1b4af66f-acca-44dc-b5f9-0c64ce7391f9",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013116_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 172208,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "3a234c37094cd18f903c460d7e32763a0752870462adb703a53ebf051e4a7683",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_07",
+      "id": "5e74b2bc-fb27-4f56-9c51-1dadc64ab94e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013116_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171906,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "4eabb749cb2a46e337a81b578f47293397a85405f8e43dcc14d9f36f7dd14f0b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_09",
+      "id": "3110f4fc-a7ad-43c5-8561-cc9aad0a6e0d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0013116_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 149632,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "55ee93ddcc387f7488e3a5318ed2a11ed4387052d892c5d728370b00fe471a4c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_04",
+      "id": "f255b3d4-e5c3-4764-81b1-f793e6eb9c48",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0013116_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 171334,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "41f9a6c5f457dd9c688f541e228a6d2b0ab71fcad41006789deff53f5ca4186b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_05",
+      "id": "47246d0e-accc-43c4-853e-259f2c73def5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0013116_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 168870,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f19a9cc88e60386c33be255e76aa61fbdfa2492243fbf35891a3bc196c41ebd9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_06",
+      "id": "fa4e5124-1c2d-446c-a7be-93c43d1b98ce",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0013116_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 149186,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "65f450141c6333c99e1fab861045968b9d97971d8ab83994d66f24eb05664eae",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_02",
+      "id": "6ccefa27-d4c8-4ca1-8e6f-1d9196f04875",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013116_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 168262,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "90bd8f6bc7faa670443798e2dd249e1804fe822fcc50f8e07e86ebd0959157be",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_08",
+      "id": "968b51c2-a8f3-4510-b105-c8fbbac0bc70",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0013116_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 168822,
+     "source_zip": "LA GEOTECA - CEPPO DI GRE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - CEPPO DI GRE - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "b2890b97756df94eaffe97033d164bf7a8fd5adfcb312b0fd5f1f14cac48b137",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA CEPPO DI GRE' 120X120_10",
+      "id": "457f62ff-93c0-46c8-b7a3-7e6292c52912",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0013117",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/ceppo-di-gre/pf60013117-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0013117_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0; wall gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0",
+   "faces": [
+    {
+     "file": "0013117_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73490,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1200,
+      600
+     ],
+     "source_sha256": "a5d135f370e5e38a7475a8551efe84463cb2efe411a36f32a271edd3552e4e69",
+     "source_px_per_mm": 1.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_01",
+      "id": "92697f8e-5f01-42fb-938b-7203bb38264b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013117_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 72778,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_3_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "ab59ec7da6d57f301b8649a3f152a781415c8982b34c8698718d0db820060e3a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_05",
+      "id": "c7f4a1df-79b1-45b5-bb67-e18e2a2a05ec",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013117_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74836,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_7_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "ba9263c7cc3c3d3bb1dd8cddfdebe0cb1c388da84f9d3d31084232141246963a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_07",
+      "id": "962f695b-f20b-451a-8af4-90afe837c697",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013117_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73918,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_1_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "30e19c74d1b472d3aeaa359736db2f711162ee3c4fef059b36631e8ab905fdd6",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_06",
+      "id": "5ab286f3-47be-4229-8413-d176ddcb9cf0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0013117_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 75260,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_4_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "60a5ccbd75b9f4ab6010478aa46f0cef75ac3bcde8fe38d00cd9199e85b27e1d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_08",
+      "id": "aa8089a8-3714-47c8-ba41-e24d52ca4727",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0013117_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73808,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_2_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "9b12f3aba93e38faa7bab2b779990635185146094dd0c07253d956f661d29c6e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_04",
+      "id": "988f6253-04a1-49b3-8f9d-a44b783b99c4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0013117_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86422,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_6_2.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "d4f5fb4517f540fdf56a1efcc2624de219f1b1de6da9367d3ce087049441a668",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_09",
+      "id": "847502d6-dd5f-46cb-9cd7-d9a10bb3ab77",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0013117_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 77612,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_8_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "2428a2618726f988f32ffd7f995ed08fcd3deb6d903afd19f7cea2519d3c7c3a",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_03",
+      "id": "d7f12687-4c48-40df-8d72-b5f15e87f994",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013117_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 85698,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_5_2.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "3fce6cbcad3502d43d984e72bfe90764f2ebd3190c7ccda9741aed2acac67f13",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_10",
+      "id": "68a3827f-3385-4955-b0c8-a3445af7cb57",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0013117_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73756,
+     "source_zip": "PLEIN AIR - LA GEOTECA CEPPO DI GRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA CEPPO DI GRE - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      1200,
+      600
+     ],
+     "source_sha256": "7ad0ecb33fd212bce5ef6b10299d3ae7ec69c20e9e1ce9057bd7f5922513e96b",
+     "source_px_per_mm": 1.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA CEPPO DI GRE' 60X120_02",
+      "id": "0bb429a5-a2bf-4fe0-b04a-496bf8b6f744",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}
