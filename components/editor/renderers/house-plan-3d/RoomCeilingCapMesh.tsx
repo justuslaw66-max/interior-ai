@@ -1,10 +1,12 @@
 "use client";
 
-import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { CeilingShadowOccluder } from "@/components/scene/CeilingShadowOccluder";
+import { noRaycast } from "@/components/scene/stableSceneProps";
+import { StableLine as Line } from "../StableLine";
+import { useLatestCallback } from "../useLatestCallback";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { buildHorizontalRoomGeometry, getRoomOutlinePoints } from "./geometry";
 import type { StructureOutlineStyle, StructureTarget } from "./surfaceMeshes";
@@ -120,21 +122,19 @@ function CeilingCapSurface({
     },
     [interactive, meshRef, pickEnabledRef]
   );
+  // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
+  const hover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onHoverTarget(ceilingTarget); });
+  const clearHover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onClearHoverTarget(ceilingTarget); });
+  const select = useLatestCallback((event: ThreeEvent<MouseEvent>) => onSelectTarget(ceilingTarget, event));
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
       raycast={raycastCeilingCap}
       renderOrder={1}
-      onPointerOver={interactive ? (event) => {
-        event.stopPropagation();
-        onHoverTarget(ceilingTarget);
-      } : undefined}
-      onPointerOut={interactive ? (event) => {
-        event.stopPropagation();
-        onClearHoverTarget(ceilingTarget);
-      } : undefined}
-      onClick={interactive ? (event) => onSelectTarget(ceilingTarget, event) : undefined}
+      onPointerOver={interactive ? hover : undefined}
+      onPointerOut={interactive ? clearHover : undefined}
+      onClick={interactive ? select : undefined}
     >
       <meshBasicMaterial
         color={color}
@@ -198,7 +198,7 @@ export function RoomCeilingCapMesh({
             color={outlineStyle.color}
             lineWidth={outlineStyle.lineWidth}
             depthTest={false}
-            raycast={() => null}
+            raycast={noRaycast}
           />
         ) : null}
       </group>

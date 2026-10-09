@@ -4,6 +4,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { Furniture } from "@/components/scene/FurnitureItem";
+import { SceneItemGroup } from "@/components/scene/SceneItemGroup";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
@@ -165,14 +166,11 @@ export function SceneItemsLayer({
               : CabinetDesignItemPlan2D;
 
           return (
-            <group
+            <SceneItemGroup
               key={`${sceneEntry.roomId}:${item.instanceId}`}
               name={`${sceneEntry.layerId}:${item.instanceId}`}
               visible={sceneEntry.visible}
-              userData={{
-                sceneItemId: item.instanceId,
-                sceneLayerId: sceneEntry.layerId,
-              }}
+              sceneItemId={item.instanceId} sceneLayerId={sceneEntry.layerId}
             >
               <CabinetDesignItemRenderer
                 sceneEntry={sceneEntry}
@@ -231,7 +229,7 @@ export function SceneItemsLayer({
                     : undefined
                 }
               />
-            </group>
+            </SceneItemGroup>
           );
         }
 
@@ -364,14 +362,11 @@ export function SceneItemsLayer({
         }:${configuration.renderQuality}`;
 
         return (
-          <group
+          <SceneItemGroup
             key={`${sceneEntry.roomId}:${item.instanceId}`}
             name={`${continuity.layerId}:${continuity.instanceId}`}
             visible={continuity.visible}
-            userData={{
-              sceneItemId: continuity.instanceId,
-              sceneLayerId: continuity.layerId,
-            }}
+            sceneItemId={continuity.instanceId} sceneLayerId={continuity.layerId}
           >
             <Furniture
               data-testid="item-in-scene"
@@ -474,7 +469,7 @@ export function SceneItemsLayer({
                 })
               }
             />
-          </group>
+          </SceneItemGroup>
         );
       })}
     </>

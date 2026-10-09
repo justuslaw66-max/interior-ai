@@ -1,0 +1,1879 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: BON TON - BIANCONE - minimali.zip (41175037 bytes, sha256 14333b1e52ec8e3a56468f4c4d7d112b9b6f0aa2bae1aaf7fdd98c8b5e64fd5a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/bon-ton/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0020759",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020759-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0020759_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-bon-ton-biancone-pf60020759-120x280-lux-196241-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020767-120x280-soft-196245-0 (uses 0020759's faces: ABK's 3 Soft pictures are 0020759's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0020759_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 102112,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BIANCONE - 120X280 - Soft 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "18ec5a4129e5432bdb20fa1a59f90b457033fd24b1e3b83f79b33492fa425d8e",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 120X280 LUX 3D_01",
+      "id": "d1333d83-d3b9-4852-a117-bbe02384189d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020759_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 92300,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BIANCONE - 120X280 - Soft 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "862261decc1fcf8c3d96806b9f3a37def5b2ebee374854e9f2da3923caf557a6",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 120X280 LUX 3D_02",
+      "id": "15a60a3c-d8a3-4baf-87bc-2576c3f64a2f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020759_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 101196,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BIANCONE - 120X280 - Soft 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "9ce5bfb9094f9cb71a64fb8ed46c56bdf7770469cb13ea3b0d006c63558bfb5b",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 120X280 LUX 3D_03",
+      "id": "baba57af-790d-483f-8089-f1385335da26",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020776",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020776-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020776_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-biancone-pf60020776-120x120-196249-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020776-120x120-196249-0",
+   "faces": [
+    {
+     "file": "0020776_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45898,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "487ace662863385a72a640a526c15680d798d528afec6b073ecd101574dde8cd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_01",
+      "id": "e41a7799-e95a-45d0-8305-a68d8d759162",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020776_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43478,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dbad3bb922a4d4e773c98aa33d0f136cd8572af58381f19ac8b5df752f3d0dd8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_08",
+      "id": "264cffcc-aec4-4816-afca-b40e6daa94a3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020776_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46950,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e5429b168dc39f1fe652cb9fbdbe29941f213821975090df605b994f885e13e3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_09",
+      "id": "c8fa5f11-c4d9-41ad-9349-1bc4dc811f41",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020776_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41678,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "363c4f0758d13b45170c5aeff15f1cd50d44c96b5ea72839ed6e1808d15b4fef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_02",
+      "id": "53bf7229-112a-478d-8058-24a8826de433",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020776_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 32082,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "da1f60b5ba714b7ad1b8a7baf8c09d79c2d202740e6ffdf3ed1646493a7e47dc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_05",
+      "id": "20e148b2-e5d0-4211-8d71-0df8b8ce1234",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020776_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41974,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3e4c10970b6a27f1791ca987c763911fa01c0ae879f8f83d0886fabee14cceec",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_06",
+      "id": "7f666c4e-e03d-46b4-891e-4a233dd5072f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020776_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44272,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e7d617e384c32148fdea7500c478274e3f3583b3fc7e5011237269858c584096",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_03",
+      "id": "6442e7f0-24e6-4d7e-b861-ea08b61e40ff",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020776_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46270,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cd3f59a2a78c38311cd8a1d54e9937a95a4e341d20cdce55983a8791e4003580",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_07",
+      "id": "ab3740c9-f0ce-4a3b-a73f-f05229162b6f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020776_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40664,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BIANCONE - 120X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7b167e3f52c6d8c7f2ebc1549ce6c7959e7cd89013934da4ae51ae5cb0fc725c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BIANCONE 120X120 ANTIQUE 3D_04",
+      "id": "801c0c28-7f98-44af-be68-5838b3a3b895",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020800",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020800-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020800_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-biancone-pf60020800-120x120-nat-196260-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020800-120x120-nat-196260-0",
+   "faces": [
+    {
+     "file": "0020800_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45846,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "606ba35bf554aed438379fce889e5247bb1d773380388491d8be3f221d74bed8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_01",
+      "id": "778df990-f53b-488c-80e2-43a5e363f69c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020800_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33288,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "515946846ddeb3ca133e09fb9e64404f952a4caa193cc47ab30d90909877a928",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_08",
+      "id": "b428fad7-ec73-4b38-b129-e7194b554a4e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020800_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 35272,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "912d79aa4e288a1edc15287aea6cb09cf2963d40d7c585d11628697ef85e586a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_07",
+      "id": "dd9f639a-222c-46ce-b6ce-7d0fe9061e6d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020800_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41742,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f624f999917dcc0c2f18756f1f7398c03d597930721c1db4acf4e3ce1fd3e3c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_03",
+      "id": "805ac8d9-53b2-4ab9-93f0-965ab120ae4e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020800_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26756,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b47afbab8e9a925155d303ebd71bbd83d72d73cff13654f1fd29a30744cf5f4b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_05",
+      "id": "a9dd83b1-5b58-453b-bd3b-716cc1844c92",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020800_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33400,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f783f44433e68b50b90f48d2cdc4e6d14f9432d972dfa197837776ce3c7ea1b9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_06",
+      "id": "040bd274-a65d-42bb-a657-23136f2a9b5f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020800_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 32666,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "144cf3bd556f6a67f5885884233155ef02fb182c9b751ef7b0a5c3db6e90e89a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_04",
+      "id": "5e8f9f24-c12d-4db8-80c5-6ce4a0182f30",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020800_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36030,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9686d7fa2617ffd1c04d24504f5756853223d58ae9acb99fd07d314c1f9a1077",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_09",
+      "id": "5f99f415-a5a8-46bf-9cf7-101188ffebdc",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020800_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42020,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BIANCONE - 120X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f6de923464fc983d7271c8ec1d073790d3f9cec7b0d8f0d2ecb4744cb8407ad4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BIANCONE 120X120 NAT 3D_02",
+      "id": "a103e92c-bdf2-4eed-9f7e-a9112e432aad",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020780",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020780-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020780_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-biancone-pf60020780-60x120-196253-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020780-60x120-196253-0",
+   "faces": [
+    {
+     "file": "0020780_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21686,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "47023bc99ea1bbbb39db910f3414442fc45b692adccb3dbe59e90f19ec102570",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_01",
+      "id": "1347fe4f-0233-46bd-9ebb-910f89c2f2dd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020780_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26660,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a46fd89dc57d42924a65dacc34fcc440dd04a7eaa8e5e668a8b35b91897b9b04",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_18",
+      "id": "d0e91930-149f-4f2d-98c9-fd38010b11a5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020780_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20766,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5046b1d3d3827d76eee8763afe988e2cbd1fc09fdf0b66eb903dc7094b0373d0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_16",
+      "id": "b2f3325c-5dd9-4b63-85cd-ab02f4ed3ea8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020780_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20904,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6974a4eb6aa34495c2915605e0dc5f7ce679514b76b7c65901e28460be6ac190",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_14",
+      "id": "2d88d03c-6502-422e-bd9c-4f7c38b2b750",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020780_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23380,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "04ba608431315a646c3a5bd6f41262bbf6798937b142d07e84682667cc99c3c5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_15",
+      "id": "27a2aa4c-2a89-4972-be23-1a8798cd88a1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020780_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21566,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7cb31dce12cfc989c12717ed9c4a7b4943307bbd7222a38f16e9d051887bfa68",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_17",
+      "id": "66326f7b-62f3-492b-89b8-9cc0aca9dce6",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020780_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20672,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a4cdc0a72df34fb206e9310be820e47924cf5fe4d7b1fda575642b52691a567f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_03",
+      "id": "784b2089-e952-4be4-95c8-729fa02597b3",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020780_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23576,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "384e17318ee994ec1630adb51d3c812bf9f6da566f7abb0b0f7add58c60bef7e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_05",
+      "id": "19b845ef-3497-4ad1-bbee-24a172dcb88f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020780_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24660,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c2e873f6492b779a47378683fb6e9033a61abe5d10add61794214e91bdd32961",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_13",
+      "id": "3b1e5dc5-bac4-46e7-acf3-b1907d2c221c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020780_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22710,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3a2dce5aea6aaa2e5df2ee5d4cba61b9a8398c43720671d29c97215824e0c62f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_12",
+      "id": "707af6b6-d809-43c0-93f3-aaa840875527",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020780_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22368,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d885069706f74cea23397331d413bd1e0d977de3d2e3d8b5e96951cae27a1302",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_07",
+      "id": "db5575ad-c98a-4a7e-b886-854eb65bf3d7",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020780_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20168,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "85ab8bdd5a2a67deadabbaf43645f385df0cfe2602d977dd51aeb5668f315705",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_06",
+      "id": "22cb1913-d41f-4fe3-9e6e-cfae1c29f97e",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020780_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25406,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "13e66c04498c4214cfab3c993be2022538d6905f4196789ede4d149a061eddd6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_02",
+      "id": "345290be-ae0f-48f1-b9dc-37580baeaefa",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020780_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14424,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8d6d1733fb197e772c2b83f5b032584badf7e39f3a7035b908ac96807880dfe8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_10",
+      "id": "0e01f412-c959-4089-b7e6-1b76ceda5b09",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020780_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21830,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cbe2f963c70b2d484685e674d08534797b411cc10131639d7e23498bdcaeff8a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_04",
+      "id": "2a3aa970-4f9a-48f9-acb1-483d5c8eb502",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020780_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18514,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "80a10b1da07316336d4ad5ab5c36787aea4e831378c44a4186a4cde052b4e42b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_09",
+      "id": "8f7cfef9-0069-4594-a253-7629ffa94198",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020780_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18896,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1291289fc2bdb9bc7f5071bf832ba7449f7354e7d4f0d8ff3ca62e94cfc399e3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_11",
+      "id": "830e1f27-8141-4399-b805-16b6af482b58",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020780_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18102,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BIANCONE - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9263c7db3a24f565aa01ec2061d214c1dbb2ab3ef423588c693309415d264bf2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON BIANCONE 60X120 ANTIQUE 3D_08",
+      "id": "a8b0d67b-27ab-4663-9b73-d9f66806af8d",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020804",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020804-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020804_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-biancone-pf60020804-60x120-nat-196264-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020804-60x120-nat-196264-0",
+   "faces": [
+    {
+     "file": "0020804_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27152,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b3254d2845498bd158abfeb6c910818c95157bef8a58013f3fe579303605c0da",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_01",
+      "id": "0d1518ec-56bc-4794-a47b-63aa1308954f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020804_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19178,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e005daa54e6c556fae03eec670b97e9e972f1c46a57a88bb3169b9eec9146c97",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_12",
+      "id": "2fb48f37-618f-4c92-94ca-e09916c71944",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020804_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19490,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7bb06a5946d5e77609932890881b620b79efb43d626aef01b26dc960371b36c4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_02",
+      "id": "af3fde07-7007-4c4f-a142-aeef14d95aca",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020804_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17912,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cc546284df41944a8ee2ea5de55430c9a81dbc6865e8aafb5224004ba2ff6d30",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_15",
+      "id": "75a59491-27a3-48bb-b954-50a66a69c9d3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020804_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19428,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "99c3840865fd1480addd3f23167f20a26663a8ac92f60a17d518d6a64ed1b39d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_03",
+      "id": "cdbb1912-1c95-42b5-9c85-ca183163fdaa",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020804_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17370,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f5d64905cbbad191ea9bf35ecad1a9dab8c0aff07ace09776e652deb95e761ff",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_08",
+      "id": "a25b80cb-b86b-47fb-bd44-de533e507bb9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020804_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15216,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "34ce48eee9e27b52ef594d0b0a04c1073b23b56fa8e600fb153e95a61ef07f56",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_10",
+      "id": "3d3524cf-2e3d-4568-bf8e-8bbfb73a5af7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020804_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19192,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "37ae296edf5cdb1ffbcf09fea529865c7e9e34836f3a29136aee684845494d11",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_14",
+      "id": "2f823d13-084f-4b1b-89d2-2b8773026be0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020804_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15840,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9d10e9af6f9713dc18efa51bd6dc381c3a91cfe783ae5204e37e27bd16c51075",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_17",
+      "id": "e407c2f4-bdeb-4ad0-8835-5b2f886bc1b2",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020804_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21916,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "20bc1c1d62b6971977b8c3abf9a257568b3aacfc76faf9fae419655182a5358d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_04",
+      "id": "13b03a85-6922-48c5-a196-d2c0b8124b59",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020804_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15474,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "54784d224663906b7c0e48df53471ff7511742fef8022b69e18a7e0a996aa73b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_16",
+      "id": "6c940edf-aff2-4042-802f-1041682a485e",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020804_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11784,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "78ecf187fa7fdd4842d650eaa2541dba830c08fe91ffec73459f034b39b9aeca",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_09",
+      "id": "7fbc6ae5-3383-4058-ae16-8865dd5d52b5",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020804_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15820,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "82ea4daf4ca6a187bc7b377069165b961ae9a0151a9c06fedd19b4b648c6ae8a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_11",
+      "id": "35a4a3ce-9a3e-466f-8708-ba26b669f96f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020804_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20198,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "84007a378713863e9b5faff3876e664a243d018eb7d9772203c403743ab3e963",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_18",
+      "id": "cd5d5815-9eb5-41a3-aedd-6bd5c71bfd09",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020804_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19662,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cc5fcfa2566e264ebaf1c3c759b668e62125926babb7bcd53d5308b3b9a24743",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_06",
+      "id": "038a38c1-e74a-4d83-9917-1735e0379d8e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020804_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16014,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "29659af3993bcb57b099214e4dd8f38a71a78ec172941a11ca50696ddab36c0b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_13",
+      "id": "7e2b6bf2-909f-40db-bbdb-5f2f688f0b22",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020804_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21540,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b64967298efc4585d57efed2451b659293bd58b16ff025249c689cb58670d394",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_05",
+      "id": "da1f4c5f-4d24-4a5c-b29b-c5bb80ea8ac0",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020804_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15954,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BIANCONE - 60X120 - Nat 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7c8877ede1a18e2369d56a18436bb167372765f58187fbb1deb276f7b3f97607",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON BIANCONE 60X120 NAT 3D_07",
+      "id": "c4d087dc-144e-48ad-9992-07b8939c1f0c",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0020848",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/biancone/pf60020848-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0020848_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 12 laid side by side",
+   "used_by": "floor gardenia-flooring-bon-ton-biancone-pf60020848-5x120-197635-0; wall gardenia-wall-tile-bon-ton-biancone-pf60020848-5x120-197635-0",
+   "faces": [
+    {
+     "file": "0020848_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1618,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "f63abd1395ed13e0144567f2f5a9a90f75fd36bf874109f65e9314d5042d80be",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_01",
+      "id": "b0c83641-4b52-4516-a9b9-3c4115148cfd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020848_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2778,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "639b2160e8493df48e4824e47b0996211b0e4bf5984422b2859cc21580ff5680",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_16",
+      "id": "47d71bf7-ad23-4dd3-9272-0289d1c05edf",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020848_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1464,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "7be163172de5231dcaee3f7ee1352a452410562d1c45f70c0e8aefd1a465c97d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_08",
+      "id": "f530db27-089d-4381-a80f-f6d22907022b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020848_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2690,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "2a4c91860da1738ccdc6d4d823c5a2f1f7449dcc549a4f099c1761765f27c42f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_03",
+      "id": "2e853468-cf59-4f01-9e29-bdf375b5370a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020848_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1898,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "8faed4d9985c6b793edfa3ad63a6602617e0c241ffe78c23ceac3d6106d5372c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_12",
+      "id": "8b1a596e-0849-47c0-9d0a-3d8f38148693",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020848_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2460,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "0c29f48f871577063e8cedbe4f446b50e850cac1260a9223edce4a0901a5dc98",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_07",
+      "id": "2392e97c-baa5-4f3e-bbcf-ae24fc4189eb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020848_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2068,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "4e97db690b6752637d2bd51b3530278b143114f9434510bdce3d567aa5ec65bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_17",
+      "id": "83338b05-f713-419c-967e-2e49edab0657",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020848_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2122,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "137dd6f8a6acf4ddc89cda65c82a61db2b9e58410cbc9c90f6cec7051d399b86",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_09",
+      "id": "297e2886-4a6f-4272-8c18-19deeda0f050",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020848_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1334,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "dd4a7e082054db792ded0b53a44323a72885fb4245000ed2e5ca34db33ba756a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_10",
+      "id": "64fdbb88-9d32-4e38-8a95-a689ed4222aa",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020848_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1496,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "1d880cdadb03488e64e544df3899f7ce9126663e621997bc365cb983c033c65c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_11",
+      "id": "f1f22369-cef6-4eaf-a176-34082fc72a52",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020848_11.webp",
+     "face": 11,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2104,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "9ca529b3ae38fadab7147e4db93489624a92fc6c60424a1c57b467a2307bf5da",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_04",
+      "id": "35c1765e-c4d2-435d-be23-d9f283781b87",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020848_12.webp",
+     "face": 12,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2426,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "4af202eb6aac1e98a73607dd0f6554b13704a0bdabe36d6b605a87a39774cf85",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_02",
+      "id": "95a00d94-838b-46c8-8594-c3b86f5236ce",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020848_13.webp",
+     "face": 13,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1850,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "176637f2056f0a4a6e8c4a76df5cc2d29197112a4583fd441d0c5b6f392d8b6d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_06",
+      "id": "3d459fb7-83ca-4f1b-80ea-eeda054f93f0",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020848_14.webp",
+     "face": 14,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2310,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "27694347ced2af5381d47e23af91c388b83ab97cbf0639479c41a838f8869248",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_13",
+      "id": "8137e672-1d74-4187-a9c4-484bd9f5ac26",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020848_15.webp",
+     "face": 15,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2780,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "bfa1180b8718445cbfae22ba14d1fe5f7aed82bbc64618b9ce2cc685e3c04d63",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_15",
+      "id": "8f030505-8ae1-446f-b8ca-447a4ef7224c",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020848_16.webp",
+     "face": 16,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2464,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "2e90ef76bd70a70511a28b151f13576ffb44769d9fbe835e94a0f5153cb1adff",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_18",
+      "id": "f86ec9e1-0d7c-4ee5-84a1-f8f8856bf040",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020848_17.webp",
+     "face": 17,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2482,
+     "source_zip": "BON TON - BIANCONE - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BIANCONE - 5X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "5b1427725bdb52bde49861ea21c0883862710a39dffece1d2c6022c7c8bddddb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BIANCONE 5X120 ANTIQUE 3D_05",
+      "id": "3313c8da-886c-4964-a03b-249791c5bf5d",
+      "site_position": 17
+     }
+    }
+   ]
+  }
+ ]
+}

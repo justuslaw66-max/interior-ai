@@ -14,6 +14,8 @@ import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
+import { noRaycast } from "@/components/scene/stableSceneProps";
+import { useLatestCallback } from "../useLatestCallback";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import type { SelectableWallSurfacePanel } from "./continuousWallSelection";
 import { OpeningInteractionQaMarker3D } from "./OpeningInteractionQaMarker3D";
@@ -232,23 +234,13 @@ function WallSurfaceSideMesh({
     },
     [interactive, pickEnabledRef]
   );
-  const handlePointerOver = interactive
-    ? (event: ThreeEvent<PointerEvent>) => {
-        event.stopPropagation();
-        onHoverTarget(target);
-      }
-    : undefined;
-  const handlePointerOut = interactive
-    ? (event: ThreeEvent<PointerEvent>) => {
-        event.stopPropagation();
-        onClearHoverTarget(target);
-      }
-    : undefined;
-  const handleClick = interactive
-    ? (event: ThreeEvent<MouseEvent>) => {
-        onSelectTarget(target, event);
-      }
-    : undefined;
+  // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
+  const hover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onHoverTarget(target); });
+  const clearHover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onClearHoverTarget(target); });
+  const select = useLatestCallback((event: ThreeEvent<MouseEvent>) => onSelectTarget(target, event));
+  const handlePointerOver = interactive ? hover : undefined;
+  const handlePointerOut = interactive ? clearHover : undefined;
+  const handleClick = interactive ? select : undefined;
 
   useEffect(() => {
     onMaterialReady(materialKey, materialRef.current);
@@ -344,7 +336,7 @@ function WallSurfaceCutCapMesh({
         <mesh
           position={[-partLength / 2, 0, 0]}
           rotation-y={-Math.PI / 2}
-          raycast={() => null}
+          raycast={noRaycast}
         >
           <planeGeometry
             args={[
@@ -359,7 +351,7 @@ function WallSurfaceCutCapMesh({
         <mesh
           position={[partLength / 2, 0, 0]}
           rotation-y={Math.PI / 2}
-          raycast={() => null}
+          raycast={noRaycast}
         >
           <planeGeometry
             args={[
@@ -645,7 +637,7 @@ export function CutawayWallMesh({
       rotation-y={segment.rotationY}
     >
       {renderBase ? (
-        <mesh castShadow raycast={() => null}>
+        <mesh castShadow raycast={noRaycast}>
           <boxGeometry args={[part.length, partHeight, wallThickness]} />
           <meshStandardMaterial
             ref={baseMaterialRef}
@@ -909,7 +901,7 @@ export function WallSurfacePanelMesh({
           depthTest={false}
           depthWrite={false}
           toneMapped={false}
-          raycast={() => null}
+          raycast={noRaycast}
         />
       ) : null}
     </group>
@@ -1028,6 +1020,29 @@ export function OpeningThresholdMesh({
     dragStateRef.current = null;
     onOpeningDragStateChange?.(false);
   };
+  // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
+  const pointerDown = useLatestCallback((event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    if (!shouldOpeningPointerDownSelect({
+      button: event.button, interactive, dragEnabled: canDragOpening }) || !resolvedHost) return;
+    stopStructurePointerEvent(event);
+    onSelectTarget(target, event);
+    const pointerAlong = getPointerAlong(event) ?? resolvedHost.alongSegmentMeters;
+    capturePointerIfSupported(event);
+    dragStateRef.current = { pointerId: event.pointerId,
+      grabDeltaAlong: resolvedHost.alongSegmentMeters - pointerAlong };
+    onOpeningDragStateChange?.(true);
+  });
+  const pointerMove = useLatestCallback((event: ThreeEvent<PointerEvent>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) return;
+    stopStructurePointerEvent(event);
+    moveOpeningFromPointer(event);
+  });
+  const pointerEnd = useLatestCallback(finishOpeningDrag);
+  const hover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onHoverTarget(target); });
+  const clearHover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onClearHoverTarget(target); });
+  const click = useLatestCallback((event: ThreeEvent<MouseEvent>) => { stopStructurePointerEvent(event); onSelectTarget(target, event); });
 
   return (
     <mesh
@@ -1035,70 +1050,13 @@ export function OpeningThresholdMesh({
       position={[threshold.x, threshold.bottom + 0.015, threshold.z]}
       rotation-y={segment.rotationY}
       raycast={raycastOpeningWhenPickable}
-      onPointerDown={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              if (!shouldOpeningPointerDownSelect({
-                button: event.button, interactive, dragEnabled: canDragOpening }) || !resolvedHost) return;
-              stopStructurePointerEvent(event);
-              onSelectTarget(target, event);
-              const pointerAlong = getPointerAlong(event) ?? resolvedHost.alongSegmentMeters;
-              capturePointerIfSupported(event);
-              dragStateRef.current = { pointerId: event.pointerId,
-                grabDeltaAlong: resolvedHost.alongSegmentMeters - pointerAlong };
-              onOpeningDragStateChange?.(true);
-            }
-          : undefined
-      }
-      onPointerMove={
-        interactive
-          ? (event) => {
-              const dragState = dragStateRef.current;
-              if (!dragState || dragState.pointerId !== event.pointerId) return;
-              stopStructurePointerEvent(event);
-              moveOpeningFromPointer(event);
-            }
-          : undefined
-      }
-      onPointerUp={
-        interactive
-          ? (event) => {
-              finishOpeningDrag(event);
-            }
-          : undefined
-      }
-      onPointerCancel={
-        interactive
-          ? (event) => {
-              finishOpeningDrag(event);
-            }
-          : undefined
-      }
-      onPointerOver={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              onHoverTarget(target);
-            }
-          : undefined
-      }
-      onPointerOut={
-        interactive
-          ? (event) => {
-              event.stopPropagation();
-              onClearHoverTarget(target);
-            }
-          : undefined
-      }
-      onClick={
-        interactive
-          ? (event) => {
-              stopStructurePointerEvent(event);
-              onSelectTarget(target, event);
-            }
-          : undefined
-      }
+      onPointerDown={interactive ? pointerDown : undefined}
+      onPointerMove={interactive ? pointerMove : undefined}
+      onPointerUp={interactive ? pointerEnd : undefined}
+      onPointerCancel={interactive ? pointerEnd : undefined}
+      onPointerOver={interactive ? hover : undefined}
+      onPointerOut={interactive ? clearHover : undefined}
+      onClick={interactive ? click : undefined}
     >
       <OpeningInteractionQaMarker3D openingId={threshold.sourceId} floorWorldY={floorWorldY} />
       <boxGeometry args={[threshold.length, 0.03, thresholdDepth]} />
@@ -1122,7 +1080,7 @@ export function OpeningThresholdMesh({
           {[jambBaseY, jambTopY].map((y) => <mesh
             key={`opening-horizontal-edge:${y}`}
             position={[0, y, 0]}
-            raycast={() => null}
+            raycast={noRaycast}
             renderOrder={20}
           >
             <boxGeometry args={[threshold.length, highlightThickness, highlightDepth]} />
@@ -1138,7 +1096,7 @@ export function OpeningThresholdMesh({
           {[-jambHalfWidth, jambHalfWidth].map((x) => <mesh
             key={`opening-vertical-edge:${x}`}
             position={[x, jambBaseY + jambHeight / 2, 0]}
-            raycast={() => null}
+            raycast={noRaycast}
             renderOrder={20}
           >
             <boxGeometry args={[highlightThickness, jambHeight, highlightDepth]} />

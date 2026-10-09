@@ -59,7 +59,7 @@ assert.match(
 
 assert.match(
   ceilingShadowOccluderSource,
-  /<mesh[\s\S]*?castShadow[\s\S]*?raycast=\{\(\) => null\}[\s\S]*?<meshBasicMaterial[\s\S]*?colorWrite=\{false\}[\s\S]*?depthWrite=\{false\}/,
+  /<mesh[\s\S]*?castShadow[\s\S]*?raycast=\{noRaycast\}[\s\S]*?<meshBasicMaterial[\s\S]*?colorWrite=\{false\}[\s\S]*?depthWrite=\{false\}/,
   "A ceiling shadow occluder must cast shadows without drawing into the visible scene or intercepting picks."
 );
 

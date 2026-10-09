@@ -1,0 +1,1672 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: BON TON - CARRARA - minimali.zip (26147885 bytes, sha256 cf3d6a9160cd63711d1ad6733e936d3868664321bee2b276aab918b6fb83eb75).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/bon-ton/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0020758",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/pf60020758-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0020758_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-bon-ton-carrara-pf60020758-120x280-soft-196240-0",
+   "faces": [
+    {
+     "file": "0020758_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 50984,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X280-Lux 3D/BON TON - CARRARA - 120X280 - Lux 3D - view_1 (2).jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "c37d9496b073becb5c7fd54280e000bf165b089a57fc1b504927d7c570021582",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON CARRARA 120X280 LUX 3D_01",
+      "id": "d89b1563-8535-4866-9f6b-a688343081d0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020758_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 53772,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - CARRARA - 120X280 - Soft 3D - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "e4159d7e9698e290059352f2e0f9fd37d7a6dd361cd07f0ee3949654f7548a61",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON CARRARA 120X280 LUX 3D_02",
+      "id": "bf6ee9ed-12f7-45e7-a310-77b4cd5043ee",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020758_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 50990,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X280-Lux 3D/BON TON - CARRARA - 120X280 - Lux 3D - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "c110f8bc3d8d16092eef52d3b9cb241dde386714c190d4807153dbd73fc12ab9",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON CARRARA 120X280 LUX 3D_03",
+      "id": "771dd108-45b1-4fc8-adc3-15c749d7a7b7",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020799",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/pf60020799-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020799_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-carrara-pf60020775-120x120-196248-0 (uses 0020799's faces: ABK's 9 Antique pictures are 0020799's 9 Nat pictures, byte for byte); floor gardenia-flooring-bon-ton-carrara-pf60020799-120x120-nat-196259-0; wall gardenia-wall-tile-bon-ton-carrara-pf60020775-120x120-196248-0 (uses 0020799's faces: ABK's 9 Antique pictures are 0020799's 9 Nat pictures, byte for byte); wall gardenia-wall-tile-bon-ton-carrara-pf60020799-120x120-nat-196259-0",
+   "faces": [
+    {
+     "file": "0020799_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26850,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "469729cbf466e79f1982b5c46a90079c0ba00464d8820e8626c9921f10d59cf9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON CARRARA 120X120 NAT 3D_01",
+      "id": "987f5339-fe05-4b1e-8e5c-e7fd5f914ffc",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020799_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 27004,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8a91ce5081ba1bf0f0df1de163acc55073a6a0e6a8f6b7b47fe79a70bf33f69d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON CARRARA 120X120 NAT 3D_07",
+      "id": "bd2170e4-7db5-43f3-b196-0ea45fe63885",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020799_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26444,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "91dcea61159c0501a39429c8343a103d894db912b3d8afe4c6222abe1c8cb62f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON CARRARA 120X120 NAT 3D_09",
+      "id": "abacb881-118e-464b-a89a-f22bf7e68ea5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020799_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29990,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "88ee1be107e246c1ea80b270afdb97494d441fdea56217fadfbf67e2c931afee",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON CARRARA 120X120 NAT 3D_06",
+      "id": "b26e4da1-2445-47c7-8d5f-6a56d42aace2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020799_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28554,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8a8558beeebe5141733d848b32bd3328b15fb8d7ce3b50215fc8061ac83a3fd8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON CARRARA 120X120 NAT 3D_08",
+      "id": "25656aab-865c-433e-8b32-a53bb80f7e09",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020799_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 27438,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4dfbbc1f7c8354a793d6f3401a797da25a3bfc343e79eb20b9b46776748983be",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON CARRARA 120X120 NAT 3D_04",
+      "id": "032a53bc-e1f2-40da-9704-19f5d66e9a2f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020799_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26236,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "23e9e03682b25be9bc7fabb15c94b55dc298e73a4b51e79d6bd72bb587f52209",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON CARRARA 120X120 NAT 3D_03",
+      "id": "81107b50-8e6c-450b-a835-4b25ed29b55e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020799_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28558,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "959019c4f7ad7038f874c878e183b91b986b068d4ec87c3ba5fdb1c7f6e8af25",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON CARRARA 120X120 NAT 3D_02",
+      "id": "b0670d06-0bae-44ea-bfd8-dc450967c847",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020799_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28362,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - CARRARA - 120X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3de35d71f82062cd86ae4c369ed79c37a99d06844b0999e2de13339b0da1c79f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON CARRARA 120X120 NAT 3D_05",
+      "id": "814d7678-2479-4903-b8b0-77f5e50e23f0",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020779",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/pf60020779-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020779_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-carrara-pf60020779-60x120-196252-0; wall gardenia-wall-tile-bon-ton-carrara-pf60020779-60x120-196252-0",
+   "faces": [
+    {
+     "file": "0020779_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14458,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "debb8c1875b252cac5caf46107cbce9b38228305c36e7be95b7452038a995ad5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_01",
+      "id": "31b4e0c8-5f00-47f0-af9a-edeb3ac244b1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020779_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13124,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "915e1c420cb4a807652c9cbb042d839470f496c33d50d37c73e3e998cda07ada",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_08",
+      "id": "d61718bb-aa3b-4b89-9c7a-e523e4b44f3d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020779_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13638,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "02386cc690d6d092eafd15288e782f4cec4a51b83dbb2ad0848a9278ca631851",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_18",
+      "id": "559ac609-c7eb-4bda-ac6d-788dd4987452",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020779_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15376,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "55a13d9c9773d2020050d13e8d7c518bd2f1d1fbdb8abb44c41b2ee1f172647f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_13",
+      "id": "9f7bcc65-ff90-44a2-b28c-3b441f92ce8c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020779_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13542,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "470a5e3daff0b766d7af3ad6cf734c08cbd1cad78f45f86c7f5f26e591d80073",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_14",
+      "id": "78c82de5-d49f-4b77-ac63-bf9b39b6fc93",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020779_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15092,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3d4297653665cbbb65eb207b7a67ab255be1bffca68265a6c5cb448b03f2c9e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_15",
+      "id": "6f0e75e1-1636-421d-93df-a758e45a8acf",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020779_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16742,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cc5ab92329482b21ac9c3b41546d04052faa14f01659f7e5f4fea1d9ec6dac76",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_12",
+      "id": "96ad4734-6822-4d19-a184-43d4b5752200",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020779_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15536,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ce2d3cd83e1c30040637adee13920a7d0ed7ff212ff9f44a6895695c1d59b27d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_17",
+      "id": "25b09fa6-8aa3-4732-81ca-0a808328cdb9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020779_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15932,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - CARRARA - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "460181d2cfffa895506d466c92e9b89766f38d23ba889086f8e92230d953aca7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_16",
+      "id": "a4254268-d07d-4cd9-a19b-00066c09c616",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020779_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14234,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "593da19f56c7d91aa1cee65b5778a0afffa8b8a3e52c3f7498df5c8ece5264a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_10",
+      "id": "c58aca1f-592d-414b-bd76-a2fcce874d97",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020779_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15660,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "485401f81e2338b615e5f8383cb7e9fda4a945b32d3972605bf417c9225fe5a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_11",
+      "id": "d69fd8b6-2b44-4936-a979-1543d9a73cea",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020779_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14730,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "66117018d3deeea7712b2ba72579669428da3fa105a9d927f5b89979b0f7dd04",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_09",
+      "id": "ac3450b3-609d-4685-9ad4-dade5c55d113",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020779_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14370,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7fbf76c7cefc9918b7e41a664d8897cf2e83e8b4a2ea826919cb6e2c0d8146cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_03",
+      "id": "c2bf68ac-8749-447b-86bb-9ae340afccc4",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020779_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14382,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "73e392125aa7dab4eba913ca12a1e550e08ebaab0f1766d831fb84537cf24d80",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_04",
+      "id": "91123f55-a0fa-44c9-b0f0-afcdaf7a3bba",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020779_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12702,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "12ba948bac63d8828e352e567127ed7bfd504335c002b2dabdf684bd45fa6c61",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_02",
+      "id": "43583966-cb13-4c1f-9800-16743ac16030",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020779_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12824,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f187759eec5706f8180f7b7f7568532591abce404ce6bdd1ec605a2707722585",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_05",
+      "id": "3b46052e-3feb-4a7d-ae16-5eb1ab4dd54d",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020779_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14296,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "aa4e904e053847c416dd3420dbf97f7f3fdfb4b1bbd01c420778e32b4c5508ed",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_06",
+      "id": "a1e8aac7-5bfa-4da8-bb6c-3dae9632a5ad",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020779_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15062,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2f145ea02b25942a1f95df2078194d8435c7a4ff5cce0f7407c2008c7c712910",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON CARRARA 60X120 ANTIQUE 3D_07",
+      "id": "37c29190-dee2-4c9e-9b6f-0428b8d6e72e",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020803",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/pf60020803-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020803_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-carrara-pf60020803-60x120-nat-196263-0; wall gardenia-wall-tile-bon-ton-carrara-pf60020803-60x120-nat-196263-0",
+   "faces": [
+    {
+     "file": "0020803_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14458,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "debb8c1875b252cac5caf46107cbce9b38228305c36e7be95b7452038a995ad5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON CARRARA 60X120 NAT 3D_01",
+      "id": "45c1c077-b4a8-43c2-b475-f7fdb2a4e291",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020803_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16742,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cc5ab92329482b21ac9c3b41546d04052faa14f01659f7e5f4fea1d9ec6dac76",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON CARRARA 60X120 NAT 3D_12",
+      "id": "85d15891-0fc1-44d1-9ab3-c86d2cf9e17c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020803_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14730,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "66117018d3deeea7712b2ba72579669428da3fa105a9d927f5b89979b0f7dd04",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON CARRARA 60X120 NAT 3D_09",
+      "id": "b594f53c-139e-4025-82a6-6a6e0d8eabae",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020803_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14278,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6f9b0cae392bdb1bea19fbd62fd22f2c895b4ddfbb630bfd2fae34bf5325cbf6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON CARRARA 60X120 NAT 3D_13",
+      "id": "10c70119-bab1-4850-b0e8-c2270828537c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020803_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13574,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9809bd9973dea520d911a8ee5d4a830882734d7c821666a8b9f82046078da59a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON CARRARA 60X120 NAT 3D_14",
+      "id": "52e373de-82d3-4cc4-8069-49f9c2eabe0c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020803_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14518,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "36e4467eaf643b651b470b0faff34a6bf561084acb66c4d6fd34c8376c5a5209",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON CARRARA 60X120 NAT 3D_16",
+      "id": "ae086a5f-4fb4-4485-aaf3-af97142c0b83",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020803_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12702,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "12ba948bac63d8828e352e567127ed7bfd504335c002b2dabdf684bd45fa6c61",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON CARRARA 60X120 NAT 3D_02",
+      "id": "ecc9d531-5753-4f76-9120-1435c3b85e75",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020803_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14296,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "aa4e904e053847c416dd3420dbf97f7f3fdfb4b1bbd01c420778e32b4c5508ed",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON CARRARA 60X120 NAT 3D_06",
+      "id": "b40d5dc8-dfbf-4835-ad4c-4a461be71557",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020803_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12824,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f187759eec5706f8180f7b7f7568532591abce404ce6bdd1ec605a2707722585",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON CARRARA 60X120 NAT 3D_05",
+      "id": "42f7cf2e-5a33-4c61-a575-08f57d84fd32",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020803_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14234,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "593da19f56c7d91aa1cee65b5778a0afffa8b8a3e52c3f7498df5c8ece5264a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON CARRARA 60X120 NAT 3D_10",
+      "id": "d1f90403-02cc-4af0-88df-e10a2d6bf714",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020803_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14382,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "73e392125aa7dab4eba913ca12a1e550e08ebaab0f1766d831fb84537cf24d80",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON CARRARA 60X120 NAT 3D_04",
+      "id": "c0a23009-1303-4f27-87fa-f670ada2a656",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020803_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15660,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "485401f81e2338b615e5f8383cb7e9fda4a945b32d3972605bf417c9225fe5a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON CARRARA 60X120 NAT 3D_11",
+      "id": "854995d1-d004-42c6-ae9c-20eb567ade40",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020803_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14022,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "05c0e1fc2ae748c181488649b9cdb05a8fda1526185310f86d2f1be32d652b67",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON CARRARA 60X120 NAT 3D_18",
+      "id": "99a5751e-4e3a-452b-97e1-e29eeb16d51f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020803_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14346,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "00a99d0a27aba7b1375222e0449a418f77f4727fb6512c347d5c5b97bb62a12b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON CARRARA 60X120 NAT 3D_17",
+      "id": "597aac1b-95d4-445c-8b3e-1731d7bf4e73",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020803_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13124,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "915e1c420cb4a807652c9cbb042d839470f496c33d50d37c73e3e998cda07ada",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON CARRARA 60X120 NAT 3D_08",
+      "id": "ae7ae8c9-baaf-422a-a22d-6645d24036d1",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020803_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14610,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8109cc4e7153c1073a6e8953a3096537f1a136ae36d0000fc26158b7aa86e818",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON CARRARA 60X120 NAT 3D_15",
+      "id": "eac804b4-2c99-4c4b-adde-27a86c00f083",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020803_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15062,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2f145ea02b25942a1f95df2078194d8435c7a4ff5cce0f7407c2008c7c712910",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON CARRARA 60X120 NAT 3D_07",
+      "id": "b820c06f-b01d-43cc-aaad-2b7ae4253633",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020803_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14370,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - CARRARA - 60X120 - Nat 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7fbf76c7cefc9918b7e41a664d8897cf2e83e8b4a2ea826919cb6e2c0d8146cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON CARRARA 60X120 NAT 3D_03",
+      "id": "bf756d9d-f14c-4475-b688-01174b891795",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0020847",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/carrara/pf60020847-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0020847_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 12 laid side by side",
+   "used_by": "floor gardenia-flooring-bon-ton-carrara-pf60020847-5x120-197634-0; wall gardenia-wall-tile-bon-ton-carrara-pf60020847-5x120-197634-0",
+   "faces": [
+    {
+     "file": "0020847_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1544,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "48cf83e085f48de4fec4d0e24c28d034ce2792116d56ac32d65bdadaee99df49",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_01",
+      "id": "3d2da8a9-0cfd-48fa-a9bf-860386502a13",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020847_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1546,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "35721874255ef7f50a0a5e891abd733f86ef3b0efc7a087624d8f08b38d81b62",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_17",
+      "id": "42f61690-af79-4c32-a985-c110e162c889",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020847_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1340,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "e3d591a28be47fe43a030e2f2a13fe2ea88a22214087cd55979e1a38953722d0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_18",
+      "id": "2009c52f-a07a-4ba0-afb7-c8e62143652a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020847_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1288,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "82f9bf3d1cc607d548e9714d8cb4a99443b5e42b7c0afe97ce8e37b10cb78e01",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_15",
+      "id": "66fca169-9913-4cc2-a59b-7da4122dd4cc",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020847_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1582,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "c8df03c28b4d7797114b8c611749ca136ab9a98a2e56946caa9706b56f8894fa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_16",
+      "id": "691b8c9d-d019-4d74-bea2-be5495c08213",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020847_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1446,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "94f3a993552743f47b4e7aac82e59ba3c00de2c96d29ec68d61bfeb6c1246390",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_10",
+      "id": "13d9742d-57dc-4f2b-a535-65df924a3e13",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020847_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1664,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "3f713f7007a0303656a55e8d388f9e3d2d517723b2b20bd5798713a02f2e5358",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_13",
+      "id": "57f909a9-7b70-444f-a368-9ae22b7e26e7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020847_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1138,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "67c2ee8ff15c2b713ef9a32be5b72f3e3688391b3b4d9a86856177ad490bf809",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_08",
+      "id": "cf55f0aa-55eb-4953-9841-0a5dfc4780b1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020847_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1508,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "2dc58adf8b90c9bc57b00a4682ea1f90e33438ed3e456e73bb7b8caee7889840",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_12",
+      "id": "6e370e53-6009-44a6-b0d0-3f52767d8605",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020847_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1506,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "4eb292c6a8df92d641ec91414536d1efcc178462e61d470255c1d0f49d0ef413",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_07",
+      "id": "b3e929ae-6428-40a2-92e9-0bbea885daae",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020847_11.webp",
+     "face": 11,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1232,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "5b72b61dcf2ab53d1c851d9d7e523a3baf911adb19a9ece1cf015dc003c86d04",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_02",
+      "id": "1b188f49-45e4-42ec-a665-f9c29cbb5d33",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020847_12.webp",
+     "face": 12,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1422,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "3dbf5576166077b65ab7c4df3e41a3e8994a678c351bf199817613ba48d72c8a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_14",
+      "id": "bbcd6b1c-ba37-42c5-8e69-fa50897e24e1",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020847_13.webp",
+     "face": 13,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1360,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "173d8669cd80c3944bdc2c62b3a2142953490a19a0f0c84caab0f29ba3bc21d0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_09",
+      "id": "26bf48a0-26dc-4641-aac8-773ac89eba40",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020847_14.webp",
+     "face": 14,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1224,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "8837f50f65d87ffd92cd761ba8d5c71144650029e77ea951906a6baaea881957",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_03",
+      "id": "e71a9b34-bacc-40e2-a33c-75802e81caa3",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020847_15.webp",
+     "face": 15,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1340,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "0e3b178adad03902e7ce50799c431b98d8a0e7af3ba78ac22f594524b492b848",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_06",
+      "id": "6d759e12-540b-41f4-825c-6fd51fc7be51",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020847_16.webp",
+     "face": 16,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1328,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "6c6f5df699866f1a8317e5679972428199b9254d3ed740b436fedb3e41c4d3be",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_11",
+      "id": "1bfd5198-c568-441f-93b7-f682c223526b",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020847_17.webp",
+     "face": 17,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1386,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "fe2a41555923b4562f2ddd8a9ed6456a2868a88d755a09c05212e731c26ff013",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_05",
+      "id": "6dc70cbd-401c-44da-a312-33ed55466525",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020847_18.webp",
+     "face": 18,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1326,
+     "source_zip": "BON TON - CARRARA - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - CARRARA - 5X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "d31bbe2530a16de8cb854f93483dee28f6740f221e23cf271b1eefe0cf1c7231",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON CARRARA 5X120 ANTIQUE 3D_04",
+      "id": "a7bff3d9-0f79-4ea7-90bb-392030474ee2",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

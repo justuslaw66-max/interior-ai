@@ -446,7 +446,7 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "mapPlanOpeningsToRoomRenderer(",
+  "useWholeHomeRendererBindings(state, actions)",
   "useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan))",
 ] as const) {
   assert.ok(
@@ -454,6 +454,12 @@ for (const expected of [
     `Structure layer should own ${expected}.`
   );
 }
+// The 3D house renderer's openings, memoized so a page re-render keeps them.
+const wholeHomeBindingsSource = readSource("components/editor/design-page/useWholeHomeRendererBindings.ts");
+assert.ok(
+  wholeHomeBindingsSource.includes("useMemo(() => mapPlanOpeningsToRoomRenderer(sceneOpenings, rooms), [rooms, sceneOpenings])"),
+  "The whole-home renderer bindings should own the memoized 3D openings."
+);
 // The structure layer's 2D overlays, memoized so a page re-render keeps them.
 const planOverlaysSource = readSource("lib/useRoomRendererPlanOverlays.ts");
 for (const expected of [
@@ -829,8 +835,13 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter\(\(room\) => room\.id === focusRoomId\)[\s\S]*const topologyOpenings = mapPlanOpeningsToRoomRenderer\([\s\S]*state\.plan\.scene\.openings[\s\S]*rooms=\{visibleRooms\}[\s\S]*topologyRooms=\{state\.wholeHome\.rooms\}[\s\S]*openings=\{topologyOpenings\}[\s\S]*focusRoomId=\{focusRoomId\}/,
+  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter\(\(room\) => room\.id === focusRoomId\)[\s\S]*rooms=\{visibleRooms\}[\s\S]*topologyRooms=\{state\.wholeHome\.rooms\}[\s\S]*openings=\{wholeHome\.topologyOpenings\}[\s\S]*focusRoomId=\{focusRoomId\}/,
   "Focused 3D structure rendering should hide inactive rooms while retaining the complete room and opening graph for shared-wall topology."
+);
+assert.match(
+  wholeHomeBindingsSource,
+  /const sceneOpenings = state\.plan\.scene\.openings;\s*const rooms = state\.wholeHome\.rooms;[\s\S]*const topologyOpenings = useMemo\(\(\) => mapPlanOpeningsToRoomRenderer\(sceneOpenings, rooms\)/,
+  "Focused 3D structure rendering should map every whole-home opening, not only the focused room's."
 );
 assert.match(
   itemsSource,
@@ -859,7 +870,7 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{\(\) => null\}[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*data-workspace-grid-mode="camera-aware-floor-and-ceiling"/,
+  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{noRaycast\}[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*data-workspace-grid-mode="camera-aware-floor-and-ceiling"/,
   "3D should provide a soft light-on-light planning grid with five 200 mm subdivisions inside every one-metre section."
 );
 assert.match(

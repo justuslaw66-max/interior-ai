@@ -1,0 +1,172 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/combo/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - COMBO - minimali.zip (11192186 bytes, sha256 b47f86ead88224b2e38e4deb8a5eff6a738c3613ed369fcb21ea71ea1c6693a0).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x60",
+   "item_code": "0021151",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/combo/pf60021151-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0021151_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-tabulae-genuine-combo-3d-pf60021151-60x60-nat-92262-0; wall gardenia-wall-tile-tabulae-genuine-combo-3d-pf60021151-60x60-nat-92262-0",
+   "faces": [
+    {
+     "file": "0021151_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14866,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "abf725ce80dc8374f8d60d05e3e6d1fe93ccb9b5bc13d0a0e05011c3ec12e7d3",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_01",
+      "id": "aed939d1-4491-42a5-8ebe-f0da66835e4e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021151_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14244,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "43fdbdca3c99342c9e99c9246978078a88e83f7ac75ad8f5eae6bbd6a534ecbe",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_03",
+      "id": "ab798ded-8fc3-4247-ab6d-dff50a914ee1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021151_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13928,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11efebf512db910981eaea29dccdf1294592e9f644ec49eb849c8f89c7f309a9",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_05",
+      "id": "d3cd6e24-ea08-4850-8647-68d42e1ed284",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021151_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13410,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "af9dd6423ad40e9df0927d1a84f63f1511983c1e91be1aaab24528f5e8b0cd89",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_04",
+      "id": "c29d1923-5c36-4113-be16-9679dc86febe",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021151_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16232,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2559
+     ],
+     "source_sha256": "ff0de03e925d0c815cd2a5ef51f67ec90175e71aace5e621e698e24b8e4cee7a",
+     "source_px_per_mm": 4.265,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_02",
+      "id": "43ffc1ef-8099-43dc-b5e9-33eb1f9fd4a5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021151_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13820,
+     "source_zip": "TABULAE - COMBO - minimali.zip",
+     "source_file": "60X60-Natural/TABULAE - COMBO - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "adf0663c12087a445a707b0cc05f4fe7565c50845b882a3842961f57dfb22b40",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE GENUINE COMBO NAT3D 60X60_06",
+      "id": "dcdd2e4b-bd19-487d-a2c1-b8283468f522",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

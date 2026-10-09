@@ -181,12 +181,14 @@ const isDorica = isGardeniaCollection("dorica");
 const isOxide = isGardeniaCollection("oxide");
 const isFalaise = isGardeniaCollection("falaise");
 const isMake = isGardeniaCollection("make");
-const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake];
+const isTabulae = isGardeniaCollection("tabulae");
+const isBonTon = isGardeniaCollection("bon-ton");
+const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
-  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise and Make declare physical-scale data"
+  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae and Bon Ton declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -200,8 +202,9 @@ for (const material of physicalMaterials) {
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
-  // are dropped); no size has fewer.
-  assert.ok(sources.length >= 3, `${id} has at least three faces`);
+  // are dropped); only Bon Ton's decors (Network, Octagon, Tricot) have a single face.
+  const minimumFaces = /-bon-ton-(network|octagon|tricot)-/.test(id) ? 1 : 3;
+  assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
   for (const source of sources) {
     // Pixel size does not matter here: the mode depends only on millimetres.
     const sample = resolveSurfacePhysicalTileSample({
@@ -366,7 +369,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make)-([a-z-]+?)-(?:g|\d)/.exec(material.surface_material.material_id)?.[1],
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton)-([a-z-]+?)-(?:g|pf|\d)/.exec(material.surface_material.material_id)?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
       material.texture_assets.faces?.length,
       [...new Set(material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`))].join("+"),
@@ -503,19 +506,116 @@ const makeSqueezed = physicalMaterials
   .filter((face) => /\/g7302\d_/.test(face.url) && face.width_mm === 1000);
 assert.equal(makeSqueezed.length, 24, "all 24 of Make's 80x80 pictures are declared 1000x1000 mm");
 
+// Gardenia Tabulae and Bon Ton (downloaded 9 Oct 2026). Every size is true to its label (image
+// matching between sizes); the single-size decors are taken as labelled, and Tabulae Sticks'
+// pictures, 4% narrower than 600x1200 mm, are drawn at the tile's width. Tabulae's chevrons are
+// single slanted pieces that need a chevron layout, so they keep their previews. Byte-identical
+// pictures: Tabulae 20x120 R11 = Natural, Bon Ton 120x280 Soft = Lux (all but Carrara), Carrara and
+// Perlino 120x120 Antique = Nat; those entries use the other item's faces.
+for (const [filter, label, faced, count] of [[isTabulae, "Tabulae", 46, 54], [isBonTon, "Bon Ton", 53, 53]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, faced, `${label} entries on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+assert.ok(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isTabulae(material) && !physicalMaterials.includes(material)).every(
+    (material) => material.surface_material.material_id.includes("-chevron-")
+  ),
+  "only Tabulae's chevrons keep their previews"
+);
+// The 30x120 R11 planks (on ABK's Plein Air pages) are floor-only.
+const tabulaeCards = (r11: string[]) => {
+  const genuine = ["23,4x148 Nat", "20x120", "20x120 Nat", "10x60 Nat"];
+  const refined = [...genuine, "5x120 Nat"];
+  return [
+    ["Tabulae Genuine Combo 3D", ["60x60 Nat"]],
+    ["Tabulae Genuine Hav", [...r11, ...genuine]],
+    ["Tabulae Genuine Sab Nat", genuine],
+    ["Tabulae Genuine Sticks 3D", ["60x120 Nat"]],
+    ["Tabulae Refined Fieno", refined],
+    ["Tabulae Refined Marble 3D", ["60x120 Nat"]],
+    ["Tabulae Refined Mesh 3D", ["60x60 Nat"]],
+    ["Tabulae Refined Miele Nat", [...r11, ...refined]],
+  ];
+};
+assert.deepEqual(collectionCards(isTabulae, "flooring"), tabulaeCards(["30x120"]));
+assert.deepEqual(collectionCards(isTabulae, "wall_tile"), tabulaeCards([]));
+const bonTonMarble = ["120x120", "120x120 Nat", "60x120", "60x120 Nat", "5x120"];
+const bonTonDecors = [["Bon Ton Network", ["60x120"]], ["Bon Ton Octagon", ["60x120"]]];
+assert.deepEqual(collectionCards(isBonTon, "flooring"), [
+  ["Bon Ton Biancone", bonTonMarble], ["Bon Ton Botticino", bonTonMarble], ["Bon Ton Carrara", bonTonMarble],
+  ...bonTonDecors, ["Bon Ton Perlino", bonTonMarble], ["Bon Ton Tricot", ["60x120"]],
+]);
+const bonTonSlabs = ["120x280 Lux", "120x280 Soft"];
+assert.deepEqual(collectionCards(isBonTon, "wall_tile"), [
+  ["Bon Ton Biancone", [...bonTonSlabs, ...bonTonMarble]], ["Bon Ton Botticino", [...bonTonSlabs, ...bonTonMarble]],
+  ["Bon Ton Carrara", ["120x280 Soft", ...bonTonMarble]], ...bonTonDecors,
+  ["Bon Ton Perlino", [...bonTonSlabs, ...bonTonMarble]], ["Bon Ton Tricot", ["60x120"]],
+]);
+assert.deepEqual(collectionFaceRows(isTabulae), [
+  ["genuine-combo", "600x600", 6, "600x600", "0021151_01.webp"],
+  ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
+  ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
+  ["genuine-hav", "1200x300", 20, "300x1200", "0021253_01.webp"],
+  ["genuine-hav", "1480x234", 20, "234x1480", "0021107_01.webp"],
+  ["genuine-hav", "600x100", 15, "100x600", "0021145_01.webp"],
+  ["genuine-sab-nat", "1200x200", 29, "200x1200", "0021140_01.webp"],
+  ["genuine-sab-nat", "1200x200", 29, "200x1200", "0021140_01.webp"],
+  ["genuine-sab-nat", "1480x234", 20, "234x1480", "0021106_01.webp"],
+  ["genuine-sab-nat", "600x100", 10, "100x600", "0021144_01.webp"],
+  ["genuine-sticks", "1200x600", 6, "600x1200", "0021153_01.webp"],
+  ["refined-fieno", "1200x200", 30, "200x1200", "0021142_01.webp"],
+  ["refined-fieno", "1200x200", 30, "200x1200", "0021142_01.webp"],
+  ["refined-fieno", "1200x50", 15, "50x1200", "0021148_01.webp"],
+  ["refined-fieno", "1480x234", 20, "234x1480", "0021108_01.webp"],
+  ["refined-fieno", "600x100", 15, "100x600", "0021146_01.webp"],
+  ["refined-marble", "1200x600", 4, "600x1200", "0021154_01.webp"],
+  ["refined-mesh", "600x600", 6, "600x600", "0021152_01.webp"],
+  ["refined-miele-nat", "1200x200", 30, "200x1200", "0021143_01.webp"],
+  ["refined-miele-nat", "1200x200", 30, "200x1200", "0021143_01.webp"],
+  ["refined-miele-nat", "1200x300", 20, "300x1200", "0021254_01.webp"],
+  ["refined-miele-nat", "1200x50", 10, "50x1200", "0021149_01.webp"],
+  ["refined-miele-nat", "1480x234", 20, "234x1480", "0021109_01.webp"],
+  ["refined-miele-nat", "600x100", 10, "100x600", "0021147_01.webp"],
+]);
+const bonTonRows = (colour: string, codes: [string, string, string, string, string], strips: number) => [
+  [colour, "1200x1200", 9, "1200x1200", `${codes[0]}_01.webp`],
+  [colour, "1200x1200", 9, "1200x1200", `${codes[1]}_01.webp`],
+  [colour, "1200x50", strips, "50x1200", `${codes[2]}_01.webp`],
+  [colour, "1200x600", 18, "600x1200", `${codes[3]}_01.webp`],
+  [colour, "1200x600", 18, "600x1200", `${codes[4]}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isBonTon), [
+  ...bonTonRows("biancone", ["0020776", "0020800", "0020848", "0020780", "0020804"], 17),
+  ...bonTonRows("botticino", ["0020774", "0020798", "0020846", "0020778", "0020802"], 18),
+  ...bonTonRows("carrara", ["0020799", "0020799", "0020847", "0020779", "0020803"], 18),
+  ["network", "1200x600", 1, "600x1200", "0020782_01.webp"],
+  ["octagon", "1200x600", 1, "600x1200", "0020783_01.webp"],
+  ...bonTonRows("perlino", ["0020801", "0020801", "0020849", "0020781", "0020805"], 18),
+  ["tricot", "1200x600", 1, "600x1200", "0020784_01.webp"],
+].sort());
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
-// floor entry with the same item code (Falaise Art Beige and Art Grey are wall-only).
+// floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
+// are wall-only).
 const sharedFaces = new Map([
   ["0010147", "0010008"], ["0010148", "0010009"], ["g69332", "g69312"],
   ["0017583", "0017200"], ["0017586", "0017526"], ["0017716", "0017199"],
   ["0017717", "0017196"], ["0017767", "0017755"], ["0017768", "0017756"],
+  ["0021155", "0021140"], ["0021156", "0021141"], ["0021157", "0021142"], ["0021158", "0021143"],
+  ["0020765", "0020757"], ["0020767", "0020759"], ["0020768", "0020760"],
+  ["0020775", "0020799"], ["0020777", "0020801"],
 ]);
-const wallOnly = new Set(["0010804", "0017607"]);
-// Make's ids carry ABK's zero-padded code (g0073022); its faces drop the zeros (g73022_nn).
-const itemCode = (id: string) => (/-((?:g|pf)?\d{5,7})-\d+x\d+/.exec(id)?.[1] ?? "?").replace(/^g0+/, "g");
+const wallOnly = new Map([
+  ["0010804", 8], ["0017607", 8],
+  ["0020757", 3], ["0020758", 3], ["0020759", 3], ["0020760", 3], ["0020765", 3], ["0020767", 3], ["0020768", 3],
+]);
+// Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
+// and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
+const itemCode = (id: string) =>
+  (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?").replace(/^g0+/, "g").replace(/^pf6/, "");
 const collectionById = new Map(
   physicalMaterials
-    .filter((material) => [isDorica, isOxide, isFalaise, isMake].some((filter) => filter(material)))
+    .filter((material) => [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon].some((filter) => filter(material)))
     .map((material) => [material.surface_material.material_id, material])
 );
 for (const material of collectionById.values()) {
@@ -530,12 +630,12 @@ for (const material of collectionById.values()) {
   assert.ok(floor, `${id} has a floor entry with item ${code}`);
   assert.deepEqual(material.texture_assets.faces, floor.texture_assets.faces, `${id} uses the floor entry's faces`);
 }
-for (const code of wallOnly) {
+for (const [code, faceCount] of wallOnly) {
   const entries = [...collectionById.values()].filter((material) => itemCode(material.surface_material.material_id) === code);
   assert.deepEqual(
     entries.map((material) => [material.surface_material.surface_category, material.texture_assets.faces?.length]),
-    [["wall_tile", 8]],
-    `${code} is a wall-only Falaise Art item with eight faces`
+    [["wall_tile", faceCount]],
+    `${code} is a wall-only item with ${faceCount} faces`
   );
 }
 

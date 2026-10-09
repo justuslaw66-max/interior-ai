@@ -305,17 +305,16 @@ export function shouldUseContinuousPatternSourceForTest({
   supplier,
   materialId,
   productName,
+  hasPhysicalFaces = false,
 }: {
   supplier: string | null | undefined;
   materialId: string | null | undefined;
   productName: string | null | undefined;
+  /** Whole-tile faces go to the physical tile painter instead: turned to the tile, at real size, varied per tile. */
+  hasPhysicalFaces?: boolean;
 }) {
-  if (supplier !== "gardenia_orchidea") return false;
-  const materialText = `${materialId ?? ""} ${productName ?? ""}`.toLowerCase();
-  const normalizedText = materialText
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[._-]+/g, " ");
+  if (supplier !== "gardenia_orchidea" || hasPhysicalFaces) return false;
+  const normalizedText = `${materialId ?? ""} ${productName ?? ""}`.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[._-]+/g, " ");
   return (
     /\bgioia\b/.test(normalizedText) ||
     /\b(octagon|network|tricot|chevron|combo|mesh|sticks|majorelle|ombrelle|palma|papilio|rossignol|primavera|martinica|confet|crocini|pillole|rattan|degrade|dec|plis|pliss|plisse|flower|art)\b/.test(
@@ -700,7 +699,7 @@ function createPatternedSurfaceTexture({
   const tileAspectRatio = Math.max(tileWidthPx, tileHeightPx) / Math.max(1, Math.min(tileWidthPx, tileHeightPx));
   const allowQuarterTurnVariation = tileAspectRatio < 1.08;
   const useContinuousPatternSource = shouldUseContinuousPatternSourceForTest({
-    supplier: material.surface_material.supplier,
+    supplier: material.surface_material.supplier, hasPhysicalFaces: Boolean(physicalSources),
     materialId: material.surface_material.material_id,
     productName: material.surface_material.product_name,
   });
