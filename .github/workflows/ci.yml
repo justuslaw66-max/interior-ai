@@ -13,7 +13,7 @@ permissions:
 jobs:
   secret-scan:
     name: Secret scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-secret-scan-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -48,7 +48,7 @@ jobs:
 
   stable-checks:
     name: Stable checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-stable-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
@@ -390,7 +390,7 @@ jobs:
 
   advisory-contract-preflight:
     name: Advisory contract preflight
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-advisory-preflight-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -571,7 +571,7 @@ jobs:
 
   merge-gate:
     name: merge-gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-merge-gate-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
