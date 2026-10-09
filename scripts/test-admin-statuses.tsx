@@ -3,8 +3,23 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { AdminPager } from "../app/admin/AdminPager";
 import { AdminStatusBadge } from "../app/admin/AdminStatusBadge";
 import { describeImportStatusChange } from "../app/admin/imports/[id]/importStatusChange";
+import {
+  adminListHref,
+  adminPageArgs,
+  adminPageFromRows,
+  adminPageHrefs,
+  parseAdminPageRequest,
+} from "../app/admin/admin-paging";
+import {
+  importJobListOrder,
+  importJobListParams,
+  importJobListWhere,
+  parseImportJobListFilters,
+} from "../app/admin/imports/import-jobs-list";
+import { modelListWhere, parseModelListFilters } from "../app/admin/models/models-list";
 import {
   ADMIN_STATUS_DICTIONARIES,
   describeAdminStatus,
@@ -117,7 +132,10 @@ assert.match(badge, /text-xs/, "a badge's text is 12px");
 
 // The colour maps and raw statuses it replaces are gone.
 const statusViews: Record<string, Array<[RegExp, string]>> = {
-  "app/admin/imports/page.tsx": [[/<AdminStatusBadge kind="importJob" status=\{job\.status\} \/>/, "the list's badge"]],
+  "app/admin/imports/ImportJobsList.tsx": [
+    [/<AdminStatusBadge kind="importJob" status=\{job\.status\} \/>/, "the list's badge"],
+    [/describeAdminStatus\("importJob", status\)\.label/, "the status filter"],
+  ],
   "app/admin/imports/[id]/page.tsx": [[/describeAdminStatus\("importJob", job\.status\)\.label/, "the page's status"]],
   "app/admin/imports/[id]/ImportJobActions.tsx": [[/describeAdminStatus\("importJob", nextStatus\)\.label/, "the select's options"]],
   "app/admin/catalog/inbox/page.tsx": [
@@ -189,8 +207,66 @@ assert.match(modelForm, /onClick=\{\(\) => requestSave\(form\.assetStatus, \(\) 
 assert.doesNotMatch(modelForm, /onClick=\{save\}/);
 assert.match(modelForm, /\{dialog\}/);
 
+// Lists (UX audit AD6): filters, search and sort in the URL, keyset pages both ways, true counts.
+const rows = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, index) => ({ id: `r${from + index}` }));
+assert.deepEqual(parseAdminPageRequest({}), { direction: "first" });
+assert.deepEqual(parseAdminPageRequest({ after: "cm1abc" }), { direction: "after", cursor: "cm1abc" });
+assert.deepEqual(parseAdminPageRequest({ before: ["armchair-real-castlery-mori-performance-fabric-armchair-walnut-wood"] }), {
+  direction: "before",
+  cursor: "armchair-real-castlery-mori-performance-fabric-armchair-walnut-wood",
+});
+assert.deepEqual(parseAdminPageRequest({ after: "x' OR 1=1" }), { direction: "first" }, "a malformed cursor is the first page");
+assert.deepEqual(adminPageArgs({ direction: "first" }, 3), { take: 4 });
+assert.deepEqual(adminPageArgs({ direction: "after", cursor: "r3" }, 3), { cursor: { id: "r3" }, skip: 1, take: 4 });
+assert.deepEqual(adminPageArgs({ direction: "before", cursor: "r4" }, 3), { cursor: { id: "r4" }, skip: 1, take: -4 });
+assert.deepEqual(adminPageFromRows(rows(1, 4), { direction: "first" }, 3), { rows: rows(1, 3), previousCursor: null, nextCursor: "r3" });
+assert.deepEqual(adminPageFromRows(rows(4, 7), { direction: "after", cursor: "r3" }, 3), { rows: rows(4, 6), previousCursor: "r4", nextCursor: "r6" });
+assert.deepEqual(adminPageFromRows(rows(7, 8), { direction: "after", cursor: "r6" }, 3), { rows: rows(7, 8), previousCursor: "r7", nextCursor: null });
+assert.deepEqual(adminPageFromRows(rows(3, 6), { direction: "before", cursor: "r7" }, 3), { rows: rows(4, 6), previousCursor: "r4", nextCursor: "r6" });
+assert.deepEqual(adminPageFromRows(rows(1, 3), { direction: "before", cursor: "r4" }, 3), { rows: rows(1, 3), previousCursor: null, nextCursor: "r3" }, "the first page reached backwards has no Previous");
+assert.equal(adminListHref("/admin/imports", { status: null, q: "", sort: "updated" }), "/admin/imports?sort=updated");
+assert.deepEqual(adminPageHrefs("/admin/imports", { status: "failed", q: "sofa a" }, { previousCursor: "r4", nextCursor: null }), {
+  previousHref: "/admin/imports?status=failed&q=sofa+a&before=r4",
+  nextHref: null,
+});
+
+const importFilters = parseImportJobListFilters({ status: "needs_review", q: "  Castlery ", sort: "oldest" });
+assert.deepEqual(importFilters, { status: "needs_review", query: "Castlery", sort: "oldest" });
+assert.deepEqual(parseImportJobListFilters({ status: "archived", sort: "toString" }), { status: null, query: "", sort: "newest" });
+assert.deepEqual(importJobListParams(parseImportJobListFilters({})), { status: null, q: "", sort: null }, "defaults stay out of the URL");
+assert.deepEqual(importJobListWhere(parseImportJobListFilters({})), {});
+assert.deepEqual(importJobListWhere(importFilters), {
+  AND: [
+    { status: "needs_review" },
+    {
+      OR: ["id", "sourceFileName", "sourceBrand", "sourceSku"].map((field) => ({
+        [field]: { contains: "Castlery", mode: "insensitive" },
+      })),
+    },
+  ],
+});
+assert.deepEqual(importJobListOrder("oldest"), [{ createdAt: "asc" }, { id: "asc" }], "every order ends on id, so pages never overlap");
+assert.deepEqual(importJobListOrder("updated"), [{ updatedAt: "desc" }, { id: "desc" }]);
+assert.deepEqual(modelListWhere(parseModelListFilters({ approval: "not_approved", q: "mori" })), {
+  AND: [{ approved: false }, { OR: [{ id: { contains: "mori", mode: "insensitive" } }, { modelUrl: { contains: "mori", mode: "insensitive" } }] }],
+});
+
+const importList = read("app/admin/imports/load-import-jobs.ts");
+assert.match(importList, /prisma\.importJob\.groupBy\(\{ by: \["status"\], _count: \{ _all: true \} \}\)/, "Import jobs counts every job");
+assert.doesNotMatch(importList + read("app/admin/imports/page.tsx"), /take: 200/, "no newest-200 cut-off");
+assert.match(importList, /\.\.\.adminPageArgs\(request\)/);
+assert.match(read("app/admin/models/load-models.ts"), /\.\.\.adminPageArgs\(request, MODEL_PAGE_SIZE\)/, "3D models load a page at a time");
+assert.doesNotMatch(read("app/admin/models/page.tsx"), /prisma\.modelAsset\.findMany/);
+for (const path of ["app/admin/imports/page.tsx", "app/admin/models/page.tsx"]) {
+  assert.match(read(path), /<AdminPager \{\.\.\.pages\} cursorLost=\{list\.cursorLost\} \/>/, `${path} has Previous and Next`);
+}
+const pager = renderToStaticMarkup(<AdminPager previousHref="/admin/imports?before=r4" nextHref={null} cursorLost />);
+assert.match(pager, /That page is no longer available/);
+assert.match(pager, /<a [^>]*href="\/admin\/imports\?before=r4"[^>]*>Previous<\/a>/);
+assert.match(pager, /<span [^>]*>Next<\/span>/, "Next isn't a link on the last page");
+
 console.log(
   "Admin status checks passed: one import-job sequence, used by the job page and both routes; " +
     `${Object.keys(ADMIN_STATUS_DICTIONARIES).length} status dictionaries and the badge, in every view; ` +
-    "status changes and a model's approval confirmed first."
+    "status changes and a model's approval confirmed first; Import jobs and 3D models paged both ways."
 );

@@ -908,12 +908,6 @@
         "maximum": 25
       }
     },
-    "app/admin/imports/page.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 99
-      }
-    },
     "app/admin/models/[id]/model-edit-form.tsx": {
       "overlongFunctions": {
         "count": 2,
