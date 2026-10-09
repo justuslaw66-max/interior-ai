@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 10 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mou/pf60016611-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-i-pigmenti-mou-faces.manifest.json. Each covers 300x300 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0016611/0/90328 for wall use.
     - "Configurator format: 30x30 Nat; surface destination: ENTRAMBE."
@@ -60,16 +61,50 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016973.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016973.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 30
     height: 30
+  image_physical_size_mm:
+    width: 300
+    height: 300
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_01.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_02.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_03.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_04.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_05.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_06.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_07.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_08.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_09.webp
+      width_mm: 300
+      height_mm: 300
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016611_10.webp
+      width_mm: 300
+      height_mm: 300
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -94,12 +129,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

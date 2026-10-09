@@ -1,0 +1,1441 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - MILK - minimali.zip (16311550 bytes, sha256 b2add923aa64612433e9f4c09dee513cc5a2269c0cc346cdeafa2ebe4c104257).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0017003",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60017003-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0017003_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0017003-120x280-nat-90347-0; wall gardenia-wall-tile-i-pigmenti-milk-0017003-120x280-nat-90347-0",
+   "faces": [
+    {
+     "file": "0017003_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 16662,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - MILK - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "f6784c097fab2c0f23bebde70b9bb9aa089544fd301de58f97b15a0e184ed60e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 120X280",
+      "id": "bdb60285-28ec-4ab0-9bcb-d6c9053bf087",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016962",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016962-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016962_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016962-120x120-nat-90332-0; wall gardenia-wall-tile-i-pigmenti-milk-0016962-120x120-nat-90332-0",
+   "faces": [
+    {
+     "file": "0016962_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6986,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MILK - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c418fa37768df8f300b3ae2fe30ace74105f844b4521bc67cab81886c5c4468",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 120X120_01",
+      "id": "77297d51-8a76-4691-9b6d-60345c477224",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016962_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6700,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MILK - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6fd927a1687bb715b9008629e9dbe777d74952d087522822dff67b7b3f79f8ea",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 120X120_03",
+      "id": "a49c96e1-e3b0-4571-aa43-aa45d461e629",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016962_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6808,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MILK - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "56b3f4cd2a13b98abfa33a540712f3403d4522021dcd9c1a8d9c0ea0344ea3ba",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 120X120_05",
+      "id": "f59cf3d5-4490-48ea-b2eb-a9964f38b0bf",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016962_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6724,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MILK - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "28565615b5deae4d4e1fca0914a889aaab3366a0ad387d77e4e3d2082de83916",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 120X120_02",
+      "id": "d095219b-e80f-4208-9d1e-92dd2fc7f5f0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016962_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6590,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MILK - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dcaae1138bd37a4f2a3b5bd0afb7d543b6cb101ea7698516671aa9760484dcce",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MILK 120X120_04",
+      "id": "9cea6875-8ae9-4421-b0a7-2d3ded2fadce",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016428",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016428-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016428_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016428-60x120-nat-90281-0; wall gardenia-wall-tile-i-pigmenti-milk-0016428-60x120-nat-90281-0",
+   "faces": [
+    {
+     "file": "0016428_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3968,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "c31c10133107cd7fc4ed79791788c31cca31ab8404ce89d1703586701391cbc4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 60X120_01",
+      "id": "b6b2cb3e-9005-4be9-9d9c-ceb4de7d47d1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016428_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3450,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7c2c2c6142ffa49ce89ccf9d295d0db8851ad5688373e09038388feb4f5e71ee",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 60X120_08",
+      "id": "a07f0ed8-f193-40c2-aed1-26dde9808cb0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016428_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3618,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "bef2c108b0cfe5dca3cf8ca11515ece53a80c884e4b677cb3cefbcd4803de7d5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 60X120_10",
+      "id": "767cba0d-120f-414e-9f94-2a5bb75883a1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016428_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3604,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "4828b8ad2c83fa61e188917e8c500d36b043e4b834dbe2a563304b6923f52394",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 60X120_09",
+      "id": "b98b5bf1-c6c0-4c4e-9388-6dda4e0c5d57",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016428_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3518,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ba4bddcbc1b286f9dc4b1f97b39d8b3c9ede866f829572b5e9b07a33b261295c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MILK 60X120_06",
+      "id": "648197f4-7be8-402d-b24d-5ddc810152a4",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016428_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3606,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "0d8595ba1e729100291e187ac94c228d8ea7b50f9e1f6eac87a745a5d77738a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI MILK 60X120_04",
+      "id": "4bf5e3d8-9790-4f37-82e9-76718a379827",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016428_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3656,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "46f2a2fdb7e1d05879d25b72501bc08bdf76b8b06a97f884492622be96b3ce6a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI MILK 60X120_05",
+      "id": "4139917b-8f22-4ea3-a8a3-78b4d537ca82",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016428_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3616,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "14131f2f7705b9cebc9f482f7131c5b7da32d951bf7fd86499257831f27ea800",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI MILK 60X120_07",
+      "id": "e299f00b-8719-4e1f-a9a8-db67ab022f8f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016428_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3408,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "5e85ccc41ab40c74a86ce3f70ab1ecd76a11a9c42813ed0718859833bb4e0a78",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI MILK 60X120_02",
+      "id": "69bdbdd4-a909-45c6-ab95-5db6b7d7c519",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016428_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3498,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MILK - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "3ed6ebc5ce6218d3524fdccd39b4a3016d9715a797b8cd31164e87731f287c01",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI MILK 60X120_03",
+      "id": "4d833d6b-b1a6-4d09-a76f-5b4c7798b86d",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016448",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016448-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016448_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016448-60x60-nat-90301-0; wall gardenia-wall-tile-i-pigmenti-milk-0016448-60x60-nat-90301-0",
+   "faces": [
+    {
+     "file": "0016448_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2278,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "ed3fb8944805a8a49c68dff62d088aa4ffeef5f39c2ba1605dbbd9ca7341f491",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 60X60_01",
+      "id": "8dd34152-30b5-4388-ab93-b55b5c2511b5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016448_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2212,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "4a56cc35f185bad9f59e7ba95debb5e3a232e12b6ec4af44e460de75ce28b911",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 60X60_08",
+      "id": "e793e956-826f-4be1-9ce9-aad8c308e87c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016448_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2408,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "51c8375137394debca94bfdfd901c09a00c9f22c74254cc14ec45e39fb2125bf",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 60X60_10",
+      "id": "efacd4d0-9608-4813-b49e-e81b25c75a7a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016448_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1792,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "65ead44d25afc12c38657be02bbd0149245823d3a7deffce1166d11dd2d5b847",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 60X60_09",
+      "id": "57ead96e-1674-410f-b72a-47788e902d55",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016448_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1822,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "bc34a0102f0a772ffbff23263ca897222bac05dec851f5f06be755b3ea5a7d7c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI MILK 60X60_06",
+      "id": "017bd58d-ba2c-4ede-8305-20362581d179",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016448_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1778,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "3016b9454cc50a463ef16e2d7a1c391cdc24930344cd3225537f5997c67a8dcc",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI MILK 60X60_07",
+      "id": "c6616e4b-a73b-40fc-bfa2-903b9d6e1f2d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016448_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2056,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "179aeb4cbc9e77d77bba6cf03e64f3209f2bb6179853cee9ae55d6a2b3cd46b7",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI MILK 60X60_02",
+      "id": "9df60d2c-456a-4b5c-a839-6fba7bd1b3cb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016448_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2032,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "44f88763e6e378199b7c75b35d796b7a30888541128d028afef74c9d22eda667",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI MILK 60X60_03",
+      "id": "a39886d9-9ae7-4765-8705-f6c3544530cf",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016448_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2000,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "258537e8d3234e9a89dd4b76e5852831ed5da24ce898f681e6443cc9ad522e32",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI MILK 60X60_05",
+      "id": "af89d60d-d996-4390-951f-cf10dd7f0608",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016448_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1718,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MILK - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "4b01bb20c552cf5211af93b8e6a8ec7818dc9e19ab523e743e30435211650144",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI MILK 60X60_04",
+      "id": "d2850c7e-b52e-42ad-aa6b-457595eb13e3",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016438",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016438-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016438_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016438-20x120-nat-90291-0; wall gardenia-wall-tile-i-pigmenti-milk-0016438-20x120-nat-90291-0",
+   "faces": [
+    {
+     "file": "0016438_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1400,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "39d4e59d74037f5969c4e5923d68527af4af64bb4828b9345228bd7f576ac7e9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 20X120_01",
+      "id": "30565df0-4a2b-41b8-a87d-a344c3683340",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016438_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1258,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "bd189a6adacbd1a91813aa0afd7e175928385d3bb7a46806eb2be0c638407edc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 20X120_04",
+      "id": "fe36984b-faf5-4259-9a42-b159fde97ff6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016438_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1594,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "30a38e02e32618c6a5dc6750e8790fbfd86fa8ff79303e3f1b505bbbc3c30926",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 20X120_10",
+      "id": "7deacaae-8277-4152-834e-a3fe09c63653",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016438_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1306,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "9626920778930dbc9f079b4c03d92d7485e600031e012ac942446dfe01758572",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 20X120_09",
+      "id": "cd6413bf-65be-42de-a7eb-b4be02d02ffa",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016438_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1332,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "4a158987f7f6c189bb1c0aa1084ed1a37f918c899556a3224b79d8db47c7a0e8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MILK 20X120_07",
+      "id": "d1d51a23-1f22-445f-83b0-73cc03620667",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016438_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1336,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "72ae9f59a72affc27a62cf26ad9a4a032a9a891353236c71b571e0508749a1c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI MILK 20X120_05",
+      "id": "2a39bd72-c8d2-499a-a668-98f555512a4a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016438_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1302,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "f36073068983d39844646d0181b422d13991891539549e14ed6ebf27963cf6ee",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI MILK 20X120_06",
+      "id": "b19f656a-ae5f-4a98-9eb6-2a39fb1b501a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016438_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1218,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "6a7169e6f5bd72eafb504adfe5ac44de51c04333464801cdaf9e0791d819fa40",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI MILK 20X120_08",
+      "id": "bc768b25-b01c-45a4-b9ca-47a087dffd46",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016438_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1488,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "65738cccbb91d47e9f7adc71a7c922f8c3c335b00b54d056997972991e7fdfde",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI MILK 20X120_03",
+      "id": "3c3c985e-1fc0-49e3-b51f-35b69eb1cc7e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016438_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1336,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MILK - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c4a7e44196ecd13001b35218bf25a8f853a30fca5aff13088cdff26b90360136",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI MILK 20X120_02",
+      "id": "c735ac52-b32a-4143-9a59-c082449538fc",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016604",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016604-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016604_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016604-30x30-nat-90321-0; wall gardenia-wall-tile-i-pigmenti-milk-0016604-30x30-nat-90321-0",
+   "faces": [
+    {
+     "file": "0016604_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 706,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "594d79666608dd9654b604c841aff86d26995d283899e7bab78ccb5bd7e4f22a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 30X30_01",
+      "id": "53e404a4-04ad-47ac-8fc9-54bfdaa96543",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016604_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 556,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "3081454115c66c2ca1be767673af23157080fdb7972f391dae3825cf6f309b6d",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 30X30_07",
+      "id": "1195ade0-b9e5-44fd-a13b-e8072b1ebd95",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016604_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 580,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "e7c9c513908428746ac8af01ae4b1293f4896b9333eaf7c36d91e4836605d678",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 30X30_10",
+      "id": "f767b81b-555d-4ccc-8265-2aed9061f6a2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016604_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 638,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "86d8cfac5709423dc4254842ea365752b58b253ca8f86ed34ff1b642f4e38141",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 30X30_05",
+      "id": "71e7e039-ebfc-4cdb-8163-1f322c2c6503",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016604_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 684,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "ec3d74e2dfe4b0d5b287629891d65a55a708569b7a18696f67cfcf86e821618a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI MILK 30X30_09",
+      "id": "4ddcf00e-711c-48fc-ae28-a924694524e2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016604_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 772,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "bb2466e2a20b02a6ecd73b61e1134963a32e7b66c34f4c6a2b95cfa8bba3aede",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI MILK 30X30_06",
+      "id": "e6379688-7205-4884-8ba3-8dd7b65d0bbd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016604_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 594,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "0655fab47e54e797b144616dd1d1a056306b7540b31eaec78ba7b8ae355710dd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI MILK 30X30_08",
+      "id": "680681a4-227d-4639-8fe4-79ca065d4aa7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016604_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 502,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "4e6b8e9704f283b150f659f5e2ba257af51a0eeabd45968632bd3f34bc96ae6f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI MILK 30X30_02",
+      "id": "4e6626c2-4a17-4285-8868-3b893329223d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016604_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 864,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "6d4c58ad7104a5ff9dd32e2239f265184e0469d13c9542df55da76a857224d05",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI MILK 30X30_04",
+      "id": "6bacd756-773e-4de6-9c0b-18de0088b6c6",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016604_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 664,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MILK - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "bd20259b98a444ccd8e4d23a94ec6f1e5b7ac0dd3ec4ca893f3055433b071e98",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI MILK 30X30_03",
+      "id": "61b46e35-04b0-4f4c-b21b-3d4f7c4a9624",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016458",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/milk/pf60016458-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016458_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "duplicates_dropped_site_positions": [
+    5
+   ],
+   "used_by": "floor gardenia-flooring-i-pigmenti-milk-0016458-10x60-nat-90311-0; wall gardenia-wall-tile-i-pigmenti-milk-0016458-10x60-nat-90311-0",
+   "faces": [
+    {
+     "file": "0016458_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 350,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "bc4ab226a65c6214a2972fbf1e19f22661b9e815564e97b12114857082da9347",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MILK 10X60_01",
+      "id": "a144a69b-d3fb-4019-b77d-be2772be380e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016458_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 380,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "406d482ffe8c2205b1216a1533ee91dffb3a565d699390233cb9b8323b25fac6",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI MILK 10X60_08",
+      "id": "781c76e6-5d41-4b03-ac7f-7bfe67cbb9a7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016458_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 446,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ac8468395873a930d0e529916fdd4959341300d4ecd35cad4a04f399d05336ce",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI MILK 10X60_04",
+      "id": "c76b1c86-6447-4363-8232-3519519a5962",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016458_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 424,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "d9ef08812a1b2f5dc0fbeb243e78c16428535c818fceeb3aa6d1534fa111207b",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI MILK 10X60_05",
+      "id": "2c52b3f4-5b14-40b6-9f26-5d001faec0ae",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016458_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 464,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "162669d4bc4951b29e410e3843c9ee5b336e71713ca84c6fdc35bd9c927bffa1",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI MILK 10X60_07",
+      "id": "f82c9c8b-8eb4-42fe-bb6b-0be0aa041605",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016458_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 408,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ef1a7d49d8815ff7f2c6e2682ee8066018d17e9c813305146ad90b41f0dfbc40",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI MILK 10X60_06",
+      "id": "1c673dd5-721e-4cdd-9677-cf8c7d025c8b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016458_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 358,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "3090b8e804e1d0519e17a4f471923b757234fbcbcbf8ac163ce4a5002883c56e",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI MILK 10X60_02",
+      "id": "ec27dcb5-1ebd-4ccb-a9f6-a530c372e776",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016458_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 466,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "e7b4cb498469cc10e7c1c3d62479e3e80d4028c44e915e45be846890212d06bd",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI MILK 10X60_09",
+      "id": "f697ed86-eeee-4aa2-a66a-ca9f0ea2290c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016458_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 430,
+     "source_zip": "I PIGMENTI - MILK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MILK - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "2441cbb8f4ce8e60161258b4511847314b332a989eb921264b0790d5f4925d94",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI MILK 10X60_10",
+      "id": "7f467393-946d-4dc5-8d46-cfa01b44583d",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}
