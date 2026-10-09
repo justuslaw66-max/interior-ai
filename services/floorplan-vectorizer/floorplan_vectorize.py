@@ -65,6 +65,12 @@ R26_REFUSE = os.environ.get("FV_R26_REFUSE", "1") != "0"    # a cluster one lett
 R26_RINGS = os.environ.get("FV_R26_RINGS", "1") != "0"      # a one- or two-digit read far larger than the plan's lettering is a fixture's rings (c22's cooker '20')
 R26_TALL = os.environ.get("FV_R26_TALL", "1") != "0"        # a two-line stack's box narrower than its read word: look for the word a letter wider
 R26_JOIN = os.environ.get("FV_R26_JOIN", "1") != "0"        # two plan words read apart on one line, a word space apart, are one label ('JUNIOR' + 'SUITE')
+# round 27 (walls drawn a degree or so off straight: a sheared listing scan, a photographed sheet), "0" = off
+R27_TILT = os.environ.get("FV_R27_TILT", "1") != "0"        # a long straight valley drifting 0.5 - 2 deg off the axis is that axis line (c24's walls)
+# Lines drifting with the sheet's own tilt are walls, not note leaders.  OFF by default (J, 9 Oct): measured on c24 +1 room,
+# but on the 60 dev s-plans it closed rooms whose casement windows (drawn with leaf arcs) the exporter then reads as doors:
+# +4 rooms, +3 false doors, +2 false windows.  "1" turns it on, once the exporter tells those windows from doors.
+R27_SHEET = os.environ.get("FV_R27_SHEET", "0") == "1"
 # The drawing (SVG only) cleaned where the trace's pieces meet: walls drawn as one, lines to where the drawing's lines end,
 # fixture outlines closed, a dashed line not cut by a stray short line (see clean_drawing).  Off: the SVG as before.
 CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
@@ -700,6 +706,59 @@ def _is_ring(mask, g):
         if ff[sy, sx]:
             cv2.floodFill(ff, fm, (sx, sy), 0)
     return float(ff.sum()) >= 0.33 * w * h                  # what is left of the background is enclosed by the ring
+
+
+_TV_WHY = ""                                                # (why _tilted_valley said no: FV_DEBUG_BOX traces only)
+
+
+def _tilted_valley(G, lab, i, x, y, w, h, T):
+    """Round 27: is component i of the ridge pass (frame: x along the line, y across it; box x, y, w, h) ONE straight valley
+    that drifts off the axis - and that drift alone makes it wider than one valley?  Returns the fit [slope, offset]
+    (across = slope * along + offset) or None.  Tests: the valley floor is found in nearly every column; it lies within
+    a pixel of one straight line in at least 90 % of them; the band is thin everywhere but at crossings; the slope is at
+    most 2 deg and explains the box's height."""
+    global _TV_WHY
+    sub = lab[y:y + h, x:x + w] == i
+    cnt = sub.sum(0)
+    have = cnt > 0
+    if have.mean() < 0.9:
+        _TV_WHY = 'gaps %.2f' % have.mean(); return None
+    wt = np.where(sub, np.maximum(0.0, 255.0 - G[y:y + h, x:x + w]), 0.0)   # the valley's centre in each column: ink-weighted
+    am = (wt * np.arange(y, y + h, dtype=np.float64)[:, None]).sum(0) / np.maximum(wt.sum(0), 1e-6)
+    have = have & (wt.sum(0) > 0)
+    xs = np.arange(x, x + w, dtype=np.float64)[have]
+    ys = am[have]
+    if len(xs) < 20:
+        _TV_WHY = 'short'; return None
+    p = np.polyfit(xs, ys, 1)
+    for _ in range(2):
+        keep = np.abs(ys - np.polyval(p, xs)) <= 1.5
+        if keep.sum() < 0.8 * len(xs):
+            _TV_WHY = 'outliers %.2f' % (keep.mean()); return None
+        p = np.polyfit(xs[keep], ys[keep], 1)
+    res = np.abs(ys - np.polyval(p, xs))
+    slope = abs(float(p[0]))
+    if slope < math.tan(math.radians(0.5)):
+        # under half a degree the later passes still pick the line up in pieces at their own places (p03's glazing row and
+        # right outer wall, 0.3 deg over 1000 px): one straight line through the middle would miss its corners there
+        _TV_WHY = 'slope %.4f under 0.5 deg' % slope; return None
+    if slope > math.tan(math.radians(2.0)) or (res <= 1.25).mean() < 0.9:
+        _TV_WHY = 'slope %.3f res %.2f' % (slope, (res <= 1.25).mean()); return None
+    if np.percentile(cnt[have], 90) > 5:                   # a band, not one valley (two lines fused, lettering)
+        _TV_WHY = 'band p90 %.1f' % np.percentile(cnt[have], 90); return None
+    if h - 3 > slope * w + 3:                               # the drift does not explain the height: something else is attached
+        _TV_WHY = 'height %d vs drift %.1f' % (h, slope * w); return None
+    # it drifts STEADILY: each third leans like the whole (two straight runs offset by a step - p03's glazing line at a
+    # jamb - fit one slope overall, but each of their thirds is level)
+    L3 = (xs[-1] - xs[0]) / 3.0
+    for k3 in range(3):
+        in_ = (xs >= xs[0] + k3 * L3) & (xs <= xs[0] + (k3 + 1) * L3)
+        if in_.sum() < 10:
+            _TV_WHY = 'third %d empty' % k3; return None
+        s3 = float(np.polyfit(xs[in_], ys[in_], 1)[0])
+        if abs(s3 - float(p[0])) > max(0.5 * slope, 1.0 / max(L3, 1.0)):
+            _TV_WHY = 'third %d slope %.4f vs %.4f' % (k3, s3, float(p[0])); return None
+    return p
 
 
 def vocab_fix(st, loose=False):
@@ -1454,8 +1513,41 @@ def extract(path):
                 x, y, w, h, _a = st_[i]
                 bx_, by_, bw_, bh_ = (x, y, w, h) if horiz else (y, x, h, w)
                 if h > 7:
-                    _dbg("ridge: not one valley", bx_, by_, bw_, bh_)
-                    continue                                # not one straight valley
+                    tl_ = _tilted_valley(G, lab_, i, x, y, w, h, T) if R27_TILT and w >= 12 * T else None
+                    if tl_ is None:
+                        _dbg("ridge: not one valley", bx_, by_, bw_, bh_, _TV_WHY if R27_TILT and w >= 12 * T else "")
+                        continue                            # not one straight valley
+                    # round 27: one straight valley drifting a degree or so off the axis over its length (a sheared or
+                    # photographed sheet): read as the axis line through its middle, the way the drawing means it
+                    p_ = tl_
+                    cols = np.arange(x, x + w)
+                    fit_ = np.polyval(p_, cols)
+                    tt = []
+                    for cx_ in cols[::max(1, w // 24)]:
+                        yy = int(round(np.polyval(p_, cx_))); a_ = yy
+                        while a_ > 0 and S_[a_ - 1, cx_] and yy - a_ < 12: a_ -= 1
+                        b_ = yy
+                        while b_ < G.shape[0] - 1 and S_[b_ + 1, cx_] and b_ - yy < 12: b_ += 1
+                        tt.append(b_ - a_ + 1)
+                    t_ = float(np.median(tt)) if tt else 3.0
+                    half = int(min(max(2, round(t_ / 2.0)), 0.25 * T))
+                    for k_, cx_ in enumerate(cols):
+                        yy = int(round(fit_[k_]))
+                        Mk[max(0, yy - half):yy + half + 1, cx_] = 255
+                    yA_ = min(max(int(round(fit_[0])), 0), G.shape[0] - 1)
+                    yB_ = min(max(int(round(fit_[-1])), 0), G.shape[0] - 1)
+                    a_e, b_e = x, x + w
+                    while a_e > 0 and x - a_e < 4 * T and S_[yA_, a_e - 1]:
+                        a_e -= 1
+                    while b_e < G.shape[1] and b_e - (x + w) < 4 * T and S_[yB_, b_e]:
+                        b_e += 1
+                    c_ = float(np.polyval(p_, x + w / 2.0)) + 0.5
+                    floor_ = G[np.clip(np.round(fit_).astype(int), 0, G.shape[0] - 1), cols]
+                    tilt_ = round(math.degrees(math.atan(p_[0])), 2)
+                    _dbg("ridge: TILTED LINE", bx_, by_, bw_, bh_, "c", round(c_, 2), "t", t_, "tilt", tilt_)
+                    out.append({"o": "h" if horiz else "v", "c": round(c_ * 4) / 4.0, "a": float(a_e), "b": float(b_e), "t": min(t_, 0.45 * T),
+                                "ridge": float(np.median(floor_)), "tilt_deg": tilt_})
+                    continue
                 cols = np.arange(x, x + w)
                 y0_, y1_ = max(1, y), min(G.shape[0] - 1, y + h)
                 blk = G[y0_:y1_, x:x + w]
@@ -5483,6 +5575,38 @@ def bar_continuations(m):
         m.setdefault("dimension_report", {})["bar_continuations"] = rep
 
 
+def _slant_fit(l, m, g, T, thr):
+    """slanted_strokes' test of one traced line: its ink centre measured along it, fitted straight. Returns (slope, offset,
+    length, drift) when it drifts steadily by 3 px or more (and at most 12 % of its length) and does not bend, else None."""
+    L_ = l["b"] - l["a"]
+    if "dash" in l or L_ < 3.0 * T or l.get("t", 3.0) > 0.5 * T:
+        return None
+    if sum(1 for d in m["dots"] if abs((d["cy"] if l["o"] == "h" else d["cx"]) - l["c"]) <= 3.0 and l["a"] - 3 <= (d["cx"] if l["o"] == "h" else d["cy"]) <= l["b"] + 3) >= 1:
+        return None                                         # dimension and extension lines are ruled
+    ts, cs = [], []
+    for t_ in np.arange(l["a"] + 3, l["b"] - 3, 2.0):
+        ti = int(t_)
+        prof = (255.0 - (g[ti, max(0, int(l["c"]) - 9):int(l["c"]) + 10] if l["o"] == "v" else g[max(0, int(l["c"]) - 9):int(l["c"]) + 10, ti]))
+        if len(prof) < 19 or prof.max() < 255 - thr:
+            continue
+        on = prof >= 0.35 * prof.max()
+        idx = np.where(on)[0]
+        if idx[-1] - idx[0] + 1 != on.sum() or on.sum() > 9 or on[0] or on[-1]:
+            continue                                        # other ink beside the stroke here: not a clean sample
+        pr = np.where(on, prof, 0.0)
+        ts.append(t_); cs.append(int(l["c"]) - 9 + float((pr * np.arange(len(pr))).sum() / pr.sum()) + 0.5)
+    if len(ts) < 0.5 * (L_ / 2.0) or len(ts) < 12:
+        return None
+    k_, c0_ = np.polyfit(ts, cs, 1)
+    res = np.abs(np.polyval([k_, c0_], ts) - np.array(cs))
+    drift = abs(k_) * L_
+    if drift < 3.0 or drift > 0.12 * L_ or np.percentile(res, 90) > 0.8 or L_ < 4.0 * T:
+        return None
+    if abs(np.polyfit(ts, cs, 2)[0]) * L_ * L_ / 4.0 > 0.8:
+        return None                                         # it bends: the flat end of a long curve, not a slanted straight stroke
+    return k_, c0_, L_, drift
+
+
 def slanted_strokes(m):
     """Soft inputs.  A note leader is drawn freehand-straight from a dot to its note and is rarely square to the sheet.  Traced
     as a vertical / horizontal line it sits beside its own ink at one end (and the tracer adds a second short line for the
@@ -5495,33 +5619,43 @@ def slanted_strokes(m):
     thr = m.get("ink_threshold", 180)
     g = gray.astype(float)
     report = []
+    fits_ = {}
+    for l in (list(m["lines"]) if R27_SHEET else []):
+        f_ = _slant_fit(l, m, g, T, thr)
+        if f_ is not None:
+            fits_[id(l)] = f_
+    sheet_ = set()
+    if R27_SHEET:
+        # round 27: a sheared or photographed sheet drifts ALL its long lines of one direction the same way (c24: every
+        # vertical ~0.8 deg, top to the right). Three or more lines of one direction drifting alike are the sheet's walls,
+        # not note leaders, which are few and each at its own angle: they stay axis lines.
+        for o_ in ("h", "v"):
+            for sg_ in (1, -1):
+                grp = [(id(l), math.degrees(math.atan(fits_[id(l)][0]))) for l in m["lines"] if id(l) in fits_ and l["o"] == o_
+                       and fits_[id(l)][0] * sg_ > 0 and abs(math.degrees(math.atan(fits_[id(l)][0]))) <= 2.0]
+                if len(grp) < 3:
+                    continue
+                med_ = float(np.median([abs(a_) for _i, a_ in grp]))
+                if med_ < 0.5:
+                    continue                                # (a slight lean the later passes cope with, as R27_TILT's floor)
+                alike = [i_ for i_, a_ in grp if 0.5 * med_ <= abs(a_) <= 2.0 * med_ or abs(abs(a_) - med_) <= 0.25]
+                if len(alike) >= 3:
+                    sheet_.update(alike)
+        if sheet_:
+            for l in m["lines"]:
+                # on a sheet found distorted, a line many walls long within 0.6 deg of the axis is ruled too (a hand-drawn
+                # leader is never that long and that square): c24's bottom wall lines, 640 px off by 3 px
+                if id(l) in fits_ and abs(math.degrees(math.atan(fits_[id(l)][0]))) <= 0.6 and fits_[id(l)][2] >= 20 * T:
+                    sheet_.add(id(l))
+        if sheet_:
+            m.setdefault("dimension_report", {})["lines_on_sheet_tilt"] = len(sheet_)
     for l in list(m["lines"]):
-        L_ = l["b"] - l["a"]
-        if "dash" in l or L_ < 3.0 * T or l.get("t", 3.0) > 0.5 * T:
+        if id(l) in sheet_:
             continue
-        if sum(1 for d in m["dots"] if abs((d["cy"] if l["o"] == "h" else d["cx"]) - l["c"]) <= 3.0 and l["a"] - 3 <= (d["cx"] if l["o"] == "h" else d["cy"]) <= l["b"] + 3) >= 1:
-            continue                                        # dimension and extension lines are ruled
-        ts, cs = [], []
-        for t_ in np.arange(l["a"] + 3, l["b"] - 3, 2.0):
-            ti = int(t_)
-            prof = (255.0 - (g[ti, max(0, int(l["c"]) - 9):int(l["c"]) + 10] if l["o"] == "v" else g[max(0, int(l["c"]) - 9):int(l["c"]) + 10, ti]))
-            if len(prof) < 19 or prof.max() < 255 - thr:
-                continue
-            on = prof >= 0.35 * prof.max()
-            idx = np.where(on)[0]
-            if idx[-1] - idx[0] + 1 != on.sum() or on.sum() > 9 or on[0] or on[-1]:
-                continue                                    # other ink beside the stroke here: not a clean sample
-            pr = np.where(on, prof, 0.0)
-            ts.append(t_); cs.append(int(l["c"]) - 9 + float((pr * np.arange(len(pr))).sum() / pr.sum()) + 0.5)
-        if len(ts) < 0.5 * (L_ / 2.0) or len(ts) < 12:
+        f_ = _slant_fit(l, m, g, T, thr)                    # (again: the dots found on earlier leaders count)
+        if f_ is None:
             continue
-        k_, c0_ = np.polyfit(ts, cs, 1)
-        res = np.abs(np.polyval([k_, c0_], ts) - np.array(cs))
-        drift = abs(k_) * L_
-        if drift < 3.0 or drift > 0.12 * L_ or np.percentile(res, 90) > 0.8 or L_ < 4.0 * T:
-            continue
-        if abs(np.polyfit(ts, cs, 2)[0]) * L_ * L_ / 4.0 > 0.8:
-            continue                                        # it bends: the flat end of a long curve, not a slanted straight stroke
+        k_, c0_, L_, drift = f_
         pa = (l["a"], float(np.polyval([k_, c0_], l["a"]))); pb = (l["b"], float(np.polyval([k_, c0_], l["b"])))
         P0, P1 = ([pa[1], pa[0]], [pb[1], pb[0]]) if l["o"] == "v" else ([pa[0], pa[1]], [pb[0], pb[1]])
         m["lines"] = [q for q in m["lines"] if q is not l]
