@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import ts from "typescript";
 
+import { noRaycast } from "@/components/scene/stableSceneProps";
 import { openingGestureBindings } from "@/components/editor/renderers/canonical-floor-plan/openingGestureBindings";
 import { memoizeByObject } from "@/components/editor/renderers/memoizeByObject";
 import { sameLinePoints } from "@/components/editor/renderers/sameLinePoints";
@@ -171,5 +173,71 @@ assert.deepEqual(built, ["a", "b", "c", "b"], "Adding c evicts b, the least rece
 assert.ok(cache.has("a") && !cache.has("c"), "has() reports what is cached.");
 value("d");
 assert.ok(!cache.has("a"), "has() does not make an entry recent: a was older than b, so d evicts it.");
+
+// R3F re-applies a host prop whose identity changed and then draws a frame. The furnished 3D
+// scene (house structure, openings, lights, items) passes the same values on every render, so a
+// page re-render that changes nothing in it (an onboarding step, a panel) doesn't redraw it.
+assert.equal(noRaycast(), null, "noRaycast picks nothing.");
+const threeHosts = new Set(["mesh", "group", "line", "lineSegments", "points", "instancedMesh", "primitive",
+  "object3D", "sprite", "pointLight", "spotLight", "directionalLight", "rectAreaLight", "hemisphereLight",
+  "ambientLight", "Line"]);
+const builtInline = (expression: ts.Expression | undefined): boolean => {
+  if (!expression) return false;
+  if (ts.isConditionalExpression(expression)) return builtInline(expression.whenTrue) || builtInline(expression.whenFalse);
+  if (ts.isParenthesizedExpression(expression)) return builtInline(expression.expression);
+  return ts.isArrowFunction(expression) || ts.isFunctionExpression(expression) || ts.isObjectLiteralExpression(expression);
+};
+const inlineHostProps = (path: string, text = readFileSync(path, "utf8")): string[] => {
+  const file = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const found: string[] = [];
+  const visit = (node: ts.Node) => {
+    if ((ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) && threeHosts.has(node.tagName.getText(file))) {
+      for (const attribute of node.attributes.properties) {
+        if (!ts.isJsxAttribute(attribute) || !/^(raycast|userData|on[A-Z]\w*)$/.test(attribute.name.getText(file))) continue;
+        const value = attribute.initializer;
+        if (value && ts.isJsxExpression(value) && builtInline(value.expression)) {
+          const line = file.getLineAndCharacterOfPosition(attribute.getStart()).line + 1;
+          found.push(`${relative(root, path)}:${line} <${node.tagName.getText(file)} ${attribute.name.getText(file)}>`);
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return found;
+};
+assert.deepEqual(
+  inlineHostProps(join(root, "probe.tsx"), [
+    "<group userData={{ id }}>",
+    "  <mesh raycast={() => null} onClick={interactive ? (event) => select(event) : undefined} onPointerOver={hover} />",
+    "  <div onClick={() => close()} />",
+    "</group>",
+  ].join("\n")),
+  ["probe.tsx:1 <group userData>", "probe.tsx:2 <mesh raycast>", "probe.tsx:2 <mesh onClick>"],
+  "The scan finds inline values on three hosts only, including one side of a conditional."
+);
+const furnishedSceneFiles = [
+  "components/editor/renderers/HousePlanRenderer3D.tsx",
+  "components/editor/renderers/GeneratedWindowFrame3D.tsx",
+  "components/editor/renderers/house-plan-3d",
+  "components/editor/design-page/DesignSceneCanvas.tsx",
+  "components/editor/design-page/SceneItemsLayer.tsx",
+  "components/editor/design-page/lighting",
+  "components/scene/CeilingShadowOccluder.tsx",
+  "components/scene/FurnitureItem.tsx",
+  "components/scene/SceneItemGroup.tsx",
+].flatMap((entry) => sourceFiles(join(root, entry)));
+assert.ok(furnishedSceneFiles.length >= 20, "Precondition: the furnished scene's renderers are all scanned.");
+assert.deepEqual(
+  furnishedSceneFiles.flatMap((path) => inlineHostProps(path)),
+  [],
+  "Furnished-scene meshes, groups, lines and lights should get raycast, userData and handlers that keep their identity (noRaycast, useMemo, useLatestCallback), not ones built inline."
+);
+const wholeHomeBindings = readFileSync(join(root, "components/editor/design-page/useWholeHomeRendererBindings.ts"), "utf8");
+assert.match(wholeHomeBindings, /const topologyOpenings = useMemo\(\(\) => mapPlanOpeningsToRoomRenderer\(sceneOpenings, rooms\), \[rooms, sceneOpenings\]\);/,
+  "The 3D openings are rebuilt only when the plan's openings or rooms change: new openings rebuild the legacy floor slabs and wall bands.");
+for (const handler of ["onSelectOpening", "onMoveOpening", "onResizeOpening", "onOpeningDragStateChange", "canonicalWallEditing"]) {
+  assert.ok(structureLayer.includes(`${handler}={wholeHome.${handler}}`), `The house renderer gets the stable ${handler}.`);
+}
 
 console.log("Stable geometry args tests passed.");

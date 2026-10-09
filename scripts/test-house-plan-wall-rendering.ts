@@ -213,8 +213,13 @@ assert.match(
 
 assert.match(
   structureLayerSource,
-  /const topologyOpenings = mapPlanOpeningsToRoomRenderer\([\s\S]*?openings=\{topologyOpenings\}/,
+  /openings=\{wholeHome\.topologyOpenings\}/,
   "Focus room mode must preserve adjacent-room openings for mirrored wall cuts."
+);
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-page", "useWholeHomeRendererBindings.ts"), "utf8"),
+  /const rooms = state\.wholeHome\.rooms;[\s\S]*?const topologyOpenings = useMemo\(\(\) => mapPlanOpeningsToRoomRenderer\(sceneOpenings, rooms\)/,
+  "Focus room mode must map adjacent-room openings against the whole-home room graph."
 );
 
 assert.match(
@@ -266,7 +271,7 @@ assert.match(
 );
 assert.match(
   source,
-  /generated-window-frame-rail-3d[\s\S]*?function GeneratedWindowFrame3D\([\s\S]*?generated-window-glass-3d/,
+  /GLASS_USER_DATA = \{ testId: "generated-window-glass-3d" \}[\s\S]*?generated-window-frame-rail-3d[\s\S]*?function GeneratedWindowFrame3D\([\s\S]*?userData=\{GLASS_USER_DATA\}/,
   "Canonical and compatibility windows should share one lightweight generated frame-and-glass mesh."
 );
 assert.match(
@@ -447,7 +452,7 @@ assert.match(
 
 assert.match(
   source,
-  /function LegacyWallBandMesh[\s\S]*?buildLegacyWallBandCoreGeometry\([\s\S]*?removeTopCap: showTopCap[\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?legacy-watertight-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,
+  /function LegacyWallBandMesh[\s\S]*?buildLegacyWallBandCoreGeometry\([\s\S]*?removeTopCap: showTopCap[\s\S]*?const capUserData = useMemo\(\(\) => \(\{ testId: "legacy-watertight-wall-top-cap-3d"[\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?userData=\{capUserData\}[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,
   "The compatibility top cap must be the only depth owner at the exact union-footprint wall top."
 );
 
@@ -652,7 +657,7 @@ assert.match(
 
 assert.match(
   source,
-  /showTopCap \? \([\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?legacy-watertight-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\} \/>[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{WALL_CUT_SURFACE_COLOR\}[\s\S]*?roughness=\{0\.86\}[\s\S]*?depthTest\s+depthWrite=\{opacity >= 0\.999\}/,
+  /showTopCap \? \([\s\S]*?position=\{\[0, band\.topMeters, 0\]\}[\s\S]*?userData=\{capUserData\}[\s\S]*?<shapeGeometry args=\{\[shapes\]\} \/>[\s\S]*?<meshStandardMaterial[\s\S]*?color=\{WALL_CUT_SURFACE_COLOR\}[\s\S]*?roughness=\{0\.86\}[\s\S]*?depthTest\s+depthWrite=\{opacity >= 0\.999\}/,
   "Merged wall tops should own their exact depth without a duplicate structural cap or polygon bias."
 );
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { Line } from "@react-three/drei/core/Line";
 import { useCursor } from "@react-three/drei/web/useCursor";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useRef } from "react";
@@ -11,6 +10,9 @@ import {
 import { getWindowOpeningHitVolume } from "./windowOpeningGeometry";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
 import { useWindowOpeningDrag, type WindowOpeningDragActions } from "./useWindowOpeningDrag";
+import { noRaycast } from "@/components/scene/stableSceneProps";
+import { StableLine as Line } from "../StableLine";
+import { useLatestCallback } from "../useLatestCallback";
 
 type OpeningTarget = { kind: "opening"; roomId: string; id: string };
 type Props = WindowOpeningDragActions & {
@@ -54,25 +56,27 @@ export function WindowOpeningMesh(props: Props) {
   const outlined = selected || props.hoveredTargetKey === targetKey;
   const halfWidth = width / 2;
   const z = getWallInteriorSurfaceSide(segment) * (wallThickness / 2 + 0.003);
+  // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
+  const raycast = useLatestCallback((raycaster: THREE.Raycaster, hits: THREE.Intersection[]) => {
+    if (props.interactive && pickEnabledRef.current && meshRef.current) {
+      THREE.Mesh.prototype.raycast.call(meshRef.current, raycaster, hits);
+    }
+  });
+  const hover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { stopPointer(event); props.onHoverTarget(target); });
+  const clearHover = useLatestCallback(() => props.onClearHoverTarget(target));
+  const pointerDown = useLatestCallback((event: ThreeEvent<PointerEvent>) => {
+    // An unclaimed pointer-down is the camera's gesture: it selects nothing and keeps orbiting.
+    event.stopPropagation();
+    if (!startDrag(event)) return;
+    stopPointer(event);
+    props.onSelectTarget(target, event);
+  });
+  const click = useLatestCallback((event: ThreeEvent<MouseEvent>) => { stopPointer(event); props.onSelectTarget(target, event); });
   if (width <= 0 || height <= 0 || hidden) return null;
   return (
     <group position={[volume.x, volume.centerY, volume.z]} rotation-y={segment.rotationY}>
-      <mesh ref={meshRef}
-        raycast={(raycaster, hits) => {
-          if (props.interactive && pickEnabledRef.current && meshRef.current) {
-            THREE.Mesh.prototype.raycast.call(meshRef.current, raycaster, hits);
-          }
-        }}
-        onPointerOver={(event) => { stopPointer(event); props.onHoverTarget(target); }}
-        onPointerOut={() => props.onClearHoverTarget(target)}
-        onPointerDown={(event) => {
-          // An unclaimed pointer-down is the camera's gesture: it selects nothing and keeps orbiting.
-          event.stopPropagation();
-          if (!startDrag(event)) return;
-          stopPointer(event);
-          props.onSelectTarget(target, event);
-        }}
-        onClick={(event) => { stopPointer(event); props.onSelectTarget(target, event); }}
+      <mesh ref={meshRef} raycast={raycast} onPointerOver={hover} onPointerOut={clearHover}
+        onPointerDown={pointerDown} onClick={click}
       >
         <boxGeometry args={[width, height, wallThickness]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
@@ -81,7 +85,7 @@ export function WindowOpeningMesh(props: Props) {
         [-halfWidth, -height / 2, z], [halfWidth, -height / 2, z],
         [halfWidth, height / 2, z], [-halfWidth, height / 2, z], [-halfWidth, -height / 2, z],
       ]} color={selected ? "#2563eb" : "#00d5e8"} lineWidth={selected ? 2.8 : 2.4}
-        renderOrder={26} depthTest={false} depthWrite={false} toneMapped={false} raycast={() => null} />}
+        renderOrder={26} depthTest={false} depthWrite={false} toneMapped={false} raycast={noRaycast} />}
     </group>
   );
 }

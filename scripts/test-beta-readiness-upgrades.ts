@@ -503,6 +503,14 @@ assert.doesNotMatch(
   /stall|getNextBestActionNudge|nextBestActionNudge/,
   "the stall nudge is gone (UX audit FR4)."
 );
+// The completed-onboarding hydration and the eligibility check run in the same commit, so the
+// check still sees the initial idle state. Unguarded, it replaced a returning user's "completed"
+// with "prompt_add_sofa" and restarted the ghost and completion timers.
+assert.match(
+  designPageOnboardingSource,
+  /if \(window\.localStorage\.getItem\("onboarded"\) === "1"\) \{\s*persistedCompletionRef\.current = true;[\s\S]*?useEffect\(\(\) => \{\s*\/\/[^\n]*\n\s*if \(persistedCompletionRef\.current\) return;\s*const capabilities = resolveEditorCapabilities/,
+  "A returning user's completed onboarding must not restart."
+);
 assert.match(
   designPageSource,
   /useDesignPageCommerceOnboardingRegistration/,

@@ -227,6 +227,7 @@ export function useDesignPageOnboarding({
   const thirdItemTrackedRef = useRef(false);
   const firstSofaHandledRef = useRef(false);
   const ghostTimerRef = useRef<number | null>(null);
+  const persistedCompletionRef = useRef(false);
   const eventDedupRef = useRef(EventDedup.createSession());
   const firstRunActivationTrackedStepsRef = useRef<
     Map<string, Set<FirstRunActivationStepId>>
@@ -236,13 +237,10 @@ export function useDesignPageOnboarding({
     if (typeof window === "undefined") return;
     try {
       if (window.localStorage.getItem("onboarded") === "1") {
+        persistedCompletionRef.current = true;
         // This one-time hydration intentionally mirrors the persisted onboarding state.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setOnboardingState((current) => ({
-          ...current,
-          enabled: false,
-          step: "completed",
-        }));
+        setOnboardingState((current) => ({ ...current, enabled: false, step: "completed" }));
       }
     } catch {
       // Ignore storage errors; eligibility will use the in-memory state.
@@ -250,6 +248,8 @@ export function useDesignPageOnboarding({
   }, []);
 
   useEffect(() => {
+    // Hydrated as completed in this same commit: starting here would replace that state.
+    if (persistedCompletionRef.current) return;
     const capabilities = resolveEditorCapabilities(state.plan);
     const eligible = isOnboardingEligible({
       isNewUser: !onboardingState.enabled && onboardingState.step === "idle",
