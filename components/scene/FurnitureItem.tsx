@@ -44,6 +44,7 @@ import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureMod
 import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
 import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
 import { useFurnitureDrag } from "./furniture/useFurnitureDrag";
+import { useLatestCallback } from "@/components/editor/renderers/useLatestCallback";
 
 export { CameraCapture } from "./furniture/CameraCapture";
 export type { FurnitureProps } from "./furniture/FurnitureProps";
@@ -694,33 +695,31 @@ export function Furniture({
     };
     onRenderReadyChange?.(renderReadyKey, renderReady);
   }, [onRenderReadyChange, renderReady, renderReadyKey]);
+  // Stable props: a page re-render that changes nothing here doesn't make R3F redraw.
+  const groupUserData = useMemo(() => sceneDemandItemUserData(instanceId, viewMode, height), [height, instanceId, viewMode]);
+  const handleClick = useLatestCallback((e: ThreeEvent<MouseEvent>) => {
+    if (!interactive) return;
+    e.stopPropagation();
+    onSelect?.(instanceId, Boolean(e.shiftKey));
+  });
+  const handlePointerDown = useLatestCallback(onPointerDown);
+  const handlePointerUp = useLatestCallback(drag.onPointerUp);
+  const handlePointerMove = useLatestCallback(onPointerMove);
+  const handlePointerOver = useLatestCallback((e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(true); });
+  const handlePointerOut = useLatestCallback((e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHovered(false); });
 
   return (
     <group
       ref={groupRef}
-      userData={sceneDemandItemUserData(instanceId, viewMode, height)}
-      position={[
-        clampedPosition[0],
-        viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2,
-        clampedPosition[2],
-      ]}
+      userData={groupUserData}
+      position={[clampedPosition[0], viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2, clampedPosition[2]]}
       rotation-y={finalRotation}
-      onClick={(e) => {
-        if (!interactive) return;
-        e.stopPropagation();
-        onSelect?.(instanceId, Boolean(e.shiftKey));
-      }}
-      onPointerDown={onPointerDown}
-      onPointerUp={drag.onPointerUp}
-      onPointerMove={onPointerMove}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={(e) => {
-        e.stopPropagation();
-        setHovered(false);
-      }}
+      onClick={handleClick}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerMove={handlePointerMove}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
     >
       {shouldLoadModel && runtimeModelUrl ? (
         <Suspense fallback={null}>

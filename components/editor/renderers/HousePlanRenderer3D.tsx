@@ -1,6 +1,7 @@
 "use client";
 
-import { Line } from "@react-three/drei/core/Line";
+import { noRaycast } from "@/components/scene/stableSceneProps";
+import { StableLine as Line } from "./StableLine";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useMemo, useRef, useState, type ComponentProps } from "react";
 import * as THREE from "three";
@@ -534,18 +535,16 @@ export default function HousePlanRenderer3D({
             {floorOutlineStyle ? (
               <Line
                 points={outlinePoints.map(([x, z]) => [x, 0.035, z])}
-                color={floorOutlineStyle.color}
-                lineWidth={floorOutlineStyle.lineWidth}
-                raycast={() => null}
+                color={floorOutlineStyle.color} lineWidth={floorOutlineStyle.lineWidth}
+                raycast={noRaycast}
               />
             ) : null}
 
             {stackedFloors && isActiveFloor ? (
               <Line
                 points={outlinePoints.map(([x, z]) => [x, 0.055, z])}
-                color={ACTIVE_FLOOR_OUTLINE_COLOR}
-                lineWidth={2.2}
-                raycast={() => null}
+                color={ACTIVE_FLOOR_OUTLINE_COLOR} lineWidth={2.2}
+                raycast={noRaycast}
               />
             ) : null}
 

@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { useMemo, type ComponentProps } from "react";
 import {
   resolveHouseRoomFloorElevationMeters,
   type HousePlanRoom2D,
@@ -178,20 +178,15 @@ function LegacyWindowFrame({
   opacity: number;
   selected: boolean;
 }) {
+  // Stable user data: a page re-render that changes nothing here doesn't make R3F redraw.
+  const userData = useMemo(() => ({ testId: "legacy-window-symbol-3d", openingId: threshold.sourceId,
+    openingBottomMeters: threshold.bottom, openingHeightMeters: threshold.height }),
+  [threshold.bottom, threshold.height, threshold.sourceId]);
   return (
     <group
-      position={[
-        threshold.x,
-        threshold.bottom + threshold.height / 2,
-        threshold.z,
-      ]}
+      position={[threshold.x, threshold.bottom + threshold.height / 2, threshold.z]}
       rotation-y={segment.rotationY}
-      userData={{
-        testId: "legacy-window-symbol-3d",
-        openingId: threshold.sourceId,
-        openingBottomMeters: threshold.bottom,
-        openingHeightMeters: threshold.height,
-      }}
+      userData={userData}
     >
       <GeneratedWindowFrame3D
         widthMeters={threshold.length}
@@ -204,45 +199,43 @@ function LegacyWindowFrame({
   );
 }
 
-export function LegacyPhysicalOpeningMeshes({
-  assemblies,
-  selectedOpeningId,
-  ...thresholdProps
-}: LegacyPhysicalOpeningMeshesProps) {
-  return assemblies.map((assembly) => {
-    return (
-      <group
-        key={assembly.stableKey}
-        position={[
-          assembly.room.x,
-          assembly.floorWorldY,
-          assembly.room.z,
-        ]}
-        userData={{
-          testId: "legacy-physical-opening-assembly",
-          stableKey: assembly.stableKey,
-          openingId: assembly.sourceOpening.id,
-        }}
-      >
-        {assembly.threshold.kind === "window" ? (
-          <LegacyWindowFrame
-            threshold={assembly.threshold}
-            segment={assembly.segment}
-            wallThickness={assembly.wallThickness}
-            opacity={assembly.opacity}
-            selected={selectedOpeningId === assembly.threshold.sourceId}
-          />
-        ) : null}
-        <OpeningThresholdMesh
-          roomId={assembly.sourceOpening.roomId ?? assembly.room.id}
+type LegacyOpeningAssemblyProps = Omit<LegacyPhysicalOpeningMeshesProps, "assemblies"> & {
+  assembly: RenderableLegacyPhysicalOpeningAssembly;
+};
+
+function LegacyOpeningAssembly({ assembly, selectedOpeningId, ...thresholdProps }: LegacyOpeningAssemblyProps) {
+  const userData = useMemo(() => ({ testId: "legacy-physical-opening-assembly",
+    stableKey: assembly.stableKey, openingId: assembly.sourceOpening.id }),
+  [assembly.sourceOpening.id, assembly.stableKey]);
+  return (
+    <group
+      position={[assembly.room.x, assembly.floorWorldY, assembly.room.z]}
+      userData={userData}
+    >
+      {assembly.threshold.kind === "window" ? (
+        <LegacyWindowFrame
           threshold={assembly.threshold}
           segment={assembly.segment}
           wallThickness={assembly.wallThickness}
-          sourceOpening={assembly.sourceOpening}
-          floorWorldY={assembly.floorWorldY}
-          {...thresholdProps}
+          opacity={assembly.opacity}
+          selected={selectedOpeningId === assembly.threshold.sourceId}
         />
-      </group>
-    );
-  });
+      ) : null}
+      <OpeningThresholdMesh
+        roomId={assembly.sourceOpening.roomId ?? assembly.room.id}
+        threshold={assembly.threshold}
+        segment={assembly.segment}
+        wallThickness={assembly.wallThickness}
+        sourceOpening={assembly.sourceOpening}
+        floorWorldY={assembly.floorWorldY}
+        {...thresholdProps}
+      />
+    </group>
+  );
+}
+
+export function LegacyPhysicalOpeningMeshes({ assemblies, ...props }: LegacyPhysicalOpeningMeshesProps) {
+  return assemblies.map((assembly) => (
+    <LegacyOpeningAssembly key={assembly.stableKey} assembly={assembly} {...props} />
+  ));
 }

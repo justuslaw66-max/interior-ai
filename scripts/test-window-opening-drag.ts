@@ -174,8 +174,11 @@ const thresholdSource = fs.readFileSync(
 assert.match(thresholdSource,
   /import \{[^}]*shouldOpeningPointerDownSelect[^}]*\} from "\.\/openingPointerSelection";/,
   "The opening threshold mesh must take its pointer-down rule from the shared module.");
+// The handlers are stable across renders (useLatestCallback), so R3F doesn't redraw on a page re-render.
+assert.ok(collapseWhitespace(thresholdSource).includes("onPointerDown={interactive ? pointerDown : undefined}"),
+  "Precondition: the threshold mesh wires its stable pointer-down handler.");
 const thresholdPointerDown = thresholdSource.slice(
-  thresholdSource.indexOf("onPointerDown="), thresholdSource.indexOf("onPointerMove=")
+  thresholdSource.indexOf("const pointerDown = useLatestCallback("), thresholdSource.indexOf("const pointerMove = useLatestCallback(")
 );
 assert.ok(thresholdPointerDown.includes("onSelectTarget(target, event)"),
   "Precondition: the threshold pointer-down still owns the drag-start selection.");
@@ -247,8 +250,10 @@ assert.ok(collapseWhitespace(canonicalResize).includes("if (!enabled) return;"),
 const windowMeshSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
 );
+assert.ok(collapseWhitespace(windowMeshSource).includes("onPointerDown={pointerDown}"),
+  "Precondition: the window mesh wires its stable pointer-down handler.");
 const windowPointerDown = windowMeshSource.slice(
-  windowMeshSource.indexOf("onPointerDown="), windowMeshSource.indexOf("onClick=")
+  windowMeshSource.indexOf("const pointerDown = useLatestCallback("), windowMeshSource.indexOf("const click = useLatestCallback(")
 );
 assert.ok(collapseWhitespace(windowPointerDown).includes("event.stopPropagation(); if (!startDrag(event)) return;"),
   "A window may select on pointer-down only when its drag actually starts, and an unclaimed one must "

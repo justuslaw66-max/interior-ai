@@ -240,7 +240,7 @@ assert.ok(seededLegacyCounts.includes("window-west-main"));
 // opening-aware house-plan structure; the scene read model keeps no second routing predicate.
 assert.match(
   readFileSync("components/editor/design-page/DesignSceneStructureLayer.tsx", "utf8"),
-  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?mapPlanOpeningsToRoomRenderer\([\s\S]*?<HousePlanRenderer3D[\s\S]*?openings=\{topologyOpenings\}/,
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?<HousePlanRenderer3D[\s\S]*?openings=\{wholeHome\.topologyOpenings\}/,
   "A single-room scene with seeded openings must use the opening-aware legacy structure renderer."
 );
 assert.doesNotMatch(

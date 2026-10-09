@@ -295,7 +295,7 @@ assert.doesNotMatch(
 );
 assert.match(itemLayerSource, /projectSceneRoomItem\(\s*sceneEntry,\s*projection/);
 assert.match(itemLayerSource, /resolveSceneItemViewContinuity\(sceneEntry/);
-assert.match(itemLayerSource, /sceneLayerId:\s*continuity\.layerId/);
+assert.match(itemLayerSource, /sceneLayerId=\{continuity\.layerId\}/);
 assert.match(itemLayerSource, /visible=\{continuity\.visible\}/);
 assert.doesNotMatch(
   itemLayerSource,
