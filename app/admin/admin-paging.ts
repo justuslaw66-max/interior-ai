@@ -33,8 +33,13 @@ export function parseAdminPageRequest(params: AdminSearchParams): AdminPageReque
   return { direction: "first" };
 }
 
-/** The findMany arguments for a page. */
-export function adminPageArgs(request: AdminPageRequest, pageSize = ADMIN_PAGE_SIZE) {
+/**
+ * The findMany arguments for a page. One shape, not a union: spread into Prisma's findMany, a
+ * union of two argument shapes makes TypeScript infer the call from one and reject the other.
+ */
+export type AdminPageArgs = { cursor?: { id: string }; skip?: number; take: number };
+
+export function adminPageArgs(request: AdminPageRequest, pageSize = ADMIN_PAGE_SIZE): AdminPageArgs {
   if (request.direction === "first") return { take: pageSize + 1 };
   return {
     cursor: { id: request.cursor },

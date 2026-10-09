@@ -95,7 +95,7 @@ assert.match(
 
 // One dictionary per kind of status: every value has a label in words and a tone.
 const enumValues = (source: string, pattern: RegExp) => {
-  const body = source.match(pattern)?.[1];
+  const body = source.match(pattern)?.[1] ?? "";
   assert.ok(body, `${pattern} must be found`);
   return Array.from(body.matchAll(/[a-z_]+/g), (match) => match[0]).sort();
 };
