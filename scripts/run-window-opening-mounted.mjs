@@ -15,6 +15,7 @@ import {
   processExists,
   resolveOwnedPortListener,
 } from "./window-opening-process-ownership.mjs";
+import { warmUpWindowOpeningServer } from "./window-opening-server-warm-up.mjs";
 
 const repositoryRoot = process.cwd();
 const hash = (value) => createHash("sha256").update(value).digest("hex");
@@ -311,6 +312,9 @@ try {
     port, launcherPid, repositoryRoot,
   });
   listenerPid = ownership.listenerPid;
+  // Compiles the design page and the routes it reads before the first test
+  // (scripts/window-opening-server-warm-up.mjs).
+  result.serverWarmUp = await warmUpWindowOpeningServer(baseUrl);
   const readyAt = new Date().toISOString();
   result.server = { ...result.server, ...ownership, readyAt };
   const serverContextPath = path.join(runRoot, "server-context.json");

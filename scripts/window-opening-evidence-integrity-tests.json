@@ -67,6 +67,8 @@
     "linux listener observation passes the evidence verifier",
     "macos listener observation keeps the raw lsof output",
     "linux listener observation refuses an uninspectable listener",
+    "server warm-up requests the design page, its scripts and the routes it reads",
+    "server warm-up fails on a redirect, an error answer or a page without scripts",
     "screenshot substitution",
     "screenshot path escape",
     "duplicate path records",

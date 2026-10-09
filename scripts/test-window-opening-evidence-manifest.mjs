@@ -41,6 +41,12 @@ import {
   resolveOwnedPortListener,
 } from "./window-opening-process-ownership.mjs";
 import {
+  warmUpWindowOpeningServer,
+  windowOpeningPageScriptPaths,
+  WINDOW_OPENING_WARM_UP_PAGE,
+  WINDOW_OPENING_WARM_UP_ROUTES,
+} from "./window-opening-server-warm-up.mjs";
+import {
   assertIgnoredBuildOutputObservation,
   collectIgnoredStateInventory,
   createIgnoredBuildOutputObservation,
@@ -624,6 +630,75 @@ async function listenerObservationRecord(host) {
     port: 45123, pid: 222, ...procHostFixture({ ownerVisible: false }),
   }), /cannot inspect/);
   cover("linux listener observation refuses an uninspectable listener");
+}
+
+// A fake server for the warm-up: answers each path from `answers` (status 200 by default) and
+// records the order of the requests.
+function warmUpServerFixture(answers) {
+  const requested = [];
+  const request = async (url, init) => {
+    assert.equal(init.redirect, "manual");
+    assert.ok(init.signal instanceof AbortSignal);
+    const requestPath = `${url.pathname}${url.search}`;
+    requested.push(requestPath);
+    const answer = answers[requestPath] ?? { status: 404, body: "" };
+    return new Response(answer.body ?? "", { status: answer.status ?? 200 });
+  };
+  return { requested, request };
+}
+const warmUpPageHtml = [
+  '<html><head><script src="/_next/static/chunks/webpack.js?v=1" async=""></script>',
+  '<script src="https://cdn.example/elsewhere.js"></script>',
+  '<script src="/_next/static/chunks/app/design/page.js" async=""></script>',
+  '<script src="/_next/static/chunks/webpack.js?v=1" async=""></script></head></html>',
+].join("");
+{
+  assert.deepEqual(windowOpeningPageScriptPaths(warmUpPageHtml), [
+    "/_next/static/chunks/webpack.js?v=1",
+    "/_next/static/chunks/app/design/page.js",
+  ]);
+  const server = warmUpServerFixture({
+    [WINDOW_OPENING_WARM_UP_PAGE]: { body: warmUpPageHtml },
+    "/_next/static/chunks/webpack.js?v=1": { body: "webpack" },
+    "/_next/static/chunks/app/design/page.js": { body: "page" },
+    ...Object.fromEntries(WINDOW_OPENING_WARM_UP_ROUTES.map((route) => [route, { body: "{}" }])),
+  });
+  let clock = 1_000;
+  const warmUp = await warmUpWindowOpeningServer("http://127.0.0.1:45123", {
+    request: server.request, now: () => (clock += 5),
+  });
+  assert.deepEqual(server.requested, [
+    "/design?debug_layout=1",
+    "/_next/static/chunks/webpack.js?v=1",
+    "/_next/static/chunks/app/design/page.js",
+    "/api/catalog/live",
+    "/api/models/imported",
+    "/api/auth/session",
+  ]);
+  assert.deepEqual(warmUp.requests.map((entry) => entry.path), server.requested);
+  assert.ok(warmUp.requests.every((entry) => entry.status === 200 && entry.durationMs === 5));
+  assert.equal(warmUp.requests[2].bytes, 4);
+  assert.ok(Date.parse(warmUp.startedAt) < Date.parse(warmUp.endedAt));
+  cover("server warm-up requests the design page, its scripts and the routes it reads");
+}
+{
+  const server = warmUpServerFixture({
+    [WINDOW_OPENING_WARM_UP_PAGE]: { body: warmUpPageHtml },
+    "/_next/static/chunks/webpack.js?v=1": { status: 500 },
+  });
+  await assert.rejects(() => warmUpWindowOpeningServer("http://127.0.0.1:45123", {
+    request: server.request,
+  }), /webpack\.js\?v=1 answered 500/);
+  assert.equal(server.requested.length, 2);
+  const redirected = warmUpServerFixture({ [WINDOW_OPENING_WARM_UP_PAGE]: { status: 307 } });
+  await assert.rejects(() => warmUpWindowOpeningServer("http://127.0.0.1:45123", {
+    request: redirected.request,
+  }), /design\?debug_layout=1 answered 307/);
+  const scriptless = warmUpServerFixture({ [WINDOW_OPENING_WARM_UP_PAGE]: { body: "<html></html>" } });
+  await assert.rejects(() => warmUpWindowOpeningServer("http://127.0.0.1:45123", {
+    request: scriptless.request,
+  }), /names no scripts/);
+  cover("server warm-up fails on a redirect, an error answer or a page without scripts");
 }
 
 async function screenshotFixture() {

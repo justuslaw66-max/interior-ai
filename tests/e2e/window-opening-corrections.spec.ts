@@ -32,6 +32,11 @@ test.use({ viewport: { width: 1440, height: 1000 }, actionTimeout: 30_000,
   navigationTimeout: 120_000, trace: WINDOW_OPENING_TRACE_MODE });
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
+// The fixture's room shows once the page has started and restored it: about 10 s on CI's
+// development server, and more when the server is slow to send the page's scripts (#109's run
+// 37894799114: 13 s for the scripts alone, and the room missed a 20 s wait). This setup step
+// gets 60 s; the tests' own checks keep the 20 s above.
+const FIXTURE_ROOM_TIMEOUT_MS = 60_000;
 type ExecutionContext = NonNullable<ReturnType<
   typeof import("../../scripts/window-opening-browser-context.mjs").canonicalWindowOpeningContext
 >> | ReturnType<typeof import("../../scripts/window-opening-browser-context.mjs").localWindowOpeningContext>;
@@ -488,7 +493,9 @@ async function loadFixture(
   assertFixtureTarget(page, "/design");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible();
   const debug = page.getByTestId("qa-design-layout-debug");
-  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
+  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id, {
+    timeout: FIXTURE_ROOM_TIMEOUT_MS,
+  });
   await expect.poll(() => page.evaluate(() => ({
     layout: document.querySelectorAll('[data-testid="qa-design-layout-debug"]').length,
     camera: Boolean(document.documentElement.getAttribute("data-qa-camera-state")),
@@ -532,7 +539,9 @@ async function replaceFixture(page: Page, value: ReturnType<typeof fixture>) {
   }, { key: STORAGE_KEY, raw: JSON.stringify(value) });
   await page.reload({ waitUntil: "domcontentloaded" });
   const debug = page.getByTestId("qa-design-layout-debug");
-  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
+  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id, {
+    timeout: FIXTURE_ROOM_TIMEOUT_MS,
+  });
   const view2d = page.locator('[data-testid="editor-view-2d"]:visible').first();
   if ((await view2d.getAttribute("aria-pressed")) !== "true") await view2d.click();
   await expect(debug).toHaveAttribute("data-view-mode", "2d");
