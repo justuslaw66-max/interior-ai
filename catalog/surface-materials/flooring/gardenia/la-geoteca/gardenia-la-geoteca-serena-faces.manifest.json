@@ -1,0 +1,793 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/serena/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - SERENA - minimali.zip (13077780 bytes, sha256 213380b939defdddecfacc4eca354774f398cd06fdbf0b36cc1e82d941ed2554); PLEIN AIR - LA GEOTECA SERENA - minimali.zip (8756892 bytes, sha256 0dc4d11a51cb1615705b705f42e72481c8436fa116c5d6fbd53a124bf3d733ed).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0011718",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/serena/pf60011718-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0011718_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-serena-pf60011718-120x280-nat-90382-0; wall gardenia-wall-tile-la-geoteca-serena-pf60011718-120x280-nat-90382-0",
+   "faces": [
+    {
+     "file": "0011718_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 148788,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - SERENA - 120X280 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "a355b66314c5db80ea1cdba4cad6569dad6ff2c67ed84abec5dbaab21c7d7442",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA SERENA RETT 120X280_01",
+      "id": "5ec40907-9eda-4eb1-8c25-2c272621bea9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011718_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 150480,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - SERENA - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "2a8a0bc99b6a5eaa88f3e74e859af463faff3c121b738f89a7df0d1f0ee0a707",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA SERENA RETT 120X280_03",
+      "id": "4faac4cd-e2e7-440f-850f-1c1b0cebfe80",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011718_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 145122,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - SERENA - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "baa05799e33fe6088a6d6d1560c27d8cef3bd1b246c654a42ab12f9cf55bedf1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA SERENA RETT 120X280_02",
+      "id": "922eb4bc-caf5-4b90-ada7-7ab2db7714c4",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0011726",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/serena/pf60011726-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0011726_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-serena-pf60011726-120x120-nat-90389-0; wall gardenia-wall-tile-la-geoteca-serena-pf60011726-120x120-nat-90389-0",
+   "faces": [
+    {
+     "file": "0011726_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 60982,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f6563a37184ca464c6d3b106e15d160fa89e90507d584fea5e61ab33036418ca",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA SERENA RETT 120X120_01",
+      "id": "7801f3d8-87d8-4d58-b1b8-241d16f3fa24",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011726_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 62554,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "c13bba9301f29856877e4b34984c700c16db865537bb1667acabd2ad7a2d5e88",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA SERENA RETT 120X120_03",
+      "id": "d51da13a-bb28-4c57-a633-eb81a26bd6d8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011726_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63492,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "e38dfbf3a7fc992cf66326b2dc905bdb2ce5d253769696a5b0cec858a0db0ef4",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA SERENA RETT 120X120_05",
+      "id": "ea739d54-61d0-4e22-97a0-4b40d1f4371c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011726_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64906,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "230973d27eb2e1d229d75ab8325edb0d42a226f3600b1feb5ee72820c69bec22",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA SERENA RETT 120X120_04",
+      "id": "c45b135d-12e5-4fa2-8fb8-18224642584d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011726_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64432,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "271610dad82e16736454fa2c7d8243075da01b93e5c238b8363f179b51414980",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA SERENA RETT 120X120_02",
+      "id": "f6899240-ac40-41f7-bdf6-a58b91d3bf0c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011726_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 61656,
+     "source_zip": "LA GEOTECA - SERENA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - SERENA - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "7744d67b53f8e5598bcc840e7f847087374fa1f8e0165e3ae5b9c08ac854fd77",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA SERENA RETT 120X120_06",
+      "id": "487562bb-bc40-4acc-9ac3-20099eb13d63",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014520",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-serena/pf60014520-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014520_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0014520_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31686,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "45d142bc87dff280183cb889ec56216645bfa44bcfbdf87dbfd55f9c955b6f73",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_01",
+      "id": "ee646d85-ccfd-42e2-977d-46d48c50d16a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014520_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32132,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "70c41ac71fe59e3eee2ae4c3f24dd2839991a1b67b6315bc38b725603ab76015",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_08",
+      "id": "440881dd-320e-42f3-b83b-43d5e00d5001",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014520_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34056,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "78779bd3e28213857b1ea4e03b4727c76e6f3d66b4cacdf65c645d1f61e634b3",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_04",
+      "id": "f8f073d8-13f1-4a8c-b41d-4f95b4da1b9d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014520_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30110,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "5dee0d421b9c85796c8bea36d24c9df39422375871f1ffec91fdae1067e05f77",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_06",
+      "id": "f2e4a5fe-70af-4e24-b652-0c6eb7a1bc25",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014520_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33062,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e3e159455cd17c4cc124e9617c55a22e0be375ff6a95a611637080511f4ca9c5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_05",
+      "id": "bfb54df2-61d6-47e9-80ab-448516565cc3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014520_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31544,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "de3d6aaab22b5649b20515e65bc33505ea8a465ccfb0cdcd56562c8f17a9834f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_09",
+      "id": "d8a9f4bb-4fc4-45bd-a485-005ca22ebec1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014520_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34022,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e596cb986b07a1fcf25d7747a8092d5dcc7cab9a6682987ddef30288a2f6088d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_10",
+      "id": "34b35d2b-2b9d-40c5-8d8c-e4071146e655",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014520_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30452,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "39b465c8acd30ecb295393d6aa21015a2ab8b40e0f2667370aac1b3ab770236c",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_11",
+      "id": "0a8245a0-4027-4fab-bab9-896bb302ff9b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014520_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34122,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "69101309b6b423994450b0f13498ecdd543e5ca21a2b9f1b8fd91f014a3606c8",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_12",
+      "id": "221675e4-0cc5-4d36-b091-a7643484d212",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014520_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31560,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "63366ae07303c7ed893a3cc4b970304b54252827d2536dd323741cbed634a294",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_07",
+      "id": "41e14f8d-37cd-44bb-bbb4-a72bae3eaa5a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014520_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30882,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "0f654581cac0ba6994cf24841bc27257b4cb4b9744a30af172060f6c941efe92",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_03",
+      "id": "391deece-c54b-4fa5-8fd5-2502bfaa64f6",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014520_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33634,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA SERENA - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "51f97b0c4379a9a426c11d74088ea292312f25899dfb276d48bb93044483119f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA SERENA 60X120 R11 20 MM_02",
+      "id": "18154829-c5f7-4667-bb8c-da1bb1fece3d",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012077",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/serena/pf60012077-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012077_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-serena-pf60012077-80x80-nat-90408-0; floor gardenia-flooring-la-geoteca-serena-pf60012083-80x80-90413-0 (uses 0012077's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0012077's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-la-geoteca-serena-pf60012077-80x80-nat-90408-0",
+   "faces": [
+    {
+     "file": "0012077_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28052,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4114dba6f2690a975bf59f2685188930711565dcc4cc4653e23519a6ded0a532",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA SERENA RETT 80X80_01",
+      "id": "416eb966-8b97-41cc-b968-3cbc396a76bc",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012077_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29352,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "aba7521af7ed6fd255363a0de1cae2d2ee8b2c4ee6b319486584a853bf6cd18c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA SERENA RETT 80X80_06",
+      "id": "bef19408-1f5d-41c3-bf04-8d59b73e3fc6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012077_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28170,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d018d58499bedaa6086631ae7093263f081b97c9fc07092d02feee10894da38f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA SERENA RETT 80X80_08",
+      "id": "cd30b807-d2fa-4b96-8cd1-d9de18215913",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012077_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27608,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "675ef41c9ab0d0760aa325fbdb3252e929414800e3651a411cf0579914bec232",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA SERENA RETT 80X80_05",
+      "id": "3802114a-f8d6-4ea5-b403-cc8a9730ee54",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012077_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27646,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "80c61f47c43163ba576624133e728a38e1d6b261297e64720665cbe97d951cab",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA SERENA RETT 80X80_07",
+      "id": "4022f5a5-cb68-4873-9925-a7e1915b6238",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012077_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26662,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b29977f873eca5922062a8b3fcab0d79b9e713eeddbafcbad576ed22c28e1683",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA SERENA RETT 80X80_04",
+      "id": "aaaeb020-1daa-40ce-99a7-6d797a8177aa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012077_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28206,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0651df00905f088f0a361122e62c52a3411ee21eafa5634fe11e8363e954aa4c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA SERENA RETT 80X80_03",
+      "id": "2323850a-7a97-4d37-ac8f-ea6ea1ea54ed",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012077_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27962,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "912fdc3c0b3a7a7366eaeaf9943011fbf9b5212937ad4c49f2518b3feaee6ba2",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA SERENA RETT 80X80_09",
+      "id": "db41d1ff-dfd2-489a-b749-24066c7faf79",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012077_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26354,
+     "source_zip": "PLEIN AIR - LA GEOTECA SERENA - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA SERENA - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0acf44a25c40cc2df47898904427a5d92bbcecf60541e438425494ca5ef6f5d7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA SERENA RETT 80X80_02",
+      "id": "f57e8ab1-b3c7-4fbb-9c29-0b86ccff2021",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

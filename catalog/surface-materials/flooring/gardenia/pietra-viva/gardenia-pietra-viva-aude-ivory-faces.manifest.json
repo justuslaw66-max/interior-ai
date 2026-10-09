@@ -1,0 +1,601 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-ivory/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - AUDE IVORY - minimali.zip (41748942 bytes, sha256 71344248fc538f290d1f7256d432728a63c54641b85724634e63e7c6770fe458).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0014862",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-ivory/pf60014862-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0014862_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-beige-0014862-120x280-90925-0; wall gardenia-wall-tile-pietra-viva-aude-beige-0014862-120x280-90925-0",
+   "faces": [
+    {
+     "file": "0014862_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 184326,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X280-Lux 3D/PIETRA VIVA - AUDE IVORY - 120X280 - Lux 3D - view_1.jpg",
+     "source_px": [
+      1773,
+      4096
+     ],
+     "source_sha256": "bc59b901d930f751452dc4dfa4d52d2fdffeba0c6b825491d7bde52d8a95447c",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE BEIGE 120X280_02",
+      "id": "d128d7eb-613c-439d-802a-1dbb3fe2c30a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014862_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 200024,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X280-Lux 3D/PIETRA VIVA - AUDE IVORY - 120X280 - Lux 3D - view_2.jpg",
+     "source_px": [
+      1773,
+      4096
+     ],
+     "source_sha256": "c3ed4d570fc7dee0ab9f29dcb265e9db37d23410b64b9d6f76bb171cf431334d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE BEIGE 120X280_01",
+      "id": "e3904bb8-15c6-439b-a47c-7033cb11a0e8",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012264",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-ivory/pf60012264-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012264_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-ivory-0012264-80x80-nat-90913-0; wall gardenia-wall-tile-pietra-viva-aude-ivory-0012264-80x80-nat-90913-0",
+   "faces": [
+    {
+     "file": "0012264_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 146280,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "32b2b9f5ee297d01046e1b88b70d2ba2e36bfacf452c2bd623e9cf732cae727f",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_08",
+      "id": "aab5f014-f0ab-43a4-9838-1d98426d0690",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012264_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 146130,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b672b0f4dc2c81ce119fc1dc2ca73518b7946585864d363daf01801e47018f5f",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_07",
+      "id": "2cd12fe4-5049-42b3-9aee-6eb916dcdf49",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012264_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 147892,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "2eec3950961cda339209fb52c1b4a06e3128ca16e8b8bbddc6f11432270bc479",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_04",
+      "id": "4a13c9a4-6f3e-4335-8cfb-e8a02b0c45c6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012264_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 150698,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "2aa6888413efa8c2c234b903da6f3c4c5d8563ab449498af0783afebfbb82f35",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_06",
+      "id": "8594bb50-ff74-47e8-88ce-13e6b8358372",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012264_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 134082,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "17c19c75bfaa5a28e5d33ce028805a4c55e2d57d76a78e055f5ef63315fd0584",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_05",
+      "id": "d1c73175-37c9-4531-90f2-f5d7a34638b3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012264_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 151386,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "465d578f66e85460d0a041f3f9dc0813ca9a07ea3cf4437fcf771f1825a9887d",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_02",
+      "id": "b59e2cf0-8842-44a0-b40d-70a75ad8f912",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012264_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 147736,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "8990335ef5b561b73d72e6100f51c2bb95b67c8ceca08c7ae0c74d16f5329b72",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_03",
+      "id": "cb4b0d67-2e46-4c7f-825a-6d197fdf9629",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012264_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 134318,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE IVORY - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "a383b239bf0d6ccb74994ea10c2f426040657f8a9f62ba31c6bdb7a27ccecee5",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE IVORY 80X80_01",
+      "id": "094f0fe6-17a7-46fd-8d7c-db67321070d1",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012910",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-ivory/pf60012910-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012910_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-ivory-0012258-120x120-90909-0 (uses 0012910's faces: ABK's 4 Antique 3D pictures are 0012910's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-aude-ivory-0012910-120x120-nat-90919-0; wall gardenia-wall-tile-pietra-viva-aude-ivory-0012258-120x120-90909-0 (uses 0012910's faces: ABK's 4 Antique 3D pictures are 0012910's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-aude-ivory-0012910-120x120-nat-90919-0",
+   "faces": [
+    {
+     "file": "0012910_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 136422,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "c337b772ede4a0cf0db469d1185f52fbefb7b2175549879396152ee1562ed26d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE IVORY 120X120_04",
+      "id": "b69f607c-788e-4e2f-86c3-9205b5c7674a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012910_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 134866,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "c198a9e61da6265aef634c089d3b1f2e7f18c02041ab2d4a83f40fa54fe0bb77",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE IVORY 120X120_03",
+      "id": "3c9bc827-13a1-4e65-b87f-d4a8579a695a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012910_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 125012,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2390,
+      2390
+     ],
+     "source_sha256": "5563a964b76f2daf2449a046b27b4cd17c714c1d48335772118066d9e44c583c",
+     "source_px_per_mm": 1.992,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE IVORY 120X120_01",
+      "id": "d6735869-5155-403f-807c-96697776114f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012910_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 137278,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2392,
+      2392
+     ],
+     "source_sha256": "f88f91ae0293ebeee081b58b15cb74c17c1ca8532a759e8f411e22a4ec362105",
+     "source_px_per_mm": 1.993,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE IVORY 120X120_02",
+      "id": "57e3d61d-c37d-47a9-a132-cfcfeac592ae",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012914",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-ivory/pf60012914-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012914_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-ivory-0011973-60x120-90905-0 (uses 0012914's faces: ABK's 8 Antique 3D pictures are 0012914's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-aude-ivory-0012914-60x120-nat-90923-0; wall gardenia-wall-tile-pietra-viva-aude-ivory-0011973-60x120-90905-0 (uses 0012914's faces: ABK's 8 Antique 3D pictures are 0012914's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-aude-ivory-0012914-60x120-nat-90923-0",
+   "faces": [
+    {
+     "file": "0012914_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 75616,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2392,
+      1196
+     ],
+     "source_sha256": "3f89d703b2ea933b00f063d2792e5af7cffacd05eea19b7063358e74773bde9d",
+     "source_px_per_mm": 1.993,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_04",
+      "id": "0a0d4e76-3828-4fde-bdd2-65d6dac816b7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012914_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61908,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2392,
+      1196
+     ],
+     "source_sha256": "209245eef1d896d0166c83c919ce0d27e040e413bf2530229d5909f11c00f471",
+     "source_px_per_mm": 1.993,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_03",
+      "id": "69c81e3c-1a44-4c29-86b4-ee906c7bd558",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012914_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64430,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a7a3710cc092132d86e150edda6fb53cfa3d76c94e3ba931a01ce12274ceb1a0",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_05",
+      "id": "fa522fd2-9cc4-4dc9-b3fa-ab31d75e242c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012914_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 66930,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2390,
+      1195
+     ],
+     "source_sha256": "3dc4feb64c25464e646a6ba8fcc297727e6e3151a50b71ed62940f71ec0cb102",
+     "source_px_per_mm": 1.992,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_02",
+      "id": "8d2d3824-f458-433e-ae19-c9ac627c52ce",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012914_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56938,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2390,
+      1195
+     ],
+     "source_sha256": "14b24b96bf97960bd3010374c2823ab7867916632305ed328b51dc6669749f8b",
+     "source_px_per_mm": 1.992,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_01",
+      "id": "a34af582-bfb4-49ba-ae47-bc0591b1face",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012914_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60264,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "9d12fdf586cf4ef7e7f3e261b2bdc3e0f5c371144418c7e2c8fa4414c29ee274",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_07",
+      "id": "9a30a824-1d9a-46e1-8ffd-7b50d07bb210",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012914_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74144,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "830f695fecf2c29f03f54548322fb7b3544b58f71e208eceef0ca5915f1f69b3",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_08",
+      "id": "74d1b4fb-b202-4a39-bbc2-6611ff83bdaa",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012914_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 70048,
+     "source_zip": "PIETRA VIVA - AUDE IVORY - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE IVORY - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "ce3acceb8fec81bc8b05e3747281842248d512236a57eeb1e3d48c3240022140",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE IVORY 60X120_06",
+      "id": "a15b683c-5403-4caf-8881-8d3f42be133f",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}
