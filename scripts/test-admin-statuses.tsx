@@ -20,6 +20,7 @@ import {
   parseImportJobListFilters,
 } from "../app/admin/imports/import-jobs-list";
 import { modelListWhere, parseModelListFilters } from "../app/admin/models/models-list";
+import { getPrimaryImportWorkflowQueue } from "../lib/import-jobs/admin-workflow-shared";
 import {
   ADMIN_STATUS_DICTIONARIES,
   describeAdminStatus,
@@ -140,7 +141,10 @@ const statusViews: Record<string, Array<[RegExp, string]>> = {
   "app/admin/imports/[id]/ImportJobActions.tsx": [[/describeAdminStatus\("importJob", nextStatus\)\.label/, "the select's options"]],
   "app/admin/catalog/inbox/page.tsx": [
     [/<AdminStatusBadge kind="workflowStage" status=\{job\.workflowStage\} \/>/, "the blockers table's stage"],
+  ],
+  "app/admin/catalog/inbox/InboxQueues.tsx": [
     [/<AdminStatusBadge kind="importJob" status=\{job\.status\} \/>/, "a queue card's status"],
+    [/describeAdminStatus\("workflowStage", job\.workflowStage\)\.label/, "a queue card's stage"],
   ],
   "app/admin/catalog/review/page.tsx": [[/<AdminStatusBadge kind="sizeCheck" status=\{row\.state\} \/>/, "the size rows"]],
   "app/admin/models/page.tsx": [[/<AdminStatusBadge kind="modelAsset" status=\{getModelAssetStatus\(a\)\} \/>/, "a model card"]],
@@ -260,6 +264,23 @@ assert.doesNotMatch(read("app/admin/models/page.tsx"), /prisma\.modelAsset\.find
 for (const path of ["app/admin/imports/page.tsx", "app/admin/models/page.tsx"]) {
   assert.match(read(path), /<AdminPager \{\.\.\.pages\} cursorLost=\{list\.cursorLost\} \/>/, `${path} has Previous and Next`);
 }
+const floorPlanQueue = read("app/admin/floor-plans/load-floor-plan-queue.ts");
+assert.match(floorPlanQueue, /parseAdminPageRequest\(\{ \.\.\.input\.params, after: input\.params\.after \?\? input\.params\.cursor \}\)/, "old Next links (cursor=) still work");
+assert.match(floorPlanQueue, /\.\.\.adminPageArgs\(request, ADMIN_FLOOR_PLAN_QUEUE_PAGE_SIZE\)/, "the floor-plan queue pages both ways");
+assert.match(floorPlanQueue, /if \(cursorLost\) request = \{ direction: "first" \};/);
+const floorPlanTable = read("app/admin/floor-plans/AdminFloorPlanQueueTable.tsx");
+assert.match(floorPlanTable, /<AdminPager \{\.\.\.pager\} \/>/);
+assert.doesNotMatch(floorPlanTable, /Next 50/);
+const workflow = read("lib/import-jobs/admin-workflow.ts");
+assert.match(workflow, /prisma\.importJob\.groupBy\(\{\s*by: \["status", "workflowStage"\],/, "the inbox counts every job by queue");
+assert.match(read("app/admin/catalog/inbox/page.tsx"), /<InboxSummary counts=\{queueCounts\} blocked=\{workflow\.summary\.blocked\} \/>/);
+const inboxQueues = read("app/admin/catalog/inbox/InboxQueues.tsx");
+assert.match(inboxQueues, /queue\.jobs\.length > shown\.length[\s\S]*Showing the \{shown\.length\} most recently changed of \{queue\.jobs\.length\}/, "a queue card says when it lists fewer than the queue holds");
+assert.match(inboxQueues, /\["Blocked \(latest 300\)", blocked\]/, "the blocked count says what it counts");
+assert.equal(getPrimaryImportWorkflowQueue({ status: "needs_review", workflowStage: null }), "review", "a queue from a groupBy row");
+assert.equal(getPrimaryImportWorkflowQueue({ status: "optimized", workflowStage: "intake" }), "scrape");
+assert.equal(getPrimaryImportWorkflowQueue({ status: "optimized", workflowStage: null }), "normalize");
+
 const pager = renderToStaticMarkup(<AdminPager previousHref="/admin/imports?before=r4" nextHref={null} cursorLost />);
 assert.match(pager, /That page is no longer available/);
 assert.match(pager, /<a [^>]*href="\/admin\/imports\?before=r4"[^>]*>Previous<\/a>/);
@@ -268,5 +289,5 @@ assert.match(pager, /<span [^>]*>Next<\/span>/, "Next isn't a link on the last p
 console.log(
   "Admin status checks passed: one import-job sequence, used by the job page and both routes; " +
     `${Object.keys(ADMIN_STATUS_DICTIONARIES).length} status dictionaries and the badge, in every view; ` +
-    "status changes and a model's approval confirmed first; Import jobs and 3D models paged both ways."
+    "status changes and a model's approval confirmed first; Import jobs, 3D models and floor plans paged both ways; the inbox counts every job."
 );

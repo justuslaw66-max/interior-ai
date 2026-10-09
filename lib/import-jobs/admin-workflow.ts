@@ -24,6 +24,11 @@ export type ImportWorkflowBlockerJob = AdminImportWorkflowJob & {
   validationBlockers: string[];
 };
 
+export type ImportWorkflowQueueCounts = {
+  total: number;
+  byQueue: Record<ImportWorkflowQueueKey, number>;
+};
+
 export type AdminImportWorkflowData = {
   jobs: AdminImportWorkflowJob[];
   queues: ImportWorkflowQueue[];
@@ -87,6 +92,21 @@ const prismaCompat = prisma as unknown as {
     }) => Promise<ImportJobRow[]>;
   };
 };
+
+/** Every import job counted by queue (UX audit AD6), not only the 300 the inbox lists. */
+export async function getImportWorkflowQueueCounts(): Promise<ImportWorkflowQueueCounts> {
+  const groups = await prisma.importJob.groupBy({
+    by: ["status", "workflowStage"],
+    _count: { _all: true },
+  });
+  const byQueue: Record<ImportWorkflowQueueKey, number> = { scrape: 0, normalize: 0, review: 0, publish: 0 };
+  let total = 0;
+  for (const group of groups) {
+    byQueue[getPrimaryImportWorkflowQueue(group)] += group._count._all;
+    total += group._count._all;
+  }
+  return { total, byQueue };
+}
 
 export async function getAdminImportWorkflowData(): Promise<AdminImportWorkflowData> {
   const jobs = await prismaCompat.importJob.findMany({

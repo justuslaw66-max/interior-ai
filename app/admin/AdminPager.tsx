@@ -3,19 +3,17 @@ import Link from "next/link";
 const LINK = "rounded-lg border bg-white px-3 py-2 text-sm font-medium hover:bg-neutral-50";
 const OFF = "rounded-lg border px-3 py-2 text-sm text-neutral-400";
 
+export type AdminPagerProps = {
+  previousHref: string | null;
+  nextHref: string | null;
+  cursorLost?: boolean;
+};
+
 /**
  * Previous and Next for an Admin list (UX audit AD6). A page whose link no longer leads anywhere
  * (its row was deleted) says so, instead of quietly showing the first page.
  */
-export function AdminPager({
-  previousHref,
-  nextHref,
-  cursorLost = false,
-}: {
-  previousHref: string | null;
-  nextHref: string | null;
-  cursorLost?: boolean;
-}) {
+export function AdminPager({ previousHref, nextHref, cursorLost = false }: AdminPagerProps) {
   return (
     <div className="space-y-2">
       {cursorLost ? (

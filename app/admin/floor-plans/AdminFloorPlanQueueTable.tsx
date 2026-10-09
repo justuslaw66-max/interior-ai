@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { AdminFloorPlanQueueJob } from "@/lib/floor-plan-imports/admin-queue";
+import { AdminPager, type AdminPagerProps } from "../AdminPager";
 import { AdminStatusBadge } from "../AdminStatusBadge";
 
 function formatBytes(bytes: number) {
@@ -17,11 +18,8 @@ function attentionLabel(attention: AdminFloorPlanQueueJob["attention"]) {
 
 export default function AdminFloorPlanQueueTable({
   jobs,
-  nextHref,
-}: {
-  jobs: AdminFloorPlanQueueJob[];
-  nextHref: string | null;
-}) {
+  ...pager
+}: { jobs: AdminFloorPlanQueueJob[] } & AdminPagerProps) {
   return (
     <section className="overflow-hidden rounded-xl border bg-white">
       <div className="overflow-x-auto">
@@ -113,11 +111,9 @@ export default function AdminFloorPlanQueueTable({
           </tbody>
         </table>
       </div>
-      {nextHref ? (
-        <div className="flex justify-end border-t bg-neutral-50 px-4 py-3">
-          <Link className="rounded-lg border bg-white px-3 py-2 text-sm font-medium" href={nextHref}>
-            Next 50
-          </Link>
+      {pager.previousHref || pager.nextHref || pager.cursorLost ? (
+        <div className="border-t bg-neutral-50 px-4 py-3">
+          <AdminPager {...pager} />
         </div>
       ) : null}
     </section>

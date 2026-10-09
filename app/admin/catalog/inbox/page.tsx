@@ -5,12 +5,13 @@ import { InboxFiltersUI, type InboxQueueFilter } from "@/components/admin/InboxF
 import {
   getAdminImportWorkflowData,
   getImportJobValidationBlockers,
+  getImportWorkflowQueueCounts,
 } from "@/lib/import-jobs/admin-workflow";
 import { AdminPageHeader } from "../../AdminPageHeader";
 import { AdminStatusBadge } from "../../AdminStatusBadge";
-import { describeAdminStatus } from "../../admin-status";
 import { adminSection, adminTitle } from "../../admin-navigation";
 import { auth } from "../../admin-session";
+import { InboxQueueCard, InboxSummary } from "./InboxQueues";
 
 const SECTION = adminSection("/admin/catalog/inbox");
 
@@ -35,7 +36,10 @@ export default async function AdminCatalogInboxPage({
     resolvedSearchParams?.blocked === "1" ||
     (Array.isArray(resolvedSearchParams?.blocked) && resolvedSearchParams?.blocked.includes("1"));
 
-  const workflow = await getAdminImportWorkflowData();
+  const [workflow, queueCounts] = await Promise.all([
+    getAdminImportWorkflowData(),
+    getImportWorkflowQueueCounts(),
+  ]);
   const filteredQueues = workflow.queues
     .filter((queue) => queueFilter === "all" || queue.key === queueFilter)
     .map((queue) => ({
@@ -56,28 +60,7 @@ export default async function AdminCatalogInboxPage({
         description="Every import job by queue (scrape, normalize, review, publish), with the jobs that are blocked."
       />
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <div className="rounded-xl border p-3">
-          <div className="text-xs text-neutral-500">Total jobs</div>
-          <div className="text-2xl font-semibold">{workflow.summary.total}</div>
-        </div>
-        <div className="rounded-xl border p-3">
-          <div className="text-xs text-neutral-500">Scrape queue</div>
-          <div className="text-2xl font-semibold">{workflow.summary.scrape}</div>
-        </div>
-        <div className="rounded-xl border p-3">
-          <div className="text-xs text-neutral-500">Normalize queue</div>
-          <div className="text-2xl font-semibold">{workflow.summary.normalize}</div>
-        </div>
-        <div className="rounded-xl border p-3">
-          <div className="text-xs text-neutral-500">Review queue</div>
-          <div className="text-2xl font-semibold">{workflow.summary.review}</div>
-        </div>
-        <div className="rounded-xl border p-3">
-          <div className="text-xs text-neutral-500">Blocked</div>
-          <div className="text-2xl font-semibold">{workflow.summary.blocked}</div>
-        </div>
-      </section>
+      <InboxSummary counts={queueCounts} blocked={workflow.summary.blocked} />
 
       <InboxFiltersUI queue={queueFilter} blockersOnly={blockersOnly} />
 
@@ -142,51 +125,7 @@ export default async function AdminCatalogInboxPage({
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {filteredQueues.map((queue) => (
-          <section key={queue.key} className="rounded-xl border p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-semibold">{queue.title}</h2>
-                <p className="mt-1 text-xs text-neutral-600">{queue.description}</p>
-              </div>
-              <div className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700">
-                {queue.jobs.length}
-              </div>
-            </div>
-
-            <div className="mt-3 space-y-3">
-              {queue.jobs.slice(0, 12).map((job) => {
-                const validationBlockers = getImportJobValidationBlockers(job);
-                return (
-                  <div key={job.id} className="rounded-lg border border-neutral-200 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <Link className="text-sm font-medium text-blue-600 hover:text-blue-700" href={`/admin/imports/${job.id}`}>
-                          {job.sourceFileName}
-                        </Link>
-                        <div className="mt-1 text-xs text-neutral-500">
-                          {job.sourceBrand ?? "Unknown brand"}
-                          {job.sourceSku ? ` · SKU ${job.sourceSku}` : ""}
-                        </div>
-                      </div>
-                      <AdminStatusBadge kind="importJob" status={job.status} />
-                    </div>
-                    <div className="mt-2 text-xs text-neutral-600">Stage: {describeAdminStatus("workflowStage", job.workflowStage).label}</div>
-                    <div className="mt-1 text-xs text-neutral-600">Next: {job.nextAction ?? "-"}</div>
-                    {validationBlockers.length > 0 ? (
-                      <div className="mt-2 text-xs text-red-700">
-                        {validationBlockers.length} blocker{validationBlockers.length === 1 ? "" : "s"}
-                      </div>
-                    ) : null}
-                  </div>
-                );
-              })}
-              {queue.jobs.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-neutral-200 p-4 text-xs text-neutral-500">
-                  No jobs in this queue.
-                </div>
-              ) : null}
-            </div>
-          </section>
+          <InboxQueueCard key={queue.key} queue={queue} />
         ))}
       </div>
     </div>

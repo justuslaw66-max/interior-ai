@@ -727,7 +727,7 @@
     "app/admin/catalog/inbox/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 176
+        "maximum": 114
       }
     },
     "app/admin/catalog/review/page.tsx": {
@@ -873,13 +873,13 @@
     "app/admin/floor-plans/AdminFloorPlanQueueTable.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 108
+        "maximum": 103
       }
     },
     "app/admin/floor-plans/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 127
+        "maximum": 86
       }
     },
     "app/admin/floor-plans/PingYiReviewJobButton.tsx": {
