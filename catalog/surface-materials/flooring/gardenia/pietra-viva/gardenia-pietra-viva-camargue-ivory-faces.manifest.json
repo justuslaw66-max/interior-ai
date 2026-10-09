@@ -1,0 +1,1368 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - CAMARGUE IVORY - minimali.zip (161468294 bytes, sha256 ff3720debf73368c9fc0f7a77fc0a4eb8a352a3c6dc781fe755f4dca15f0c73f); PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip (65383158 bytes, sha256 719d88e5fd3c394cd7c929315ffb188dd9c618b07bd8fdbe269c1c7556eec29b).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0014180",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/pf60014180-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0014180_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-ivory-0014180-120x280-nat-139989-0; wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014180-120x280-nat-139989-0",
+   "faces": [
+    {
+     "file": "0014180_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 214772,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X280-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "aa2404f616b92140884d64399071e40a63cfcff8d8aab7d63a68a2c4425149e3",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE IVORY 120X280_01",
+      "id": "17f42b3a-2a4f-4bda-98bf-e60fa08d1844",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014180_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 225364,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X280-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "3b6c0e03db729153096c7eedbb63a05b7c2f1816e87dfdfcbee37a22b6e4ced1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE IVORY 120X280_02",
+      "id": "6121ebc2-9ac0-49bd-a324-88f264c2fd40",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0014181",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/pf60014181-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014181_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-ivory-0014181-120x120-nat-139988-0; floor gardenia-flooring-pietra-viva-camargue-ivory-0014183-120x120-139966-0 (uses 0014181's faces: ABK's 9 Antique 3D pictures are 0014181's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014181-120x120-nat-139988-0; wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014183-120x120-139966-0 (uses 0014181's faces: ABK's 9 Antique 3D pictures are 0014181's Nat P.tech pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0014181_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96886,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9c804c5a3af91cd55add0587b0c16d1680b6b07763c0668014efa415ce1a44a7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_01",
+      "id": "22257f6a-5e94-4635-aea6-ddf1ef3003cf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014181_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 88420,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bfee806b4d91f9d7f094e1472c6b4291f4dfb1e7cdf78d97170834e2ed335892",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_02",
+      "id": "2b0b0dd2-73d5-4591-a576-f36dd1de8a81",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014181_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92840,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d6e8cffae77a3ae2c580072bcd1cc1032fad1a91e48dbf8a03e5b0659dce0fb8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_03",
+      "id": "fe001d4f-4b71-480f-9e55-9e33371edc0c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014181_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87924,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cbb13e4dfe709c9510a034de445305a1079834f3ef90cb040e69696d8b1d0d1b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_04",
+      "id": "bfee2da2-d6ad-4921-99a8-26a492ba96ba",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014181_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96916,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "495ac8059dc2922c9663fd04812c0e6d3bd3ff0bcec08e803ab810f4813b1055",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_05",
+      "id": "572c2c80-bb83-46b4-8ef9-a798b1954c57",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014181_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72190,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "360d2fb5385c022214876ffb6cf32b8f6df64ee56b977da225cacf347b32638b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_06",
+      "id": "4e8ea490-10a6-4953-b291-4a7a4802d3c4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014181_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 94036,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b0897598e07366e3012227ec9c4758a8692092776527bfe08d3dbbd94c86dc9c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_07",
+      "id": "33af06ee-830c-4ca7-878d-2d72ab3a4636",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014181_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 102744,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "73d60ea06bd1d181e5044e75a1743b7e6994cd47b431479f1c663cfed4016783",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_08",
+      "id": "4546107e-0a55-4048-8f8d-fcabe2473460",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014181_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104296,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ed2ae37dc60bb9e44db21d50531560d483fb3aad0a4bc002b9987275e2d2ddb",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE IVORY 120X120_09",
+      "id": "1e9e4b10-54cf-4a7f-920b-133bb125193c",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x160",
+   "item_code": "0014670",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/pf60014670-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 1600
+   },
+   "swatch": "0014670_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-ivory-0014670-80x160-nat-139975-0; wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014670-80x160-nat-139975-0",
+   "faces": [
+    {
+     "file": "0014670_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 104000,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "05ee5f61d788cd96bac2a2c3a06bae6c33cd599ab50077c44c4d2e725aac7250",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_01",
+      "id": "554bd68e-02c7-4570-8eee-65124b4c2d6a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014670_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 103448,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "ded090220d9a31a1a0352de8c4c501e07a76e010d73dd01385ef111b6b5a89f7",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_02",
+      "id": "dbb82aa4-1657-4c62-a09a-502af854f088",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014670_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 100810,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "b0e8f15fdec0a57cd84a3c135cdc000a9a5c81d007e7842beaddaff4dfe163b0",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_03",
+      "id": "136e172c-fb8c-4861-a508-2ecf7adc341d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014670_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 98218,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "fa81924d57819c2eef4f39770e62e0408229601262faed1523688d4d31c8716b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_04",
+      "id": "afbc5c93-3c32-4e27-bb8b-893a6cbbde15",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014670_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 112416,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "753e16797b88dc91a2e3501c3a47a60c417aeab2ee3aab25f43199bfdaa41d53",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_05",
+      "id": "d9dee3a9-7a3c-477b-b4b0-6df119d1d296",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014670_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 103754,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "934e590af113f4ae70a162065d3b49bb45ff7f4d6a4abc51ddb1bcfc120c5a8c",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_06",
+      "id": "3e85739f-a971-4fab-bafb-776cebc215e5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014670_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 108922,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "d451c93712e5680de78fa3c9d5027b8d9a8dc67d34fbb0305c89e2be7fa63b68",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_07",
+      "id": "a9748d12-9bc5-4b63-81ed-c5d02c5a62ae",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014670_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 110910,
+     "source_zip": "PIETRA VIVA - CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE IVORY - 80X160 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "fe65e21e25e1e89d1992c03aa287061be10e8984519fded96d27f3dd834e4bda",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE IVORY 80X160_08",
+      "id": "fd424781-3aca-4fdf-a910-9a05573cf6c5",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014185",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/pf60014185-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014185_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-ivory-0014187-60x120-139970-0 (uses 0014185's faces: ABK's 18 Antique 3D pictures are 0014185's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-camargue-ivory-0016099-60x120-nat-139985-0 (uses 0014185's faces: ABK's 18 R11 pictures (on Plein Air's page) are 0014185's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014185-60x120-nat-139968-0; wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014187-60x120-139970-0 (uses 0014185's faces: ABK's 18 Antique 3D pictures are 0014185's Nat P.tech pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0014185_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50064,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "48560b951da26be915b28bc8ab083da0f516459fa9888c00dfa248d53a8a9799",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_01",
+      "id": "24b79ce3-3feb-4f5d-8584-67cad42fa433",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014185_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47218,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "e98df26d207a911705f92a941bd660c76e5f5417cdafe7ec932538e631b35d2a",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_02",
+      "id": "a35db696-1e45-4cae-8996-c75534f1ab8f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014185_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46832,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "188e9139cb7727a6a444045827d9aa40467d96b6b298e571f20632325ec5aece",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_03",
+      "id": "5224f02c-47e3-4403-9596-1009ff0db4e0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014185_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41638,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "5cb36a866e2ca8fcf6c53abf806740f31659d09a54e09a9cdfcc33dd951d8db3",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_04",
+      "id": "0f5ca5cc-1662-40f9-a413-8e4d1db5e9ff",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014185_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45268,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "8403fd945c3485d048a382ddb11e56e8625156b82e717e7d5337bd7a5cd5e5ad",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_05",
+      "id": "5f6f8661-2a60-4c4a-93a0-32e6271a88c8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014185_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48298,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "2c7e10361d586993c0ece5ca2bc5e01f9eef09435d355270b4c094b56b26ed2f",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_06",
+      "id": "efec39e1-ecc2-4431-842e-7bfe5b9a27aa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014185_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45544,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "42353a32f649db06ce30fb3ec44e95d1ec40222a37a77d8762161624cf81b592",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_07",
+      "id": "07ae354c-7a9e-4e8a-940c-ecb04b40edde",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014185_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41378,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "1f39705952639596373d5d3a82dcf41f014b32cfb99eb895cd24eaa72a2e4837",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_08",
+      "id": "a8cb5ea0-07f9-4126-ae37-9a65c71a9188",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014185_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48480,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "f0581a571b2a01f4bafaa00d38a5e240da34b2fafd2f837627c471baff27a50a",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_09",
+      "id": "cf2046fe-75ac-4f8f-9f2f-34f67c40c9d0",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014185_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46062,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "0d36501868d8fa632ff1121af183d91dd3d87276747f2c310bb5acdc499f8e44",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_10",
+      "id": "1d7fdec8-443b-4c6f-a62e-2fe4f1d367fe",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014185_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33092,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "e7c514b4b4af524827c578771ab7bf790391c10b3d7838bc32156bce2f002082",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_11",
+      "id": "9b025c32-0b7f-48d9-988a-9818c5dec905",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014185_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39042,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "5817060beef89af61f27e7adcf87f974492129280d881e348709301e79ac1467",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_12",
+      "id": "b7f0ca59-bebe-41f9-9dd5-a14b5a5de172",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014185_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45706,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_13.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "23215bdb5ce5281e3516f7b54bab9796485246e6c8240bc9f9e419163d0903ff",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13 (view_13)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_13",
+      "id": "a382a63d-4d5d-4638-b01b-0f5e1db72581",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014185_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50058,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_14.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "64c2b0ae9a417b422242034822e4d82f84ce5da2f6639abc43612082a3b85ada",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14 (view_14)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_14",
+      "id": "ebca9a22-f34c-4b7c-8bb6-00b9941b7585",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014185_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55588,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_15.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "01e986a098e7b43d291bca047b9fdd5669b1911cedb64c67e2debf00167c9f4e",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15 (view_15)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_15",
+      "id": "0293b585-786f-4ae0-957b-a38b56e8b219",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014185_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47702,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_16.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "153d161870c1eaa981ed8ebbb869e30840a82b830074d9c83114bf4a5dde0bbf",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16 (view_16)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_16",
+      "id": "dd3c93aa-8800-4540-85e2-5159bf163d61",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014185_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54656,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_17.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "284e45629e25d5a010f13316d1cf260d4d992796bb12b486a7e7108d06468a26",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17 (view_17)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_17",
+      "id": "f3aa4403-42e9-4d13-83b6-5fa0dc18c974",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014185_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50984,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 60X120 - R11 - view_18.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "80353162a2abbcfb0ff5a35ef8d8669650b91198295ce7199a2b364aa2f2311e",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18 (view_18)",
+      "name": "MEMENTO CAMARGUE IVORY 60X120_18",
+      "id": "56ba596b-5da6-48f0-8c6a-cc37a51c2f21",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0014668",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-ivory/pf60014668-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0014668_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-ivory-0016102-80x80-nat-139987-0 (uses 0014668's faces: ABK's 16 R11 pictures (on Plein Air's page) are 0014668's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-ivory-0014668-80x80-nat-139973-0",
+   "faces": [
+    {
+     "file": "0014668_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55156,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5fec0d586b28cd038f8154e95a532eaad868c7680ea747a68c68a75a2d8a9606",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_01",
+      "id": "5e23a3fd-5d4a-494d-99b7-9a701cf5acdd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014668_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50160,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9c67b689e8f6d838e658969602045b0a09551ec49b31f2a2c735af62e290cc0",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_02",
+      "id": "174d777a-9b1d-480a-9b85-ead48462a58a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014668_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49876,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "31d042e71b2fcf2a3e209f68a14bde714000e69acbd4d926871748b9fc14fc9c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_03",
+      "id": "c9df7b92-6954-4ba2-9850-9930f7aa37c5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014668_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51626,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "791cc8887ec3f9de15b355e17fa13f48cca89a79a1fe1f5171a4f4a161b77602",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_04",
+      "id": "23d04f58-94e8-423c-bca6-2e1c01aa9ac3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014668_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50186,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "64f154b5f5cb9d5972301de65a94a6c17c0d18564b977e054e37aee615c89f5d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_05",
+      "id": "2913ab9a-7b8b-4d4a-9c9a-02b05452d511",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014668_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49718,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3575d39ac10a888715277689de61b945096fbb25cd78ca5fa98d6fac183796f4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_06",
+      "id": "b09884ff-6685-40f4-81e9-a5891593e1a0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014668_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49822,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "49a96e9455579584eabfe6d7c6c06ed8f6828d3c6187f58f326f74cab7d28e20",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_07",
+      "id": "68a99f64-772f-4b5a-bfd5-e06ae585cd2c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014668_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47732,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1158be4d0516f3d046fb594fbcd1e48334d1a84a26941a581ab03cb5da40d755",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_08",
+      "id": "d70d321e-b9be-492f-b7fd-4bdb13008d1a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014668_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52300,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04d14a92c1d129989afea4a0d8d63f77d011a37db6bd778993d55421e5278f0c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_09",
+      "id": "b7f93df1-19f1-47e9-a62e-f524bae5bfdb",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014668_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 58172,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d378845c17f33b65dcd58a02fd32b68e57e7cc8c9161cc32f03da24331c112eb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_10",
+      "id": "3e7af55f-18d0-4010-98c7-02334f2f061b",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014668_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51348,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3a6210c6b7994426cc1e72cceff3127a99fdea67b25a4f79770c194fe3e93cab",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_11",
+      "id": "6aff7d83-5025-4165-b437-ef46ddd6d15b",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014668_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51864,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ddba4a88403f8066b53214a774ddede82e3338aec08c79d78912c773f2da9fae",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_12",
+      "id": "3e8af910-b97d-4e5c-9fe0-13bac95c844f",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014668_13.webp",
+     "face": 13,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 59336,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "942f0dc806a249ff28e39475a3525813fca9a5395f7eb0c6ddb43549b7dfd5fa",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13 (view_13)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_13",
+      "id": "39b7001a-5fe2-418c-a00a-56ef8f813e2f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014668_14.webp",
+     "face": 14,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49294,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cb587a039af3fff05aa61f15daeef87389585f0b8f27d3c33f71e616b21ee9e5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14 (view_14)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_14",
+      "id": "08d1ce69-7f15-4a30-8169-8833e618741c",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014668_15.webp",
+     "face": 15,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 54498,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7427286efe813c7fe78f0a9c7195389fda57dcaabcb0059cbc0b42c333b14811",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15 (view_15)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_15",
+      "id": "b1089065-2d50-420a-b328-0402aa2e5322",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014668_16.webp",
+     "face": 16,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55696,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE IVORY - 80X80 - R11 - view_16.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f9671db00bef97b6e32797aa74386b9242c3f7adeb188c08aa7a47e247852bcc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16 (view_16)",
+      "name": "MEMENTO CAMARGUE IVORY 80X80_16",
+      "id": "53a46258-202e-43e5-a2c8-fc1c710e796c",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

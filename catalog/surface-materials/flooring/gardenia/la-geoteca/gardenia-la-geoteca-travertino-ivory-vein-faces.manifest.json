@@ -1,0 +1,490 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-vein/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: DORICA - TRAVERTINO IVORY VEIN - minimali.zip (20608017 bytes, sha256 5c9f10bd419ee960c52566fd4c76870e354b59dddc02168c04737f6fd0730dee).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0012720",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-vein/pf60012720-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0012720_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-vein-pf60012720-120x280-nat-90420-0; wall gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60012720-120x280-nat-90420-0",
+   "faces": [
+    {
+     "file": "0012720_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 156618,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "c0b04a4aca309c6c141a104da363b9303cdbf6e2592f82db209597e4d2b9bb64",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X280_01",
+      "id": "191eccba-19da-425c-88ac-e414a481b659",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012720_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 156164,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "757d0ca506e442336d3625e4ff66f3aedf3a79db252cfc692d182e8b08475449",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X280_02",
+      "id": "3b4ba8b1-b997-4906-8e5b-fb73e19cee48",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012720_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 152944,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X280 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "9388eabfc28f533960757c2efa89b96da5a1078ee80cd7936954b66868ab54cf",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X280_03",
+      "id": "be1733ef-3ecc-443c-b991-2c5023a14d47",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012723",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-vein/pf60012723-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012723_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-vein-pf60016137-120x120-nat-90443-0 (uses 0012723's faces: ABK lists Travertino Ivory Vein 120x120 Nat P.tech (under Dorica) as 0012723; the configurator's 0016137 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60016137-120x120-nat-90443-0 (uses 0012723's faces: ABK lists Travertino Ivory Vein 120x120 Nat P.tech (under Dorica) as 0012723; the configurator's 0016137 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0012723_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72428,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d6393881f833b3e4fb8ed3e54fedc350e7faabe53333ce1ec131707ba5d5f906",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X120_01",
+      "id": "2b10cec6-ac35-4efa-926b-68516b6cd0d4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012723_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 70572,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e85a805631c89183751e99925e88d7f48da41c168c33f2911976469eb14b7ebc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X120_05",
+      "id": "5cc164a6-f158-4271-98d4-b4473ea62bc8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012723_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 71020,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d8402ff22bb9cc8eaef4ecf689750f4926ea05ebc525a610c4758a26055e96a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X120_03",
+      "id": "fad33f9b-6f40-45f3-aee7-c9fa7631c1c6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012723_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72882,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4bf3a78d30f4bb3e8b70536c7da73866e0a7d101f44882fefe09e3be0f5a8623",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X120_02",
+      "id": "82f91639-4b01-42f6-853c-b12ab2ac4c5b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012723_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 69594,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2d62e5804cea925d0d0f15cdd3adc26151b9f4416fc1267ff9a6f30f12aa9c96",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY VEIN 120X120_04",
+      "id": "3776c435-71c3-464e-a8de-f500735db9b9",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012726",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-vein/pf60012726-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012726_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-vein-pf60016139-60x120-nat-90445-0 (uses 0012726's faces: ABK lists Travertino Ivory Vein 60x120 Nat P.tech (under Dorica) as 0012726; the configurator's 0016139 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60016139-60x120-nat-90445-0 (uses 0012726's faces: ABK lists Travertino Ivory Vein 60x120 Nat P.tech (under Dorica) as 0012726; the configurator's 0016139 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0012726_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35498,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "25b6b4e027e54ee8710d9aba5b2d28cf733fa90a60d63604d680af8783b89081",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_03",
+      "id": "78a81525-ff8e-4f6a-bc81-01305afd6fad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012726_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36276,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0506635fadf4f40869e96952d15dc75524ad02f9f74d40330c1b13eeb1e72d91",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_01",
+      "id": "874ceca7-3ac0-4769-9eb4-47cea52c0bd8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012726_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35042,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "671838645d8ce0896636ab16f1085f84d1243a6ea8a85dda5d02ec80da8183e9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY VEIN  60X120_02",
+      "id": "40bc4204-45d5-4002-98b0-d92a0f886d95",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012726_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37834,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "9fe03c2b64d9c548bf9cc941a357a0adb0e808cc57e8521f975f142c9df59a1a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_10",
+      "id": "b97f122c-a010-48a7-b3ec-be0f0616817a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012726_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33744,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b8b68e49af27eff77510eb5f254e68a127678435d7bd61565636b868403ef777",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_05",
+      "id": "f8413a31-e929-4732-8ebb-d43d63fcede8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012726_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33370,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f0914fb135475252a14977a07c413beeaa829d3e399676bdb863f9c662f7a28b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_04",
+      "id": "6ab0e19a-7109-4461-b3df-5b1fcc043a43",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012726_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37274,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "e5ed6f44c9b5decead1dbde8df0485588cfaff7c1493ee346f4d694429fe1ec3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_06",
+      "id": "2325af3a-6e4b-4d73-a9c5-a8cffb4c6870",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012726_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37502,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "60443eea4fbd87fa861f52959f69d6bdd8d6690a9091a0e93b8cb64241762096",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_08",
+      "id": "f7a20b87-af06-413d-b910-1647f4001fae",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012726_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36244,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "b3d4ecea8d97e44ad6ed2d204fe96a2b05c5cd1cf14fd06e3545018996987c9e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_07",
+      "id": "eb940a77-c468-4e5a-b616-7b23bd230afb",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012726_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36366,
+     "source_zip": "DORICA - TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY VEIN - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "60916c16a1e3a65fae5e85a6503d971b77e5040f5b60e457eeea8c4b155b3b7d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "DORICA TRAVERTINO IVORY VEIN 60X120_09",
+      "id": "93ef7ae5-0620-4cf6-8296-d63cafe582b4",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

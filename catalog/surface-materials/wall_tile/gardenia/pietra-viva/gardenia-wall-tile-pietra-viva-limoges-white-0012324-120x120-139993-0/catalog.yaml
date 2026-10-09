@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 6 single item pictures of item 0012922 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/pf60012922-v102/), because ABK's 6 Antique 3D pictures are 0012922's Nat P.tech pictures, byte for byte. Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-limoges-white-faces.manifest.json. Each covers 1200x1200 mm and 1390x1390 mm; the renderer cuts tile-sized windows at true scale. Three of ABK's six 120x120 pictures (2344 px) match the colour's 60x120 pictures only when drawn as 1390 mm (r 0.88 to 1.00), so they are declared as 1390x1390 mm faces; the renderer cuts true-scale windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0012324/0/139993 for wall use.
     - "Configurator format: 120x120; surface destination: ENTRAMBE."
@@ -63,16 +64,38 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 120
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_04.webp
+      width_mm: 1390
+      height_mm: 1390
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_05.webp
+      width_mm: 1390
+      height_mm: 1390
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012922_06.webp
+      width_mm: 1390
+      height_mm: 1390
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -100,12 +123,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

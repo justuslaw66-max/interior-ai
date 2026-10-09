@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 12 single item pictures of item 0014520 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-serena/pf60014520-v102/), because ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026). Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-geoteca-serena-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60011735/0/90396 for floor use.
     - "Configurator format: 60x120 Nat; surface destination: ENTRAMBE."
@@ -65,16 +66,56 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60011726.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60011726.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0014520_12.webp
+      width_mm: 600
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -99,12 +140,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

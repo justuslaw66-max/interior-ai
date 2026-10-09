@@ -183,12 +183,15 @@ const isFalaise = isGardeniaCollection("falaise");
 const isMake = isGardeniaCollection("make");
 const isTabulae = isGardeniaCollection("tabulae");
 const isBonTon = isGardeniaCollection("bon-ton");
-const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon];
+const isPietraViva = isGardeniaCollection("pietra-viva");
+const isLaGeoteca = isGardeniaCollection("la-geoteca");
+const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
-  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae and Bon Ton declare physical-scale data"
+  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva and La Geoteca " +
+    "declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -202,8 +205,13 @@ for (const material of physicalMaterials) {
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
-  // are dropped); only Bon Ton's decors (Network, Octagon, Tricot) have a single face.
-  const minimumFaces = /-bon-ton-(network|octagon|tricot)-/.test(id) ? 1 : 3;
+  // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs; Bon Ton's decors (Network,
+  // Octagon, Tricot) and La Geoteca's Plissè decors have a single face.
+  const minimumFaces = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-/.test(id)
+    ? 1
+    : /-(pietra-viva|la-geoteca)-.+-120x280-/.test(id)
+      ? 2
+      : 3;
   assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
   for (const source of sources) {
     // Pixel size does not matter here: the mode depends only on millimetres.
@@ -369,7 +377,9 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton)-([a-z-]+?)-(?:g|pf|\d)/.exec(material.surface_material.material_id)?.[1],
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+        material.surface_material.material_id
+      )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
       material.texture_assets.faces?.length,
       [...new Set(material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`))].join("+"),
@@ -594,6 +604,169 @@ assert.deepEqual(collectionFaceRows(isBonTon), [
   ["tricot", "1200x600", 1, "600x1200", "0020784_01.webp"],
 ].sort());
 
+// Gardenia Pietra Viva and La Geoteca (downloaded 9 Oct 2026). Antique 3D and R11 items show the Nat
+// P.tech item's pictures byte for byte and use its faces. Stand-ins for items with no pictures of
+// their own (J, 9 Oct): the same colour and size in the other finish, or the same product under the
+// code ABK lists it with (La Geoteca's Limestone and Travertino, on Dorica's pages). Pietra Viva's Aude
+// 80x80 and La Geoteca's Ceppo di Gre 80x80 R11 pictures are a 1200 mm graphic squeezed to 800 mm;
+// three of Limoges White's 120x120 pictures cover 1390 mm (image matching). Negresco 120x280 and 80x80
+// have no pictures and keep their previews. Ceppo di Gre 120x280 leaves out six FUTURA CENERE pictures.
+for (const [filter, label, faced, count] of [
+  [isPietraViva, "Pietra Viva", 86, 86],
+  [isLaGeoteca, "La Geoteca", 88, 92],
+] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, faced, `${label} entries on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+assert.ok(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isLaGeoteca(material) && !physicalMaterials.includes(material)).every(
+    (material) => /-negresco-pf6001(1723|2155)-/.test(material.surface_material.material_id)
+  ),
+  "only La Geoteca Negresco's 120x280 and 80x80 keep their previews"
+);
+const audeSizes = (slab: string[]) => [...slab, "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat"];
+const camargueLimoges = (slab: string[]) => [...slab, "120x120", "120x120 Nat", "80x160 Nat", "60x120", "60x120 Nat", "80x80 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(collectionCards(isPietraViva, category), [
+    ["Pietra Viva Aude Beige", audeSizes(["120x280"])],
+    ["Pietra Viva Aude Grey", audeSizes([])],
+    ["Pietra Viva Aude Ivory", audeSizes(["120x280"])],
+    ["Pietra Viva Camargue Beige", camargueLimoges([])],
+    ["Pietra Viva Camargue Ivory", camargueLimoges(["120x280 Nat"])],
+    ["Pietra Viva Limoges Sand", camargueLimoges([])],
+    ["Pietra Viva Limoges White", camargueLimoges(["120x280 Nat"])],
+  ]);
+}
+// The 80x80 R11 entries (no "Nat") are floor-only, as is Ceppo di Gre's 80x80.
+const geoteca = (floor: boolean, r11: boolean, nat80 = true) =>
+  ["120x280 Nat", "120x120 Nat", "60x120 Nat", ...(r11 && floor ? ["80x80"] : []), ...(nat80 ? ["80x80 Nat"] : [])];
+for (const [category, floor] of [["flooring", true], ["wall_tile", false]] as const) {
+  assert.deepEqual(collectionCards(isLaGeoteca, category), [
+    ["La Geoteca Bourgogne Beige", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Bourgogne Silver", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Brennero", geoteca(floor, true)],
+    ["La Geoteca Ceppo Di Gre'", geoteca(floor, true, false)],
+    ["La Geoteca Dec Plis Bou Bei", ["60x120 Nat"]],
+    ["La Geoteca Dec Pliss Serena", ["60x120 Nat"]],
+    ["La Geoteca Dec Plissè Limes", ["60x120 Nat"]],
+    ["La Geoteca Limestone", geoteca(floor, true)],
+    ["La Geoteca Marfil", geoteca(floor, false)],
+    ["La Geoteca Negresco", ["120x120 Nat", "60x120 Nat"]],
+    ["La Geoteca Serena", geoteca(floor, true)],
+    ["La Geoteca Trav Ivory Cross", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Trav Ivory Vein", ["120x280 Nat", "120x120 Nat", "60x120 Nat"]],
+  ]);
+}
+assert.deepEqual(collectionFaceRows(isPietraViva), [
+  ["aude-beige", "1200x1200", 4, "1200x1200", "0012911_01.webp"],
+  ["aude-beige", "1200x1200", 4, "1200x1200", "0012911_01.webp"],
+  ["aude-beige", "1200x600", 8, "600x1200", "0012915_01.webp"],
+  ["aude-beige", "1200x600", 8, "600x1200", "0012915_01.webp"],
+  ["aude-beige", "2800x1200", 2, "1200x2800", "0014862_01.webp"],
+  ["aude-beige", "800x800", 8, "1200x1200", "0012265_01.webp"],
+  ["aude-grey", "1200x1200", 4, "1200x1200", "0012908_01.webp"],
+  ["aude-grey", "1200x1200", 4, "1200x1200", "0012908_01.webp"],
+  ["aude-grey", "1200x600", 8, "600x1200", "0011118_01.webp"],
+  ["aude-grey", "1200x600", 8, "600x1200", "0011118_01.webp"],
+  ["aude-grey", "800x800", 8, "1200x1200", "0012262_01.webp"],
+  ["aude-ivory", "1200x1200", 4, "1200x1200", "0012910_01.webp"],
+  ["aude-ivory", "1200x1200", 4, "1200x1200", "0012910_01.webp"],
+  ["aude-ivory", "1200x600", 8, "600x1200", "0012914_01.webp"],
+  ["aude-ivory", "1200x600", 8, "600x1200", "0012914_01.webp"],
+  ["aude-ivory", "2800x1200", 2, "1200x2800", "0014863_01.webp"],
+  ["aude-ivory", "800x800", 8, "1200x1200", "0012264_01.webp"],
+  ["camargue-beige", "1200x1200", 9, "1200x1200", "0014182_01.webp"],
+  ["camargue-beige", "1200x1200", 9, "1200x1200", "0014182_01.webp"],
+  ["camargue-beige", "1200x600", 18, "600x1200", "0014186_01.webp"],
+  ["camargue-beige", "1200x600", 18, "600x1200", "0014186_01.webp"],
+  ["camargue-beige", "1600x800", 8, "800x1600", "0014671_01.webp"],
+  ["camargue-beige", "800x800", 16, "800x800", "0014669_01.webp"],
+  ["camargue-ivory", "1200x1200", 9, "1200x1200", "0014181_01.webp"],
+  ["camargue-ivory", "1200x1200", 9, "1200x1200", "0014181_01.webp"],
+  ["camargue-ivory", "1200x600", 18, "600x1200", "0014185_01.webp"],
+  ["camargue-ivory", "1200x600", 18, "600x1200", "0014185_01.webp"],
+  ["camargue-ivory", "1600x800", 8, "800x1600", "0014670_01.webp"],
+  ["camargue-ivory", "2800x1200", 2, "1200x2800", "0014180_01.webp"],
+  ["camargue-ivory", "800x800", 16, "800x800", "0014668_01.webp"],
+  ["limoges-sand", "1200x1200", 6, "1200x1200", "0012921_01.webp"],
+  ["limoges-sand", "1200x1200", 6, "1200x1200", "0012921_01.webp"],
+  ["limoges-sand", "1200x600", 6, "600x1200", "0012926_01.webp"],
+  ["limoges-sand", "1200x600", 6, "600x1200", "0012926_01.webp"],
+  ["limoges-sand", "1600x800", 8, "800x1600", "0014672_01.webp"],
+  ["limoges-sand", "800x800", 12, "800x800", "0012331_01.webp"],
+  ["limoges-white", "1200x1200", 6, "1200x1200+1390x1390", "0012922_01.webp"],
+  ["limoges-white", "1200x1200", 6, "1200x1200+1390x1390", "0012922_01.webp"],
+  ["limoges-white", "1200x600", 10, "600x1200", "0012927_01.webp"],
+  ["limoges-white", "1200x600", 10, "600x1200", "0012927_01.webp"],
+  ["limoges-white", "1600x800", 8, "800x1600", "0014673_01.webp"],
+  ["limoges-white", "2800x1200", 2, "1200x2800", "0012329_01.webp"],
+  ["limoges-white", "800x800", 6, "1200x1200+1390x1390", "0012922_01.webp"],
+]);
+assert.deepEqual(collectionFaceRows(isLaGeoteca), [
+  ["bourgogne-beige", "1200x1200", 6, "1200x1200", "0016057_01.webp"],
+  ["bourgogne-beige", "1200x600", 11, "600x1200", "0016059_01.webp"],
+  ["bourgogne-beige", "2800x1200", 2, "1200x2800", "0016055_01.webp"],
+  ["bourgogne-beige", "800x800", 8, "800x800", "0016061_01.webp"],
+  ["bourgogne-beige", "800x800", 8, "800x800", "0016061_01.webp"],
+  ["bourgogne-silver", "1200x1200", 6, "1200x1200", "0016058_01.webp"],
+  ["bourgogne-silver", "1200x600", 12, "600x1200", "0016060_01.webp"],
+  ["bourgogne-silver", "2800x1200", 2, "1200x2800", "0016056_01.webp"],
+  ["bourgogne-silver", "800x800", 8, "800x800", "0016062_01.webp"],
+  ["bourgogne-silver", "800x800", 8, "800x800", "0016062_01.webp"],
+  ["brennero", "1200x1200", 8, "1200x1200", "0011729_01.webp"],
+  ["brennero", "1200x600", 12, "600x1200", "0014522_01.webp"],
+  ["brennero", "2800x1200", 3, "1200x2800", "0011721_01.webp"],
+  ["brennero", "800x800", 9, "800x800", "0012079_01.webp"],
+  ["brennero", "800x800", 9, "800x800", "0012079_01.webp"],
+  ["ceppo-di-gre", "1200x1200", 10, "1200x1200", "0013116_01.webp"],
+  ["ceppo-di-gre", "1200x600", 10, "600x1200", "0013117_01.webp"],
+  ["ceppo-di-gre", "2800x1200", 6, "1200x2800", "0008674_01.webp"],
+  ["ceppo-di-gre", "800x800", 12, "1200x1200", "0013072_01.webp"],
+  ["dec-plis-bou-bei", "1200x600", 1, "600x1200", "0016141_01.webp"],
+  ["dec-pliss-serena", "1200x600", 1, "600x1200", "0016634_01.webp"],
+  ["dec-plisse-limes", "1200x600", 1, "600x1200", "0016140_01.webp"],
+  ["limestone", "1200x1200", 6, "1200x1200", "0010537_01.webp"],
+  ["limestone", "1200x600", 7, "600x1200", "0010539_01.webp"],
+  ["limestone", "2800x1200", 2, "1200x2800", "0011763_01.webp"],
+  ["limestone", "800x800", 6, "800x800", "0012080_01.webp"],
+  ["limestone", "800x800", 6, "800x800", "0012080_01.webp"],
+  ["marfil", "1200x1200", 9, "1200x1200", "0011732_01.webp"],
+  ["marfil", "1200x600", 12, "600x1200", "0011741_01.webp"],
+  ["marfil", "2800x1200", 3, "1200x2800", "0011724_01.webp"],
+  ["marfil", "800x800", 9, "800x800", "0012156_01.webp"],
+  ["negresco", "1200x1200", 12, "1200x1200", "0011731_01.webp"],
+  ["negresco", "1200x600", 12, "600x1200", "0011740_01.webp"],
+  ["serena", "1200x1200", 6, "1200x1200", "0011726_01.webp"],
+  ["serena", "1200x600", 12, "600x1200", "0014520_01.webp"],
+  ["serena", "2800x1200", 3, "1200x2800", "0011718_01.webp"],
+  ["serena", "800x800", 9, "800x800", "0012077_01.webp"],
+  ["serena", "800x800", 9, "800x800", "0012077_01.webp"],
+  ["trav-ivory-cross", "1200x1200", 6, "1200x1200", "0017438_01.webp"],
+  ["trav-ivory-cross", "1200x600", 12, "600x1200", "0017439_01.webp"],
+  ["trav-ivory-cross", "2800x1200", 3, "1200x2800", "0016135_01.webp"],
+  ["trav-ivory-cross", "800x800", 5, "800x800", "0016144_01.webp"],
+  ["trav-ivory-cross", "800x800", 6, "800x800", "0016183_01.webp"],
+  ["trav-ivory-vein", "1200x1200", 5, "1200x1200", "0012723_01.webp"],
+  ["trav-ivory-vein", "1200x600", 10, "600x1200", "0012726_01.webp"],
+  ["trav-ivory-vein", "2800x1200", 3, "1200x2800", "0012720_01.webp"],
+]);
+const facesOf = (code: string) =>
+  physicalMaterials
+    .flatMap((material) => material.texture_assets.faces ?? [])
+    .filter((face) => face.url.includes(`/${code}_`));
+assert.ok(
+  ["0012265", "0012262", "0012264", "0013072"].every(
+    (code) => facesOf(code).length > 0 && facesOf(code).every((face) => face.width_mm === 1200 && face.height_mm === 1200)
+  ),
+  "Aude's 80x80 and Ceppo di Gre's 80x80 R11 pictures are declared 1200x1200 mm"
+);
+const limogesWhite = physicalMaterials.find((material) => material.surface_material.material_id.includes("-0012922-"));
+assert.deepEqual(
+  limogesWhite?.texture_assets.faces?.map((face) => face.width_mm),
+  [1200, 1200, 1200, 1390, 1390, 1390],
+  "three of Limoges White's 120x120 pictures cover 1390 mm"
+);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -604,10 +777,24 @@ const sharedFaces = new Map([
   ["0021155", "0021140"], ["0021156", "0021141"], ["0021157", "0021142"], ["0021158", "0021143"],
   ["0020765", "0020757"], ["0020767", "0020759"], ["0020768", "0020760"],
   ["0020775", "0020799"], ["0020777", "0020801"],
+  // Pietra Viva: Antique 3D and R11 items on the Nat P.tech item's faces, and the stand-ins.
+  ["0011974", "0012915"], ["0011973", "0012914"], ["0012254", "0012908"], ["0012258", "0012910"],
+  ["0014184", "0014182"], ["0014183", "0014181"], ["0014188", "0014186"], ["0014187", "0014185"],
+  ["0012322", "0012921"], ["0012318", "0012926"], ["0012324", "0012922"], ["0012319", "0012927"],
+  ["0014325", "0014186"], ["0016099", "0014185"], ["0016100", "0014669"], ["0016102", "0014668"],
+  ["0012293", "0012331"], ["0012332", "0012922"], ["0012260", "0012911"], ["0012267", "0012265"],
+  ["0012266", "0012262"], ["0012912", "0011118"],
+  // La Geoteca: R11 items on the Nat P.tech item's faces, and the stand-ins.
+  ["0016026", "0016061"], ["0016027", "0016062"], ["0012085", "0012079"], ["0012086", "0012080"],
+  ["0012083", "0012077"], ["0011775", "0010537"], ["0011776", "0010539"], ["0016136", "0017438"],
+  ["0016138", "0017439"], ["0016137", "0012723"], ["0016139", "0012726"], ["0011738", "0014522"],
+  ["0011735", "0014520"],
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
   ["0020757", 3], ["0020758", 3], ["0020759", 3], ["0020760", 3], ["0020765", 3], ["0020767", 3], ["0020768", 3],
+  // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items are wall-only; their floor entries are R11.
+  ["0012265", 8], ["0012262", 8], ["0014186", 18], ["0014185", 18], ["0014669", 16], ["0014668", 16], ["0012331", 12],
 ]);
 // Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
 // and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
@@ -615,7 +802,9 @@ const itemCode = (id: string) =>
   (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?").replace(/^g0+/, "g").replace(/^pf6/, "");
 const collectionById = new Map(
   physicalMaterials
-    .filter((material) => [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon].some((filter) => filter(material)))
+    .filter((material) =>
+      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca].some((filter) => filter(material))
+    )
     .map((material) => [material.surface_material.material_id, material])
 );
 for (const material of collectionById.values()) {

@@ -1,0 +1,856 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-cross/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: DORICA - TRAVERTINO IVORY CROSS - minimali.zip (29630424 bytes, sha256 de078e4498b282ef7de54c662c4831050f375581df898cda87c509743a47b39d); PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip (10693926 bytes, sha256 4953223d12b80bb117fa1a80e6fce21726a74d411d4d3fe054bc1b49dc56071d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016135",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-cross/pf60016135-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016135_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016135-120x280-nat-90441-0; wall gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016135-120x280-nat-90441-0",
+   "faces": [
+    {
+     "file": "0016135_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 158870,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "dd08238cf414af5649254acd6c745a5432aeef6b517fd1d7f2a851195c5e5672",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X280_01",
+      "id": "52a05c5e-7564-4ceb-81b0-5221c8079586",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016135_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 173592,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "2425c75acc20770eb70068a7d938ff2d0b2a4121d65ce7d83430fbd55a4cb757",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X280_02",
+      "id": "423b07a7-6de5-4de3-aca3-c5b8a0a3c90c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016135_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 171060,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X280-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X280 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "a470628898c85a405de303d8f7d25fedfcf03d20936cbcda3d8b5b591e4620b5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X280_03",
+      "id": "b6e9c221-4977-4057-8c74-d549e56a6354",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0017438",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-cross/pf60017438-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0017438_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016136-120x120-nat-90442-0 (uses 0017438's faces: ABK lists Travertino Ivory Cross 120x120 Nat P.tech (under Dorica) as 0017438; the configurator's 0016136 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016136-120x120-nat-90442-0 (uses 0017438's faces: ABK lists Travertino Ivory Cross 120x120 Nat P.tech (under Dorica) as 0017438; the configurator's 0016136 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017438_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67520,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "53b4b84fefd6a63b968c06cb2648ea693e0efbd6f4d2d0d7e75f2caefa44fb76",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_01",
+      "id": "25f1d171-9359-4140-b5e1-d4978d3239c0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017438_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 69012,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9f52ff539c237b95fb3c85ebdf9d8eff77b22b8cec406d75e605771bdfeaab2b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_02",
+      "id": "a71e0c64-7a04-45b0-845a-dca211599bd0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017438_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76954,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8fdb4f338486287206e3656ac8673ed8b1a9bb1d6150826e28b2432e1943ae5b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_04",
+      "id": "59e338d4-6308-4729-9380-72c46423085b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017438_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 70256,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cbec0b50ab293b62b9e28c95fda0729ddd1b9dc9a2f7e30d25fefc8efb88b318",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_05",
+      "id": "95640c88-159f-44ca-aada-fee022109b6f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017438_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73878,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c4e2e81fc83ce1db2c241caaf7770978023db675451255d798d79698b46b3f9e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_06",
+      "id": "a496e5f8-2339-4430-811d-93c6d1af6efc",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017438_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 76346,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "120X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "943c7ad915d1491f5312be03311d29fa38941b0f1c2f80610dff51e621c2f971",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA TRAVERTINO IVORY CROSS 120X120_03",
+      "id": "9364427f-d05e-4da6-8fdc-bfed70f8361d",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0017439",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-cross/pf60017439-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0017439_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016138-60x120-nat-90444-0 (uses 0017439's faces: ABK lists Travertino Ivory Cross 60x120 Nat P.tech (under Dorica) as 0017439; the configurator's 0016138 has no page there (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016138-60x120-nat-90444-0 (uses 0017439's faces: ABK lists Travertino Ivory Cross 60x120 Nat P.tech (under Dorica) as 0017439; the configurator's 0016138 has no page there (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017439_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45842,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1adb66406747a56d2b115b4a2e5aa452fc393f4d99a91fa70250f003467fa64c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_03",
+      "id": "a64332af-8543-42d9-8013-a3efb00259bf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017439_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31352,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1b86abaf1c6771f6d8df02f3b17069ab6341305c1282d516612c2efb77ea2ff8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_07",
+      "id": "6a53056a-4205-451f-8496-d881a1c01f55",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017439_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33320,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c8a2cf693b69e883148a2260fd4bcdb1cec09b43eff94741e64967fd4d42e44b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_10",
+      "id": "44219a7f-1d90-4148-a654-c9b067ab824d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017439_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42224,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ecc1d42af3dba290e0bd31ae2f8d56906964f0f61d656d89d2d9dfa39c3c6621",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_08",
+      "id": "eb88f201-43ce-4e31-b939-7a9309131522",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017439_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29064,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6df38bb51a6f05b27e36388a2bb627a2c632a17daf0a2834ad14043f0d4d62db",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_02",
+      "id": "55a78c9a-a5de-4459-8f56-7fd9fde8c24f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017439_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29806,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d2f5012aff9cffe5885af37dff1c12835dd449975be05581e0976d2271b63152",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_09",
+      "id": "77f0e234-2905-4734-b3e9-526461bfb89d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017439_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39312,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "77a3dfb371366e1e29a06fc96e0d148fa759c2343711461dd9ba38d469b97e0b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_11",
+      "id": "b2624616-23c0-4cb4-bda0-81b2b50bcb25",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017439_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39730,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f8db2a6f5a721f3ca5c507204b308fce30b16f8e09d07e65a664ac664a7c57d2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_12",
+      "id": "4adcc055-dd07-4b48-bd4a-8160c051461a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017439_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46270,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9cad9ff8cad1e1cb7e8f958530801f34783efab8d0bb130256fb70578749095f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_04",
+      "id": "f59092ab-9254-4ac7-a913-b8fa0cd0bff2",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017439_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34620,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "15885488c6a45acff46f59d172a50afee9e28e623adce35d175b81b3c5c44e30",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_06",
+      "id": "9dc94d5e-6776-499f-9bb2-4148f9eab221",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017439_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37458,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6ad9cd906c0a4a2542d83c073622f583606f212f9154ac66df0895a1882163ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_01",
+      "id": "f1147f74-2f47-4527-9ec0-e4faff09d987",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017439_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32674,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "60X120-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2a90f46f6c9efb0f30af88682716f8df3417360a8f7b70ef748d8ccbd9ff3499",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "DORICA TRAVERTINO IVORY CROSS 60X120_05",
+      "id": "17656b7b-0da6-4575-95d8-546acc60c5a1",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016144",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-cross/pf60016144-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016144_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016144-80x80-nat-90448-0; wall gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016144-80x80-nat-90448-0",
+   "faces": [
+    {
+     "file": "0016144_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33056,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "56ea266faa0d81cc1305f3e04565c82655b8e9439d185218517b93732ef6c7f5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY CROSS 80X80_02",
+      "id": "62b66677-c0e6-4593-a6ad-763f79c355c9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016144_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28512,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "84af2fc1fe9a32b5e4aa9436a9726b0bb2419190a57c7f17b5e1d78086be7eb5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY CROSS 80X80_05",
+      "id": "5d10a78f-1185-41e9-88ce-c32c766d29d7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016144_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32520,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6d9ee57e7ac24b4e1d8c3abc799830e03ef34f8baa6946e15aa8e06083ee2622",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY CROSS 80X80_04",
+      "id": "ced190c6-c745-4b67-b717-df257ccd8bde",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016144_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31954,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f1c817a2ab2a3c637a6215cd90024c1f4f07428b504d9778ac4580c18d464bc9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY CROSS 80X80_01",
+      "id": "0f51e8be-23e3-440a-9c42-59837ae4b538",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016144_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33188,
+     "source_zip": "DORICA - TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-Nat P.tech/DORICA - TRAVERTINO IVORY CROSS - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7d38be1b3f4ae09b7c150807cbdcd18d96d7f5245d3e58ed8bae4c4e5fc37160",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY CROSS 80X80_03",
+      "id": "ca46c5ca-27d2-4264-ac6e-a604b31776ea",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016183",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/dorica-travertino-ivory-cross/pf60016183-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016183_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0; wall gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0",
+   "faces": [
+    {
+     "file": "0016183_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37904,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e38f85e82f7b3ecd99f269487a316974a05d979790fefd9b2d65b9e1cee6564",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_01",
+      "id": "46fb8b1e-3250-49d0-a0d3-276230aad841",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016183_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36776,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f4b41e97b60500bc1008430b4a3cd5ae023e38a9f4e68da7c7108bacb576a511",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_03",
+      "id": "0c8f6ff4-0f4f-456f-b6f2-f06eef11c9ec",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016183_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36298,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0ac8ea4b5121961856434d535d800c9652c600d91aba1700b576e1e26ff15061",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_04",
+      "id": "14e59a00-1619-4934-a846-69a0d27744cf",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016183_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37764,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d4df4c11402b726791f574be4cf227df3a886f4d6819101ec8b87ae114cc6cb6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_02",
+      "id": "dd0626f9-0be0-4319-be22-c529257990f3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016183_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34948,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e3382c10bcaad31920f85d1b76381e5e331f4a7774293569540b2b70c79c405f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_06",
+      "id": "1e4b0c7a-a6d4-4b32-91c1-352078f45679",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016183_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32296,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY CROSS - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "30c4cdecc4cdc343b3a9cd5b6c7d2c2c9332d64b68ddb41ceda5e6799d1b8f3f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA TRAVERTINO CROSS RETT 80X80 R11_20 MM_05",
+      "id": "7abe08c4-69c2-436c-9a99-37d4004da825",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

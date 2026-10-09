@@ -1,0 +1,601 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - AUDE BEIGE - minimali.zip (31788867 bytes, sha256 7e12332556c1591157c673ac043aebb84f777f0721ee3d64293e126c785b8157).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0014863",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60014863-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0014863_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-ivory-0014863-120x280-90926-0; wall gardenia-wall-tile-pietra-viva-aude-ivory-0014863-120x280-90926-0",
+   "faces": [
+    {
+     "file": "0014863_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 238632,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X280-Lux 3D/PIETRA VIVA - AUDE BEIGE - 120X280 - Lux 3D - view_1.jpg",
+     "source_px": [
+      1772,
+      4096
+     ],
+     "source_sha256": "7d807b0440cdc0810972ba4e98b8584d8fb72b5c95ed0f4cfb2d7c5efbac4c99",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE IVORY 120X280_01",
+      "id": "fedbb712-496c-40a3-b500-5e51d412acf9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014863_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 226014,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X280-Lux 3D/PIETRA VIVA - AUDE BEIGE - 120X280 - Lux 3D - view_2.jpg",
+     "source_px": [
+      1773,
+      4096
+     ],
+     "source_sha256": "b573c1ad3163f6bb7fd3835429cfe8cbd13d86f3146155d9dc8cd28a724bc637",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE IVORY 120X280_02",
+      "id": "9f7941a1-cdcf-4fe8-b7c9-5fb0083f6d42",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012265",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012265-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012265_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-beige-0012267-80x80-nat-90916-0 (uses 0012265's faces: ABK's Plein Air page for Aude Beige 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-beige-0012265-80x80-nat-90914-0",
+   "faces": [
+    {
+     "file": "0012265_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 103798,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "95bcc4bde9772449767fc1ea3120efb0a08e39a47b1dd88b26343fff2d353d0b",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_01",
+      "id": "4e768103-7dfa-4471-a883-4982e485c305",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012265_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101430,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6182ab93e71338c7dfaf56008b4dfba28f628c4976ef099b30e24f61d182853f",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_05",
+      "id": "e4258321-bd78-4584-b3a3-3554c8dc867e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012265_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 90568,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "dcc7e0b2a4b23da9dfca0bd6f8244b9c570b07fbe094b7ebd28b6eb024e81a43",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_07",
+      "id": "c14344bd-2946-4bd8-8fd8-b0aac58f929d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012265_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 93920,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1cb186b8bc425eead5c976c9a2c0810623dae9e70c7d91c646381643a19f118e",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_03",
+      "id": "a51d7ae8-d0da-4235-a5f7-2ec2f187654b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012265_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 119920,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ba23454e655dc0218e2542c594814b3ff4b508ec8efa4dc35c4347ff14e61937",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_02",
+      "id": "5de3f682-0d1e-45a6-84c4-d9b37b4c7ace",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012265_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 119604,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "53c357755c44a629a009733d08103b8077d10d5d9e0ae352fd085d1264cdd59a",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_06",
+      "id": "62e54b1d-3f5a-4bd6-89ce-54a2b1d448fd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012265_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108464,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7b5f17c7fdeff0893697a8db3c922c527ed4fb5f482f29d1ce12dcf778090fb6",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_08",
+      "id": "c6c0ee3a-8250-45bf-a312-cf53e07b027c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012265_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 103856,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d31381681b1d2187864132d0e83bc4b20fb589bb95fdd408f2cbb8b5f16fac50",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE BEIGE 80X80_04",
+      "id": "2c712110-52d7-464d-ae6a-18b008e3041a",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012911",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012911-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012911_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-beige-0012260-120x120-90910-0 (uses 0012911's faces: ABK has no Aude Beige 120x120 Antique 3D page; the 120x120 Nat P.tech pictures stand in, as Aude Grey's and Aude Ivory's 120x120 Antique 3D pictures are their Nat P.tech pictures byte for byte (J, 9 Oct 2026)); floor gardenia-flooring-pietra-viva-aude-beige-0012911-120x120-nat-90920-0; wall gardenia-wall-tile-pietra-viva-aude-beige-0012260-120x120-90910-0 (uses 0012911's faces: ABK has no Aude Beige 120x120 Antique 3D page; the 120x120 Nat P.tech pictures stand in, as Aude Grey's and Aude Ivory's 120x120 Antique 3D pictures are their Nat P.tech pictures byte for byte (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-beige-0012911-120x120-nat-90920-0",
+   "faces": [
+    {
+     "file": "0012911_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 75934,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ceafdc09a865d6f833ee549cc8cff13cb48bd4d426e13eaed8cafbb3f4472a2a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE BEIGE 120X120_03",
+      "id": "29f83ec0-739e-4e93-b5fc-71ac7963188b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012911_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86626,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ed6bdb91f66ee100ea65b98a14ad35533ae989d4d13b0e412af751199ddbc011",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE BEIGE 120X120_04",
+      "id": "cb4ab815-9ff1-48d8-af04-864ddc825e64",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012911_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81066,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9ab150c53410743d4de18602cc70614fc666a6e8aeb86705082c719454f5043e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE BEIGE 120X120_01",
+      "id": "05c4893d-f6af-4e2b-81a9-44de816d90cd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012911_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100898,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "118bf5ff9cc26e7582d1fdd29bb1bb81babe94f29b0e98c1d8432276f938d1aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE BEIGE 120X120_02",
+      "id": "8bb54ded-93b9-4268-880c-33dfba63ab5d",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012915",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012915-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012915_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-beige-0011974-60x120-90906-0 (uses 0012915's faces: ABK's 8 Antique 3D pictures are 0012915's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-aude-beige-0012915-60x120-nat-90924-0; wall gardenia-wall-tile-pietra-viva-aude-beige-0011974-60x120-90906-0 (uses 0012915's faces: ABK's 8 Antique 3D pictures are 0012915's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-aude-beige-0012915-60x120-nat-90924-0",
+   "faces": [
+    {
+     "file": "0012915_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53488,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "be114038baa8e52894f0e53e099a0ff0a6190c046317db840ea2573c2d0a05ce",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_04",
+      "id": "34cbda54-9543-4212-89b6-a74ef54b88ad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012915_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69884,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "27f6a80bbbdaf37d399b95549324bacf7b582cb3cd006f92af1121d7aa461423",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_01",
+      "id": "6c65ecb9-dfa4-4ad6-aa47-155d6fb27063",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012915_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60620,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "0f04fb6c24ecb04c3734bfaa38b9472f29ceab077d35568fa75b562c9d5e7fd0",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_05",
+      "id": "9b6e9b5c-82c0-4580-960d-c2e82c4da1a9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012915_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63480,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "bf509e6f8ffe0b789e3a8eb93abc623ec67f22e01bbba09f638fb319b341936f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_07",
+      "id": "2ffb0839-a5db-46c9-b440-50189032af11",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012915_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54144,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "c743327150c926b0802a96a75900a627675df42b8c45b92311fc97f2c7d0c0ba",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_02",
+      "id": "31cd9b08-795f-41c7-858a-c65455310823",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012915_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64536,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "54e04478c89442e5a51cdfbb237171b2cd6e1805c2017c4df392e82e66d92915",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_03",
+      "id": "dc519906-1bdc-4b04-9ca4-2417fbad05aa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012915_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56642,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "18bb4e6f3f1ccc9ecaf123988ef2ade92bd1e10cba9def30f7e75b970e6cac72",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_08",
+      "id": "d25721b0-6dfb-4cb2-a79f-b3a8d85988b7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012915_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68302,
+     "source_zip": "PIETRA VIVA - AUDE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - AUDE BEIGE - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "aec1fec47766dd642db124692e411a2015baac4302915fe96b575b8e32fa2e50",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE BEIGE 60X120_06",
+      "id": "ea8689bc-17bf-4484-b9c9-e05425bed56a",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

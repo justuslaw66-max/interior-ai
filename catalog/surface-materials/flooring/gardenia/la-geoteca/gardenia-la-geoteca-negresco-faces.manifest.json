@@ -1,0 +1,631 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/negresco/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - NEGRESCO - minimali.zip (50336816 bytes, sha256 96acc5f5d96bd7c5bebc56383768753f94c834c2c7b367d66ec3d1aa68c77029).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0011731",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/negresco/pf60011731-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0011731_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-negresco-pf60011731-120x120-nat-90393-0; wall gardenia-wall-tile-la-geoteca-negresco-pf60011731-120x120-nat-90393-0",
+   "faces": [
+    {
+     "file": "0011731_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86892,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d59f6684802d7a489990d62e2a737ba919a6cb0b5092e92571e52235b0e8d684",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_01",
+      "id": "e0cc57d3-17eb-4f9a-b938-a6019456b0ec",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011731_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 91774,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_1_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "0213a5e63b84d9ff4254ec7cdc9089cad5197adf9574545a56bc8a9cd45b8168",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_02",
+      "id": "74c45d26-bf01-4928-a6e1-bbf69788ff69",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011731_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87834,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "cdf1660cf866bac09102d6f1e91eb9bdfa79794dd779a4388ffd1e0d3cbc7139",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_09",
+      "id": "256ed06d-22c2-47e2-bf39-b1be93f66758",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011731_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 80172,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f5f083889755d359d05a174d776b580d244960a55435a17b234d769d0cba65e9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_07",
+      "id": "65f4131a-1659-4626-81bf-a4abfbbf2757",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011731_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101826,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f020f02a32c77347ed706d47e19af24fa48eafeff5e9673c931801e354a1ef22",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_06",
+      "id": "8cfd079f-836f-4c96-9278-6d64bc5853bf",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011731_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87050,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "7c67bbcd2b7b0018df46a01c14e6e844365c90804fcf5ca4931d0ed698bc1069",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_08",
+      "id": "aa22364d-1ea2-4c92-8fa0-7d1269c0f7d4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011731_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 94316,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_6_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "49ec80f44ab82c3adf9c11e0b131ff6a4cdef128310bb5a9a5ffc4f04a997437",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_03",
+      "id": "67851ac3-d7ef-401d-a637-4b0b15efd657",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011731_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 75170,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_7_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "815d5b2ed3152cfc463018cef4af9890aa7dc24a92446fd896cbe7f7b9ebe609",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_10",
+      "id": "31a7e6a9-485b-4e4f-bb33-e856b1c3016f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0011731_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 79250,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_8_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "e91ee70620d8a574665751ed49c68dd8c6a91cd5ef661a192a8d9e7e9ca6dc7f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_04",
+      "id": "3290c010-7750-40f5-8113-9cbfced7c937",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0011731_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 95072,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_9_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "a1d91d545766273faae65bd7d07ecce58b434b0cf80f332a028d776bc8722184",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_12",
+      "id": "1910d364-6304-4416-bd26-6a1eab39c457",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0011731_11.webp",
+     "face": 11,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 83832,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_10_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "cc14dfe8da831f8395a60f3637206ae463908d138bf46c871cd2684c2739530c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_11",
+      "id": "9623ac32-1c2e-4be6-a2a1-e9ace00d26dd",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0011731_12.webp",
+     "face": 12,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 90800,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - NEGRESCO - 120X120 - Nat P.tech - view_11_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d4e672a1b0a2dc91cafcc28fb68bb4eb0053ecf739a9006ea50b332bcf49998f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA NEGRESCO RETT 120X120_05",
+      "id": "d1c7dcf9-6ae9-43bd-b8ef-909f17300a79",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0011740",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/negresco/pf60011740-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0011740_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-negresco-pf60011740-60x120-nat-90400-0; wall gardenia-wall-tile-la-geoteca-negresco-pf60011740-60x120-nat-90400-0",
+   "faces": [
+    {
+     "file": "0011740_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46410,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "d2934546958002971c6b672a5a1879527df5a992bbea9e05036fb347e454dfff",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_01",
+      "id": "65ccbb45-9d11-466f-85fb-07baf81973d7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011740_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39728,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_1_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "f066cdaa86185e7dcdba3d0ec43de265909b5e4f45558122581cf394a6f8902a",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_12",
+      "id": "d377bb15-1fc6-4659-b874-50ab66f91301",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011740_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48994,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "2701581db3162165cd846d67f043b3224f65023ca576c69fdf282d4cda43fc05",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_06",
+      "id": "13d93c30-dfa4-4cbb-ae83-b5dac8e4dfa7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011740_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39166,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "84ad4bc7db6cc68557d07a426a4541bcff8a776f74ab9fdb36d128184c47a80d",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_09",
+      "id": "94712cbb-46db-4c0b-9472-d78b22c25faa",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011740_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42336,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "a0bf72ef28e07932953226846e31efdc7ba429d4313a92cf18dd34f5d5011b85",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_04",
+      "id": "a9eea26a-6998-4b95-829e-2f4ac145a3ed",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011740_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49390,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "79932706f4aec8b5b4ed24a2643ea1aeb9806534e0747c9c48bf5fea236722c2",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_03",
+      "id": "f88a4ed0-9a04-40a7-982f-80d070e4a796",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011740_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52682,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_6_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "a04ffc146563cfdf833040466f1385f798d4ff9a63d98a5f4aeb07b7229d7149",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_02",
+      "id": "4f073598-f3a1-4311-adf2-c90c028f8cdd",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011740_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45422,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_7_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "3c05d8412aa39c545bf430f0ed290e602f6ea1d7e1fb5ed314c4fed7ecf47282",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_05",
+      "id": "777ad382-c518-477a-83e7-4f187ae98238",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0011740_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54720,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_8_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "7d04d5ce91799efa4e88b750bdf8692593e1a4576ae8fb27c8597eec56f589f1",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_07",
+      "id": "349f058f-6b1d-4dc0-8afd-d5f4f5b8e287",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0011740_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45412,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_9_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "a398c500b557c84a6ad932dd43d8133f4b9956da0e30f23816cbe773196b8311",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_08",
+      "id": "6151671c-74a7-4823-a11e-aea6e8750c70",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0011740_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48318,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_10_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "d471ac47cb0c9c8235aea797a42a17b546406f0c93be1c4e0fde4c0a436649d4",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_10",
+      "id": "0f326679-07c3-46a8-9061-8fbf710c6bf3",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0011740_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40400,
+     "source_zip": "LA GEOTECA - NEGRESCO - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - NEGRESCO - 60X120 - Nat P.tech - view_11_2.jpg",
+     "source_px": [
+      2284,
+      1200
+     ],
+     "source_sha256": "e70fc8a0b2bbdb7d113997bb7abd1ed21e569353180dbf8f050c544b26b4ee81",
+     "source_px_per_mm": 1.903,
+     "orientation": "turned 90 ccw",
+     "cropped": "5.1% wider than 600x1200 mm: 58 px of width (15 mm per side) cut off, keeping the 1200 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA NEGRESCO RETT 60X120_11",
+      "id": "c78e7e81-adf7-4da3-9975-65d8f0a92935",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

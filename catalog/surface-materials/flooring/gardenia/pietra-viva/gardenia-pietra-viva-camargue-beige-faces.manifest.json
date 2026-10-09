@@ -1,0 +1,1304 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - CAMARGUE BEIGE - minimali.zip (85257118 bytes, sha256 afd3dc7484df9610795a69456b4bf4d4e96d1fe9232c6159474c9d0da19179fd); PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip (32052902 bytes, sha256 5e834f4fd16697855be01b9bca62acf9e3bb9665e14b9f6180b4c79c2b167142).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0014182",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-beige/pf60014182-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014182_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0014182-120x120-nat-139965-0; floor gardenia-flooring-pietra-viva-camargue-beige-0014184-120x120-139967-0 (uses 0014182's faces: ABK's 9 Antique 3D pictures are 0014182's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014182-120x120-nat-139965-0; wall gardenia-wall-tile-pietra-viva-camargue-beige-0014184-120x120-139967-0 (uses 0014182's faces: ABK's 9 Antique 3D pictures are 0014182's Nat P.tech pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0014182_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43494,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1aea499ea0a6d07f28444ccf520f7e6e0f041cda7db426f9b05e48e5fddc7605",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_01",
+      "id": "690528ed-9c3d-4134-87f3-f0e00ff69d68",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014182_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38130,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6a73f2dd66614e52bde12ca688d4aac5871ae4cafea3d2223b265f8c8ccc043a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_02",
+      "id": "5e8e34ee-55bd-40b9-8c06-8f2cc8b5f7ad",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014182_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36710,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bbdf6b7f7675a8ad1da89db151d3a55b6f2a68ebc5f12658d3eed5cdb62cfe28",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_03",
+      "id": "d1f0797d-a4a9-455e-9ef5-fe48e43eca13",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014182_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 39220,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be933f09c830a9ae82c7fc7f727e91258666ac5b7b761d38d09d62b9726c6dec",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_04",
+      "id": "42bba33d-1ad4-4072-aea0-e2a58117680d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014182_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42530,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "27316436e241c81212b6e7cb51a0b2393126a31824a25a80c0c6603d11ba71fc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_05",
+      "id": "5aaeb100-f470-4b44-a4a9-7c051cfe5a09",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014182_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45844,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "40d7872127981cbc103644db7f5e416235d8fd69524099246343b3bcfd3ea07f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_06",
+      "id": "eef905cc-8f73-497a-a91d-0954f6ab19b1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014182_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38564,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3d177a0b0eb6dd1e295856d01dee3a944ebd408c4efa9de1ea14ab42dd8c53ee",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_07",
+      "id": "ab435221-54bd-4cdb-bae2-fdc32edb7f4a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014182_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 52386,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "602682ac308238e050656a26a9bc8a6cb29f7cc32212a258b88bb60f419d2ba3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_08",
+      "id": "29916d39-e866-4107-9fdf-977ae7517523",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014182_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46916,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e2146d597b413a5ab941d34f9bbc06e202fdb4c21c9cdd3c008e23d4dfaaa7bc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE BEIGE 120X120_09",
+      "id": "49ad0ead-ba01-437b-a047-6d2382db65ea",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x160",
+   "item_code": "0014671",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-beige/pf60014671-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 1600
+   },
+   "swatch": "0014671_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0014671-80x160-nat-139976-0; wall gardenia-wall-tile-pietra-viva-camargue-beige-0014671-80x160-nat-139976-0",
+   "faces": [
+    {
+     "file": "0014671_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 27396,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d5f4a40cf65019b5f795525cc86218e4e4671b358550626e6bbb83c6a68bf1a3",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_01",
+      "id": "40747735-6395-462d-9109-9619a1f3cf51",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014671_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 19758,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "b5bf4734483bd8be79967a7e0d2b878d7c90fce40780b98da69de423fcf14186",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_02",
+      "id": "ec45cb83-b6d0-4656-bd9f-0ed9d233c4ca",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014671_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 23458,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "c509d23b8bd3f0577db525a2c2553edd5c6af0affc8243fb739a3065a03631d6",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_03",
+      "id": "e33f7691-6e86-4a9b-975b-7b2e403bd361",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014671_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 20832,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "7685eb686a599add29da0a488720ff98f6d4883482e579b341f1daf369ad1ca8",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_04",
+      "id": "4ee98bbf-77af-4e8a-8201-96dcfd8e79cf",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014671_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 29210,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "f768095511135a32a054ee0fadc69ca978c93057332bd123c35268b421d76e15",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_05",
+      "id": "0ac9d03c-56c7-4e0e-ae59-67c86c97d466",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014671_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 24244,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "aa759b8ed0e31a496b2b66501c21c542c775d6ad732b12734ef212a25f4b3ac2",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_06",
+      "id": "b889d4b8-ad54-4f88-8335-b1ba51b77324",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014671_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 26326,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "3b28e92500524fa1f48c2b42de2cd4537770229f9694b3071a38b19d3a411b3b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_07",
+      "id": "08142a0b-9fea-42e6-be9f-06d489de0ff3",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014671_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 24948,
+     "source_zip": "PIETRA VIVA - CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - CAMARGUE BEIGE - 80X160 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2116,
+      4096
+     ],
+     "source_sha256": "0a59154e4e75f4d66bbc5973f1b6de7e7f730bcb6c40b4020c78c7c475ca546c",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 68 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X160_08",
+      "id": "2a662137-b9bb-410f-89b5-52d7ee936bcd",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014186",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-beige/pf60014186-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014186_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-camargue-beige-0014325-60x120-nat-139972-0 (uses 0014186's faces: ABK's 18 R11 pictures (on Plein Air's page) are 0014186's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014186-60x120-nat-139969-0; wall gardenia-wall-tile-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0014186_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22244,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "4fe54d5a3528210eb279f4e94b967cf58b341cc68cc373f24bf9000f1839bf48",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_01",
+      "id": "6c4a4b2d-d2fb-433a-b2d0-acb5397b5563",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014186_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21012,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "5e20104abfaa1c949b631e72a0423acdb664c0ac284abd33d0bdc44d1f39ea8b",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_02",
+      "id": "be81e226-25cb-43f2-9511-3510d8e947f5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014186_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19370,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "924f266c9ca5d00479d73f4263d86b27ca28b552983074a9ba5e04c6e3c2a15a",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_03",
+      "id": "30a46525-7866-4315-a290-76b60d00efa0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014186_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16222,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "e53c19d67cce29e2fa172719c0a31dce6498e96282fa5ab69a8485adb90e80b1",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_04",
+      "id": "b5bfc374-fd88-4fc3-bd63-37f462e29340",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014186_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16540,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "54fe2f4ea8ad2453abbf959431dd4237aeb575391f22f9495de9e4fb1edd3136",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_05",
+      "id": "9c5c3d6f-de31-4b50-853d-b2cc72fcfb89",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014186_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18204,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "6d9de073053b29280c721c69cdfd5cdd36d0e775e3feefbec862f1d52d580504",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_06",
+      "id": "8c38df5a-3c94-4f37-9313-710f32c6cf9f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014186_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20016,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "d448eaef27823c127c3c715ea27cacafbd368a3e4ca929005a59e9a1b7146e06",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_07",
+      "id": "767c649e-bdc9-427f-8e32-8ab9acfcd7a1",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014186_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18844,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "6769d7fef513a732a0acab35c40f2b281c058487dd75c2c3b4a218ad022fd87f",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_08",
+      "id": "e3654b81-b1ac-4c7e-9ab8-a9ab2002c598",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014186_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23898,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "043540c5921693db19798e82a1f870500837395a9954c3567c4e067777820005",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_09",
+      "id": "f9470bc8-7d34-47c0-8039-cb30981898cc",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014186_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20836,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "8b15917f79580ec7f119d779c7793d77d2c057e1ddcddc38ddc2e8b852693290",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_10",
+      "id": "70d6636c-d936-48ec-a775-d22309dc138f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014186_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21792,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "4e7f535492583776c71a571a8f9941fed24a9c264c9b2bebae1f0d4d672a1a8d",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_11",
+      "id": "56401ba7-b24d-41f1-acaa-bbb532c05bfc",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014186_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26186,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "12fa5f94f9121a4d3766f71918a5e4c031cdee38af9cacd575ef71f806658b39",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_12",
+      "id": "79df9427-91ce-4343-ac4e-3c28fb53df2e",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014186_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18240,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_13.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "5f3c519e318e69d9271ae65f4dd9eee6758313c543c1a7d162df791bcb12b4aa",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13 (view_13)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_13",
+      "id": "b9505119-51ee-4183-9ccc-c6960859462e",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014186_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22400,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_14.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "8570614339c8b3fd10116b0d95a40adb9fa165f8fc09cc4376da2a48f416f91c",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14 (view_14)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_14",
+      "id": "17bf215b-dfcb-4bf1-9f49-d3ae34266f2f",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014186_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29124,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_15.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "d47218d73e6b775966f815da9c8cba439958d9bbfd7b95450db35e4a6e8c068d",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15 (view_15)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_15",
+      "id": "5d4262a4-8a61-43dd-8380-33a3c66719db",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014186_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21956,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_16.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "b87bd76b19b8e207f3d7fa96872c73c735743d4379f811007c23f3d50a942b41",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16 (view_16)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_16",
+      "id": "14fa3dfc-c69d-4724-bbee-cf8b27e0c6b0",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014186_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26334,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_17.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "96b9aa9e32d7f6e9bafa8a702db8dc589a0ced53b8f492592755837e795bf86d",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17 (view_17)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_17",
+      "id": "8f046d66-1dd6-4cea-b1c0-869cbd49ea99",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014186_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23578,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 60X120 - R11 - view_18.jpg",
+     "source_px": [
+      2025,
+      4049
+     ],
+     "source_sha256": "cf978a16a3558acf525fbdf67140ecd4048876d81c1b9b05151bce0f9cc54f4e",
+     "source_px_per_mm": 3.374,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18 (view_18)",
+      "name": "MEMENTO CAMARGUE BEIGE 60X120_18",
+      "id": "8449a4ef-9f6b-4d6b-ad22-b4b0055ae3e2",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0014669",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/camargue-beige/pf60014669-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0014669_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0016100-80x80-nat-139986-0 (uses 0014669's faces: ABK's 16 R11 pictures (on Plein Air's page) are 0014669's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014669-80x80-nat-139974-0",
+   "faces": [
+    {
+     "file": "0014669_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15288,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f6f9c714e9c7f30384fa16da1a0e5275cc13bd0c22a9a7bfaaac070501cbcd47",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_01",
+      "id": "c239d89b-be3f-4ab5-b066-f7b40f7e6c61",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014669_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12456,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "643fbb284c18fd046881485c8619e621168d345a7122a452864eb84ac22edce2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_02",
+      "id": "c142d42c-361e-4b6b-bc88-e20758e035a4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014669_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9872,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2a0d9f497419ba2bad41c7fc33ea7e6b13dda8220ab896b2c28f45eda0d55618",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_03",
+      "id": "d8937303-2b17-487d-bc12-c400f8debb9e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014669_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9708,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bbd1043bee74104d071f078a5609f706dfd9f5d01960be76f82a2e34292268e7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_04",
+      "id": "62972102-2c48-47a4-940d-190929a4b857",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014669_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10324,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "18267b6be3b64de2ca6fb7bb59ab3eb6efa3b3c992f43920e1eb714b10219f91",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_05",
+      "id": "90e4bbff-7eac-4809-bcd7-ef0eded8a345",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014669_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10484,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "822321f720136efb1b8ffe29875730e1b3377c8919f7aee2ae616fd4abf0cf19",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_06",
+      "id": "d0313904-0859-4d58-af4e-6cb52153709c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014669_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10112,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "65f254335ac7d04c8bb37578e81ae0ec938562b908d72b5c2c9781dffad539b9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_07",
+      "id": "0cf04580-b7e6-42de-8eff-b7da45821a07",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014669_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9934,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3f2ab346cd7320cbc2e8a225541c2f510ea0d5b3998b893dc7634cf940583487",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_08",
+      "id": "e0fbe6e0-f2c0-4d53-ac23-643511adcc5c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014669_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12122,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b462f7b513a31394da074d303d12eaffd74f0cc9460f2aa21e4115a1e78f8686",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_09",
+      "id": "9119c962-84ef-4cc3-9b27-e821a093201b",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014669_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14786,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e8587c7e19be5c179af6e20a5820342179f8bdf064b553cbc64200866a7d151c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_10",
+      "id": "cde1ef88-7e95-429d-b15a-fd07c255f7aa",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014669_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11242,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "58e5f3a365551bdb5b2d065a645dfd3278f1e803ed0be6a6a9c47806e5bc006c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_11",
+      "id": "57e63695-7770-48f2-9a12-308d9f9792e8",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014669_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11866,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b58224786df5ec70886ba46ed4c73e187a5e643e8bca1984ebbfe178397730eb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_12",
+      "id": "c1bf5fbd-6bfa-4976-9c55-16a6200a9120",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014669_13.webp",
+     "face": 13,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15110,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4a8eb91a0436310f9cb0d4f0de319e9eb2c12b2956f36ba856faef4aac556d30",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13 (view_13)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_13",
+      "id": "05a3ae32-e43b-4fe4-866a-d9195f63c3bd",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014669_14.webp",
+     "face": 14,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10180,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "548ab29fae5a102ee1210186c1ab134f4b89a63dfff22074e7a525cd1beaccad",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14 (view_14)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_14",
+      "id": "747226e3-64c4-43c5-8edb-990753242cf7",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014669_15.webp",
+     "face": 15,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12284,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c69764eaee1b83785c1913d503049f30f73a88893032331aa39f977a3fb75a23",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15 (view_15)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_15",
+      "id": "aef9aca2-6d48-4d13-8a6f-794e4667fc81",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014669_16.webp",
+     "face": 16,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11824,
+     "source_zip": "PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA CAMARGUE BEIGE - 80X80 - R11 - view_16.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e4c68dee98e1283267d4877a221325288069d99717c52257dc85ab31cb8b4ec1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16 (view_16)",
+      "name": "MEMENTO CAMARGUE BEIGE 80X80_16",
+      "id": "9e9c95cc-1f34-4b8a-9f4c-2c1c4da3f900",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}
