@@ -18,7 +18,7 @@ permissions:
 jobs:
   window-opening-mounted:
     name: Window-opening suite (informational)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     concurrency:
       group: window-opening-mounted-${{ github.event.pull_request.number || github.ref }}
