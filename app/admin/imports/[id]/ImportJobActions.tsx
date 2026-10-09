@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { allowedImportStatusesFrom } from "@/lib/import-jobs/status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
 import { describeAdminStatus } from "../../admin-status";
+import { useImportStatusChange } from "./useImportStatusChange";
 
 type ImportJobActionsProps = {
   jobId: string;
@@ -60,14 +61,21 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
     });
   };
 
+  // A status change can't be undone, so it's confirmed first (AD4).
+  const { requestChange: requestUpdate, dialog } = useImportStatusChange(props.currentStatus, (nextStatus) => {
+    setStatus(nextStatus);
+    runUpdate(nextStatus);
+  });
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    runUpdate(status);
+    requestUpdate(status);
   };
 
   return (
     <section className="rounded-xl border p-4">
-      <h2 className="text-sm font-semibold">Workflow Actions</h2>
+      {dialog}
+      <h2 className="text-sm font-semibold">Workflow actions</h2>
       <form className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2" onSubmit={onSubmit}>
         <label className="text-xs text-neutral-600">
           Status
@@ -137,34 +145,25 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("needs_review")}
-            onClick={() => {
-              setStatus("needs_review");
-              runUpdate("needs_review");
-            }}
+            onClick={() => requestUpdate("needs_review")}
           >
-            Mark Needs Review
+            Mark needs review
           </button>
           <button
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("approved")}
-            onClick={() => {
-              setStatus("approved");
-              runUpdate("approved");
-            }}
+            onClick={() => requestUpdate("approved")}
           >
-            Mark Approved
+            Mark approved
           </button>
           <button
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("published")}
-            onClick={() => {
-              setStatus("published");
-              runUpdate("published");
-            }}
+            onClick={() => requestUpdate("published")}
           >
-            Mark Published
+            Mark published
           </button>
           {feedback && <span className="text-xs text-neutral-600">{feedback}</span>}
         </div>

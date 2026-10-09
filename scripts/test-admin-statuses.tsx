@@ -4,6 +4,7 @@ import { join, relative } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { AdminStatusBadge } from "../app/admin/AdminStatusBadge";
+import { describeImportStatusChange } from "../app/admin/imports/[id]/importStatusChange";
 import {
   ADMIN_STATUS_DICTIONARIES,
   describeAdminStatus,
@@ -151,7 +152,45 @@ for (const path of sourceFiles("app/admin")) {
   assert.doesNotMatch(read(path), retiredColourMaps, `${path} keeps no status colour map of its own`);
 }
 
+// Status changes that can't be undone are confirmed first (UX audit AD4): an import job's, and a
+// model's approval. The shared ConfirmDialog runs the change only from its confirm button.
+for (const status of IMPORT_JOB_STATUS_SEQUENCE) {
+  const copy = describeImportStatusChange(status);
+  assert.match(copy.title, /^[A-Z][^?]*\?$/, `${status}: the dialog asks a question`);
+  assert.ok(copy.confirmLabel.length > 0 && !/^(OK|Yes|Confirm)$/.test(copy.confirmLabel), `${status}: the button names the change`);
+  assert.equal(copy.destructive, status === "failed", `${status}: only failing a job is destructive`);
+}
+assert.match(describeImportStatusChange("published").description, /^Published is final/);
+assert.match(describeImportStatusChange("failed").description, /^Failed is final/);
+assert.deepEqual(describeImportStatusChange("optimized"), {
+  title: "Move this job to optimized?",
+  description: "A job can't go back to an earlier status.",
+  confirmLabel: "Move to optimized",
+  destructive: false,
+});
+
+const confirmation = read("app/admin/useAdminConfirmation.tsx");
+assert.match(confirmation, /<ConfirmDialog[\s\S]*onCancel=\{\(\) => setPending\(null\)\}[\s\S]*onConfirm=\{\(\) => \{\s*setPending\(null\);\s*pending\.onConfirm\(\);/);
+const statusChange = read("app/admin/imports/[id]/useImportStatusChange.ts");
+assert.match(statusChange, /if \(nextStatus === currentStatus\) return apply\(nextStatus\);/, "saving at the current status doesn't ask");
+assert.match(statusChange, /confirm\(\{ \.\.\.describeImportStatusChange\(nextStatus\), onConfirm: \(\) => apply\(nextStatus\) \}\)/);
+assert.match(actions, /useImportStatusChange\(props\.currentStatus, \(nextStatus\) => \{\s*setStatus\(nextStatus\);\s*runUpdate\(nextStatus\);/);
+assert.match(actions, /event\.preventDefault\(\);\s*requestUpdate\(status\);/, "the form's Save asks before a status change");
+for (const [status, label] of [["needs_review", "Mark needs review"], ["approved", "Mark approved"], ["published", "Mark published"]]) {
+  assert.match(actions, new RegExp(`onClick=\\{\\(\\) => requestUpdate\\("${status}"\\)\\}\\s*>\\s*${label}`), `${label} asks first`);
+}
+assert.equal(actions.match(/runUpdate\(/g)?.length, 1, "runUpdate runs only from the confirmed change");
+assert.match(actions, /\{dialog\}/);
+const modelApproval = read("app/admin/models/[id]/modelApproval.tsx");
+assert.match(modelApproval, /if \(nextStatus !== "approved" \|\| initialStatus === "approved"\) return save\(\);/);
+assert.match(modelApproval, /confirmLabel: "Approve and save",\s*onConfirm: save,/);
+const modelForm = read("app/admin/models/[id]/model-edit-form.tsx");
+assert.match(modelForm, /onClick=\{\(\) => requestSave\(form\.assetStatus, \(\) => void save\(\)\)\}/, "Save asks before approving");
+assert.doesNotMatch(modelForm, /onClick=\{save\}/);
+assert.match(modelForm, /\{dialog\}/);
+
 console.log(
   "Admin status checks passed: one import-job sequence, used by the job page and both routes; " +
-    `${Object.keys(ADMIN_STATUS_DICTIONARIES).length} status dictionaries and the badge, in every view.`
+    `${Object.keys(ADMIN_STATUS_DICTIONARIES).length} status dictionaries and the badge, in every view; ` +
+    "status changes and a model's approval confirmed first."
 );

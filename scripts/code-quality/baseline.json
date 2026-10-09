@@ -41,7 +41,7 @@
       "limit": 250
     },
     "app/admin/models/[id]/model-edit-form.tsx": {
-      "lines": 409,
+      "lines": 404,
       "limit": 250
     },
     "app/admin/models/[id]/viewer.tsx": {
@@ -895,7 +895,7 @@
     "app/admin/imports/[id]/ImportJobActions.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 157
+        "maximum": 155
       }
     },
     "app/admin/imports/[id]/page.tsx": {
@@ -917,11 +917,11 @@
     "app/admin/models/[id]/model-edit-form.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 360
+        "maximum": 354
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 21
       }
     },
     "app/admin/models/[id]/viewer.tsx": {
