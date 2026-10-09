@@ -185,13 +185,17 @@ const isTabulae = isGardeniaCollection("tabulae");
 const isBonTon = isGardeniaCollection("bon-ton");
 const isPietraViva = isGardeniaCollection("pietra-viva");
 const isLaGeoteca = isGardeniaCollection("la-geoteca");
-const onAbkFaces = [isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca];
+const isOrosei = isGardeniaCollection("orosei");
+const isGioia = isGardeniaCollection("gioia");
+const onAbkFaces = [
+  isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia,
+];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
-  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva and La Geoteca " +
-    "declare physical-scale data"
+  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
+    "Orosei and Gioia declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -206,8 +210,8 @@ for (const material of physicalMaterials) {
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs; Bon Ton's decors (Network,
-  // Octagon, Tricot) and La Geoteca's Plissè decors have a single face.
-  const minimumFaces = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-/.test(id)
+  // Octagon, Tricot), La Geoteca's Plissè decors and every Gioia colour have a single face.
+  const minimumFaces = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-/.test(id)
     ? 1
     : /-(pietra-viva|la-geoteca)-.+-120x280-/.test(id)
       ? 2
@@ -377,7 +381,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -767,6 +771,82 @@ assert.deepEqual(
   "three of Limoges White's 120x120 pictures cover 1390 mm"
 );
 
+// Gardenia Orosei and Gioia (downloaded 9 Oct 2026). Orosei's Antique 3D items show the Natural item's
+// pictures byte for byte and use its faces. 42 of Orosei's 45 60x60 pictures are the 120x120 graphic
+// squeezed to 600 mm (image matching), so they are declared 1200x1200 mm; Bone's pictures 1 and 2 and
+// Vanilla's picture 2 are true 600 mm pictures. Each Gioia colour is one picture of the whole 60x120
+// tile. Six of the seven decors stand upright with the long side horizontal, as Gioia is laid;
+// Primavera's picture stands upright with the long side vertical, so that entry lays the tile
+// 600 mm wide and 1200 mm tall (J, 9 Oct 2026).
+for (const [filter, label, count] of [[isOrosei, "Orosei", 78], [isGioia, "Gioia", 21]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+const oroseiSizes = ["120x280 Nat", "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(collectionCards(isOrosei, category), [
+    ["Orosei Bone", oroseiSizes],
+    ["Orosei Cream", oroseiSizes],
+    ["Orosei Ecru", oroseiSizes],
+    ["Orosei Ecru Tessera", ["120x120", "60x120"]],
+    ["Orosei Rope", oroseiSizes],
+    ["Orosei Vanilla", oroseiSizes],
+    ["Orosei Vanilla Tessera", ["120x120", "60x120"]],
+  ]);
+}
+const gioiaDecors = ["Majorelle", "Ombrelle", "Palma", "Papilio", "Rossignol"];
+assert.deepEqual(collectionCards(isGioia, "flooring"), gioiaDecors.map((name) => [`Gioia ${name}`, ["60x120"]]));
+assert.deepEqual(
+  collectionCards(isGioia, "wall_tile"),
+  [
+    "Beige", "Bosco", "Cenere", "Cielo", "Cipria", "Corteccia", "Latte", "Majorelle", "Martinica", "Oceano", "Ombrelle",
+    "Palma", "Papilio", "Primavera", "Rossignol", "Salvia",
+  ].map((name) => [`Gioia ${name}`, ["60x120"]])
+);
+// One colour's rows: its 120x120 and 60x120 Natural items (the Antique 3D entries draw the same faces),
+// the 120x280 slab, the 60x60 item with its face sizes, and the 80x80 item.
+const oroseiRows = (colour: string, [square, plank, slab, sixty, eighty]: string[], faces60: string) => [
+  [colour, "1200x1200", 9, "1200x1200", `${square}_01.webp`],
+  [colour, "1200x1200", 9, "1200x1200", `${square}_01.webp`],
+  [colour, "1200x600", 9, "600x1200", `${plank}_01.webp`],
+  [colour, "1200x600", 9, "600x1200", `${plank}_01.webp`],
+  [colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`],
+  [colour, "600x600", 9, faces60, `${sixty}_01.webp`],
+  [colour, "800x800", 9, "800x800", `${eighty}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isOrosei), [
+  ...oroseiRows("bone", ["0021733", "0021738", "0021723", "0030223", "0030228"], "600x600+1200x1200"),
+  ...oroseiRows("cream", ["0021735", "0021740", "0021725", "0030225", "0030231"], "1200x1200"),
+  ...oroseiRows("ecru", ["0021737", "0021742", "0021727", "0030227", "0030233"], "1200x1200"),
+  ["ecru-tessera", "1200x1200", 9, "1200x1200", "0021698_01.webp"],
+  ["ecru-tessera", "1200x600", 18, "600x1200", "0030241_01.webp"],
+  ...oroseiRows("rope", ["0021736", "0021741", "0021726", "0030226", "0030232"], "1200x1200"),
+  ...oroseiRows("vanilla", ["0021734", "0021739", "0021724", "0030224", "0030230"], "1200x1200+600x600"),
+  ["vanilla-tessera", "1200x1200", 9, "1200x1200", "0021697_01.webp"],
+  ["vanilla-tessera", "1200x600", 17, "600x1200", "0030240_01.webp"],
+]);
+assert.deepEqual(
+  ["0030223", "0030224", "0030225"].map((code) => facesOf(code).slice(0, 9).map((face) => face.width_mm)),
+  [
+    [600, 600, 1200, 1200, 1200, 1200, 1200, 1200, 1200],
+    [1200, 600, 1200, 1200, 1200, 1200, 1200, 1200, 1200],
+    [1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200],
+  ],
+  "Orosei's 60x60 pictures are declared 1200x1200 mm, but for three true 600 mm pictures"
+);
+const gioiaTiles = physicalMaterials
+  .filter(isGioia)
+  .map((material) => [
+    /-gioia-([a-z]+)-/.exec(material.surface_material.material_id)?.[1],
+    material.surface_material.surface_category,
+    `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
+    material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`).join(","),
+  ]);
+assert.ok(
+  gioiaTiles.every(([name, , tile, faces]) => faces === "600x1200" && tile === (name === "primavera" ? "600x1200" : "1200x600")),
+  "every Gioia entry has one 600x1200 mm face; only Primavera is laid with the long side vertical"
+);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -789,21 +869,35 @@ const sharedFaces = new Map([
   ["0012083", "0012077"], ["0011775", "0010537"], ["0011776", "0010539"], ["0016136", "0017438"],
   ["0016138", "0017439"], ["0016137", "0012723"], ["0016139", "0012726"], ["0011738", "0014522"],
   ["0011735", "0014520"],
+  // Orosei: Antique 3D items on the Natural item's faces.
+  ["0021692", "0021733"], ["0021699", "0021738"], ["0021694", "0021735"], ["0021701", "0021740"],
+  ["0021696", "0021737"], ["0021703", "0021742"], ["0021695", "0021736"], ["0021702", "0021741"],
+  ["0021693", "0021734"], ["0021700", "0021739"],
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
   ["0020757", 3], ["0020758", 3], ["0020759", 3], ["0020760", 3], ["0020765", 3], ["0020767", 3], ["0020768", 3],
   // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items are wall-only; their floor entries are R11.
   ["0012265", 8], ["0012262", 8], ["0014186", 18], ["0014185", 18], ["0014669", 16], ["0014668", 16], ["0012331", 12],
+  // Gioia's plain colours, Martinica and Primavera are wall-only.
+  ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648", "0009655", "0010527"].map(
+    (code) => [code, 1] as const
+  ),
 ]);
 // Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
 // and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
+// Gioia's decors carry an eight-digit code (00202274 -> 0202274_nn).
 const itemCode = (id: string) =>
-  (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?").replace(/^g0+/, "g").replace(/^pf6/, "");
+  (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?")
+    .replace(/^g0+/, "g")
+    .replace(/^pf6/, "")
+    .replace(/^0(\d{7})$/, "$1");
 const collectionById = new Map(
   physicalMaterials
     .filter((material) =>
-      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca].some((filter) => filter(material))
+      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia].some((filter) =>
+        filter(material)
+      )
     )
     .map((material) => [material.surface_material.material_id, material])
 );

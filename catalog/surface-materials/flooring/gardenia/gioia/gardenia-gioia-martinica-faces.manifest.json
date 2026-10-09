@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/gioia/martinica/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: GIOIA - MARTINICA - minimali.zip (1287707 bytes, sha256 4ff598e61c3f0c406200907864d554afc1c162c6684d6c098b41ec57d9870c50).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/gioia/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009655",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/gioia/martinica/pf60009655-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009655_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-gioia-martinica-pf60009655-60x120-90240-0",
+   "faces": [
+    {
+     "file": "0009655_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74546,
+     "source_zip": "GIOIA - MARTINICA - minimali.zip",
+     "source_file": "60X120-Natural/GIOIA - MARTINICA - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1282
+     ],
+     "source_sha256": "27e7d4aa1448eac370dccc06ba20b6953e60ce0561cd631bde873f8baa5a8b10",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "GIOIA MARTINICA 60X120",
+      "id": "5ffca845-04fd-4028-8aca-d4c54174b269",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

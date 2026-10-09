@@ -1,0 +1,1024 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - ECRU - minimali.zip (108421284 bytes, sha256 f2d6c0d0c2d57d620acc051c1596c47431c7fb021286df12fa0c15a6423f2ee3).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0021727",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/pf60021727-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0021727_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-pf60021727-120x280-nat-197547-0; wall gardenia-wall-tile-orosei-ecru-pf60021727-120x280-nat-197547-0",
+   "faces": [
+    {
+     "file": "0021727_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 219166,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ECRU - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "983e3567829a1c3dc00d465f062bea5c6de155c55e775f6145d6c32849744f00",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "OROSEI ECRU 120X280_02",
+      "id": "4556c122-3689-4d4c-8cd6-2c7208e0a3d0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021727_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 221762,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ECRU - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "79b743d81dd797257fb6029c898701359a3899d9b12beb5fb65f4e8617fdbae8",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "OROSEI ECRU 120X280_01",
+      "id": "00d805a5-7fa7-4ef1-a876-5f12bf119dc1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021727_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 217566,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ECRU - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "ff36f451579f5d7deb2396697cb24eb82ca25235b272e53b2bacded60e4c09aa",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 3",
+      "name": "OROSEI ECRU 120X280_03",
+      "id": "60bb922a-59a1-4562-b8e7-a97aaa3bb927",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0021737",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/pf60021737-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021737_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-pf60021696-120x120-197535-0 (uses 0021737's faces: ABK's 9 Antique 3D pictures are 0021737's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-ecru-pf60021737-120x120-nat-197552-0; wall gardenia-wall-tile-orosei-ecru-pf60021696-120x120-197535-0 (uses 0021737's faces: ABK's 9 Antique 3D pictures are 0021737's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-ecru-pf60021737-120x120-nat-197552-0",
+   "faces": [
+    {
+     "file": "0021737_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100500,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ba69bef6a4645e424e2a3ed02e5199c3c4ee4e5d1c8e73b62652c8bfa72c2ca4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "OROSEI ECRU 120X120_08",
+      "id": "0213cb60-edc2-4222-9d2f-10676d8c7bee",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021737_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 103764,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f392abe0b99d299022a607b49e59e23f3cc236739cb09ac7d1092345e0d60ee8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "OROSEI ECRU 120X120_01",
+      "id": "e3530a25-30ec-4513-8a50-2e1dbb08c148",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021737_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96542,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cbd94da7346ec7109a730d02dd86077606b55cf5886cee60ad5732bb851ec112",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "OROSEI ECRU 120X120_03",
+      "id": "73f54353-5406-45f3-93f2-92436bc0330d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021737_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98652,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ffa7de2c15bf8e8bdf6556e48dbe316676948aa7b9e88aec4281dd1a701d5df",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "OROSEI ECRU 120X120_07",
+      "id": "e0ad6934-a464-4e7b-9779-a58042dead15",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021737_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 99360,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4c6c193982b5cdbf79af1c2e3e3d9f2db2dec26c5dd9d1ee3b33f4d5c07a4e86",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "OROSEI ECRU 120X120_09",
+      "id": "9abfbcca-7817-4f39-a19e-2285a8788d58",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021737_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98788,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "859171b5d4aaabdc48a83120635a9241cd3523089931593f57f02f59e02cb2ca",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "OROSEI ECRU 120X120_05",
+      "id": "81242398-e3b2-422a-8fa0-9c6e6f7a2ffc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021737_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97178,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e8255cf9f2a6bc44adcbdf7a5f76810f2ece80392f9d535d99c37ae40842f2a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "OROSEI ECRU 120X120_06",
+      "id": "fe1718b6-f478-4ae0-9457-d3e1d7a3f039",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021737_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96380,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9bde27c4175ee78d81a0ad285513a1a3dec155cbd91c5bb39139218aca2da303",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "OROSEI ECRU 120X120_04",
+      "id": "594cabaf-ff22-4261-805b-68f07dbc6580",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021737_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104702,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "120X120-Natural/OROSEI - ECRU - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e1162ddce99a1fd6caa2e1fa3b056db537d4c301e2fb38fcaa606a0f11600863",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "OROSEI ECRU 120X120_02",
+      "id": "5d41602d-eadb-4bfe-b72e-96de518ebc7c",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0030227",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/pf60030227-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030227_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-pf60030227-60x60-nat-197562-0; wall gardenia-wall-tile-orosei-ecru-pf60030227-60x60-nat-197562-0",
+   "faces": [
+    {
+     "file": "0030227_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104120,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "882b8a05919d24204d342a07516e97e3ce9ddf465bbdb0a626db835c293a6f10",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "OROSEI ECRU 60x60_08",
+      "id": "4ba631e3-2693-4ff1-bb12-788135050333",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030227_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101184,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6a358c9e19802cda967a8f9f9468e4e2ad228eeb5ef9f505ae942e2c027c0583",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "OROSEI ECRU 60x60_05",
+      "id": "50659c92-24f0-475a-adfc-90e15ed72620",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030227_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 102998,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "93657fb910c1a4053bd57fbff09079a0708dd84adb7ae65b92ca28180d611741",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "OROSEI ECRU 60x60_07",
+      "id": "db10f8cd-558b-4268-b049-2a39199648ed",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030227_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 102454,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "096b8b9dd294cd793ed72b3e26a08908cc7b8e95f6be9c5d8c0a2b1da5decdef",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "OROSEI ECRU 60x60_09",
+      "id": "56023991-091a-47d5-b1f6-c1720d1c8656",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030227_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 99856,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ca525253d43d5debb1b81bafe49fb5fffbac0609222cb1b63c7ceb51861ca61b",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "OROSEI ECRU 60x60_06",
+      "id": "dcd57ec0-6b5f-48b4-a073-8344191e57b3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030227_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 99036,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "01d6b2378c26c258dbaf1809ebb52920be407f9cf060a1c937e7edb6678ff15e",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "OROSEI ECRU 60x60_04",
+      "id": "750de34d-9ade-42a8-b9f6-474f165c3140",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030227_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108180,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7a91a513dcd85e65f306161891fc66a6115319c5906b4f2311d130da4b1e56f5",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "OROSEI ECRU 60x60_02",
+      "id": "a48ec593-9e53-4ec7-be92-a60c3b6f49e4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030227_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97756,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "eaf53994efa76109e52f6bcffa8b82a9f443491ac136ee0b6cc9ee3c0f585480",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "OROSEI ECRU 60x60_03",
+      "id": "20044570-a4a7-4a62-a942-a0376b840bf8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030227_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106918,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ECRU - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5e42a4e27f0422ff7c4eccf2e33dc6e7ce5fd4581cf242733ee27fb6309ced4a",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "OROSEI ECRU 60x60_01",
+      "id": "647581d1-625a-4abd-973d-51c195a1b0de",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0021742",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/pf60021742-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021742_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-pf60021703-60x120-197542-0 (uses 0021742's faces: ABK's 9 Antique 3D pictures are 0021742's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-ecru-pf60021742-60x120-nat-197557-0; wall gardenia-wall-tile-orosei-ecru-pf60021703-60x120-197542-0 (uses 0021742's faces: ABK's 9 Antique 3D pictures are 0021742's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-ecru-pf60021742-60x120-nat-197557-0",
+   "faces": [
+    {
+     "file": "0021742_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49178,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3d4f957105f943b7a4fe0ef9a7af7cbb22c9a1fbc79efe6cf86be66f37a10b50",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "OROSEI ECRU 60X120_08",
+      "id": "d7f75a48-0b90-40dd-80ce-eb0333b6440c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021742_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51338,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2733f61a590a531523f0d5a725698ca04b4bcf2e9d03b74cd9f22bf45bc0fca0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "OROSEI ECRU 60X120_04",
+      "id": "a20b21ed-f9ba-4b43-9615-d05262e493b0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021742_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51720,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bd61f8283129e4fbd9d1b7cb885ccdd616b2341958ac90a03d63e667c7fa4061",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "OROSEI ECRU 60X120_01",
+      "id": "c36d978e-f5f6-4a91-974b-022596e5a698",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021742_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49554,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "76e8e2cdfe71ca26c5d93b4fed42e8410cbba882ae24c868374da4bcc8ee9b37",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "OROSEI ECRU 60X120_05",
+      "id": "efb678ce-f7fa-424d-86a8-82840fe40550",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021742_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50198,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bdd20df7abf35dbe277dda33b52bff741bd3230e3985ecbcbb7fcc256d96087f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "OROSEI ECRU 60X120_07",
+      "id": "afd6aabe-6315-427a-aac6-81ef08132c32",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021742_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49466,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "83e975887bf36dab693b046d15956c594eeff5bc5c7c5ddd02270da5c7420830",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "OROSEI ECRU 60X120_06",
+      "id": "380798db-34dc-439b-a119-40b1afb5935c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021742_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49112,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6697013c5c9590988e519502f6a0193fcd48f9c48eb4088e2acc5a1b20198f99",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "OROSEI ECRU 60X120_03",
+      "id": "c9399a0f-e613-4453-bb9e-a7b343eb2676",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021742_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54000,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e3ee468cc35ff6816aaa9625333e4149c4616a691f2925aa040046109122fdb6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "OROSEI ECRU 60X120_02",
+      "id": "91a753b7-9b65-4500-8821-3bf1fdb078aa",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021742_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48414,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ECRU - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9f02cc82972ecfcc28b647367f1ecd71fbd49b28ca2eb197d0093e142d9a4d89",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "OROSEI ECRU 60X120_09",
+      "id": "3f8bb557-74fb-4aab-9c97-159b33fc8529",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0030233",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/ecru/pf60030233-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0030233_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-ecru-pf60030233-80x80-nat-197567-0; wall gardenia-wall-tile-orosei-ecru-pf60030233-80x80-nat-197567-0",
+   "faces": [
+    {
+     "file": "0030233_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47370,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "34d98ae4be2cdfe3546a37c521f8328b6f5f34f31e38a148c6ffcd192e2b814d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "OROSEI ECRU_6 80X80",
+      "id": "42b1a09a-1723-466d-aaea-c35b47a5bf43",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030233_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46432,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5dbadb2256606d4ee28a26bfe2874cc9683d778916e2345cf2c79ad3bb20d5b4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "OROSEI ECRU_8 80X80",
+      "id": "e0486045-6b98-435c-85de-64f5d849231e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030233_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46510,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6cdf67fe9ddfa4f8482d0a8f4c029f9d0600abf14b038e8fc26b4e1a9ab1340d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "OROSEI ECRU_5 80X80",
+      "id": "4fe91b64-fb73-47f9-a57b-db09e10dfb8d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030233_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48594,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6b75332fb85f4e75c3101b9d15d6bad883519cb1825e1f3d316724f849448af2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "OROSEI ECRU_7 80X80",
+      "id": "14f5aa3f-6dcc-4610-acc5-eec51e41cb25",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030233_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46450,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8bb70ce3bdb3d63b9759f9ecf89120520e736e3e308da1f71bf412961f626ec5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "OROSEI ECRU_9 80X80",
+      "id": "ac816ccb-78c2-4255-ac91-d9710e64da60",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030233_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48616,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e9b53044fcedd9232b305b6b8c5864fffdc41f2f6d9544ffc925f0b10b5159ba",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "OROSEI ECRU_1 80X80",
+      "id": "42c6af51-b278-4eab-895e-ce11527e602c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030233_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 45998,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0c3a124518db4f4ef3618f43f863f7ba7ea81360de34c99ab577b705d283092d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "OROSEI ECRU_4 80X80",
+      "id": "e8dedd41-9c22-4e94-909c-a3aa7ee4bf46",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030233_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46912,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0a928a953ed1186ed478a548c13e5cf3f3bbb266ac215fe2f5fd74890bf5551e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "OROSEI ECRU_3 80X80",
+      "id": "625f94ec-ca0f-4b08-b46a-dda288227bf2",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030233_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46254,
+     "source_zip": "OROSEI - ECRU - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ECRU - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9fecc1cb46e943c3a80aa54864bbcee71f0cfabbf1397c60255ab9dd62b657b7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "OROSEI ECRU_2 80X80",
+      "id": "802722c7-ea1e-4c80-bddf-2ef9acd26a53",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}
