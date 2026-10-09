@@ -2,21 +2,8 @@
 
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-
-const STATUS_SEQUENCE = [
-  "received",
-  "normalizing",
-  "optimized",
-  "preview_generated",
-  "metadata_extracted",
-  "needs_mapping",
-  "needs_review",
-  "approved",
-  "published",
-  "failed",
-] as const;
-
-type ImportJobStatus = (typeof STATUS_SEQUENCE)[number];
+import { allowedImportStatusesFrom } from "@/lib/import-jobs/status";
+import type { ImportJobStatus } from "@/lib/import-jobs/types";
 
 type ImportJobActionsProps = {
   jobId: string;
@@ -26,20 +13,6 @@ type ImportJobActionsProps = {
   initialCatalogItemId: string;
   initialNormalizedAssetId: string;
 };
-
-function getAllowedStatuses(currentStatus: string): ImportJobStatus[] {
-  if (!STATUS_SEQUENCE.includes(currentStatus as ImportJobStatus)) {
-    return ["failed"];
-  }
-
-  if (currentStatus === "failed" || currentStatus === "published") {
-    return [currentStatus as ImportJobStatus];
-  }
-
-  const fromIdx = STATUS_SEQUENCE.indexOf(currentStatus as ImportJobStatus);
-  const forward = STATUS_SEQUENCE.slice(fromIdx) as ImportJobStatus[];
-  return forward.includes("failed") ? forward : [...forward, "failed"];
-}
 
 export default function ImportJobActions(props: ImportJobActionsProps) {
   const router = useRouter();
@@ -52,7 +25,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
   const [normalizedAssetId, setNormalizedAssetId] = useState(props.initialNormalizedAssetId);
   const [feedback, setFeedback] = useState<string>("");
 
-  const statusOptions = useMemo(() => getAllowedStatuses(props.currentStatus), [props.currentStatus]);
+  const statusOptions = useMemo(() => allowedImportStatusesFrom(props.currentStatus), [props.currentStatus]);
 
   const runUpdate = (nextStatus: ImportJobStatus | string) => {
     setFeedback("");

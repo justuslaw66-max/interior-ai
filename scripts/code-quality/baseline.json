@@ -1113,11 +1113,7 @@
     "app/api/admin/imports/bulk/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 138
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 16
+        "maximum": 104
       }
     },
     "app/api/admin/imports/route.ts": {
