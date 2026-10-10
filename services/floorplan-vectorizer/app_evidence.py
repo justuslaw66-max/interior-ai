@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.21.0"
+VERSION = "app-evidence-0.22.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -293,6 +293,7 @@ MEET_AT_OPENING = os.environ.get("AE_MEET", "1") != "0"             # two rooms 
 SNAP_CUTS = float(os.environ.get("AE_SNAP_CUTS", 1.5))     # an opening cut this close (px) to a corner on its wall line is cut at the corner: no sub-pixel wall piece for the app to refuse
 WELD_CORNERS = float(os.environ.get("AE_WELD_CORNERS", 1.0))   # two rooms' corners this close (px) are one corner: no sub-pixel piece of wall for the app to refuse
 SHARED_ENDS = float(os.environ.get("AE_SHARED_ENDS", 3.0))     # the two rooms' ends of one opening's span, 1 - 3 px apart along the wall: one end (round 28)
+LAST_CHECK = os.environ.get("AE_LAST_CHECK", "1") != "0"     # the app's geometry rules once more on the outlines as they leave: mend, else withhold (round 29)
 DIM_SCRAPS = os.environ.get("AE_DIM_SCRAPS", "1") != "0"           # a stroke in line with a dimension line, and a partition cut from one, are that line's own scraps
 PASSAGE_WIDE = os.environ.get("AE_PASSAGE_WIDE", "1") != "0"       # two wall ends facing each other up to 2 m apart are a doorway (else 1.5 m)
 PASSAGE_MAX_MM = float(os.environ.get("AE_PASSAGE_MAX", 2000 if PASSAGE_WIDE else 1500))
@@ -4672,36 +4673,6 @@ def build(m, gray=None):
         for me in r_["meta"]:
             if me.get("opening") is not None and me["opening"].get("_unclaimed"):
                 me["kind"] = "wall"; me["opening"] = None
-    sem_open = []
-    for g in openings:
-        if g["kind"] == "wall":
-            continue
-        if g.get("_unclaimed"):
-            p0, p1 = ((g["a"], g["c"]), (g["b"], g["c"])) if g["o"] == "h" else ((g["c"], g["a"]), (g["c"], g["b"]))
-            r = S.ratio((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
-            sem_open.append({"kind": "door", "operation": g["operation"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "confidence": 0.45, "evidenceKind": "vectorizer",
-                             "hinge": "unknown", "swingSide": 0, "handing": "unknown", "note": "door found, but the space beyond it did not close"})
-            continue
-        g["_hinge_px"], g["_swing_px"] = swing_geometry(g)
-        p0, p1 = gap_pts(g) if g.get("frame") else (((g["a"], g["c"]), (g["b"], g["c"])) if g["o"] == "h" else ((g["c"], g["a"]), (g["c"], g["b"])))
-        r = S.ratio((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
-        sem_open.append({"kind": g["kind"], "operation": g["operation"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"],
-                         "spanStart": S.ratio(*p0), "spanEnd": S.ratio(*p1), "confidence": g["confidence"], "evidenceKind": "vectorizer",
-                         "spanSourcePx": [S(*p0), S(*p1)], "widthMm": int(round((g["b"] - g["a"]) * scale_work)) if scale_work else None,
-                         "hinge": g.get("hinge", "unknown"), "swingSide": g.get("swing_side", 0), "handing": g.get("handing", "unknown"), "note": g.get("why"),
-                         "hingeSourcePx": g["_hinge_px"], "swingTowardSourcePx": g["_swing_px"]})
-    for i in unhosted:
-        a_ = m["arcs"][i]
-        r = S.ratio(a_["cx"], a_["cy"])
-        sem_open.append({"kind": "door", "operation": "swing", "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "confidence": 0.45, "evidenceKind": "vectorizer",
-                         "hinge": "unknown", "swingSide": 0, "handing": "unknown", "leafMm": int(round(a_["r"] * scale_work)) if scale_work else None,
-                         "note": "door swing found, but no gap in a wall to put it in"})
-    sem_fix = []
-    for f_ in fixtures:
-        x0, y0, x1, y1 = f_["box"]; r = S.ratio((x0 + x1) / 2, (y0 + y1) / 2)
-        sem_fix.append({"kind": f_["kind"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "bbox": S.bbox(x0, y0, x1, y1), "confidence": f_["confidence"], "evidenceKind": "vectorizer"})
-    walls_out, seen_w, seen_g = [], {}, {}
-    rooms_out = []
     m["_welded_corners"] = weld_corners(rooms, WELD_CORNERS)
     # a side of one room under a source pixel long (a corner welded onto another room's half a pixel from this room's
     # own next corner: s031's BATH/WC 1) is a wall the app's construction can make zero-length - it goes
@@ -4727,6 +4698,54 @@ def build(m, gray=None):
         m["_subpixel_sides"] += drop_subpixel_sides(rooms, 1.0 * float(m.get("work_scale", 1) or 1))
     # (last: after every step that moves a corner, so the two rooms' ends of one opening stay one end)
     m["_shared_ends"] = weld_shared_ends(rooms, SHARED_ENDS) if SHARED_ENDS > 0 else 0
+    # The app's geometry rules once more, on the outlines as they now leave (round 29): what can be mended is, the rest is
+    # withheld; an opening into a withheld room leads into space no room claims (as a door onto such space does above).
+    if LAST_CHECK:
+        kept, gone, m["_mended"], short = last_legal_check(rooms, S, T, 1.0 * float(m.get("work_scale", 1) or 1))
+        m["_subpixel_sides"] += short
+        if gone:
+            lost = {n_ for n_, r_ in enumerate(rooms) if any(r_ is q for q in gone)}
+            for g in openings:
+                if g["kind"] != "wall" and any(b_ in lost for b_ in g.get("between", [None, None]) if b_ is not None):
+                    g["_unclaimed"] = True
+            for r_ in kept:
+                for me in r_["meta"]:
+                    if me.get("opening") is not None and me["opening"].get("_unclaimed"):
+                        me["kind"] = "wall"; me["opening"] = None
+            m["_withheld_rooms_last"] = m.get("_withheld_rooms_last", 0) + len(gone)
+        if gone or m["_mended"]:
+            rooms = kept
+            settle(rooms, openings)
+    sem_open = []
+    for g in openings:
+        if g["kind"] == "wall":
+            continue
+        if g.get("_unclaimed"):
+            p0, p1 = ((g["a"], g["c"]), (g["b"], g["c"])) if g["o"] == "h" else ((g["c"], g["a"]), (g["c"], g["b"]))
+            r = S.ratio((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+            sem_open.append({"kind": g["kind"], "operation": g["operation"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "confidence": 0.45, "evidenceKind": "vectorizer",
+                             "hinge": "unknown", "swingSide": 0, "handing": "unknown", "note": "%s found, but the space beyond it did not close" % g["kind"].replace("_", " ")})
+            continue
+        g["_hinge_px"], g["_swing_px"] = swing_geometry(g)
+        p0, p1 = gap_pts(g) if g.get("frame") else (((g["a"], g["c"]), (g["b"], g["c"])) if g["o"] == "h" else ((g["c"], g["a"]), (g["c"], g["b"])))
+        r = S.ratio((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+        sem_open.append({"kind": g["kind"], "operation": g["operation"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"],
+                         "spanStart": S.ratio(*p0), "spanEnd": S.ratio(*p1), "confidence": g["confidence"], "evidenceKind": "vectorizer",
+                         "spanSourcePx": [S(*p0), S(*p1)], "widthMm": int(round((g["b"] - g["a"]) * scale_work)) if scale_work else None,
+                         "hinge": g.get("hinge", "unknown"), "swingSide": g.get("swing_side", 0), "handing": g.get("handing", "unknown"), "note": g.get("why"),
+                         "hingeSourcePx": g["_hinge_px"], "swingTowardSourcePx": g["_swing_px"]})
+    for i in unhosted:
+        a_ = m["arcs"][i]
+        r = S.ratio(a_["cx"], a_["cy"])
+        sem_open.append({"kind": "door", "operation": "swing", "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "confidence": 0.45, "evidenceKind": "vectorizer",
+                         "hinge": "unknown", "swingSide": 0, "handing": "unknown", "leafMm": int(round(a_["r"] * scale_work)) if scale_work else None,
+                         "note": "door swing found, but no gap in a wall to put it in"})
+    sem_fix = []
+    for f_ in fixtures:
+        x0, y0, x1, y1 = f_["box"]; r = S.ratio((x0 + x1) / 2, (y0 + y1) / 2)
+        sem_fix.append({"kind": f_["kind"], "centerXRatio": r["xRatio"], "centerYRatio": r["yRatio"], "bbox": S.bbox(x0, y0, x1, y1), "confidence": f_["confidence"], "evidenceKind": "vectorizer"})
+    walls_out, seen_w, seen_g = [], {}, {}
+    rooms_out = []
     if os.environ.get("AE_LOG_OPEN"):
         _k = k_len
         for g in openings:
@@ -4806,7 +4825,7 @@ def build(m, gray=None):
                       "dimensionLabels": sem_dims, "openingSymbols": sem_open, "fixtureSymbols": sem_fix, "entrance": None, "notes": notes},
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk and not g.get("_unclaimed")) for kk in ("door", "window", "open_passage", "wall")},
-                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "leafRowsReadAsCasements": int(m.get("_casement_rows", 0)), "doorsNotPlacedBeyondOpenSpace": int(m.get("_private_out", 0)) + int(m.get("_mixed_out_doors", 0)), "thinWallsReadAsWalls": int(m.get("_mixed_cells", 0)) if m.get("_mixed_pass") else 0, "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
+                        "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "roomOutlinesMendedForTheApp": int(m.get("_mended", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "leafRowsReadAsCasements": int(m.get("_casement_rows", 0)), "doorsNotPlacedBeyondOpenSpace": int(m.get("_private_out", 0)) + int(m.get("_mixed_out_doors", 0)), "thinWallsReadAsWalls": int(m.get("_mixed_cells", 0)) if m.get("_mixed_pass") else 0, "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
                         "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "glassInThinWalls": int(m.get("_glass_windows", 0)), "glassBandsBetweenTwoRooms": int(m.get("_glass_partitions", 0)), "doorwaysToTheOutsideReadAsWindows": int(m.get("_sills", 0)), "cornersWelded": int(m.get("_welded_corners", 0)), "ductsKeptAsSpaces": sum(1 for r_ in rooms if r_.get("duct") is not None), "openingsOnDuctsShut": int(m.get("_duct_openings", 0)), "cornersSnappedToDucts": int(m.get("_duct_snaps", 0)), "subPixelSidesDropped": int(m.get("_subpixel_sides", 0)), "cornersStraightened": int(m.get("_straightened", 0)), "sidesCutAtDuctJogs": int(m.get("_duct_jogs", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
@@ -5037,6 +5056,210 @@ def drop_subpixel_sides(rooms, min_len):
                 n_ += 1; changed = True
                 break
     return n_
+
+
+# ---- the app's geometry rules, once more on the outlines as they leave (round 29) ---------------------------------------
+# The rules of lib/floor-plan-compiler-v2.ts (tools/geomcheck.py is the gate's own copy of them), in source pixels: a room
+# loop may not use one wall twice or cross itself, walls of two rooms may not cross, and a stretch of wall - once the app
+# has split every side at the corners of other rooms lying on it within 0.75 px - may belong to two rooms at most.  The
+# rules are checked earlier on the working outlines, but every later step (the welds, the straightening, the turn back to
+# source pixels) moves corners again: this is the last word.  (Kept in this program: the worker runs it on its own.)
+
+def _app_cross(a, b, c, d, eps=0.75):
+    """two sides cross, and do not merely touch within eps of an end of either"""
+    if min(_pt_seg(a, c, d), _pt_seg(b, c, d), _pt_seg(c, a, b), _pt_seg(d, a, b)) <= eps:
+        return False
+    o = lambda p, q, r_: (q[0] - p[0]) * (r_[1] - p[1]) - (q[1] - p[1]) * (r_[0] - p[0])
+    return (o(a, b, c) > 0) != (o(a, b, d) > 0) and (o(c, d, a) > 0) != (o(c, d, b) > 0)
+
+
+def _loop_area2(P):
+    """twice the signed area of a loop (> 0: the room lies left of its sides)"""
+    n = len(P)
+    return sum(P[i][0] * P[(i + 1) % n][1] - P[(i + 1) % n][0] * P[i][1] for i in range(n))
+
+
+def _stretch_use(outlines):
+    """{stretch: [(room, side, which side of the stretch the room lies on: +1 / -1)]}, the stretches as the app cuts them"""
+    corners = [p for P in outlines for p in P]
+    use = {}
+    for ri, P in enumerate(outlines):
+        n = len(P); turn = 1.0 if _loop_area2(P) > 0 else -1.0
+        for i in range(n):
+            a, b = P[i], P[(i + 1) % n]
+            L = math.hypot(b[0] - a[0], b[1] - a[1])
+            if L < 1e-6:
+                continue
+            u = ((b[0] - a[0]) / L, (b[1] - a[1]) / L); ts = {0.0, L}
+            for c in corners:
+                t = (c[0] - a[0]) * u[0] + (c[1] - a[1]) * u[1]
+                if abs((c[0] - a[0]) * -u[1] + (c[1] - a[1]) * u[0]) <= 0.75 and 0.5 < t < L - 0.5:
+                    ts.add(t)
+            ts = sorted(ts)
+            for t0, t1 in zip(ts, ts[1:]):
+                k = tuple(sorted(((round(a[0] + u[0] * t0), round(a[1] + u[1] * t0)), (round(a[0] + u[0] * t1), round(a[1] + u[1] * t1)))))
+                way = u[0] if abs(u[0]) >= abs(u[1]) else u[1]     # (the side run one fixed way along its line: which side the room is on)
+                use.setdefault(k, []).append((ri, i, 1 if turn * way > 0 else -1))
+    return use
+
+
+def app_geometry_problems(outlines):
+    """What the app refuses in these room outlines (source pixels), a room's own problems first:
+    ("twice", r) and ("self", r, i, j) - sides i and j of room r cross; then ("adjacent", [(r, side, +1 / -1)], stretch)
+    and ("cross", r, s)."""
+    own, shared, boxes = [], [], []
+    q_ = lambda p: (round(p[0] / 0.75), round(p[1] / 0.75))
+    for ri, P in enumerate(outlines):
+        n = len(P)
+        if len({tuple(sorted((q_(P[i]), q_(P[(i + 1) % n])))) for i in range(n)}) < n:
+            own.append(("twice", ri))
+        own += [("self", ri, i, j) for i in range(n) for j in range(i + 2, n)
+                if not (i == 0 and j == n - 1) and _app_cross(P[i], P[(i + 1) % n], P[j], P[(j + 1) % n])]
+        boxes.append((min(p[0] for p in P) - 1, min(p[1] for p in P) - 1, max(p[0] for p in P) + 1, max(p[1] for p in P) + 1))
+    for k, v in sorted(_stretch_use(outlines).items()):
+        if len({e[0] for e in v}) > 2:
+            shared.append(("adjacent", v, k))
+    for ri, P in enumerate(outlines):
+        for rj in range(ri + 1, len(outlines)):
+            A, B = boxes[ri], boxes[rj]
+            if A[0] > B[2] or B[0] > A[2] or A[1] > B[3] or B[1] > A[3]:
+                continue
+            Q = outlines[rj]
+            if any(_app_cross(P[i], P[(i + 1) % len(P)], Q[j], Q[(j + 1) % len(Q)]) for i in range(len(P)) for j in range(len(Q))):
+                shared.append(("cross", ri, rj))
+    return own + shared
+
+
+def _cut_twist(rooms, r, i, j, share=0.1):
+    """A loop whose sides i and j cross is two loops joined at the crossing: the small one (a spike the outline took into
+    the wall, at most `share` of the room, with no opening on it that another room carries too) is cut off.  False when it
+    is not that small."""
+    P, M = r["pts"], r["meta"]; n = len(P)
+    carried = {id(me["opening"]) for q in rooms if q is not r for me in q["meta"] if me.get("opening") is not None}
+    a, b, c, d = P[i], P[(i + 1) % n], P[j], P[(j + 1) % n]
+    den = (b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0])
+    if abs(den) < 1e-12:
+        return False
+    t = ((c[0] - a[0]) * (d[1] - c[1]) - (c[1] - a[1]) * (d[0] - c[0])) / den
+    X = [a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]
+    inner, outer = [X] + P[i + 1:j + 1], P[:i + 1] + [X] + P[j + 1:]
+    if abs(_loop_area2(inner)) <= abs(_loop_area2(outer)):
+        keep, keep_meta, small, lost = outer, M[:i + 1] + M[j:], inner, M[i:j + 1]
+    else:
+        keep, keep_meta, small, lost = inner, M[i:j + 1], outer, M[:i + 1] + M[j:]
+    if len(keep) < 3 or abs(_loop_area2(small)) > share * abs(_loop_area2(keep)) or any(me.get("opening") is not None and id(me["opening"]) in carried for me in lost):
+        return False
+    P[:] = keep; M[:] = keep_meta
+    return True
+
+
+def _inside(p, P, eps=0.75):
+    """p lies inside loop P, further than eps from its sides"""
+    n = len(P)
+    if min(_pt_seg(p, P[i], P[(i + 1) % n]) for i in range(n)) <= eps:
+        return False
+    hit = False
+    for i in range(n):
+        a, b = P[i], P[(i + 1) % n]
+        if (a[1] > p[1]) != (b[1] > p[1]) and p[0] < a[0] + (p[1] - a[1]) * (b[0] - a[0]) / (b[1] - a[1]):
+            hit = not hit
+    return hit
+
+
+def _drop_straight_corner(r, j):
+    """corner j of room r standing on the straight line of its two sides (both plain wall) goes"""
+    P, M = r["pts"], r["meta"]; n = len(P)
+    if n <= 3 or M[j - 1].get("opening") is not None or M[j].get("opening") is not None:
+        return
+    a, p, b = P[j - 1], P[j], P[(j + 1) % n]
+    L = math.hypot(b[0] - a[0], b[1] - a[1])
+    if L < 1e-6 or abs((p[0] - a[0]) * (b[1] - a[1]) - (p[1] - a[1]) * (b[0] - a[0])) / L > 0.5:
+        return
+    if not 0 < (p[0] - a[0]) * (b[0] - a[0]) + (p[1] - a[1]) * (b[1] - a[1]) < L * L:
+        return
+    longer = M[j - 1] if math.hypot(p[0] - a[0], p[1] - a[1]) >= math.hypot(b[0] - p[0], b[1] - p[1]) else M[j]
+    del P[j]; del M[j]
+    M[j - 1] = longer
+
+
+def _weld_overlap(rooms, pr, S, T, before):
+    """Two rooms on one side of a stretch of wall overlap there: one room's corner went a little past the other's (a
+    chamfer the reading left, c24's half-blurred scan).  Of the two rooms, the corner past the other's goes onto it - when
+    that is no more than half a wall's thickness and leaves neither room reaching into the other.  True when it did."""
+    v = pr[1]
+    for side in (1, -1):
+        both = [(ri, si) for ri, si, s_ in v if s_ == side]
+        if len({ri for ri, _ in both}) == 2:
+            break
+    else:
+        return False
+    (xr, xs), (yr, ys) = both[0], next(e for e in both if e[0] != both[0][0])
+    X, Y = rooms[xr], rooms[yr]
+    ax, bx = X["pts"][xs], X["pts"][(xs + 1) % len(X["pts"])]
+    L = math.hypot(bx[0] - ax[0], bx[1] - ax[1])
+    if L < 1e-6:
+        return False
+    u = ((bx[0] - ax[0]) / L, (bx[1] - ax[1]) / L)
+    t = lambda p: (p[0] - ax[0]) * u[0] + (p[1] - ax[1]) * u[1]
+    ends = lambda R, s: sorted(((t(R["pts"][s]), s), (t(R["pts"][(s + 1) % len(R["pts"])]), (s + 1) % len(R["pts"]))))
+    ex, ey = ends(X, xs), ends(Y, ys)
+    if ex[0][0] > ey[0][0]:
+        (X, ex), (Y, ey) = (Y, ey), (X, ex)
+    if not ex[0][0] < ey[0][0] < ex[1][0] < ey[1][0] or ex[1][0] - ey[0][0] > 0.5 * T:
+        return False                                         # (not two rooms overlapping by a little at their meeting)
+    best = None
+    for R, vi, Q, wi in ((X, ex[1][1], Y, ey[0][1]), (Y, ey[0][1], X, ex[1][1])):
+        P0, M0, Q0 = list(R["pts"]), list(R["meta"]), Q["pts"][wi]
+        R["pts"][vi] = [Q0[0], Q0[1]]
+        for j in sorted(((vi - 1) % len(R["pts"]), (vi + 1) % len(R["pts"])), reverse=True):
+            _drop_straight_corner(R, j)
+        src = [[S(*p) for p in r_["pts"]] for r_ in rooms]
+        Rs, Qs = src[next(n_ for n_, r_ in enumerate(rooms) if r_ is R)], src[next(n_ for n_, r_ in enumerate(rooms) if r_ is Q)]
+        left = len(app_geometry_problems(src))
+        if left < before and not any(_inside(p, Qs) for p in Rs) and not any(_inside(p, Rs) for p in Qs):
+            moved = abs(abs(_loop_area2(R["pts"])) - abs(_loop_area2(P0)))
+            if best is None or (left, moved) < best[:2]:
+                best = (left, moved, R, list(R["pts"]), list(R["meta"]))
+        R["pts"][:] = P0; R["meta"][:] = M0
+    if best is None:
+        return False
+    best[2]["pts"][:] = best[3]; best[2]["meta"][:] = best[4]
+    return True
+
+
+def _to_withhold(rooms, pr):
+    """the room a problem costs: a room's own problem costs that room; of two rooms on one side of an overlapping stretch,
+    or two crossing rooms, the one without a name goes before a named one, an outdoor space before an indoor room, then
+    the smaller"""
+    if pr[0] in ("twice", "self"):
+        return pr[1]
+    if pr[0] == "cross":
+        cands = [pr[1], pr[2]]
+    else:
+        sides = [s_ for _ri, _si, s_ in pr[1]]
+        side = 1 if sides.count(1) >= 2 and len({ri for ri, _si, s_ in pr[1] if s_ == 1}) >= 2 else -1
+        cands = sorted({ri for ri, _si, s_ in pr[1] if s_ == side}) or sorted({e[0] for e in pr[1]})
+    named = lambda r_: any(l["known"] for l in r_["labels"]) or r_.get("duct") is not None
+    return min(cands, key=lambda ri: (named(rooms[ri]), not rooms[ri].get("outdoor"), abs(_loop_area2(rooms[ri]["pts"])), ri))
+
+
+def last_legal_check(rooms, S, T, min_side):
+    """The rooms as they leave, made what the app accepts: a spike cut off a loop, two rooms' overlap at their meeting
+    welded shut (and a side a mend left shorter than min_side dropped, as before) - and what cannot be mended withheld.
+    Returns (rooms kept, rooms withheld, outlines mended, short sides dropped)."""
+    gone, mended, short = [], 0, 0
+    for _ in range(4 * len(rooms) + 8):
+        found = app_geometry_problems([[S(*p) for p in r_["pts"]] for r_ in rooms])
+        if not found:
+            break
+        pr = found[0]
+        if (pr[0] == "self" and _cut_twist(rooms, rooms[pr[1]], pr[2], pr[3])) or (pr[0] == "adjacent" and _weld_overlap(rooms, pr, S, T, len(found))):
+            mended += 1
+            short += drop_subpixel_sides(rooms, min_side)
+            continue
+        w_ = _to_withhold(rooms, pr)
+        gone.append(rooms[w_]); rooms = rooms[:w_] + rooms[w_ + 1:]
+    return rooms, gone, mended, short
 
 
 class NoThinWalls(Exception):
