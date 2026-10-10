@@ -187,15 +187,16 @@ const isPietraViva = isGardeniaCollection("pietra-viva");
 const isLaGeoteca = isGardeniaCollection("la-geoteca");
 const isOrosei = isGardeniaCollection("orosei");
 const isGioia = isGardeniaCollection("gioia");
+const isIPigmenti = isGardeniaCollection("i-pigmenti");
 const onAbkFaces = [
-  isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia,
+  isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei and Gioia declare physical-scale data"
+    "Orosei, Gioia and I Pigmenti declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -210,8 +211,10 @@ for (const material of physicalMaterials) {
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs; Bon Ton's decors (Network,
-  // Octagon, Tricot), La Geoteca's Plissè decors and every Gioia colour have a single face.
-  const minimumFaces = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-/.test(id)
+  // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
+  // decors (Crocini, Pillole, Rattan) have a single face.
+  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-/;
+  const minimumFaces = singleFace.test(id)
     ? 1
     : /-(pietra-viva|la-geoteca)-.+-120x280-/.test(id)
       ? 2
@@ -381,7 +384,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -847,6 +850,59 @@ assert.ok(
   "every Gioia entry has one 600x1200 mm face; only Primavera is laid with the long side vertical"
 );
 
+// Gardenia I Pigmenti (downloaded 9 Oct 2026). Each of the ten colours comes in seven sizes, and every
+// size matches the colour's other sizes at its labelled scale (image matching). Crocini, Pillole and
+// Rattan are one picture of the whole 60x120 tile. Ash 60x120's tenth picture is its first again,
+// re-exported 2 px lower, and is used once, like the byte-identical repeats on Milk's and Mou's 10x60
+// pages. ABK has no pictures of the Mos Confet mosaics, so they keep their previews (J, 9 Oct 2026).
+assert.equal(physicalMaterials.filter(isIPigmenti).length, 146, "I Pigmenti entries on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isIPigmenti).length, 166, "I Pigmenti entries in the catalogue");
+assert.ok(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isIPigmenti(material) && !physicalMaterials.includes(material)).every(
+    (material) => material.surface_material.material_id.includes("-mos-confet-")
+  ),
+  "only I Pigmenti's mosaics keep their previews"
+);
+const pigmentiDecors = ["Crocini", "Pillole", "Rattan"];
+const pigmentiSizes = ["120x280 Nat", "120x120 Nat", "60x120 Nat", "60x60 Nat", "20x120 Nat", "30x30 Nat", "10x60 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isIPigmenti, category),
+    ["Ash", "Bark", "Clay", "Concrete", "Cotto", "Cream", "Crocini", "Milk", "Mou", "Mud", "Pillole", "Rattan", "Sand"].map(
+      (name) => [`I Pigmenti ${name}`, pigmentiDecors.includes(name) ? ["60x120 Nat"] : pigmentiSizes]
+    )
+  );
+}
+// One colour's rows: 120x120, 20x120, 60x120, the 120x280 slab (one face), 30x30, 10x60 and 60x60.
+const pigmentiRows = (colour: string, codes: string[], plankFaces = 10, thinFaces = 10) =>
+  (
+    [
+      ["1200x1200", 5, "1200x1200"],
+      ["1200x200", 10, "200x1200"],
+      ["1200x600", plankFaces, "600x1200"],
+      ["2800x1200", 1, "1200x2800"],
+      ["300x300", 10, "300x300"],
+      ["600x100", thinFaces, "100x600"],
+      ["600x600", 10, "600x600"],
+    ] as const
+  ).map(([tile, count, face], index) => [colour, tile, count, face, `${codes[index]}_01.webp`]);
+const pigmentiDecor = (decor: string, code: string) => [decor, "1200x600", 1, "600x1200", `${code}_01.webp`];
+assert.deepEqual(collectionFaceRows(isIPigmenti), [
+  ...pigmentiRows("ash", ["0016961", "0016439", "0016429", "0016997", "0016605", "0016459", "0016449"], 9),
+  ...pigmentiRows("bark", ["0016970", "0016442", "0016432", "0016998", "0016608", "0016462", "0016452"]),
+  ...pigmentiRows("clay", ["0016964", "0016441", "0016431", "0016999", "0016607", "0016461", "0016451"]),
+  ...pigmentiRows("concrete", ["0016974", "0016447", "0016437", "0017000", "0016613", "0016467", "0016457"]),
+  ...pigmentiRows("cotto", ["0016969", "0016444", "0016434", "0017001", "0016610", "0016464", "0016454"]),
+  ...pigmentiRows("cream", ["0016975", "0016443", "0016433", "0017002", "0016609", "0016463", "0016453"]),
+  pigmentiDecor("crocini", "0014514"),
+  ...pigmentiRows("milk", ["0016962", "0016438", "0016428", "0017003", "0016604", "0016458", "0016448"], 10, 9),
+  ...pigmentiRows("mou", ["0016973", "0016445", "0016435", "0017004", "0016611", "0016465", "0016455"], 10, 9),
+  ...pigmentiRows("mud", ["0016972", "0016446", "0016436", "0017005", "0016612", "0016466", "0016456"]),
+  pigmentiDecor("pillole", "0014511"),
+  pigmentiDecor("rattan", "0014512"),
+  ...pigmentiRows("sand", ["0016963", "0016440", "0016430", "0017006", "0016606", "0016460", "0016450"]),
+]);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -895,8 +951,8 @@ const itemCode = (id: string) =>
 const collectionById = new Map(
   physicalMaterials
     .filter((material) =>
-      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia].some((filter) =>
-        filter(material)
+      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti].some(
+        (filter) => filter(material)
       )
     )
     .map((material) => [material.surface_material.material_id, material])

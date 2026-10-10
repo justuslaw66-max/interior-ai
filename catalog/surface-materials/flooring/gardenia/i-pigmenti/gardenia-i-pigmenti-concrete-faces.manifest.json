@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - CONCRETE - minimali.zip (17624267 bytes, sha256 d7c40c81d8d9150c31268f63ea9356be0672c38516e41fcab89c30652cf28424).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0017000",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60017000-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0017000_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0017000-120x280-nat-90344-0; wall gardenia-wall-tile-i-pigmenti-concrete-0017000-120x280-nat-90344-0",
+   "faces": [
+    {
+     "file": "0017000_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 16346,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - CONCRETE - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "ed777e49d490c7d4a9fca9bd8c5520ad00990bae58a09f54814e1be058e8b730",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 120X280",
+      "id": "d5505d4c-461c-49d7-8675-d1f859807b5a",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016974",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016974-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016974_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016974-120x120-nat-90339-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016974-120x120-nat-90339-0",
+   "faces": [
+    {
+     "file": "0016974_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8676,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CONCRETE - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be071fa737753790dbf543c794fa32a4cfccec92be2a9937da8c655e5e971da7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 120X120_01",
+      "id": "43ea6c72-c036-44d5-9588-56fad96fbe06",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016974_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8652,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CONCRETE - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "accee044f63aa9e9ac454e341a12f211b2e158ac18788d6da79f4db446aec16d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 120X120_04",
+      "id": "aaa7fdd1-95c4-43eb-b26c-8896c3d2d6ed",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016974_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 4294,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CONCRETE - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "983597bd033ec756d1ff7ffa1f5577cdc68616a5444f476003aa9bc076dc6e0c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 120X120_02",
+      "id": "ae6cd19b-d2d7-453a-9be4-57c0c9681399",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016974_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8346,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CONCRETE - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c71b0348369b90d8cb07837dd86f0e86f601dba91329a8c3a9b517e872d01d1c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 120X120_05",
+      "id": "9f7d03dd-44df-42f6-a6fe-39c5eecaa5cc",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016974_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7998,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CONCRETE - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b07f2b56374b6b165c9dc319c4cc159e964c0f514b534a5b6bfb4fe948503955",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 120X120_03",
+      "id": "561aae35-e608-4d86-a3a3-ae11756198a7",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016437",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016437-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016437_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016437-60x120-nat-90290-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016437-60x120-nat-90290-0",
+   "faces": [
+    {
+     "file": "0016437_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4786,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ebc4e0cb4d23ff936ebd814f6e6e86d44299ab40a01f3e67ada33474263312de",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 60X120_01",
+      "id": "27a5061a-c37c-41ec-b214-08e69c9c6afe",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016437_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4148,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "efa2c3876bcaaf02223c1ceb6ddae0082aab0b6da4e48b8c09e494f87bb744d6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 60X120_09",
+      "id": "a3572886-ff3a-4a3e-8d1a-8c9f3775f0ac",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016437_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2252,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "5854ea9e8f4b4aa4ced6d772dcb89bd99a76c7c49e04c2f33d32f5fdf99e4f80",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 60X120_04",
+      "id": "4b538f64-2e52-4078-8c98-011f330ddd07",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016437_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2432,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "c5e8a360be93ff7e9c11b7790f22e1da6ec3db7cc72093d447f369b122f1141a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 60X120_03",
+      "id": "0a184dab-daec-4ba4-a042-7cb0bbe73bf0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016437_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4238,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "638d4bf5f83fda81591c8aff67d589d454cf00e20fa43d4093f852c5b9a46c0a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 60X120_10",
+      "id": "190c440c-3010-4175-b55f-4c72ce948bfe",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016437_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4318,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "21c16f42c9f17a3e90ed60ac96f55db51e3a9db7fb57f62f4fee6fcb31cba96d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CONCRETE 60X120_07",
+      "id": "30bd0f1c-4237-4c76-b1b5-4950b2dfd21a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016437_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4388,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "75c43bc048bab435541aa28d6e94f902a5e3620cc0af96fba163aea2413f6227",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CONCRETE 60X120_05",
+      "id": "16ced7d6-26c4-4622-9fa3-8ed4b538e7c5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016437_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4222,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "76aa5a5d514f092c8e7390062a5655d6f025d95cf1ad439af297e3a5c05ca3f2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CONCRETE 60X120_02",
+      "id": "8f46f76a-5cf8-4a30-a7e2-96322c0a75a8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016437_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4610,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "529f7d8294585cfccea58888a19fa9c5b067c1f0ddf247a09916bd7a11180ca7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CONCRETE 60X120_06",
+      "id": "c15dc878-c12d-4e48-842a-6e942043d2de",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016437_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4394,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CONCRETE - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "12fac909505339dc670f132488b4ef27f4e9f4a397ee576c9535b67d8454f354",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CONCRETE 60X120_08",
+      "id": "c1f5bd6c-741d-4d14-8310-43e57dfa0e92",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016457",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016457-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016457_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016457-60x60-nat-90310-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016457-60x60-nat-90310-0",
+   "faces": [
+    {
+     "file": "0016457_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2772,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "ed316466405912e16fad5e3808574a8368d0b8cbf5d4374e9fe8724a48ce9646",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 60X60_01",
+      "id": "a838802a-170a-4b3d-98df-ab07a4bc3156",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016457_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1394,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "fc4789610ef15fb90a1d0a3f4f391258d87f87e7b30a526c5db85e5e754f656e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 60X60_06",
+      "id": "243ffd78-e12c-45e9-abd3-2e0c173bebcf",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016457_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1972,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "9e59b0294549e0753da1e7a18dc51b63ea82c00993bf96667f8ed155d6a7134f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 60X60_04",
+      "id": "9cf8c6d9-6e48-40b9-a9f0-2f1ade917ad1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016457_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2150,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "3a111b5a503709fa0c93fb9d6e9f7316823f43d0de9b11ad236fab2c4fcbc71d",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 60X60_03",
+      "id": "60f88e49-9454-4a72-9103-07fccd41f9db",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016457_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1138,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "6d28e6eee5d28fc904a8a7ba242c1e9b04fe7655c5507bd3ceb868a060c5f5c3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 60X60_08",
+      "id": "f42775cd-f230-4651-84c2-7887e17fb985",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016457_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1138,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "583430f600ff7d5668038d1540d25d7aa87909ab9f6d44edb3ec26cfddcf954e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CONCRETE 60X60_05",
+      "id": "d253a3a0-4cfa-4cd1-94ab-a2f7839d2c1f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016457_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2060,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8a9a7714089d599f7bf939641c08cb177814b0165ef6d5b5bbf1bf152fec24d8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CONCRETE 60X60_10",
+      "id": "efb8647b-9e4f-4188-aef5-ffad33e52c5f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016457_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1176,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "7780111ae511b1b8506c262e01a98d3edf6f509f930042097a9bf4af4707dcc0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CONCRETE 60X60_07",
+      "id": "3deb7525-3e73-4729-9596-c14d88be7833",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016457_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2154,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e29e4abe0b537b9fca23ce59fd2bb26fe3afb15d8048cceebd926b2f4e04e355",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CONCRETE 60X60_09",
+      "id": "b3820016-c88a-49fb-a3b3-68cd0c3afe6e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016457_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2218,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CONCRETE - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "74a8c8f6f03d38bbdb84733a9c71a09582d981bced969024a48e52db16f8fc57",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CONCRETE 60X60_02",
+      "id": "1e51d480-9587-4dba-a38e-b6e9d6c8c60b",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016447",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016447-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016447_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016447-20x120-nat-90300-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016447-20x120-nat-90300-0",
+   "faces": [
+    {
+     "file": "0016447_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1672,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "51c0b09950102c02a10fc226e93da5426dcfc775905593c28655e9002b16f850",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 20X120_01",
+      "id": "89131438-a30a-4b82-abf1-d20df449e77f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016447_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1994,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0d270c66a69a667948c82537e9efeae266f96ee30e48d60538ab905ae1a31490",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 20X120_10",
+      "id": "6f186974-7f38-4b00-8fca-458ceb1dcdfd",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016447_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1724,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "3a3867d7e940f126aad09c82a2b3fe2379cca2749416b5a7d811f68d2192c1e1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 20X120_06",
+      "id": "4a93301c-f2e3-4699-939a-0524ed7dd55b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016447_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1592,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "416c33dff048af3646810c2f3780002e3a459146e0c08991c8ef4846a68249ad",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 20X120_07",
+      "id": "090574a9-55f1-4205-bbcc-95e742548dfd",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016447_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1446,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "ad47618b8f5671427324d60797bb7baabf8a2870d66f98de474c9c8e68f7704d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 20X120_05",
+      "id": "082a4e4b-aac1-4210-86c5-1fe64a3704af",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016447_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1534,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "7147bbd929d030bbddc01e966c653bf66104eaf30d6cb4a0bc1307e85e08a650",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CONCRETE 20X120_09",
+      "id": "fc5009a3-fba4-47ca-b62c-b090a5fddb0f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016447_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1788,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "9d7d627e668ef4532d85d79d6ae2c9afe916ece3a26e47e2bf407b1bab656b84",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CONCRETE 20X120_08",
+      "id": "e65fb878-e9c9-493e-b56c-980496f73a93",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016447_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1610,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c7ef8a0cbb03b59256710bfb110691614ca0228e91a8532449957a588644d0ad",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CONCRETE 20X120_02",
+      "id": "8b590415-919b-4325-86a4-943da67f1a01",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016447_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1602,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "b4150d06f4377c079564dd72b4f0cefc340cebea7048864bac37690fc522c81a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CONCRETE 20X120_03",
+      "id": "9c82f169-4b0f-4dd2-8d8a-c9bbcc7c5163",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016447_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1320,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CONCRETE - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c7e7d27a85e0edb1b785253383e1fe17592f2504088ddd9169931e43627ae651",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CONCRETE 20X120_04",
+      "id": "d2038c4b-c493-40d9-b1cc-9a1830fa978f",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016613",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016613-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016613_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016613-30x30-nat-90330-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016613-30x30-nat-90330-0",
+   "faces": [
+    {
+     "file": "0016613_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 888,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "1f7b1748deef61a486d221b28644b6caae28d1edf492448806ac032f8487fd80",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 30X30_01",
+      "id": "22fb5245-e7ea-4ca0-afe0-7dd3c2f2e874",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016613_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 626,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "dac795fbff01b192bb9215166752c6e27ee91ef63c82031b0db89ac20c454b51",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 30X30_10",
+      "id": "a5258ebd-8f7f-4ea5-93f8-9917f7674001",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016613_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 646,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "8f3d663bba4a0653e83e64b029df8015a5e6b251e26009d4c50c0d45ca18618b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 30X30_09",
+      "id": "8a0aaeb6-6bd4-4360-bf96-81045c5c6d72",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016613_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 570,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "d74f496c45ec8ff0621d4693f6e9135fbcd37237d832567a6b5739ef779e59a2",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 30X30_08",
+      "id": "afa292ee-8aa3-4e90-a963-9701fbe87127",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016613_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 618,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "a43316af4c7c498e1d912619479baec4e3bdc47659581903d0872230a9e9121c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 30X30_07",
+      "id": "b9110334-b56e-4d26-a1f6-7954e99e3ec6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016613_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 678,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "9d45d4c0a78e9a008e553a555d0850d104bb350946995fcad0eed5aa8b203cb6",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI CONCRETE 30X30_04",
+      "id": "8f496c32-dcb1-41ee-badf-528188e6a0ff",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016613_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 594,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "7fe020af567bb7806f717cad1069463bf03a56695e502e0bae6661e4816ffb8a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI CONCRETE 30X30_02",
+      "id": "ca81db2d-c1ee-4c36-9048-68ab0ae90685",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016613_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 636,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "81f6fbd874c5e3251d2a7f892ea70dd03b5ea140aa969e0eb0aed633b5a7c088",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI CONCRETE 30X30_05",
+      "id": "8001e3c6-132e-4a65-bf08-e9dd2ceb7e64",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016613_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1126,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "2a465e844622d914b11334ee022995011d6c53f2c080a0a9ae7b05c8839ba532",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI CONCRETE 30X30_03",
+      "id": "ee326fb9-1c16-4908-98d6-a4ab52419981",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016613_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 906,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CONCRETE - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "dfd732fbf30902b634ab65c2c6132d7329a8b89543b74bd7345915e3d33636b3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI CONCRETE 30X30_06",
+      "id": "b86bbcfa-78a9-4299-ada0-6b1d9daa18e1",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016467",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/concrete/pf60016467-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016467_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-concrete-0016467-10x60-nat-90320-0; wall gardenia-wall-tile-i-pigmenti-concrete-0016467-10x60-nat-90320-0",
+   "faces": [
+    {
+     "file": "0016467_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 342,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ac9ba9912089f31dfd0ae1a9dd73157c937734e37741a869388f6417372baef6",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CONCRETE 10X60_01",
+      "id": "cb401b04-ba49-484e-a373-d366e4adfded",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016467_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 528,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "5940c79c3d92571e194e4c490b7b362de34842e6789f78f0af39a11dc70b38d6",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CONCRETE 10X60_04",
+      "id": "bb8a8ccc-d7e2-458b-ab32-dc3bd4ec6683",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016467_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 322,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "e304d3b0348e3fa54d8d9ebee3765de0d42027c75336535386a19ecafa774d43",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CONCRETE 10X60_10",
+      "id": "d4cac998-c096-41dc-b3c7-3c74f7534375",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016467_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 260,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "211c45b8554be87d7e08ed1d21025b6bb2105635ff435cd3c41deecdf062be04",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CONCRETE 10X60_09",
+      "id": "a10852e9-0e8f-4ce6-9b6f-6a9692a7c1c5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016467_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 276,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "058cfd652dc2fa98e554385647686949d745b6cc9c526a99b59a03428d3b5487",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CONCRETE 10X60_07",
+      "id": "ccd0920b-bc1c-4d82-862f-2fbcff782fe8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016467_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 264,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "b8ceb61bde59c8883c94215b7b797a1df489c96bfea37983f060f5db41bca5bd",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CONCRETE 10X60_08",
+      "id": "ca812be2-468c-449c-a9c8-32fbffd8fa4f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016467_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 430,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ed822e7bbb4f80875579da155836b2f152feaac139e4f174a71620b70eb208dc",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CONCRETE 10X60_03",
+      "id": "87c23eb9-94e0-442e-bec5-8d34c29cc174",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016467_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 248,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "3fb0392961bdeb8443794bf1795d22a2fa6605f27356106ffbad12e41721fb48",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CONCRETE 10X60_06",
+      "id": "84f921f5-b125-4465-8fdc-4499f8b673d9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016467_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 414,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "d7d5234da66405bf66474b2cd757b0293c611c299fc8c0c1906b0fe6b86d354f",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CONCRETE 10X60_05",
+      "id": "01efa6d3-e852-4497-8c28-5a553ed18689",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016467_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 348,
+     "source_zip": "I PIGMENTI - CONCRETE - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CONCRETE - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "c2398c2227bb0f0b5848d1eef0bc05c779d312ad71175a1fa3fc60a278e8940b",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CONCRETE 10X60_02",
+      "id": "23582a31-691b-423b-9fc2-6279775c7195",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

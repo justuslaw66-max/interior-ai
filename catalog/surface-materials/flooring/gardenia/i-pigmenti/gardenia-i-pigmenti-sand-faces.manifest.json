@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - SAND - minimali.zip (26635950 bytes, sha256 186cf0fb34583dad6dba9a23e8a8b232a5917f574a54b7005af27a0c5b3b3e23).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0017006",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60017006-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0017006_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0017006-120x280-nat-90350-0; wall gardenia-wall-tile-i-pigmenti-sand-0017006-120x280-nat-90350-0",
+   "faces": [
+    {
+     "file": "0017006_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 32672,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - SAND - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "78f7c66e7162e1f523d8ddfd7754e2d405d529924fc7589edec26e5a6932ac70",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 120X280",
+      "id": "40644eb2-852f-4a4c-a28b-7b9d78de6355",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016963",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016963-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016963_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016963-120x120-nat-90333-0; wall gardenia-wall-tile-i-pigmenti-sand-0016963-120x120-nat-90333-0",
+   "faces": [
+    {
+     "file": "0016963_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13818,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - SAND - 120X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "564f6cbe64f2c6d2298ac797a516225831b395b17cdf79255b96c59fbfef01c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 120X120_01",
+      "id": "97db8b37-ad56-428e-bc0a-9af115dd0548",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016963_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12644,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - SAND - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ba8551e7605e94234599b0ffdb7372efd6ec7683bf9655eb8994463e10fd8cc1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 120X120_04",
+      "id": "7dacfe4b-6bc8-48e9-9e72-6cb4ea9ca5cb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016963_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13152,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - SAND - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be561e3d7c0d5f8e91438bfc9fcc8633a663a008bb6b141122932131f13e3bbf",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 120X120_05",
+      "id": "2dc995aa-e447-4b6f-8e62-64dd6908a061",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016963_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12664,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - SAND - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "08f90db35c1117b4f6abe101755f5fea8828b1de94a71fb0ae1d0ccdea58c962",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 120X120_03",
+      "id": "03c9d16e-9d70-498d-bc1b-ccd60dc2a567",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016963_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12712,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - SAND - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "481f5d36aadbaed8232f39e7dcaa1485715e8f2bd6a55af1def3abb43fcdc973",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 120X120_02",
+      "id": "7e7cf43d-e935-478d-96f7-8c2b281c34db",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016430",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016430-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016430_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016430-60x120-nat-90283-0; wall gardenia-wall-tile-i-pigmenti-sand-0016430-60x120-nat-90283-0",
+   "faces": [
+    {
+     "file": "0016430_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7710,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "2bab89896434eaef2b342cd8af35575a1ee48663e8c37e13fafffdd2c31a1485",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 60X120_01",
+      "id": "882f644a-bdf8-4a56-b3a8-ab6acc40a24e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016430_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6126,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "cf8a133d6edbbf86326eab26993fabdaac74f05b55f37ae9d2a018ed549e4da3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 60X120_09",
+      "id": "9221c1e3-3706-4882-9eb8-4f8b2aabb9ee",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016430_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6194,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "bd13db7a6da59341308bb8e7a9d93da972d9d113dcb23f30e0a8e2423b0662d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 60X120_06",
+      "id": "48cddd40-1e5d-4daa-bf82-aeae76ea7f4b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016430_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6578,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "dc2f317a7db0cf25385a9e311e8a5d07013cd8ba7f409cec4e652d2e165a6328",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 60X120_05",
+      "id": "e47f3bac-c04c-4b81-92fd-a7d2cb6b0fd0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016430_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6580,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "133dd6b0dc33f04018f1088dea4c27a4ab5ac65212905c6026e61df7599da65d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 60X120_08",
+      "id": "1f0c835d-0d58-41f5-ab26-3d8f03e5e8b8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016430_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7006,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "3f7a90dae7769c015947bbfbb3144d7b9a97198f6054794f30601e0c386a09e6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI SAND 60X120_10",
+      "id": "33e64fce-0ab3-4e8d-9fd6-466a6b439a0d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016430_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6162,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "2ed436249b3095a92bda278bf60906214ec9cd9d751cdbbe9508ee90059ee730",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI SAND 60X120_07",
+      "id": "54ab4489-8928-4950-8768-77ed2d8afc4a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016430_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6238,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "05ee34be84c70741588964d4fced795075832121490fb2f4e9d0fbfa3666d585",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI SAND 60X120_04",
+      "id": "0b4bec96-f0ab-43fc-bedb-90e0fa95acb7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016430_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6456,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "8208533539a33807b578e428cb39d9a5608f98a5a829f4c2b99d5158f478fe37",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI SAND 60X120_02",
+      "id": "0c6d040f-617b-4ee3-a221-e53f6f7177d7",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016430_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6672,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - SAND - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "91a1da8e720c730c5414cd4f81e761952a64f3b2cd42f7a457a22a2958c39f9b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI SAND 60X120_03",
+      "id": "8d531329-91df-4aa7-92d6-e8d0508c09c7",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016450",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016450-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016450_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016450-60x60-nat-90303-0; wall gardenia-wall-tile-i-pigmenti-sand-0016450-60x60-nat-90303-0",
+   "faces": [
+    {
+     "file": "0016450_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4356,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5b93f1f2cf95a6bcaefe212c634e0fe371a254aa1ebd2195b247b1f63c2e7740",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 60X60_01",
+      "id": "7a9d3ef3-8fc2-4b98-ac25-fa91dd2cba74",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016450_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3178,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "aa207fff2c42706613e39f13802ad73c788addcf044a5990ba68748fb83fc89e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 60X60_06",
+      "id": "743dad09-16e4-4256-9ee0-1567018193de",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016450_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2830,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8b234e372f4771704923196af977aca38f15f2d0bf07402fef4afb6620a98242",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 60X60_04",
+      "id": "e86c74c0-d7ad-400c-9e82-fb3f68d392c8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016450_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3498,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "39f024b27d190b2690803ea705e80c55685ba4fe606200607d66b66d60b49514",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 60X60_05",
+      "id": "8cbebd79-5d16-4c61-8184-d2be5f420251",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016450_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3152,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e847782164823164f8d22b5c3665f1a3ea3e6c6b9e8046b309d30eb9f4fd80d8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 60X60_03",
+      "id": "8d6097ee-aa15-4372-9c7c-7a183d439e0d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016450_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4074,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "879d693acf2a96efb02f6d99c6ddc79e8cd1bb82aea70048c308bb5ca8e2a18b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI SAND 60X60_10",
+      "id": "03e5d68b-c35e-49e9-b7ce-7b1bc2acfb25",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016450_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3318,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "4a3e0144b87ad4bb0ecf2edf6954de809c42eb461d00e1ee3774927e8842735c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI SAND 60X60_02",
+      "id": "1af539d6-178e-4a1c-bbad-4e99f6d7fb57",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016450_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2820,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "0607ab6a2be8580b050b43ac7c5b35296009a716b783068f98bbc8dd782c1941",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI SAND 60X60_09",
+      "id": "2ef46893-b9c0-4426-8fa2-d8e0d932fe45",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016450_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2682,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5d011d9f1678fd7bcb9e702652258177da7cca908dc46c761514bc850074d18d",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI SAND 60X60_07",
+      "id": "b8f82619-34bb-41c2-8f66-21454b94f4a4",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016450_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3954,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - SAND - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "67907cd36963e8deaa738d7561cd81b8c8b91bcf400543261f56c0b0bb04f2f4",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI SAND 60X60_08",
+      "id": "66ab3180-c800-477c-ae2b-97247e0d2fa8",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016440",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016440-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016440_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016440-20x120-nat-90293-0; wall gardenia-wall-tile-i-pigmenti-sand-0016440-20x120-nat-90293-0",
+   "faces": [
+    {
+     "file": "0016440_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2262,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c1e3196b738eea4fcd35cd0800f3fa491c914c25bfd31669c5ec21de60a45d01",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 20X120_01",
+      "id": "011c2833-e0c6-43fb-b0c4-e56c9d05394f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016440_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2662,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0ed47c7310f7be71eff1484f7dac3948b7127f1fa640e49c912dde0cf90b66a7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 20X120_08",
+      "id": "bef30140-3ef1-4fc4-a4e1-e163a76a7c1c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016440_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2228,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0bab034e989e95004dbbbaee3cb29a74eee2bbc4c541d32f7ccf9ad2e3a01ba5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 20X120_10",
+      "id": "6a9fa9ec-8556-450b-b30a-e76dda49d429",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016440_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1972,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "4472ec8552db406f811c34d3e040edebadbce92db112ddb0c4b26f53aee27990",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 20X120_04",
+      "id": "178b542f-1de2-40f9-80c0-b8d25c8afb3e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016440_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2872,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "274ff5b00c9dc19e9998c23bc25d2f4fbb522ffaa9d374b8a0096f2482d256fb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 20X120_06",
+      "id": "93400699-7c4a-4b83-8004-fe9df4e87103",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016440_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2182,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0eac92fc19637d4c4f4bcc5f4d18e9f737a2eef5f54104790a158026c78a61c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI SAND 20X120_09",
+      "id": "597954ed-01ae-44f0-9083-f02d2aedfbc5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016440_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2262,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "f60867eebd0c53f554c6181903e8b56d0f2f69a8452af86ad69d99b87b878558",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI SAND 20X120_07",
+      "id": "27b65bc7-7efa-4f3a-92f9-54cb85e1e1f0",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016440_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2284,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "d2d1f86d86d74e1aa2fffc9b55688b8a5bcc01d00bb4e6bcddf9f2385ca05790",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI SAND 20X120_05",
+      "id": "fc492a1a-9ef9-4201-af1c-c953c253dea4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016440_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2444,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "973b7c7b222c78e995417a2a764025648318d30aabbe8666bff29c48c54ddd18",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI SAND 20X120_02",
+      "id": "55e1a7d3-5208-4077-9cd7-5365f4cb417d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016440_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2558,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - SAND - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "fd6b7e6387200ad7a657eb4e081405a0047e8a8a54c2b9a91a9433755500bbaa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI SAND 20X120_03",
+      "id": "1f9bbbd5-9d85-4389-b3d2-9a62feb79e15",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016606",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016606-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016606_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016606-30x30-nat-90323-0; wall gardenia-wall-tile-i-pigmenti-sand-0016606-30x30-nat-90323-0",
+   "faces": [
+    {
+     "file": "0016606_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1176,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "4cf30a7b122a0316f79f75f003c55c045f4d0c7a62d3cd217de49e68e1772449",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 30X30_01",
+      "id": "2dbcbc31-666e-42f8-8fe6-f61ea95a4dc0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016606_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1368,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "84ff7388f24b62dd4126cc6db8ab5cf00a6fa10493979ee018e5e18bf00a40b1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 30X30_06",
+      "id": "d1b98631-1556-4cd0-814c-b474b173de97",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016606_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 794,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "9add1a8d5280c085ed3ebd2bc630a7ce1f6a48fd7a423e251a24cfb15338f313",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 30X30_10",
+      "id": "4b1fc9e2-688d-48be-b757-f0f386692fb8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016606_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 810,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "57ae68818808ff57c40eee3a725545fdd127fc12b6489b0e52a914883021dac8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 30X30_02",
+      "id": "58d96b4c-b7b6-43ca-aadd-f8d5b9bba621",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016606_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 986,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "ac4d5fa4b3292b5ebae3b914f25b13c496c832185659487c9eee10d285d5b394",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 30X30_09",
+      "id": "d202f059-6050-4afd-a663-600220e14ea6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016606_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 822,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "dd31d45ebe9b1a1627a19fafb74e3efd61575e99b618c7725a966ad22797f4d6",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI SAND 30X30_07",
+      "id": "9627d12d-d4bb-49cd-a7da-ccae39df5ad8",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016606_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 818,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "f16870eedcc9f297fcbbacd51a848190c0a5b705f3c5f991d376b925a8564232",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI SAND 30X30_08",
+      "id": "dbafe011-8fbd-4546-84e8-d213de8da618",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016606_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1040,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "de3b6ade79dd9a0036c7816465b839c01662b8b9aa285bef500cc3e21040f83f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI SAND 30X30_03",
+      "id": "324d50bb-1e83-4b64-8910-1908867e8296",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016606_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 892,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "b0bd3fd18604b634ee12905e571ab07db44866d14782738db6b80fb7004689fe",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI SAND 30X30_05",
+      "id": "5c1cb287-f67a-41d9-a417-dbc67b16d8cb",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016606_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1526,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - SAND - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "a7734c8838c1fbd31d2e40f9dfab7fde6c05f43362ddd89ee370baab6729076f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI SAND 30X30_04",
+      "id": "b2bd19b1-795f-4ebf-989c-76dfb4c68b06",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016460",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/sand/pf60016460-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016460_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-sand-0016460-10x60-nat-90313-0; wall gardenia-wall-tile-i-pigmenti-sand-0016460-10x60-nat-90313-0",
+   "faces": [
+    {
+     "file": "0016460_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 476,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "8c28c5ef1b613ee998dafc5f9782a823e0b9c9c660e55d8d5c1ce111accac149",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI SAND 10X60_01",
+      "id": "995372ef-7f7e-4ff9-ad90-13a91016f933",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016460_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 508,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "0a38b25ebbf72eaee28c99cf2af612d0bd13eba709c10a4da3cdc83a0b930533",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI SAND 10X60_02",
+      "id": "895f45ec-0795-4ea0-aee3-5674642a88de",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016460_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 776,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "2f13d5021f37f8f97e0c2d62ce58e01fb34dac93a6cd24e2733eec54c9c6480f",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI SAND 10X60_09",
+      "id": "9db722c3-19b9-4526-8772-1f4c45f10895",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016460_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 716,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "d18ea72cbc62c8d3cbc30d63cb6347d3816349adfe9cee119924e75c26986b41",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI SAND 10X60_04",
+      "id": "d6684612-879e-4ac3-a762-fe7ae4a4e15c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016460_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 742,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "c92b46340ffa4c58c7fcdf669628ccec118f2cab5ca3de6423faa71f7e4a38bf",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI SAND 10X60_07",
+      "id": "75a3f6e8-753f-4be7-a9e1-81797fa61fc2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016460_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 516,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ae1d0f918bbb2e1e5bc6d56b32e7bd6ddccfbdaf864095d514716566d0784453",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI SAND 10X60_08",
+      "id": "0ba89c04-992a-47bf-b2c1-efa9abfe64f9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016460_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 618,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "45d4a90493dee367917a5927a4a9bf8234a931ddf595c48f1f15444cfa020e47",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI SAND 10X60_03",
+      "id": "842bf100-39bd-453e-88f1-70108923c9d7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016460_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 630,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "dc9b577e2532db944972049cce774e77b646380792a3b59d23b0e553c27260fb",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI SAND 10X60_05",
+      "id": "722c06e9-39e5-4b2e-adea-3ea0e5e46d60",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016460_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 684,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "bf0550cad8f65159b8cb354d3ce97428c29a8367261661ff08b71b9452a44f94",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI SAND 10X60_10",
+      "id": "96bd9c11-4a36-4bf5-9ad7-a5c15108693d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016460_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 558,
+     "source_zip": "I PIGMENTI - SAND - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - SAND - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "1f983b105d8830079c7f491d0f9161567f8f5e068b961991cf594409713a89ce",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI SAND 10X60_06",
+      "id": "ba0520da-7663-494c-9737-b4b5a06ae63d",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

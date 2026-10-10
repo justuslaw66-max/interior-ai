@@ -18,6 +18,7 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | La Geoteca, ten colours and three Plissè decors | 88 of its 92 drafts (46 floor, 42 wall); Negresco 120x280 and 80x80 keep their previews | 286 | `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-la-geoteca-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Orosei, five colours and two Tessera decors | 78 drafts (39 floor, 39 wall) | 248 | `catalog/surface-materials/flooring/gardenia/orosei/gardenia-orosei-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Gioia, nine plain colours and seven printed decors | 21 drafts (5 floor, 16 wall) | 16 | `catalog/surface-materials/flooring/gardenia/gioia/gardenia-gioia-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | I Pigmenti, ten colours and three 3D decors | 146 of its 166 drafts (73 floor, 73 wall); the 20 Mos Confet mosaic entries keep their previews | 560 | `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-i-pigmenti-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -40,7 +41,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei and Gioia entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia and I Pigmenti entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -57,6 +58,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia Tabulae and Bon Ton originals | 0.91 (Bon Ton 120x280) to 4.4 |
 | Gardenia Pietra Viva and La Geoteca originals | 1.0 (two Ceppo di Gre 60x120 pictures) to 3.4 |
 | Gardenia Orosei and Gioia originals | 1.46 (Orosei 120x280) to 3.4 (Gioia Primavera) |
+| Gardenia I Pigmenti originals | 1.46 (120x280) to 2.95 (60x60, 30x30 and most 10x60) |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -138,3 +140,12 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
   - **Orosei 60x60** (0030223 to 0030227): 42 of the 45 pictures are the colour's 120x120 graphic squeezed to 600 mm (r 0.99 to 1.00 drawn as 1200 mm, 0.11 to 0.13 as 600 mm). Declared as 1200x1200 mm faces; the renderer cuts true-scale 600x600 windows from them. The other three (Bone's pictures 1 and 2, Vanilla's picture 2) are true 600 mm pictures (r 1.00 at 600 mm, 0.11 to 0.12 at 1200) and are declared as 600x600 mm faces.
 - **Not in the catalogue:** Orosei's R11 sizes (their pictures come in the colour ZIPs), and the three 40x60 Mix Floor colours and Plein Air's Orosei pages (not downloaded).
 - **Gioia** comes in one size, 60x120, with one picture per colour: the whole tile. The seven printed decors (Majorelle, Martinica, Ombrelle, Palma, Papilio, Primavera, Rossignol) run on across the tile's edges: each picture's last row and column of pixels correlate with its first as strongly as neighbouring rows and columns do (r 0.44 to 0.97, against 0.42 to 0.96). Six stand upright with the long side horizontal, as the catalogue lays Gioia. Their faces are stored turned upright like every 60x120 face, and the tile painter turns them back on the horizontal tile (checked through the real tile painter). **Primavera's picture stands upright with the long side vertical**, so its entry is laid 600 mm wide and 1200 mm tall (J, 9 Oct 2026). Gioia's decor codes are written 00202274 in the catalogue and 020227412. on ABK's pages; both read as 0202274, the faces' prefix.
+
+## Gardenia I Pigmenti specifics (downloaded 9 Oct 2026)
+
+- As for the collections before: one copy of each face, every site picture (678 on 86 size pages) matched to its ZIP file by sha256, and each colour's sizes checked against each other with the crop test.
+- **Sizes:** the catalogue has each of the ten colours in seven sizes (120x280, 120x120, 60x120, 60x60, 20x120, 30x30, 10x60). Four pictures of each size per colour, cropped in three or nine places and drawn at 0.67 to 1.5 times the label, match the colour's other sizes best at the labelled scale (r 0.82 to 0.98; 0.09 to 0.39 at the other scales). Each size uses its own faces; the 120x280 slab has one picture, so one face.
+- **Repeats, used once:** Milk's and Mou's 10x60 pages list one picture twice with identical bytes. Ash 60x120's tenth picture is its first again, re-exported 2 px lower (fine detail r 0.77 at that shift, against 0.00 between different faces).
+- **Crocini, Pillole and Rattan** (60x120 Nat 3D) are one picture of the whole tile each, laid with the long side horizontal, as ABK shows them.
+- **Mos Confet mosaics** (29.3x33.3, ten colours, floor and wall): ABK's Single Item Picture pages have no mosaics, so the 20 entries keep their previews (J, 9 Oct 2026), like Make's T36 mosaics.
+- **Not in the catalogue:** the 5x120 strips, and the 120x120 R11 items of Ash, Cream and Sand (their pictures are the Natural item's, byte for byte). Both come in the colour ZIPs.

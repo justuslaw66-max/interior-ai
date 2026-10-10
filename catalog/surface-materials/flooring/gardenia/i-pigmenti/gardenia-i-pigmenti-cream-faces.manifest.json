@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - CREAM - minimali.zip (27882041 bytes, sha256 141fe65e8a3cbbb5dbcdb21775655d6fd2bf40070a696dddbec8175b814a1e8c).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0017002",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60017002-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0017002_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0017002-120x280-nat-90346-0; wall gardenia-wall-tile-i-pigmenti-cream-0017002-120x280-nat-90346-0",
+   "faces": [
+    {
+     "file": "0017002_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 38684,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - CREAM - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "737a93a75b55adc6683fb392e1b15d01bdc262329777e69577f92cb1e018ee38",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 120X280",
+      "id": "503c4bca-5123-45a5-afb5-dde50f89afe7",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016975",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016975-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016975_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016975-120x120-nat-90340-0; wall gardenia-wall-tile-i-pigmenti-cream-0016975-120x120-nat-90340-0",
+   "faces": [
+    {
+     "file": "0016975_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16990,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - CREAM - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9e3673b12e3de290a7c4f2943f1bc18b8413dd9e59b7378de3247fe5b7927cd2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 120X120_01",
+      "id": "4c3d6deb-2144-4754-99e0-0e8feee4d9a3",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016975_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15660,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - CREAM - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "185bea2910abb5f043a71bd2063830aef1a0711058b5d37bc0fe59bbfcc5f4a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 120X120_03",
+      "id": "3584aff7-66fd-44c3-8004-e675c5945180",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016975_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15752,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - CREAM - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a5322eefd1a6d61b478787cc22f14cebce92cbf0def13095592a25a6988e84c8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 120X120_04",
+      "id": "3c2298c9-93e4-4d94-9a92-c756c3da122f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016975_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15606,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - CREAM - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "628daa63a7b26604e48e6e0746551f0bf51f4272b87dedbe50c3279f6752e55b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 120X120_02",
+      "id": "a83df628-8058-49fb-89e3-49127ec54b85",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016975_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15894,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - CREAM - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9dceaba58909be1eca08a80c7dbd401a763d3a6efa63e7d6a1f8f09dadb24789",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 120X120_05",
+      "id": "3976c6d8-4647-4d49-ba2f-12abc38f3dfe",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016433",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016433-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016433_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016433-60x120-nat-90286-0; wall gardenia-wall-tile-i-pigmenti-cream-0016433-60x120-nat-90286-0",
+   "faces": [
+    {
+     "file": "0016433_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9442,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "0a67338ef79df5ebfefe031b38136c6781b4b071a99a98b709f62502f542b971",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 60X120_01",
+      "id": "af0a8513-cfb4-4b7a-8b8f-43de1ac612aa",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016433_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8392,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "07f90b19d8b75c8eb545fca0e5ebd27414c3094ffbecc4eb875c20a416c4dbcf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 60X120_08",
+      "id": "6efb1817-8575-43a8-916d-6859ef0d041f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016433_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8482,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "e366d57697e26429350262e4807d9dae2fd08ad3533d21b22a42fa7b2c4ba805",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 60X120_05",
+      "id": "1b19add1-0d92-43a6-abfa-a9e4cea993cb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016433_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8148,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "98c54fad6da0859760051cf770f94d3c0d74d9f5e1a067e1cbe663a5eb0c394b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 60X120_07",
+      "id": "1de2771b-9714-4c28-ad81-574fce1ad7e4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016433_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7664,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "b120c6f326eca7b38fdff19587305546906f23d212d32b9fda1b5b6534ae2ede",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 60X120_02",
+      "id": "5e571ce6-d547-44fc-bc25-17db64712b8e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016433_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8380,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "0c53f7ce9285ba46dbd3404df4bd8b7e0351e7323dd9b5daf7b99c8fe8e08a88",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CREAM 60X120_04",
+      "id": "c9a3d90e-db17-4c1c-8d93-c05d92433b70",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016433_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7854,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "f29601bed9f978fbd9ca4fee06eb3d5d0ece9044ea1256100763d57e3fdf5b17",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CREAM 60X120_06",
+      "id": "4407ae73-6b88-4164-8799-cc83f1e9a8f7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016433_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8084,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "323816bbc7a690c7ec90534007864c0e3ced81135233bbbaf49c72948fbdec7f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CREAM 60X120_03",
+      "id": "d35608d9-f2a5-4dc1-8658-ff42f087fcba",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016433_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8328,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ca17a4b03c60054cf8a5b1beb2548e58713d7da6f80da0aed3b535912f3e06ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CREAM 60X120_10",
+      "id": "9c278c78-c3ea-4358-8d26-0e084e2e44ef",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016433_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7382,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CREAM - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "64276daa4f6b0d7d86008e36868379b2083e7faf34996fd2f157243a08fd65c1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CREAM 60X120_09",
+      "id": "b9590d57-7591-418a-8327-d11830b4e1e4",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016453",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016453-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016453_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016453-60x60-nat-90306-0; wall gardenia-wall-tile-i-pigmenti-cream-0016453-60x60-nat-90306-0",
+   "faces": [
+    {
+     "file": "0016453_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5366,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "4712b56663959ac70852ed79e62393d9cd6c88a6135eec094757a61cbdf6e7d1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 60X60_01",
+      "id": "9a353569-5b6f-4eca-a1e1-9b05c13ca238",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016453_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4860,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5f2081e3d385ac798cfeef1d23b604ccf5b681d97ab7edb66eec9a2f1af16811",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 60X60_10",
+      "id": "e50c1213-8152-4330-9fc1-18e5f6191947",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016453_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3616,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "b0f681536ec7fad0fe473423239d4b5fd72a90217e9c6b4084f01d864243f4c2",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 60X60_09",
+      "id": "98cf900d-c195-4cad-a4d9-30e917388336",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016453_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3170,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "b6a41ab03a322f44dd4adf8ee9271487c459739fb38b23f4424969ac5d280929",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 60X60_07",
+      "id": "ec4625ef-5d98-401a-8763-1830429d23f8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016453_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4832,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8be0666e80a512d3deb8877a7020e4d32408a12f6de81723c15e7f31069b5649",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 60X60_08",
+      "id": "75d23e54-02e0-49e1-b0c3-31a7f72acd52",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016453_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4284,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "3d4cbded727b160935a4d256bfcfa8e2594233b6592ab7d41ab2298849ce5213",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CREAM 60X60_05",
+      "id": "94d9797e-39c5-43b5-9b35-d062920a2e93",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016453_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4306,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "f564e41bdba61d22b247061c545dbf9334258e1493dfe529d441150ff2552c16",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CREAM 60X60_02",
+      "id": "598054d1-f795-4cdd-80ac-808a023e139c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016453_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3774,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5df95206fb2a0f626f4f9bcb9628d3dbd189fefc4877b3e17ca3c7df442b7ff0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CREAM 60X60_06",
+      "id": "2b3366ee-04c3-42a1-983f-d8a3fb48be29",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016453_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3512,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "57dac50f374499bda9111f1564a03e110983baeb7dd7d94b44304d0ee9ed513b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CREAM 60X60_04",
+      "id": "0c4c67a2-abf5-4040-8665-5fe5691380cb",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016453_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3822,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CREAM - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "89c640f0f1a47ee166facdecdacb3b09f4124a2e1739b6966d1cac930d460eef",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CREAM 60X60_03",
+      "id": "245e819c-99eb-46c1-8f9e-cd4f4be00037",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016443",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016443-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016443_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016443-20x120-nat-90296-0; wall gardenia-wall-tile-i-pigmenti-cream-0016443-20x120-nat-90296-0",
+   "faces": [
+    {
+     "file": "0016443_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3186,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "1f9bfe4c31979afb8ce533b88159f920127122e1fbc996e1e3c35f05c518b7f3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 20X120_01",
+      "id": "b84d9800-78a2-498e-b64b-cadb1fc195f4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016443_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2666,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0e094f92edd7313f231461a32f596914f37a40f963eae74176b1acb557944ca3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 20X120_05",
+      "id": "36abc3db-ba16-4a04-865f-c92315eb2a15",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016443_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3124,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "b84e88f064db90286060a381776b480dbe297c6298f087fc1c666af19fb19907",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 20X120_06",
+      "id": "651cdd21-ec31-450b-b20c-d8104182779f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016443_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2450,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "fb381d4d7dec2d6a36918230c4910510acc901fda60a9b0a58edaf3dd4323dac",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 20X120_07",
+      "id": "173b4602-1ea1-42ee-bdaa-ff5936ac6002",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016443_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2420,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "52d5a43b0d88f440bb61b26a70c480981fb3ee44be41bb80f0dcc7a8b7071cbc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 20X120_08",
+      "id": "103308be-f3cd-44e0-a1ca-2f28ec1d3af5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016443_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2786,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "d8ad27bd8f0339b16ccf6e602dc325c72bf57bb26d7b5a16befb83d3988e5929",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CREAM 20X120_04",
+      "id": "b169d38f-09d4-437a-9605-a7c32cfd0e05",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016443_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2972,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "2d2096125b0237b9dadb96cbdc6b8e41284a0b3b024589d59c28186676d4c70b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CREAM 20X120_10",
+      "id": "6f023838-5e79-4f21-9a13-79315ce2280d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016443_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2530,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "81c71b118e20833c3fe2de1c471d7c5e5f3cc2cdefdb8425a87a99f1d271871a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CREAM 20X120_03",
+      "id": "4db24d56-b177-4ac0-9985-a71bfa0b9df9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016443_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3178,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "a438a88ed31df8da390f8c3d58df25e701a66b60b24cab46ee26404985d3a0bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CREAM 20X120_02",
+      "id": "f15c2f92-7c90-4474-a80c-c083777b2749",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016443_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3134,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CREAM - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "b8e2d8d7158589a3486fa392cde23681ff622df25ef9d755000487ff4e710f33",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CREAM 20X120_09",
+      "id": "8cacf4e2-9141-4361-b6bd-13a960943fdf",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016609",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016609-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016609_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016609-30x30-nat-90326-0; wall gardenia-wall-tile-i-pigmenti-cream-0016609-30x30-nat-90326-0",
+   "faces": [
+    {
+     "file": "0016609_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1134,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "a84f91ef8a324418c3baa7fa4b820b3bb9743c578b10cc20bded9c391879527e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 30X30_01",
+      "id": "0bd940b3-3e2c-4d10-95b7-0af44c51b60a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016609_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1080,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "91ff8c1b4fca5716d7ef5710dc3298e44b8d6c5b09e05f98f28ff5deb6bd496e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 30X30_06",
+      "id": "aecdd47c-168e-4082-88ca-0adcba01b353",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016609_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1406,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "5bf026acbf9d49b90b4e2e46524657a2499cdce1360ced3e6e6516ae0dc86372",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 30X30_07",
+      "id": "27784d2b-a356-43c2-a0ce-4b174eace42b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016609_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1254,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "f9e7ab59640b3775abda4698ba6dfc3c1c2e809bd1940745d6aa2358667ea886",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 30X30_04",
+      "id": "436fa28d-a44c-4828-b816-454223981521",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016609_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1016,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "e889481ca15aadd0bc32e5a28b49f44e09ca32fbe530663c9fbaf50e57fdb219",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 30X30_10",
+      "id": "f5754a1a-e536-46a3-803c-7d154b76e52f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016609_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 958,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "3eef445a0a586756e3582685b5bdc8a03112b88a8eb227a1b352309903e636bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI CREAM 30X30_02",
+      "id": "3bfc0dde-a220-4fc5-91dd-2939502f2c54",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016609_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 992,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "9412a77866ccab809c899de2d21e394b64663b604ca3b500629867b1fa599fa9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI CREAM 30X30_08",
+      "id": "8046665b-4589-471a-be9c-96659aac7af2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016609_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1120,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "22dbbdf83f83804258c04aa97981273e5e8538e55e768758d5a209a263c73c32",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI CREAM 30X30_09",
+      "id": "40181178-65a9-49f8-beca-8ede0bd98f44",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016609_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 852,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "ca4a11207c1b71b0f557b99f15fad457dd02ebcde1c5a1b1d8e45a8ef2899393",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI CREAM 30X30_05",
+      "id": "9cd9409b-3e26-4846-8c2a-727910bcc5bd",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016609_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1006,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CREAM - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "7ecc3224c65c2de556da86a29799a011257e2a379a792fe95b0195ebe343ce76",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI CREAM 30X30_03",
+      "id": "9c66041f-3ac2-4638-89a5-1b86a8dd9f82",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016463",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/cream/pf60016463-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016463_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-cream-0016463-10x60-nat-90316-0; wall gardenia-wall-tile-i-pigmenti-cream-0016463-10x60-nat-90316-0",
+   "faces": [
+    {
+     "file": "0016463_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1238,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1181,
+      197
+     ],
+     "source_sha256": "dac9a7e8f59192e5a9c2c73581c73e56fbe6ba9969a57980d1032f52d4afc4d0",
+     "source_px_per_mm": 1.968,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CREAM 10X60_01",
+      "id": "376546a7-199a-4ad8-9cb5-d8dfbd83042b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016463_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 812,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "5f9c8ef25f88996e85b0fe719c66dd8b3cdb2eb57ea3a557f3ba39f54526760a",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CREAM 10X60_08",
+      "id": "422a485e-df94-4d97-ac3c-b1f5450ee113",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016463_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 722,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "09d9596cbb2a6bd98e3d3c6fff08d96c1940669ca96541ddf44d13159e089420",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CREAM 10X60_03",
+      "id": "238d5f3f-895b-436d-ad49-1e701f71036f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016463_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1278,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "a3483a9961d23d7bb1b686efdca8e8780354520bb2a65bfe1496ec25b13be2f6",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CREAM 10X60_07",
+      "id": "1343fb14-1d89-494d-aacd-091ad2093476",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016463_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1098,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "876c56a92c6dc1bbf42d8cc62e765b1ef98908298d16a2cd669ca9f82bdc0a3d",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CREAM 10X60_05",
+      "id": "46a1324f-6868-4201-8922-08e9c18aaa2e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016463_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1092,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "d5866121bde4dc333652cc9c47ed0f21bdbf8053f0e37259117679b6ef443ce1",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CREAM 10X60_04",
+      "id": "264f2e56-c471-4c46-90a1-45ddcd339fd0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016463_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 636,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "f727c906114959c984e9d646f34ee1408b8b423906d9640bc539b0477031b75c",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CREAM 10X60_10",
+      "id": "60d89ace-fa40-4952-a0c0-de35e877a909",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016463_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 882,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "98e558a06c06a33bc9f483f07d8614004a49e46bbc2d5a163f49baf3e63d5d4c",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CREAM 10X60_06",
+      "id": "6e79073b-e847-4710-971d-cd451ae581ae",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016463_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 814,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "b56d4e847a3f28bd96974889a39640f2b037ef732e371b32b133fb056830069b",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CREAM 10X60_09",
+      "id": "83559dbe-aa37-4af3-a5f9-5c3352cc4d72",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016463_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 920,
+     "source_zip": "I PIGMENTI - CREAM - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CREAM - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1181,
+      197
+     ],
+     "source_sha256": "eb20b7fdbed8e8bca4108e7810b5f9ebb6181f385e671b25adcd823fe4082f02",
+     "source_px_per_mm": 1.968,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CREAM 10X60_02",
+      "id": "b859e529-e60a-4d27-b718-24951f275b3d",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

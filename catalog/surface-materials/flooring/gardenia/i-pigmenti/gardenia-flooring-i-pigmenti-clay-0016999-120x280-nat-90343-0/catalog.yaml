@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile face: the single item picture from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016999-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the original is sharper, see gardenia-i-pigmenti-clay-faces.manifest.json. It covers 1200x2800 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0016999/0/90343 for floor use.
     - "Configurator format: 120x280 Nat; surface destination: ENTRAMBE."
@@ -62,16 +63,23 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016964.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016964.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016999_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016999_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 280
     height: 120
+  image_physical_size_mm:
+    width: 1200
+    height: 2800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016999_01.webp
+      width_mm: 1200
+      height_mm: 2800
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -96,12 +104,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
