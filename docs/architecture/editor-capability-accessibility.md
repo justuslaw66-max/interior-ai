@@ -83,9 +83,11 @@ command-bar lifecycle.
 `useDesignPageCoreShellRegistration` derives two access flags, and nothing
 else derives them:
 
-- `canEdit` is `!isClientPreview`. The plan, rooms, doors and windows, moving
-  and removing placed items, and the start chooser's empty templates are
-  usable as soon as the editor opens.
+- `canEdit` is `!isClientPreview` once the page has hydrated
+  (`useClientHydrated`). The plan, rooms, doors and windows, moving and
+  removing placed items, and the start chooser's empty templates are usable as
+  soon as the editor's scripts run. The server's HTML keeps them disabled, so
+  a click before then isn't silently lost.
 - `canChangeProducts` is `canEdit && liveCatalogReady`. Anything that picks a
   product waits for the live catalog and the imported catalogue (or their
   10-second fallback): adding from Furnish and the imported models, furnished

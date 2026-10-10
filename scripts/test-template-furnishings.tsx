@@ -50,7 +50,7 @@ assert.match(readiness, /export const IMPORTED_CATALOG_WAIT_MS = 10_000;/);
 assert.match(readiness, /setTimeout\(markImportedCatalogHydrated, IMPORTED_CATALOG_WAIT_MS\)/);
 assert.match(
   source("lib/useDesignPageCoreShellRegistration.ts"),
-  /const liveCatalogReady = useDesignPageLiveCatalog\(\);\s*const \{ canEdit, canChangeProducts \} = designPageEditAccess\(isClientPreview, liveCatalogReady\);/
+  /const liveCatalogReady = useDesignPageLiveCatalog\(\);\s*const \{ canEdit, canChangeProducts \} = designPageEditAccess\(isClientPreview, useClientHydrated\(\), liveCatalogReady\);/
 );
 // The imported catalogue (2.5 MB) is read on opening, and again on window focus at most every
 // five minutes, not on every focus (J, 10 Oct 2026).

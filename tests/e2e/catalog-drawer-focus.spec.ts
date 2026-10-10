@@ -246,10 +246,12 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
     await opener.click();
 
     releaseLiveCatalog();
+    // The products cover waits for both lists (UX phase 4a), or for the imported list's 10-second
+    // wait. Release that empty list too before waiting for the cover, rather than racing the timer.
+    releaseImportedModels();
     await expect(
       page.locator('[data-catalog-drawer-focus-scope] > .pointer-events-none[aria-hidden]'),
     ).toHaveCount(0);
-    releaseImportedModels();
 
     await expect(page.getByTestId("catalog-item-drawer")).toBeHidden();
     await expect(opener).toHaveCount(0);
