@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
+import { ModelStatusField } from "./ModelStatusField";
+import { ModelApprovalBlockers, useModelApprovalConfirmation } from "./modelApproval";
 
 type EditableModelAsset = {
   id: string;
@@ -61,6 +63,8 @@ export default function ModelEditForm({
   const initialAssetStatus: "draft" | "needs_fix" | "approved" = useMemo(() => {
     return getModelAssetStatus(asset);
   }, [asset]);
+
+  const { requestSave, dialog } = useModelApprovalConfirmation(initialAssetStatus);
 
   const stripStatusMarker = (notes: string) =>
     notes.replace(/\[STATUS:(draft|needs_fix|approved)\]\s*/g, "").trim();
@@ -301,23 +305,10 @@ export default function ModelEditForm({
         </div>
       )}
 
-      <label className="block text-xs">
-        <div className="mb-1 font-medium">Status</div>
-        <select
-          className="w-full rounded-md border px-2 py-1"
-          value={form.assetStatus}
-          onChange={(e) =>
-            setForm((prev) => ({
-              ...prev,
-              assetStatus: e.target.value as "draft" | "needs_fix" | "approved",
-            }))
-          }
-        >
-          <option value="draft">draft</option>
-          <option value="needs_fix">needs_fix</option>
-          <option value="approved">approved</option>
-        </select>
-      </label>
+      <ModelStatusField
+        value={form.assetStatus}
+        onChange={(assetStatus) => setForm((prev) => ({ ...prev, assetStatus }))}
+      />
 
       <label className="block text-xs">
         <div className="mb-1 font-medium">Notes</div>
@@ -399,23 +390,15 @@ export default function ModelEditForm({
         <button
           className="rounded-md bg-black px-3 py-1.5 text-xs text-white disabled:opacity-50"
           disabled={!hasChanges || saving}
-          onClick={save}
+          onClick={() => requestSave(form.assetStatus, () => void save())}
         >
           {saving ? "Saving..." : "Save changes"}
         </button>
         {status && <div className="text-xs opacity-80">{status}</div>}
       </div>
 
-      {saveIssues.length > 0 && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-          <div className="font-medium">Approval blockers</div>
-          <div className="mt-2 space-y-1">
-            {saveIssues.map((issue) => (
-              <div key={issue}>{issue}</div>
-            ))}
-          </div>
-        </div>
-      )}
+      <ModelApprovalBlockers issues={saveIssues} />
+      {dialog}
     </div>
   );
 }

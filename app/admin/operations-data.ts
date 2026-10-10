@@ -7,8 +7,9 @@ import {
   trustedWebhookFailureWhere,
   type OperationsAppEventClient,
 } from "@/lib/app-event-operations";
+import { describeAdminStatus, type AdminStatusTone } from "./admin-status";
 
-export type StatusTone = "neutral" | "info" | "success" | "warning" | "critical";
+export type StatusTone = AdminStatusTone;
 
 export type AttentionItemData = {
   id: string;
@@ -43,6 +44,7 @@ export type RecentOperationData = {
   label: string;
   workflow: "Asset import" | "Floor plan";
   status: string;
+  statusLabel: string;
   statusTone: StatusTone;
   owner: string;
   updatedAt: Date;
@@ -130,12 +132,9 @@ async function safeQuery<T>(load: () => Promise<T>, fallback: T): Promise<QueryR
   }
 }
 
-function statusTone(status: string): StatusTone {
-  if (status === "failed") return "critical";
-  if (status === "needs_review" || status === "needs_mapping") return "warning";
-  if (status === "approved" || status === "published" || status === "ready") return "success";
-  if (status === "received" || status === "normalizing" || status === "validating") return "info";
-  return "neutral";
+function operationStatus(kind: "importJob" | "floorPlanJob", status: string) {
+  const { label, tone } = describeAdminStatus(kind, status);
+  return { statusLabel: label, statusTone: tone };
 }
 
 function unavailableToolContext(label: string): ToolContextData {
@@ -389,7 +388,7 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
       label: job.sourceFileName,
       workflow: "Asset import",
       status: job.status,
-      statusTone: statusTone(job.status),
+      ...operationStatus("importJob", job.status),
       owner: job.uploadedBy?.email ?? job.sourceBrand ?? "Unassigned",
       updatedAt: job.updatedAt,
       issue: job.errorMessage,
@@ -400,7 +399,7 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
       label: job.sourceAsset.fileName,
       workflow: "Floor plan",
       status: job.status,
-      statusTone: statusTone(job.status),
+      ...operationStatus("floorPlanJob", job.status),
       owner: job.user.email ?? "Unassigned",
       updatedAt: job.updatedAt,
       issue: job.errorMessage,

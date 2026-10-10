@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
 import { AddressBindingEditor } from "./AddressBindingEditor";
 import { ApprovedRevisionPanel } from "./ApprovedRevisionPanel";
 import { ConstructionEvidenceEditor } from "./ConstructionEvidenceEditor";
@@ -106,9 +107,7 @@ export function FloorPlanApprovalPanel({
     <section className="rounded-xl border bg-white p-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold">
-            Import status
-          </h2>
+          <h2 className="text-base font-semibold">Import status</h2>
           <p className="mt-1 max-w-3xl text-xs text-neutral-600">
             Finish and test the imported 2D plan first. Public-directory details
             can be completed later without changing its geometry.
@@ -116,7 +115,7 @@ export function FloorPlanApprovalPanel({
         </div>
         {job.revision ? (
           <div className="rounded-lg border bg-neutral-50 px-3 py-2 text-xs">
-            <div className="font-medium">{job.revision.publicationStatus}</div>
+            <AdminStatusBadge kind="floorPlanPublication" status={job.revision.publicationStatus} />
             <div>{job.revision.verificationTier.replaceAll("_", " ")}</div>
             <div className="mt-1 font-mono text-[10px]">{job.revision.id}</div>
           </div>

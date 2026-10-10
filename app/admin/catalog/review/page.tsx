@@ -4,6 +4,8 @@ import { isAdminEmail } from "@/lib/admin";
 import { getFreshCatalogYamlMap, type CatalogYamlEntry } from "@/lib/catalog-yaml";
 import { getAdminImportWorkflowData, type AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow";
 import { AdminPageHeader } from "../../AdminPageHeader";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
+import { describeAdminStatus } from "../../admin-status";
 import { adminSection, adminTitle } from "../../admin-navigation";
 import { auth } from "../../admin-session";
 
@@ -132,12 +134,14 @@ export default async function AdminCatalogReviewPage() {
             <section key={job.id} className="rounded-xl border p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.14em] text-neutral-500">{job.workflowStage}</div>
+                  <div className="text-xs uppercase tracking-[0.14em] text-neutral-500">
+                    {describeAdminStatus("workflowStage", job.workflowStage).label}
+                  </div>
                   <h2 className="mt-1 text-lg font-semibold">{job.sourceFileName}</h2>
                   <div className="mt-1 text-sm text-neutral-600">
                     {job.sourceBrand ?? "Unknown brand"}
                     {job.sourceSku ? ` · SKU ${job.sourceSku}` : ""}
-                    {job.status ? ` · ${job.status}` : ""}
+                    {job.status ? ` · ${describeAdminStatus("importJob", job.status).label}` : ""}
                   </div>
                 </div>
                 <Link className="text-sm text-blue-600 hover:text-blue-700" href={`/admin/imports/${job.id}`}>
@@ -201,17 +205,7 @@ export default async function AdminCatalogReviewPage() {
                             <td className="px-3 py-2 text-neutral-700">{row.sourceValue}</td>
                             <td className="px-3 py-2 text-neutral-700">{row.presetValue}</td>
                             <td className="px-3 py-2">
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                                  row.state === "match"
-                                    ? "bg-green-100 text-green-700"
-                                    : row.state === "mismatch"
-                                      ? "bg-amber-100 text-amber-800"
-                                      : "bg-neutral-100 text-neutral-700"
-                                }`}
-                              >
-                                {row.state}
-                              </span>
+                              <AdminStatusBadge kind="sizeCheck" status={row.state} />
                             </td>
                           </tr>
                         ))}

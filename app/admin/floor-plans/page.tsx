@@ -2,49 +2,25 @@ import type { Metadata } from "next";
 import { canAccessAdmin } from "@/lib/admin";
 import {
   ADMIN_FLOOR_PLAN_QUEUE_FILTERS,
-  ADMIN_FLOOR_PLAN_QUEUE_JOB_SELECT,
-  ADMIN_FLOOR_PLAN_QUEUE_PAGE_SIZE,
-  buildAdminFloorPlanQueueWhere,
-  floorPlanQueueAttention,
   parseAdminFloorPlanQueueFilter,
 } from "@/lib/floor-plan-imports/admin-queue";
-import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../AdminPageHeader";
 import { adminSection, adminTitle } from "../admin-navigation";
+import { adminPageHrefs, singleParam as single, type AdminSearchParams } from "../admin-paging";
 import { auth } from "../admin-session";
 import AdminFloorPlanFixturePanel from "./AdminFloorPlanFixturePanel";
 import AdminFloorPlanIntakeForm from "./AdminFloorPlanIntakeForm";
 import AdminFloorPlanQueueTable from "./AdminFloorPlanQueueTable";
-
-type PageSearchParams = Record<string, string | string[] | undefined>;
+import { loadFloorPlanQueue } from "./load-floor-plan-queue";
 
 const SECTION = adminSection("/admin/floor-plans");
 
 export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
-function single(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function nextQueueHref(input: {
-  filter: string;
-  query: string;
-  overdue: boolean;
-  cursor: string | null;
-}) {
-  if (!input.cursor) return null;
-  const params = new URLSearchParams();
-  if (input.filter !== "all") params.set("filter", input.filter);
-  if (input.query) params.set("q", input.query);
-  if (input.overdue) params.set("overdue", "1");
-  params.set("cursor", input.cursor);
-  return `/admin/floor-plans?${params.toString()}`;
-}
-
 export default async function AdminFloorPlansPage({
   searchParams,
 }: {
-  searchParams: Promise<PageSearchParams>;
+  searchParams: Promise<AdminSearchParams>;
 }) {
   const session = await auth();
   if (!canAccessAdmin(session?.user?.email)) return null;
@@ -53,54 +29,13 @@ export default async function AdminFloorPlansPage({
   const filter = parseAdminFloorPlanQueueFilter(single(params.filter));
   const query = (single(params.q) ?? "").trim().slice(0, 120);
   const overdue = single(params.overdue) === "1";
-  let cursor = single(params.cursor)?.trim() || null;
-  if (cursor) {
-    const cursorExists = await prisma.floorPlanImportJob.findUnique({
-      where: { id: cursor },
-      select: { id: true },
-    });
-    if (!cursorExists) cursor = null;
-  }
-  const where = buildAdminFloorPlanQueueWhere({ filter, query, overdue });
-  const [rows, statusRows, approved, published] = await Promise.all([
-    prisma.floorPlanImportJob.findMany({
-      where,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      take: ADMIN_FLOOR_PLAN_QUEUE_PAGE_SIZE + 1,
-      select: ADMIN_FLOOR_PLAN_QUEUE_JOB_SELECT,
-    }),
-    prisma.floorPlanImportJob.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.floorPlanRevision.count({ where: { publicationStatus: "approved" } }),
-    prisma.floorPlanRevision.count({ where: { publicationStatus: "published" } }),
-  ]);
-  const hasMore = rows.length > ADMIN_FLOOR_PLAN_QUEUE_PAGE_SIZE;
-  const jobs = rows.slice(0, ADMIN_FLOOR_PLAN_QUEUE_PAGE_SIZE).map((job) => ({
-    ...job,
-    attention: floorPlanQueueAttention(job),
-  }));
-  const counts = new Map<string, number>(
-    statusRows.map((row) => [row.status, row._count._all])
+  const queue = await loadFloorPlanQueue({ filter, query, overdue, params });
+  const { summary } = queue;
+  const pages = adminPageHrefs(
+    SECTION.href,
+    { filter: filter === "all" ? null : filter, q: query, overdue: overdue ? "1" : null },
+    queue.page
   );
-
-  const summary = {
-    active: ["received", "rendered", "extracted", "selecting_page", "scale_solved", "topology_built", "validating"]
-      .reduce((total, status) => total + (counts.get(status) ?? 0), 0),
-    needsReview: counts.get("needs_review") ?? 0,
-    ready: counts.get("ready") ?? 0,
-    approved,
-    published,
-    failed: counts.get("failed") ?? 0,
-  };
-  const nextHref = nextQueueHref({
-    filter,
-    query,
-    overdue,
-    cursor: hasMore ? jobs.at(-1)?.id ?? null : null,
-  });
 
   return (
     <main className="space-y-6 p-6">
@@ -164,7 +99,7 @@ export default async function AdminFloorPlansPage({
         ))}
       </section>
 
-      <AdminFloorPlanQueueTable jobs={jobs} nextHref={nextHref} />
+      <AdminFloorPlanQueueTable jobs={queue.page.rows} {...pages} cursorLost={queue.cursorLost} />
     </main>
   );
 }

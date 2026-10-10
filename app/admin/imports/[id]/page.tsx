@@ -5,6 +5,7 @@ import { canAccessAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../../AdminPageHeader";
 import { adminSection, adminTitle } from "../../admin-navigation";
+import { describeAdminStatus } from "../../admin-status";
 import { auth } from "../../admin-session";
 import ImportJobActions from "./ImportJobActions";
 
@@ -140,7 +141,7 @@ export default async function ImportJobDetailPage({ params }: ImportJobDetailPag
       <AdminPageHeader
         crumbs={[{ title: SECTION.title, href: SECTION.href }, { title: job.id }]}
         title={`Import job ${job.id}`}
-        description={`Status: ${job.status}`}
+        description={`Status: ${describeAdminStatus("importJob", job.status).label}`}
       />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">

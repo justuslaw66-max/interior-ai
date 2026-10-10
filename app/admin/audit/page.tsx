@@ -17,6 +17,7 @@ import {
   runSurfaceMaterialAudit,
 } from "@/lib/surface-material-audit";
 import { AdminPageHeader } from "../AdminPageHeader";
+import { AdminStatusBadge } from "../AdminStatusBadge";
 import { adminSection, adminTitle } from "../admin-navigation";
 import { auth } from "../admin-session";
 import AuditActions from "./AuditActions";
@@ -33,13 +34,6 @@ function toneClass(hasIssue: boolean) {
 
 function formatAuditValue(value: string | null | undefined) {
   return value ? value.replace(/_/g, " ") : "Not set";
-}
-
-function statusPillClass(status: string) {
-  if (status === "published") return "bg-green-50 text-green-700 ring-green-100";
-  if (status === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (status === "blocked") return "bg-red-50 text-red-700 ring-red-100";
-  return "bg-neutral-100 text-neutral-700 ring-neutral-200";
 }
 
 type SurfaceMaterialAuditFilter =
@@ -539,9 +533,7 @@ export default async function AdminAuditPage({
                           {getRelativeSurfaceMaterialPath(material.filePath)}
                         </div>
                       </div>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ring-1 ${statusPillClass(material.publishStatus)}`}>
-                        {formatAuditValue(material.publishStatus)}
-                      </span>
+                      <AdminStatusBadge kind="surfacePublication" status={material.publishStatus} />
                     </div>
 
                     <div className="mt-3 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-4">

@@ -5,10 +5,43 @@ import { prisma } from "@/lib/prisma";
 import { getImportJobValidationBlockers } from "@/lib/import-jobs/admin-workflow";
 import type { AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow-shared";
 import { readJsonRequest } from "@/lib/api-boundary";
+import { canTransitionImportStatus, isImportJobStatus } from "@/lib/import-jobs/status";
+import type { ImportJobStatus } from "@/lib/import-jobs/types";
 
 interface BulkUpdateRequest {
   ids: string[];
   status: string;
+}
+
+type BulkRefusal = { error: string; failedIds: string[]; details: string };
+
+/**
+ * Why moving every job to `status` is refused, or null. The same transitions as a single job's
+ * update (none backwards, none out of a final status), then the approval blockers.
+ */
+function bulkTransitionRefusal(
+  jobs: AdminImportWorkflowJob[],
+  status: ImportJobStatus
+): BulkRefusal | null {
+  const invalid = jobs.filter((job) => !canTransitionImportStatus(job.status, status));
+  if (invalid.length > 0) {
+    return {
+      error: `Cannot transition jobs to ${status} from their current status`,
+      failedIds: invalid.map((job) => job.id),
+      details: invalid.map((job) => `${job.id}: ${job.status} -> ${status}`).join(" | "),
+    };
+  }
+  if (status !== "approved" && status !== "published") return null;
+
+  const blocked = jobs
+    .map((job) => ({ id: job.id, blockers: getImportJobValidationBlockers(job) }))
+    .filter((entry) => entry.blockers.length > 0);
+  if (blocked.length === 0) return null;
+  return {
+    error: `Cannot transition jobs to ${status} due to validation blockers`,
+    failedIds: blocked.map((entry) => entry.id),
+    details: blocked.map((entry) => `${entry.id}: ${entry.blockers.join("; ")}`).join(" | "),
+  };
 }
 
 export async function PATCH(request: Request) {
@@ -41,20 +74,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "status must be a string" }, { status: 400 });
   }
 
-  const validStatuses = [
-    "received",
-    "normalizing",
-    "optimized",
-    "preview_generated",
-    "metadata_extracted",
-    "needs_mapping",
-    "needs_review",
-    "approved",
-    "published",
-    "failed",
-  ];
-
-  if (!validStatuses.includes(status)) {
+  if (!isImportJobStatus(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
@@ -95,30 +115,9 @@ export async function PATCH(request: Request) {
       select: jobFields,
     });
 
-    // Check for blockers if transitioning to approved or published
-    if (status === "approved" || status === "published") {
-      const blockersMap = new Map<string, string[]>();
-      for (const job of jobs) {
-        const blockers = getImportJobValidationBlockers(job);
-        if (blockers.length > 0) {
-          blockersMap.set(job.id, blockers);
-        }
-      }
-
-      if (blockersMap.size > 0) {
-        const failedIds = Array.from(blockersMap.keys());
-        const blockersDetail = Array.from(blockersMap.entries())
-          .map(([id, blockers]) => `${id}: ${blockers.join("; ")}`)
-          .join(" | ");
-        return NextResponse.json(
-          {
-            error: `Cannot transition jobs to ${status} due to validation blockers`,
-            failedIds,
-            details: blockersDetail,
-          },
-          { status: 400 }
-        );
-      }
+    const refusal = bulkTransitionRefusal(jobs, status);
+    if (refusal) {
+      return NextResponse.json(refusal, { status: 400 });
     }
 
     // Update all jobs
