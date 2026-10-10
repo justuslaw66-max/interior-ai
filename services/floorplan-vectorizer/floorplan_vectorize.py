@@ -56,6 +56,11 @@ BOLD_NEEDS_DARK = os.environ.get("FV_BOLD_NEEDS_DARK", "1") != "0"
 # floor-drain triangle, a tap dot, lettering that could not be read) is traced as it is - plain strokes and small filled
 # shapes in an "unclassified" group of the SVG - so it is never lost.  The room model (app_evidence.py) does not read it.
 RESIDUAL = os.environ.get("FV_RESIDUAL", "1") != "0"
+# Blur, round 29 (10 Oct, J: "even a slightly blurry floor plan should trace and rebuild into a clean, sharp vector plan").
+# A blurred plan read as it is loses its thin lines, its lettering and its black: on the blur set (T0, 9 Oct) the soft copy
+# of p05 has its darkest ink at 71 and every wall failed the wall test; hatched walls at low resolution lost their hatch.
+# "1": a picture whose black is lifted AND whose edges are soft is restored before anything is read (restore_contrast).
+RESTORE = os.environ.get("FV_RESTORE", "1") != "0"
 # The other line of a two-line room name (round 25, J 6 Oct: "continue working on the remaining items"): 'BATH' under COMMON
 # with the door swing through it, 'BEDROOM' under MASTER in bold blurred lettering - read again beside the line that was read.
 SECOND_LINES = os.environ.get("FV_SECOND_LINES", "1") != "0"
@@ -1150,6 +1155,37 @@ def _md5_file(p):
     return h.hexdigest()
 
 
+RESTORE_BLACK, RESTORE_EDGE = 20.0, 0.87
+
+
+def restore_contrast(g, sigma=1.2, amount=1.5):
+    """Blur, restore: the plan's own black (1st percentile of the dark pixels) to 0 and its paper (the commonest light grey) to
+    255, then an unsharp mask (sigma 1.2 px, amount 1.5).  Only for a picture that is BLURRED: its black lifted above
+    RESTORE_BLACK and its steepest edges soft - the 99th percentile of the gradient across ink / paper edges, per unit of the
+    black-to-paper span, below RESTORE_EDGE.  Measured on the dev / gate plans: their blurred copies with a lifted black
+    0.56-0.83, the sharp plans whose black is pale by drawing 0.91-1.0.  Restoring every plan, sharp ones too, cost the
+    tuned plans 22 rooms (128 -> 106 of 138), so a sharp picture is never touched.
+    -> (image, report); the image is g itself when the picture is not restored."""
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:]))
+    dark = g[g < 160]
+    black = float(np.percentile(dark, 1)) if dark.size >= 200 else 0.0
+    span = max(1.0, paper - black)
+    gf = g.astype(np.float32)
+    mag = np.hypot(cv2.Sobel(gf, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(gf, cv2.CV_32F, 0, 1, ksize=3)) / (4.0 * span)
+    k5 = np.ones((5, 5), np.uint8)
+    edge = mag[(cv2.dilate(gf, k5) - cv2.erode(gf, k5)) >= 0.5 * span]
+    steep = float(np.percentile(edge, 99)) if edge.size >= 500 else 1.0
+    rep = {"black": round(black, 1), "paper": paper, "edge": round(steep, 3)}
+    if not (black > RESTORE_BLACK and steep < RESTORE_EDGE):
+        rep["restored"] = False
+        return g, rep
+    st = np.clip((gf - black) * 255.0 / span, 0, 255)
+    us = np.clip(st + amount * (st - cv2.GaussianBlur(st, (0, 0), sigma)), 0, 255)
+    rep["restored"] = True
+    return np.rint(us).astype(np.uint8), rep
+
+
 def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
@@ -1160,6 +1196,11 @@ def extract(path):
         gray0 = cv2.imread(path, cv2.IMREAD_GRAYSCALE)      # (exactly the decode used so far: a JPEG's own grey differs by 1 from BGR->grey)
     gray0, wm_frac = remove_watermark(gray0)
     gray0, wall_tone = normalise_wall_paint(gray0)
+    restored = None
+    if RESTORE:
+        g_r, restored = restore_contrast(gray0)
+        if restored["restored"]:
+            gray0 = g_r                                     # (from here on the plan is read as the restored picture it now is)
     # a bold scan: every stroke 5-7 px fat.  All of it would pass for 'wall'.  The drawing is brought to the stroke width the
     # pipeline is built for (the typical stroke is 1 px on every other plan seen; measured 7 on the one bold scan)
     ink0_ = ((gray0 < 128) * 255).astype(np.uint8)
@@ -1251,6 +1292,8 @@ def extract(path):
         model["pre_scale"] = round(pre_scale, 4); model["source_size"] = orig_size
     if wm_frac:
         model["watermark_removed"] = round(wm_frac, 4)
+    if restored is not None and restored["restored"]:
+        model["restored"] = restored                              # (a picture that is not restored keeps its model byte for byte)
     if wall_tone is not None:
         model["wall_style"] = {"fill": int(wall_tone)}
     if hatch is not None:
@@ -2170,6 +2213,13 @@ def extract(path):
             oh_ = float(np.median(online_h))
             if oh_ >= 10 and all(abs(oh_ - q_) > 0.2 * max(oh_, q_) for q_ in th_modes):
                 th_modes.append(oh_)
+        if restored is not None and restored["restored"]:
+            # A restored picture's lettering is sharp again, no longer blurred into the word blobs the peaks above expect:
+            # the words already read give its size too (c22 soft: 29 px, beside peaks of 18 and 42 from its strokes).
+            rh_ = [t_["box"][2] if t_["vertical"] else t_["box"][3] for t_ in texts if t_.get("source_res") and any(ch.isalpha() for ch in t_["s"])]
+            rs_ = float(np.median(rh_)) if len(rh_) >= 3 else 0.0
+            if rs_ >= 14 and all(abs(rs_ - q_) > 0.2 * max(rs_, q_) for q_ in th_modes):
+                th_modes.append(rs_)
         th = th_modes[0]
         if DEBUG: print('lettering sizes', th_modes, [int(sm_[int(p)]) for p in th_modes])
 
