@@ -17,6 +17,7 @@ type DesignControlsPanelConfigurationKey =
   | "floorPlanLifecycleIdentity"
   | "isDesigner"
   | "canEdit"
+  | "canChangeProducts"
   | "canEditPlanGeometry"
   | "aiDesignEnabled"
   | "panelMode";

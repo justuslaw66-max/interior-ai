@@ -570,7 +570,7 @@ export default function CatalogPanel({
       />
 
       <div
-        ref={catalogGridRef} tabIndex={-1} data-testid="catalog-results-focus-target" data-catalog-drawer-focus-fallback
+        ref={catalogGridRef} tabIndex={-1} data-testid="catalog-results-focus-target" data-catalog-drawer-focus-fallback inert={!canEdit}
         className="mt-2 overflow-y-auto"
         style={{ maxHeight: GRID_HEIGHT }}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
@@ -716,7 +716,7 @@ export default function CatalogPanel({
       />
 
       {!canEdit && (
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-white/50" aria-hidden />
+        <div role="status" data-testid="catalog-products-loading" className="absolute inset-0 flex items-start justify-center rounded-xl bg-white/50 pt-6 text-sm font-semibold text-neutral-700">Loading products…</div>
       )}
     </div>
   );

@@ -20,6 +20,8 @@ export type ShoppingListPageProps = {
   /** The design's floor and wall finishes, priced by their suppliers. */
   surfaces?: readonly ShoppingSurface[];
   canEdit: boolean;
+  /** Swaps wait for the product lists; Remove doesn't. Defaults to canEdit. */
+  canSwap?: boolean;
   busy: boolean;
   notice: ShoppingNotice | null;
   buyList: { retailer: ShoppingRetailer | null; openedIds: ReadonlySet<string> };
@@ -68,8 +70,8 @@ function ShoppingNoticeBar({ notice, onDismiss }: { notice: ShoppingNotice; onDi
   );
 }
 
-function ShoppingListSections({ list, canEdit, actions }: Pick<ShoppingListPageProps, "list" | "canEdit" | "actions">) {
-  const row = { canEdit, onRemove: actions.remove, onSwapForCheaper: actions.swapForCheaper };
+function ShoppingListSections({ list, canEdit, canSwap, actions }: Pick<ShoppingListPageProps, "list" | "canEdit" | "canSwap" | "actions">) {
+  const row = { canEdit, canSwap, onRemove: actions.remove, onSwapForCheaper: actions.swapForCheaper };
   return (
     <>
       {list.retailers.map((retailer) => (
@@ -90,7 +92,7 @@ function ShoppingListSections({ list, canEdit, actions }: Pick<ShoppingListPageP
  * with the design's products by shop, one total, and one way to buy at each shop. Removing a product
  * keeps focus on the page: the next product's Remove, the one before it, or the heading.
  */
-export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, buyList, swapAll = null, actions }: ShoppingListPageProps) {
+export function ShoppingListPage({ list, surfaces = [], canEdit, canSwap = canEdit, busy, notice, buyList, swapAll = null, actions }: ShoppingListPageProps) {
   const empty = list.productCount === 0;
   const wide = useMediaQuery("(min-width: 64rem)");
   const pageRef = useRef<HTMLElement | null>(null);
@@ -105,7 +107,7 @@ export function ShoppingListPage({ list, surfaces = [], canEdit, busy, notice, b
         </div>
         {swapAll && !empty && !wide ? <ShoppingSwapAll {...swapAll} /> : null}
         {notice && !buyList.retailer ? <ShoppingNoticeBar notice={notice} onDismiss={actions.dismissNotice} /> : null}
-        {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} actions={rowActions} />}
+        {empty ? <ShoppingListEmpty onGoFurnish={actions.goFurnish} /> : <ShoppingListSections list={list} canEdit={canEdit} canSwap={canSwap} actions={rowActions} />}
         <ShoppingSurfacesSection surfaces={surfaces} />
       </div>
       {empty ? null : (

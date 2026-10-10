@@ -8,6 +8,8 @@ import type { ShoppingListLine } from "@/lib/shopping-list";
 export type ShoppingListRowProps = {
   line: ShoppingListLine;
   canEdit: boolean;
+  /** A swap picks another product, so it waits for the product lists; Remove doesn't. Defaults to canEdit. */
+  canSwap?: boolean;
   onRemove: (line: ShoppingListLine) => void;
   onSwapForCheaper: (line: ShoppingListLine) => void;
 };
@@ -26,13 +28,13 @@ function ShoppingLineImage({ line }: Pick<ShoppingListRowProps, "line">) {
   );
 }
 
-function ShoppingLineDetail({ line, canEdit, onSwapForCheaper }: Omit<ShoppingListRowProps, "onRemove">) {
+function ShoppingLineDetail({ line, canSwap, onSwapForCheaper }: Pick<ShoppingListRowProps, "line" | "onSwapForCheaper"> & { canSwap: boolean }) {
   return (
     <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-neutral-600 md:text-[13px]">
       <span data-testid="shopping-list-row-detail">{line.detail}</span>
       <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-bold text-neutral-700">{line.roomName}</span>
       {line.addCount > 1 ? <span data-testid="shopping-list-row-quantity">Qty {line.addCount}</span> : null}
-      {line.cheaperSwap && canEdit ? (
+      {line.cheaperSwap && canSwap ? (
         <button
           type="button"
           data-testid="shopping-list-swap"
@@ -48,7 +50,7 @@ function ShoppingLineDetail({ line, canEdit, onSwapForCheaper }: Omit<ShoppingLi
 }
 
 /** One product in the Shopping list: picture, name, variant, room, price, and remove (FU8). */
-export function ShoppingListRow({ line, canEdit, onRemove, onSwapForCheaper }: ShoppingListRowProps) {
+export function ShoppingListRow({ line, canEdit, canSwap = canEdit, onRemove, onSwapForCheaper }: ShoppingListRowProps) {
   return (
     <li
       data-testid="shopping-list-row"
@@ -61,7 +63,7 @@ export function ShoppingListRow({ line, canEdit, onRemove, onSwapForCheaper }: S
         <div className="truncate text-sm font-bold text-neutral-900 md:text-[15px]" title={line.title}>
           {line.title}
         </div>
-        <ShoppingLineDetail line={line} canEdit={canEdit} onSwapForCheaper={onSwapForCheaper} />
+        <ShoppingLineDetail line={line} canSwap={canSwap} onSwapForCheaper={onSwapForCheaper} />
       </div>
       <span data-testid="shopping-list-row-price" className="shrink-0 text-sm font-bold text-neutral-900 md:text-[15px]">
         {line.priceLabel}

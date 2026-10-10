@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { SelectedItemActionRow, SelectedItemSwaps } from "../components/editor/design-page/SelectedItemQuickActions";
@@ -155,6 +156,20 @@ assert.equal(
     <SelectedItemSwaps cheaper={null} pricier={null} disabled={false} onSwapToCheaper={noop} onSwapToPricier={noop} />
   ),
   ""
+);
+
+// A swap picks another product, so it waits for the product lists; the panel's other edits don't
+// (J, 10 Oct 2026).
+const panel = readFileSync("components/editor/design-page/SelectedItemPanel.tsx", "utf8");
+assert.match(panel, /<SelectedItemSwaps[\s\S]*?disabled=\{editsDisabled \|\| !canChangeProducts\}/);
+assert.match(
+  readFileSync("lib/design-page-panel-registration.ts", "utf8"),
+  /isClientPreview: configuration\.isClientPreview,\s*canEdit: configuration\.canEdit,\s*canChangeProducts: configuration\.canChangeProducts,\s*\},\s*actions: \{\s*inspectionController:/
+);
+assert.match(
+  readFileSync("lib/useDesignPageProductInspectionController.ts", "utf8"),
+  /configuration: \{\s*canEdit: canEdit && liveCatalogReady, \/\/ A variant or finish is another product/,
+  "Variants and finishes are other products too."
 );
 
 console.log("Selected item summary checks passed.");

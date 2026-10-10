@@ -40,3 +40,21 @@ export function useImportedCatalogHydrated(): boolean {
 
   return ready;
 }
+
+/**
+ * Admin can publish a model while an editor is open, so the imported catalogue is read again when
+ * the window regains focus, but at most this often: it is 2.5 MB of JSON, and the server takes
+ * 1.5 s or more to answer it (measured on production, 10 Oct 2026).
+ */
+export const IMPORTED_CATALOG_REFRESH_AFTER_MS = 5 * 60_000;
+
+/** Runs `read` now; the function it returns runs it again once `intervalMs` has passed since the last run. */
+export function readNowAndAtMostEvery(intervalMs: number, read: () => void, now: () => number = Date.now): () => void {
+  let lastReadAt = now();
+  read();
+  return () => {
+    if (now() - lastReadAt < intervalMs) return;
+    lastReadAt = now();
+    read();
+  };
+}

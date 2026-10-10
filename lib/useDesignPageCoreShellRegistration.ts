@@ -51,6 +51,16 @@ function useClientPreviewBaseBoundary(
 }
 
 /**
+ * Editing doesn't wait for the product lists (J, 10 Oct 2026); only what picks a product does:
+ * adding, furnished templates, swaps, variants and finishes.
+ */
+function designPageEditAccess(isClientPreview: boolean, liveCatalogReady: boolean) {
+  const canEdit = !isClientPreview;
+  const canChangeProducts = canEdit && liveCatalogReady;
+  return { canEdit, canChangeProducts };
+}
+
+/**
  * Registers the route-bound state and the early editor runtimes in their
  * lifecycle-sensitive order. Downstream feature controllers consume the
  * grouped contracts returned here instead of owning route or shell setup.
@@ -231,7 +241,7 @@ export function useDesignPageCoreShellRegistration({
     refs: { designSnapshotRef },
   } = snapshotDocumentController;
   const liveCatalogReady = useDesignPageLiveCatalog();
-  const canEdit = !isClientPreview && liveCatalogReady;
+  const { canEdit, canChangeProducts } = designPageEditAccess(isClientPreview, liveCatalogReady);
 
   return {
     boundaries: {
@@ -259,7 +269,7 @@ export function useDesignPageCoreShellRegistration({
         isClientPreview,
         showDesignerTheme,
         liveCatalogReady,
-        canEdit,
+        canEdit, canChangeProducts,
       },
       paywall: {
         primaryUpgradeCtaLabel,
