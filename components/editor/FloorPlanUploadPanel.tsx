@@ -235,11 +235,11 @@ export default function FloorPlanUploadPanel({
     ].join(" ");
   };
   const drawStatusClass = dark
-    ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
-    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-500";
+    ? "designer-status-pending rounded-full px-2 py-1 text-xs font-semibold"
+    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-500";
   const drawToolMetaClass = dark
-    ? "mt-0.5 block text-[11px] font-medium text-neutral-400"
-    : "mt-0.5 block text-[11px] font-medium text-neutral-500";
+    ? "mt-0.5 block text-xs font-medium text-neutral-400"
+    : "mt-0.5 block text-xs font-medium text-neutral-500";
   const drawToolIconClass = dark ? "border-neutral-400 bg-neutral-500" : "border-neutral-600 bg-neutral-300";
   const traceRoomHint =
     traceRoomDrawMode === "straight_wall"

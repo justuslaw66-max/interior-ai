@@ -140,7 +140,7 @@ export default function CatalogItemDrawer({
       >
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
             Product preview
           </div>
           <div id={titleId} className="text-sm font-semibold text-neutral-900">
@@ -184,7 +184,7 @@ export default function CatalogItemDrawer({
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
                 Adding to {activeRoomLabel}
               </div>
               <div
@@ -198,18 +198,18 @@ export default function CatalogItemDrawer({
               </div>
               {roomProductQuantity > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-emerald-700">
                 {roomProductQuantity} already in {activeRoomLabel}
                   </span>
                   {roomVariantQuantity > 0 ? (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
                       {roomVariantQuantity} this variant
                     </span>
                   ) : null}
                 </div>
               ) : null}
             </div>
-            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-sm">
+            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
               Variant locked
             </span>
           </div>
@@ -224,7 +224,7 @@ export default function CatalogItemDrawer({
                 aria-hidden="true"
               />
               <div className="min-w-0">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                   Exact variant selected
                 </div>
                 <div
@@ -240,7 +240,7 @@ export default function CatalogItemDrawer({
               <div className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
                 {detail.priceLabel ?? "Price on request"}
               </div>
-              <div className="mt-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+              <div className="mt-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 Identity locked
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function CatalogItemDrawer({
           <section className="mt-3 rounded-2xl border border-neutral-200 bg-white p-3.5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                   Purchase option
                 </div>
                 <div className="mt-1 text-sm font-semibold text-neutral-950">
@@ -275,7 +275,7 @@ export default function CatalogItemDrawer({
                 </div>
               </div>
               {selectedOptionSavings ? (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                   Save {selectedOptionSavings}
                 </span>
               ) : null}
@@ -303,7 +303,7 @@ export default function CatalogItemDrawer({
                       <span className="text-sm font-semibold">{option.label}</span>
                       <span
                         className={[
-                          "rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                          "rounded-full px-2 py-0.5 text-xs font-semibold",
                           isSelected ? "bg-white/15 text-white" : "bg-white text-neutral-600",
                         ].join(" ")}
                       >
@@ -342,7 +342,7 @@ export default function CatalogItemDrawer({
         <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                 Placement preview
               </div>
               <div className="mt-1 text-sm font-semibold text-neutral-950">
@@ -371,7 +371,7 @@ export default function CatalogItemDrawer({
                 <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                   Configuration
                 </h4>
-                <span className="text-[11px] text-neutral-500">
+                <span className="text-xs text-neutral-500">
                   {configurationOptions.length} choices
                 </span>
               </div>
@@ -403,7 +403,7 @@ export default function CatalogItemDrawer({
                       ) : null}
                       <div className="px-3 py-2">
                         <div className="text-sm font-semibold">{option.label}</div>
-                        <div className={isSelected ? "mt-0.5 text-[11px] text-white/70" : "mt-0.5 text-[11px] text-neutral-500"}>
+                        <div className={isSelected ? "mt-0.5 text-xs text-white/70" : "mt-0.5 text-xs text-neutral-500"}>
                           {option.dimsLabel}
                         </div>
                       </div>
@@ -420,7 +420,7 @@ export default function CatalogItemDrawer({
                 <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                   Size
                 </h4>
-                <span className="text-[11px] text-neutral-500">Keeps finish when possible</span>
+                <span className="text-xs text-neutral-500">Keeps finish when possible</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {detail.sizeOptions.map((size) => {

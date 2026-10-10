@@ -54,10 +54,10 @@ export default function ExportReadinessPreview({
             <div
               className={
                 entry.ready
-                  ? "mt-0.5 text-[11px] font-semibold text-emerald-600"
+                  ? "mt-0.5 text-xs font-semibold text-emerald-600"
                   : dark
-                    ? "mt-0.5 text-[11px] font-semibold text-amber-300"
-                    : "mt-0.5 text-[11px] font-semibold text-amber-700"
+                    ? "mt-0.5 text-xs font-semibold text-amber-300"
+                    : "mt-0.5 text-xs font-semibold text-amber-700"
               }
             >
               {entry.value}

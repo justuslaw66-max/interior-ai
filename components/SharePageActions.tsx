@@ -18,7 +18,7 @@ const SECONDARY_ACTION_CLASS =
 function ShareActionMessage({ message }: { message: string | null }) {
   return (
     <>
-      <div className="text-right text-[11px] text-neutral-500">
+      <div className="text-right text-xs text-neutral-500">
         Editing creates a private copy in your account.
       </div>
       {message ? (

@@ -10,10 +10,10 @@ const LABELS: Record<RoomSetupStatus, string> = {
   none: "Needs a room",
 };
 
-const READY_CLASS = "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700";
-const TODO_CLASS = "rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700";
-const DESIGNER_READY_CLASS = "designer-status-ready rounded-full px-2 py-1 text-[11px] font-semibold";
-const DESIGNER_TODO_CLASS = "designer-status-warning rounded-full px-2 py-1 text-[11px] font-semibold";
+const READY_CLASS = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
+const TODO_CLASS = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
+const DESIGNER_READY_CLASS = "designer-status-ready rounded-full px-2 py-1 text-xs font-semibold";
+const DESIGNER_TODO_CLASS = "designer-status-warning rounded-full px-2 py-1 text-xs font-semibold";
 
 export function roomSetupStatus(hasRooms: boolean, roomIsDraft: boolean): RoomSetupStatus {
   if (!hasRooms) return "none";

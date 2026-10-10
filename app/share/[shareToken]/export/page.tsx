@@ -601,7 +601,7 @@ function PlanOverview({
                               x={toSvgX(furniture.labelX)}
                               y={toSvgY(furniture.labelZ) + 3}
                               textAnchor="middle"
-                              className="fill-gray-800 text-[9px] font-bold"
+                              className="fill-gray-800 text-xs font-bold"
                               textLength={Math.min(footprintWidthPx - 4, 22)}
                               lengthAdjust="spacingAndGlyphs"
                             >
@@ -644,7 +644,7 @@ function PlanOverview({
                               x={toSvgX(opening.labelX)}
                               y={toSvgY(opening.labelZ)}
                               textAnchor="middle"
-                              className="fill-gray-700 text-[9px] font-semibold"
+                              className="fill-gray-700 text-xs font-semibold"
                             >
                               {openingLabel}
                             </text>
@@ -663,7 +663,7 @@ function PlanOverview({
                         x={labelX}
                         y={labelY - 7}
                         textAnchor="middle"
-                        className="fill-gray-600 text-[10px]"
+                        className="fill-gray-600 text-xs"
                       >
                         {formatMeasurement(room.width, "m")} x {formatMeasurement(room.depth, "m")}
                       </text>
@@ -671,7 +671,7 @@ function PlanOverview({
                         x={labelX}
                         y={labelY + 8}
                         textAnchor="middle"
-                        className="fill-gray-500 text-[10px]"
+                        className="fill-gray-500 text-xs"
                       >
                         {formatMeasurement(room.areaSqm, "m2")} • {room.itemCount} items • {room.openingCount} doors & windows
                       </text>

@@ -135,7 +135,7 @@ export function ImportedFloorPlanWallEditor({
         </div>
       ) : (
         <div className="mt-3 grid gap-3">
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
             {state.isLocalFork
               ? "Changes save to this design’s local copy. The source plan is unchanged."
               : "Your first accepted change creates a local Needs review copy."}
@@ -223,7 +223,7 @@ export function ImportedFloorPlanWallEditor({
               Move endpoint
             </button>
           </div>
-          {!straightWall ? <p className="text-[10px] text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
+          {!straightWall ? <p className="text-xs text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
           <CanonicalPlanRemodelTools floor={floor} wall={wall} commit={actions.applyProposalMutation} proposal={state.proposal} recover={actions.recoverLayout} />
           {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-amber-700">{issue}</p>)}
           <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>

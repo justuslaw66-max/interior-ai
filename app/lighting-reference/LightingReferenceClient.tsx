@@ -434,7 +434,7 @@ export function LightingReferenceClient() {
           <ReferenceMaterials />
         </Canvas>
         {process.env.NODE_ENV !== "production" ? (
-          <dl className="pointer-events-none absolute left-4 top-4 grid grid-cols-[auto_auto] gap-x-3 gap-y-1 rounded-xl bg-black/75 px-3 py-2 text-[11px] text-white shadow-lg">
+          <dl className="pointer-events-none absolute left-4 top-4 grid grid-cols-[auto_auto] gap-x-3 gap-y-1 rounded-xl bg-black/75 px-3 py-2 text-xs text-white shadow-lg">
             <dt>Mode</dt>
             <dd className="font-mono">{lighting.id}</dd>
             <dt>Exposure</dt>

@@ -53,7 +53,7 @@ export function DesignValidationFeedback({
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-              <label className="text-[10px] font-semibold text-neutral-600">
+              <label className="text-xs font-semibold text-neutral-600">
                 Change orientation
                 <select
                   data-testid="floor-plan-orientation-choice"
@@ -103,7 +103,7 @@ export function DesignValidationFeedback({
                 </p>
                 <div
                   data-testid="floor-plan-revision-compare-preview"
-                  className="mt-2 grid grid-cols-2 gap-2 text-[11px]"
+                  className="mt-2 grid grid-cols-2 gap-2 text-xs"
                 >
                   <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
                     <div className="font-semibold text-neutral-800">Current design</div>
@@ -117,7 +117,7 @@ export function DesignValidationFeedback({
                   </div>
                 </div>
                 {floorPlanRevisionUpdate.unmappedRoomCount > 0 && (
-                  <p className="mt-1 text-[11px] leading-4 text-amber-700">
+                  <p className="mt-1 text-xs leading-4 text-amber-700">
                     {floorPlanRevisionUpdate.unmappedRoomCount} unmatched room
                     {floorPlanRevisionUpdate.unmappedRoomCount === 1 ? "" : "s"} will not be guessed or copied; review the new copy before placing furniture there.
                     {floorPlanRevisionUpdate.skippedItemCount > 0
@@ -126,7 +126,7 @@ export function DesignValidationFeedback({
                   </p>
                 )}
                 {floorPlanRevisionUpdate.errorMessage && (
-                  <p role="alert" className="mt-1 text-[11px] leading-4 text-red-700">
+                  <p role="alert" className="mt-1 text-xs leading-4 text-red-700">
                     {floorPlanRevisionUpdate.errorMessage}
                   </p>
                 )}

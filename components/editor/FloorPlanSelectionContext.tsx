@@ -8,7 +8,7 @@ const ORIENTATION_LABELS = {
 };
 
 export default function FloorPlanSelectionContext({ result, subtle }: { result: FloorPlanCatalogSearchResult; subtle: string }) {
-  return <div data-testid="floor-plan-orientation" className={`mt-1 text-[11px] ${subtle}`}>
+  return <div data-testid="floor-plan-orientation" className={`mt-1 text-xs ${subtle}`}>
     {floorPlanOrientationLabel(result)}
     {result.previewUrl ? " Preview shows the published source page." : " Source preview unavailable."}
     <div>{result.verificationTier === "construction_verified" ? "Construction verified" : "Source verified"}</div>

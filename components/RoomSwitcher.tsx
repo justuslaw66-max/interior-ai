@@ -101,7 +101,7 @@ export const RoomSwitcher: React.FC<RoomSwitcherProps> = ({
                 title={`Switch to ${room.name}`}
               >
                 <span className="block leading-tight">{room.name}</span>
-                <span className={`block text-[10px] font-semibold uppercase leading-tight ${room.isActive ? "text-neutral-300" : "text-neutral-400"}`}>
+                <span className={`block text-xs font-semibold uppercase leading-tight ${room.isActive ? "text-neutral-300" : "text-neutral-400"}`}>
                   {ROOM_TYPE_LABELS[room.roomType] ?? "Room"}
                 </span>
               </button>
@@ -210,7 +210,7 @@ export const RoomSwitcherVertical: React.FC<RoomSwitcherProps> = ({
                 title={`Switch to ${room.name}`}
               >
                 <span className="block leading-tight">{room.name}</span>
-                <span className={`block text-[10px] font-semibold uppercase leading-tight ${room.isActive ? "text-neutral-300" : "text-neutral-400"}`}>
+                <span className={`block text-xs font-semibold uppercase leading-tight ${room.isActive ? "text-neutral-300" : "text-neutral-400"}`}>
                   {ROOM_TYPE_LABELS[room.roomType] ?? "Room"}
                 </span>
               </button>

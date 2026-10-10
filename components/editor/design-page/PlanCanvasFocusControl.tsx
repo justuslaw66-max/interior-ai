@@ -46,14 +46,14 @@ export function PlanCanvasFocusControl({ state, actions }: PlanCanvasFocusContro
         </span>
         <span
           data-testid="plan-focus-progress"
-          className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600"
+          className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600"
         >
           {state.progressLabel}
         </span>
         {!state.guided && (
           <span
             data-testid="plan-focus-manual-mode"
-            className="shrink-0 rounded-full bg-neutral-950 px-2 py-0.5 text-[11px] font-semibold text-white"
+            className="shrink-0 rounded-full bg-neutral-950 px-2 py-0.5 text-xs font-semibold text-white"
           >
             Manual
           </span>

@@ -42,8 +42,8 @@ export default function SelectedItemRotationControls({
     ? "designer-text-secondary mt-1 text-xs"
     : "mt-1 text-xs text-neutral-600";
   const hintClass = dark
-    ? "designer-text-secondary mt-2 text-[11px]"
-    : "mt-2 text-[11px] text-neutral-500";
+    ? "designer-text-secondary mt-2 text-xs"
+    : "mt-2 text-xs text-neutral-500";
   const buttonClass = dark
     ? "min-h-11 rounded-lg border border-white/15 px-2 py-2 text-xs"
     : "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";

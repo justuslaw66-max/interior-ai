@@ -51,7 +51,7 @@ export default function FloorPlanOptionalConfigurationPanel({
         : "mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"}
     >
       <div className="text-xs font-semibold">Options shown in the source</div>
-      <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+      <p className={`mt-1 text-xs leading-4 ${subtle}`}>
         These marks stay non-physical unless you explicitly choose a complete,
         reviewed layout. A label or dashed outline never creates a room or wall.
       </p>
@@ -64,7 +64,7 @@ export default function FloorPlanOptionalConfigurationPanel({
                 ? "rounded-md border border-white/10 bg-white/5 p-2"
                 : "rounded-md border border-sky-100 bg-white p-2"}
             >
-              <legend className="px-1 text-[11px] font-semibold">{group.label}</legend>
+              <legend className="px-1 text-xs font-semibold">{group.label}</legend>
               <div className="mt-1 grid gap-1.5">
                 {group.options.map((option) => {
                   const selected = option.revisionId === selectedRevisionId;
@@ -74,8 +74,8 @@ export default function FloorPlanOptionalConfigurationPanel({
                       type="button"
                       aria-pressed={selected}
                       className={selected
-                        ? "rounded-md border border-sky-600 bg-sky-50 px-2 py-1.5 text-left text-[10px] font-semibold text-sky-900"
-                        : "rounded-md border border-neutral-200 px-2 py-1.5 text-left text-[10px] font-semibold disabled:opacity-50"}
+                        ? "rounded-md border border-sky-600 bg-sky-50 px-2 py-1.5 text-left text-xs font-semibold text-sky-900"
+                        : "rounded-md border border-neutral-200 px-2 py-1.5 text-left text-xs font-semibold disabled:opacity-50"}
                       disabled={disabled || !onChoosePublicVariant || selected}
                       onClick={() => onChoosePublicVariant?.(group, option)}
                     >
@@ -105,10 +105,10 @@ export default function FloorPlanOptionalConfigurationPanel({
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-semibold">
+                  <div className="truncate text-xs font-semibold">
                     {suggestion.label}
                   </div>
-                  <div className={`mt-0.5 text-[10px] ${subtle}`}>
+                  <div className={`mt-0.5 text-xs ${subtle}`}>
                     {suggestion.kind === "suggested_room"
                       ? "Suggested room arrangement"
                       : "Optional partition"}
@@ -118,8 +118,8 @@ export default function FloorPlanOptionalConfigurationPanel({
                   </div>
                 </div>
                 <span className={suggestion.sourceSupported
-                  ? "shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-semibold text-sky-800"
-                  : "shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-800"}
+                  ? "shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
+                  : "shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800"}
                 >
                   {suggestion.sourceSupported ? "Source mark" : "Needs review"}
                 </span>
@@ -127,14 +127,14 @@ export default function FloorPlanOptionalConfigurationPanel({
               {hasSelectableVariant ? (
                 <button
                   type="button"
-                  className="mt-2 w-full rounded-md bg-sky-700 px-2 py-1.5 text-[10px] font-semibold text-white disabled:opacity-50"
+                  className="mt-2 w-full rounded-md bg-sky-700 px-2 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
                   disabled={disabled}
                   onClick={() => onChooseVariant!(suggestion.variant!)}
                 >
                   Use reviewed {suggestion.variant!.label}
                 </button>
               ) : (
-                <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+                <p className={`mt-1 text-xs leading-4 ${subtle}`}>
                   {suggestion.status === "authored_variant_available"
                     ? "Load the exact authored revision before selecting this option."
                     : "No authored geometry variant is attached, so the current walls and rooms will stay unchanged."}

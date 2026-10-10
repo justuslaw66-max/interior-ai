@@ -182,7 +182,7 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
                         x={toX(room.center.x)}
                         y={toY(room.center.z) + 14}
                         textAnchor="middle"
-                        className="fill-neutral-500 text-[11px]"
+                        className="fill-neutral-500 text-xs"
                       >
                         {room.dimensions}
                       </text>
