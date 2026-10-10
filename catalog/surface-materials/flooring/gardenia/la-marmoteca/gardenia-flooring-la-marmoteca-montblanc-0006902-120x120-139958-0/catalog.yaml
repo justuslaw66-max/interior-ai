@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 8 single item pictures of item 0006899 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/montblanc/pf60006899-v102/), because ABK's 9 Nat P.tech pictures are 0006899's 9 Lux pictures, byte for byte. Downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-marmoteca-montblanc-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0006902/0/139958 for floor use.
     - "Configurator format: 120x120; surface destination: ENTRAMBE."
@@ -65,16 +66,44 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006902.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006902.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 120
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_04.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_05.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_06.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_07.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0006899_08.webp
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.48
@@ -101,12 +130,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

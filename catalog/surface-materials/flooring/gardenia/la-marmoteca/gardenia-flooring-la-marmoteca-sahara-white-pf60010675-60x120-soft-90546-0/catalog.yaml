@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 16 single item pictures of item 0017765 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/pf60017765-v102/), because ABK has no Sahara White 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026). Downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-marmoteca-sahara-white-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60010675/0/90546 for floor use.
     - "Configurator format: 60x120 Soft; surface destination: ENTRAMBE."
@@ -65,16 +66,68 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027057.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027057.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_15.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0017765_16.webp
+      width_mm: 600
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.48
@@ -100,12 +153,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
