@@ -73,7 +73,7 @@ export function FurnishImportedModels(props: FurnishImportedModelsProps) {
         className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-neutral-900 marker:hidden"
       >
         <span className="text-sm font-semibold">All 3D models</span>
-        <span className="rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-700">Open</span>
+        <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700">Open</span>
       </summary>
       <p className="text-xs text-neutral-600">Pick any verified model by family, including pieces not in the catalogue yet.</p>
       <ImportedModelSelects {...props} />

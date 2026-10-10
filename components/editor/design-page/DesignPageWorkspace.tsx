@@ -463,7 +463,7 @@ export function DesignPageWorkspace() {
               <div className="text-xs font-semibold text-neutral-900">
                 Floor plan image
               </div>
-              <div className="text-[10px] text-neutral-500">
+              <div className="text-xs text-neutral-500">
                 Locked tracing guide
               </div>
             </div>

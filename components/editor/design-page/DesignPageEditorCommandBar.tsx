@@ -177,7 +177,7 @@ export function DesignPageEditorCommandBar({
             {configuration.showRoomHealth && overflowRoomHealthLabel ? (
               <span
                 data-testid="editor-command-overflow-room-health"
-                className={`shrink-0 rounded-full px-2 py-1 text-[11px] font-semibold ${
+                className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${
                   configuration.dark
                     ? "border border-white/10 bg-white/10 text-neutral-100"
                     : overflowRoomHealthClass

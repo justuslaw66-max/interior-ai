@@ -98,8 +98,8 @@ export function DesignPageSelectionInspector({
           <div
             className={
               configuration.dark
-                ? "text-[11px] font-semibold uppercase text-neutral-400"
-                : "text-[11px] font-semibold uppercase text-neutral-500"
+                ? "text-xs font-semibold uppercase text-neutral-400"
+                : "text-xs font-semibold uppercase text-neutral-500"
             }
           >
             {state.summary.kind}
@@ -165,7 +165,7 @@ export function DesignPageSelectionInspector({
           }
         >
           <div className="flex items-end justify-between gap-3">
-            <div className="text-[11px] font-semibold uppercase text-neutral-500">
+            <div className="text-xs font-semibold uppercase text-neutral-500">
               Dimensions
             </div>
             <DisplayUnitSelect
@@ -215,8 +215,8 @@ export function DesignPageSelectionInspector({
           <div
             className={
               configuration.dark
-                ? "mt-1.5 text-[10px] text-neutral-400"
-                : "mt-1.5 text-[10px] text-neutral-500"
+                ? "mt-1.5 text-xs text-neutral-400"
+                : "mt-1.5 text-xs text-neutral-500"
             }
           >
             Resize keeps the room centre when space allows. Enter applies; Esc cancels.

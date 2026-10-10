@@ -11,14 +11,14 @@ export function ImportedFloorPlanReviewStatus({ document, isLocalFork, editingEn
   return <div className="flex items-start justify-between gap-2">
     <div>
       <div className="font-semibold">Imported plan geometry</div>
-      <div className={`mt-0.5 text-[10px] ${subtle}`}>
+      <div className={`mt-0.5 text-xs ${subtle}`}>
         {isLocalFork ? "Local needs-review copy" : "Source plan locked"}
       </div>
-      <p data-testid="floor-plan-review-status" className={`mt-0.5 text-[10px] ${subtle}`}>{label}</p>
+      <p data-testid="floor-plan-review-status" className={`mt-0.5 text-xs ${subtle}`}>{label}</p>
     </div>
     <span className={editingEnabled
-      ? "rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800"
-      : "rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800"}>
+      ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800"
+      : "rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800"}>
       {editingEnabled ? "Editing" : "Locked"}
     </span>
   </div>;

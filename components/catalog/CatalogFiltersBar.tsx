@@ -19,7 +19,7 @@ export default function CatalogFiltersBar({
         <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
         Filters
         {activeFilterCount > 0 ? (
-          <span className="rounded-full bg-neutral-900 px-1.5 py-0.5 text-[10px] text-white">
+          <span className="rounded-full bg-neutral-900 px-1.5 py-0.5 text-xs text-white">
             {activeFilterCount}
           </span>
         ) : null}
