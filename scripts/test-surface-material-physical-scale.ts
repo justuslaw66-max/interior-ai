@@ -193,16 +193,18 @@ const isIPigmenti = isGardeniaCollection("i-pigmenti");
 const isLaMarmoteca = isGardeniaCollection("la-marmoteca");
 const isHermione = isGardeniaCollection("hermione");
 const isConcreaPlain = isGardeniaCollection("concrea-plain");
+const isJustNature = isGardeniaCollection("just-nature");
+const isLuce = isGardeniaCollection("luce");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-  isLaMarmoteca, isHermione, isConcreaPlain,
+  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione and Concrea Plain declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature and Luce declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -216,13 +218,13 @@ for (const material of physicalMaterials) {
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
   const tileHeightMm = material.physical_specs.tile_length_mm as number;
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
-  // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's; Bon Ton's decors (Network,
+  // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's and Luce's; Bon Ton's decors (Network,
   // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
   // decors (Crocini, Pillole, Rattan) have a single face.
   const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-/;
   const minimumFaces = singleFace.test(id)
     ? 1
-    : /-(pietra-viva|la-geoteca|concrea-plain)-.+-120x280-/.test(id)
+    : /-(pietra-viva|la-geoteca|concrea-plain|luce)-.+-120x280-/.test(id)
       ? 2
       : 3;
   assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
@@ -390,7 +392,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -1025,9 +1027,12 @@ assert.deepEqual(collectionFaceRows(isConcreaPlain), [
   ...concreaRows("white", [10, 8, 2, 18], ["0003059", "0002607", "0008652", "0003063"]),
 ]);
 // What the entries take from ABK's pages: thickness per format (6 mm slabs, 8.5 mm otherwise), no configurator
-// pattern ids, the layouts J chose, and no blocker but the price.
-const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter((entry) => isHermione(entry) || isConcreaPlain(entry));
-assert.equal(abkSiteEntries.length, 28, "Hermione's 3 and Concrea Plain's 11 items, each for floor and wall");
+// pattern ids, the layouts J chose (planks for the wood collections), and no blocker but the price.
+const isFromAbkPages = (entry: { surface_material: { material_id: string } }) =>
+  [isHermione, isConcreaPlain, isJustNature, isLuce].some((filter) => filter(entry));
+const isWoodPlank = (entry: { surface_material: { material_id: string } }) => isHermione(entry) || isJustNature(entry);
+const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter(isFromAbkPages);
+assert.equal(abkSiteEntries.length, 78, "Hermione 3, Concrea Plain 11, Just Nature 11 and Luce 14 items, each for floor and wall");
 for (const entry of abkSiteEntries) {
   const id = entry.surface_material.material_id;
   assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
@@ -1035,7 +1040,7 @@ for (const entry of abkSiteEntries) {
   assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
   assert.deepEqual(
     entry.rendering.available_pattern_layouts,
-    isHermione(entry) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
+    isWoodPlank(entry) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
   assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
@@ -1047,7 +1052,90 @@ assert.equal(
   physicalMaterials.filter((material) => material.surface_material.supplier === "gardenia_orchidea").length,
   "the import guard finds every Gardenia entry on faces"
 );
-assert.deepEqual([lostToImport.get("hermione"), lostToImport.get("concrea-plain")], [6, 22]);
+assert.deepEqual(
+  ["hermione", "concrea-plain", "just-nature", "luce"].map((collection) => lostToImport.get(collection)),
+  [6, 22, 22, 28]
+);
+
+// Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
+// each colour's family and Luce's look as ABK describes them (J, 10 Oct 2026: Luce per colour, as ABK). Just Nature
+// has six plank faces per size; its 20x120 planks are found in the colour's 30x120 pictures at the same scale, so the
+// 20x120 entries also draw the 30x120 faces, cut to the plank (J, 10 Oct 2026). Beige Scuro has no 30x120 entry: ABK
+// shows Beige Medio's pictures for it. Sbiancato's 30x120 page lists one picture twice. Luce's 120x280 pictures come
+// out about 5% larger than its other sizes (noted in the entries).
+for (const [filter, label, count] of [[isJustNature, "Just Nature", 22], [isLuce, "Luce", 28]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+const lucePlain = ["120x120 Nat", "60x120 Nat", "80x80 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isJustNature, category),
+    (
+      [
+        ["Beige Chiaro", ["30x120 Nat", "20x120 Nat"]],
+        ["Beige Medio", ["30x120 Nat", "20x120 Nat"]],
+        ["Beige Scuro", ["20x120 Nat"]],
+        ["Grigio", ["30x120 Nat", "20x120 Nat"]],
+        ["Noce Scuro", ["30x120 Nat", "20x120 Nat"]],
+        ["Sbiancato", ["30x120 Nat", "20x120 Nat"]],
+      ] as const
+    ).map(([name, sizes]) => [`Just Nature ${name}`, [...sizes]])
+  );
+  assert.deepEqual(
+    collectionCards(isLuce, category),
+    (
+      [
+        ["Acciaio", lucePlain],
+        ["Peltro", lucePlain.slice(1)],
+        ["Perla", ["120x280 Nat", ...lucePlain]],
+        ["Piombo", lucePlain.slice(0, 2)],
+        ["Verderame", ["120x280 Nat", ...lucePlain.slice(0, 2)]],
+      ] as const
+    ).map(([name, sizes]) => [`Luce ${name}`, [...sizes]])
+  );
+}
+// One Just Nature colour's rows: the 20x120 plank on its own faces and the 30x120 faces cut to it, then the 30x120.
+const justNatureRows = (colour: string, plank: string, wide: string, wideFaces = 6) => [
+  [colour, "1200x200", 6 + wideFaces, "200x1200+300x1200", `${plank}_01.webp`],
+  [colour, "1200x300", wideFaces, "300x1200", `${wide}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isJustNature), [
+  ...justNatureRows("beige-chiaro", "g52012", "g52002"),
+  ...justNatureRows("beige-medio", "g52016", "g52006"),
+  ["beige-scuro", "1200x200", 6, "200x1200", "g52013_01.webp"],
+  ...justNatureRows("grigio", "g52011", "g52001"),
+  ...justNatureRows("noce-scuro", "g52015", "g52005"),
+  ...justNatureRows("sbiancato", "g52010", "g52000", 5),
+]);
+const luceRow = (colour: string, tile: "120x120" | "60x120" | "80x80" | "120x280", code: string) =>
+  ({
+    "120x120": [colour, "1200x1200", 6, "1200x1200", `${code}_01.webp`],
+    "60x120": [colour, "1200x600", 12, "600x1200", `${code}_01.webp`],
+    "80x80": [colour, "800x800", 12, "800x800", `${code}_01.webp`],
+    "120x280": [colour, "2800x1200", 2, "1200x2800", `${code}_01.webp`],
+  })[tile];
+assert.deepEqual(collectionFaceRows(isLuce), [
+  luceRow("acciaio", "120x120", "0006083"), luceRow("acciaio", "60x120", "0006087"), luceRow("acciaio", "80x80", "0006546"),
+  luceRow("peltro", "60x120", "0006088"), luceRow("peltro", "80x80", "0006547"),
+  luceRow("perla", "120x120", "0006540"), luceRow("perla", "60x120", "0006541"), luceRow("perla", "120x280", "0008183"),
+  luceRow("perla", "80x80", "0006549"),
+  luceRow("piombo", "120x120", "0006085"), luceRow("piombo", "60x120", "0006089"),
+  luceRow("verderame", "120x120", "0006159"), luceRow("verderame", "60x120", "0006161"), luceRow("verderame", "120x280", "0008182"),
+]);
+// Colour and look as ABK describes them.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter((material) => isJustNature(material) || isLuce(material)).map((material) =>
+    `${/-(just-nature|luce)-([a-z-]+?)-(?:g\d|\d)/.exec(material.surface_material.material_id)?.slice(1).join(" ")}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "just-nature beige-chiaro: wood beige", "just-nature beige-medio: wood beige", "just-nature beige-scuro: wood beige",
+    "just-nature grigio: wood grey", "just-nature noce-scuro: wood brown", "just-nature sbiancato: wood white",
+    "luce acciaio: plain grey", "luce peltro: plain grey", "luce perla: plain white", "luce piombo: concrete grey",
+    "luce verderame: concrete mixed",
+  ]
+);
 
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
@@ -1114,7 +1202,7 @@ const collectionById = new Map(
     .filter((material) =>
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-        isLaMarmoteca, isHermione, isConcreaPlain,
+        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])

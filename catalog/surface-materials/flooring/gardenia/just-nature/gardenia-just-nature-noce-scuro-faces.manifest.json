@@ -1,0 +1,331 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/noce-scuro/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: JUST NATURE - NOCE SCURO - minimali.zip (6848527 bytes, sha256 596c909c924bb3892adbc0115e6fc3b3c5f1597ab61232693f9001060476b123).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/just-nature/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "g52005",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/noce-scuro/g0052005-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "g52005_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-noce-scuro-g52005-30x120-nat; wall gardenia-wall-tile-just-nature-noce-scuro-g52005-30x120-nat; floor gardenia-flooring-just-nature-noce-scuro-g52015-20x120-nat (also draws these faces, cut to its tile); wall gardenia-wall-tile-just-nature-noce-scuro-g52015-20x120-nat (also draws these faces, cut to its tile)",
+   "faces": [
+    {
+     "file": "g52005_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 29704,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_1.jpg",
+     "source_px": [
+      649,
+      2597
+     ],
+     "source_sha256": "7d3c4771389731411ca079e89356e4eb1c784d0b47bb01403f856727a1e360fe",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_1",
+      "id": "09bf47bc-dad2-4496-aacf-396e8b21ee2d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52005_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 28062,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_2.jpg",
+     "source_px": [
+      650,
+      2600
+     ],
+     "source_sha256": "6f3765d91a0676a53c0ffab3a12ddd3f70aa50c638dfc5b356a703dda7b5c85c",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_2",
+      "id": "b209128a-ac39-41da-b9a0-794b7021c1bb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52005_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24796,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_3.jpg",
+     "source_px": [
+      649,
+      2597
+     ],
+     "source_sha256": "d9472b33faa7f654c79129b6b41f5fb13fb095ccc8bd14e0f0cf46f30afb3062",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_3",
+      "id": "04ecba3f-b1d6-4596-baf4-dee3e120b08c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52005_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24372,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_4.jpg",
+     "source_px": [
+      650,
+      2600
+     ],
+     "source_sha256": "3077ea6e84f3b690030c0d8491bdc458e6f0494c922d1bee1e704ec0fe4a169d",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_4",
+      "id": "6a6a5cd0-a0ea-4241-86df-db8d024b94fb",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52005_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 30848,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_5.jpg",
+     "source_px": [
+      650,
+      2600
+     ],
+     "source_sha256": "35f4c80ed6e73d28390148489a92525a2f31b00176f70b4c7ae5cf42f3729a6e",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_5",
+      "id": "58a21116-8073-4cf4-8301-00b273d65c5e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52005_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 28662,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - NOCE SCURO - 30X120 - Natural - view_6.jpg",
+     "source_px": [
+      649,
+      2597
+     ],
+     "source_sha256": "72cdff2e28d93dda0d5d14a937cafba4377f8eb7401851f2cfd41d091b16ea60",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_NOCE_SCURO_30x120_6",
+      "id": "d6c9368c-cd4d-4650-b650-327cda77ff6e",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "g52015",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/noce-scuro/g0052015-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "g52015_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-noce-scuro-g52015-20x120-nat; wall gardenia-wall-tile-just-nature-noce-scuro-g52015-20x120-nat",
+   "faces": [
+    {
+     "file": "g52015_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 21054,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      433,
+      2597
+     ],
+     "source_sha256": "08acec476f2609b4543a3d9996f18163a2b51c64c6b88397b9251f2e3f337688",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_1",
+      "id": "23410d8d-4072-42e2-9471-e370e85ffacc",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52015_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 19274,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      433,
+      2600
+     ],
+     "source_sha256": "261953a2eb06aeab1b9ccf75a831aec9f56d0d4ed804b72ead2331a924fdd59f",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_2",
+      "id": "6d80678e-032e-4a00-806c-d841a672d905",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52015_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 16450,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      433,
+      2597
+     ],
+     "source_sha256": "fd903aeb0539b60eee86fc1e3cc437c8ec06d2db73a48da83888ca5f8aeedd48",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_3",
+      "id": "da500900-2262-4d56-9118-bcfac968cbce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52015_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15830,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      433,
+      2600
+     ],
+     "source_sha256": "b8265e32d74ccb4ef72675aa5060d4de3b0b6ad997253f3d72c4cb5a25557a98",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_4",
+      "id": "c4e2d334-3420-4a0c-9198-4f8cb4956437",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52015_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 21246,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      433,
+      2597
+     ],
+     "source_sha256": "0dfe37ddfbdca14854b841065f837f91691f13e737fa889d1c63262aed975847",
+     "source_px_per_mm": 2.164,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_5",
+      "id": "d5ccd0c4-8e67-4c35-a33d-0b0812ada7b5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52015_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 19148,
+     "source_zip": "JUST NATURE - NOCE SCURO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - NOCE SCURO - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      434,
+      2602
+     ],
+     "source_sha256": "ccc7e75d1013d78cde32219ebd7aaea59c45a6efc94868787456617bfd6856e3",
+     "source_px_per_mm": 2.168,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_NOCE_SCURO_20x120_6",
+      "id": "393451ce-3e40-448b-a968-7ae743153276",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

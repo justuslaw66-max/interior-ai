@@ -1,0 +1,310 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/sbiancato/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: JUST NATURE - SBIANCATO - minimali.zip (4849170 bytes, sha256 ad76cc6f743f42b62d7223809a5a97fa784f5a5c76427f64cc5a8a7b106456d7).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/just-nature/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "g52000",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/sbiancato/g0052000-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "g52000_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "duplicates_dropped_site_positions": [
+    3
+   ],
+   "used_by": "floor gardenia-flooring-just-nature-sbiancato-g52000-30x120-nat; wall gardenia-wall-tile-just-nature-sbiancato-g52000-30x120-nat; floor gardenia-flooring-just-nature-sbiancato-g52010-20x120-nat (also draws these faces, cut to its tile); wall gardenia-wall-tile-just-nature-sbiancato-g52010-20x120-nat (also draws these faces, cut to its tile)",
+   "faces": [
+    {
+     "file": "g52000_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 14196,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - SBIANCATO - 30X120 - Natural - view_1.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "648feee3e709718887a1875a0697c6797325913563759d96ccf8f7c80c256e83",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_SBIANCATO_30x120_1",
+      "id": "b0fc2f96-aaac-4cc7-973c-d4d9b1c1e719",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52000_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15870,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - SBIANCATO - 30X120 - Natural - view_3.jpg",
+     "source_px": [
+      649,
+      2596
+     ],
+     "source_sha256": "883e6400094c06a3f71e033fe179dcd47e92e68f994b3dd77c85473df9158b9c",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_SBIANCATO_30x120_2",
+      "id": "5369c5c7-9e3f-4100-b64b-23facbf826bf",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52000_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 13364,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - SBIANCATO - 30X120 - Natural - view_4.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "285aaf0addc6093c981cc6c32d2850e7c864c9e1b5a37a2b2f851798f9b1d7b1",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_SBIANCATO_30x120_4",
+      "id": "70f62b33-e0ef-4935-b0b2-a4595b087046",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52000_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19318,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - SBIANCATO - 30X120 - Natural - view_5.jpg",
+     "source_px": [
+      650,
+      2599
+     ],
+     "source_sha256": "378501961e63c5485598385034b727c55d5f0038689409650a4d36da54ac4d0f",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_SBIANCATO_30x120_5",
+      "id": "1002fcaf-66fa-4f26-8266-b322773aa2ef",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52000_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12128,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - SBIANCATO - 30X120 - Natural - view_6.jpg",
+     "source_px": [
+      649,
+      2596
+     ],
+     "source_sha256": "655a55a9f5c8fe4172f48792a481d4945cbe8a9945b5ff89f75013c106807631",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_SBIANCATO_30x120_6",
+      "id": "3276306b-574e-47d7-b525-67e751f797e4",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "g52010",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/sbiancato/g0052010-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "g52010_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-sbiancato-g52010-20x120-nat; wall gardenia-wall-tile-just-nature-sbiancato-g52010-20x120-nat",
+   "faces": [
+    {
+     "file": "g52010_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10120,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      434,
+      2601
+     ],
+     "source_sha256": "13990aaecae0e5e6b0c4c36a41efbdd55f66429242d808a438d7582c408e464b",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_SBIANCATO_20x120_1",
+      "id": "6cabec11-4160-49ec-972f-1af376e5252b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52010_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11292,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      433,
+      2596
+     ],
+     "source_sha256": "c72ae4a53ebc6278ef4a77c0504b8ce4cb5888c29c6b17daef76a89f55f2933e",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_SBIANCATO_20x120_2",
+      "id": "1915bb6e-2120-4373-85af-5d78743fea5d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52010_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11276,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      433,
+      2596
+     ],
+     "source_sha256": "695a043f6aee22a13bb99f5b4f47b611200af28aa7737f7c572c668045e869c2",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_SBIANCATO_20x120_3",
+      "id": "01ef6cb3-f9f6-4360-bca6-4dbe58bc760b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52010_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9328,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      434,
+      2601
+     ],
+     "source_sha256": "0d5e2e2df9a3e5af5a09665cc50f7770b6a37f3064fa517ae200dea741270e1b",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_SBIANCATO_20x120_4",
+      "id": "eb0f44a7-3af7-4761-8abf-e2f4677a6737",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52010_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13390,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "b45a71e23f3b5f91a6d8b983fe32337bec127839814e1fd958ee1a67e76b07f4",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_SBIANCATO_20x120_5",
+      "id": "da34ab97-a62e-4015-9430-b9ba39ce73dc",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52010_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 7890,
+     "source_zip": "JUST NATURE - SBIANCATO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - SBIANCATO - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      433,
+      2596
+     ],
+     "source_sha256": "7b69e79eb2092a7efafe5b36c0de5496f69e4a8caff7111133953adbd7fc5a3a",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_SBIANCATO_20x120_6",
+      "id": "7876439c-27b3-4768-a384-016d60404e45",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

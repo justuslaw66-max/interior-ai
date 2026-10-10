@@ -1,0 +1,619 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/peltro/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LUCE - PELTRO - minimali.zip (31326786 bytes, sha256 69d488135d0abcf0f3db4763697f746cd9f834b468ed7a8b8d203a2511999430).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/luce/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0006088",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/peltro/pf60006088-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006088_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-peltro-0006088-60x120-nat; wall gardenia-wall-tile-luce-peltro-0006088-60x120-nat",
+   "faces": [
+    {
+     "file": "0006088_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6276,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3014839b015af2bd8f15dbedc1927a61bc7ae773125a8e5fd18c23cf639500d6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "LUCE PELTRO 60X120_07",
+      "id": "718fde14-9849-46be-87b2-4e8142d09295",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006088_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9178,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "19660f8fffa1960fa7dea20160c051e8ccb058cbed16c64e4401b2ae6e9d1a67",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "LUCE PELTRO 60X120_05",
+      "id": "c32114c4-1362-442f-9e78-7c1f192f5f38",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006088_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8444,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "91e2e501bfd27085cc1411463dc12a4703c79772771dcc6d1ad14184de3dfd80",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "LUCE PELTRO 60X120_10",
+      "id": "66c5b4f2-0fd5-43c0-8440-e2e8fa86e7fb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006088_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6452,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4032389e101e9b6988ae2032dc404c313aec82557bf275a6da7f52a217f8660d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "LUCE PELTRO 60X120_03",
+      "id": "d8360451-87e1-497b-af71-146809d43350",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006088_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8428,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3b3796b6aef2bbdb0bc2a286c27ad059e1767033829ea5d9eb8294831e2ec0e5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "LUCE PELTRO 60X120_06",
+      "id": "fca37bae-7afa-4596-b579-95e22af09c90",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006088_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8416,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c004e6388bd72d423af5e9ba5dab4c0821d6deb2b46e8e14f9c7996fa40f8bf5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "LUCE PELTRO 60X120_12",
+      "id": "80cf51d3-23ab-4c2a-a384-6d86113e21fd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006088_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7536,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f951b03eef00896aa5fa9a2ab6c075f8d8882911993e8ac33603717221b9b439",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "LUCE PELTRO 60X120_04",
+      "id": "ecf9f4aa-dd9d-45fd-9344-02639e4233b3",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006088_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8246,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9f4505e7efc76bbb29f4c122adfc6cf029817ed17ccf0962379e2a64fdb80617",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "LUCE PELTRO 60X120_11",
+      "id": "093777cb-bfc9-4b77-8892-71c2c0abffc6",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006088_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6704,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1670069ca66950b75641ddb7355f36469d43bcfa9882de1b1c538717f57bc73a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "LUCE PELTRO 60X120_02",
+      "id": "84a00dd9-dfb9-4d26-8f3f-63886a5a91d5",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006088_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6772,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2d70f36338769859a12e7f2d88567c571265ff40eb42f63c16dc31ccaecaf557",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "LUCE PELTRO 60X120_08",
+      "id": "950d1e40-ecf6-4ecf-9fb9-ce5170459911",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006088_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6940,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fea1c1e787d94ff24f0e297ebe921490f8a31b1ae1b4f73456b8a5a30cb62d42",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "LUCE PELTRO 60X120_09",
+      "id": "06341d6c-617a-4ece-a8af-bd6c9f1ddace",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006088_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7826,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PELTRO - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bef55d99595800b74fd73c55f992a8d12186b17b318f63fb152e0a996e9c900a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "LUCE PELTRO 60X120_01",
+      "id": "b2659243-54fe-481e-ae2e-b7dee4090ed3",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0006547",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/peltro/pf60006547-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0006547_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-peltro-0006547-80x80-nat; wall gardenia-wall-tile-luce-peltro-0006547-80x80-nat",
+   "faces": [
+    {
+     "file": "0006547_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 7518,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0a3d5c8381698556e764edb4028342fcfd32b4fb237ab4d49bf158ff3d80ccc8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "LUCE PELTRO 80X80_11",
+      "id": "73b79b84-6816-4965-807a-668f235e0d31",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006547_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 7000,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b2e429b36f8c4203288a465f1bc1a517457cb3c83722d6e5d754bec55c804d75",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "LUCE PELTRO 80X80_04",
+      "id": "073acd48-a988-440f-9b81-157d34cef91c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006547_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5138,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4afcab774b650057ca148de602276acddf6f9c27e3ac151a929a9abe062093fd",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "LUCE PELTRO 80X80_07",
+      "id": "41ff5051-6810-4627-a600-2eb0db78bf6d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006547_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5272,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b741baefbeb59b883385ea9f98a7a4efd58af9e62a40e28024c30d1aed91ff14",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "LUCE PELTRO 80X80_05",
+      "id": "bdbd708d-54fd-4c55-94c3-ec2d93f94880",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006547_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 7526,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dd7bd027ccabc5ad89c77136ddedcdbf9ac340041e19170eb2cafd24e2b8479d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "LUCE PELTRO 80X80_01",
+      "id": "4c410ab6-604a-48f8-82b3-4a6f93a529cf",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006547_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5296,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f988c057c986cb1bcbea99e44ebab9144749167a2c6eb4d3fe98ab59440fb64c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "LUCE PELTRO 80X80_10",
+      "id": "87ce30d6-950f-4129-982e-63f13d6d297e",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006547_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6256,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c2c28058eeb5eec9e5b34f0b3399f4f0d55ca0d35cc57d744cf80769892deb6f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "LUCE PELTRO 80X80_03",
+      "id": "4be04fd2-1c98-4f4a-9186-ef2390a4b4bf",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006547_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6346,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "005394f58d7f645ae37e23c1b768c90e15d64346f68e426594ae1e60c5ddf1df",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "LUCE PELTRO 80X80_06",
+      "id": "0c3f3e58-1d70-4e6b-9163-e3c8929cf984",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006547_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6266,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e8f02eadb8757030325fde2c59a2756632e8f04c63a30fa9cfaad4ab0bba9892",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "LUCE PELTRO 80X80_12",
+      "id": "c8655ad3-bb9e-4bef-94f8-d4e13c942ad4",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006547_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 6400,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "813022345a3bfbc3d418bf781ba5872815e5753028504893029b763b26cca181",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 10",
+      "name": "LUCE PELTRO 80X80_09",
+      "id": "250b07b1-84ec-4a22-a885-36c013ca4b44",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006547_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5600,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ec7f119396b0cb03a27ccb18a8365c4e27ae71681798c97f11039165b7b28ed",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11",
+      "name": "LUCE PELTRO 80X80_08",
+      "id": "a3eb1dc3-e5b4-4808-9c75-27a68e25c10c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006547_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 7164,
+     "source_zip": "LUCE - PELTRO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PELTRO - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "358d3545eb913644d812d3f1b9710d07a11e6ba26210c80bd0b60840d52c349e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 12",
+      "name": "LUCE PELTRO 80X80_02",
+      "id": "132204d4-8ce5-4c6d-b905-c0be03492891",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}
