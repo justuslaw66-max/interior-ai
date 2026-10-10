@@ -1,0 +1,610 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/emerald-green/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - EMERALD GREEN - minimali.zip (33366858 bytes, sha256 554587403e1a0014e2e1a82f3f17b0cd47d0fd647dc0316a31bd58468e0b551e).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008685",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/emerald-green/pf60008685-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008685_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-emerald-green-0008685-120x280-lux-139961-0; wall gardenia-wall-tile-la-marmoteca-emerald-green-0008685-120x280-lux-139961-0",
+   "faces": [
+    {
+     "file": "0008685_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 238026,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - EMERALD GREEN - 120X280 - Lux - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "bf24e7c342b92512b195ed7e1262164488aac0d0cb8cffe534ce1373c0a50fe9",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE EMERALD GREEN 120X280_01",
+      "id": "1aaca51f-400c-4f04-af83-0e73d31be7ed",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008685_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 235356,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - EMERALD GREEN - 120X280 - Lux - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "5a7abe61b501a98c52a4254ca1c6fcf56432f25c6c7e24806c498cae69651481",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE EMERALD GREEN 120X280_02",
+      "id": "c7d9b27d-d49b-47f4-a2e1-6eff1fdabef2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0008685_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 229214,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - EMERALD GREEN - 120X280 - Lux - view_3.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "67bb7210144015241c4e864a98e41c92e7de50e67b1c9d384f8d2656c2b916e8",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE EMERALD GREEN 120X280_03",
+      "id": "e42ed575-b6fd-4470-b4ca-871c634c118d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0008685_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 225960,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - EMERALD GREEN - 120X280 - Lux - view_4.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "fae94b8164e1542a01fa63e8ff2f019abdce03b4b2410e79149152e4f121057f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE EMERALD GREEN 120X280_04",
+      "id": "e3a9f38e-98dd-447f-91f9-675e524a6279",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0008685_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 225662,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - EMERALD GREEN - 120X280 - Lux - view_5.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "ccbbb4052907f6d03c8f53f1e883c42c4aa1a7081c0e75d4ee39ef1f3a4ebda1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE EMERALD GREEN 120X280_05",
+      "id": "47b9af2d-d63c-4392-b6f8-690b5ca03576",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0005359",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/emerald-green/pf60005359-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0005359_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-emerald-green-0005359-120x120-lux-139954-0; wall gardenia-wall-tile-la-marmoteca-emerald-green-0005359-120x120-lux-139954-0",
+   "faces": [
+    {
+     "file": "0005359_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97864,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "40ac6ccbdcf4c8bd7263850a73abcbe94083c5c9cb3655b47d045546dfdc6fc6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE EMERALD GREEN 120X120_01",
+      "id": "b4b2fca7-2e52-48fa-8e92-2298bfd31e73",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0005359_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98532,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9238b30519bcae4317ec4c2f958ead6ca812a1d892790fe2d566abf53ce3f99",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE EMERALD GREEN 120X120_02",
+      "id": "1cc36a9e-6e93-429b-9c7d-4b93fad75697",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0005359_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 78310,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0c5552bfc927647511844b19aacf0d0e9962c2c01d0fb76b42047ae6def36d96",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE EMERALD GREEN 120X120_03",
+      "id": "aa8af118-1b51-4dbf-bbb8-70aaafac85d8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0005359_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101594,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "671d632b78a1e32cc94ca65c1ac95c41247a02568f7a194dc49a9ad337781b05",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE EMERALD GREEN 120X120_04",
+      "id": "a6ac337c-5404-46a7-ad95-bab4a7a9b61c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0005359_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92066,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4d8d690896c064b0ef4140df24c4e6c5708f292465794357b77aa25de10fdd01",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE EMERALD GREEN 120X120_05",
+      "id": "2a08f3a7-0660-48e2-aacb-d181a704b237",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0005359_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 80232,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - EMERALD GREEN - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c613cbb666d6e13a77455e43ef971f29c9d0a42d821033e71b78d84698f74e77",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE EMERALD GREEN 120X120_06",
+      "id": "fcfff57b-82a1-4ce4-8339-8cd80c24a666",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0005362",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/emerald-green/pf60005362-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0005362_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-emerald-green-0005362-60x120-lux-139955-0; wall gardenia-wall-tile-la-marmoteca-emerald-green-0005362-60x120-lux-139955-0",
+   "faces": [
+    {
+     "file": "0005362_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52218,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7c7c6d3da4a23bdcc33f8e42e7687da4c2eeb44285d50d13bd84e8dc57c37e2e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE EMERALD GREEN 60X120_01",
+      "id": "773d7e5d-ccad-4dcf-8117-94092baf87da",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0005362_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51598,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "97082297bc506c1d3b353a9c574cc69475ae2158f1d9baa66736ffbe043ecaa1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE EMERALD GREEN 60X120_02",
+      "id": "0174626f-8058-4c03-b26c-090f5e5ac230",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0005362_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43204,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "051addfebe6570725929fab3c91b7ab6a79d788eb5c5ee5513afebeb50eb7e35",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE EMERALD GREEN 60X120_03",
+      "id": "12a16147-c4a9-4095-bbc1-bb53ac5c6e7b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0005362_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48190,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "598cc5b08e0d56433d2797647a44de8e708d45cb68dbf85bd9493f9175414625",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE EMERALD GREEN 60X120_04",
+      "id": "1cb2199c-dc67-44a6-8475-7ed0c2f3ce00",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0005362_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39082,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0a8ad7751f79f99cc2b32160df44eaa4c07d795874bb879758aaaa5354de56b9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE EMERALD GREEN 60X120_05",
+      "id": "9dc8891c-4d40-4781-97ad-5145930a878a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0005362_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39800,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "58fc3f4760efa5186ae72a04772348007ef8240428d600c5a30da5cfaeaac0d7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE EMERALD GREEN 60X120_06",
+      "id": "7c8c6317-f64e-49b0-9992-2297addfdfcb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0005362_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45292,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7bf04ebda83bf58e206b40710207f99ab8bccac2977872228d0bef628ed25811",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE EMERALD GREEN 60X120_07",
+      "id": "54545593-d6d0-49b0-8005-46b278142b44",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0005362_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54380,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0c70dd7fdc01b79ce77fc9b963325fef758905cce0426f9d6644b4805689b0c8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE EMERALD GREEN 60X120_08",
+      "id": "868cd10d-e406-4887-af3e-43a8afee0620",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0005362_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46650,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9baf9d86e9cdd8caa9c211df980eac8531e64375b448675c22b41b8c6a73eb6c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE EMERALD GREEN 60X120_09",
+      "id": "50a54949-89cb-4db3-8063-5e0fd45c54bc",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0005362_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48732,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b9542c9b01652c44c489171b1f2190244ea7c20a483e85ce06eebdd77cd98450",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10 (view_10)",
+      "name": "NOBILE EMERALD GREEN 60X120_10",
+      "id": "6e82a87b-bead-4af3-a5bc-e243220d169e",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0005362_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35366,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "892d90460de033dff253cde9e7ade14d3effbb9fd8d7a3264ae03b802f45098b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11 (view_11)",
+      "name": "NOBILE EMERALD GREEN 60X120_11",
+      "id": "e0e3088a-268e-4e01-9544-e6b2fecc88a6",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0005362_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42322,
+     "source_zip": "LA MARMOTECA - EMERALD GREEN - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - EMERALD GREEN - 60X120 - Lux - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "168b367708641b24019b0ea689a26207a58fe87bb34af43d19badf91ca1dd81b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12 (view_12)",
+      "name": "NOBILE EMERALD GREEN 60X120_12",
+      "id": "16a39a5a-f8f4-4ed1-bb64-f7ce802eb922",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

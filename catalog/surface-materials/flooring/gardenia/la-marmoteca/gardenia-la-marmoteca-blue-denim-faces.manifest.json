@@ -1,0 +1,754 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/blue-denim/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - BLUE DENIM - minimali.zip (56367091 bytes, sha256 2dc902164e259f91713ea344e5e329618a36d583ff5654584045357acab6ad38).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g27002",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/blue-denim/g27002-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g27002_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-blue-denim-g27002-120x280-lux-90513-0; wall gardenia-wall-tile-la-marmoteca-blue-denim-g27002-120x280-lux-90513-0",
+   "faces": [
+    {
+     "file": "g27002_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 301264,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - BLUE DENIM - 120X280 - Lux - view_1.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "727b02f4762cb531d058b6059a00d10e4eab4434b89ac8962bde622853b553d6",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_BLUE DENIM 120X280_4",
+      "id": "d51ad4d9-aaf6-4512-8896-7d09a8b97a84",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27002_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 281152,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - BLUE DENIM - 120X280 - Lux - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "b5d46d9124d42c7d8ade99b478012271a56a134e7e74c2bc4a05b681b8b9701b",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_BLUE DENIM 120X280_3",
+      "id": "f1aa854e-8eed-4925-b538-1d1efcc62e00",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27002_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 298792,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - BLUE DENIM - 120X280 - Lux - view_3.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "f01bb83db0b204a16b07990750de01f1f6d66dfd6009a5ec057d75a1a3ed5cc1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_BLUE DENIM 120X280_1",
+      "id": "c93311c4-7b7c-4253-917b-22fe87b96efd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27002_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 271804,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - BLUE DENIM - 120X280 - Lux - view_4.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "617ae018c7f1289c1355982c35f83d5ed77ed9b12b6e68fdabeec6d0bc3d6146",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_BLUE DENIM 120X280_2",
+      "id": "5a5daa66-48b1-49a8-bdce-f1f496cf7d4d",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g27012",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/blue-denim/g0027012.a-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g27012_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-blue-denim-g0027012-120x120-lux-90487-0; wall gardenia-wall-tile-la-marmoteca-blue-denim-g0027012-120x120-lux-90487-0",
+   "faces": [
+    {
+     "file": "g27012_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 144044,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "39fc7f9e580265d2e924c3740af856f06dd5115db0221d650c8c9b84198a912b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_2",
+      "id": "770e3100-671e-4747-beed-84ea6f5c0a65",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27012_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 134916,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e4b813d86b6782f78f323b58347b9ef62fc849ff117aa0e22de0c1c30ace0f20",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_1",
+      "id": "d41b7e06-5996-4047-9295-9329a7c98bbc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27012_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128442,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a243368f63b68ab0222efc625ecc2490a7ba6fbb111b42a580d869b010d86244",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_5",
+      "id": "3a6d4a27-f46d-4698-906e-5b06f1987b66",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27012_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129670,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f5707ccd5a32a8a9d2dd2ca0be44a9d2fcfbfee4b539e25edd77cdbe3bd63bca",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_6",
+      "id": "6ee0d7eb-db1f-48e4-a529-c22e4bfc67a1",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27012_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108726,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c6f2c0ce08c93f3ddd83c719b0918976c06fc44fb6a09fd84ab452a11ccb2bd5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_3",
+      "id": "ea4e13e4-f2b3-4530-8f08-3cc62058ac62",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27012_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113024,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3159a294dd2da76616ad6e8e789659456540a172d64fd9059311f2829ff48310",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_4",
+      "id": "1d0aa837-aa79-49e9-a0b9-3d073ee097c0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27012_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 116094,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c0b76088d072681063a69bb59f59a63059877842368c0cdb669a31b1e8da2e0f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_9",
+      "id": "3e6fed20-7da2-4117-9fd5-ffe9e78f9c98",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27012_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 116344,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7aa788c5b3f0a8a006246f9cea43c0a4316015b7b6841c91c1d9f805fd0f8241",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_8",
+      "id": "3bac66a5-7837-407d-b7ea-db4f5e4dae2b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27012_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 117236,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - BLUE DENIM - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cfe4321f5acea0894d612a622f59b9c45a029931fe5059a05017a05b1f88c9f9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_BLUE DENIM_120X120_7",
+      "id": "de1f0278-3a79-4a2b-a313-af4443cddd82",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27022",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/blue-denim/g0027022.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27022_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-blue-denim-g0027022-60x120-lux-90492-0; wall gardenia-wall-tile-la-marmoteca-blue-denim-g0027022-60x120-lux-90492-0",
+   "faces": [
+    {
+     "file": "g27022_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64586,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "0682a912c6ef889b9db6a393aaafe75f75a61fd837f4f21fd946a445ced58968",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_10",
+      "id": "f946bb5c-0c38-425d-b858-6655fd998a02",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27022_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63204,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b6bf257e6a447bca8ef61dbfd77fa506a98dad2a5effb8b0dbe2c8cafb3a4fdd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_9",
+      "id": "68736816-cb5b-4602-9794-f48b7afc0aec",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27022_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 71834,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "da0bdf475a0065a7918b2e942b23aa2db57e9a58f6bb69e07960c71402218869",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_1",
+      "id": "12b284b1-3274-4322-bcfd-61c68b148c97",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27022_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61232,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b0b2bf43d9377a3cb229c39de92fcefa020edbe1e27848e01f69874ea510e103",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_14",
+      "id": "aa45b2ef-79ee-4c2f-ba90-e213216755fb",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27022_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56826,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "1410ce0fb1da30702b6195a70cdd3e8301f0855d765aa3ed3896e940f7bd6a7f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_6",
+      "id": "29bec8cc-a49e-4e12-99b9-37248cbd4245",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27022_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57090,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6affbe489c756396950367393620766d581499dc64f38921dcdd5558638725fb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_8",
+      "id": "e2c34745-b0a5-48f8-9d83-de2341e69e49",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27022_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55864,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "f59d26d910356c601c4955fad352237521748b00101051cc9edbc7f79b44b08e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_16",
+      "id": "e7fbc181-c06a-42dd-9fc9-fb0aacc0ecbb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27022_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61966,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "9283e0c36ed3c6880450c6e8d074639aca59a31ef1ae9f615da8232c9b327d89",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_15",
+      "id": "011fc275-6f6d-4693-8671-357f2b2c7f9c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27022_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58500,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "36416ef97fcfb1db5b62d3ed879b5e4f6f68ad11729ae7ace389d2f4f6e9e20a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_13",
+      "id": "1444b7d4-dc42-4fe1-8f6b-dcd04b309068",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27022_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58058,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2378d93cc1c940bf328f787a2c7cbb3f5817dc05d4469a8be1f3c0215919023f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_7",
+      "id": "f5ec33de-1177-4c6c-965c-59de7388a2c3",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27022_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54758,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6dc7b9d91d6ba59d6c529924a8ef8fd34726c7b63d679eb60a5f03273da2d364",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_5",
+      "id": "9261544b-55a3-4cd5-9eb5-57810759654d",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27022_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 77774,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "a698dafd3ca4fe9f30cb034f69d804a9fd82b8635b397d95992e81087dc54da9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_3",
+      "id": "2b2d6111-dade-4792-8f1b-7e250ea2d574",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27022_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68562,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_13.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ec2ef06aa6977485db617d4cbab22b43a367789609f63551acdc26db494a4a12",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_4",
+      "id": "3c957742-734d-4892-b0f0-a8e6c0463a8a",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27022_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58206,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_14.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "8ed621630ddb40f0c59da712708ed786b430ccb0db60c2416839d674c12c192e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_11",
+      "id": "5bdcdf41-f489-4a70-a98c-22607973382d",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27022_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62234,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "3a33d334f2f8f09fb7ba010f6130179d116aa8551c41fea3888fc4d21ab84408",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_2",
+      "id": "da987e10-a9e3-4674-ad94-05262e35e1c0",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27022_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69542,
+     "source_zip": "LA MARMOTECA - BLUE DENIM - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - BLUE DENIM - 60X120 - Lux - view_16.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "4f8a11b11e4388ab9112fc9c16ca0d69c92ef5f5f4f0f5618759a499e44c5923",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_BLUE DENIM_60X120_12",
+      "id": "02e41bc7-b41f-49c4-b583-cf0a3cb01d99",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}
