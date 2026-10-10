@@ -27,6 +27,8 @@ type CatalogItemDrawerAddSectionProps = {
   /** Consumers: Add places the product, with Undo, and "Choose where it goes" opens the preview (FU4). */
   placesDirectly: boolean;
   onAdd: AddHandler;
+  /** The product lists are still loading: details can be read, but Add and Choose where it goes wait. */
+  addDisabled?: boolean;
   onChooseSpot?: AddHandler;
   onToggleCompare: (id: string) => void;
   onClose: () => void;
@@ -77,10 +79,11 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
         <button
           type="button"
           onClick={() => props.onAdd(productId, variantId, purchaseOptionId)}
+          disabled={props.addDisabled}
           data-testid="catalog-detail-add-to-room"
-          className="min-w-0 flex-1 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+          className="min-w-0 flex-1 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-60"
         >
-          {addQuantity > 1 ? `Add set of ${addQuantity} to ${summary.roomLabel}` : `Add to ${summary.roomLabel}`}
+          {props.addDisabled ? "Loading products…" : addQuantity > 1 ? `Add set of ${addQuantity} to ${summary.roomLabel}` : `Add to ${summary.roomLabel}`}
         </button>
         {props.favourite ? <DetailFavourite favourite={props.favourite} /> : null}
       </div>
@@ -88,7 +91,8 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
         <button
           type="button"
           data-testid="catalog-detail-choose-spot"
-          className="mt-1 min-h-11 w-full text-center text-xs font-semibold text-neutral-700 underline-offset-2 hover:underline"
+          disabled={props.addDisabled}
+          className="mt-1 min-h-11 w-full text-center text-xs font-semibold text-neutral-700 underline-offset-2 hover:underline disabled:opacity-60"
           onClick={() => {
             onChooseSpot(productId, variantId, purchaseOptionId);
             props.onClose();

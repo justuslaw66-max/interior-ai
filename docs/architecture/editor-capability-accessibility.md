@@ -90,8 +90,11 @@ else derives them:
   product waits for the live catalog and the imported catalogue (or their
   10-second fallback): adding from Furnish and the imported models, furnished
   templates, swaps in the item panel and in Shop (including Pro's Swap all),
-  and variants and finishes. While waiting, Furnish's product grid is `inert`
-  under a "Loading products…" status, and the furnished template cards say so.
+  and variants and finishes. While waiting, products can still be browsed
+  (search, filters, details, Compare) under a dimmed "Loading products…"
+  cover that lets clicks through; Add, dragging a card and "Choose where it
+  goes" wait, the details' Add button says "Loading products…", and the
+  furnished template cards say so too.
 
 The tradeoff (J, 10 Oct 2026): opening the editor no longer waits on the
 2.5 MB imported catalogue, at the cost of a second flag. A move or resize made

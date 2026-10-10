@@ -35,7 +35,7 @@ type Props = {
   roomProductQuantity?: number;
   roomVariantQuantity?: number;
   onClose: () => void;
-  onAdd: (id: string, variantId?: string, purchaseOptionId?: string) => void;
+  onAdd: (id: string, variantId?: string, purchaseOptionId?: string) => void; addDisabled?: boolean; // Until the product lists load.
   placesDirectly?: boolean; // Consumers: Add places the product; onChooseSpot opens the preview instead (FU4).
   favourite?: CatalogItemDrawerFavourite; // The heart in details (UX 4g, FU3).
   onChooseSpot?: (id: string, variantId?: string, purchaseOptionId?: string) => void;
@@ -58,7 +58,7 @@ export default function CatalogItemDrawer({
   roomProductQuantity = 0,
   roomVariantQuantity = 0,
   onClose,
-  onAdd, placesDirectly = false, onChooseSpot, favourite,
+  onAdd, addDisabled = false, placesDirectly = false, onChooseSpot, favourite,
   onToggleCompare,
   onPreviewRelated,
   onSetFinish,
@@ -468,7 +468,7 @@ export default function CatalogItemDrawer({
         purchaseOptionId={selectedPurchaseOption?.id} addQuantity={addQuantity}
         summary={{ finishLabel: selectedFinishLabel, optionLabel: selectedPurchaseOption?.label ?? "Single", dimsLabel: dimsCmLabel, roomLabel: activeRoomLabel, price: selectedOptionPrice, compareAt: selectedOptionCompareAt }}
         retailerUrl={selectedRetailerUrl} isCompared={isCompared} placesDirectly={placesDirectly}
-        onAdd={onAdd} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} favourite={favourite} />
+        onAdd={onAdd} addDisabled={addDisabled} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} favourite={favourite} />
       </aside>
     </>,
     document.body

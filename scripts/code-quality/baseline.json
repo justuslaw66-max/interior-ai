@@ -113,7 +113,7 @@
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
-      "lines": 723,
+      "lines": 722,
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -1453,7 +1453,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 606
+        "maximum": 605
       }
     },
     "components/common/LazyImage.tsx": {
