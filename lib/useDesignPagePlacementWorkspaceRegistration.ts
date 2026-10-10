@@ -61,8 +61,7 @@ export function useDesignPagePlacementWorkspaceRegistration({
       wallThickness,
       placementAddMode: isDesigner ? base.state.editor.placementAddMode : "auto", // FU4: consumers' Add places it
       hasWholeHousePlan: scene.hasWholeHousePlan,
-      catalogCanvasDragDisabled:
-        isClientPreview || editorMode === "present",
+      catalogCanvasDragDisabled: isClientPreview,
     },
     refs: {
       designSnapshot: coreShell.refs.designSnapshotRef,

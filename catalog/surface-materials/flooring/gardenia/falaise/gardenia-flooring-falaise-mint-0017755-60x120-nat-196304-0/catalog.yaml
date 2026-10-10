@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Falaise
   material_id: gardenia-flooring-falaise-mint-0017755-60x120-nat-196304-0
   product_name: Gardenia Falaise Mint 60x120 Nat
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 18 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/pf60017755-v102/), downloaded signed in on 2026-10-08, stored at 0.6 px per mm; the originals are sharper, see gardenia-falaise-mint-faces.manifest.json. Each covers 600x1200 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0017755/0/196304 for floor use.
     - "Configurator format: 60x120 Nat; surface destination: ENTRAMBE."
@@ -66,16 +67,74 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/falaise/0017756.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/falaise/0017756.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/falaise/0017755_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/falaise/0017755_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_15.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_16.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_17.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/falaise/0017755_18.webp
+      width_mm: 600
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -103,12 +162,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

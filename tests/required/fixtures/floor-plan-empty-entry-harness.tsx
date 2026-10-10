@@ -224,7 +224,6 @@ function EmptyPlanEntryHarness() {
           progressActionClass="fixture-action"
           progressSecondaryActionClass="fixture-action"
           progressMetaClass="fixture-meta"
-          onOpenTemplatePicker={noop}
           onStartDrawRoomSetup={noop}
           onSelectUploadMode={() => {
             setPlanStartMode("upload");

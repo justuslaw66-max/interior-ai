@@ -1,0 +1,1801 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: FALAISE - MINT - minimali.zip (58733253 bytes, sha256 1dceb2dee7e61ed0fdff5158da3a833b7f97928e735db1a50869ada25273bd15); PLEIN AIR - FALAISE MINT - minimali.zip (14234694 bytes, sha256 3b192c11988e817d56f6ef07beba59729fffac587829878e292d36c744d9f334).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/falaise/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0017754",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/pf60017754-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0017754_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-mint-0017754-120x120-nat-196303-0; wall gardenia-wall-tile-falaise-mint-0017754-120x120-nat-196303-0",
+   "faces": [
+    {
+     "file": "0017754_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112278,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "94d61cc7456d4a9fee9b56ca0fbb43cc7d0994e98ce8c1f71e27e79d1d063cd7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE MINT 120X120_03",
+      "id": "da909453-9051-4613-98e2-1aae9c4e8672",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017754_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96878,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "7ce469b0e7c1de6cf9e58c91e04b9a76850c11698dedb6125a8293dba10253d0",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE MINT 120X120_04",
+      "id": "c89a78fd-d23e-46f5-a0b4-fa9cc3bc35d4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017754_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 115964,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "b2159e8a3e962ea57361000e6a6967f8f0e6e23d77c6e079467db14222aaf340",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE MINT 120X120_09",
+      "id": "883c79f4-f284-438b-a811-bdf12e071ce1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017754_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112778,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "66cf0447a1588c1167678750c8d9dafeb572bab11d4f7c51a232225917e3ab14",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE MINT 120X120_08",
+      "id": "4b7a2adb-b9cb-4116-ae5f-0682fed098c0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017754_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112702,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "048092cd0a592a6d5574b8ef356f46c92dd6bce8a29272e9e42baa1f0f9904db",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE MINT 120X120_06",
+      "id": "85133f15-5745-4f24-8b2a-218256dd9726",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017754_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100366,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d2fb1b484c2e6952ae0ba77dc1deb58d78cc0aeeacfa61b8e3198850705fad85",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE MINT 120X120_02",
+      "id": "8710f7e4-254f-4aa0-bf9b-efdba8488f19",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017754_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107086,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f536843ba2639b16486d9d8999662a6c9ddb05a0bbb59103436c4a6f6e69d9ec",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE MINT 120X120_01",
+      "id": "6c20bd38-1e3e-4cae-90cf-8e7a861235fc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017754_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113384,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "2d4381c813027d1ad9f0b5b9bc50628d8a31780594772352885f191452360462",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE MINT 120X120_07",
+      "id": "dacd82ab-e935-43e7-9bb6-0f511cef087c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017754_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 96950,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "120X120-Natural/FALAISE - MINT - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "f3d854c86ccbc046394158728f2543c2c23d00b8a8b3a72c94916bdbcf6b016a",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE MINT 120X120_05",
+      "id": "9126a9d8-590d-44da-87f4-4faedb438c2e",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0017755",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/pf60017755-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0017755_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-mint-0017755-60x120-nat-196304-0; floor gardenia-flooring-falaise-mint-0017767-60x120-196307-0 (uses 0017755's faces: ABK's 10 R11 pictures (on Plein Air's page) are 10 of 0017755's 18 Natural pictures, byte for byte); wall gardenia-wall-tile-falaise-mint-0017755-60x120-nat-196304-0",
+   "faces": [
+    {
+     "file": "0017755_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55058,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "96d05b4e131714345e20772dd6a5307fa8925273d798087433975c01609c1866",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE MINT 60X120_05",
+      "id": "9f1c5ce4-12fb-4df2-a5b0-2fc60e7b26ad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017755_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57156,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "2312c20263f1de88bea497c7fcb42078d0ff158a990ec64de443f4af610ec460",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE MINT 60X120_17",
+      "id": "c01520f0-d262-4d3b-a4b1-0159c482e32c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017755_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52396,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e0541b2c4cf21c555194d538b611826476afecf1492cf0000d1411286c674267",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE MINT 60X120_04",
+      "id": "91c079f3-e785-4b10-a3bc-1e057c03c95b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017755_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56784,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "54a799b281c05e9326b90ad5edd2eaf0b11ce31b00b99b2bd8caa22b1d9fe998",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE MINT 60X120_14",
+      "id": "148487cd-f9da-42ec-9705-7fc2fc991046",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017755_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56722,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b78b8dc87a0247bf3bbcb30de97988701513c3d193dd0b035575a1ef4fa9df38",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE MINT 60X120_16",
+      "id": "e4e424d0-cce1-4f8c-ab9d-894d66821a8e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017755_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50364,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "1145b0d5731822a170fa59c3b6be7ad6d03c6f912a30245d34ed03c17928898f",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE MINT 60X120_03",
+      "id": "3462e985-7e28-47b2-9496-232d0ebf806a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017755_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48000,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "703b78cde487d6f7cdefcc26f6238d7dbcb635abaac5a86cd5d4f5bbba4e90f8",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE MINT 60X120_08",
+      "id": "1d0790ef-cf8f-4393-b857-ec57c291d0fc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017755_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47466,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "46427015435c4f144f6c5a98eff100eab376dbb1b084143d2ba6ae88528592cc",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE MINT 60X120_11",
+      "id": "9e6328a1-2664-4f82-9b9c-61b51212837c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017755_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58422,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a8c5e534cabfe2e07c438ca9c8d94a5cf7a2bbff16b787d4db48a0fbd7becaba",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE MINT 60X120_10",
+      "id": "45da786e-69c4-4029-b2dd-1556f2b3ef1d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017755_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54366,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e512c5e379dac38c2b6b58f0761f5ef222af536b87eb812a412b316213708fe7",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "FALAISE MINT 60X120_09",
+      "id": "3e761988-6f98-44df-8e0b-5b4b0b44d880",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017755_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56256,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "a912864b5d345dd6e2e1a77dd7838604898fa1781c78f324691bdfe046a276a0",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "FALAISE MINT 60X120_13",
+      "id": "20c73357-7f4d-4f10-a0d8-e910e4cdc4d0",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017755_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54452,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "4e49f2d202297bdbbf687199dc86588cf9d854cbe4a4a5ed1df73798871fde41",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "FALAISE MINT 60X120_15",
+      "id": "d0c0076a-d555-4523-b083-96e357633c1d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017755_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49534,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b947b78f13834a8e96f41c50546fd6be79ec039e516971519b9e410991ba273e",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "FALAISE MINT 60X120_12",
+      "id": "102b2588-519b-4406-a893-626075035dd7",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017755_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54386,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "cef613af43b9c85f594b54fc27332feb82fb1f27de543f7f7b28c37089211fff",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "FALAISE MINT 60X120_01",
+      "id": "1f73590b-7383-4a97-906f-4fe57b0bdaf8",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017755_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48530,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "30ab51f5258585f860a74b884625706171dcdc6226b2994c0ce603919b748027",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "FALAISE MINT 60X120_07",
+      "id": "59b22ce0-3edc-4234-91ba-7cd2175816e4",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017755_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53886,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "521ea9da1a43ee29f8597c73cd2d750d548b9e42b4872868381f2711c8cef5c5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "FALAISE MINT 60X120_02",
+      "id": "56eca9ba-92c3-454b-935a-8d480e848e35",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0017755_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57362,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - FALAISE MINT - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "f524a59d8df200ef793f0acb2e27be3560b99bec291a678cba89d7e27868bb39",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "FALAISE MINT 60X120_06",
+      "id": "132309fb-458a-446d-b270-406704baac19",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0017755_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60564,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X120-Natural/FALAISE - MINT - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "c6493d13d1b7383f67eed5c45165101024e415cab5c46c84207e578d5a08c76c",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "FALAISE MINT 60X120_18",
+      "id": "b19d9967-f8b2-4dfd-a7ea-1acedecc64ce",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0017758",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/pf60017758-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0017758_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-mint-0017758-80x80-nat-196306-0; wall gardenia-wall-tile-falaise-mint-0017758-80x80-nat-196306-0",
+   "faces": [
+    {
+     "file": "0017758_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44202,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "9127e76d1140b4e058e41203ac7daf9c07982cee3449ca5f98eb137570f4f8d5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE MINT 80X80_02",
+      "id": "042c2815-a29e-4a15-8dd1-8a43d81e9af1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017758_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50196,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7f554eb0d6f20ad1701e636ce1564e141ad19bb27b9dc1999403a50f3bf23023",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE MINT 80X80_06",
+      "id": "b3a9fb21-9e0c-49f9-937c-ef6ba156b08d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017758_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 42908,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "9083633ff7778493762943af8370e36a55eae18244b0a66148138fbeefc70b69",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE MINT 80X80_04",
+      "id": "77ba364c-df08-4a8b-b0a3-94a3bb781f8e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017758_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51264,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1cc051c373d17994529f89a192f93b758e8d4f76b98b50a2fbae56bdce158dc8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE MINT 80X80_03",
+      "id": "d3d59595-7cc3-46c3-9fbe-dbf4fd85eb8c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017758_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 42888,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ea816260f0d3b4569a4efb6347df34011443f1632c559a77087044435b50e877",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE MINT 80X80_05",
+      "id": "5b6156d7-2f1d-4255-9691-bce56dc8cb85",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017758_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48282,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "50f38600ddc8a0de9f994385d4af0f6bb7e7adf820e0c6870073764e76efc5f3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE MINT 80X80_08",
+      "id": "52b449f4-4cbd-43e8-9b20-733013e35114",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017758_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49958,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "71ff3d0e964d62cc108e3cd4949ebbde638ba08da188593529469492709c8d5f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE MINT 80X80_01",
+      "id": "678335f8-a146-4f93-b968-1cbc33273727",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017758_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52934,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b74b47293cad46d34e47670077a916775998135db8692ed1991f0c578ccba6c3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE MINT 80X80_09",
+      "id": "dd727960-5704-4d87-a0aa-fdaf1e1b8978",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017758_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51884,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "80X80-Natural/FALAISE - MINT - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "439e9d4a1de6477cd8011469ff4ac5552237887c4af1a5f18fb80f68c805f575",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE MINT 80X80_07",
+      "id": "eb6c3a07-5ebd-4314-8697-02a08e24b341",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0017756",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/falaise/mint/pf60017756-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0017756_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-falaise-mint-0017756-60x60-nat-196305-0; floor gardenia-flooring-falaise-mint-0017768-60x60-196308-0 (uses 0017756's faces: ABK's 10 R11 pictures (on Plein Air's page) are 10 of 0017756's 36 Natural pictures, byte for byte); wall gardenia-wall-tile-falaise-mint-0017756-60x60-nat-196305-0",
+   "faces": [
+    {
+     "file": "0017756_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23088,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "727639b163c318a4b0621d12fad5974bc54c9c90dc63926fb20c8df7b51b06b5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "FALAISE MINT 60X60_15",
+      "id": "6cac94f9-55be-4fbf-8ca7-80ec457b73b1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017756_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30742,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "f1af31cab92d198033e8f828f86581d8d26a4fbf8acc2040e13646b5cfc512ca",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "FALAISE MINT 60X60_19",
+      "id": "18669d3f-5f2f-4051-9030-339149582a52",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017756_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25306,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "7936ab22fe9b0a03741f10ab98567503acdb4b889d37903e5d7e8d4ab21c970f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "FALAISE MINT 60X60_16",
+      "id": "f056f4b0-9d76-457b-bba6-76445eb5d2dd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017756_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29672,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "727bfedcc3ee3b139a919ea0a1b53000410bc1d8267508f181f8f5fc91a3cea7",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "FALAISE MINT 60X60_33",
+      "id": "a0654d6d-a3b1-42f8-8df6-3e31580eac8e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017756_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25342,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "410acd6e9fd9dbaffd8ccae0a1f31ef57fcf2f078bae0680a78c5d5af9322828",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "FALAISE MINT 60X60_17",
+      "id": "d9345479-1700-499f-8678-84332b7ed8d6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017756_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27122,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "7fc648b4fc6de9b3fbc1d162f2b9ae425bd316ac1f2654fdedb3492ac6d5293c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "FALAISE MINT 60X60_04",
+      "id": "2754f320-a87f-40ac-b70b-9f21e076562d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017756_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27306,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "dd1e7602145bc5ff4a39cacf4404d42de7e80c5587351c6ffce81bfbebcb86eb",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "FALAISE MINT 60X60_08",
+      "id": "e953ed02-2895-46ff-b474-ebf1d357e51f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017756_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26260,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "c4e23a8f22f3b1b1b452fb4122be2ad15b5b246d0dc05960f4f5b1a71dde14db",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "FALAISE MINT 60X60_05",
+      "id": "698f69a3-2f2f-4c14-a29a-196f23cb998c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017756_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28312,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "0fb9b5f1601f0841fb4f4837a4ae1c2b926e7dc583226306d01f6b7fe335db5e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "FALAISE MINT 60X60_18",
+      "id": "5bc68044-39e9-4b41-b6a2-f8ed60f0b54f",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017756_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24144,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "d3cf1a096463442f90a0c9072c8fd3e8195f9a5f4633f13c7d17ed112a0ac722",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "FALAISE MINT 60X60_22",
+      "id": "aad4b5aa-dbc9-468d-83de-c66a4c1ce937",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017756_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33626,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "52441b489a97e0c1986820dee2ec6d7e2fcaf8d4ef53ef4faabff13f534fa588",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "FALAISE MINT 60X60_36",
+      "id": "ff913782-e7d6-41e7-a627-4035cde45904",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017756_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27002,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "0df726d361bdeb3720df0a4cc3a14b27d7703017b1bad40a513b9bb824fdb968",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "FALAISE MINT 60X60_30",
+      "id": "9baa57df-2ebc-4f0a-8b16-89f0bcef0a2d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017756_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23400,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_13.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "63611aa8b11c5417dd1a2cbce54e9beb84b3af65101a2258a084e7c7752f5876",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "FALAISE MINT 60X60_23",
+      "id": "c89afd35-b397-4304-88a8-549677840d2e",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017756_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23668,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_14.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "ed42fd3060b87651444c07aa73382b3be14d366585833af4ba4dc9b0c6673599",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "FALAISE MINT 60X60_21",
+      "id": "cc50b3cd-8e2b-46d5-a197-f943f7a18470",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017756_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31406,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_15.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "0e104ead52ef713ef934eb7d9b87f76b9aa1ef0d5722509ce2ed5d8b6682857d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "FALAISE MINT 60X60_27",
+      "id": "a7c1d865-0ec4-475c-9e2a-389dd92a12a6",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017756_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26450,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_16.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "13ce5e629cd3a1751c4ba39829f7e68bea52f06b64cf94a8eb8659da762bfba3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "FALAISE MINT 60X60_32",
+      "id": "d04ba1f7-f36b-44d8-8dbb-fb77384ca7d4",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0017756_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25384,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "70152fe8c0bca08ed29ee4cc3b70ff02d8dcbbbbf3f264a1300ae580382a2b0b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "FALAISE MINT 60X60_07",
+      "id": "a46c8439-8ab0-4897-a303-c159bd33d5e9",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0017756_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30278,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_18.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "03079f5cf67f8b65d1e263febdbb0313d3d0ebfb7fc51726245a0d9b11766bf1",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "FALAISE MINT 60X60_29",
+      "id": "cfa1a9ca-889a-43f8-8279-c1cc2a41c9d1",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0017756_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26872,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "12ebb2898bd65d798f058976150f12dca7d2edbe9341ce30044c3df3ffaacbea",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "FALAISE MINT 60X60_01",
+      "id": "6f5137e0-17ee-4b43-9f0b-2336bf3eb6f7",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0017756_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26224,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_20.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "6806f3b75e7f97483296664b28d101eca1a62410e3e147151d80b1e792c767ed",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "FALAISE MINT 60X60_28",
+      "id": "6bc612ee-5856-41fe-82c9-4ffdb80412fd",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0017756_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26204,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_21.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "56d7875240acff3206a4bee45e94c9cc9decbe1314bff6fdaf6421f15a1cc411",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "FALAISE MINT 60X60_26",
+      "id": "35991368-9806-4f7b-a527-2dbae65af526",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0017756_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26132,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "76de8a36f2413f122c6b9a4e2d9a815676483fa241c3f8414ed447caeb2a7f0d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "FALAISE MINT 60X60_09",
+      "id": "656a2f53-6f54-4c68-9aca-2eeb3d6025c9",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0017756_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26748,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_23.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "443e1a2e9ca59e304b6d4f074d3a685efd23a0b6eca8fa78aea14dda1ae723e2",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "FALAISE MINT 60X60_24",
+      "id": "33f16867-56c7-41a7-bfa7-adf07ff50657",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0017756_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24924,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_24.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "ec59d28d4aca64d4beaccbf2cd20eb0f61e0785afe1335e53356ca4c11d4bc04",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "FALAISE MINT 60X60_13",
+      "id": "a42effeb-cd64-46cd-bc85-7bc53d513275",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0017756_25.webp",
+     "face": 25,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29938,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_25.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "a67e780f8b64497f82386c4158890e7f1d398ccb288da0f9cb79fe2ac480080c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "FALAISE MINT 60X60_25",
+      "id": "1aa28286-8074-46d7-9681-260d165c42e2",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0017756_26.webp",
+     "face": 26,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27970,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_26.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "3fb4242caa56c72f6f2c3940ebba71bda81199f946bcd2e3b4c9120dcd0641f0",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "FALAISE MINT 60X60_20",
+      "id": "b40beaaa-d20c-4b6f-8832-b6c70357d249",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0017756_27.webp",
+     "face": 27,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30374,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_27.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "1fe2db0ae5cfe4418bb0ddca288ef42dd30a4242ef935dd6d8d2cf24b7a36493",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "FALAISE MINT 60X60_11",
+      "id": "563206b3-d211-435a-bc58-8271b546ec2f",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0017756_28.webp",
+     "face": 28,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24038,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "be6855c9e34944541000181f597fb65edfbf3412069460ccd24d261f80eed4d9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "FALAISE MINT 60X60_06",
+      "id": "28476ade-2bf7-4a98-b0b4-9f1ea55c3f35",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0017756_29.webp",
+     "face": 29,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27760,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_29.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "001dc5eb5c3e942c6e209a554d4bdc95eb4bb544b2517d78a92b2cfad5620d77",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "FALAISE MINT 60X60_12",
+      "id": "cf8efb5b-0e03-4ea0-9c53-94ee5195ee69",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0017756_30.webp",
+     "face": 30,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28772,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "9115514287cdb171da466a059b8c2d82ad9284ea3d3de76b47a4e55e20d086b4",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "FALAISE MINT 60X60_10",
+      "id": "8e9e0450-93c5-4f3e-b1cc-c332d6ed1276",
+      "site_position": 30
+     }
+    },
+    {
+     "file": "0017756_31.webp",
+     "face": 31,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23234,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_31.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "8ccc1480a45b1e94e942def44f81452ca1763957c0b30034bc6d584ee23ad11e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 31",
+      "name": "FALAISE MINT 60X60_14",
+      "id": "0a019cb8-fb9a-41e0-b91d-cea37b48bf32",
+      "site_position": 31
+     }
+    },
+    {
+     "file": "0017756_32.webp",
+     "face": 32,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26826,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "e061d3d19cc96e8274f8f174c1e39741c1a44ec29fe1e6c7bc7389c7deeeb4f5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 32",
+      "name": "FALAISE MINT 60X60_03",
+      "id": "31602548-5baf-4547-81fe-39010e045d21",
+      "site_position": 32
+     }
+    },
+    {
+     "file": "0017756_33.webp",
+     "face": 33,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29332,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_33.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "3af084a6b88e025e8a1fb13b65848a20f382268d3bc11da0a4a4351f04ca834d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 33",
+      "name": "FALAISE MINT 60X60_31",
+      "id": "1cdb536d-c39c-4d21-a540-399b5b01a979",
+      "site_position": 33
+     }
+    },
+    {
+     "file": "0017756_34.webp",
+     "face": 34,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29248,
+     "source_zip": "PLEIN AIR - FALAISE MINT - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - FALAISE MINT - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "f6001a56b7e5d9b3b8ef02dd4b749bcf6fa34598affcb2f2cdbda1b2e3bc2a5f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 34",
+      "name": "FALAISE MINT 60X60_02",
+      "id": "d75fa9b8-9984-4c7e-8bb1-8cace31703be",
+      "site_position": 34
+     }
+    },
+    {
+     "file": "0017756_35.webp",
+     "face": 35,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28134,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_35.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "066d552f61bbd20bdfd12e04ab24aa252b5e5d1f0ad554a62afbb60908872fe8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 35",
+      "name": "FALAISE MINT 60X60_34",
+      "id": "5415271b-763b-41aa-9ca9-861296f8c968",
+      "site_position": 35
+     }
+    },
+    {
+     "file": "0017756_36.webp",
+     "face": 36,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28182,
+     "source_zip": "FALAISE - MINT - minimali.zip",
+     "source_file": "60X60-Natural/FALAISE - MINT - 60X60 - Natural - view_36.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "1d913335afa5f0ec27c653b7139318fc9ba1689b626173165de2160d4ca748a0",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 36",
+      "name": "FALAISE MINT 60X60_35",
+      "id": "f8527c28-37f0-4102-9048-39b462baf05b",
+      "site_position": 36
+     }
+    }
+   ]
+  }
+ ]
+}

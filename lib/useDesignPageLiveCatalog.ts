@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CATALOG_ITEMS, CATALOG_ITEMS_MAP } from "@/lib/catalog";
+import { useImportedCatalogHydrated } from "@/lib/imported-catalog-readiness";
 
 type LiveCatalogPayload = {
   ids?: string[];
@@ -94,8 +95,13 @@ function loadLiveCatalogOnce(): Promise<void> {
   return sessionLoad;
 }
 
+/**
+ * The editor's products are ready: the live catalog has been read (or fell back to the local one)
+ * and the imported catalogue has answered, since some products come only from it (UX phase 4a).
+ */
 export function useDesignPageLiveCatalog(): boolean {
   const [ready, setReady] = useState(() => sessionLoaded);
+  const importedCatalogHydrated = useImportedCatalogHydrated();
 
   useEffect(() => {
     let cancelled = false;
@@ -111,5 +117,5 @@ export function useDesignPageLiveCatalog(): boolean {
     };
   }, []);
 
-  return ready;
+  return ready && importedCatalogHydrated;
 }

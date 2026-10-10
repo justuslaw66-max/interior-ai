@@ -311,7 +311,6 @@ export function DesignPageWorkspace() {
       boundaries: {
         coreShell: coreShellRegistration,
         documentSelection: documentSelectionRegistration,
-        editorInteraction: editorInteractionRegistration,
         persistence: persistenceWorkspaceRegistration,
         placement: placementWorkspaceRegistration,
       },
@@ -406,8 +405,8 @@ export function DesignPageWorkspace() {
     },
     ai: { notes: { open: showAINotes, data: aiNotesData, onApplySuggestion: applySuggestion, onClose: closeAiNotes } },
     presentation: { presentExport: presentExportDialog, download: { open: downloadOpen, onClose: () => setDownloadOpen(false),
-      onDownloadImages: () => presentationBackupRegistration.actions.exportImages({ limitsShown: true }),
-      onDownloadPdf: () => presentationBackupRegistration.actions.exportPdf({ limitsShown: true }),
+      onDownloadImages: presentationBackupRegistration.actions.exportImages,
+      onDownloadPdf: presentationBackupRegistration.actions.exportPdf,
       onSignIn: signInWithReturn, onSeePricing: () => { setPlansOpenerId(EDITOR_DOWNLOAD_OPENER_ID); setShowPlans(true); } } },
     editing: { designRename: designRenameDialog,
       roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
@@ -440,7 +439,7 @@ export function DesignPageWorkspace() {
       validation: { constraints: visibleConstraints, confidence: layoutConfidence,
         ...floorPlanLifecycleRegistration.derived.validation },
     },
-    sharing: { url: persistenceState.shareLinkFallback, standalone: persistenceState.shareLinkFallbackStandalone, onClose: persistenceActions.closeShareLinkFallback,
+    sharing: { url: persistenceState.shareLinkFallback, onClose: persistenceActions.closeShareLinkFallback,
       onCopy: persistenceActions.copyFallbackShareLink, onOpen: persistenceActions.openFallbackShareLink },
     cabinetry: {
       state: cabinetryStudioState, access: { enabled: canUseCabinetryStudio, accessLevel: cabinetryAccessLevel },
@@ -486,7 +485,7 @@ export function DesignPageWorkspace() {
           </div>
         ) : null}
       </div>
-      <DesignPagePanelRegion {...panelRegionModel} />
+      <DesignPagePanelRegion {...panelRegionModel} planTools={presentExportDialog} />
       <DesignPageDialogLayer {...dialogLayerModel} />
       <LocalBackupRecoveryDialog
         state={presentationBackupRegistration.state.localBackupRecovery}

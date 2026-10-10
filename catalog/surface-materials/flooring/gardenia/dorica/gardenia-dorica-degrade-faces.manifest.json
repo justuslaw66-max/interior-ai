@@ -1,0 +1,120 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/degrade/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (DORICA - DEGRADÉ - minimali.zip, 8276111 bytes, sha256 8abdf0c0038d742ef6ef0f64c47192cd20bcb4ce0f371f1970cf5bcaef7d60fd).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/dorica/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0010087",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/degrade/pf60010087-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010087_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-degrade-0010087-60x120-196274-0; wall gardenia-wall-tile-dorica-degrade-0010087-60x120-196274-0",
+   "faces": [
+    {
+     "file": "0010087_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42678,
+     "source_file": "60X120-Antique 3D/DORICA - DEGRADÉ - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "961cb96095b2701660f9678fd8cc62bb9984fec342c5d5a12b17e3ea3f99cfa7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA DEGRADE ANTIQUE 3D 60X120_03",
+      "id": "96c6dd1a-48e8-488b-ac74-a16180eb50c2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010087_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42106,
+     "source_file": "60X120-Antique 3D/DORICA - DEGRADÉ - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2047,
+      4096
+     ],
+     "source_sha256": "a6e75e7b66b0ecf30c41eeb3a6710202e882f3e43e61a6a83a3b7921dca8b7da",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA DEGRADE ANTIQUE 3D 60X120_04",
+      "id": "14b36b44-8679-4685-9d63-06460cd20910",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010087_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48858,
+     "source_file": "60X120-Antique 3D/DORICA - DEGRADÉ - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "db267b5f6e1e606be924396724cee7ddc6fda8831a9bfa4dcec0a8e84597da47",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA DEGRADE ANTIQUE 3D 60X120_01",
+      "id": "761c071e-3a6f-4b69-8881-44889dadad84",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010087_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44756,
+     "source_file": "60X120-Antique 3D/DORICA - DEGRADÉ - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9adb8883138fa40bd23a9df5d62325504af931c5a4f20255eb875577cc1b34c8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA DEGRADE ANTIQUE 3D 60X120_02",
+      "id": "5aff1a0b-5605-4af8-9e70-c7d9a170d7ec",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

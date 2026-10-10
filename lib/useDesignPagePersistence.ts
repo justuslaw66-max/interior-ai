@@ -16,7 +16,8 @@ import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
-import { getDesignPageSaveStatus, needsSaveBeforeLeaving } from "@/lib/design-page-save-status";
+import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
+import { useDesignPageLeaveSave } from "@/lib/useDesignPageLeaveSave";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
 import {
@@ -800,18 +801,12 @@ export function useDesignPagePersistence({
     writeLocalDesignBackup,
   ]);
 
-  // Leaving the editor for My designs. False keeps the editor open: when the save failed, or when
-  // the design changed while it saved. Autosave waits meanwhile: a write it started would supersede
-  // this save, which then reports nothing saved and keeps the editor open with the design saved.
-  const latestFingerprintRef = useRef(currentStoredDesignFingerprint);
-  useEffect(() => { latestFingerprintRef.current = currentStoredDesignFingerprint; }, [currentStoredDesignFingerprint]);
-  const saveBeforeLeaving = useCallback(async () => {
-    if (!needsSaveBeforeLeaving({ designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError })) return true;
-    const savedFingerprint = currentStoredDesignFingerprint;
-    leaveSavesRef.current += 1;
-    const saved = (await saveDesignToCloud().finally(() => { leaveSavesRef.current -= 1; })) !== null;
-    return saved && latestFingerprintRef.current === savedFingerprint;
-  }, [currentStoredDesignFingerprint, designId, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError, saveDesignToCloud]);
+  // Leaving the editor for My designs saves first; see useDesignPageLeaveSave.
+  const saveBeforeLeaving = useDesignPageLeaveSave({
+    designId, isAuthenticated, hasPendingCloudSnapshotChanges, isSaving, lastCloudSaveError, designSnapshot,
+    currentStoredDesignFingerprint, getStoredDesign: getStoredDesignForPersistence, saveDesignToCloud,
+    leaveSaves: leaveSavesRef,
+  });
 
   return {
     state: {
@@ -835,7 +830,7 @@ export function useDesignPagePersistence({
       loadDesign: loadDesignAfterCancellingConflictCopy,
       cancelDesignLoad: cancelDesignTransitions,
       clearPersistedSnapshotFingerprint,
-      createShareLinkAndCopy: shareLinkActions.createShareLinkAndCopy, shareDesign: () => shareLinkActions.shareFromCommandBar(saveDesignToCloud),
+      shareDesign: () => shareLinkActions.shareFromCommandBar(saveDesignToCloud),
       closeShareLinkFallback: shareLinkActions.closeShareLinkFallback,
       copyFallbackShareLink: shareLinkActions.copyFallbackShareLink,
       openFallbackShareLink: shareLinkActions.openFallbackShareLink,

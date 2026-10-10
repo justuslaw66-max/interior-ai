@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: La Geoteca
   material_id: gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013072-80x80-90428-0
   product_name: Gardenia La Geoteca Ceppo Di Gre' 80x80
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 12 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-ceppo-di-gre/pf60013072-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-geoteca-ceppo-di-gre-faces.manifest.json. Each covers 1200x1200 mm. ABK's 80x80 R11 pictures show a 1200 mm graphic squeezed to 800 mm: drawn as 1200 mm they match the colour's 120x120 and 60x120 pictures (r 0.51 to 1.00), and drawn as 800 mm nothing (r 0.10 to 0.11). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60013072/0/90428 for floor use.
     - "Configurator format: 80x80; surface destination: PAVIMENTO."
@@ -65,16 +66,56 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60013116.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-geoteca/pf60013116.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 80
     height: 80
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_04.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_05.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_06.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_07.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_08.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_09.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_10.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_11.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-geoteca/0013072_12.webp
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -100,12 +141,12 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

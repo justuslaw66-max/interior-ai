@@ -94,18 +94,51 @@ test.describe("command bar account corner", () => {
     await expect(getPro).toHaveCount(0);
   });
 
-  test("phones and tablets keep Get Pro out of the bar, and phones show Sign in as an icon", async ({ page }) => {
+  test("phones keep the account in the Menu, and tablets keep Get Pro out of the bar", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await mockAccount(page, { plan: "free", signedIn: false });
     await openEditor(page);
-    const signIn = page.getByTestId("editor-command-sign-in");
-    await expect(signIn).toBeVisible(SESSION_TIMEOUT);
-    await expect(signIn).toHaveAccessibleName("Sign in");
-    expect((await signIn.boundingBox())?.width).toBeLessThanOrEqual(31);
+    // Phones (UX 4d): no Sign in or Account in the header; the Menu ends with Sign in.
+    const menu = page.getByTestId("editor-command-overflow");
+    await expect(menu).toHaveAccessibleName("Menu");
     await expect(page.getByTestId("editor-command-get-pro")).toBeHidden();
+    await expect
+      .poll(async () => {
+        await menu.click();
+        const shown = await page.getByTestId("editor-command-overflow-account").getByTestId("editor-command-sign-in").isVisible();
+        await page.keyboard.press("Escape");
+        return shown;
+      }, SESSION_TIMEOUT)
+      .toBe(true);
+    await expect(page.getByTestId("editor-command-bar").getByRole("button", { name: "Sign in" })).toHaveCount(0);
     await page.setViewportSize({ width: 900, height: 800 });
+    const signIn = page.getByTestId("editor-command-sign-in");
+    await expect(signIn).toBeVisible();
+    await expect(signIn).toHaveAccessibleName("Sign in");
+    expect((await signIn.boundingBox())?.width).toBe(36);
     await expect(page.getByTestId("editor-command-get-pro")).toBeHidden();
     await page.setViewportSize({ width: 1024, height: 800 });
     await expect(page.getByTestId("editor-command-get-pro")).toBeVisible();
+  });
+
+  test("on phones members find their plan, Pricing and Sign out in the Menu, and Pricing returns to the Menu", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mockAccount(page, { plan: "free", signedIn: true });
+    await openEditor(page);
+    const menu = page.getByTestId("editor-command-overflow");
+    await expect(page.getByTestId("editor-command-account")).toHaveCount(0);
+    const account = page.getByTestId("editor-command-overflow-account");
+    await expect
+      .poll(async () => {
+        await menu.click();
+        const shown = await account.getByTestId("editor-account-plan").isVisible();
+        if (!shown) await page.keyboard.press("Escape");
+        return shown;
+      }, SESSION_TIMEOUT)
+      .toBe(true);
+    await expect(account.getByTestId("editor-command-sign-out")).toBeVisible();
+    await account.getByTestId("editor-command-view-plans").click();
+    await closePricingWithEscape(page);
+    await expect(menu).toBeFocused();
   });
 });

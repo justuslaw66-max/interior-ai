@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy" | "present";
+export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorToolRailProps = {
   mode: EditorToolRailMode;
@@ -12,7 +12,6 @@ type EditorToolRailProps = {
   onAdjust: () => void;
   onAi: () => void;
   onCart: () => void;
-  onPresent: () => void;
   onFitPlan: () => void;
 };
 
@@ -97,16 +96,6 @@ function AiIcon() {
   );
 }
 
-function PresentIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M5 5h14v10H5z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="m11 8 4 2-4 2z" fill="currentColor" />
-      <path d="M12 15v4M9 19h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function FitIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
@@ -124,7 +113,6 @@ export default function EditorToolRail({
   onAdjust,
   onAi,
   onCart,
-  onPresent,
   onFitPlan,
 }: EditorToolRailProps) {
   return (
@@ -132,8 +120,8 @@ export default function EditorToolRail({
       data-testid="editor-tool-rail"
       className={
         dark
-          ? "designer-tool-rail absolute left-4 top-15 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
-          : "absolute left-4 top-15 z-40 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
+          ? "designer-tool-rail absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
+          : "absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
       }
       aria-label="Editor tools"
     >
@@ -178,16 +166,6 @@ export default function EditorToolRail({
         onClick={onCart}
       >
         <CartIcon />
-      </ToolButton>
-      <ToolButton
-        active={mode === "present"}
-        dark={dark}
-        label="Presentation shortcut"
-        testId="editor-rail-present"
-        title={mode === "present" ? "Exit export mode" : "Export and present"}
-        onClick={onPresent}
-      >
-        <PresentIcon />
       </ToolButton>
       <div
         className={

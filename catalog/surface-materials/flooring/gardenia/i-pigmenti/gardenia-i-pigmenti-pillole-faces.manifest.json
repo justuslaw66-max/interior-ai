@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/pillole/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - PILLOLE - minimali.zip (717648 bytes, sha256 6b63688a2575142f94f1d304b9c468f6c12c528c3a573b1ba6d8413609fe1f2f).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0014511",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/pillole/pf60014511-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014511_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-pillole-pf60014511-60x120-nat-90357-0; wall gardenia-wall-tile-i-pigmenti-pillole-pf60014511-60x120-nat-90357-0",
+   "faces": [
+    {
+     "file": "0014511_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28154,
+     "source_zip": "I PIGMENTI - PILLOLE - minimali.zip",
+     "source_file": "60X120-Nat 3D/I PIGMENTI - PILLOLE - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "0951d8c73727bde4c1253847bd1e1c694e8fe92b0db464596448e6af819fb611",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 1 (view_01)",
+      "name": "I PIGMENTI PILLOLE ANT3D 60X120",
+      "id": "500ac2cc-3622-4a1f-b21a-4c8b1095e881",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

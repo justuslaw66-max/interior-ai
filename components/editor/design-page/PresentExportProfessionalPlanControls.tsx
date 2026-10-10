@@ -40,10 +40,10 @@ export default function PresentExportProfessionalPlanControls({
 }: PresentExportProfessionalPlanControlsProps) {
   const controlClass = (active: boolean, compact = false) =>
     active
-      ? `min-h-11 rounded-lg bg-teal-600 ${compact ? "px-2" : "px-3"} py-2 text-xs font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
+      ? `min-h-11 rounded-lg bg-neutral-900 ${compact ? "px-2" : "px-3"} py-2 text-xs font-semibold text-white outline-hidden focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
       : dark
-        ? `designer-control min-h-11 rounded-lg border ${compact ? "px-2" : "px-3"} py-2 text-xs text-neutral-200 outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
-        : `min-h-11 rounded-lg bg-gray-100 ${compact ? "px-2" : "px-3"} py-2 text-xs outline-none hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`;
+        ? `designer-control min-h-11 rounded-lg border ${compact ? "px-2" : "px-3"} py-2 text-xs text-neutral-200 outline-hidden focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
+        : `min-h-11 rounded-lg bg-gray-100 ${compact ? "px-2" : "px-3"} py-2 text-xs outline-hidden hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`;
 
   return (
     <div className="space-y-2" data-testid="professional-plan-controls">

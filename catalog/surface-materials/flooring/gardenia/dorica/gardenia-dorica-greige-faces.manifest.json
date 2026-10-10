@@ -1,0 +1,595 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/greige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (DORICA - GREIGE - minimali.zip, 49952227 bytes, sha256 9727808a332d49c2f20b69a9498d472f74be6bc679b0c081d80ebbc3c1ec3046).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/dorica/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0010004",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/greige/pf60010004-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010004_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-greige-0010004-120x120-nat-196268-0; wall gardenia-wall-tile-dorica-greige-0010004-120x120-nat-196268-0",
+   "faces": [
+    {
+     "file": "0010004_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 92540,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "45067d6a3a1a754d469ad8fb5ac49b9c740113b86c63dc15e239efb276efa083",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "DORICA GREIGE 120X120_01",
+      "id": "e60ccfa2-cafc-48bf-9ff5-b485b5e97a77",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010004_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86886,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "2081c64c3b072d6e661a5923accb87c82396aa5bc9953b1a37c36a8a43112a28",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "DORICA GREIGE 120X120_02",
+      "id": "c2f96a0f-e8a1-4b6c-96db-fa9afb9c486e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010004_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 87984,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "66eb61d861d22447da0f2c90bded702e0cdaa7b914e255a82ec9b627fb33b114",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "DORICA GREIGE 120X120_03",
+      "id": "c3c3bd5e-7f78-49ca-849b-d60c07bbffce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010004_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 90156,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4dd4d82f58238fdd34c69ad3e43a56534c544d345465c2ea7c92828dc590f2d1",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "DORICA GREIGE 120X120_04",
+      "id": "7d5ae627-eab8-4bc4-9aae-af723e4d13f4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010004_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 90608,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "a36acf6348b0f9c4f12d55ab3e826fc05829a93cbeec8aa0254ef7baec8f4ec1",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "DORICA GREIGE 120X120_05",
+      "id": "f18855ca-e799-4b2f-83dc-b52a77b730a9",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010004_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86266,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "57188811820c0c97ad6bd22d9699864b834c3d5e92fd9c7136ffdca75c0b4955",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "DORICA GREIGE 120X120_06",
+      "id": "adbadd30-b107-4b5b-9796-f584d62505bd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010004_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 91598,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e87fa82ec505383fb8fe184702ba3b4f9fc288235b4004d65d2aff1a061698e2",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "DORICA GREIGE 120X120_07",
+      "id": "26f9f8c6-d2a4-4980-a190-9e71739dc295",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010004_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 88642,
+     "source_file": "120X120-Nat P.tech/DORICA - GREIGE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "845eb6558ee0e274ad0d0df0942d4fd636db8dcd76c06679558732fb14066a0e",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "DORICA GREIGE 120X120_08",
+      "id": "a8fe5043-3a7f-4398-af76-b9e0b7af2b5c",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0010007",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/greige/pf60010007-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010007_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-greige-0010007-60x120-nat-196271-0; wall gardenia-wall-tile-dorica-greige-0010007-60x120-nat-196271-0",
+   "faces": [
+    {
+     "file": "0010007_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48388,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "58fd1a9f4a55b7a0e8824c74bbabad4f7914985e48d9214aa6922d290e148b41",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "DORICA GREIGE 60X120_01",
+      "id": "e8dd2103-312e-4169-8e8b-aa110c2e9ffa",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010007_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45818,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "e5a67722379a310270c11802ab6ebb27da53072e8819b7672806d6ee27610ddc",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "DORICA GREIGE 60X120_02",
+      "id": "e6d8b2c1-b773-495b-ba4e-eb7fd829c2a2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010007_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43680,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "7239b4eb0453166b824310d11d608c76d876a76dede17462ad63965d42c41c23",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "DORICA GREIGE 60X120_03",
+      "id": "cf8dc376-8169-4c26-a462-8e0f3b81192d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010007_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48948,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "dcc777d130f01f64ce4bae7e147f3f0f7557cef6a92a5517663b67a0d25af6ab",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "DORICA GREIGE 60X120_04",
+      "id": "65eacee6-3d38-4a3c-9f11-18fc1a225321",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010007_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47838,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "a1b1a39baaf34fcacadb59663e6df1dbaf589eda1f175b4ce7e1272d36f3f1bb",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "DORICA GREIGE 60X120_05",
+      "id": "a2e43c86-0999-4396-88b3-b5e2fcdc6cb3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010007_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45868,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "411c863820b5f5b950150f757c1f569c68c058b806023b108424ca8f1829c935",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "DORICA GREIGE 60X120_06",
+      "id": "2eebc8ff-df77-4cee-85f6-631d6c2d62b6",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010007_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48038,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "6861c2b4573df1c67b474e6b3b5cdc3849a7e775bc91bdfb55dd05155b5e39a9",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "DORICA GREIGE 60X120_07",
+      "id": "8859ffd2-eaca-49f9-b5e7-d5b55eacb0b3",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010007_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47702,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "19f8d473314bd4246ee0f6441dd371d4bcbbbb52dc058512d8c64ab78267c10d",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "DORICA GREIGE 60X120_08",
+      "id": "f0e74ccf-1bda-41fe-88cd-e4ba58a23b5f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0010007_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46986,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "13e6afd89453201b2a2273007123f793bd4cb76d8033a9a8a6707350e8840fcb",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "DORICA GREIGE 60X120_09",
+      "id": "d92dc1d2-b1ab-450f-9a57-614e217cf434",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0010007_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45070,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "e26f60803e9bc421aabba250b2cbbc05766f988a3781e0e37665ad2f474c7327",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "DORICA GREIGE 60X120_10",
+      "id": "d86964b0-7716-40a8-9c99-d520f5ef813a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010007_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45506,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "06172d94a7a53dc44f788b9acf83f35c383eb56a0e789378c754aa90a03c0deb",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "DORICA GREIGE 60X120_11",
+      "id": "2a23bcec-9ad8-4124-bfd1-80401c1a6d7d",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0010007_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44000,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "bc7fe14bca58734318ae2881e4708ada7746a337ffec5458c117eb7230f4d428",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "DORICA GREIGE 60X120_12",
+      "id": "d7f794bb-c326-478c-9a8b-a26e7cf88f52",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0010007_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42670,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "d5d9637c51a15b0109739f37f4ae2e5baafd1f31bbf155c25dd21504c9c48e4e",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13 (view_13)",
+      "name": "DORICA GREIGE 60X120_13",
+      "id": "3377f7b2-06f2-48a6-a5eb-35e17293a538",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0010007_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42958,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "e90c514db9419327f275db407e930eefec998841f24ad0b189430b6a19cb6df2",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14 (view_14)",
+      "name": "DORICA GREIGE 60X120_14",
+      "id": "a270b4cc-05a8-48b0-89ed-13915e121f45",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0010007_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43786,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "12209a2eff5f65ec20d1d4de48f913ec328560b4882e12e7dbd006f362c5f71d",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15 (view_15)",
+      "name": "DORICA GREIGE 60X120_15",
+      "id": "7b4b2b06-d5ff-4a19-b11f-338935c5a519",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0010007_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46194,
+     "source_file": "60X120-Nat P.tech/DORICA - GREIGE - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1600,
+      3200
+     ],
+     "source_sha256": "debafa7e6c45763930458313163d4b3fa2910b9405b4b4e147793cd40647de0e",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16 (view_16)",
+      "name": "DORICA GREIGE 60X120_16",
+      "id": "501a53fb-9aa3-43a2-9f2e-42f751cde622",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -20,9 +20,7 @@ import {
 } from "@/lib/onboarding";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, ZoneMin } from "@/lib/room-types";
-import type { AutoSeatingZoneCreationRequest } from "@/lib/design-page-zone-orchestration";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
 type DesignMode = "homeowner" | "designer";
 
@@ -40,8 +38,9 @@ type ClampToRoom = (
 export type DesignPageOnboardingState = {
   designId: string | null;
   shareToken: string | null;
+  /** Download is open: the first-run checklist's "Share or export" step (it was Present & export). */
+  downloadOpen: boolean;
   plan: Plan;
-  editorMode: DesignPageEditorMode;
   viewMode: EditorViewMode;
   mode: DesignMode;
   isClientPreview: boolean;
@@ -54,17 +53,10 @@ export type DesignPageOnboardingState = {
   planRoomCount: number;
   saveStatusKind: string;
   planGuidedActionsEnabled: boolean;
-  viewportSize: {
-    width: number;
-    height: number;
-  };
+  viewportSize: { width: number; height: number };
 };
 
 export type DesignPageOnboardingActions = {
-  autoCreateSeatingZone: (
-    sofaItem: DesignItem,
-    request: AutoSeatingZoneCreationRequest
-  ) => boolean;
   clampToRoom: ClampToRoom;
   showConstraintsForMoment: (results: ConstraintResult[]) => void;
   showConfidenceSummary: (results: ConstraintResult[]) => void;
@@ -215,7 +207,6 @@ export function useDesignPageOnboarding({
   configuration,
 }: UseDesignPageOnboardingOptions) {
   const {
-    autoCreateSeatingZone,
     clampToRoom,
     showConstraintsForMoment,
     showConfidenceSummary,
@@ -236,6 +227,7 @@ export function useDesignPageOnboarding({
   const thirdItemTrackedRef = useRef(false);
   const firstSofaHandledRef = useRef(false);
   const ghostTimerRef = useRef<number | null>(null);
+  const persistedCompletionRef = useRef(false);
   const eventDedupRef = useRef(EventDedup.createSession());
   const firstRunActivationTrackedStepsRef = useRef<
     Map<string, Set<FirstRunActivationStepId>>
@@ -245,13 +237,10 @@ export function useDesignPageOnboarding({
     if (typeof window === "undefined") return;
     try {
       if (window.localStorage.getItem("onboarded") === "1") {
+        persistedCompletionRef.current = true;
         // This one-time hydration intentionally mirrors the persisted onboarding state.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setOnboardingState((current) => ({
-          ...current,
-          enabled: false,
-          step: "completed",
-        }));
+        setOnboardingState((current) => ({ ...current, enabled: false, step: "completed" }));
       }
     } catch {
       // Ignore storage errors; eligibility will use the in-memory state.
@@ -259,13 +248,14 @@ export function useDesignPageOnboarding({
   }, []);
 
   useEffect(() => {
+    // Hydrated as completed in this same commit: starting here would replace that state.
+    if (persistedCompletionRef.current) return;
     const capabilities = resolveEditorCapabilities(state.plan);
     const eligible = isOnboardingEligible({
       isNewUser: !onboardingState.enabled && onboardingState.step === "idle",
       skipGuidedOnboarding: capabilities.skipGuidedOnboarding,
       isShared: Boolean(state.shareToken),
       isClientPreview: state.isClientPreview,
-      mode: state.editorMode === "ai" ? "design" : state.editorMode,
     });
 
     if (eligible && !onboardingState.enabled) {
@@ -290,7 +280,6 @@ export function useDesignPageOnboarding({
     onboardingState.enabled,
     onboardingState.step,
     state.designId,
-    state.editorMode,
     state.isClientPreview,
     state.isGuest,
     state.plan,
@@ -389,10 +378,7 @@ export function useDesignPageOnboarding({
     });
     if (!sofaItem || firstSofaHandledRef.current) return;
 
-    const seatingZoneReady = autoCreateSeatingZone(sofaItem, {
-      source: "onboarding_post_placement",
-    });
-    if (!seatingZoneReady) return;
+    // The first sofa no longer makes a seating zone (UX 4g, FU6): the step just advances.
     firstSofaHandledRef.current = true;
 
     const results = evaluateConstraints({
@@ -402,13 +388,6 @@ export function useDesignPageOnboarding({
     });
     showConstraintsForMoment(results);
     showConfidenceSummary(results);
-
-    track("seating_zone_auto_created", {
-      design_id: state.designId,
-      isGuest: state.isGuest,
-      timeSinceStartMs:
-        Date.now() - (onboardingStartedAtRef.current ?? Date.now()),
-    });
 
     // The first sofa milestone advances the onboarding state synchronously.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -455,7 +434,6 @@ export function useDesignPageOnboarding({
       }
     }, 600);
   }, [
-    autoCreateSeatingZone,
     clampToRoom,
     roomDepth,
     roomWidth,
@@ -562,11 +540,11 @@ export function useDesignPageOnboarding({
                 ? "failed"
                 : "idle",
         shareToken: state.shareToken,
-        exportOpened: state.editorMode === "present",
+        exportOpened: state.downloadOpen,
       }),
     [
       state.designRoomCount,
-      state.editorMode,
+      state.downloadOpen,
       state.items.length,
       state.saveStatusKind,
       state.shareToken,

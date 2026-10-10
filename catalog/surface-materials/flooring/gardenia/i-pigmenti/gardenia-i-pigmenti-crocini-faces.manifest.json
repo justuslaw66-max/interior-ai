@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/crocini/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - CROCINI - minimali.zip (876857 bytes, sha256 b7c1481b1443c49bde7a7dd0bcf27acf9fce4d2790b6bf073c15e6f79d67b0f7).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0014514",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/crocini/pf60014514-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014514_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-crocini-pf60014514-60x120-nat-90359-0; wall gardenia-wall-tile-i-pigmenti-crocini-pf60014514-60x120-nat-90359-0",
+   "faces": [
+    {
+     "file": "0014514_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32752,
+     "source_zip": "I PIGMENTI - CROCINI - minimali.zip",
+     "source_file": "60X120-Nat 3D/I PIGMENTI - CROCINI - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "2234fa6b08e7b06804c0626f022e00de8c878cb32da1ca20bd3f1b60474cc13f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CROCINI ANT3D 60X120",
+      "id": "21b7f49b-cfdb-42d5-a080-789b2c3c5a98",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

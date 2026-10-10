@@ -35,21 +35,13 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       localBackupPlanningResolverRef,
     },
   } = coreShell;
-  const { planViewport, editorShell } = viewportShell.boundaries;
+  const { planViewport } = viewportShell.boundaries;
   const { snapshotDocument, documentRoom } =
     documentSelection.boundaries;
 
   const exportRuntime = useDesignPagePresentationExportRuntime({
     state: {
       access: { isDesigner: coreShell.derived.access.isDesigner },
-      editor: {
-        editorMode: editorShell.state.editor.editorMode,
-        viewMode: base.state.editor.viewMode,
-      },
-      shopping: {
-        hoveredCartInstanceId:
-          editorShell.state.cart.hoveredCartInstanceId,
-      },
       document: { items: documentRoom.derived.room.items },
       presentation: {
         designId: base.state.identity.designId,
@@ -57,16 +49,11 @@ export function useDesignPagePresentationBackupRegistrationFacade({
         exportStylePreset:
           planViewport.state.plan.exportStylePreset,
         sceneReady: documentSelection.boundaries.sceneRoomRead.state.scene.sceneReady,
-        cameraView: planViewport.state.camera.cameraView,
         clientPreview: base.state.access.clientPreview,
       },
     },
     actions: {
       setClientPreview: base.actions.access.setClientPreview,
-      transitionToCameraView:
-        planViewport.actions.camera.navigation.transitionToCameraView,
-      setUpgradeReason: base.actions.paywall.setUpgradeReason,
-      setShowUpgrade: base.actions.dialogs.setShowUpgrade,
       updateProjection:
         planViewport.actions.camera.navigation.updateProjection,
       showToast: showRuleToast,
@@ -78,6 +65,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       controls: planViewport.refs.camera.controls,
       renderer: planViewport.refs.camera.renderer,
       scene: planViewport.refs.camera.scene,
+      cameraView: planViewport.refs.camera.cameraView,
       designSnapshot: snapshotDocument.refs.designSnapshotRef,
     },
   });

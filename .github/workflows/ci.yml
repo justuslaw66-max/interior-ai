@@ -13,7 +13,7 @@ permissions:
 jobs:
   secret-scan:
     name: Secret scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-secret-scan-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -48,7 +48,7 @@ jobs:
 
   stable-checks:
     name: Stable checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-stable-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
@@ -354,10 +354,17 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      # CI serves the strict build above, as the Pro visual matrix does: on `next dev` an
+      # on-demand compile sometimes forced a Fast Refresh full reload mid-test (#97, #98).
+      # Local and certification runs keep the canonical development server.
       - name: Run required cart overlay accessibility matrix
+        env:
+          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:cart-overlay-accessibility-required
 
       - name: Run required Retailer Confirmation accessibility matrix
+        env:
+          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:retailer-confirmation-accessibility-required
 
       - name: Run required Guest Save Prompt accessibility matrix
@@ -383,7 +390,7 @@ jobs:
 
   advisory-contract-preflight:
     name: Advisory contract preflight
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-advisory-preflight-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
@@ -564,7 +571,7 @@ jobs:
 
   merge-gate:
     name: merge-gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: required-merge-gate-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true

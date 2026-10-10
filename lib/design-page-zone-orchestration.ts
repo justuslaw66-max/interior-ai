@@ -6,36 +6,11 @@ import {
   type ZoneMin,
 } from "@/lib/room-types";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import {
   buildAutoZones,
   computeZoneAnchor,
   normalizeZones,
 } from "@/lib/design-page-zone-layout";
-
-export type AutoSeatingZoneCreationSource =
-  | "editor"
-  | "onboarding_post_placement";
-
-export type AutoSeatingZoneCreationRequest = {
-  source: AutoSeatingZoneCreationSource;
-};
-
-export function canAutoCreateSeatingZoneForEditor({
-  editorMode,
-  isClientPreview,
-  source,
-}: {
-  editorMode: DesignPageEditorMode;
-  isClientPreview: boolean;
-  source: AutoSeatingZoneCreationSource;
-}): boolean {
-  if (isClientPreview) return false;
-  if (editorMode === "design") return true;
-  return (
-    editorMode === "adjust" && source === "onboarding_post_placement"
-  );
-}
 
 type BuildManualZoneFromSelectionParams = {
   selectedSet: Set<string>;
@@ -72,35 +47,6 @@ export function buildManualZoneFromSelection(
   return {
     zoneId,
     manualZones: [...manualZones, newZone],
-  };
-}
-
-type BuildAutoSeatingZoneParams = {
-  sofaItem: DesignItem;
-  existingZones: ZoneMin[];
-};
-
-export function buildAutoSeatingZone(
-  params: BuildAutoSeatingZoneParams
-): { zoneId: string; manualZones: ZoneMin[] } | null {
-  const { sofaItem, existingZones } = params;
-  if (existingZones.some((zone) => zone.type === "seating")) return null;
-
-  const zoneId = `zone-${Date.now().toString(36)}`;
-  const newZone: ZoneMin = {
-    id: zoneId,
-    type: "seating",
-    itemIds: [sofaItem.instanceId],
-    anchor: computeZoneAnchor([sofaItem]),
-    source: "manual",
-  };
-
-  return {
-    zoneId,
-    manualZones: [
-      ...existingZones.filter((zone) => zone.source === "manual"),
-      newZone,
-    ],
   };
 }
 

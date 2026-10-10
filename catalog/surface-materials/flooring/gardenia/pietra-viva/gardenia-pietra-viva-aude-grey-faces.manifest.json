@@ -1,0 +1,538 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-grey/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - AUDE GREY - minimali.zip (33632472 bytes, sha256 a226065a8bc289ae246efa186784c5fc010254ed020fcd37915a77ff29e9e78b).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012262",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-grey/pf60012262-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012262_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-nat-90915-0 (uses 0012262's faces: ABK's Plein Air page for Aude Grey 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-grey-0012262-80x80-nat-90911-0",
+   "faces": [
+    {
+     "file": "0012262_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113664,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "21c1cbb755d4fbab05d7267a6ff9598ed223f1ac04b72595f1c34bdce8ae9e35",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE GREY 80X80_06",
+      "id": "ce39c9a3-cd07-4e06-b976-d98bbad156db",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012262_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114716,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7265d70726a3395cfa3f99c86dad09449ce5fe9e630dc9fd0d72683a0c68ab37",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE GREY 80X80_02",
+      "id": "4e8acccc-1915-4cd5-90e0-797868d208bd",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012262_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129116,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1a590f3e0aa46e88201955f41a63b98decc71c02a5572b59468b0b860a44738a",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE GREY 80X80_08",
+      "id": "165b4945-c77a-4a13-808c-8e302af41993",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012262_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128152,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "dd80a9311d4d78a88b9c3e00a591b34794a6e391c6718eea44425bf2a8a624be",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE GREY 80X80_05",
+      "id": "021fda23-d2fe-4117-9d51-d4770a80c864",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012262_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130618,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4d2ce7b4da8a0c4c14cf40a8d727a0c35712e9e2057d956adf620ae130ae6797",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE GREY 80X80_04",
+      "id": "da0c1ba5-f069-42a7-8e3a-854ac026b620",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012262_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 127222,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1138b356a30d9d4ff37d48306e482dffc050ee33f0095c38f811c07348baf489",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE GREY 80X80_01",
+      "id": "1ef7263f-202a-4464-a6cf-24bc4098db18",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012262_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 124804,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b63537753727ca0296bb48da6a725a598b8f11725767f25bb50e08f8878230d4",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE GREY 80X80_03",
+      "id": "3efdfe88-6253-49a7-851c-134cddb29010",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012262_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129180,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "80X80-Nat P.tech/PIETRA VIVA - AUDE GREY - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3e6819e854452766ba21fbd25340c28489e31b6e3440c33db1e5630f8131039d",
+     "source_px_per_mm": 1.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE GREY 80X80_07",
+      "id": "b1a6d7aa-69bb-4929-9fd6-bcfa1508fe36",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012908",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-grey/pf60012908-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012908_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-grey-0012254-120x120-90907-0 (uses 0012908's faces: ABK's 4 Antique 3D pictures are 0012908's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-aude-grey-0012908-120x120-nat-90917-0; wall gardenia-wall-tile-pietra-viva-aude-grey-0012254-120x120-90907-0 (uses 0012908's faces: ABK's 4 Antique 3D pictures are 0012908's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-aude-grey-0012908-120x120-nat-90917-0",
+   "faces": [
+    {
+     "file": "0012908_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114414,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE GREY - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "d8043d95afea89cce25090dbc059fb656e86e02357ce77b41fc312dc6868f38d",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE GREY 120X120_03",
+      "id": "16b2b66d-3e03-4add-89c7-b94bfec142ec",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012908_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 112324,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE GREY - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "bc2ed3a5d80d30ac2dffd6a86b1edd28458ed276c1953270b975c6d3b910e33b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE GREY 120X120_04",
+      "id": "fa043327-5f1c-4823-b0a5-65102af848aa",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012908_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100638,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE GREY - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "7603dd8e3baeaa548cdb69c92e9f9c18481c72e68201b547334c2253938542cf",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE GREY 120X120_02",
+      "id": "2cfd7e6a-37de-4d6d-95bb-a645b8975174",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012908_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114702,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - AUDE GREY - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "a2019348c9efbce63b0d4bfe338f7affb42991998affdf3fc7fd8d3f7568562c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE GREY 120X120_01",
+      "id": "f88b2b7b-8b5a-48e8-a8ab-5c24716da269",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0011118",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-grey/pf60011118-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0011118_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-grey-0011118-60x120-90903-0; floor gardenia-flooring-pietra-viva-aude-grey-0012912-60x120-nat-90921-0 (uses 0011118's faces: ABK's Aude Grey 60x120 Nat P.tech page shows the four 120x120 pictures (named 120X120, 2400 x 2400 px); the 60x120 Antique 3D pictures stand in, as Aude Beige's and Aude Ivory's 60x120 Antique 3D and Nat P.tech pictures are byte-identical (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-grey-0011118-60x120-90903-0; wall gardenia-wall-tile-pietra-viva-aude-grey-0012912-60x120-nat-90921-0 (uses 0011118's faces: ABK's Aude Grey 60x120 Nat P.tech page shows the four 120x120 pictures (named 120X120, 2400 x 2400 px); the 60x120 Antique 3D pictures stand in, as Aude Beige's and Aude Ivory's 60x120 Antique 3D and Nat P.tech pictures are byte-identical (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0011118_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64386,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "5878bf488f8e29741f8f7960bf70aaa4076641c561020505173dfb31d4982124",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA AUDE GREY 60X120_08",
+      "id": "e01f1abc-73a1-4df8-9865-09d5d1b24578",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011118_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53236,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "22357122415adcd28464ab646fde359e341b9631ca7bc5aa58aa71f2115ee96d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA AUDE GREY 60X120_03",
+      "id": "2b574688-566e-40cd-ad7b-3387a4b15159",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011118_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60204,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "5ce9de7f466240a465c750924ea833cb1ecb331699b2d40edffff22c8c5e3094",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA AUDE GREY 60X120_06",
+      "id": "8fa6b207-8402-44da-aaae-fd87f0143d7e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011118_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50014,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "3623aa410bfcdda77fe43fff00a4e3a1df193fdb8c77ac5414a899e2790d3cb2",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA AUDE GREY 60X120_07",
+      "id": "60cc85ce-1d10-4d07-abf6-125ab077854a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011118_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50408,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "d255fb815bccaabcb47706ddc71c50e11e65559904532f04115e9d1b65af4ef1",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA AUDE GREY 60X120_04",
+      "id": "48be6204-ebb3-4c4a-a7d8-52443c5f4914",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011118_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 48312,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e721e3d749020cfe04c1dd982d9e418ba523ab090784533b39519252a2e616e4",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA AUDE GREY 60X120_02",
+      "id": "8817a9b8-b316-4f04-ab05-2cb4b988183f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011118_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 66016,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7df60774ceca81db4ecbf97184f9911cf8cd746981448e79d33e5b26548f8cfe",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA AUDE GREY 60X120_01",
+      "id": "ea5b0a1e-2dd5-478d-ac51-a16dab06392c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011118_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55824,
+     "source_zip": "PIETRA VIVA - AUDE GREY - minimali.zip",
+     "source_file": "60X120-Antique 3D/PIETRA VIVA - AUDE GREY - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "42b57cf7eb4a29d872657d82f8d591998415b6233c2f0193a94f87f4c41909c5",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA AUDE GREY 60X120_05",
+      "id": "f42a05a1-eb7e-4b30-98d7-557d632e062d",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

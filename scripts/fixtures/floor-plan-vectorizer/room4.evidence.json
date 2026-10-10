@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.15.0",
+ "exporterVersion": "app-evidence-0.21.0",
  "page": {
   "widthPx": 828,
   "heightPx": 957,
@@ -261,10 +261,6 @@
       "yRatio": 0.538462
      },
      {
-      "xRatio": 0.396739,
-      "yRatio": 0.538462
-     },
-     {
       "xRatio": 0.397534,
       "yRatio": 0.538462
      },
@@ -329,7 +325,7 @@
       "yRatio": 0.457941
      },
      {
-      "xRatio": 0.396739,
+      "xRatio": 0.397534,
       "yRatio": 0.457941
      },
      {
@@ -429,10 +425,6 @@
       "yRatio": 0.457941
      },
      {
-      "xRatio": 0.396739,
-      "yRatio": 0.457941
-     },
-     {
       "xRatio": 0.397534,
       "yRatio": 0.457941
      },
@@ -481,10 +473,6 @@
       "yRatio": 0.538462
      },
      {
-      "xRatio": 0.396739,
-      "yRatio": 0.538462
-     },
-     {
       "xRatio": 0.321256,
       "yRatio": 0.538462
      }
@@ -498,7 +486,7 @@
     "points": [
      {
       "xRatio": 0.618207,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.618207,
@@ -518,23 +506,27 @@
      },
      {
       "xRatio": 0.871679,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.785234,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.767139,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.751812,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.685386,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
+     },
+     {
+      "xRatio": 0.646739,
+      "yRatio": 0.268857
      }
     ]
    },
@@ -558,19 +550,31 @@
      },
      {
       "xRatio": 0.610507,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
+     },
+     {
+      "xRatio": 0.646739,
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.685386,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.751812,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.754529,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
+     },
+     {
+      "xRatio": 0.754529,
+      "yRatio": 0.176594
+     },
+     {
+      "xRatio": 0.754529,
+      "yRatio": 0.123302
      },
      {
       "xRatio": 0.754529,
@@ -598,19 +602,27 @@
      },
      {
       "xRatio": 0.754529,
-      "yRatio": 0.268809
+      "yRatio": 0.123302
+     },
+     {
+      "xRatio": 0.754529,
+      "yRatio": 0.176594
+     },
+     {
+      "xRatio": 0.754529,
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.767139,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.785234,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.871679,
-      "yRatio": 0.268809
+      "yRatio": 0.268857
      },
      {
       "xRatio": 0.871679,
@@ -727,12 +739,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      107.7367514445018,
-      61.066567865254
+      107.73675144450124,
+      61.06656786525269
      ],
      [
-      207.1155263869781,
-      61.066567865254
+      207.11552638697785,
+      61.06656786525269
      ]
     ],
     "readingClean": true
@@ -756,12 +768,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      496.2193692362042,
-      61.066567865254
+      496.2193692362039,
+      61.06656786525269
      ],
      [
-      622.7056309066905,
-      61.066567865254
+      622.7056309066896,
+      61.06656786525269
      ]
     ],
     "readingClean": true
@@ -785,12 +797,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      107.7367514445018,
-      796.4896889067123
+      107.73675144450124,
+      796.4896889067113
      ],
      [
-      333.6050578788456,
-      796.4896889067123
+      333.605057878845,
+      796.4896889067113
      ]
     ],
     "readingClean": true
@@ -814,12 +826,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      29.736751444501806,
-      91.566567865254
+      29.736751444501238,
+      91.5665678652527
      ],
      [
-      29.736751444501806,
-      723.9896889067123
+      29.736751444501238,
+      723.9896889067113
      ]
     ],
     "readingClean": true
@@ -843,12 +855,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      798.0900868870631,
-      91.566567865254
+      798.0900868870626,
+      91.5665678652527
      ],
      [
-      798.0900868870631,
-      723.9896889067123
+      798.0900868870626,
+      723.9896889067113
      ]
     ],
     "readingClean": true
@@ -872,12 +884,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      107.7367514445018,
-      31.566567865254
+      107.73675144450124,
+      31.566567865252694
      ],
      [
-      722.0900868870631,
-      31.566567865254
+      722.0900868870626,
+      31.566567865252694
      ]
     ],
     "readingClean": true
@@ -901,12 +913,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      767.5900868870631,
-      440.90583910415285
+      767.5900868870626,
+      440.90583910415154
      ],
      [
-      767.5900868870631,
-      723.9896889067123
+      767.5900868870626,
+      723.9896889067113
      ]
     ],
     "readingClean": true
@@ -930,12 +942,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      333.6050578788456,
-      796.4896889067123
+      333.605057878845,
+      796.4896889067113
      ],
      [
-      722.0900868870631,
-      796.4896889067123
+      722.0900868870626,
+      796.4896889067113
      ]
     ],
     "readingClean": true
@@ -959,12 +971,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      59.986751444501806,
-      440.90583910415285
+      59.98675144450124,
+      440.90583910415154
      ],
      [
-      59.986751444501806,
-      513.1801879566317
+      59.98675144450124,
+      513.1801879566303
      ]
     ],
     "readingClean": true
@@ -988,12 +1000,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      207.1155263869781,
-      61.066567865254
+      207.11552638697785,
+      61.06656786525269
      ],
      [
-      315.527577259718,
-      61.066567865254
+      315.5275772597174,
+      61.06656786525269
      ]
     ],
     "readingClean": true
@@ -1017,12 +1029,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      315.527577259718,
-      61.066567865254
+      315.5275772597174,
+      61.06656786525269
      ],
      [
-      496.2193692362042,
-      61.066567865254
+      496.2193692362039,
+      61.06656786525269
      ]
     ],
     "readingClean": true
@@ -1046,12 +1058,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      622.7056309066905,
-      61.066567865254
+      622.7056309066896,
+      61.06656786525269
      ],
      [
-      722.0900868870631,
-      61.066567865254
+      722.0900868870626,
+      61.06656786525269
      ]
     ],
     "readingClean": true
@@ -1075,12 +1087,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      59.986751444501806,
-      91.566567865254
+      59.98675144450124,
+      91.5665678652527
      ],
      [
-      59.986751444501806,
-      242.14565344045138
+      59.98675144450124,
+      242.14565344045053
      ]
     ],
     "readingClean": true
@@ -1104,12 +1116,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      767.5900868870631,
-      91.566567865254
+      767.5900868870626,
+      91.5665678652527
      ],
      [
-      767.5900868870631,
-      260.2120627268071
+      767.5900868870626,
+      260.2120627268058
      ]
     ],
     "readingClean": true
@@ -1133,12 +1145,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      767.5900868870631,
-      260.2120627268071
+      767.5900868870626,
+      260.2120627268058
      ],
      [
-      767.5900868870631,
-      440.90583910415285
+      767.5900868870626,
+      440.90583910415154
      ]
     ],
     "readingClean": true
@@ -1162,12 +1174,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      59.986751444501806,
-      513.1801879566317
+      59.98675144450124,
+      513.1801879566303
      ],
      [
-      59.986751444501806,
-      723.9896889067123
+      59.98675144450124,
+      723.9896889067113
      ]
     ],
     "readingClean": true
@@ -1191,12 +1203,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      59.986751444501806,
-      242.14565344045138
+      59.98675144450124,
+      242.14565344045053
      ],
      [
-      59.986751444501806,
-      440.90583910415285
+      59.98675144450124,
+      440.90583910415154
      ]
     ],
     "readingClean": false
@@ -1501,11 +1513,11 @@
     "spanSourcePx": [
      [
       324.75,
-      156.38537953669658
+      156.3853795366955
      ],
      [
       324.75,
-      185.30454166703248
+      185.30454166703146
      ]
     ],
     "widthMm": 480,
@@ -1962,11 +1974,11 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      635.1911153263353,
+      635.1911153263345,
       257.5
      ],
      [
-      650.173696629909,
+      650.1736966299082,
       257.5
      ]
     ],
@@ -1975,6 +1987,72 @@
     "swingSide": 0,
     "handing": "unknown",
     "note": "folding door drawn on a traced wall",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.666063,
+    "centerYRatio": 0.268936,
+    "spanStart": {
+     "xRatio": 0.646739,
+     "yRatio": 0.268936
+    },
+    "spanEnd": {
+     "xRatio": 0.685386,
+     "yRatio": 0.268936
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      535.5,
+      257.3720241898328
+     ],
+     [
+      567.5,
+      257.3720241898328
+     ]
+    ],
+    "widthMm": 531,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "glass drawn in a thin wall",
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null
+   },
+   {
+    "kind": "window",
+    "operation": "fixed",
+    "centerXRatio": 0.754774,
+    "centerYRatio": 0.149948,
+    "spanStart": {
+     "xRatio": 0.754774,
+     "yRatio": 0.123302
+    },
+    "spanEnd": {
+     "xRatio": 0.754774,
+     "yRatio": 0.176594
+    },
+    "confidence": 0.6,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      624.9530181022258,
+      118.0
+     ],
+     [
+      624.9530181022258,
+      169.0
+     ]
+    ],
+    "widthMm": 847,
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "note": "glass drawn in a thin wall",
     "hingeSourcePx": null,
     "swingTowardSourcePx": null
    }
@@ -2067,8 +2145,8 @@
      513.0
     ]
    ],
-   "thicknessPx": 4.5,
-   "thicknessMm": 75,
+   "thicknessPx": 5.0,
+   "thicknessMm": 83,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2102,7 +2180,7 @@
     ],
     [
      228.0,
-     515.307897862233
+     515.3078978622328
     ]
    ],
    "thicknessPx": 5.0,
@@ -2115,15 +2193,15 @@
    "sourcePx": [
     [
      228.0,
-     515.307897862233
+     515.3078978622328
     ],
     [
      266.0,
-     515.307897862233
+     515.3078978622328
     ]
    ],
-   "thicknessPx": 5.12,
-   "thicknessMm": 85,
+   "thicknessPx": 5.38,
+   "thicknessMm": 89,
    "opening": null
   },
   {
@@ -2132,15 +2210,15 @@
    "sourcePx": [
     [
      266.0,
-     515.307897862233
+     515.3078978622328
     ],
     [
-     328.5,
-     515.307897862233
+     329.158002323244,
+     515.3078978622328
     ]
    ],
-   "thicknessPx": 5.0,
-   "thicknessMm": 83,
+   "thicknessPx": 5.38,
+   "thicknessMm": 89,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2169,28 +2247,11 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     328.5,
-     515.307897862233
+     329.158002323244,
+     515.3078978622328
     ],
     [
-     329.15800232324403,
-     515.307897862233
-    ]
-   ],
-   "thicknessPx": 5.12,
-   "thicknessMm": 85,
-   "opening": null
-  },
-  {
-   "id": "e7",
-   "kind": "wall_centerline",
-   "sourcePx": [
-    [
-     329.15800232324403,
-     515.307897862233
-    ],
-    [
-     329.15800232324403,
+     329.158002323244,
      717.5
     ]
    ],
@@ -2199,11 +2260,11 @@
    "opening": null
   },
   {
-   "id": "e8",
+   "id": "e7",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     329.15800232324403,
+     329.158002323244,
      717.5
     ],
     [
@@ -2216,7 +2277,7 @@
    "opening": null
   },
   {
-   "id": "e9",
+   "id": "e8",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2228,8 +2289,8 @@
      717.5
     ]
    ],
-   "thicknessPx": 9.0,
-   "thicknessMm": 149,
+   "thicknessPx": 15.0,
+   "thicknessMm": 249,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -2248,7 +2309,7 @@
    }
   },
   {
-   "id": "e10",
+   "id": "e9",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2265,7 +2326,7 @@
    "opening": null
   },
   {
-   "id": "e11",
+   "id": "e10",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2282,7 +2343,7 @@
    "opening": null
   },
   {
-   "id": "e12",
+   "id": "e11",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2299,7 +2360,7 @@
    "opening": null
   },
   {
-   "id": "e13",
+   "id": "e12",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2311,8 +2372,8 @@
      709.5
     ]
    ],
-   "thicknessPx": 6.25,
-   "thicknessMm": 104,
+   "thicknessPx": 9.0,
+   "thicknessMm": 149,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2331,7 +2392,7 @@
    }
   },
   {
-   "id": "e14",
+   "id": "e13",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2348,7 +2409,7 @@
    "opening": null
   },
   {
-   "id": "e15",
+   "id": "e14",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2360,8 +2421,8 @@
      709.5
     ]
    ],
-   "thicknessPx": 6.25,
-   "thicknessMm": 104,
+   "thicknessPx": 9.0,
+   "thicknessMm": 149,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -2380,7 +2441,7 @@
    }
   },
   {
-   "id": "e16",
+   "id": "e15",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2397,7 +2458,7 @@
    "opening": null
   },
   {
-   "id": "e17",
+   "id": "e16",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2414,7 +2475,7 @@
    "opening": null
   },
   {
-   "id": "e18",
+   "id": "e17",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2431,7 +2492,7 @@
    "opening": null
   },
   {
-   "id": "e19",
+   "id": "e18",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2443,8 +2504,8 @@
      438.25
     ]
    ],
-   "thicknessPx": 6.0,
-   "thicknessMm": 100,
+   "thicknessPx": 6.5,
+   "thicknessMm": 108,
    "opening": {
     "kind": "open_passage",
     "operation": "open",
@@ -2463,7 +2524,7 @@
    }
   },
   {
-   "id": "e20",
+   "id": "e19",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2480,7 +2541,7 @@
    "opening": null
   },
   {
-   "id": "e21",
+   "id": "e20",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2492,8 +2553,8 @@
      438.25
     ]
    ],
-   "thicknessPx": 6.0,
-   "thicknessMm": 100,
+   "thicknessPx": 6.5,
+   "thicknessMm": 108,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2518,7 +2579,7 @@
    }
   },
   {
-   "id": "e22",
+   "id": "e21",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2526,7 +2587,7 @@
      438.25
     ],
     [
-     328.5,
+     329.158002323244,
      438.25
     ]
    ],
@@ -2535,11 +2596,11 @@
    "opening": null
   },
   {
-   "id": "e23",
+   "id": "e22",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     328.5,
+     329.158002323244,
      438.25
     ],
     [
@@ -2547,8 +2608,8 @@
      438.25
     ]
    ],
-   "thicknessPx": 6.0,
-   "thicknessMm": 100,
+   "thicknessPx": 6.5,
+   "thicknessMm": 108,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -2573,7 +2634,7 @@
    }
   },
   {
-   "id": "e24",
+   "id": "e23",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2590,7 +2651,7 @@
    "opening": null
   },
   {
-   "id": "e25",
+   "id": "e24",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2599,7 +2660,7 @@
     ],
     [
      320.2371794871795,
-     156.38537953669658
+     156.3853795366955
     ]
    ],
    "thicknessPx": 2.53,
@@ -2607,16 +2668,16 @@
    "opening": null
   },
   {
-   "id": "e26",
+   "id": "e25",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
      320.2371794871795,
-     156.38537953669658
+     156.3853795366955
     ],
     [
      320.2371794871795,
-     185.30454166703248
+     185.30454166703146
     ]
    ],
    "thicknessPx": 12.0,
@@ -2639,12 +2700,12 @@
    }
   },
   {
-   "id": "e27",
+   "id": "e26",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      320.2371794871795,
-     185.30454166703248
+     185.30454166703146
     ],
     [
      320.2371794871795,
@@ -2656,7 +2717,7 @@
    "opening": null
   },
   {
-   "id": "e28",
+   "id": "e27",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2664,7 +2725,7 @@
      223.75
     ],
     [
-     329.15800232324403,
+     329.158002323244,
      223.75
     ]
    ],
@@ -2673,15 +2734,15 @@
    "opening": null
   },
   {
-   "id": "e29",
+   "id": "e28",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     329.15800232324403,
+     329.158002323244,
      223.75
     ],
     [
-     329.15800232324403,
+     329.158002323244,
      438.25
     ]
    ],
@@ -2690,24 +2751,7 @@
    "opening": null
   },
   {
-   "id": "e30",
-   "kind": "wall_centerline",
-   "sourcePx": [
-    [
-     329.15800232324403,
-     438.25
-    ],
-    [
-     334.0,
-     438.25
-    ]
-   ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
-   "opening": null
-  },
-  {
-   "id": "e31",
+   "id": "e29",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2724,7 +2768,7 @@
    "opening": null
   },
   {
-   "id": "e32",
+   "id": "e30",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2741,7 +2785,7 @@
    "opening": null
   },
   {
-   "id": "e33",
+   "id": "e31",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2758,7 +2802,7 @@
    "opening": null
   },
   {
-   "id": "e34",
+   "id": "e32",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2775,7 +2819,7 @@
    "opening": null
   },
   {
-   "id": "e35",
+   "id": "e33",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2787,8 +2831,8 @@
      120.0
     ]
    ],
-   "thicknessPx": 19.5,
-   "thicknessMm": 324,
+   "thicknessPx": 20.0,
+   "thicknessMm": 332,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -2807,7 +2851,7 @@
    }
   },
   {
-   "id": "e36",
+   "id": "e34",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2824,7 +2868,7 @@
    "opening": null
   },
   {
-   "id": "e37",
+   "id": "e35",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2841,7 +2885,7 @@
    "opening": null
   },
   {
-   "id": "e38",
+   "id": "e36",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2853,8 +2897,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 20.5,
-   "thicknessMm": 340,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -2873,7 +2917,7 @@
    }
   },
   {
-   "id": "e39",
+   "id": "e37",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2890,7 +2934,7 @@
    "opening": null
   },
   {
-   "id": "e40",
+   "id": "e38",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2907,7 +2951,7 @@
    "opening": null
   },
   {
-   "id": "e41",
+   "id": "e39",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -2924,32 +2968,15 @@
    "opening": null
   },
   {
-   "id": "e42",
+   "id": "e40",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     328.5,
+     329.158002323244,
      438.25
     ],
     [
-     329.15800232324403,
-     438.25
-    ]
-   ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
-   "opening": null
-  },
-  {
-   "id": "e43",
-   "kind": "wall_centerline",
-   "sourcePx": [
-    [
-     329.15800232324403,
-     438.25
-    ],
-    [
-     329.15800232324403,
+     329.158002323244,
      231.5
     ]
    ],
@@ -2958,11 +2985,11 @@
    "opening": null
   },
   {
-   "id": "e44",
+   "id": "e41",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     329.15800232324403,
+     329.158002323244,
      231.5
     ],
     [
@@ -2975,7 +3002,7 @@
    "opening": null
   },
   {
-   "id": "e45",
+   "id": "e42",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -2987,8 +3014,8 @@
      231.5
     ]
    ],
-   "thicknessPx": 8.0,
-   "thicknessMm": 133,
+   "thicknessPx": 22.0,
+   "thicknessMm": 365,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3007,7 +3034,7 @@
    }
   },
   {
-   "id": "e46",
+   "id": "e43",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3024,12 +3051,12 @@
    "opening": null
   },
   {
-   "id": "e47",
+   "id": "e44",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      108.75,
-     515.307897862233
+     515.3078978622328
     ],
     [
      108.75,
@@ -3041,7 +3068,7 @@
    "opening": null
   },
   {
-   "id": "e48",
+   "id": "e45",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3058,7 +3085,7 @@
    "opening": null
   },
   {
-   "id": "e49",
+   "id": "e46",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
@@ -3070,8 +3097,8 @@
      721.5
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 8.0,
+   "thicknessMm": 133,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3090,7 +3117,7 @@
    }
   },
   {
-   "id": "e50",
+   "id": "e47",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3098,7 +3125,7 @@
      721.5
     ],
     [
-     329.15800232324403,
+     329.158002323244,
      721.5
     ]
    ],
@@ -3107,16 +3134,16 @@
    "opening": null
   },
   {
-   "id": "e51",
+   "id": "e48",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     329.15800232324403,
+     329.158002323244,
      721.5
     ],
     [
-     329.15800232324403,
-     515.307897862233
+     329.158002323244,
+     515.3078978622328
     ]
    ],
    "thicknessPx": 2.32,
@@ -3124,16 +3151,16 @@
    "opening": null
   },
   {
-   "id": "e52",
+   "id": "e49",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      266.0,
-     515.307897862233
+     515.3078978622328
     ],
     [
      108.75,
-     515.307897862233
+     515.3078978622328
     ]
    ],
    "thicknessPx": 5.38,
@@ -3141,12 +3168,12 @@
    "opening": null
   },
   {
-   "id": "e53",
+   "id": "e50",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      511.875,
-     257.25
+     257.2960522570729
     ],
     [
      511.875,
@@ -3158,7 +3185,7 @@
    "opening": null
   },
   {
-   "id": "e54",
+   "id": "e51",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3175,7 +3202,7 @@
    "opening": null
   },
   {
-   "id": "e55",
+   "id": "e52",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3184,7 +3211,7 @@
     ],
     [
      721.75,
-     257.25
+     257.2960522570729
     ]
    ],
    "thicknessPx": 7.5,
@@ -3192,37 +3219,37 @@
    "opening": null
   },
   {
-   "id": "e56",
+   "id": "e53",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      721.75,
-     257.25
+     257.2960522570729
     ],
     [
-     650.173696629909,
-     257.25
+     650.1736966299082,
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
   },
   {
-   "id": "e57",
+   "id": "e54",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     650.173696629909,
-     257.25
+     650.1736966299082,
+     257.2960522570729
     ],
     [
-     635.1911153263353,
-     257.25
+     635.1911153263345,
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.0,
-   "thicknessMm": 100,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": {
     "kind": "door",
     "operation": "folding",
@@ -3241,37 +3268,37 @@
    }
   },
   {
-   "id": "e58",
+   "id": "e55",
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     635.1911153263353,
-     257.25
+     635.1911153263345,
+     257.2960522570729
     ],
     [
      622.5,
-     257.25
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
   },
   {
-   "id": "e59",
+   "id": "e56",
    "kind": "supported_opening_span",
    "sourcePx": [
     [
      622.5,
-     257.25
+     257.2960522570729
     ],
     [
      567.5,
-     257.25
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 5.0,
-   "thicknessMm": 83,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -3296,24 +3323,56 @@
    }
   },
   {
-   "id": "e60",
-   "kind": "wall_centerline",
+   "id": "e57",
+   "kind": "supported_opening_span",
    "sourcePx": [
     [
      567.5,
-     257.25
+     257.2960522570729
+    ],
+    [
+     535.5,
+     257.2960522570729
+    ]
+   ],
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "glass drawn in a thin wall",
+    "widthMm": 531,
+    "between": [
+     "room-6",
+     "room-5"
+    ]
+   }
+  },
+  {
+   "id": "e58",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     535.5,
+     257.2960522570729
     ],
     [
      511.875,
-     257.25
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
   },
   {
-   "id": "e61",
+   "id": "e59",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3322,7 +3381,7 @@
     ],
     [
      505.5,
-     257.25
+     257.2960522570729
     ]
    ],
    "thicknessPx": 20.0,
@@ -3330,38 +3389,87 @@
    "opening": null
   },
   {
-   "id": "e62",
+   "id": "e60",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      505.5,
-     257.25
+     257.2960522570729
     ],
     [
-     567.5,
-     257.25
+     535.5,
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
   },
   {
-   "id": "e63",
+   "id": "e61",
    "kind": "wall_centerline",
    "sourcePx": [
     [
      622.5,
-     257.25
+     257.2960522570729
     ],
     [
      624.75,
-     257.25
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
+  },
+  {
+   "id": "e62",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     624.75,
+     257.2960522570729
+    ],
+    [
+     624.75,
+     169.0
+    ]
+   ],
+   "thicknessPx": 5.5,
+   "thicknessMm": 91,
+   "opening": null
+  },
+  {
+   "id": "e63",
+   "kind": "supported_opening_span",
+   "sourcePx": [
+    [
+     624.75,
+     169.0
+    ],
+    [
+     624.75,
+     118.0
+    ]
+   ],
+   "thicknessPx": 5.5,
+   "thicknessMm": 91,
+   "opening": {
+    "kind": "window",
+    "operation": "fixed",
+    "hinge": "none",
+    "swingSide": 0,
+    "handing": "unknown",
+    "confidence": 0.6,
+    "hingeSourcePx": null,
+    "swingTowardSourcePx": null,
+    "note": "glass drawn in a thin wall",
+    "widthMm": 847,
+    "between": [
+     "room-6",
+     "room-7"
+    ]
+   }
   },
   {
    "id": "e64",
@@ -3369,7 +3477,7 @@
    "sourcePx": [
     [
      624.75,
-     257.25
+     118.0
     ],
     [
      624.75,
@@ -3410,8 +3518,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 20.5,
-   "thicknessMm": 340,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3452,15 +3560,15 @@
    "sourcePx": [
     [
      624.75,
-     257.25
+     257.2960522570729
     ],
     [
-     635.1911153263353,
-     257.25
+     635.1911153263345,
+     257.2960522570729
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 108,
+   "thicknessPx": 6.41,
+   "thicknessMm": 106,
    "opening": null
   },
   {
@@ -3469,7 +3577,7 @@
    "sourcePx": [
     [
      721.75,
-     257.25
+     257.2960522570729
     ],
     [
      721.75,
@@ -3493,8 +3601,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 23.11,
-   "thicknessMm": 384,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": null
   },
   {
@@ -3510,8 +3618,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 22.0,
-   "thicknessMm": 365,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3542,8 +3650,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 23.11,
-   "thicknessMm": 384,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": null
   },
   {
@@ -3576,8 +3684,8 @@
      206.5
     ]
    ],
-   "thicknessPx": 11.5,
-   "thicknessMm": 191,
+   "thicknessPx": 12.5,
+   "thicknessMm": 208,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3639,7 +3747,7 @@
     ],
     [
      320.2371794871795,
-     185.30454166703248
+     185.30454166703146
     ]
    ],
    "thicknessPx": 10.47,
@@ -3659,8 +3767,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 10.11,
-   "thicknessMm": 168,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": null
   },
   {
@@ -3676,8 +3784,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 9.0,
-   "thicknessMm": 149,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -3708,8 +3816,8 @@
      109.44477693144722
     ]
    ],
-   "thicknessPx": 10.11,
-   "thicknessMm": 168,
+   "thicknessPx": 21.11,
+   "thicknessMm": 350,
    "opening": null
   },
   {
@@ -3722,7 +3830,7 @@
     ],
     [
      108.75,
-     515.307897862233
+     515.3078978622328
     ]
    ],
    "thicknessPx": 7.5,
@@ -3735,15 +3843,15 @@
    "sourcePx": [
     [
      108.75,
-     515.307897862233
+     515.3078978622328
     ],
     [
      228.0,
-     515.307897862233
+     515.3078978622328
     ]
    ],
-   "thicknessPx": 5.62,
-   "thicknessMm": 93,
+   "thicknessPx": 5.38,
+   "thicknessMm": 89,
    "opening": null
   },
   {
@@ -3786,22 +3894,18 @@
     },
     {
      "x": 228.0,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     },
     {
      "x": 266.0,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     },
     {
-     "x": 328.5,
-     "y": 515.307897862233
+     "x": 329.158002323244,
+     "y": 515.3078978622328
     },
     {
-     "x": 329.15800232324403,
-     "y": 515.307897862233
-    },
-    {
-     "x": 329.15800232324403,
+     "x": 329.158002323244,
      "y": 717.5
     },
     {
@@ -3861,7 +3965,7 @@
      "y": 438.25
     },
     {
-     "x": 328.5,
+     "x": 329.158002323244,
      "y": 438.25
     },
     {
@@ -3892,8 +3996,7 @@
     "e20",
     "e21",
     "e22",
-    "e23",
-    "e24"
+    "e23"
    ],
    "areaM2": 31.89,
    "sourceLabels": [
@@ -3913,22 +4016,22 @@
     },
     {
      "x": 320.2371794871795,
-     "y": 156.38537953669658
+     "y": 156.3853795366955
     },
     {
      "x": 320.2371794871795,
-     "y": 185.30454166703248
+     "y": 185.30454166703146
     },
     {
      "x": 320.2371794871795,
      "y": 223.75
     },
     {
-     "x": 329.15800232324403,
+     "x": 329.158002323244,
      "y": 223.75
     },
     {
-     "x": 329.15800232324403,
+     "x": 329.158002323244,
      "y": 438.25
     },
     {
@@ -3973,22 +4076,22 @@
     }
    ],
    "edgeIds": [
+    "e24",
     "e25",
     "e26",
     "e27",
     "e28",
+    "e21",
+    "e20",
     "e29",
     "e30",
-    "e21",
     "e31",
     "e32",
     "e33",
     "e34",
     "e35",
     "e36",
-    "e37",
-    "e38",
-    "e39"
+    "e37"
    ],
    "areaM2": 16.53,
    "sourceLabels": [
@@ -4015,15 +4118,11 @@
      "y": 438.25
     },
     {
-     "x": 328.5,
+     "x": 329.158002323244,
      "y": 438.25
     },
     {
-     "x": 329.15800232324403,
-     "y": 438.25
-    },
-    {
-     "x": 329.15800232324403,
+     "x": 329.158002323244,
      "y": 231.5
     },
     {
@@ -4036,14 +4135,13 @@
     }
    ],
    "edgeIds": [
+    "e38",
+    "e39",
+    "e22",
     "e40",
     "e41",
-    "e23",
     "e42",
-    "e43",
-    "e44",
-    "e45",
-    "e46"
+    "e43"
    ],
    "areaM2": 12.56,
    "sourceLabels": [
@@ -4059,7 +4157,7 @@
    "sourcePoints": [
     {
      "x": 108.75,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     },
     {
      "x": 108.75,
@@ -4074,31 +4172,26 @@
      "y": 721.5
     },
     {
-     "x": 329.15800232324403,
+     "x": 329.158002323244,
      "y": 721.5
     },
     {
-     "x": 329.15800232324403,
-     "y": 515.307897862233
-    },
-    {
-     "x": 328.5,
-     "y": 515.307897862233
+     "x": 329.158002323244,
+     "y": 515.3078978622328
     },
     {
      "x": 266.0,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     }
    ],
    "edgeIds": [
+    "e44",
+    "e45",
+    "e46",
     "e47",
     "e48",
-    "e49",
-    "e50",
-    "e51",
-    "e6",
     "e5",
-    "e52"
+    "e49"
    ],
    "areaM2": 12.53,
    "sourceLabels": [
@@ -4114,7 +4207,7 @@
    "sourcePoints": [
     {
      "x": 511.875,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
      "x": 511.875,
@@ -4134,36 +4227,41 @@
     },
     {
      "x": 721.75,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
-     "x": 650.173696629909,
-     "y": 257.25
+     "x": 650.1736966299082,
+     "y": 257.2960522570729
     },
     {
-     "x": 635.1911153263353,
-     "y": 257.25
+     "x": 635.1911153263345,
+     "y": 257.2960522570729
     },
     {
      "x": 622.5,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
      "x": 567.5,
-     "y": 257.25
+     "y": 257.2960522570729
+    },
+    {
+     "x": 535.5,
+     "y": 257.2960522570729
     }
    ],
    "edgeIds": [
+    "e50",
+    "e51",
+    "e18",
+    "e17",
+    "e52",
     "e53",
     "e54",
-    "e19",
-    "e18",
     "e55",
     "e56",
     "e57",
-    "e58",
-    "e59",
-    "e60"
+    "e58"
    ],
    "areaM2": 10.47,
    "sourceLabels": [
@@ -4191,19 +4289,31 @@
     },
     {
      "x": 505.5,
-     "y": 257.25
+     "y": 257.2960522570729
+    },
+    {
+     "x": 535.5,
+     "y": 257.2960522570729
     },
     {
      "x": 567.5,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
      "x": 622.5,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
      "x": 624.75,
-     "y": 257.25
+     "y": 257.2960522570729
+    },
+    {
+     "x": 624.75,
+     "y": 169.0
+    },
+    {
+     "x": 624.75,
+     "y": 118.0
     },
     {
      "x": 624.75,
@@ -4219,11 +4329,14 @@
     }
    ],
    "edgeIds": [
-    "e36",
-    "e35",
+    "e34",
+    "e33",
+    "e59",
+    "e60",
+    "e57",
+    "e56",
     "e61",
     "e62",
-    "e59",
     "e63",
     "e64",
     "e65",
@@ -4248,19 +4361,27 @@
     },
     {
      "x": 624.75,
-     "y": 257.25
+     "y": 118.0
     },
     {
-     "x": 635.1911153263353,
-     "y": 257.25
+     "x": 624.75,
+     "y": 169.0
     },
     {
-     "x": 650.173696629909,
-     "y": 257.25
+     "x": 624.75,
+     "y": 257.2960522570729
+    },
+    {
+     "x": 635.1911153263345,
+     "y": 257.2960522570729
+    },
+    {
+     "x": 650.1736966299082,
+     "y": 257.2960522570729
     },
     {
      "x": 721.75,
-     "y": 257.25
+     "y": 257.2960522570729
     },
     {
      "x": 721.75,
@@ -4277,9 +4398,11 @@
    ],
    "edgeIds": [
     "e64",
+    "e63",
+    "e62",
     "e68",
-    "e57",
-    "e56",
+    "e54",
+    "e53",
     "e69",
     "e70",
     "e71",
@@ -4319,11 +4442,11 @@
     },
     {
      "x": 320.2371794871795,
-     "y": 185.30454166703248
+     "y": 185.30454166703146
     },
     {
      "x": 320.2371794871795,
-     "y": 156.38537953669658
+     "y": 156.3853795366955
     },
     {
      "x": 320.2371794871795,
@@ -4344,8 +4467,8 @@
     "e75",
     "e76",
     "e77",
-    "e26",
     "e25",
+    "e24",
     "e78",
     "e79",
     "e80"
@@ -4368,11 +4491,11 @@
     },
     {
      "x": 108.75,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     },
     {
      "x": 228.0,
-     "y": 515.307897862233
+     "y": 515.3078978622328
     },
     {
      "x": 228.0,
@@ -4406,7 +4529,7 @@
   "gapsSeen": 90,
   "openings": {
    "door": 8,
-   "window": 11,
+   "window": 13,
    "open_passage": 3,
    "wall": 10
   },
@@ -4417,6 +4540,9 @@
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 1,
+  "leafRowsReadAsCasements": 0,
+  "doorsNotPlacedBeyondOpenSpace": 0,
+  "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 1,
   "stripsThatAreNoSlidingPanels": 0,
@@ -4439,6 +4565,23 @@
   "sidesSplitAtThicknessChanges": 6,
   "sidesWeldedOntoTheWall": 0,
   "jambChamfersDropped": 0,
+  "dimensionScrapsDropped": 1,
+  "slidingPartitionsFromStrokes": 0,
+  "wideDoorwaysKept": 0,
+  "swingsReadFromTheDrawing": 0,
+  "thresholdDoors": 0,
+  "gentleSlopedStrokes": 2,
+  "outdoorSpacesClosedByGentleSlopes": 0,
+  "glassInThinWalls": 2,
+  "glassBandsBetweenTwoRooms": 0,
+  "doorwaysToTheOutsideReadAsWindows": 0,
+  "cornersWelded": 0,
+  "ductsKeptAsSpaces": 0,
+  "openingsOnDuctsShut": 0,
+  "cornersSnappedToDucts": 0,
+  "subPixelSidesDropped": 0,
+  "cornersStraightened": 0,
+  "sidesCutAtDuctJogs": 0,
   "unsupportedWallPx": 0,
   "thickAxisWallPx": 0,
   "slantedWallPx": 0,
@@ -4447,6 +4590,7 @@
   "skewDeg": 0.0,
   "pageCrop": null,
   "scaleBar": null,
-  "areaCheck": null
+  "areaCheck": null,
+  "wallThicknessUnified": 29
  }
 }

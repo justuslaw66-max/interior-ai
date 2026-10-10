@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - MUD - minimali.zip (18488705 bytes, sha256 6aeebb3dc744c82645630784b993fcb50a77efbc064d874f1614a005762b0603).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0017005",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60017005-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0017005_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0017005-120x280-nat-90349-0; wall gardenia-wall-tile-i-pigmenti-mud-0017005-120x280-nat-90349-0",
+   "faces": [
+    {
+     "file": "0017005_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 21058,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - MUD - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "d45a7f79cb994890916b3a573c97118bd6408163e9538398e9986600354ff8c4",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 120X280",
+      "id": "44b970a1-6e1c-4afd-9ef4-7569d42e85bc",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016972",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016972-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016972_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016972-120x120-nat-90337-0; wall gardenia-wall-tile-i-pigmenti-mud-0016972-120x120-nat-90337-0",
+   "faces": [
+    {
+     "file": "0016972_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9034,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MUD - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3a9014644ed8bfbaabe84e239a39b4a7c9df30cd8fe6aa7284c27ecb00564e55",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 120X120_01",
+      "id": "a4da019e-06a1-454b-86c3-5ed201fe456f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016972_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8578,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MUD - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6cf7c33fd8471ee7d095ed39e1b31910e6e1b7b93408da1e0674d936ff1abf25",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 120X120_02",
+      "id": "3fc08847-b4fb-4a14-bf3f-5d1c3a070097",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016972_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8604,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MUD - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dcb1f473665d5c02df0ac622cd6bfc9923487b782d9081430b832800091c99f0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 120X120_03",
+      "id": "ec07cb6d-f33b-4e72-a5df-065ab2a3f33b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016972_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7604,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MUD - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11003056cddb2d3e558bf7aa52ef6cecaa0b6056692122ae97c53d5d9ad62984",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 120X120_05",
+      "id": "674ee71b-05d0-42f0-a848-2daa1f941122",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016972_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8674,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - MUD - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3abd169b9495e91e19782f00d908fb391474dd6a5b2c2a39f7628a7be4cb3c9c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 120X120_04",
+      "id": "b346ce6b-d09b-415f-bde5-66120cdc327c",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016436",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016436-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016436_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016436-60x120-nat-90289-0; wall gardenia-wall-tile-i-pigmenti-mud-0016436-60x120-nat-90289-0",
+   "faces": [
+    {
+     "file": "0016436_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4938,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "099f520da93c4d0e1ed66376a6bde1ffdb7a50bcec3bcc9d5c6ba27155699f3a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 60X120_01",
+      "id": "ac80fe2b-1bc7-4946-a8bd-c9bf7e09934b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016436_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4472,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "3436495f9f1bd62ff78be12dedcd6332a5c70edd46b71ed152828b71f2dfc0e4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 60X120_08",
+      "id": "acbde54e-a64b-4871-93c4-4e6063c55467",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016436_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3882,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "05f1f3ff269327ce3c6bbb48ac9a0fc645dc6f28a3a1cb92ca177f426c7cd660",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 60X120_09",
+      "id": "dc3c3668-69bd-46fb-bee5-f7b53e5b692c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016436_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4130,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "54da4857bd487b4b2255698b6e4558e89c68eb84928c88a2d711d278fb531ca7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 60X120_10",
+      "id": "cc5a3c6e-64f3-4b4e-8452-056969ec772d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016436_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4456,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "48196029ba1c7095f9278988137da0cb9138a472974c90194b228d46eb7b04d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 60X120_03",
+      "id": "5cd1645b-42b2-4152-bdb6-beaed7f8ec20",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016436_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4554,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "4b2116df34f3a5b8bdf26090b97da91ef414e30c0ff2ac2772ae47ae11ce8855",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI MUD 60X120_05",
+      "id": "257fbfd7-28f2-4c8b-8d53-04c4d7c5f68c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016436_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4418,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7745ebf288ab60188f31b2960ad26ddfa116e076d5e65ea0997d1374fb3e1730",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI MUD 60X120_07",
+      "id": "e35a5797-84b8-45c1-a70c-cb1ad82d3d71",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016436_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4248,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "b4ddb69d9c14347d5a5f1fa5e7dd83757f43b0a104a2ff25ea0eef24731881f5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI MUD 60X120_02",
+      "id": "92038138-6689-4d03-9fc3-5f42ee2d6b4d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016436_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4522,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "81b594c80abc09b92f4cb59b0be2e9186a5f501e9b6d2385e2b012f2fa2c8081",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI MUD 60X120_04",
+      "id": "fe2790c6-e1bb-43ac-a5e2-5039913ce454",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016436_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4382,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - MUD - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "436612230d3002b7fd5129bffc5fd2b0a8ff6c5c0aeee3abd8200e0600e1e75d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI MUD 60X120_06",
+      "id": "a1d38450-702a-4e98-a26d-100afe1f1f80",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016456",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016456-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016456_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016456-60x60-nat-90309-0; wall gardenia-wall-tile-i-pigmenti-mud-0016456-60x60-nat-90309-0",
+   "faces": [
+    {
+     "file": "0016456_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2804,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "73721afc32c83df70aba788724e11a96a233fa9573f3b4bfc024053a0be53e11",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 60X60_01",
+      "id": "a2345813-c03f-4493-a4d8-118e9a887e70",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016456_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2268,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e24d14823830e9386878e7561d814cf451d2b3a26a100a42ae9a7aba0d95ecdb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 60X60_03",
+      "id": "c9c6f8aa-cb39-48f1-94b6-46702e3968fd",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016456_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2600,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "b787de44830980494ca3fbccf8da7e9d2d08b0e65ee7d147c2cf480dba5aaa24",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 60X60_10",
+      "id": "3a9ed591-f7e6-4320-8fc2-b6d99f41be80",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016456_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2396,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "eac90e51c63832c3fddddd8eee18c4805658139ce335a3e6c9554d37768c2edf",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 60X60_05",
+      "id": "b082731b-be17-46f9-a72a-4f1e056b2755",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016456_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2370,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "aa28de766db56c14a7b30761e1bf3e3214a31c8d1b05694de2bdb0029436a902",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 60X60_02",
+      "id": "9a1323fe-5d93-4e3f-b260-91e85fe50eaf",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016456_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2060,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "af27e93cb6dfc81842462d0342e568a94717bc9f8f54a73a52c176bb59488d6a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI MUD 60X60_09",
+      "id": "e7e401d0-2588-40ab-9b59-11b4247329fd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016456_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1962,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "fbf207520f4f25f915fac9c807d41a682873f500c366dddac19688ee777dede3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI MUD 60X60_04",
+      "id": "9f506fe7-77ec-4f0b-8e75-b7345580fc9e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016456_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2504,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "f267ff09c53410bf068af6d53a49a8d52423ca8311ee7abd195e4527ccaa7b82",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI MUD 60X60_08",
+      "id": "4e342ae2-8360-4948-8a69-caaf4a84db1b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016456_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1992,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "0e90515e81bc57862716f88b50a544b216963a2166cbef906933f5a7735e9104",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI MUD 60X60_07",
+      "id": "6aa58776-8bbe-4d27-9064-e603e672c29e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016456_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2206,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - MUD - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "db433728caf5aabcb6590d148e444159a0ef4abf4542a2b591aa340236740fc5",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI MUD 60X60_06",
+      "id": "536bb2e2-49c2-4ee4-b1da-4e0ac625e45d",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016446",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016446-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016446_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016446-20x120-nat-90299-0; wall gardenia-wall-tile-i-pigmenti-mud-0016446-20x120-nat-90299-0",
+   "faces": [
+    {
+     "file": "0016446_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1720,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "89677f465d549ee132a247f7a4082502d6956c05bca3f7119e93c4db8f1c97eb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 20X120_01",
+      "id": "2b86437f-01c7-4577-9e4c-a9df3fdbbaa4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016446_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1662,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "dbd9177a401d15c4d15e9e2f813a52f0d43bd20a8cc139f6bec95faca2d217af",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 20X120_06",
+      "id": "78c1e342-ce17-40d4-ab34-8c4d3c8197af",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016446_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1658,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "11acf87946782a37353b0d2625ac12ddc1a0546f5b29b2108280eb029f1ccdf6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 20X120_04",
+      "id": "5eabe837-6f82-45df-a7d4-b923ec1ff1a6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016446_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1676,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "58dbcd683c1b2d82ac99ccd70279a1ec0c95d2f3e8fad052a5efed66077bec57",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 20X120_09",
+      "id": "0b65fa95-e04f-4d52-ae0b-f9f12d533d59",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016446_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1298,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "d6eac5c61e2a6898bf377644a2e0d88dbeab71ad1ee5c64f2f4aae5c880f8183",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 20X120_07",
+      "id": "8ede888c-8993-4f9a-932a-b865cb9eba3b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016446_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1298,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "639a0d51949045b415df14d69627678343175e580f9c6950b7f83b1f2a576eea",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI MUD 20X120_08",
+      "id": "ee38fdc7-d67b-49b1-9627-2c70b2cf37f2",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016446_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1580,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "9a2bc2ba22213da7d80f8fd5cb501902739e343c0119ccb06728e9950ae27143",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI MUD 20X120_05",
+      "id": "a078b513-88db-4c29-b50c-9dad3ed2ebff",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016446_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1712,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "509531eabdf0f80aada6b524e724e2740060c1587904095dbb46b5bec8d1b043",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI MUD 20X120_02",
+      "id": "d0dd3480-75fa-4cda-b036-5a99cf1a9fa3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016446_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1460,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0bcb918219ca1d385ab80a630ef0956867938e619ed570250d0c277300ae8ce4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI MUD 20X120_03",
+      "id": "4ea1446c-62ff-4c24-beb8-0b60d5bdd92e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016446_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1508,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - MUD - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "fa7d1f98ec30c7fe989288f0150ca14eb40b169bef33c0d28687ccc002904ca0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI MUD 20X120_10",
+      "id": "f0f56fef-2b9e-41ad-b754-823617f221aa",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016612",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016612-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016612_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016612-30x30-nat-90329-0; wall gardenia-wall-tile-i-pigmenti-mud-0016612-30x30-nat-90329-0",
+   "faces": [
+    {
+     "file": "0016612_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 852,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "77734cf3b00a3222095db3dd5e86cc6ed4def0a3ef44b2ec86b880be67c123aa",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 30X30_01",
+      "id": "7b5bcdd8-d47b-4b64-8f55-12a75a9b2d1b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016612_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 618,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "6fb5183d3a401d9e30fd9e93a6b91754fb909a271e12828727ffbc81bae5344c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 30X30_10",
+      "id": "b0eed14e-11f2-4b20-b6e1-64586bb80596",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016612_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 568,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "3b1a47472818aad276a7f1ee99f9cfaa23d066d3e55e8b84163b23a65687e293",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 30X30_08",
+      "id": "80b71c5d-2d70-4fa6-852c-7a2ede5fa2b9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016612_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 574,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "aa367c4c030ff8e36b34ea859fca6a7813bc26f71780d820ba5277d6993ccfaf",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 30X30_07",
+      "id": "71ef2bcb-066b-444d-ac79-7d28a2c7849d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016612_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 700,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "28ec5108a8141ff5ae3545251785daed75a7d80b870c8e3d6c59c560fd12edfb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 30X30_09",
+      "id": "7f37a399-87b6-453e-98b2-9a782987e4be",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016612_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 672,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "2f2d97c7c964fa4cff1745f9c7b4329904bfe75c37be66dea36de722cdfdba07",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI MUD 30X30_03",
+      "id": "d982b0d4-4e87-42ee-b2cd-9669f4ed30dd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016612_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 848,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "90428ef47be467692295960572b6a988f0a251b69d954a67a65a92e211e292ae",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI MUD 30X30_06",
+      "id": "5f2266a2-7c6b-42ef-bc12-1730a7842957",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016612_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 704,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "e911c17955ae6bffd06e6314e2d865eb31e046e815b9741729f49bccd8754f46",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI MUD 30X30_05",
+      "id": "483db57c-a4e4-43d9-9ebb-4a8bdb75a4b4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016612_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 598,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "39370e0e43e06ab93d7b8a5e4f07e4541e804849184de710252afae18642e5a1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI MUD 30X30_02",
+      "id": "d4cc6ed9-70d0-45df-a5af-d5b66a9524ec",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016612_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 972,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - MUD - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "727d7e41cc9bb64d9bfe3883d729f87724d829f6f1184a2b6b198b5efc1b8f85",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI MUD 30X30_04",
+      "id": "39d7e0c3-d1be-4014-a36a-101e3150a6b7",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016466",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mud/pf60016466-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016466_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-mud-0016466-10x60-nat-90319-0; wall gardenia-wall-tile-i-pigmenti-mud-0016466-10x60-nat-90319-0",
+   "faces": [
+    {
+     "file": "0016466_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 356,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "1b3d14862adefb38cbe54820776702e3a5c086bc0e6ec039bff3de8055bb756f",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI MUD 10X60_01",
+      "id": "af383de1-3d3b-4277-96a7-6f4f86f5405f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016466_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 532,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ed659424418e0feb854f63cde12820eb33ebb4b4de1235303536c690443df730",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI MUD 10X60_07",
+      "id": "b52746c3-6345-4868-90ce-fe15e96d28dc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016466_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 540,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "51dcfd8cda26cedc7cb3a28f8ffb9e7e981ce6133b922f88e37eedd16d6e08a8",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI MUD 10X60_04",
+      "id": "df5f3739-5b9a-4109-8717-53ace09be256",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016466_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 580,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "25f65e1278f39e66b197efe97a8df7ea5e723aeffe6057bc993a3f57aa1a78ea",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI MUD 10X60_08",
+      "id": "32281a79-981c-497c-ace9-340ec6c1e5be",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016466_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 616,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "8cde8518ff803c952df1c4529d4c7723da79b7e3c8817025dbef4a78f6cf4a75",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI MUD 10X60_09",
+      "id": "c9a7a042-f368-490d-b2c5-59ca219b4278",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016466_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 454,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "bbcb2ecd85761ba2f30cfcdb6dcc547b97b524498ec5e4351bd2e267b90fc97a",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI MUD 10X60_06",
+      "id": "052d4a67-d020-4521-9226-92f5073f02f4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016466_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 426,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "57742edbf9544a2a211c27ba6053f38f0dc7c94a7072b3f2e78590d253735905",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI MUD 10X60_05",
+      "id": "9e16ac43-6341-4158-b57d-b5d1e12f393d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016466_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 434,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "76d4d3515d4357b208b818e02c17ad781f6bfc28d2de860fbbaee8035bb33982",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI MUD 10X60_03",
+      "id": "a4b51bbf-7406-41d3-b9b1-855d74e3c0b1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016466_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 370,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "19053d9424b8e013ce5392e81c217514e433b2cfbae8a956c2478b67df847378",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI MUD 10X60_02",
+      "id": "74b0f75d-8564-4cf2-9bbf-c459e020cb23",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016466_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 468,
+     "source_zip": "I PIGMENTI - MUD - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - MUD - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "fcdbbd2858d559b3b84339c189d4313dca7d45a8f25117ee47790dce6a4caed2",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI MUD 10X60_10",
+      "id": "6badb725-0e95-43e5-8fbc-b4a3c29d1d5a",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

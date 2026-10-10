@@ -14,6 +14,7 @@ import {
   MODEL_SELECTOR_REPRESENTATIVE_BY_PRODUCT_ID,
 } from "../lib/design-page-model-maps";
 import { buildDesignPageSelectionPanelModels } from "../lib/design-page-selection-panel-model";
+import { CATALOG_ITEMS } from "../lib/catalog";
 
 const root = process.cwd();
 const readSource = (relativePath: string) =>
@@ -22,13 +23,22 @@ const readSource = (relativePath: string) =>
 const workspaceSource = readSource(
   "components/editor/design-page/DesignPageWorkspace.tsx",
 );
-const panelSource = readSource(
+// The panel's header ("Selected", Lock, Deselect) is its own file (UX 4f).
+const panelSource = [
   "components/editor/design-page/SelectedItemPanel.tsx",
-);
+  "components/editor/design-page/SelectedItemPanelHeader.tsx",
+].map(readSource).join("\n");
 const detailsPanelSource = readSource(
   "components/editor/SelectedItemDetailsPanel.tsx",
 );
-const selectedItemSource = `${panelSource}\n${detailsPanelSource}`;
+const summaryCardSource = readSource(
+  "components/editor/design-page/SelectedItemSummaryCard.tsx",
+);
+const quickActionsSource = readSource(
+  "components/editor/design-page/SelectedItemQuickActions.tsx",
+);
+const selectionModelSource = readSource("lib/design-page-selection-panel-model.ts");
+const selectedItemSource = `${panelSource}\n${detailsPanelSource}\n${summaryCardSource}\n${quickActionsSource}`;
 const panelRegionSource = readSource(
   "components/editor/design-page/DesignPagePanelRegion.tsx",
 );
@@ -59,8 +69,8 @@ assert.match(
 );
 assert.match(
   workspaceSource,
-  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}\s*\/>/,
-  "The workspace should compose the panel region through its typed model.",
+  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}(?:\s+planTools=\{presentExportDialog\})?\s*\/>/,
+  "The workspace should compose the panel region through its typed model (and the plan's tools, UX 4e).",
 );
 assert.doesNotMatch(
   workspaceSource,
@@ -70,14 +80,29 @@ assert.doesNotMatch(
 
 const toggleLock = () => undefined;
 const removeItem = () => undefined;
+const deselect = () => undefined;
 const noop = () => undefined;
+const castleryProduct = Object.values(CATALOG_ITEMS).find(
+  (product) => product.commerce.type === "affiliate" && product.commerce.data.url && product.commerce.data.priceHint,
+)!;
+assert.ok(castleryProduct, "The local catalogue has a product sold by a shop, with a price.");
 const buildSelectionModels = (rotationEnabled: boolean) =>
   buildDesignPageSelectionPanelModels({
     cabinet: { state: { cabinet: {}, project: {} }, configuration: {}, actions: {} },
     item: {
       state: {
         document: { rooms: [], activeRoomId: null },
-        details: { product: { id: "selected-product" }, item: { instanceId: "selected-item" } },
+        details: {
+          product: castleryProduct,
+          item: {
+            instanceId: "selected-item",
+            productId: castleryProduct.id,
+            variantId: castleryProduct.defaultVariantId,
+            position: [0, 0, 0],
+          },
+          measurementUnit: "cm",
+        },
+        summarySource: { style: "modern", planningDimensionsMm: { w: 705, d: 850, h: 850 } },
         rotation: { enabled: rotationEnabled, state: { selectedRotationDegrees: 45 } },
         productModelVariants: {},
         productFinishes: {},
@@ -87,7 +112,6 @@ const buildSelectionModels = (rotationEnabled: boolean) =>
             showFullDimensions: false,
             showDeliveryWarranty: false,
             showRotationControls: true,
-            selectedItemCommerceType: "cart_ready",
             selectedItemLockLabel: "Lock",
           },
           adjustableHangingHeight: null,
@@ -103,12 +127,12 @@ const buildSelectionModels = (rotationEnabled: boolean) =>
           setSelectedItemPosition: noop,
           applySelectedItemStyleAlternative: noop,
           swapSelectedItemToCheaper: noop,
-          upgradeSelectedItem: noop,
+          swapSelectedItemToPricier: noop,
           openSelectedItemCommerce: noop,
           toggleSelectedItemLock: toggleLock,
-          removeSelectedItemFromDesign: removeItem,
         },
-        placement: {},
+        placement: { onDelete: removeItem, onDuplicate: noop },
+        selection: { clearAllSelection: deselect },
         rotation: {},
         productConfiguration: { model: {}, finish: {}, selectVariant: noop },
       },
@@ -116,10 +140,18 @@ const buildSelectionModels = (rotationEnabled: boolean) =>
   } as unknown as Parameters<typeof buildDesignPageSelectionPanelModels>[0]);
 
 const selectionModels = buildSelectionModels(true);
-assert.equal(selectionModels.selectedItem.state.details.product.id, "selected-product");
+assert.equal(selectionModels.selectedItem.state.details.product.id, castleryProduct.id);
 assert.equal(selectionModels.selectedItem.state.rotation?.selectedRotationDegrees, 45);
 assert.strictEqual(selectionModels.selectedItem.actions.onToggleLock, toggleLock);
+// One Remove for a product (UX audit ED3, FU12): the placement's delete, with its lock check.
 assert.strictEqual(selectionModels.selectedItem.actions.onRemove, removeItem);
+assert.strictEqual(selectionModels.selectedItem.actions.onDeselect, deselect);
+// The summary: the product's own words, its size in the design's units.
+const summary = selectionModels.selectedItem.state.summary;
+assert.equal(summary.title, castleryProduct.title);
+assert.equal(summary.sale.kind, "retailer");
+assert.match(summary.priceLabel, /^S\$[\d,]+$/);
+assert.equal(summary.sizeLabel, "70.5 W × 85 D × 85 H cm");
 assert.equal(
   buildSelectionModels(false).selectedItem.state.rotation,
   null,
@@ -152,16 +184,23 @@ assert.strictEqual(
   selectionModels.selectedItem,
   "client preview should keep the Adjust-mode panel mounted for its leaf-level aria and opacity policy.",
 );
-assert.equal(
-  buildDesignPagePanelRegionAdapter({
-    ...panelModelInput,
-    state: { ...panelModelInput.state, editorMode: "design" },
-  }).state.selectedItem,
-  null,
-  "the pure panel adapter should gate selected-item composition to Adjust mode.",
-);
+// Products show the one item panel in Plan, Furnish and Suggest a layout (UX 4f); not in Shop or Present.
+for (const editorMode of ["design", "ai"] as const) {
+  assert.strictEqual(
+    buildDesignPagePanelRegionAdapter({ ...panelModelInput, state: { ...panelModelInput.state, editorMode } }).state.selectedItem,
+    selectionModels.selectedItem,
+    `the item panel shows in ${editorMode} mode.`,
+  );
+}
+for (const editorMode of ["buy"] as const) {
+  assert.equal(
+    buildDesignPagePanelRegionAdapter({ ...panelModelInput, state: { ...panelModelInput.state, editorMode } }).state.selectedItem,
+    null,
+    `the pure panel adapter keeps the item panel out of ${editorMode} mode.`,
+  );
+}
 
-for (const callbackName of ["onToggleLock", "onRemove"] as const) {
+for (const callbackName of ["onToggleLock", "onRemove", "onDeselect", "onViewProduct", "onDuplicate"] as const) {
   assert.match(
     panelSource,
     new RegExp(`actions\\.${callbackName}\\b`),
@@ -171,10 +210,6 @@ for (const callbackName of ["onToggleLock", "onRemove"] as const) {
 
 const toggleLockSource = controllerSource.slice(
   controllerSource.indexOf("const toggleSelectedItemLock"),
-  controllerSource.indexOf("const removeSelectedItemFromDesign"),
-);
-const removeSource = controllerSource.slice(
-  controllerSource.indexOf("const removeSelectedItemFromDesign"),
   controllerSource.indexOf("const selectedItemLockLabel"),
 );
 assert.match(
@@ -182,15 +217,19 @@ assert.match(
   /getSelectedIds\(\)[\s\S]*?getItems\(\)[\s\S]*?commitItems\(/,
   "Locking should keep click-time multi-selection ref reads in the controller callback.",
 );
+assert.doesNotMatch(
+  controllerSource,
+  /removeSelectedItemFromDesign/,
+  "The panel's second remove path (unnamed, no lock check) is gone: Remove is the placement's delete.",
+);
 assert.match(
-  removeSource,
-  /commitItems\([\s\S]*?getSelectedIds\(\)[\s\S]*?getPrimaryId\(\)[\s\S]*?updateSelection\(/,
-  "Removing should keep item and primary-selection mutations in the controller callback.",
+  selectionModelSource,
+  /const \{ onDuplicate, onDelete, \.\.\.placementDetails \} = item\.actions\.placement;[\s\S]*onRemove: onDelete,/,
+  "The item panel's Remove should be the placement's delete.",
 );
 
 for (const callbackName of [
   "toggleSelectedItemLock",
-  "removeSelectedItemFromDesign",
 ] as const) {
   assert.match(
     controllerSource,
@@ -217,8 +256,8 @@ assert.match(
 );
 assert.match(
   panelSource,
-  /max-h-\[calc\(100vh-8\.75rem-env\(safe-area-inset-bottom\)\)\][^"`]*overflow-y-auto[^"`]*md:max-h-\[calc\(100vh-4\.75rem\)\]/,
-  "The panel should preserve its bounded scrolling container, clear of the phone step bar.",
+  /right-4 top-bar-17 z-40 md:top-bar-6 w-\[320px\] max-h-\[calc\(100vh-12\.75rem-env\(safe-area-inset-bottom\)\)\][^"`]*overflow-y-auto[^"`]*md:max-h-\[calc\(100vh-var\(--editor-bar-h\)-2\.5rem\)\]/,
+  "The panel should preserve its bounded scrolling container: on phones under the canvas pills and clear of the step bar.",
 );
 assert.match(
   panelSource,
@@ -237,29 +276,50 @@ assert.doesNotMatch(
 );
 assert.match(
   panelSource,
-  /sticky top-0 z-20 -mx-4 mb-2 border-b[^"`]*px-4 py-2/,
-  "The Selected Item heading should remain sticky while the inspector scrolls.",
+  /sticky top-0 z-20 -mx-4 -mt-4[^"`]*border-b[^"`]*px-4 py-2/,
+  "The Selected heading should remain sticky while the panel scrolls.",
 );
+// As in the Furnish mockup (UX audit FU12): "Selected" and a Deselect (×), no collapsed summary.
 assert.match(
   panelSource,
-  /data-testid="selected-item-panel-collapse"[\s\S]*aria-expanded=\{!collapsed\}[\s\S]*Collapse[\s\S]*Expand/,
-  "The selected-item inspector should expose an accessible compact-state toggle.",
+  />Selected<\/span>[\s\S]*data-testid="selected-item-deselect"[\s\S]*aria-label=\{`Deselect \$\{title\}`\}[\s\S]*onClick=\{onDeselect\}/,
+  "The panel should say Selected and offer a named Deselect.",
 );
+assert.doesNotMatch(panelSource, /selected-item-panel-collapse|selected-item-panel-summary|Selected Item/);
+// Where it's sold, in the app's words.
 assert.match(
-  panelSource,
-  /data-collapsed=\{collapsed \? "true" : "false"\}[\s\S]*data-testid="selected-item-panel-summary"[\s\S]*state\.details\.selectedBrand[\s\S]*state\.details\.product\.title/,
-  "Collapsed selected-item inspectors should preserve the selected product identity.",
+  summaryCardSource,
+  /data-testid="selected-item-availability"[\s\S]*?Sold by \{sale\.retailer\}[\s\S]*?aria-label=\{`View product at \$\{sale\.retailer\}`\}[\s\S]*?onClick=\{onViewProduct\}[\s\S]*?View product/,
+  "A product sold by a shop should read \"Sold by <shop> · View product\".",
 );
+assert.match(summaryCardSource, /"Checkout here, from your Shopping list" : "Not sold online yet"/);
+assert.match(panelSource, /onViewProduct=\{actions\.onViewProduct\}/);
+for (const retired of ["External retailer", "Check stock", "View retailer", "Needs commerce review", "Buy now"]) {
+  assert.ok(
+    !`${panelSource}\n${detailsPanelSource}\n${summaryCardSource}\n${quickActionsSource}`
+      .replace(/\/\*\*[\s\S]*?\*\//g, "")
+      .includes(retired),
+    `The item panel should not say "${retired.trim()}" (the shop's own words; UX audit FU12).`,
+  );
+}
+// One Remove: Rotate, Duplicate and Remove in one row, and no Delete left in the details.
 assert.match(
+  quickActionsSource,
+  /data-testid="rotation-controls-toggle"[\s\S]*?aria-expanded=\{rotationOpen\}[\s\S]*?Rotate[\s\S]*?data-testid="selected-item-duplicate"[\s\S]*?Duplicate[\s\S]*?data-testid="selected-item-delete"[\s\S]*?onClick=\{onRemove\}[\s\S]*?Remove/,
+  "Rotate, Duplicate and Remove should sit in one row, in that order.",
+);
+assert.doesNotMatch(
   detailsPanelSource,
-  /data-testid=\{[\s\S]*?"selected-item-availability"[\s\S]*?External retailer[\s\S]*?Check current stock and delivery at \$\{product\.commerce\.data\.retailer\}[\s\S]*?Check stock/,
-  "Affiliate products should place a compact stock action beside the external-retailer badge.",
+  /selected-item-delete|selected-item-duplicate|rotation-controls-toggle|>\s*Delete\s*</,
+  "The details keep the placement tools only: no second Delete, Duplicate or Rotation toggle.",
 );
+// Named swaps: what it swaps to, and what that costs.
 assert.match(
-  panelSource,
-  /onCheckRetailerStock=\{[\s\S]*?state\.details\.product\.commerce\.type === "affiliate"[\s\S]*?actions\.onOpenCommerce/,
-  "The external-retailer stock action should use the selected-item commerce handler.",
+  quickActionsSource,
+  /\{swap\.title\}<\/span>\s*<span className="shrink-0">· \{swap\.priceLabel\}[\s\S]*?label="Swap for cheaper"[\s\S]*?label="Swap for pricier"/,
+  "Swaps should name the product they swap to and its price.",
 );
+assert.match(panelSource, /data-testid="selected-item-dimensions"[\s\S]*?state\.summary\.sizeLabel/);
 
 for (const childName of [
   "SelectedItemDetailsPanel",
@@ -559,37 +619,37 @@ assert.equal(
 for (const label of [
   "Swap for cheaper",
   "Swap for pricier",
-  "Check current stock and delivery at",
-  "Check stock",
-  "View retailer",
-  "Buy now",
-  "Needs commerce review",
-  "Lock",
-  "Unlock",
+  "Sold by",
+  "View product",
+  "Rotate",
+  "Duplicate",
   "Remove",
 ] as const) {
   assert.match(
     selectedItemSource,
     new RegExp(label),
-    `The selected-item panel should preserve the ${label} commerce/action copy.`,
+    `The selected-item panel should keep the ${label} copy.`,
   );
 }
-for (const callbackName of [
-  "onSwapToCheaper",
-  "onUpgradeItem",
-  "onOpenCommerce",
-  "onToggleLock",
-  "onRemove",
+for (const [prop, callbackName] of [
+  ["onSwapToCheaper", "onSwapToCheaper"],
+  ["onSwapToPricier", "onSwapToPricier"],
+  ["onToggleLock", "onToggleLock"],
+  ["onRemove", "onRemove"],
+  ["onDuplicate", "onDuplicate"],
+  ["onRotate", "onToggleRotation"],
+  ["onDeselect", "onDeselect"],
 ] as const) {
   assert.match(
     panelSource,
-    new RegExp(`onClick=\\{actions\\.${callbackName}\\}`),
-    `${callbackName} should remain a passed button callback.`,
+    new RegExp(`${prop}=\\{actions\\.${callbackName}\\}`),
+    `${callbackName} should remain a passed callback.`,
   );
 }
+assert.match(panelSource, /lockLabel=\{state\.lockLabel\}/);
 assert.match(
   panelSource,
-  /\{state\.lockLabel\}/,
+  /onClick=\{onToggleLock\}[\s\S]*?\{lockLabel\}/,
   "The lock button should render the workspace-derived selection label.",
 );
 

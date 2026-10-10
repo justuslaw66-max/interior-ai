@@ -1,0 +1,706 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - LIMOGES WHITE - minimali.zip (70468702 bytes, sha256 88c58e93ebf613e2ed7a0f79c65cd32574a6fa87ab3d9186df05d68382ec4aac).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0012329",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/pf60012329-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0012329_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-white-0012329-120x280-nat-140005-0; wall gardenia-wall-tile-pietra-viva-limoges-white-0012329-120x280-nat-140005-0",
+   "faces": [
+    {
+     "file": "0012329_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 267552,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "dd249206ac0f10761f238ef9aeb630ee0c8a4080d1468269da13e107546edaac",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES WHITE 120X280@1",
+      "id": "04a5c68e-1328-4aae-86a8-3a40a3a494f4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012329_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 254458,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2032,
+      4096
+     ],
+     "source_sha256": "92881da75dab5e8d1b71142e65fa631f27936100d66e3bff37b79759c4208fa6",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "15.8% wider than 1200x2800 mm: 277 px of width (95 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES WHITE120X280@2",
+      "id": "5a332629-4866-4254-a429-8caf72b71007",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012922",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/pf60012922-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012922_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-white-0012324-120x120-139993-0 (uses 0012922's faces: ABK's 6 Antique 3D pictures are 0012922's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-limoges-white-0012332-80x80-nat-139999-0 (uses 0012922's faces: ABK's three 80x80 pictures are three of the 120x120 pictures, byte for byte; the 120x120 faces are used); floor gardenia-flooring-pietra-viva-limoges-white-0012922-120x120-nat-139991-0; wall gardenia-wall-tile-pietra-viva-limoges-white-0012324-120x120-139993-0 (uses 0012922's faces: ABK's 6 Antique 3D pictures are 0012922's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-white-0012332-80x80-nat-139999-0 (uses 0012922's faces: ABK's three 80x80 pictures are three of the 120x120 pictures, byte for byte; the 120x120 faces are used); wall gardenia-wall-tile-pietra-viva-limoges-white-0012922-120x120-nat-139991-0",
+   "faces": [
+    {
+     "file": "0012922_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73800,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "828ea058ea9ee5f4df43803c9c742dd12add48d2f383c1ecba4b068d641f72ee",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES WHITE 120X120@1",
+      "id": "8763b121-0a27-481c-8022-5c6a97a4dd64",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012922_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 83592,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2ebf56497154f2835ce8cafe422fdded2e8dac9c170b99b873adb5775e66febb",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES WHITE 120x120@2",
+      "id": "cff36b81-4642-4c88-bb8a-4e752678d363",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012922_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64222,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bf67d783591257cb7064fe6eede1bdadd309bc50cd1f30d68921d8bfd12265d5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO LIMOGES WHITE 120X120@3",
+      "id": "e1191290-fe70-48f3-b87f-abc971809729",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012922_04.webp",
+     "face": 4,
+     "width_mm": 1390,
+     "height_mm": 1390,
+     "width_px": 834,
+     "height_px": 834,
+     "bytes": 149850,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "0f088a8a438edcd3c699005ec16d8d3e7721d160bd8e7599d3520ae8c3d3e5fe",
+     "source_px_per_mm": 1.686,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO LIMOGES WHITE120X120_4",
+      "id": "5ca59c9a-09d9-4ac7-8a94-573f5815758f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012922_05.webp",
+     "face": 5,
+     "width_mm": 1390,
+     "height_mm": 1390,
+     "width_px": 834,
+     "height_px": 834,
+     "bytes": 160840,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "67e94e2ca0b9902b9c10d767bb7a43e78f09efb7a95234c2252d1eeb1bf5d4f2",
+     "source_px_per_mm": 1.686,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO LIMOGES WHITE120X120_5",
+      "id": "f26c028b-c142-49ad-92d6-f5895a257477",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012922_06.webp",
+     "face": 6,
+     "width_mm": 1390,
+     "height_mm": 1390,
+     "width_px": 834,
+     "height_px": 834,
+     "bytes": 143750,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "8bce48b1b89ffb9a52295d7429f71c04ac3cb7d857e35fe8b9005139257ce7d5",
+     "source_px_per_mm": 1.686,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO LIMOGES WHITE120X120_6",
+      "id": "47555c09-9e1d-4d4f-a12d-ca579680ee9e",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x160",
+   "item_code": "0014673",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/pf60014673-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 1600
+   },
+   "swatch": "0014673_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-white-0014673-80x160-nat-139964-0; wall gardenia-wall-tile-pietra-viva-limoges-white-0014673-80x160-nat-139964-0",
+   "faces": [
+    {
+     "file": "0014673_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 81226,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "d6ca948c2533f0e7882d8d75bc639ff385d2031c07f5c4202f1aa33dc7ed3d61",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_04",
+      "id": "6d0821b1-7ea5-48b9-9d03-16f0b614fb17",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014673_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 87376,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "b925e9e37d335cd4ae0701c8d832f400162507976ec32a9bd7e4e2c87d827d21",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_07",
+      "id": "013fa04c-c4d4-4681-892c-1af857bda490",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014673_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 91838,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "7450023fdf6af51607ba8cc5e3ad85311737686db4775626cbfd3e6c7a0bf54f",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_06",
+      "id": "7571d6dd-d859-4c28-b22c-5857118fabf5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014673_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 92682,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "45e7cdda29493be1510a7e33ea6618846d3cbb92a9866ce7ed84a31af4f40065",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_05",
+      "id": "e69bc547-84e3-4046-a431-5a01bad37b20",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014673_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 79664,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "3357476438edff03710e28a606c99dd8bcb5c36b0f3df5064dc45d1b94e45bbe",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_08",
+      "id": "7f515057-f229-4bc5-b40b-fb2dbc6a6586",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014673_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 90166,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "4a9f83bbfc185adc03f19fc95152196d9973e35862565351eaebc937dfd95e53",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_01",
+      "id": "8a42c3d9-9bd5-4563-8b09-4999f9925351",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014673_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 86436,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "dca75275474132c97463558e2666b30f5410e080575287f4ce1af60c34500d01",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_02",
+      "id": "b9003e67-258b-4b92-94f7-269db21ecc6a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014673_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 81970,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 80X160 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "9b75d6c32247133f2c100f69932f50a1b3ded0ad0b1ed9c8e7401c65452b5a22",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA LIMOGES WHITE 80X160_03",
+      "id": "ab44b670-533a-4399-af91-2c635f969e67",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012927",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-white/pf60012927-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012927_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-white-0012319-60x120-139997-0 (uses 0012927's faces: ABK's 10 Antique 3D pictures are 0012927's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-limoges-white-0012927-60x120-nat-139995-0; wall gardenia-wall-tile-pietra-viva-limoges-white-0012319-60x120-139997-0 (uses 0012927's faces: ABK's 10 Antique 3D pictures are 0012927's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-white-0012927-60x120-nat-139995-0",
+   "faces": [
+    {
+     "file": "0012927_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45186,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b83b6d99f68e4684917420935a5e413d95bababa90efa4a73f77711299ace86c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@1",
+      "id": "e2e45f53-35df-4a7d-8ee5-2fb27b943f35",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012927_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41926,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "860eed5251d9e86e1ceda9c258594040b20221edc8c0251418e881b2a3bde8ca",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@2",
+      "id": "24bd2159-cb9b-470c-8108-d2db982fce3c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012927_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39730,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "81e063d04b4a1f3c775c26b5cc5165f8e77963e4132514d753456660ccb76748",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@3",
+      "id": "6bef22af-93af-4811-80f7-6cd7cc2c6688",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012927_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40070,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "07498ec7212a4b96eec67a9a6af1c3e5b282d8d6117d62eec792baf5139451bb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@4",
+      "id": "bc631713-4e99-44f0-8fea-657b6b06e87f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012927_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47674,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2ed541e9e482904bda1c12b1d6fcb6532f21eb58546b277dad4006e92292ae19",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@5",
+      "id": "7a9c879f-545b-42fa-b394-a968e8f6fd51",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012927_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49068,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c4bdd8e41f6fe1c90ff0afd4fb9509c6a39efd804979686cc41bd8fa860798eb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@6",
+      "id": "2da92442-4e8d-42ca-a3b7-d4eb8e5be6eb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012927_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50520,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1012,
+      2024
+     ],
+     "source_sha256": "b2f77194ae49259c13182180e35fbbcccd3bd1228d1b432912360b2f3756fe98",
+     "source_px_per_mm": 1.687,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@7",
+      "id": "8aebb5ed-9bf5-4605-b10e-d1c0f4c70182",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012927_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 59000,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1012,
+      2024
+     ],
+     "source_sha256": "5c89fb16010d5098d1496723d4bf710ca7f212ca46774207259328ed5973f84e",
+     "source_px_per_mm": 1.687,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@8",
+      "id": "f46f7d7a-72c5-4cee-b0e3-230c1273fba1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012927_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45810,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1012,
+      2024
+     ],
+     "source_sha256": "6ca86d30b2d4f5acd5fc226e46b1fa142f903e3c29907855ee78ac27b198e7e3",
+     "source_px_per_mm": 1.687,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@9",
+      "id": "796bc19c-8ab8-45d7-9d71-cd3f9c30f9a9",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012927_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57436,
+     "source_zip": "PIETRA VIVA - LIMOGES WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES WHITE - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1012,
+      2024
+     ],
+     "source_sha256": "381cabd2b11b2eea95cefa32f95b0401b77ea331a57daff13fe5fb02984d58de",
+     "source_px_per_mm": 1.687,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO LIMOGES WHITE 60X120@10",
+      "id": "ee67b650-0186-4499-99ff-6bb12e5798ef",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

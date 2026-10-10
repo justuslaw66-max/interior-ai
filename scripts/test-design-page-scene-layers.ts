@@ -156,7 +156,6 @@ assertSourceOrder(
     "useDesignPageViewportShellRegistration({",
     "useEditorMode(",
     "useDesignPageTransientFeedback({",
-    "const seatingZoneAutoDisabledRef",
     "useDesignPageWorkspacePaywallRegistration({",
     "useDesignPageEditorClientLifecycle({",
     "useDesignPageSnapshotDocumentState()",
@@ -228,9 +227,6 @@ assertSourceOrder(
 assertSourceOrder(
   shellRuntimeSource,
   [
-    "hoveredCartInstanceId, setHoveredCartInstanceId",
-    "showPresentModal, setShowPresentModal",
-    "presentModeRoomId, setPresentModeRoomId",
     "useDesignPageSurfaceStateController()",
     "editorMode, setEditorMode",
     "guidedPlanStartMode, setGuidedPlanStartMode",
@@ -240,15 +236,15 @@ assertSourceOrder(
     "const handlePlanDebugMetricsChange",
     "const handlePlan2DCameraDiagnosticsChange",
   ],
-  "Editor shell runtime should preserve cart-through-camera-diagnostics hook order"
+  "Editor shell runtime should preserve surface-through-camera-diagnostics hook order"
 );
 assertSourceOrder(
   clientLifecycleSource,
   [
-    '"seating_zone_auto_disabled"',
+    'localStorage.getItem("placement_add_mode")',
     'localStorage.setItem("placement_add_mode"',
     "preloadCoreAssets()",
-    'if (state.editorMode === "present")',
+    'if (state.editorMode === "buy")',
     "const signInWithReturn",
   ],
   "Editor client lifecycle should preserve hydration-through-sign-in hook order"
@@ -450,14 +446,28 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "mapPlanOpeningsToRoomRenderer(",
-  "mapPlanFixedElementsToRoomRenderer(",
-  "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
+  "useWholeHomeRendererBindings(state, actions)",
+  "useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan))",
 ] as const) {
   assert.ok(
     structureSource.includes(expected),
     `Structure layer should own ${expected}.`
   );
+}
+// The 3D house renderer's openings, memoized so a page re-render keeps them.
+const wholeHomeBindingsSource = readSource("components/editor/design-page/useWholeHomeRendererBindings.ts");
+assert.ok(
+  wholeHomeBindingsSource.includes("useMemo(() => mapPlanOpeningsToRoomRenderer(sceneOpenings, rooms), [rooms, sceneOpenings])"),
+  "The whole-home renderer bindings should own the memoized 3D openings."
+);
+// The structure layer's 2D overlays, memoized so a page re-render keeps them.
+const planOverlaysSource = readSource("lib/useRoomRendererPlanOverlays.ts");
+for (const expected of [
+  "mapPlanOpeningsToRoomRenderer(openings, rooms), [openings, rooms]",
+  "mapPlanFixedElementsToRoomRenderer(",
+  "mapPlanAnnotationsToRoomRenderer(annotations), [annotations]",
+] as const) {
+  assert.ok(planOverlaysSource.includes(expected), `The plan overlays hook should own ${expected}.`);
 }
 
 assert.match(
@@ -594,8 +604,8 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /interactive=\{\s*configuration\.editorMode !== "present" &&\s*!configuration\.isClientPreview\s*\}/,
-  "Whole-home structure interaction should remain disabled in present and client-preview modes."
+  /interactive=\{!configuration\.isClientPreview\}/,
+  "Whole-home structure interaction should remain disabled in Client Preview."
 );
 assert.match(
   housePlanRenderer3DSource,
@@ -651,7 +661,7 @@ for (const expected of [
   "raycast={() => null}",
   "<DesignerGrid",
   "<CirculationHeatmapOverlay",
-  'if (zone.source === "auto" && !showingPlacementZones) return null;',
+  'if ((zone.source === "auto" || !configuration.zoneOutlinesAlways) && !showingPlacementZones) return null;',
   "!supportSurface && zones.compatibleIds.has(zone.id)",
   'helperLabel={compatible ? `Tap to place in ${label}` : undefined}',
   "actions.targetPendingPlacementToRoom(",
@@ -750,11 +760,11 @@ assert.doesNotMatch(
 );
 const structureConfigurationSource =
   adapterSource.match(
-    /structure:\s*\{\s*editorMode: editor\.editorMode,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
+    /structure:\s*\{\s*isClientPreview: editor\.isClientPreview,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
   )?.[0] ?? "";
 assert.match(
   structureConfigurationSource,
-  /editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
+  /isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
   "The scene adapter should map editor and plan structure configuration."
 );
 assert.doesNotMatch(
@@ -825,8 +835,13 @@ assert.match(
 );
 assert.match(
   structureSource,
-  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter\(\(room\) => room\.id === focusRoomId\)[\s\S]*const topologyOpenings = mapPlanOpeningsToRoomRenderer\([\s\S]*state\.plan\.scene\.openings[\s\S]*rooms=\{visibleRooms\}[\s\S]*topologyRooms=\{state\.wholeHome\.rooms\}[\s\S]*openings=\{topologyOpenings\}[\s\S]*focusRoomId=\{focusRoomId\}/,
+  /const visibleRooms = focusRoomId[\s\S]*state\.wholeHome\.rooms\.filter\(\(room\) => room\.id === focusRoomId\)[\s\S]*rooms=\{visibleRooms\}[\s\S]*topologyRooms=\{state\.wholeHome\.rooms\}[\s\S]*openings=\{wholeHome\.topologyOpenings\}[\s\S]*focusRoomId=\{focusRoomId\}/,
   "Focused 3D structure rendering should hide inactive rooms while retaining the complete room and opening graph for shared-wall topology."
+);
+assert.match(
+  wholeHomeBindingsSource,
+  /const sceneOpenings = state\.plan\.scene\.openings;\s*const rooms = state\.wholeHome\.rooms;[\s\S]*const topologyOpenings = useMemo\(\(\) => mapPlanOpeningsToRoomRenderer\(sceneOpenings, rooms\)/,
+  "Focused 3D structure rendering should map every whole-home opening, not only the focused room's."
 );
 assert.match(
   itemsSource,
@@ -855,7 +870,7 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{\(\) => null\}[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*data-workspace-grid-mode="camera-aware-floor-and-ceiling"/,
+  /WORKSPACE_GRID_CELL_SIZE_METERS = 0\.2[\s\S]*WORKSPACE_GRID_SECTION_SIZE_METERS = 1[\s\S]*color="#f3f5f5"[\s\S]*<Grid[\s\S]*cellSize=\{WORKSPACE_GRID_CELL_SIZE_METERS\}[\s\S]*cellThickness=\{0\.45\}[\s\S]*cellColor="#ffffff"[\s\S]*sectionSize=\{WORKSPACE_GRID_SECTION_SIZE_METERS\}[\s\S]*sectionThickness=\{0\.8\}[\s\S]*sectionColor="#ffffff"[\s\S]*material-toneMapped=\{false\}[\s\S]*raycast=\{noRaycast\}[\s\S]*data-workspace-grid=\{viewMode === "3d" \? "visible" : "hidden"\}[\s\S]*data-workspace-grid-mode="camera-aware-floor-and-ceiling"/,
   "3D should provide a soft light-on-light planning grid with five 200 mm subdivisions inside every one-metre section."
 );
 assert.match(

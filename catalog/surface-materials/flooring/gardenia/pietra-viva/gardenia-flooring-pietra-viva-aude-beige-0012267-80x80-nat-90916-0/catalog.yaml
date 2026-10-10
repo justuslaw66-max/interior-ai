@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Pietra Viva
   material_id: gardenia-flooring-pietra-viva-aude-beige-0012267-80x80-nat-90916-0
   product_name: Gardenia Pietra Viva Aude Beige 80x80 Nat
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 8 single item pictures of item 0012265 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012265-v102/), because ABK's Plein Air page for Aude Beige 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026). Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-aude-beige-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale. ABK's 80x80 pictures are this colour's 120x120 graphic squeezed to 800 mm: drawn as 1200 mm they match the colour's 120x120 and 60x120 pictures (r 1.00), and drawn as 800 mm nothing (r 0.10 to 0.12). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0012267/0/90916 for floor use.
     - "Configurator format: 80x80 Nat; surface destination: PAVIMENTO."
@@ -67,16 +68,44 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012260.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012260.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 80
     height: 80
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_04.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_05.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_06.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_07.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012265_08.webp
+      width_mm: 1200
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -102,13 +131,13 @@ import_governance:
   publish_status: draft
   publish_blockers:
     - confirm_physical_dimensions
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
     - gardenia_equivalent_variant_collapsed

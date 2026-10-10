@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useId, useMemo, type ReactNode } from "react";
 import CatalogPanel from "@/components/catalog/CatalogPanel";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
@@ -54,6 +54,8 @@ type DesignControlsFurnishPanelProps = {
   onGoShop: () => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
+  /** Above the foot: Pro's layout versions. */
+  footer?: ReactNode;
 };
 
 type FurnishRoomRowProps = Pick<DesignControlsFurnishPanelProps, "rooms" | "activeRoomId" | "activeRoomName" | "canEdit" | "onSelectRoom">;
@@ -107,7 +109,7 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
     <button
       type="button"
       data-testid="editor-workflow-ai"
-      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
+      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900"
       onClick={props.onGoAiDesign}
     >
       Suggest a layout
@@ -136,7 +138,8 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
 
 /**
  * Furnish, products first (audit findings FU1, ST12): the room, the search with Suggest a layout
- * beside it, the category chips and the products; then what's in the room and the way to Shop.
+ * beside it, the category chips and the products; then what's in the room, Pro's layout versions
+ * and the way to Shop.
  */
 export default function DesignControlsFurnishPanel(props: DesignControlsFurnishPanelProps) {
   const { dark, canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
@@ -171,6 +174,7 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
         onProductChange={props.onSelectedImportedProductChange}
         onAdd={props.onAddImportedToRoom}
       />
+      {props.footer}
       <FurnishFooter
         roomName={activeRoomName}
         productCount={productCount}

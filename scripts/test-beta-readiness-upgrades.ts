@@ -86,6 +86,11 @@ const sharePageSource = readFileSync(
 );
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
+const shareHeaderSource = readFileSync(join(root, "app/share/[shareToken]/(presentation)/ShareHeader.tsx"), "utf8");
+const shareShoppingSource = readFileSync(
+  join(root, "app/share/[shareToken]/(presentation)/ShareShoppingSection.tsx"),
+  "utf8"
+);
 const shareRoomScheduleSource = readFileSync(
   join(root, "components/public-share/PublicShareRoomSchedule.tsx"),
   "utf8"
@@ -275,15 +280,12 @@ for (const source of [sharePageSource, exportPageSource]) {
     "share/export QA marker should include missing-commerce count."
   );
 }
-assert.match(
-  sharePageSource,
-  /data-testid="share-handoff-integrity"/,
-  "share page should show visible handoff integrity."
-);
-assert.match(
-  sharePageSource,
-  /data-testid="share-handoff-id"/,
-  "share page should show a visible handoff ID."
+// UX audit SX7 (phase 4e): the shared page is for the person it was shared with, so the handoff
+// status, its "Reference" hash and each room's health left it; the hidden QA marker keeps the fingerprint.
+assert.doesNotMatch(
+  sharePageSource + shareHeaderSource,
+  /share-handoff-integrity|share-handoff-id|Reference \{/,
+  "The shared page shows no handoff status or reference hash."
 );
 assert.match(
   shareActionsSource,
@@ -291,20 +293,16 @@ assert.match(
   "share page actions should expose first-viewport PDF download."
 );
 assert.match(
-  shareActionsSource,
+  shareHeaderSource,
   /data-testid="share-shopping-list"[\s\S]*Shopping list/,
-  "share page actions should expose first-viewport shopping list access."
+  "the share page's summary line should link to the Shopping list in the first viewport."
 );
 assert.match(
-  sharePageSource,
+  shareShoppingSource,
   /id="shopping-preview"/,
   "share page shopping preview should be directly linkable from first-viewport actions."
 );
-assert.match(
-  shareRoomScheduleSource,
-  /data-testid="share-room-health"/,
-  "share page room list should show room health."
-);
+assert.doesNotMatch(shareRoomScheduleSource, /share-room-health|health/i, "The shared room list has no health column (SX7).");
 assert.match(
   exportPageSource,
   /data-testid="export-handoff-integrity"/,
@@ -480,6 +478,14 @@ assert.match(
   /const firstRunActivationState = useMemo/,
   "the design-page onboarding controller should compute first-run activation state."
 );
+// Present & export retired (phase 4's small PR): opening Download is the export step, and a room
+// review that once opened Present & export for an empty room goes to Furnish, where products go.
+assert.match(designPageOnboardingSource, /exportOpened: state\.downloadOpen,/);
+assert.match(
+  readFileSync(join(process.cwd(), "lib/useDesignPageRoomReadModel.ts"), "utf8"),
+  /if \(target === "export"\) \{\s*goFurnish\(\);\s*showToast\("Add furniture to start this room"\);/,
+  "an empty room's export review should send the user to Furnish."
+);
 assert.match(
   designPageOnboardingSource,
   /templateChosen: state\.designRoomCount > 1 \|\| state\.items\.length > 0,/,
@@ -496,6 +502,14 @@ assert.doesNotMatch(
   designPageOnboardingSource,
   /stall|getNextBestActionNudge|nextBestActionNudge/,
   "the stall nudge is gone (UX audit FR4)."
+);
+// The completed-onboarding hydration and the eligibility check run in the same commit, so the
+// check still sees the initial idle state. Unguarded, it replaced a returning user's "completed"
+// with "prompt_add_sofa" and restarted the ghost and completion timers.
+assert.match(
+  designPageOnboardingSource,
+  /if \(window\.localStorage\.getItem\("onboarded"\) === "1"\) \{\s*persistedCompletionRef\.current = true;[\s\S]*?useEffect\(\(\) => \{\s*\/\/[^\n]*\n\s*if \(persistedCompletionRef\.current\) return;\s*const capabilities = resolveEditorCapabilities/,
+  "A returning user's completed onboarding must not restart."
 );
 assert.match(
   designPageSource,

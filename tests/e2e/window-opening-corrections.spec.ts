@@ -32,6 +32,11 @@ test.use({ viewport: { width: 1440, height: 1000 }, actionTimeout: 30_000,
   navigationTimeout: 120_000, trace: WINDOW_OPENING_TRACE_MODE });
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
+// The fixture's room shows once the page has started and restored it: about 10 s on CI's
+// development server, and more when the server is slow to send the page's scripts (#109's run
+// 37894799114: 13 s for the scripts alone, and the room missed a 20 s wait). This setup step
+// gets 60 s; the tests' own checks keep the 20 s above.
+const FIXTURE_ROOM_TIMEOUT_MS = 60_000;
 type ExecutionContext = NonNullable<ReturnType<
   typeof import("../../scripts/window-opening-browser-context.mjs").canonicalWindowOpeningContext
 >> | ReturnType<typeof import("../../scripts/window-opening-browser-context.mjs").localWindowOpeningContext>;
@@ -488,7 +493,9 @@ async function loadFixture(
   assertFixtureTarget(page, "/design");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible();
   const debug = page.getByTestId("qa-design-layout-debug");
-  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
+  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id, {
+    timeout: FIXTURE_ROOM_TIMEOUT_MS,
+  });
   await expect.poll(() => page.evaluate(() => ({
     layout: document.querySelectorAll('[data-testid="qa-design-layout-debug"]').length,
     camera: Boolean(document.documentElement.getAttribute("data-qa-camera-state")),
@@ -532,7 +539,9 @@ async function replaceFixture(page: Page, value: ReturnType<typeof fixture>) {
   }, { key: STORAGE_KEY, raw: JSON.stringify(value) });
   await page.reload({ waitUntil: "domcontentloaded" });
   const debug = page.getByTestId("qa-design-layout-debug");
-  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
+  await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id, {
+    timeout: FIXTURE_ROOM_TIMEOUT_MS,
+  });
   const view2d = page.locator('[data-testid="editor-view-2d"]:visible').first();
   if ((await view2d.getAttribute("aria-pressed")) !== "true") await view2d.click();
   await expect(debug).toHaveAttribute("data-view-mode", "2d");
@@ -696,6 +705,24 @@ async function findCanvasCursorPoint({
   throw new Error(`Could not find mounted canvas target with ${cursor} cursor.`);
 }
 
+// The canvas renders on demand, and drei Html places a QA marker from the
+// camera only on mount and in later frames. A marker that mounts with no frame
+// after it (a repaired or newly hosted opening) can keep a stale position, so
+// ask for one fresh frame before reading marker boxes.
+async function renderFreshFrame(page: Page) {
+  const renderFrame = async () =>
+    Number(await page.locator("html").getAttribute("data-qa-camera-render-frame"));
+  const before = await renderFrame();
+  await page.evaluate(() => {
+    const request = (window as typeof window & {
+      __INTERIOR_AI_QA_REQUEST_FRAME__?: () => void;
+    }).__INTERIOR_AI_QA_REQUEST_FRAME__;
+    if (!request) throw new Error("The QA frame request hook is missing.");
+    request();
+  });
+  await expect.poll(renderFrame).toBeGreaterThan(before);
+}
+
 async function selectedOpeningDragBasis(
   page: Page,
   openingId: string,
@@ -705,6 +732,7 @@ async function selectedOpeningDragBasis(
   const tangentMarker = page.getByTestId(`qa-opening-tangent-2d-${openingId}`);
   await anchor.waitFor({ state: "attached" });
   await tangentMarker.waitFor({ state: "attached" });
+  await renderFreshFrame(page);
   const [anchorBox, tangentBox] = await Promise.all([
     anchor.boundingBox(), tangentMarker.boundingBox(),
   ]);
@@ -761,6 +789,7 @@ async function dragOpening3D(page: Page, openingId: string, pixels: number) {
   await dragPlane.waitFor({ state: "attached" });
   await tangentMarker.waitFor({ state: "attached" });
   await normalMarker.waitFor({ state: "attached" });
+  await renderFreshFrame(page);
   const [anchorBox, dragPlaneBox, tangentBox, normalBox] = await Promise.all([
     anchor.boundingBox(), dragPlane.boundingBox(), tangentMarker.boundingBox(), normalMarker.boundingBox(),
   ]);
@@ -875,9 +904,41 @@ async function openImportReview(page: Page, proMode: boolean) {
     .selectOption("mounted-protected-window");
 }
 
+type CameraWatchWindow = typeof window & {
+  __planCameraWatch?: { initial: string; seen: Set<string>; observer: MutationObserver };
+};
+
+// Records every camera state the canvas reports (data-qa-camera-state on <html>, written per
+// frame by CameraCapture) from now until the returned function is called.
+async function watchCameraStates(page: Page) {
+  await page.evaluate(() => {
+    const html = document.documentElement;
+    const initial = html.getAttribute("data-qa-camera-state") ?? "";
+    const seen = new Set([initial]);
+    const observer = new MutationObserver((records) => {
+      for (const record of records) seen.add(record.oldValue ?? "");
+      seen.add(html.getAttribute("data-qa-camera-state") ?? "");
+    });
+    observer.observe(html, {
+      attributes: true, attributeOldValue: true, attributeFilter: ["data-qa-camera-state"],
+    });
+    (window as CameraWatchWindow).__planCameraWatch = { initial, seen, observer };
+  });
+  return () => page.evaluate(() => {
+    const watch = (window as CameraWatchWindow).__planCameraWatch!;
+    watch.observer.disconnect();
+    watch.seen.add(document.documentElement.getAttribute("data-qa-camera-state") ?? "");
+    delete (window as CameraWatchWindow).__planCameraWatch;
+    return { initial: watch.initial, seen: [...watch.seen] };
+  });
+}
+
 async function assertOpeningMarkerInCanvas(page: Page, openingId: string) {
+  const marker = page.getByTestId(`qa-opening-anchor-3d-${openingId}`);
+  await marker.waitFor({ state: "attached" });
+  await renderFreshFrame(page);
   const canvasBox = await page.getByTestId("scene-canvas").first().boundingBox();
-  const markerBox = await page.getByTestId(`qa-opening-anchor-3d-${openingId}`).boundingBox();
+  const markerBox = await marker.boundingBox();
   expect(canvasBox).toBeTruthy();
   expect(markerBox).toBeTruthy();
   expect(markerBox!.x + markerBox!.width).toBeGreaterThan(canvasBox!.x);
@@ -1066,6 +1127,7 @@ test("known unresolved marker selects, repairs, and remains discoverable in 3D",
   await page.locator('[data-testid="editor-view-2d"]:visible').first().click();
   await knownMarker.click();
   await expect(page.getByTestId("selection-inspector-opening-host-warning")).toBeVisible();
+  const repairCameraStates = await watchCameraStates(page);
   await page.getByTestId("selection-inspector-opening-wall-repair").selectOption("west");
   await expect(knownMarker).toHaveCount(0);
   await expect(issue).toHaveCount(0);
@@ -1073,6 +1135,10 @@ test("known unresolved marker selects, repairs, and remains discoverable in 3D",
     .toBe("west");
   await expect.poll(async () => (await storedOpening(page, "known-unresolved"))?.offsetMm)
     .toBe(1200);
+  // The repair closes the plan quality review. The plan was fitted around it and stays put: the
+  // camera never moves, not even for a frame.
+  const repairCamera = await repairCameraStates();
+  expect(repairCamera.seen, "Repairing the wall keeps the plan where it is.").toEqual([repairCamera.initial]);
   await dragOpening2D({ page, openingId: "known-unresolved", alongMeters: -0.8 });
   const repaired = await storedOpening(page, "known-unresolved");
   expect(repaired.id).toBe("known-unresolved");
@@ -1431,6 +1497,7 @@ test("mounted 3D drag uses the projected physical tangent and persists undo/redo
   await page.keyboard.press("ControlOrMeta+z");
   await expect.poll(async () => (await storedOpening(page, "three-d-diagonal")).offsetMm).toBe(0);
 
+  await renderFreshFrame(page);
   const anchor = await page.getByTestId("qa-opening-anchor-3d-three-d-diagonal").boundingBox();
   expect(anchor).toBeTruthy();
   const start = { x: anchor!.x + anchor!.width / 2, y: anchor!.y + anchor!.height / 2 };

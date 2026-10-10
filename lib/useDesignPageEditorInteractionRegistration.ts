@@ -39,7 +39,6 @@ export function useDesignPageEditorInteractionRegistration({
   const base = coreShell.boundaries.base;
   const viewportShell = coreShell.boundaries.viewportShell;
   const planViewport = viewportShell.boundaries.planViewport;
-  const editorShell = viewportShell.boundaries.editorShell;
   const {
     documentRoom,
     sceneRoomRead: sceneRoom,
@@ -60,7 +59,7 @@ export function useDesignPageEditorInteractionRegistration({
   const { updateCameraViewFromScene } = cameraBridge.actions.navigation;
   const { designId } = base.state.identity;
   const { viewMode, showGrid, snapEnabled } = base.state.editor;
-  const { isDesigner, isClientPreview } = coreShell.derived.access;
+  const { isDesigner } = coreShell.derived.access;
   const { selectedZoneId } = documentSelection.state;
   const { setViewMode } = base.actions.editor;
   const { showRuleToast } = coreShell.actions.feedback;
@@ -73,10 +72,6 @@ export function useDesignPageEditorInteractionRegistration({
         hasWholeHousePlan: sceneRoom.derived.scene.hasWholeHousePlan,
         designRoomCount: snapshotDocument.state.designSnapshot.rooms.length,
         rooms: housePlan2D.rooms,
-        items,
-        selectedItem: itemSelection.state.selectedItem ?? null,
-        selectedProduct:
-          selectionInspection.derived.selectedProduct ?? null,
       },
       canvas: {
         showGrid,
@@ -91,8 +86,8 @@ export function useDesignPageEditorInteractionRegistration({
         viewportSize: planViewport.state.diagnostics.viewportSize,
         planFitBounds: planWorkspace.derived.plan2DFitBounds,
         planSafeAreaLeftPx: planWorkspace.derived.plan2DSafeAreaLeftPx,
-        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx,
-        planSafeAreaBottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
+        planSafeAreaRightPx: planWorkspace.derived.plan2DSafeAreaRightPx, planSafeAreaLiveRightPx: planWorkspace.derived.plan2DSafeAreaLiveRightPx,
+        planSafeAreaTopPx: planWorkspace.derived.plan2DSafeAreaTopPx, planSafeAreaBottomPx: planWorkspace.derived.plan2DSafeAreaBottomPx,
         floatingPlanOverlayStackVisible:
           planWorkspace.derived.floatingPlanOverlayStackVisible,
         floatingPlanOverlayStackWidthPx:
@@ -124,15 +119,13 @@ export function useDesignPageEditorInteractionRegistration({
 
   const presentationState = useDesignPagePresentationStateRegistration({
     state: { cameraView: planViewport.state.camera.cameraView },
-    refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef },
+    refs: { designSnapshot: snapshotDocument.refs.designSnapshotRef, cameraView: cameraBridge.refs.cameraView },
     actions: {
       document: { setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot },
       camera: {
         setLegacySavedViews: cameraBridge.actions.setSavedViews,
         handleEditorViewModeChange:
           camera.actions.navigation.handleEditorViewModeChange,
-        transitionToCameraView:
-          cameraBridge.actions.navigation.transitionToCameraView,
       },
       history: { runHistoryTransaction },
       selection: { updateSelection: itemSelection.actions.updateSelection },
@@ -143,8 +136,6 @@ export function useDesignPageEditorInteractionRegistration({
   const zone = useDesignPageZoneController({
     state: { items, zones, selectedZoneId },
     configuration: {
-      editorMode: editorShell.state.editor.editorMode,
-      isClientPreview,
       isDesigner,
       catalogItems: CATALOG_ITEMS,
       roomWidth,
@@ -155,14 +146,12 @@ export function useDesignPageEditorInteractionRegistration({
       selectedIds: itemSelection.refs.selectedIds,
       items: itemDocument.refs.activeItems,
       zones: documentSelection.refs.zones,
-      seatingZoneAutoDisabled: coreShell.refs.seatingZoneAutoDisabledRef,
     },
     actions: {
       setDesignSnapshot: snapshotDocument.actions.setDesignSnapshot,
       setSelectedZoneId: documentSelection.actions.setSelectedZoneId,
       clearSelection: itemSelection.actions.clearSelection,
       commitItems: itemDocument.actions.commitItems,
-      history,
       runHistoryTransaction,
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
       getSelectionBounds: selectionInspection.actions.geometry.getSelectionBounds,

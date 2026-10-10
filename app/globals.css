@@ -7,12 +7,20 @@
 @source "../features";
 @source not "../features/cabinetry";
 @source "../lib";
-@source inline("bg-blue-700 gap-5 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-red-950 xl:grid-cols-2");
+@source inline("bg-blue-700 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-red-950 xl:grid-cols-2");
 
 /* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
    default, dark: utilities follow the OS setting and half-theme dialogs
    (UX audit 2026-09-23, SX3). Nothing sets the attribute yet. */
 @custom-variant dark (&:where([data-color-scheme="dark"], [data-color-scheme="dark"] *));
+
+/* Touch (UX 4d, audit AX1): phones, and screens whose main pointer is a finger. touch:min-h-11
+   makes a control a 44px target there and leaves the desktop's dense sizes alone. */
+@custom-variant touch {
+  @media (width < 48rem), (pointer: coarse) {
+    @slot;
+  }
+}
 
 :root {
   --bg-canvas: #ffffff;
@@ -22,13 +30,23 @@
   --border-strong: rgba(0, 0, 0, 0.14);
   --text-primary: #0b0d12;
   --text-secondary: #4b5568;
-  --text-muted: #7b8496;
-  --accent: #2f6bff;
-  --danger: #e5484d;
+  --text-muted: #636363;
+  --accent: #275fcb;
+  --focus: #275fcb;
+  --success: #20553f;
+  --danger: #dc2626;
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
   --font-geist-sans: Arial, Helvetica, sans-serif;
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  /* The editor's command bar from md (UX 4c, 56px as in the TopBar mockup). What sits under it is
+     placed from it (top-bar-*), and so is lib/design-page-editor-configuration's EDITOR_BAR_HEIGHT_PX. */
+  --editor-bar-h: 3.5rem;
+}
+
+/* top-bar-2 is 0.5rem under the editor's command bar, top-bar-6 1.5rem, and so on. */
+@utility top-bar-* {
+  top: calc(var(--editor-bar-h) + --spacing(--value(integer)));
 }
 
 [data-theme="designer"] {
@@ -81,8 +99,47 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--text-primary);
+  --color-ink-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-focus: var(--focus);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+/* One focus ring for every control (UX audit AX6): 2px in the focus colour, 2px out. A control
+   that draws its own ring hides this outline with outline-hidden, which forced-colours mode
+   still shows. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Touch targets (UX 4d, audit AX1): on phones and touch screens, every button, field and select in a
+   touch area (the phone's sheet, the menus, the panels over the canvas) is at least 44px tall. In
+   the utilities layer, so it outranks their dense sizes; data-touch-exempt leaves a control alone
+   (a product card's name: the card's height is fixed). */
+@layer utilities {
+  @media (width < 48rem), (pointer: coarse) {
+    [data-touch-area]
+      :is(button, select, [role="switch"], input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="hidden"])):not([data-touch-exempt]) {
+      min-height: 2.75rem;
+    }
+  }
+}
+
+/* Fields use 16px text on phones (UX 4d, audit AX1), so iOS doesn't zoom the page in when one takes
+   focus. Outside the layers, so it outranks the text-size utilities (not inline styles). */
+@media (width < 48rem) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]),
+  select,
+  textarea {
+    font-size: 1rem;
+  }
 }
 
 html,
@@ -257,12 +314,6 @@ body {
 [data-theme="designer"] :is(.designer-command-bar, .designer-tool-rail) :is(.designer-control, .designer-command-selection):focus-visible {
   outline: 2px solid var(--accent-on-dark);
   outline-offset: 2px;
-}
-
-@media (max-width: 767px) {
-  .command-history-action:focus-visible {
-    outline-offset: -2px !important;
-  }
 }
 
 [data-theme="designer"] .designer-tool-rail .designer-control-active {
@@ -466,17 +517,20 @@ body {
   animation: toastIn 160ms ease-out;
 }
 
-/* Darken light text utilities for better readability */
-.text-neutral-400 {
-  color: #525252;
-}
+/* Darken light text utilities for better readability. In the utilities layer, after Tailwind's own
+   rules, so these colours stay while hover:, disabled: and other variants still apply. */
+@layer utilities {
+  .text-neutral-400 {
+    color: #525252;
+  }
 
-.text-neutral-500 {
-  color: #404040;
-}
+  .text-neutral-500 {
+    color: #404040;
+  }
 
-.text-neutral-600 {
-  color: #2a2a2a;
+  .text-neutral-600 {
+    color: #2a2a2a;
+  }
 }
 
 /* Keep legacy utility classes readable on the light Pro work surfaces. */

@@ -13,6 +13,7 @@ import type { PlanStartMode } from "@/components/editor/DesignControlsPlanPanel"
 import type { BetaStartPanelProps } from "@/components/editor/design-page/BetaStartPanel";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { track } from "@/lib/analytics";
+import { requestStartTemplates } from "@/lib/start-templates-request";
 
 export const BETA_START_DISMISSED_STORAGE_KEY =
   "interior-ai:beta-start-dismissed";
@@ -71,15 +72,11 @@ export function useDesignPageBetaStartController({
     }
   }, []);
 
+  // Start a new design's Templates, the one template list (ST8), which records the choice.
   const chooseTemplate = useCallback(() => {
-    track("launch_path_selected", { path: "template", source: "beta_start" });
-    actions.setGuidedPlanStartMode("template");
-    actions.goPlan();
-    actions.setViewMode("2d");
-    actions.setDesignPanelOpen(true);
-    actions.showToast("Choose a template in the Plan panel");
+    requestStartTemplates({ openerId: null });
     dismiss();
-  }, [actions, dismiss]);
+  }, [dismiss]);
 
   const startDrawRoom = useCallback(() => {
     actions.setGuidedPlanStartMode("draw");

@@ -99,8 +99,10 @@ Pro disclosure adds only implemented controls: exposure, shadows, time, date,
 plan north, latitude/longitude, fixture master power/brightness, and the
 existing renderer quality preference. Selecting a functional fixture in Pro
 adds saved on/off, dimmer, CCT, and spot-beam width. Presentation is temporary
-viewport state entered by Present & Export; its selected source scene remains
-project state and its higher render quality is used by image/PDF capture.
+viewport state shown while the Download dialog is open (it was Present &
+Export's until that retired in UX phase 4's small PR); its selected source scene
+remains project state and its higher render quality is used by image/PDF
+capture.
 
 Compatibility IDs remain `studio`, `daylight`, and `warm`. The version-1
 lighting object and legacy `lightingPreset` mirror are both maintained.

@@ -180,7 +180,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?min-\[1800px\]:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
+  /data-testid="editor-command-overflow-room-context"(?![^>]*min-\[1800px\])[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
   "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
 );
 // The room size waits for the saved display unit instead of flashing the default unit.
@@ -217,8 +217,8 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /disabled=\{state\.commandBar\.editorMode === "present"\}[\s\S]*?dark=\{configuration\.dark\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
-  "Room status should preserve presentation disabling, theme, compact layout, and command variant."
+  /viewMode=\{room\.viewMode\}\s*dark=\{configuration\.dark\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
+  "Room status should preserve theme, compact layout, and command variant."
 );
 assert.match(
   commandBarSource,

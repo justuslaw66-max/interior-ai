@@ -60,7 +60,7 @@ for (const marker of registrationOrder) {
 
 assert.match(
   commerceOnboardingSource,
-  /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?isGuest: !base\.state\.identity\.session\?\.user[\s\S]*?designRoomCount: coreShell\.state\.document\.designSnapshot\.rooms\.length[\s\S]*?planRoomCount: documentRoom\.derived\.plan\.housePlan2D\.rooms\.length[\s\S]*?saveStatusKind: persistence\.state\.persistence\.saveStatus\.kind[\s\S]*?autoCreateSeatingZone:[\s\S]*?editorInteraction\.boundaries\.zone\.actions\.autoCreateSeatingZone[\s\S]*?clampToRoom: documentRoom\.actions\.room\.clampToActiveRoom/,
+  /useDesignPageOnboardingRegistrationFacade\(\{[\s\S]*?isGuest: !base\.state\.identity\.session\?\.user[\s\S]*?designRoomCount: coreShell\.state\.document\.designSnapshot\.rooms\.length[\s\S]*?planRoomCount: documentRoom\.derived\.plan\.housePlan2D\.rooms\.length[\s\S]*?saveStatusKind: persistence\.state\.persistence\.saveStatus\.kind[\s\S]*?actions: \{\s*clampToRoom: documentRoom\.actions\.room\.clampToActiveRoom/,
   "The onboarding registration should retain identity, document, feedback, and room inputs."
 );
 assert.match(

@@ -14,6 +14,9 @@ import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import { createFloorMaterialTexture, useTransparencyRecompileRef } from "./materials";
+import { stableExtrudeOptions } from "../stableExtrudeOptions";
+import { useLatestCallback } from "../useLatestCallback";
+import { noRaycast } from "@/components/scene/stableSceneProps";
 import {
   buildLegacyWallBandCoreGeometry,
   buildRoomEdgeBandGeometry,
@@ -44,6 +47,8 @@ export function LegacyFloorSlabMesh({ slab }: { slab: LegacyFloorSlab3D }) {
   const { camera } = useThree();
   const slabRef = useRef<THREE.Mesh | null>(null);
   const shapes = useMemo(() => legacyPlanarShape(slab.polygons), [slab.polygons]);
+  const userData = useMemo(() => ({ testId: "legacy-watertight-floor-slab-3d",
+    floorLevel: slab.floorLevel, polygonCount: slab.polygons.length }), [slab.floorLevel, slab.polygons.length]);
   useFrame(() => {
     if (!slabRef.current) return;
     slabRef.current.visible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(slab.elevationMeters, slab.thicknessMeters);
@@ -53,19 +58,10 @@ export function LegacyFloorSlabMesh({ slab }: { slab: LegacyFloorSlab3D }) {
       ref={slabRef}
       position={[0, slab.elevationMeters - slab.thicknessMeters, 0]}
       rotation-x={-Math.PI / 2}
-      raycast={() => null}
-      userData={{
-        testId: "legacy-watertight-floor-slab-3d",
-        floorLevel: slab.floorLevel,
-        polygonCount: slab.polygons.length,
-      }}
+      raycast={noRaycast}
+      userData={userData}
     >
-      <extrudeGeometry
-        args={[
-          shapes,
-          { depth: slab.thicknessMeters, bevelEnabled: false, steps: 1 },
-        ]}
-      />
+      <extrudeGeometry args={[shapes, stableExtrudeOptions(slab.thicknessMeters, 1)]} />
       <meshBasicMaterial
         attach="material-0"
         transparent
@@ -100,6 +96,13 @@ export function LegacyWallBandMesh({
     () => buildLegacyWallBandCoreGeometry({ band, facePatches, removeTopCap: showTopCap }),
     [band, facePatches, showTopCap]
   );
+  const wallFaceRenderPatchCount = coreGeometry.userData.wallFaceRenderPatchCount ?? 0;
+  const removedCoveredTriangleCount = coreGeometry.userData.removedCoveredTriangleCount ?? 0;
+  const coreUserData = useMemo(() => ({ testId: "legacy-watertight-wall-band-3d", floorLevel: band.floorLevel,
+    polygonCount: band.polygons.length, wallFaceRenderPatchCount, removedCoveredTriangleCount }),
+  [band.floorLevel, band.polygons.length, removedCoveredTriangleCount, wallFaceRenderPatchCount]);
+  const capUserData = useMemo(() => ({ testId: "legacy-watertight-wall-top-cap-3d",
+    floorLevel: band.floorLevel, polygonCount: band.polygons.length }), [band.floorLevel, band.polygons.length]);
   const coreMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
   const capMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
 
@@ -112,16 +115,8 @@ export function LegacyWallBandMesh({
         receiveShadow
         position={[0, band.bottomMeters, 0]}
         rotation-x={-Math.PI / 2}
-        raycast={() => null}
-        userData={{
-          testId: "legacy-watertight-wall-band-3d",
-          floorLevel: band.floorLevel,
-          polygonCount: band.polygons.length,
-          wallFaceRenderPatchCount:
-            coreGeometry.userData.wallFaceRenderPatchCount ?? 0,
-          removedCoveredTriangleCount:
-            coreGeometry.userData.removedCoveredTriangleCount ?? 0,
-        }}
+        raycast={noRaycast}
+        userData={coreUserData}
       >
         <primitive object={coreGeometry} attach="geometry" />
         <meshStandardMaterial
@@ -139,12 +134,8 @@ export function LegacyWallBandMesh({
         <mesh
           position={[0, band.topMeters, 0]}
           rotation-x={-Math.PI / 2}
-          raycast={() => null}
-          userData={{
-            testId: "legacy-watertight-wall-top-cap-3d",
-            floorLevel: band.floorLevel,
-            polygonCount: band.polygons.length,
-          }}
+          raycast={noRaycast}
+          userData={capUserData}
         >
           <shapeGeometry args={[shapes]} />
           <meshStandardMaterial
@@ -207,6 +198,7 @@ export function RoomFloorMesh({
   const floorRotation = THREE.MathUtils.degToRad(floorSettings.floorRotationDeg);
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
   const slabEdgeOffset = wallThickness / 2;
+  const roomShape = useMemo(() => buildRoomShapeGeometry(room), [room]);
   const floorBandGeometry = useMemo(
     () =>
       showEdgeBand
@@ -254,11 +246,7 @@ export function RoomFloorMesh({
     floorRotation,
   ]);
 
-  useEffect(() => {
-    return () => {
-      defaultTexture?.dispose();
-    };
-  }, [defaultTexture]);
+  useEffect(() => () => defaultTexture?.dispose(), [defaultTexture]);
 
   useEffect(() => {
     return () => {
@@ -275,6 +263,10 @@ export function RoomFloorMesh({
     [interactive]
   );
 
+  // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
+  const hover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onHoverTarget(floorTarget); });
+  const clearHover = useLatestCallback((event: ThreeEvent<PointerEvent>) => { event.stopPropagation(); onClearHoverTarget(floorTarget); });
+  const select = useLatestCallback((event: ThreeEvent<MouseEvent>) => { if (interactive) onSelectTarget(floorTarget, event); });
   useFrame(() => {
     const floorVisible = camera.position.y > resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness);
     if (floorSurfaceRef.current) floorSurfaceRef.current.visible = floorVisible;
@@ -291,28 +283,11 @@ export function RoomFloorMesh({
         renderOrder={1 + floorLayerIndex}
         receiveShadow
         raycast={raycastFloorSurface}
-        onPointerOver={
-          interactive
-            ? (event) => {
-                event.stopPropagation();
-                onHoverTarget(floorTarget);
-              }
-            : undefined
-        }
-        onPointerOut={
-          interactive
-            ? (event) => {
-                event.stopPropagation();
-                onClearHoverTarget(floorTarget);
-              }
-            : undefined
-        }
-        onClick={(event) => {
-          if (!interactive) return;
-          onSelectTarget(floorTarget, event);
-        }}
+        onPointerOver={interactive ? hover : undefined}
+        onPointerOut={interactive ? clearHover : undefined}
+        onClick={select}
       >
-        <shapeGeometry args={[buildRoomShapeGeometry(room)]} />
+        <shapeGeometry args={[roomShape]} />
         <meshStandardMaterial
           color={surfaceTexture || defaultTexture ? "#ffffff" : material.renderColor}
           map={surfaceTexture ?? defaultTexture ?? undefined}
@@ -331,7 +306,7 @@ export function RoomFloorMesh({
           ref={floorBandRef}
           geometry={floorBandGeometry}
           position={[0, -slabThickness, 0]}
-          raycast={() => null}
+          raycast={noRaycast}
         >
           <meshBasicMaterial
             color={material.lineColor}

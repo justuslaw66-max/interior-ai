@@ -10,11 +10,9 @@ import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRe
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import {
-  mapPlanAnnotationsToRoomRenderer,
-  mapPlanFixedElementsToRoomRenderer,
-  mapPlanOpeningsToRoomRenderer,
-} from "@/lib/design-page-plan-overlays";
+import { useRoomRendererPlanOverlays } from "@/lib/useRoomRendererPlanOverlays";
+import { useLatestCallback } from "@/components/editor/renderers/useLatestCallback";
+import { resolveWallGestureControls, useWholeHomeRendererBindings } from "@/components/editor/design-page/useWholeHomeRendererBindings";
 import type { PlanZone2D } from "@/lib/design-page-zone-layout";
 import type { EditorScene2D } from "@/lib/editorScene";
 import type {
@@ -23,7 +21,6 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { resolveCanonicalSceneModel } from "@/lib/floor-plan-scene-model-resolution";
@@ -78,7 +75,6 @@ export type DesignSceneStructureLayerState = {
   };
 };
 export type DesignSceneStructureLayerConfiguration = {
-  editorMode: DesignPageEditorMode;
   isClientPreview: boolean;
   plan: {
     measurementUnit: NonNullable<PlanRendererProps["measurementUnit"]>;
@@ -172,10 +168,6 @@ type DesignSceneStructureLayerProps = {
   focusRoomId?: string | null;
 };
 
-function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
-  return state && actions ? { ...state, ...actions } : undefined;
-}
-
 export function DesignSceneStructureLayer({
   state,
   configuration,
@@ -185,10 +177,13 @@ export function DesignSceneStructureLayer({
   const canonicalResolution = useMemo(() => resolveCanonicalSceneModel(state.plan.canonicalDocument, state.plan.canonicalGeometryHash),
     [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;
+  const planOverlays = useRoomRendererPlanOverlays(state.plan.scene, state.plan.rooms, Boolean(canonicalPlan));
+  // Stable, so the memoized room fills skip re-rendering when only the page's handlers changed.
+  const selectRoom = useLatestCallback(actions.rooms.select);
+  const selectSurfaceTarget = useLatestCallback(actions.rooms.selectSurfaceTarget);
+  const wholeHome = useWholeHomeRendererBindings(state, actions);
   const canonicalActiveFloorId =
-    canonicalPlan?.floors.find(
-      (floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel
-    )?.id ?? null;
+    canonicalPlan?.floors.find((floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel)?.id ?? null;
   const canonicalStructureExpected = Boolean(state.plan.canonicalDocument);
   const canonicalIntegrityWarning = canonicalResolution.error ? (
     <Html position={[0, 0.18, 0]} center transform={false} zIndexRange={[30, 0]}>
@@ -212,7 +207,7 @@ export function DesignSceneStructureLayer({
     </Html>
   ) : null;
   const canonicalEditingNotice =
-    canonicalPlan && configuration.editorMode !== "present" ? (
+    canonicalPlan ? (
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
@@ -266,8 +261,8 @@ export function DesignSceneStructureLayer({
           activeFloorLevel={state.wholeHome.activeFloorLevel}
           activeRoomId={plan.activeRoomId}
           selectedRoomIds={plan.selectedRoomIds}
-          onSelectRoom={actions.rooms.select}
-          onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
+          onSelectRoom={selectRoom}
+          onSelectSurfaceTarget={selectSurfaceTarget}
           onClearRoomSelection={
             plan.calibration.enabled ? undefined : actions.rooms.clearSelection
           }
@@ -299,7 +294,7 @@ export function DesignSceneStructureLayer({
           showZones={layers.zones}
           planViewOrientation={configuration.plan.orientation}
           gridBounds={configuration.plan.gridBounds}
-          interactive={configuration.editorMode !== "present"}
+          interactive
           selectedOverlayId={plan.selectedOverlayId}
           onSelectOverlay={actions.overlays.select}
           onDeleteOverlay={actions.overlays.delete}
@@ -332,13 +327,9 @@ export function DesignSceneStructureLayer({
           traceOpeningMode={plan.openingTrace.enabled && !plan.underlay}
           traceOpeningKind={plan.openingTrace.kind}
           onTraceOpeningPoint={actions.drawing.addOpeningPoint}
-          openings={mapPlanOpeningsToRoomRenderer(plan.scene.openings, plan.rooms)}
-          fixedElements={mapPlanFixedElementsToRoomRenderer(
-            canonicalPlan
-              ? plan.scene.fixedElements.filter((element) => !element.canonicalKind)
-              : plan.scene.fixedElements
-          )}
-          annotations={mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)}
+          openings={planOverlays.openings}
+          fixedElements={planOverlays.fixedElements}
+          annotations={planOverlays.annotations}
           zones={plan.zones}
           onPlanDebugMetricsChange={actions.reportPlanMetrics}
           canonicalPlan={canonicalPlan}
@@ -358,43 +349,31 @@ export function DesignSceneStructureLayer({
     const visibleRooms = focusRoomId
       ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
       : state.wholeHome.rooms;
-    // Focus mode is a visibility filter, not a topology filter. Adjacent-room
-    // openings can cut a focused room's shared wall even when their owning
-    // room is hidden, so the legacy topology builder must always receive the
-    // complete whole-home room/opening graph.
-    const topologyOpenings = mapPlanOpeningsToRoomRenderer(
-      state.plan.scene.openings, state.wholeHome.rooms
-    );
-
+    // Focus mode is a visibility filter, not a topology filter: topologyRooms and
+    // wholeHome.topologyOpenings always carry the complete whole-home graph.
     return (
       <>
       <HousePlanRenderer3D
         rooms={visibleRooms}
         topologyRooms={state.wholeHome.rooms}
-        openings={topologyOpenings}
+        openings={wholeHome.topologyOpenings}
         activeRoomId={state.wholeHome.activeRoomId}
         focusRoomId={focusRoomId}
         activeFloorLevel={state.wholeHome.activeFloorLevel}
         wallHeight={state.wholeHome.wallHeight}
         stackedFloors={state.wholeHome.stackedFloors}
         fadeInactiveFloors
-        interactive={
-          configuration.editorMode !== "present" &&
-          !configuration.isClientPreview
-        }
-        onSelectRoom={actions.rooms.select}
+        interactive={!configuration.isClientPreview}
+        onSelectRoom={selectRoom}
         selectedOpeningId={state.wholeHome.selectedOpeningId}
         selectedSurfaceTarget={state.wholeHome.selectedSurfaceTarget}
-        onSelectSurfaceTarget={actions.rooms.selectSurfaceTarget}
-        onSelectOpening={actions.overlays.select}
-        onMoveOpening={actions.overlays.moveOpening}
-        onResizeOpening={actions.overlays.resizeOpening}
-        onOpeningDragStateChange={(dragging, kind) => {
-          if (kind) actions.overlays.setDragging(dragging, kind);
-          else actions.wholeHome.setOpeningDragging(dragging);
-        }}
+        onSelectSurfaceTarget={selectSurfaceTarget}
+        onSelectOpening={wholeHome.onSelectOpening}
+        onMoveOpening={wholeHome.onMoveOpening}
+        onResizeOpening={wholeHome.onResizeOpening}
+        onOpeningDragStateChange={wholeHome.onOpeningDragStateChange}
         canonicalPlan={canonicalPlan} canonicalStructureExpected={canonicalStructureExpected}
-        canonicalWallEditing={resolveWallGestureControls(state.plan.wallEditing, actions.walls)}
+        canonicalWallEditing={wholeHome.canonicalWallEditing}
       />
       {canonicalIntegrityWarning}
       {canonicalEditingNotice}

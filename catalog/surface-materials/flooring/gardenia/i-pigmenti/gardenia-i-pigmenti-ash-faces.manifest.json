@@ -1,0 +1,1442 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - ASH - minimali.zip (24926714 bytes, sha256 2f1e3a2db1db58618eeb5c0b6e78afc7de89ef49c805f01bf3ea4aea9d64d505).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016997",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016997-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016997_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016997-120x280-nat-90341-0; wall gardenia-wall-tile-i-pigmenti-ash-0016997-120x280-nat-90341-0",
+   "faces": [
+    {
+     "file": "0016997_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 27050,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - ASH - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "5360f62ddcf08e78eb5a3222f9f13a66d6dc064b2abfb913bb39689028914cc0",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 120X280",
+      "id": "06094cf3-573b-4fe7-9ca7-cb931d468d87",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016961",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016961-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016961_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016961-120x120-nat-90331-0; wall gardenia-wall-tile-i-pigmenti-ash-0016961-120x120-nat-90331-0",
+   "faces": [
+    {
+     "file": "0016961_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12258,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - ASH - 120X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "486a5dd0537935172cd5c92341e7c2ca2f5a371b3311cc3d5bfcc4540e8c8b01",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 120X120_01",
+      "id": "6026bacb-20da-4ed2-b0f0-5842938ba2ad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016961_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13220,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - ASH - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a695e101a3c8566cae547b9708dffd9b7a612b999f8f9586aa9a490524815571",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 120X120_05",
+      "id": "8e930b33-77c3-4cd9-b5ff-fde1554ffee8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016961_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12920,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - ASH - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c84bac1910fdb0295bbcadf69a0f5508c7c76733250c10b6d17e68dc47a136ba",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 120X120_04",
+      "id": "fcf70feb-d5d2-4f74-8c04-5b09ee415a19",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016961_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12938,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - ASH - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a54de3e44f3f01ae07484c45f4c85f2d7a6c4515c5267c6f862a64bbb9b66e78",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 120X120_02",
+      "id": "87cebe87-5e92-404e-ad5a-5fcbf1a10a1b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016961_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12760,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "120X120-R11/I PIGMENTI - ASH - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f9a89a28b9d40f22272ba0af95ae1b7f0a99b9bae270269206d98c1d4342c47c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 120X120_03",
+      "id": "60989a8f-4669-40d5-8345-b381722b1938",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016429",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016429-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016429_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    10
+   ],
+   "duplicates_note": "picture 10 is picture 1 again, re-exported 2 px lower (image matching), so it is used once",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016429-60x120-nat-90282-0; wall gardenia-wall-tile-i-pigmenti-ash-0016429-60x120-nat-90282-0",
+   "faces": [
+    {
+     "file": "0016429_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6394,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "f5c41a8c0d0906b66bab402363347beaf4ae060415ac602bf0e438b9bb154f35",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 60X120_01",
+      "id": "16127807-d5ef-49d8-9ee9-f33d212b4d70",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016429_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6252,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "0c04355ae8e68f4190d28a1bdae1a69542c4505400df29ec88aef940e97c0abc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 60X120_03",
+      "id": "40f69922-2d9e-485c-927a-2c8d96ad7bc5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016429_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5600,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "879d9e2c8625dee07127f765b17007285b83d08456a4d742cc25fb03f2808afb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 60X120_05",
+      "id": "739ec42c-16b2-4924-934b-28be92d5617c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016429_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5728,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "68d01423488fe447d9f5b4d7666a3d4d1b44a866b210cff257eb2f8252de44d5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 60X120_06",
+      "id": "ff951c60-5d9a-4a17-9d21-f03bb1e8c8a5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016429_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5800,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "49c377b23afba97f3ca0b4fc9a2e0f6cf0c002aa5014259e0910b79216b7e49e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 60X120_04",
+      "id": "69821dcd-9b41-4248-9332-aa2e1849604f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016429_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5498,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7823c72bd5e5666d5850990d68557df94f3842a6234ff42e85c77d707d05c681",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI ASH 60X120_02",
+      "id": "88f92c03-6704-4718-9850-2dd47fd7fabd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016429_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6632,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "367943ebfe46243b393b266077369d5e15b0ac128a52323dedb98c5d41bfb70f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI ASH 60X120_08",
+      "id": "02a8901e-05f7-4051-80bd-9328f49aa88c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016429_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5414,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "6ad074deb60e12a820e79c60a583ab0e1974a63d32ce09920cfd1b7f2a1f04eb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI ASH 60X120_10",
+      "id": "f9122fea-b5f2-4ed3-837a-61d060996571",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016429_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5598,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - ASH - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "09c28a6386bb89914be47ba787e42cb52eed32636847e0ea0ec6938b1d75cc4b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI ASH 60X120_07",
+      "id": "2a7686d8-73c0-400e-b29b-637788af22ed",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016449",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016449-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016449_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016449-60x60-nat-90302-0; wall gardenia-wall-tile-i-pigmenti-ash-0016449-60x60-nat-90302-0",
+   "faces": [
+    {
+     "file": "0016449_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3602,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "1ca948045fb4a9d797e2ef90ebd6cbd5f825d7dde545dc870d22bc4c222e6d3c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 60X60_01",
+      "id": "a8495721-8a05-4951-840a-e1e5ecf50cca",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016449_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2700,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5111034b537e0ac1557255ae36fbf731067b1caf09bc7063900d368aeeb344bf",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 60X60_04",
+      "id": "8b5415bc-a476-40bf-8798-21bda9a25fba",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016449_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2386,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "0609cd414ca6f1846b409856819b1e84a5f415cc4ad613ce20b96acec838d5ff",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 60X60_09",
+      "id": "6841f6f1-1c99-43c3-baca-8d1ac5f6b510",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016449_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3034,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "66efc552ca5ca0c60f30844da1071451408e1b707fa99fc7d6e1fad147eb9537",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 60X60_03",
+      "id": "46ead6ab-f844-4202-a5a7-165cd31a6d1d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016449_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2514,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8637595b6165cba3eccd1cab35509aadabef43855983c7ff2c0deeb6b0f6b6ca",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 60X60_07",
+      "id": "c04214a5-3b07-4c23-a704-75e4ff3d76ad",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016449_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3340,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "1693c8afe0f3c9e3b43d636ac22a634cfa2a030c9be06a850ee40449101edfe0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI ASH 60X60_02",
+      "id": "a63df69e-ce6d-4fb2-880b-14a2120b8f78",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016449_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3336,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8093d5dd396aceda8e46aef97688ccd00f7d5c2cebc6e8dd3b77633d92d834cc",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI ASH 60X60_08",
+      "id": "e35c2207-f6d0-47f0-a738-4d04a6fece85",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016449_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3784,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "051aed6feabb554c6ca4ef96b562559260206e6754e3f38de22e4ea5102f0b84",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI ASH 60X60_10",
+      "id": "4bd2b255-03ef-4977-aca7-0909575a7184",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016449_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3250,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "232c0caa71c1dcae9c3bb9308d8ae1356642ae4c7265b8d4f833dd6dc27954c7",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI ASH 60X60_05",
+      "id": "2d67a608-693c-46ed-b03f-da32709c45c7",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016449_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2920,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - ASH - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "205dc4e3781026938a7e3da8f51b531a7421d36d3f1245139af6609da7806fa1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI ASH 60X60_06",
+      "id": "620c6fcc-8eb8-4f39-b567-8902aa93a9d4",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016439",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016439-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016439_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016439-20x120-nat-90292-0; wall gardenia-wall-tile-i-pigmenti-ash-0016439-20x120-nat-90292-0",
+   "faces": [
+    {
+     "file": "0016439_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2484,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c951c0d0372664c9b65e8b2420b03e325bc79f1a55511dc966134aed9d49d061",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 20X120_01",
+      "id": "03b8c3b1-e6de-457f-b6fb-be5094709b61",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016439_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2060,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "35206834acedcaf197cd35743f4a8d28f83bc65c4a3604f6afa4126cc6a32fc0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 20X120_05",
+      "id": "c301cfb3-f68c-4c43-bcd7-ba1f2b230ad5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016439_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1842,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "95629e96c7f0054707fbde1b2350b1257c552426db61d9ea05b151ae472ed77b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 20X120_10",
+      "id": "8217520c-fd80-4c52-b2f5-a2671af5ec06",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016439_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2110,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "a4a4073ce478e69a91a340f12c359f0e903d446dcf1bbde7bdfa85e79fa02623",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 20X120_04",
+      "id": "f6ce8fb8-4c90-406d-93cc-ea716a985447",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016439_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2140,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "4c9d55058fde4f923c9e55538aeb18dca18da63bee6f4df6344ed04b8cdee26f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 20X120_02",
+      "id": "27c2c773-3893-4a7b-9a0e-b94e12a2626d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016439_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1890,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "ff77bee82650cf631de003aea5a8f9b6c3d6d4c02696e9e3a8d2a95dddf585d0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI ASH 20X120_07",
+      "id": "011d95cf-7c2f-48c0-964e-230a6027f3b4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016439_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2178,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "a5a88c63ed22a95d59528e32950388a35d9d91001152020036f7e2b604845237",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI ASH 20X120_06",
+      "id": "cece7e1e-88cc-4728-8a23-28fa013c2bb5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016439_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1778,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c480f92d8a4872dc88b1ef2983482563cde627f2f3fe63bf1590a33111be6822",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI ASH 20X120_03",
+      "id": "5e5c2017-5975-4090-9600-7653162baad9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016439_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2688,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "b4a5b0eb21e8af72ba79a0634a755d16e1c7ada67207d8fa4636ff1a210d5394",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI ASH 20X120_08",
+      "id": "d7d7d366-5fdb-400d-9de8-4fe19bb06c94",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016439_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2146,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - ASH - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "62b485de09c12ee361ea25c7c7331f47cda4517e025660557a56aa1fbe6decf3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI ASH 20X120_09",
+      "id": "c1c4aec1-9e05-4422-ab2e-199fd8184ef0",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016605",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016605-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016605_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016605-30x30-nat-90322-0; wall gardenia-wall-tile-i-pigmenti-ash-0016605-30x30-nat-90322-0",
+   "faces": [
+    {
+     "file": "0016605_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1066,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "3e152b30972d6f19f1d37e6252f60d3f96bb9adc22add1aa1f1c8d6e599dc3e1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 30X30_01",
+      "id": "abb3aed8-2bd9-4d7a-a993-b4e3ba1c01e6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016605_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1006,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "09c7b9766be97dd6b2c95cb988945025929bdcc79f423e3b2a91d5675a641cf7",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 30X30_03",
+      "id": "ae8f9e1e-8f83-44ec-b085-43c76431af8b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016605_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 734,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "0b202682f5ab7167fb8fa17fc1b3b01a2c1e4a7312f0fe210f0f64a9eb81ca2c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 30X30_08",
+      "id": "9c9e5b92-01fd-43e2-bccf-e49095ecd9fc",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016605_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1364,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "b9b6b0542dc5c80aae484fd61282143cd1c5fc4081a243c7c0e67570a2ca5811",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 30X30_04",
+      "id": "b80eb207-6aa8-4528-9f4d-f809dd9893da",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016605_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1214,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      884,
+      884
+     ],
+     "source_sha256": "19e183b6ca56262ff95fc6325d05028b62f4ad94165ba745b2d6d7444cdb2226",
+     "source_px_per_mm": 2.947,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 30X30_06",
+      "id": "598a7fb8-9ef2-4e6f-a98d-529d9eec9f50",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016605_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 770,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "2050516272f0c6426b320c2cf57d0febfe6734b43989193b694cafc49e335fd2",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI ASH 30X30_10",
+      "id": "5d325462-dc33-4597-9242-28eac2543f7f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016605_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 928,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "90117f2b1d6a0309ea6cd71009832fba20adf8f1c08f431ad503bcad2d731250",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI ASH 30X30_09",
+      "id": "069cb292-ef40-4d88-b06a-b6a1ab927030",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016605_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 798,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "30bcd72f6da64572a60ccd68df6e015b3add4e3ae7c0f4e42709996bc953d17f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI ASH 30X30_07",
+      "id": "0da86910-fddd-47d0-bf19-4fa0ad4c40f3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016605_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 850,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "8b25bf8cd3c09c286bded4b384384a11e48ed590d8e3bc3d542c9eea4f2468a6",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI ASH 30X30_05",
+      "id": "2071e999-3529-4c19-8f30-990c6d34963e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016605_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 742,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - ASH - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "06f9738f2ac74cf76489d827e1f3bbe816bddf2f73769ebb92c3e2cd59c133f8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI ASH 30X30_02",
+      "id": "003e4dc4-ef0e-4960-84ab-39e5c6a36e4a",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016459",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/ash/pf60016459-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016459_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-ash-0016459-10x60-nat-90312-0; wall gardenia-wall-tile-i-pigmenti-ash-0016459-10x60-nat-90312-0",
+   "faces": [
+    {
+     "file": "0016459_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 772,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "9a48873222ddd799ae1e005771f2de5217228c495b518e087554cfd3db22af13",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI ASH 10X60_01",
+      "id": "d4b91299-74dd-4272-b57d-31be23ce09ec",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016459_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 538,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "cc090061bd6af798dc0274549ba529c3f9736e928f7c254706159bc350adac80",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI ASH 10X60_09",
+      "id": "a7357bd6-d124-4347-90d2-2e72a2836f50",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016459_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 732,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "d33bd532405b993effb679e9a63d5a6156f1824dba66db740d931c6f5a5ae7d2",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI ASH 10X60_06",
+      "id": "28164671-f1d0-40fd-9f00-854aa60816de",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016459_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 472,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "c81b085fadcd31f20ba179c0246fd8a2257662d7e7d9170514ad5d71da8de93a",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI ASH 10X60_04",
+      "id": "76db3f17-4c60-4670-a247-819c24a4d62d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016459_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 678,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "9ea37145581866e812bf455d25ed69c887ced35d046197d26ed5d8455b043bf3",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI ASH 10X60_10",
+      "id": "f803a337-994e-476c-ae55-1f865611633d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016459_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 690,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "ec69b2a3fc0a7a5745abee401f5cea263e5597e86ba470f5356e7766ffc54240",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI ASH 10X60_02",
+      "id": "bdccffb9-1036-4ee1-b86c-bf1de422901b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016459_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 442,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "a7e51bc217f150ebe781b9c47e037fa097a6aa520ae7606a148d000ff2ba4878",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI ASH 10X60_07",
+      "id": "b230adf9-78b7-4170-bbab-69107a1fdaea",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016459_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 636,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "e8c66f29faf0a0fd869220704b81bd7f315e903cb71c465962d97cd17577416c",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI ASH 10X60_05",
+      "id": "6a039f1a-b804-413a-809f-061ab0a7872b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016459_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 990,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "c6a4d923adf709fd55bb8a708a19961e1db06a6af744b14281d1c9de9e4dbe5a",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI ASH 10X60_03",
+      "id": "456998a9-98f3-453a-892d-88e17c9f8993",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016459_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 556,
+     "source_zip": "I PIGMENTI - ASH - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - ASH - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "2db2e71693a13832f41f39c1248b35c56c138bf9d8d603f546938c0b277d63c4",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI ASH 10X60_08",
+      "id": "37f1fb47-fbc9-4d07-99ca-a626e5f5f45c",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

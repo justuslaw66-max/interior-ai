@@ -74,8 +74,8 @@ for (const formerWorkspaceOwner of [
 
 assert.match(
   placementSource,
-  /catalogCanvasDragDisabled:[\s\S]*?isClientPreview \|\| editorMode === "present"/,
-  "Placement registration should retain client-preview and presentation drag guards."
+  /catalogCanvasDragDisabled: isClientPreview,/,
+  "Placement registration should retain the client-preview drag guard."
 );
 assert.match(
   placementSource,

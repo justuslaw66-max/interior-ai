@@ -76,17 +76,19 @@ export function FixtureLightManager({
   fixtures: readonly EditorFixtureLight[];
   lighting: ResolvedEditorLighting;
 }) {
-  const activeFixtures = selectFixtureLightBudget(fixtures, lighting);
+  // Memoized, so the count below is read from a value nothing changes later and the
+  // userData memo holds (react-hooks/preserve-manual-memoization).
+  const activeFixtures = useMemo(() => selectFixtureLightBudget(fixtures, lighting), [fixtures, lighting]);
+  const activeFixtureLights = activeFixtures.length;
+  const { maxActiveLights: maxFixtureLights, maxShadowCastingLights: maxFixtureShadows } = lighting.fixtures;
+  // Stable user data: a page re-render that changes nothing here doesn't make R3F redraw.
+  const userData = useMemo(
+    () => ({ activeFixtureLights, maxFixtureLights, maxFixtureShadows }),
+    [activeFixtureLights, maxFixtureLights, maxFixtureShadows]
+  );
 
   return (
-    <group
-      name="editor-fixture-light-manager"
-      userData={{
-        activeFixtureLights: activeFixtures.length,
-        maxFixtureLights: lighting.fixtures.maxActiveLights,
-        maxFixtureShadows: lighting.fixtures.maxShadowCastingLights,
-      }}
-    >
+    <group name="editor-fixture-light-manager" userData={userData}>
       {activeFixtures.map((fixture) => {
         const common = {
           name: `editor-fixture-light:${fixture.id}`,

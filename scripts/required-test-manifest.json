@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 317,
-      "expectedPathSha256": "47b4fe9ad805c1233f91e76eb35ece64deeb0611481534d5430e12165bc924c2"
+      "expectedFileCount": 318,
+      "expectedPathSha256": "47309f8f218cc9a0d5329f020974485d426e898f643abf62f6cf166b46094092"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 109,
-      "expectedPathSha256": "a3672e4fe0d419ce7fea8e9c7b0a7e5c57ba1e829eece35e35a5322cd53ccdc2"
+      "expectedFileCount": 110,
+      "expectedPathSha256": "2056ff122950eccca3bc6fb847b708661b2a5f0bf064503a3c8907085f5caafa"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -542,18 +542,20 @@
       "blocking": true,
       "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
       "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
-      "packageClosure": { "expectedScriptCount": 12, "expectedSha256": "7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0" },
+      "packageClosure": { "expectedScriptCount": 13, "expectedSha256": "6e1a80dd0e336a509c2f2165b937c313ad96d01fe80ea7227820d3e9041cb819" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
         "scripts/test-catalog-registry-sync.ts",
         "scripts/test-catalog-asset-availability.ts",
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
       "requiredCommandSources": [
         "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-physical-scale.ts",
         "scripts/test-surface-material-browser-semantics.ts",
         "scripts/test-phase8-performance-boundaries.ts"
       ],
@@ -692,7 +694,7 @@
     },
     {
       "id": "ci.pro-visual-policy",
-      "invariant": "Consumer and Pro visual policy, including the accessible Cmd/Ctrl+K Command Palette lifecycle, Client Preview command-bar focus exclusion, direct and nested Plans ownership, and the route-mocked Present/Export to Share Link Fallback clipboard-failure lifecycle with topmost isolation, semantic return, preserved command and Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
+      "invariant": "Consumer and Pro visual policy, including the accessible Cmd/Ctrl+K Command Palette lifecycle, Client Preview command-bar focus exclusion (also while Download captures its pictures), direct and nested Plans ownership, and the route-mocked Share Link Fallback clipboard-failure lifecycle from the command bar's Share with topmost isolation, semantic return, preserved command and Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:pro-visual-policy",
@@ -725,9 +727,9 @@
           "title": "keeps Client Preview responsive, scope-cancelled, and Pro-gated"
         },
         {
-          "id": "visual.client-preview-presentation-entry",
+          "id": "visual.client-preview-download-entry",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "uses the same Client Preview focus contract from presentation export"
+          "title": "uses the same Client Preview focus contract from Download's pictures"
         },
         {
           "id": "visual.plans-account-pointer",
@@ -737,7 +739,7 @@
         {
           "id": "visual.plans-account-keyboard-narrow",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+          "title": "gives the phone Menu's Pricing keyboard entry semantic replacement and narrow Plans return"
         },
         {
           "id": "visual.plans-upgrade-pointer",
@@ -757,12 +759,12 @@
         {
           "id": "visual.share-fallback-consumer-pointer-actions",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Consumer pointer Share Link Fallback exclusive nested ownership and preserved actions"
+          "title": "gives Consumer pointer Share Link Fallback from Share exclusive ownership and preserved actions"
         },
         {
           "id": "visual.share-fallback-pro-keyboard-narrow",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
-          "title": "gives Pro keyboard and narrow Share Link Fallback semantic return and parent guards"
+          "title": "gives Pro keyboard and narrow Share Link Fallback from Share semantic return and focus containment"
         },
         {
           "id": "visual.share-fallback-supersession-scope",
@@ -942,7 +944,11 @@
         "args": ["playwright", "test", "-c", "playwright.cart-overlay.config.ts"],
         "exactConfigOnly": true
       },
-      "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required cart overlay accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
     },
     {
       "id": "ci.retailer-confirmation-accessibility",
@@ -1049,7 +1055,11 @@
         "args": ["playwright", "test", "-c", "playwright.retailer-confirmation.config.ts"],
         "exactConfigOnly": true
       },
-      "ci": { "job": "stable-checks", "step": "Run required Retailer Confirmation accessibility matrix" }
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Retailer Confirmation accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
     },
     {
       "id": "ci.guest-save-overlay-accessibility",
@@ -1384,6 +1394,36 @@
         "workflow": ".github/workflows/full-advisory-e2e.yml",
         "job": "e2e-full",
         "step": "Run advisory full E2E inventory"
+      }
+    },
+    {
+      "id": "advisory.window-opening-mounted",
+      "invariant": "The 12 mounted window-opening cases run on every pull request and push of the integration line through their sealable runner (own dev server, disposable database, exact inventory, no filter, skip or retry), visible as an informational check without being merge or release certification.",
+      "cadence": "advisory",
+      "blocking": false,
+      "command": "npm run test:window-opening-mounted",
+      "packageScript": "test:window-opening-mounted",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "3e0f287343bac3a92ed87cac851c40473f3fa6aeca7ec562e9c55bc715a8b95c" },
+      "runner": "node",
+      "requiredSources": [
+        "tests/e2e/window-opening-corrections.spec.ts",
+        "playwright.window-opening.config.ts",
+        "scripts/run-window-opening-mounted.mjs",
+        "scripts/window-opening-mounted-tests.json",
+        "scripts/window-opening-mounted-test-contract.mjs",
+        "scripts/provision-gate-a3-database.mjs"
+      ],
+      "requiredCommandSources": ["scripts/run-window-opening-mounted.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": {
+        "workflow": ".github/workflows/window-opening-mounted.yml",
+        "job": "window-opening-mounted",
+        "step": "Run mounted window-opening suite",
+        "afterSteps": ["Start runner PostgreSQL for the window role", "Install Playwright Chromium"]
       }
     },
     {

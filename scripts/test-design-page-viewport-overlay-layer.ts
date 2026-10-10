@@ -69,7 +69,8 @@ for (const contractName of [
 
 // The read model injects live values; workspace orchestration owns actions.
 for (const expected of [
-  "rail: planWorkspace.derived.floatingPlanOverlayStackVisible",
+  // Plan's rail steps aside while a product's item panel shows (UX 4f).
+  "rail: (planWorkspace.derived.floatingPlanOverlayStackVisible",
   "sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil",
   "selectionInspector: inspector.floatingSelectionInspectorVisible",
   "planQuality: quality.reviewPanelVisible",

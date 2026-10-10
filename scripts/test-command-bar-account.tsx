@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement, createRef, type ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CommandBarAccountMenu } from "../components/editor/command-bar/CommandBarAccountMenu";
+import { AccountMenuItems, CommandBarAccountMenu } from "../components/editor/command-bar/CommandBarAccountMenu";
 import { CommandBarGetProButton } from "../components/editor/command-bar/CommandBarGetProButton";
 import {
   getPlansReturnFocusIds,
@@ -30,7 +30,7 @@ const account = (props: Partial<AccountProps>) =>
 const pending = account({ accountReady: false });
 assert.match(pending, /data-testid="editor-command-account-pending"/);
 assert.doesNotMatch(pending, /<button/, "Nothing is clickable until the session has loaded.");
-assert.match(pending, /h-\[30px\] w-\[30px\]/, "The placeholder keeps the bar from shifting.");
+assert.match(pending, /h-9 w-9/, "The placeholder keeps the bar from shifting.");
 
 const guest = account({ isAuthed: false, accountName: null });
 assert.match(guest, /data-testid="editor-command-sign-in"[^>]*aria-label="Sign in"/, "Guests get a Sign in button in the bar.");
@@ -47,6 +47,17 @@ assert.match(menu, /data-testid="editor-command-view-plans"[^>]*>Pricing</);
 assert.match(menu, /data-testid="editor-command-sign-out"/);
 assert.doesNotMatch(menu, /editor-command-sign-in/, "The menu no longer offers Sign in.");
 assert.match(account({ open: true, canManageBilling: true }), /data-testid="editor-command-manage-billing"/);
+
+// Phones (UX 4d): no Account button; the Menu ends with the same items, and guests' Sign in is one
+// of them. Pricing from there hands focus back to the Menu, the bar's fallback.
+const phoneItems = (props: Partial<AccountProps>) =>
+  renderToStaticMarkup(createElement(AccountMenuItems, { ...base, ...props }));
+assert.equal(phoneItems({ accountReady: false }), "", "Nothing until the session has loaded.");
+assert.match(phoneItems({ isAuthed: false, accountName: null }),
+  /^<button type="button" role="menuitem" data-testid="editor-command-sign-in" aria-label="Sign in" class="menu-button"><span>Sign in<\/span><\/button>$/);
+const phoneMember = phoneItems({});
+assert.match(phoneMember, /data-testid="editor-account-plan"[^>]*>Free<[\s\S]*data-testid="editor-command-view-plans"[^>]*>Pricing<[\s\S]*data-testid="editor-command-sign-out"/);
+assert.doesNotMatch(phoneMember, /editor-command-account"|role="menu"/, "The items sit in the Menu, not a menu of their own.");
 
 const getPro = (canUpgrade: boolean, accountReady = true) =>
   renderToStaticMarkup(createElement(CommandBarGetProButton, { dark: false, accountReady, canUpgrade, onGetPro: noop }));
@@ -74,7 +85,13 @@ assert.match(read("lib/useDesignPagePresentationWorkspaceRegistration.ts"),
 assert.match(read("lib/useDesignPageBilling.ts"), /finally \{\s*setPlanLoaded\(true\);\s*\}/,
   "A failed plan request still counts as loaded, so Get Pro isn't held back for ever.");
 assert.match(read("components/editor/design-page/PlansDialog.tsx"), /getPlansReturnFocusIds\(state\.openedFromUpgrade, state\.openerId\)/);
-assert.match(read("components/editor/EditorCommandBar.tsx"),
-  /<CommandBarGetProButton dark=\{dark\} accountReady=\{accountReady\} canUpgrade=\{canUpgrade\} onGetPro=\{onGetPro\} \/>/);
+const commandBar = read("components/editor/EditorCommandBar.tsx");
+assert.match(commandBar,
+  /<CommandBarGetProButton dark=\{dark\} accountReady=\{props\.accountReady\} canUpgrade=\{props\.canUpgrade\} onGetPro=\{props\.onGetPro\} \/>/);
+assert.match(commandBar, /phone=\{!wide\}\s*accountSlot=\{<AccountMenuItems \{\.\.\.account\} onClose=\{\(\) => setOverflowOpen\(false\)\} \/>\}/,
+  "On phones the Menu holds the account's items.");
+assert.match(commandBar, /\{wide \? moreMenu : null\}\s*\{wide \? \(\s*<CommandBarAccountMenu/,
+  "From md, More and Account sit at the end of the bar.");
+assert.match(commandBar, /md:gap-3">\s*\{wide \? null : moreMenu\}/, "On phones the Menu starts the bar.");
 
 console.log("Command bar account checks passed.");

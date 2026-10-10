@@ -1,0 +1,1024 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - ROPE - minimali.zip (148076073 bytes, sha256 395f7c5167e738a0df444991059f2a518ae0155da7f7e03265dade30e666f1d9).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0021726",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/pf60021726-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0021726_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-rope-pf60021726-120x280-nat-197546-0; wall gardenia-wall-tile-orosei-rope-pf60021726-120x280-nat-197546-0",
+   "faces": [
+    {
+     "file": "0021726_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 225030,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ROPE - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "7416db9b3a9766c6e020b251a6fa7c00103ea509cda266e2d20fa142a4b65e8a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "OROSEI ROPE 120X280_02",
+      "id": "38b41eb9-0a78-43c7-96bd-db358d878e08",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021726_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 237746,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ROPE - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "28f55c80377a40e18eb1172e0128221b7d94f9366f6699c85db71b4a9d816b28",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "OROSEI ROPE 120X280_01",
+      "id": "3f5f6722-b4cb-4f8f-8c0e-96aecfa1f88e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021726_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 237200,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - ROPE - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "55bed4550a1196be0722f4cd075858eb84cfd67ee74fe8892f71d1bb7e998daf",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 3",
+      "name": "OROSEI ROPE 120X280_03",
+      "id": "bc10e62c-f315-4911-be2d-38c601a62034",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0021736",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/pf60021736-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021736_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-rope-pf60021695-120x120-197534-0 (uses 0021736's faces: ABK's 9 Antique 3D pictures are 0021736's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-rope-pf60021736-120x120-nat-197551-0; wall gardenia-wall-tile-orosei-rope-pf60021695-120x120-197534-0 (uses 0021736's faces: ABK's 9 Antique 3D pictures are 0021736's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-rope-pf60021736-120x120-nat-197551-0",
+   "faces": [
+    {
+     "file": "0021736_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104012,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9c1948ab7c209b5cab2e87ee6c5b9faff094a1e4691a6e474021871dbcbff6a3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "OROSEI ROPE 120X120_08",
+      "id": "2656ae3c-e162-44eb-9115-225995089b58",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021736_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101202,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1849d812cf2bfa833fd6f784ab663854ad0cf026752f9ef1d9ee528290672345",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "OROSEI ROPE 120X120_07",
+      "id": "2609d4d4-eaf9-4ac9-8092-3727ab6be10c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021736_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 99480,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "397824bd3d96ec5d8b69fe5cf16408b08299227054a17674ffe9e428ea245f35",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "OROSEI ROPE 120X120_04",
+      "id": "7e8f9173-5281-4410-93b3-335b8a8021df",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021736_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107070,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0832d10c568fabc6faefd9a8a7d594656bb0873b13f7051320a8d7fd36370574",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "OROSEI ROPE 120X120_01",
+      "id": "ae32aeb9-4be8-4cc0-89ff-b458d4e1ca7e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021736_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100624,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b2abde3d381683c1c3adc0444d3f0a9a057d3f385f32598574fe853651415da0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "OROSEI ROPE 120X120_05",
+      "id": "70bb43c6-eaf3-4287-8f96-445c7fbd8b5e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021736_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109076,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7a3a6af84105c22835a1b682442c5770a6c29d98b3a01bb49e070f96b428eba8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "OROSEI ROPE 120X120_02",
+      "id": "c36b4372-ec3f-4115-9a45-39d868010d66",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021736_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 98822,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b19697c64365a2e553f9bbeefa43b79d16edc64fce21ea6f71f883aa6e30e668",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "OROSEI ROPE 120X120_06",
+      "id": "cf4c4ac9-3270-4071-8882-2b9ba546b7fa",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021736_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 99552,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ae78de8542617902e43ee0690bf8125f30e1117527ecaa220b28b9d6939a3b92",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "OROSEI ROPE 120X120_03",
+      "id": "e90f227d-56dd-4336-8778-c3e4169fc200",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021736_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101076,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - ROPE - 120X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6d94205c52c34fd5155ff0bc3ecad8fa0a183cc54b95129fe653b1b9e390d0d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "OROSEI ROPE 120X120_09",
+      "id": "8424e3b0-44f2-41f8-a915-afb43fad5f81",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0030226",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/pf60030226-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030226_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-rope-pf60030226-60x60-nat-197561-0; wall gardenia-wall-tile-orosei-rope-pf60030226-60x60-nat-197561-0",
+   "faces": [
+    {
+     "file": "0030226_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106498,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "351e2f22ee10821ceeff77ff60ab21fbf6fe7f8129487a589d7f6e4d5b444401",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "OROSEI ROPE 60x60_08",
+      "id": "cadbacf4-840f-407b-99b2-5a802dfaca90",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030226_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104372,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "779829e929911f94d37cf077bb33b4186a017a741f6be93d1ea813f284558cd5",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "OROSEI ROPE 60x60_09",
+      "id": "ba7a6f0e-60cc-48c6-bdd8-7390174aa738",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030226_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101360,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0458fb389219ef685178a5f59a03b4ac4dfb21173a8700061df19f943bafc433",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "OROSEI ROPE 60x60_04",
+      "id": "ad6b8e09-34a4-4e9b-836e-c9f8289289eb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030226_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 100318,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "74552fb7283e236cc88e6789ab34df11af27a993c3c49d58991edd4e64669254",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "OROSEI ROPE 60x60_03",
+      "id": "d88d6f73-e8c8-4990-a748-1cd93b3cb6f4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030226_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 103802,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d7f095af18f60f21f031fddb7a2039cf69913d7e412917213737a5ed51ee3608",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "OROSEI ROPE 60x60_05",
+      "id": "127fce7c-a4d5-4a42-8cf2-c768b680b8ea",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030226_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 104066,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e04b38e2c8426bb8dbecb713e1293754f0659a6b0eae4153383dcdaeedc03228",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "OROSEI ROPE 60x60_07",
+      "id": "a46d2b5d-479f-4ac2-82a1-39449c76d10f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030226_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 101810,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9072df401ac5ecacaed61a0437ba86b8d6575979b0ed97ae0ae2dcaa6534e86b",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "OROSEI ROPE 60x60_06",
+      "id": "4c0430c6-5255-475e-b339-effccd4982d4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030226_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110382,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5ef2f06eec037c86758df9de22deccbf3b1e7ff69584321ea9691e9312c4ae6b",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "OROSEI ROPE 60x60_02",
+      "id": "da0c483e-7c6d-4dbc-a478-42211b1ef4cb",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030226_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109322,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - ROPE - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9d7f8ebc2e4b15a1821f6e315771abcf6caa0b5ba53290278a80c5f05a105f04",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "OROSEI ROPE 60x60_01",
+      "id": "a06b611e-2318-49a0-9027-e2012e92d2e4",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0021741",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/pf60021741-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021741_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-rope-pf60021702-60x120-197541-0 (uses 0021741's faces: ABK's 9 Antique 3D pictures are 0021741's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-rope-pf60021741-60x120-nat-197556-0; wall gardenia-wall-tile-orosei-rope-pf60021702-60x120-197541-0 (uses 0021741's faces: ABK's 9 Antique 3D pictures are 0021741's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-rope-pf60021741-60x120-nat-197556-0",
+   "faces": [
+    {
+     "file": "0021741_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51102,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3d6ec94df0463b17d82895137bcf5b13aee21f60af745be8793ba9b513879261",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "OROSEI ROPE 60X120_07",
+      "id": "09cdcc9d-247e-45ff-bb19-9c84a34e4f40",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021741_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51954,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "300ce84114c13c387ec3e483d99cc2aac0720f3fc0e1a6234a3cfe9ebe6eaf7b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "OROSEI ROPE 60X120_08",
+      "id": "633ac64d-8e62-442a-8e4e-c5aad9a8f08e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021741_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51658,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e60275c2d6de33b30dce987cd366dbb1f255f1fa9a53be4988514a5665688855",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "OROSEI ROPE 60X120_09",
+      "id": "8ee4bbed-37d3-46dc-9195-cbca94d8481e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021741_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55614,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "48d057be9ec34a09693303348a450d613410179901370608ce9cbe99329f7312",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "OROSEI ROPE 60X120_02",
+      "id": "b17beda8-9d4e-4c1b-a5a1-6b527078ffa4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021741_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50844,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "651a53d84a09320635937f3a3cd62a42f17cc2d40ea9e9db17b2f5bfc6d72019",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "OROSEI ROPE 60X120_03",
+      "id": "dcbfe609-5961-4e10-a463-6515dcaa24fc",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021741_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52674,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d136587d40918bef83890a2820a338bfe76a722f0ba2549dd6266519a5e65216",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "OROSEI ROPE 60X120_01",
+      "id": "a1c6f69a-c92e-4f1b-a111-5ae44888e6cf",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021741_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50326,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6549f0b5bdac32beebc0b3f72de947919c643bcbc2e83ef5126541a3238c9acc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "OROSEI ROPE 60X120_06",
+      "id": "de020c68-ab15-42d1-b46d-452843e6cb86",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021741_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51834,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ae744d117cf2007cadb0e26e8dfe5f99c2bd670f4286a6bded04711e358cfed0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "OROSEI ROPE 60X120_04",
+      "id": "7042cef5-af4a-416e-b92f-b200bdb0cac0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021741_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51038,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "60X120-Natural/OROSEI - ROPE - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "024aae2985161db2e5a350364aad610dddfbe89d7cb8a776b84bd3aa16d59502",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "OROSEI ROPE 60X120_05",
+      "id": "e67f98d3-0ae4-4eef-83b8-994a132e7406",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0030232",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/rope/pf60030232-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0030232_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-rope-pf60030232-80x80-nat-197566-0; wall gardenia-wall-tile-orosei-rope-pf60030232-80x80-nat-197566-0",
+   "faces": [
+    {
+     "file": "0030232_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46232,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2bac9062156330867c9c77d1d56ce83dc784319f99c6070b89285ae4b1440dca",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "OROSEI ROPE_8 80X80",
+      "id": "60dae173-3c4f-4a7c-9d78-3b6af14bbc2a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030232_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46762,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be745be6ae8d613c3417a3cc511ae955c77366aafcfdb21dea5e4350b83e9166",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "OROSEI ROPE_3 80X80",
+      "id": "1e7327c1-de65-4b32-9798-2f2f42574b35",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030232_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 45218,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "86ab2a19a9478042361f134974e9169d036b83f98af6ca75c1f04a582f630da3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "OROSEI ROPE_9 80X80",
+      "id": "bf2900e5-6967-4b01-8b3a-96f822e03854",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030232_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46408,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "336b63cb578bf731110337609e615da5b2168f202996e48da82e4bedeeb1a988",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "OROSEI ROPE_7 80X80",
+      "id": "8d54a0dc-94ae-4366-9fd7-74c018b8a359",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030232_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47156,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "70065302782139f62975ce08db5e54a9e7a2c94dc17a04deac5e18f836b84bd0",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "OROSEI ROPE_6 80X80",
+      "id": "f53ace05-5a26-4fba-8748-5a4b4a77bc00",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030232_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46722,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d7aff8bb61ef14d750afc8a0e17370794200e2ff70e965878a89ecf7ef5d9598",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "OROSEI ROPE_5 80X80",
+      "id": "77184679-aeaa-412d-82ab-262aefad6a9c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030232_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 45676,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c8ac4b944aa9478e903fa15e6bb122aef595ca896bf056b19d7010052f5666bc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "OROSEI ROPE_4 80X80",
+      "id": "86d51b27-4b5d-4b30-923e-ae5cc6c5ae36",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030232_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47376,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "30030aba81b9350a3793a2a6361f47324f78a4cfdfd8b66e39e14bac94a0e59b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "OROSEI ROPE_1 80X80",
+      "id": "aef744da-3c73-49d8-9695-1dc9787e52c7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030232_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46428,
+     "source_zip": "OROSEI - ROPE - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - ROPE - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3b27a24f276ae17380924816a13eb771901d94d053c0c38de0f08271cf8cb35f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "OROSEI ROPE_2 80X80",
+      "id": "b7f0de27-4c65-4d6e-989a-c1019e9ab155",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

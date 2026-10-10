@@ -12,6 +12,7 @@ import { track } from "@/lib/analytics";
 import type { CameraView } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { switchRoom, type DesignSnapshot, type RoomSnapshot } from "@/lib/room-types";
+import { storeyDisplayLabel } from "@/lib/storey-labels";
 import {
   buildNewFloorRooms,
   clonePlanOpeningsForRoomMap,
@@ -125,7 +126,7 @@ export function useFloorManager({
         );
       }
 
-      showRuleToast(`Switched to ${formatFloorLevel(level)}`);
+      showRuleToast(`Switched to ${storeyDisplayLabel(targetRoom.floorLabel ?? formatFloorLevel(level))}`);
       track("editor_floor_switched", { floorLevel: level });
     },
     [
@@ -143,7 +144,7 @@ export function useFloorManager({
   const handleToggleFloorVisibility = useCallback(
     (level: number) => {
       if (level === activeFloorLevel) {
-        showRuleToast("Active floor stays visible");
+        showRuleToast("The level you're on stays visible");
         return;
       }
 
@@ -182,7 +183,7 @@ export function useFloorManager({
         { ...designSnapshotRef.current, rooms: [...designSnapshotRef.current.rooms, ...nextRooms] },
         firstRoom.id
       );
-      runHistoryTransaction(direction === "upper" ? "Add upper floor" : "Add lower floor", () => {
+      runHistoryTransaction(direction === "upper" ? "Add level above" : "Add level below", () => {
         designSnapshotRef.current = nextSnapshot;
         setDesignSnapshot(nextSnapshot);
         if (creationMode === "layout" || creationMode === "walls") {
@@ -195,7 +196,7 @@ export function useFloorManager({
       setSelectedPlanRoomId(firstRoom.id);
       setHiddenFloorLevels((prev) => prev.filter((level) => level !== nextLevel));
       actionAdaptersRef.current.clearNonRoomSelection();
-      showRuleToast(`Added ${nextFloorLabel}`);
+      showRuleToast(`Added ${storeyDisplayLabel(nextFloorLabel)}`);
       track("editor_floor_added", { direction, floorLevel: nextLevel, creationMode });
     },
     [
@@ -221,7 +222,7 @@ export function useFloorManager({
       formatFloorLevel(activeFloorLevel);
     const nextLabel = nextLabelInput?.trim();
     if (typeof nextLabelInput === "undefined") {
-      showRuleToast("Use the floor panel to rename this floor");
+      showRuleToast("Use the Levels panel to rename this level");
       return;
     }
     if (!nextLabel || nextLabel === currentLabel) return;
@@ -232,11 +233,11 @@ export function useFloorManager({
         (room.floorLevel ?? 1) === activeFloorLevel ? { ...room, floorLabel: nextLabel } : room
       ),
     };
-    runHistoryTransaction("Rename floor", () => {
+    runHistoryTransaction("Rename level", () => {
       designSnapshotRef.current = nextSnapshot;
       setDesignSnapshot(nextSnapshot);
     });
-    showRuleToast(`Renamed floor to ${nextLabel}`);
+    showRuleToast(`Renamed level to ${nextLabel}`);
     track("editor_floor_renamed", { floorLevel: activeFloorLevel });
   }, [activeFloorLevel, designSnapshotRef, floorOptions, runHistoryTransaction, setDesignSnapshot, showRuleToast]);
 
@@ -255,7 +256,7 @@ export function useFloorManager({
       firstRoom.id
     );
 
-    runHistoryTransaction("Duplicate floor", () => {
+    runHistoryTransaction("Duplicate level", () => {
       designSnapshotRef.current = nextSnapshot;
       setDesignSnapshot(nextSnapshot);
       setPlanOpenings((prev) => [
@@ -265,7 +266,7 @@ export function useFloorManager({
     });
     setSelectedPlanRoomId(firstRoom.id);
     actionAdaptersRef.current.clearNonRoomSelection();
-    showRuleToast(`Duplicated to ${firstRoom.floorLabel}`);
+    showRuleToast(`Duplicated to ${storeyDisplayLabel(firstRoom.floorLabel ?? formatFloorLevel(nextLevel))}`);
     track("editor_floor_duplicated", { sourceFloorLevel: activeFloorLevel, floorLevel: nextLevel });
   }, [
     actionAdaptersRef,
@@ -282,7 +283,7 @@ export function useFloorManager({
     const rooms = designSnapshotRef.current.rooms;
     const nextActiveRoom = resolveNextActiveRoomAfterFloorDelete(rooms, activeFloorLevel);
     if (!nextActiveRoom) {
-      showRuleToast("Keep at least one floor");
+      showRuleToast("Keep at least one level");
       return;
     }
     const remainingRooms = rooms.filter((room) => (room.floorLevel ?? 1) !== activeFloorLevel);
@@ -290,7 +291,7 @@ export function useFloorManager({
       floorOptions.find((option) => option.level === activeFloorLevel)?.label ??
       formatFloorLevel(activeFloorLevel);
     if (!confirmed) {
-      showRuleToast(`Confirm delete for ${currentLabel} in the floor panel`);
+      showRuleToast(`Confirm delete for ${currentLabel} in the Levels panel`);
       return;
     }
 
@@ -300,7 +301,7 @@ export function useFloorManager({
       nextActiveRoom.id
     );
 
-    runHistoryTransaction("Delete floor", () => {
+    runHistoryTransaction("Delete level", () => {
       designSnapshotRef.current = nextSnapshot;
       setDesignSnapshot(nextSnapshot);
       setPlanOpenings((prev) =>

@@ -61,7 +61,7 @@ export function PlanAnnotationDialog({
         <textarea
           data-testid="plan-annotation-input"
           data-editor-dialog-initial-focus="true"
-          className="mt-1 min-h-24 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
+          className="mt-1 min-h-24 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
           value={text}
           onChange={(event) => onTextChange(event.currentTarget.value)}
           onKeyDown={(event) => {

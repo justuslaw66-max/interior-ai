@@ -10,19 +10,17 @@ import {
   WHOLE_HOME_FIT_ZOOM_SCALE,
   type Plan2DViewFitOrientation,
 } from "@/components/editor/camera/EditorCamera2D";
-import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
-import { resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
+import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
+import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
+import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
   applyPlan2DCameraInvariant, isPlan2DCameraDegenerate,
   type Plan2DCameraControls,
 } from "@/lib/plan-camera-2d";
-import type { DesignItem } from "@/lib/room-types";
-import { mapToTopCategory } from "@/lib/catalog/view-builders";
 
 const PLAN_2D_WHOLE_HOME_FIT_PADDING_MIN_METERS = 3.2;
 const PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO = 0.24;
@@ -33,6 +31,15 @@ type PlanFitBounds = {
   centerZ: number;
   widthMeters: number;
   depthMeters: number;
+};
+
+type PlanFitInsetsPx = Parameters<typeof resolvePlanFitInsetsPx>[1];
+
+type Plan2DCameraViewOptions = {
+  centerX?: number; centerZ?: number; widthMeters?: number; depthMeters?: number; paddingMeters?: number;
+  fitOrientation?: Plan2DViewFitOrientation;
+  /** The insets to fit within: explicit fits pass the live ones (planSafeAreaLiveRightPx). */
+  insets?: PlanFitInsetsPx;
 };
 
 type ViewportSize = {
@@ -54,9 +61,6 @@ export type DesignPageCameraNavigationState = {
   hasWholeHousePlan: boolean;
   designRoomCount: number;
   rooms: HousePlanRoom2D[];
-  items: DesignItem[];
-  selectedItem: DesignItem | null;
-  selectedProduct: CatalogItemSchema | null;
 };
 
 export type DesignPageCameraNavigationConfiguration = {
@@ -65,7 +69,9 @@ export type DesignPageCameraNavigationConfiguration = {
   viewportSize: ViewportSize;
   planFitBounds: PlanFitBounds;
   planSafeAreaLeftPx: number;
-  planSafeAreaRightPx: number;
+  planSafeAreaRightPx: number; // automatic 2D fits: the floating overlay stack as of the last fit
+  planSafeAreaLiveRightPx: number; // explicit 2D fits (Fit, a room's fit): the stack as it is now
+  planSafeAreaTopPx: number;
   planSafeAreaBottomPx: number;
   floatingPlanOverlayStackVisible: boolean;
   floatingPlanOverlayStackWidthPx: number;
@@ -92,17 +98,10 @@ export type DesignPageCameraNavigationActions = {
   preserveCameraAfterPlanOverlaySelection: () => void;
   transitionToCameraView: (nextView: CameraView, durationMs?: number) => void;
   applyQueued3DView: (nextView: CameraView, durationMs?: number, attempt?: number) => void;
-  applyPlan2DCameraView: (options?: {
-    centerX?: number;
-    centerZ?: number;
-    fitOrientation?: Plan2DViewFitOrientation;
-    widthMeters?: number;
-    depthMeters?: number;
-    paddingMeters?: number;
-  }) => boolean;
-  applyQueued2DPlanView: (attempt?: number) => void;
+  applyPlan2DCameraView: (options?: Plan2DCameraViewOptions) => boolean;
+  applyQueued2DPlanView: (attempt?: number, options?: Plan2DCameraViewOptions) => void;
   prepareForPlanTemplate: () => void;
-  handleEditorViewModeChange: (next: EditorViewMode) => void;
+  handleEditorViewModeChange: (next: EditorViewMode, open3DView?: CameraView, durationMs?: number) => void;
   handleFitPlanView: () => void;
   handleFitSelectedPlanRoom: (roomId: string) => void;
   focusWholeHomeCameraPoint: (x: number, z: number, durationMs?: number) => void;
@@ -112,8 +111,6 @@ export type DesignPageCameraNavigationActions = {
   handleWholeHomeNavigatorZoom: (direction: "in" | "out") => void;
   handleWholeHomeFocusRoom: (roomId: string) => void;
   getWholeHome3DView: () => CameraView;
-  getEyeLevelView: () => CameraView;
-  getFocusView: () => CameraView;
 };
 
 export type DesignPageCameraNavigationController = {
@@ -157,18 +154,13 @@ export function useDesignPageCameraNavigation({
     hasWholeHousePlan,
     designRoomCount,
     rooms,
-    items,
-    selectedItem,
-    selectedProduct,
   } = state;
   const {
     defaultCameraView,
     designId,
     viewportSize,
     planFitBounds,
-    planSafeAreaLeftPx,
-    planSafeAreaRightPx,
-    planSafeAreaBottomPx,
+    planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaLiveRightPx, planSafeAreaTopPx, planSafeAreaBottomPx,
     floatingPlanOverlayStackVisible,
     floatingPlanOverlayStackWidthPx,
     activeRoomFloorWorldY, activeRoomPlanOffset: { x: activeRoomPlanX, z: activeRoomPlanZ }, roomHeight,
@@ -228,13 +220,15 @@ export function useDesignPageCameraNavigation({
     Math.max(planFitBounds.widthMeters, planFitBounds.depthMeters) *
       PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO
   );
+  const planFitInsets = useMemo(
+    () => ({ leftPx: planSafeAreaLeftPx, rightPx: planSafeAreaRightPx, topPx: planSafeAreaTopPx, bottomPx: planSafeAreaBottomPx }),
+    [planSafeAreaBottomPx, planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaTopPx]
+  );
+  const planFitLiveInsets = useMemo(() => ({ ...planFitInsets, rightPx: planSafeAreaLiveRightPx }), [planFitInsets, planSafeAreaLiveRightPx]);
   const plan2DWholeHomeViewFit = useMemo(() => {
     const viewportWidthPx = viewportSize.width;
     const viewportHeightPx = viewportSize.height;
-    const leftInsetPx = viewportWidthPx >= 768 ? planSafeAreaLeftPx : 0;
-    const rightInsetPx = viewportWidthPx >= 768 ? planSafeAreaRightPx : 0;
-    const bottomInsetPx = viewportWidthPx < 768 ? planSafeAreaBottomPx : 0;
-
+    const insets = resolvePlanFitInsetsPx(viewportWidthPx, planFitInsets);
     return resolvePlan2DViewFit({
       centerX: planFitBounds.centerX,
       centerZ: planFitBounds.centerZ,
@@ -242,9 +236,7 @@ export function useDesignPageCameraNavigation({
       paddingMeters: plan2DWholeHomeFitPaddingMeters,
       planDepthMeters: planFitBounds.depthMeters,
       planWidthMeters: planFitBounds.widthMeters,
-      safeAreaBottomPx: bottomInsetPx,
-      safeAreaLeftPx: leftInsetPx,
-      safeAreaRightPx: rightInsetPx,
+      ...insets,
       viewportHeightPx,
       viewportWidthPx,
       zoomScale: WHOLE_HOME_FIT_ZOOM_SCALE,
@@ -254,9 +246,7 @@ export function useDesignPageCameraNavigation({
     planFitBounds.centerZ,
     planFitBounds.depthMeters,
     planFitBounds.widthMeters,
-    planSafeAreaBottomPx,
-    planSafeAreaLeftPx,
-    planSafeAreaRightPx,
+    planFitInsets,
     plan2DWholeHomeFitPaddingMeters,
     viewportSize.height,
     viewportSize.width,
@@ -283,19 +273,9 @@ export function useDesignPageCameraNavigation({
       fov: perspectiveFov,
     };
 
-    setCameraView((previous) => {
-      const [px, py, pz] = previous.pos;
-      const [tx, ty, tz] = previous.target;
-      const changed =
-        Math.abs(px - next.pos[0]) > 0.001 ||
-        Math.abs(py - next.pos[1]) > 0.001 ||
-        Math.abs(pz - next.pos[2]) > 0.001 ||
-        Math.abs(tx - next.target[0]) > 0.001 ||
-        Math.abs(ty - next.target[1]) > 0.001 ||
-        Math.abs(tz - next.target[2]) > 0.001 ||
-        Math.abs((previous.fov ?? 45) - (next.fov ?? 45)) > 0.01;
-      return changed ? next : previous;
-    });
+    setCameraView((previous) =>
+      cameraViewChanged(previous, next) ? next : previous
+    );
   }, [cameraRef, controlsRef, setCameraView]);
 
   const preserveCameraAfterPlanOverlaySelection = useCallback(() => {
@@ -358,19 +338,14 @@ export function useDesignPageCameraNavigation({
       const start = performance.now();
 
       const tick = (timestamp: number) => {
-        if (cameraTransitionTokenRef.current !== transitionToken) {
-          isCameraAnimatingRef.current = false;
-          return;
-        }
+        if (cameraTransitionTokenRef.current !== transitionToken) return; // the newer transition owns isCameraAnimatingRef
 
         const t = Math.min(1, (timestamp - start) / durationMs);
         const eased = 1 - Math.pow(1 - t, 3);
 
         camera.position.lerpVectors(fromPos, toPos, eased);
         (controls.target as THREE.Vector3).lerpVectors(fromTarget, toTarget, eased);
-        if (isPerspective) {
-          camera.fov = fromFov + (toFov - fromFov) * eased;
-        }
+        if (isPerspective) camera.fov = fromFov + (toFov - fromFov) * eased;
         updateProjection(camera);
         controls.update();
 
@@ -418,8 +393,8 @@ export function useDesignPageCameraNavigation({
       viewportWidthPx >= 768 && floatingPlanOverlayStackVisible
         ? floatingPlanOverlayStackWidthPx + 32
         : 0;
-    const topInsetPx = viewportWidthPx >= 768 ? 96 : 72;
-    const bottomInsetPx = viewportWidthPx < 768 ? 96 : 48;
+    const topInsetPx = viewportWidthPx >= 768 ? EDITOR_BAR_HEIGHT_PX + 60 : Math.max(72, planFitInsets.topPx);
+    const bottomInsetPx = viewportWidthPx < 768 ? Math.max(96, planFitInsets.bottomPx) : 48;
     const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
     const effectiveHeightPx = Math.max(260, viewportHeightPx - topInsetPx - bottomInsetPx);
     const aspect = Math.max(0.65, effectiveWidthPx / effectiveHeightPx);
@@ -511,6 +486,7 @@ export function useDesignPageCameraNavigation({
     planFitBounds.centerZ,
     planFitBounds.depthMeters,
     planFitBounds.widthMeters,
+    planFitInsets,
     planSafeAreaLeftPx,
     roomHeight,
     viewportSize.height,
@@ -557,14 +533,19 @@ export function useDesignPageCameraNavigation({
   ]);
 
   const handleEditorViewModeChange = useCallback(
-    (next: EditorViewMode) => {
+    (next: EditorViewMode, open3DView?: CameraView, durationMs = 420) => {
       if (next === "3d") {
         resetFloorPlanInteraction({ resetCalibrationDistance: false });
-        pending3DViewRef.current = hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView;
+        // Already in 3D: a queued view would only replace the camera on a later view-mode effect run.
+        if (viewMode === "3d") {
+          if (open3DView) transitionToCameraView(open3DView, durationMs);
+          return;
+        }
+        pending3DViewRef.current = open3DView ?? (hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView);
       }
       setViewMode(next);
     },
-    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView]
+    [getWholeHome3DView, hasWholeHousePlan, resetFloorPlanInteraction, setViewMode, singleRoomDefaultCameraView, transitionToCameraView, viewMode]
   );
 
   const prepareForPlanTemplate = useCallback(() => {
@@ -582,14 +563,8 @@ export function useDesignPageCameraNavigation({
       depthMeters = planFitBounds.depthMeters,
       fitOrientation = wholeHomeFitOrientation,
       paddingMeters,
-    }: {
-      centerX?: number;
-      centerZ?: number;
-      fitOrientation?: Plan2DViewFitOrientation;
-      widthMeters?: number;
-      depthMeters?: number;
-      paddingMeters?: number;
-    } = {}) => {
+      insets: fitInsets = planFitInsets,
+    }: Plan2DCameraViewOptions = {}) => {
       const camera = cameraRef.current;
       const controls = controlsRef.current;
       if (!(camera instanceof THREE.OrthographicCamera) || !controls) return false;
@@ -598,9 +573,7 @@ export function useDesignPageCameraNavigation({
       const span = Math.max(widthMeters, depthMeters);
       const viewportWidthPx = canvas?.clientWidth ?? window.innerWidth;
       const viewportHeightPx = canvas?.clientHeight ?? window.innerHeight;
-      const leftInsetPx = viewportWidthPx >= 768 ? planSafeAreaLeftPx : 0;
-      const rightInsetPx = viewportWidthPx >= 768 ? planSafeAreaRightPx : 0;
-      const bottomInsetPx = viewportWidthPx < 768 ? planSafeAreaBottomPx : 0;
+      const insets = resolvePlanFitInsetsPx(viewportWidthPx, fitInsets);
       const fitPaddingMeters = paddingMeters ?? plan2DWholeHomeFitPaddingMeters;
       const fitZoomScale = paddingMeters == null ? WHOLE_HOME_FIT_ZOOM_SCALE : 1;
       const fit = resolvePlan2DViewFit({
@@ -610,9 +583,7 @@ export function useDesignPageCameraNavigation({
         paddingMeters: fitPaddingMeters,
         planDepthMeters: depthMeters,
         planWidthMeters: widthMeters,
-        safeAreaBottomPx: bottomInsetPx,
-        safeAreaLeftPx: leftInsetPx,
-        safeAreaRightPx: rightInsetPx,
+        ...insets,
         viewportHeightPx,
         viewportWidthPx,
         zoomScale: fitZoomScale,
@@ -636,9 +607,7 @@ export function useDesignPageCameraNavigation({
       planFitBounds.centerZ,
       planFitBounds.depthMeters,
       planFitBounds.widthMeters,
-      planSafeAreaBottomPx,
-      planSafeAreaLeftPx,
-      planSafeAreaRightPx,
+      planFitInsets,
       plan2DWholeHomeFitPaddingMeters,
       roomHeight,
       updateCameraViewFromScene,
@@ -648,11 +617,11 @@ export function useDesignPageCameraNavigation({
   );
 
   const applyQueued2DPlanView = useCallback(
-    (attempt = 0) => {
-      if (applyPlan2DCameraView()) return;
+    (attempt = 0, options?: Plan2DCameraViewOptions) => {
+      if (applyPlan2DCameraView(options)) return;
       if (attempt >= 10) return;
       window.requestAnimationFrame(() => {
-        applyQueued2DPlanView(attempt + 1);
+        applyQueued2DPlanView(attempt + 1, options);
       });
     },
     [applyPlan2DCameraView]
@@ -660,7 +629,7 @@ export function useDesignPageCameraNavigation({
 
   const handleFitPlanView = useCallback(() => {
     if (viewMode === "2d") {
-      applyQueued2DPlanView();
+      applyQueued2DPlanView(0, { insets: planFitLiveInsets });
       showRuleToast("Plan fitted");
     } else {
       transitionToCameraView(hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView, 420);
@@ -678,6 +647,7 @@ export function useDesignPageCameraNavigation({
     designRoomCount,
     getWholeHome3DView,
     hasWholeHousePlan,
+    planFitLiveInsets,
     planViewDepth,
     planViewWidth,
     showRuleToast,
@@ -734,6 +704,7 @@ export function useDesignPageCameraNavigation({
           widthMeters: paddedWidth,
           depthMeters: paddedDepth,
           paddingMeters: 1.2,
+          insets: planFitLiveInsets,
         })
       ) {
         transitionToCameraView(
@@ -756,6 +727,7 @@ export function useDesignPageCameraNavigation({
     [
       applyPlan2DCameraView,
       applyQueued3DView,
+      planFitLiveInsets,
       roomHeight,
       rooms,
       showRuleToast,
@@ -1204,63 +1176,6 @@ export function useDesignPageCameraNavigation({
     viewMode,
   ]);
 
-  const getEyeLevelView = useCallback((): CameraView => {
-    const sofa =
-      items.find((item) => {
-        const catalogItem = CATALOG_ITEMS[item.productId];
-        return catalogItem
-          ? mapToTopCategory(catalogItem.category, catalogItem) === "sofa"
-          : false;
-      }) ?? null;
-    if (!sofa) {
-      return singleRoomDefaultCameraView;
-    }
-
-    const product = CATALOG_ITEMS[sofa.productId];
-    const sofaX = sofa.position?.[0] ?? 0;
-    const sofaZ = sofa.position?.[2] ?? 0;
-    const targetY = Math.max(0.8, (product.dimsMm.h / 1000) * 0.5);
-    const offsetBack = Math.max(2.2, (product.dimsMm.d / 1000) * 2.8);
-
-    return resolveCameraViewForRoomOrigin({
-      target: [sofaX, targetY, sofaZ],
-      pos: [sofaX, 1.5, sofaZ + offsetBack],
-      fov: 45,
-    }, activeRoomOrigin);
-  }, [activeRoomOrigin, items, singleRoomDefaultCameraView]);
-
-  const getFocusView = useCallback((): CameraView => {
-    if (!selectedItem || !selectedProduct) {
-      return getEyeLevelView();
-    }
-
-    const rotation = selectedItem.rotationY ?? 0;
-    const normalizedQuarterTurns =
-      ((Math.round(rotation / (Math.PI / 2)) % 4) + 4) % 4;
-    const isOddRot = normalizedQuarterTurns % 2 !== 0;
-    const width = isOddRot
-      ? selectedProduct.dimsMm.d / 1000
-      : selectedProduct.dimsMm.w / 1000;
-    const depth = isOddRot
-      ? selectedProduct.dimsMm.w / 1000
-      : selectedProduct.dimsMm.d / 1000;
-    const centerX = selectedItem.position?.[0] ?? 0;
-    const centerZ = selectedItem.position?.[2] ?? 0;
-    const centerY = Math.max(0.4, (selectedProduct.dimsMm.h / 1000) * 0.52);
-    const itemSize = Math.max(width, depth, selectedProduct.dimsMm.h / 1000);
-    const distance = Math.max(1.8, Math.min(4.4, itemSize * 2.4));
-
-    return resolveCameraViewForRoomOrigin({
-      target: [centerX, centerY, centerZ],
-      pos: [
-        centerX + distance * 0.42,
-        centerY + Math.max(0.5, itemSize * 0.45),
-        centerZ + distance,
-      ],
-      fov: 45,
-    }, activeRoomOrigin);
-  }, [activeRoomOrigin, getEyeLevelView, selectedItem, selectedProduct]);
-
   return {
     state: {
       plan2DWholeHomeViewFit,
@@ -1292,8 +1207,6 @@ export function useDesignPageCameraNavigation({
       handleWholeHomeNavigatorZoom,
       handleWholeHomeFocusRoom,
       getWholeHome3DView,
-      getEyeLevelView,
-      getFocusView,
     },
   };
 }

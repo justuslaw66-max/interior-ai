@@ -1,0 +1,1903 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: BON TON - BOTTICINO - minimali.zip (43882375 bytes, sha256 011bc97dd8c5447af042e4c42026e8085e04215d09081b224c75c06df4e265bc).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/bon-ton/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0020757",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020757-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0020757_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-bon-ton-botticino-pf60020757-120x280-lux-196239-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020765-120x280-soft-196243-0 (uses 0020757's faces: ABK's 3 Soft pictures are 0020757's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0020757_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 106106,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BOTTICINO - 120X280 - Soft 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "833a030e15bdb6162cb1f62b0eb1aafa6edf176d761e5f29787cf77df4db43a3",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 120X280 LUX 3D_01",
+      "id": "398cd826-e494-4f9d-a106-13ffe1d5097a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020757_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 99954,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BOTTICINO - 120X280 - Soft 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "81f39916bfc23c19356b22e23335d6cf942a22ecfd8d14bae2bfee530d5b3900",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 120X280 LUX 3D_02",
+      "id": "e4d41a50-f9a3-4868-8c2b-07a20f473c85",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020757_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 109538,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X280-Soft 3D/BON TON - BOTTICINO - 120X280 - Soft 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1110
+     ],
+     "source_sha256": "57becd746867cedb7395f7b03e4810dcd8da118f97d8fa5640c6b08d4528a887",
+     "source_px_per_mm": 0.914,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 120X280 LUX 3D_03",
+      "id": "e72b6a62-da93-4ebe-a83f-11a2d0c2e8f4",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020774",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020774-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020774_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-botticino-pf60020774-120x120-196247-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020774-120x120-196247-0",
+   "faces": [
+    {
+     "file": "0020774_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43294,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e923228c25cfb4dd4c9713b5f232308b63f3906462de5bd1bb0a5ee24f90a2a4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_01",
+      "id": "c9686aa6-bd23-4727-b297-9940c2ffe57b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020774_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43114,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b65da9329c3d07a5783cf99035e43dd7aa455b5026c9726d7e7655fba251ebab",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_02",
+      "id": "191d2f08-a3a1-48b5-9677-60bbfc3e6b33",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020774_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43910,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ce8efe45a632cd4f80f3aa56a6ec1d44b0200ae501afc12fe2bfcf4fcf47ba63",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_08",
+      "id": "7ec289be-ed46-4780-bac4-613b841d16ba",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020774_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43930,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "497c002c864969615635d626c6f5f8ae2e1d9353f389670f3d7297cf99576483",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_03",
+      "id": "df13b49a-2de7-4cdb-a16c-f0092221b019",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020774_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40004,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "136648124e139bfad85b8d3f573d98cbd90c9d63289610e8aecb6c298ed037dd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_06",
+      "id": "a7b3cbaf-08ec-4d31-aa98-2a5b7b2156d9",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020774_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45046,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "544628fd65471d665ac9034adee471a863179270daf570d029cb382a4498b775",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_09",
+      "id": "7e093271-b3fb-4860-95bd-0a5d89c189f1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020774_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 39086,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9729bccb1b2c61928acc69954a3e80647d640f84b7630882664851ff7065c414",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_04",
+      "id": "086ee785-92bb-4bc3-9787-0b039a3f91f2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020774_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36588,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "de5adb00b7b3bd73c8856388a644c176c0931d23ee6ebfacfed1026180bd42e8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_05",
+      "id": "0625758e-b331-40f1-a114-a9235822e134",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020774_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43728,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Antique 3D/BON TON - BOTTICINO - 120X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b080fba6ce33b54287de66855b00572e90461f69ee29872e4c64351229e29a2d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BOTTICINO 120X120 ANTIQUE 3D_07",
+      "id": "ea227869-1043-4715-a55d-a28d3eccf900",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0020798",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020798-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0020798_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-botticino-pf60020798-120x120-nat-196258-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020798-120x120-nat-196258-0",
+   "faces": [
+    {
+     "file": "0020798_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41770,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "54c0119681598c17237891161618007ed65b12fd41c1669787de6358a19fe82b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_01",
+      "id": "df2745de-d8d9-4efa-8f43-8e57712950a8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020798_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40032,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "045e83551de8006085cb02b3e7913c905859930d66b9ac951c48dbeba24136e1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_08",
+      "id": "540c4ad3-8378-4f5f-8eb1-5a1ce0ca549e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020798_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43776,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d2653009db901f03ea4efbfb469d212fed629c63bb7355f6a49c68382c137cd5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_07",
+      "id": "f598dd1d-3205-422c-8028-3ff03eabb379",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020798_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36800,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dd7c80bbe7685e5ef71e31f1f3104d20ab9e8cadbec2112329102f2f3e5e074d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_05",
+      "id": "3bc1eb23-9530-4b07-a881-4d076a1a21bf",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020798_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38666,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e1f6eb69c7ed393285a06eac0e9ad2e76f3a6425d74b54f2027a847423e88277",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_06",
+      "id": "e3512d90-ff96-4bc5-83f3-78d516a8ad47",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020798_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38700,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3570e116dd1336da76665fb1ad458a068fe1b5b0e0c27689adec7df4d828ff44",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_04",
+      "id": "5cd0c334-33a8-48a2-a69c-e6a17983fc6c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020798_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43856,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "59d45f51d629c1abec0fc7856e7acfb735ec1256a14599a3af944fd8c63312f4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_09",
+      "id": "39aa02fd-9448-4088-9163-eaaedef97691",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020798_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41384,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "533a63d57ab82fd4faafeeae824a81017495d8296a9bc54af3f746ecd4ade1f6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_02",
+      "id": "f0507edc-b170-4731-b449-c9b3fca0e738",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020798_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43184,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "120X120-Nat 3D/BON TON - BOTTICINO - 120X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f35dfc27b43edb90f9e4c3ce35be929d33732ca81231756dbc1b0ab112efcda8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BOTTICINO 120X120 NAT 3D_03",
+      "id": "f91896e8-2b04-466a-ab68-dadb2602402d",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020778",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020778-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020778_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-botticino-pf60020778-60x120-196251-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020778-60x120-196251-0",
+   "faces": [
+    {
+     "file": "0020778_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20742,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4dc21774058501e752467af0b9ffe56ade40bcf921f51c6978e9c4d69bb897ab",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_01",
+      "id": "fd4fa6ba-b5b7-4a05-b658-1d33c8c499ab",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020778_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22132,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "933a5ef3d975c2a5bbbd31d455839419c92702bd288b26b703d8fe649e99e26b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_04",
+      "id": "9f33e777-01ca-407b-8fdf-83932edbdbe2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020778_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21470,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "58ff2a7f6736fafedcdfb7533b06fea2087764fe9bb20d38b86a9851440e4410",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_12",
+      "id": "718308f5-6677-435d-9d19-2901ce6dddbe",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020778_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22576,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "48875ff57eba0a2cca2c631bfc23178c441f9f729cba7147fc3e2933551523c4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_18",
+      "id": "0079e435-2aa8-41a0-bc96-be3290a1a19a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020778_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21892,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "09bcc9c00f8d01f3f97c087470047106db09fa1b384f3a34f52e6d8df785bc05",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_13",
+      "id": "e43213b4-9b11-4840-8f4f-4412893b6a4a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020778_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22422,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e898cc435c78555d99e3e2e42cc0e83a123764896494bed8fc8bc757811683bd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_10",
+      "id": "688973fa-0523-4f2c-87cf-08779f29a5dd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020778_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21878,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "87e3daa9b25dbe3e5453f82f3a779e067c77a9a4f8ed9c220716346d90bc2ef0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_09",
+      "id": "c6eaa9c1-d253-45ee-bf32-315d8cb87d83",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020778_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19016,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "04edf2de1d7571cc7c6ae1f83eee52407f0e819485bcf2596b5d88e72139ce0d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_08",
+      "id": "65c5b5cd-efdd-4a92-869a-119264715c54",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020778_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22240,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4a70e4573569904a3c7f280117b7bce516a8ec1ab5d8b4fd5f42a5f3bfedac13",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_16",
+      "id": "65218f73-da16-4b81-acef-8c2f85d13bc6",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020778_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21042,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "aefacb3901daee972d63e49cb75c8e00e732bbf08b43308fff0919545850f421",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_05",
+      "id": "4de6941e-bab0-4043-b383-57306cba773d",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020778_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21722,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0904073b8142298b1a7ff8607e62449924d525c11ef3362ff436cae0f61431f5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_15",
+      "id": "c6197c05-451d-442e-a3a8-a0cab1a1044b",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020778_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19294,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c57a6f2efb2cfb0ad9b7c873c8f58313048e57e821e7bc415a35e546a3775ad8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_07",
+      "id": "ddcbf17b-882c-45bb-8505-23ccbc0c9f9c",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020778_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24210,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "59af579540a8f0ad1785e01c80e6ad023ff737d37ce48d26d0a1c10d5e68f598",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_14",
+      "id": "0ba60d35-71ab-4e85-9276-f08ac3c69c66",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020778_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20984,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9f7c8ced028e77fcc75e29bce5ca7eb06db5db1125b39c7485fb1043191b4e04",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_03",
+      "id": "4cce6bc2-80e6-4e0b-b118-5d9fc1072cd0",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020778_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20208,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "567c2eb361851169719989c47e5bb43a534af2ac829fa3d90600afa040beb556",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_02",
+      "id": "f1e41b71-aa5b-407e-96e6-addfe0c50f23",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020778_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22724,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e2a4acf4b555c9325d799a7ae1497e0ac9ed71ca30a212be894c6f9a7ed49de1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_17",
+      "id": "c0b15b15-a219-45e6-98e9-7c87610757d3",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020778_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22230,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1ce6ffe42703fdfb779496b480dc9b9fd14570c8781d7295b4b58f55b315b2d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_06",
+      "id": "f22a4731-75b1-4e3d-8c10-d020d017ccd2",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020778_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18944,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Antique 3D/BON TON - BOTTICINO - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bc5f4e6e9db53d8e20e079389f94e183045e40e5cad8245c0d14f17909f152de",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON BOTTICINO 60X120 ANTIQUE 3D_11",
+      "id": "8750f727-4c5e-4107-b339-8531c0693cd8",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0020802",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020802-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0020802_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-bon-ton-botticino-pf60020802-60x120-nat-196262-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020802-60x120-nat-196262-0",
+   "faces": [
+    {
+     "file": "0020802_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20252,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2d13c823b6a02dab2d835b39644cb5ef3534fb727c15428d55631c560213059f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_01",
+      "id": "d16a61c7-a83d-4677-9cfa-39d0c2665000",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020802_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22018,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "08b0e44df577bdd96900c38c0dc51a6aad1e5af1a5a8c656c19c5196da267971",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_18",
+      "id": "85e4eb5a-6c84-4631-8a33-47d2d11e0026",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020802_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21964,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "250474f7ccb5ec7c5a282b204766c995eaf07fc712f34ff6c0b8ae31b55545d3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_16",
+      "id": "1d73a64c-afe5-4212-a36e-5c7c70571663",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020802_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17864,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "00285b0f45edd7c8eaffc9109241a9bdb3c98624fa26b4517b650bcc59de2fe4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_08",
+      "id": "9a063862-7887-4407-a480-d2e6a2a002ec",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020802_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19764,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cb93e100be974e709050ca7c1539b1a2be134d8cd82288655d795e39bda39c7d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_15",
+      "id": "794e9367-1563-44d3-a699-f144ee23297f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020802_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20332,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7eadc472e2396816f49e6be217851533d72289e8e9b1925c9b94d6de01f12b68",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_12",
+      "id": "f8e0bbb9-8559-4917-9368-b89694de999d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020802_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21408,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a30d23c6e4477af85ce17e3785f1df4753b3fd285e194b7bb308367edd2d201c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_13",
+      "id": "c0a3a1ee-47e5-4808-aee0-7c0be8659890",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020802_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19376,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3f290f40c18485962cb653e70081bbc9fc7ef738eb1db15d2f005bb0e44755f7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_11",
+      "id": "7e10bbd9-34b6-4551-8206-0ee980c484d4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020802_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17692,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f9d9bda53afca8b054218cf57a3b835324315836ec977dd2f495643832b4d3b1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_10",
+      "id": "da91b4ce-dec9-4495-add5-0f8fb3faceef",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020802_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23552,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d73ab79fffc0ee9df9db98a621b422bd44fa3e272e816e8bc9301b2f79c23f8a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_14",
+      "id": "1dec7db2-068c-4d9c-bec8-637359b069ed",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020802_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22444,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5ed47e2421d285ba87abc5c044b17950b2060cc35340261dfc380de29902e550",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_17",
+      "id": "d55776e7-e2a9-40a4-8810-45713c276634",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020802_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18952,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "abea1d1316dd40a8fa99a18016e7dd2f12a5b7e2d69e12119740ec34a77778ea",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_09",
+      "id": "73850ba8-cddc-44a9-9db9-622017d7673e",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020802_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20744,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ed41aa426fd3050e2d6fb80d541c0fd4a9ae74bd12ddb5a51729d2a548753bbe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_03",
+      "id": "9ae46f1c-8bcb-4777-aa11-074740a5d107",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020802_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21182,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "78d7df2991b52296fa5123be73555add438a77d264a50499f1ffdec7c57394fe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_05",
+      "id": "f583c605-511c-4b5d-b183-4b190e3db657",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020802_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20416,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0a2f703578cbb5e9f1f3469dca0553b7742c04bb155d682b139d863e8959959d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_07",
+      "id": "b427e29b-5b84-4cfb-b0b2-bddd5f987c2b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020802_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21952,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fc4798584697acd88e0e6f7dbeaabbbc366b37cde7dfbbcefa1fc1596c8d7d62",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_06",
+      "id": "ae76d647-9b66-48a9-a434-3eda0a4d8d17",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020802_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21346,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6dc56aced14d3dcd06f81eb59f4a2adab12517a067853ffa165f3d57a19f9f8f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_02",
+      "id": "d00115aa-c203-4f15-b436-166145b8851a",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020802_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20468,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "60X120-Nat 3D/BON TON - BOTTICINO - 60X120 - Nat 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "af70e09b4a74ecb2e190e75e53b0fbc423bcdb41a78a39b423087dc053e28998",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON BOTTICINO 60X120 NAT 3D_04",
+      "id": "e9a8a632-400d-4e35-b1ad-38c32176ad1d",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0020846",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020846-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0020846_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 12 laid side by side",
+   "used_by": "floor gardenia-flooring-bon-ton-botticino-pf60020846-5x120-197633-0; wall gardenia-wall-tile-bon-ton-botticino-pf60020846-5x120-197633-0",
+   "faces": [
+    {
+     "file": "0020846_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1946,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "2d626656dc1fa46a3422f9076b23dd1705ef9b3e8c1ec0d9e8f63b2a3d23b931",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_01",
+      "id": "9bc07049-93b3-4913-a81c-9b9a3baa277a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020846_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1968,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "f1c3563701b3ec1e3eccad4cb3212e5200509967bd51db5fde41d6439f79cf6c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_15",
+      "id": "d37203ec-12a7-4309-b86a-cbde05ddfd70",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020846_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2102,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "5fafb5f089b570cd85613b5a0e2dd990a1a1570ab48863dd2a7a5a7316c82076",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_16",
+      "id": "774437e8-2860-4f62-bd8a-2f0a193f2bb2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020846_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2596,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "9b109493bad6d36ca8af27a69f593c1590d08225225b4a98d1823f707712a66b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_14",
+      "id": "6db22dbb-72bc-4f2f-af70-26ec0fd4e64a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020846_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2168,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "d0bfab07cab07a1360917175cf6b6129c3a6879d5cb45b5662286cc157c06d23",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_18",
+      "id": "f0fc3cf2-5286-4380-9207-11a213609db5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0020846_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2356,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "2af49bff7cee0480385280ccefde9970adc4518fd6ceb7d0f4031bef84443c9d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_17",
+      "id": "1a67fc3b-e0b4-426e-84e3-666f6ffe843f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0020846_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1676,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "138791ecd85028e88e8ff97ac26fec4a0fb7529d8a0a211f7907a3e78de5951c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_02",
+      "id": "8215cd11-7844-4ead-8c3a-1f559fc0ebea",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0020846_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1870,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "bca9c89a4c96672acb45f079563cbfffbbdb97aed933ca8dab64213143ecf2fd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_12",
+      "id": "8f00777f-4bdf-4b0b-8508-681b33dbaab2",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0020846_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2306,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "1ddcc927c8e123e075ec563d3c98ab095095b5552eb3e513bfc1f7a5acd072e6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_11",
+      "id": "0430d0ff-a3f3-44af-b33e-a4f4e5c91be6",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0020846_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2336,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "56c88764bda3259b7bb25ace0c788df7b0dc8637fc8504fb347b596daba1ceb2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_09",
+      "id": "38cb70ab-555b-4790-9a2a-2c05f1cf0064",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0020846_11.webp",
+     "face": 11,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2292,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "9c048011bea8f539469fae2efa35d00111ae0d50542670eb8710bb0f76b6358a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_13",
+      "id": "04550304-7176-490e-90ca-c53794804728",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0020846_12.webp",
+     "face": 12,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2386,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "b1391fa079e8d7d169d3c989cf57c191c608c2a410492840062cf05bd02f754d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_06",
+      "id": "d6c85546-5747-4d5d-b9db-ae355bc8084a",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0020846_13.webp",
+     "face": 13,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2082,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "050e5043dc45056c1fcdb68af9313f9b71ad108acd549348ab15ffb6e451e873",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_10",
+      "id": "76bfc44a-7cac-410b-8118-d9a1433c4895",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0020846_14.webp",
+     "face": 14,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2306,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "d571988524a3b0c1a5669357137975f9046c5b2ae9ac1424538e1621cb4d7945",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_04",
+      "id": "9e4a19e1-caa0-4d0a-af06-a2dc30d4dcae",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0020846_15.webp",
+     "face": 15,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2164,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "4f46fa4eb4439f92038e47d7ca06c868797aae0005f6c1830d670817faaa6de2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_05",
+      "id": "9a9d057f-0af6-40f7-9414-9b8e948bf0fd",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0020846_16.webp",
+     "face": 16,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2106,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "a499fbf51b58cee7c3467afaf8bbb96ded8376e6c3a56e01eb30c8977264a6aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_07",
+      "id": "661ba563-378c-497f-9eb9-ae5e989402ce",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0020846_17.webp",
+     "face": 17,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2196,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "96004b7253f5410b1aad83f79eee420a885ad36e117759b0c8c6ab758815f9de",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_03",
+      "id": "b38a64a2-3c42-4b4e-9ce6-86ac02790ea4",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0020846_18.webp",
+     "face": 18,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 2134,
+     "source_zip": "BON TON - BOTTICINO - minimali.zip",
+     "source_file": "5X120-Antique 3D/BON TON - BOTTICINO - 5X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2560,
+      107
+     ],
+     "source_sha256": "207cae39fa2407c67be30b14fc07470b0c327e643007a69d6f450776901b0046",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "BON TON BOTTICINO 5X120 ANTIQUE 3D_08",
+      "id": "6f3c33d8-74d1-456b-a9bd-55beff0192d6",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

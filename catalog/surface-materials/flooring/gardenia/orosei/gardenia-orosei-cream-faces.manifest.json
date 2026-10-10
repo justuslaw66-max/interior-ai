@@ -1,0 +1,1024 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - CREAM - minimali.zip (150384682 bytes, sha256 41e767ed6927474a5283b1afd9f8ead3e14097373e9ad6706e06c885c702babd).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0021725",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/pf60021725-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0021725_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-cream-pf60021725-120x280-nat-197545-0; wall gardenia-wall-tile-orosei-cream-pf60021725-120x280-nat-197545-0",
+   "faces": [
+    {
+     "file": "0021725_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 292176,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - CREAM - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "a31d0c0c0a6568b3d81c2328932485abf03558cd4a4585380e97698cf933b7f4",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "OROSEI CREAM 120X280_03",
+      "id": "c59e93d3-c2b2-4ff7-9446-4ef7935ea58e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021725_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 283264,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - CREAM - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "92a46c9230f268edadefcad8b50b27d0d509a3b11fd8d4a24974a92936e44d50",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "OROSEI CREAM 120X280_01",
+      "id": "4842defa-881d-4237-8b95-2280fb8a1c2c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021725_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 280876,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - CREAM - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "ec2ee6d37115e570956a8506ef2a6f55347a2543d3338cbbcd55acd7906f7b2f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 3",
+      "name": "OROSEI CREAM 120X280_02",
+      "id": "def1a1dd-dced-47a3-a760-a946d126c6fb",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0021735",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/pf60021735-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021735_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-cream-pf60021694-120x120-197533-0 (uses 0021735's faces: ABK's 9 Antique 3D pictures are 0021735's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-cream-pf60021735-120x120-nat-197550-0; wall gardenia-wall-tile-orosei-cream-pf60021694-120x120-197533-0 (uses 0021735's faces: ABK's 9 Antique 3D pictures are 0021735's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-cream-pf60021735-120x120-nat-197550-0",
+   "faces": [
+    {
+     "file": "0021735_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130192,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aea782194f0d1aaf581b270ed3debcd07376f0f7dd9fd0a7d205a029da6359db",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "OROSEI CREAM 120X120_07",
+      "id": "a6bf24e2-933a-49ca-9373-63a88a691eab",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021735_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 136100,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ace8de6dbcb82c25e1b50f5b25a7477c186b55a8d30e4ad69acfff81510cf771",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "OROSEI CREAM 120X120_02",
+      "id": "8e20bd7a-0cbb-493e-8103-0756b9c00c1f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021735_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129400,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04c59efae65eaced297075cc2aadd312ae834f3f3df2d06f075c50d1043e5a4f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "OROSEI CREAM 120X120_04",
+      "id": "553a1e29-3428-408e-bbd9-f127a861957a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021735_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128176,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6a4ea182d3da82cf09fe353a55cf72a1b62437ae7332ae82c907364604e673a3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "OROSEI CREAM 120X120_03",
+      "id": "6ad54a03-1bf0-44f1-9e76-a1231b503a7c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021735_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 127310,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ad0c3c3f91ae405de38c60a6156fb3e92af0b7af1a82d2e153a13706a62daf1f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "OROSEI CREAM 120X120_06",
+      "id": "50a72ccb-a278-419b-b00a-2ef3677ffa16",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021735_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130198,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ff143d87ce6582acd003aeef4a2070c59f52487fb444760fc7cd4a7ab6ea34e5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "OROSEI CREAM 120X120_08",
+      "id": "6ed910b7-f5ee-4e3c-b02c-1c45035f224d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021735_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 127440,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9990fc638aaa6037d78ecff83f36ec952e1ceb483849a549ac33e29264e80618",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "OROSEI CREAM 120X120_05",
+      "id": "2e8ea0e0-53b3-450e-b329-ad864ee3f290",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021735_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 132982,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "883fd6facab1e326d040c7d0c871b37a8da769049b39b2f55f31c61b0bc1a38e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "OROSEI CREAM 120X120_01",
+      "id": "63657b23-1fb0-41b2-9cad-16b0622cae2a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021735_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128770,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - CREAM - 120X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a744d59248b0002cd8de44a0c355f78a6cbf428010a79fc9d77c4fbe8e5d0a83",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "OROSEI CREAM 120X120_09",
+      "id": "76cfef50-11ca-4a7b-a0b9-7f485a38d30a",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0030225",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/pf60030225-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030225_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-cream-pf60030225-60x60-nat-197560-0; wall gardenia-wall-tile-orosei-cream-pf60030225-60x60-nat-197560-0",
+   "faces": [
+    {
+     "file": "0030225_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 132134,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "da31042dc7eb0d8e0068df4ff86a961c96fd697c67a0228a7fa3ab238738f81c",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "OROSEI CREAM 60x60_05",
+      "id": "81261605-bdd0-4f7a-84ce-996bd47db957",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030225_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 128182,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "64a5984a4b2ce1ea189d101a10795edfc088643b19763ebf4a325f3eea0dd4b9",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "OROSEI CREAM 60x60_06",
+      "id": "8ea08909-09ac-4668-8fff-5e8dd8ac6606",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030225_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 133418,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "209664135b26028054e1a420eb7479c91a02c8f3c24baed43cc9852818cdeb9f",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "OROSEI CREAM 60x60_08",
+      "id": "ad331f73-eaec-4cb2-a523-97d7048b317b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030225_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129564,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e0b7a2787726a489cc89fb0b5cd85c2d42ac963cc1208a77e611ef7c59e2ae7d",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "OROSEI CREAM 60x60_09",
+      "id": "2c987590-d204-4922-a7ec-1c262e0dfc3d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030225_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 131778,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f03532c709fcc1157a9f504be76346ae554b3f0d109b90768431b3928a4f1cfd",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "OROSEI CREAM 60x60_04",
+      "id": "dc1bde1e-54a4-4a32-bf7e-03992eedda75",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030225_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 131896,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "26b41ea548c03c3f49a00c01a8d9b467b83ca8330324b29c5eda2ca890be79c5",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "OROSEI CREAM 60x60_07",
+      "id": "0dbf7e0e-eb2d-4fdf-bd47-ff699e01e0fc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030225_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130384,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9e969f684325455d623a6b630a3133415655059e348fb4785c7689c01f149087",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "OROSEI CREAM 60x60_03",
+      "id": "d8d35e20-c8dc-4a8c-8eba-e692149f6fcb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030225_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 139902,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "da79df8a5c46642401d73fc7ec4b6ea81b8161fecab3072f140ff15cadd4323c",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "OROSEI CREAM 60x60_02",
+      "id": "b8757272-eb19-47dd-b220-4128c14cbb9a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030225_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 134714,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - CREAM - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9185a999de3827df107c41f9503d98b794c353e415c0f2cb1d00374bf738ed77",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "OROSEI CREAM 60x60_01",
+      "id": "1c0f2dcc-39e8-462e-aa99-7333e22f2121",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0021740",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/pf60021740-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021740_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-cream-pf60021701-60x120-197540-0 (uses 0021740's faces: ABK's 9 Antique 3D pictures are 0021740's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-cream-pf60021740-60x120-nat-197555-0; wall gardenia-wall-tile-orosei-cream-pf60021701-60x120-197540-0 (uses 0021740's faces: ABK's 9 Antique 3D pictures are 0021740's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-cream-pf60021740-60x120-nat-197555-0",
+   "faces": [
+    {
+     "file": "0021740_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65718,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "011b05e089f76a03a0e408e456e1455b07df14703d64b3beeb158ee27b1f05f4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "OROSEI CREAM 60X120_08",
+      "id": "9a3e74a6-07da-4199-9c09-47d6bf41bf71",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021740_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64276,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8d5fc6cad7cce18e21ab1daf86379ae661da0295d18142f15a11a692e1c1709a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "OROSEI CREAM 60X120_04",
+      "id": "553c9bf2-219b-40c4-906d-157d9f369021",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021740_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63498,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e4c75a7a0271fc55bd4c377f0f1d848a7840fc8d661c6815d05c6da8c19a64c6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "OROSEI CREAM 60X120_06",
+      "id": "987f3f03-1fbc-4104-8094-3d1014fe9755",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021740_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64338,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "42284e8a709c86f5d96bb4a7338e73f5dd31eefd8a290d7ed75c18f48ad74a47",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "OROSEI CREAM 60X120_09",
+      "id": "40b67570-c5ea-4ed3-96f8-c5e2773f840f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021740_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 67198,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c292082d3cdca9f971069673d16bbc3e6056a83a480725cb9256ce5441079738",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "OROSEI CREAM 60X120_05",
+      "id": "d6abf359-7938-4747-8070-4b7b7501ce70",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021740_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65876,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5116ceb275d4c8d46c53c85c49b6008d2e906a60b29503966f25487504c13ed6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "OROSEI CREAM 60X120_07",
+      "id": "2dc6569c-5921-4f4c-a6b5-7e5747bdd5a0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021740_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68876,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cab1b35b24173455efde0b7dc6ca9c41c92c6f00d1dd39637c6a63fa80dc6008",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "OROSEI CREAM 60X120_01",
+      "id": "8d148942-3df4-4eb8-b4a9-179bc43704f6",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021740_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69266,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "288290926a4b40e48a043579ee1e7a8fcc0a07f37fdb359f1158e03af7598386",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "OROSEI CREAM 60X120_02",
+      "id": "194f8400-c6d5-45a7-bc7a-5d8b36395171",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021740_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64536,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - CREAM - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fbddfdda087208366f0a3952480bf5b4c29df17fec5a27b4f08eae0b2cf89055",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "OROSEI CREAM 60X120_03",
+      "id": "2d5e52ba-9f00-47f5-a585-33a5663f899b",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0030231",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/cream/pf60030231-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0030231_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-cream-pf60030231-80x80-nat-197565-0; wall gardenia-wall-tile-orosei-cream-pf60030231-80x80-nat-197565-0",
+   "faces": [
+    {
+     "file": "0030231_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57980,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "28eb48af9f5700e4a702cda42ad357dbc1b30e0aaa92ce9f140110aaeea26c8a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "OROSEI CREAM_6 80X80",
+      "id": "6d8190c1-1c33-4c10-ab45-1caf79a07f88",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030231_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57466,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "22a290eeec2eb5b843872643e84c86093a2051eaf1b6f050e0037218c85e5abd",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "OROSEI CREAM_5 80X80",
+      "id": "08cdc08e-abad-4705-98f8-834d9444521b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030231_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55848,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e1b8a1fbf07db07c2295a0c079e1df6aa539572e3e267c72f07cd3e096864f19",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "OROSEI CREAM_4 80X80",
+      "id": "fb78fa88-84d8-479d-bbc2-41559d3e4cdb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030231_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 58320,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9d50eb32518580774b2cb70fe71196cce6dfa3874cdc39e6f2d3884fbd8aec74",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "OROSEI CREAM_9 80X80",
+      "id": "cd14630c-f074-484d-87b4-1916312f3448",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030231_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57154,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bf71c5078e57ece1b4b0e337fda0a633a6c8c5d1b269858380377909fc024ba4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "OROSEI CREAM_8 80X80",
+      "id": "11033afc-a54a-49d3-8ee7-ef7d0d27981c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030231_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 58274,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ef8f9fabf1fc267a5fb15d42ad6e864a8f43c47a8a0816111e4fd9b6ebd0eb6f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "OROSEI CREAM_7 80X80",
+      "id": "d7a2e790-c52a-4d26-ad77-e121b112b004",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030231_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57628,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aad2b006b8563874c3010cd2c65f9af4c8c6eb53ec68a19d23a504846c74a9ce",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "OROSEI CREAM_2 80X80",
+      "id": "98b2ea32-e683-4193-8b6f-381da049f2d9",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030231_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 58424,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e9d8e3b18f00b32a973f6ad1babee8a1b296d69bea712a6629ad146238f178cb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "OROSEI CREAM_1 80X80",
+      "id": "741cefe1-5791-48fb-ae33-648febdc52da",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030231_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 58542,
+     "source_zip": "OROSEI - CREAM - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - CREAM - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6de8f8e0555d1d22718c54fa83a441de7a2854b8ac88a463184049a073bd7c0c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "OROSEI CREAM_3 80X80",
+      "id": "96c3bbd9-2e8d-4c52-98b0-eb83fefc262f",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

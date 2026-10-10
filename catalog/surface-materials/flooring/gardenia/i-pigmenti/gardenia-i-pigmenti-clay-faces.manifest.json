@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - CLAY - minimali.zip (19351645 bytes, sha256 88dc1ea3ea81a891e09f324acc1de0aa306b33099d433769982938ee5ee2a681).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016999",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016999-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016999_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016999-120x280-nat-90343-0; wall gardenia-wall-tile-i-pigmenti-clay-0016999-120x280-nat-90343-0",
+   "faces": [
+    {
+     "file": "0016999_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 19808,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - CLAY - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "289b85180b60769bacde65c643543c3e6879cf168ee8ba3afd06eb6d502eaa28",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 120X280",
+      "id": "31c0df0e-7c5c-4231-a6bf-b48128d97799",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016964",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016964-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016964_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016964-120x120-nat-90334-0; wall gardenia-wall-tile-i-pigmenti-clay-0016964-120x120-nat-90334-0",
+   "faces": [
+    {
+     "file": "0016964_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9918,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CLAY - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "eeba25cc4f0da0c1d73ed7f832a7b6cc181e786a4d5723bef9b8e510f8a43e5b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 120X120_01",
+      "id": "352d57b5-0979-45c3-8efa-80bb3c9e6955",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016964_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8372,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CLAY - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fe7b6bb9bdc480c27a0ede114220e87c7ad8c36ec26712457a39f619fcb61e11",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 120X120_02",
+      "id": "8fcabba3-c143-4341-8336-28c86ce5756c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016964_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8632,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CLAY - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6024e9a1abfdedc48a2fcd382148900055caf643a0116b10dfd4ae86ed43cae3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 120X120_05",
+      "id": "f017cbb3-6cd7-473d-bd4a-bf6245b12c0e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016964_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8540,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CLAY - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "60860e2608666a755f7f3a4c1630842b80feba8df5c2f7cce14b5cd02d495739",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 120X120_03",
+      "id": "dea33c72-6a23-4cb7-a39e-e7818680b6fa",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016964_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8498,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - CLAY - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1b93626b21e9d6f76f31f17c02687d5363f94b932a37b37d8777b6bfc3acb18a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 120X120_04",
+      "id": "cf61b7c5-d300-425d-af4a-9264cfdd9ecb",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016431",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016431-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016431_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016431-60x120-nat-90284-0; wall gardenia-wall-tile-i-pigmenti-clay-0016431-60x120-nat-90284-0",
+   "faces": [
+    {
+     "file": "0016431_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4944,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "bbe5b56a83503984118539ae0399cfc297db791b07765bb31809eb3a4d1cd0e5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 60X120_01",
+      "id": "062e10de-0b7c-4aa6-a27c-52b0bf3a0521",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016431_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4452,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "df44b89985e65b3a7dd6530feaa452a99aa0cbe7fa5d03fbf7e8e2eacade4232",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 60X120_06",
+      "id": "f305a281-c33f-4055-a324-2d8d66ff7be8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016431_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4406,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "83937ee2f2c0b7035e0d9cc71df7859ddbdfe1034e4168cf6af820171f92b108",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 60X120_09",
+      "id": "5571b385-0699-4102-adb2-76f028455a11",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016431_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4914,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7abeaa9d220d1541fa17194166d27a5258946312214b63459a300cb6219e88a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 60X120_08",
+      "id": "dfc537d8-51b6-4bd7-9892-8dd856a2ddc3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016431_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4518,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "a81d0527c565649b73c2ad844138dcb031ee5b1210f3270688bd27de7b36080a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 60X120_07",
+      "id": "e6305228-d3ef-45b4-9c06-b90aa5a90c11",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016431_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4370,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "5acf3fa9d5d17a1dc38759ed6f3f2b92c7c72f2cf28ff9f4aaedc7014109c28d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CLAY 60X120_03",
+      "id": "00f99c09-7e02-44f8-b38f-28649a8c0f25",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016431_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4694,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "d44e48294b39b58d1fae61204c062ff0e8381b4b498feec4be1ae8403b8637d2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CLAY 60X120_05",
+      "id": "67a19748-bf3f-47dd-84b5-d47ae5c74c3f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016431_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4644,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "f87cf4580f80fa5520955638949a35c0c5cd552c20041669bac211f9b3cc544e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CLAY 60X120_10",
+      "id": "9f32ad35-e593-43ae-8c74-3f350fe41863",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016431_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4468,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "954b498f800cc48f4e6bb3d81a72efc49b9aa8d020ecc43e665caf4bc3a217b0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CLAY 60X120_04",
+      "id": "5722e125-a03f-4afd-ada6-7324b80a0603",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016431_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4240,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - CLAY - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ec932f287e99ee546d34c4dd0d43320fcc812f5982a1dfa0c18760f5236463d8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CLAY 60X120_02",
+      "id": "d909822f-c079-4369-b25e-926fc3d360d0",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016451",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016451-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016451_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016451-60x60-nat-90304-0; wall gardenia-wall-tile-i-pigmenti-clay-0016451-60x60-nat-90304-0",
+   "faces": [
+    {
+     "file": "0016451_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2706,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "29fcc61c2ff026b0a7938f6b94f10a75e7fd45114cd86bf32093b3ff0315a1fa",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 60X60_01",
+      "id": "6ee20959-f1d9-4421-9563-f8fb1913ff39",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016451_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2132,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "ad6944ca983300907329419e5b89febdefef7d210603e458925327e065832729",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 60X60_09",
+      "id": "2fc9ad9e-abc2-45ed-9331-1b509d5292ce",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016451_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2948,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "5a74b5614445973ecbe49afd664a2caf0b7b6d4f780148da925fa3e1fb8ad8b0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 60X60_10",
+      "id": "1aa55b60-d61b-492b-abcc-266c823b0d08",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016451_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2288,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "92150f02626cf1ea5e79d27b92095cce030c1e6be503298020be61f3ed5b2ba8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 60X60_05",
+      "id": "e0179ab6-fcf8-4b9d-8410-704563fd1c88",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016451_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2110,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "9cb402ddb7c4b3c3a6aa47806112d39aee98357925f7208ac07983c963b74284",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 60X60_04",
+      "id": "671afec6-6c23-4e78-976b-93d22a1dba2a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016451_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2366,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "bcfa65e31b13c548e50e49726578d1ffbff666a7d9d128e5ca556b5a031623ca",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CLAY 60X60_02",
+      "id": "5a6ee88f-98c1-40e2-b1d3-8941ee7722a7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016451_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2332,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "6e01898ff7fe21a96dfcd17989b0741aab437d2173307dd6760e51aa731a0685",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CLAY 60X60_03",
+      "id": "62bd5f3b-b820-4e77-aa53-8236aa038d4e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016451_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2164,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "1ae0f4dda374f177a437c607137f2e7fda520cb70c8874a99ef202d5ce836479",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CLAY 60X60_06",
+      "id": "c6ecf33b-f0ae-4863-80f2-18bd1e0211ea",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016451_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2074,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "8ff7c50b554528fe2329a10bae083511e43dc5f2c463bcece0399da034b963e0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CLAY 60X60_07",
+      "id": "5e9d4eb3-ee9c-4484-8fd1-ac6c2fc2b507",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016451_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2644,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - CLAY - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "b072edd3646761b090ccf52aa80075295c645d7326d3e8654c80876c03dcb0a3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CLAY 60X60_08",
+      "id": "1fe2382e-d80d-4a23-8481-6c2abc94b6eb",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016441",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016441-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016441_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016441-20x120-nat-90294-0; wall gardenia-wall-tile-i-pigmenti-clay-0016441-20x120-nat-90294-0",
+   "faces": [
+    {
+     "file": "0016441_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2036,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "0f8617c3279cf4ef7cb57224ad36a661aaf2e7b673b4050a04ee30ad26dbb81a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 20X120_01",
+      "id": "ad5b6a8f-7648-460f-ab33-79607f1787be",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016441_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1680,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "b49348d757468f00071802c1f8ee70c999ab8059e64977e9ae919a71868f02f1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 20X120_10",
+      "id": "5e19e35f-603e-4c14-8278-964bf3f41daf",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016441_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1584,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "1217197765f5606e7810161110f712927e4e1da49c66f8d7586ebdc788b75ff4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 20X120_07",
+      "id": "0fb09dc8-3091-4a29-a250-07ac2f16aaaa",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016441_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1802,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "737760d64c4cea60a101a72aae47c72dcb647a740b0235b33fa3617b7c771733",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 20X120_09",
+      "id": "49f957d2-8963-47e3-bca5-e81b977e4190",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016441_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1352,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "7f465d5b19490eb5d2e722945593546da035f76712ba36812de50fb4d4236cc6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 20X120_08",
+      "id": "bf19be4c-534c-4a52-99d3-2492bd0c12c2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016441_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1626,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "f8e1d3dd69838c9cac152f495b75d7ea488fa0a0298c40a7cb5f774804dd14bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI CLAY 20X120_02",
+      "id": "7101c900-e038-4f3e-95a6-ba7627d9b0d6",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016441_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1612,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "95a009fc53dfbe9a8cecaf8a8a8613ccc8a0d6185c1031dd77a3bca437a1e4aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI CLAY 20X120_04",
+      "id": "d4199f95-3b6e-4e12-8235-fbb28081c969",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016441_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1790,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "e9259ddbd00ed852fef9c3826471b37f59d8c8e962cf8f287d21edcc72dff339",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI CLAY 20X120_03",
+      "id": "ed197947-6ee0-42fa-bd8f-05179ff6d2d5",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016441_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1670,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "61e7752767e8ba71d2706199aa650a369edd2860dead16643a219ccc1956b349",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI CLAY 20X120_05",
+      "id": "04108331-76c7-470c-b673-a5c71a52b3ae",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016441_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1968,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - CLAY - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "257988b6c7f097ccfca8f2646df488856b676da97a5a8339d8e55e7c3f997425",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI CLAY 20X120_06",
+      "id": "29d5ebd0-4d88-4f2d-99c5-709205041afe",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016607",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016607-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016607_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016607-30x30-nat-90324-0; wall gardenia-wall-tile-i-pigmenti-clay-0016607-30x30-nat-90324-0",
+   "faces": [
+    {
+     "file": "0016607_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 828,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "4118193f3bb81e6b76bf52e55e83cc7a5790f75e231d7e0f969265b3b8a1a6b1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 30X30_01",
+      "id": "1083ad78-a3f6-4c89-9486-b8f50319f62f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016607_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 728,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "213d847ddacf408492d1bcb32b97120cbfd8822c2b8db4e3832de4eabdaaf4a5",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 30X30_09",
+      "id": "dfda6f57-83c6-4b2f-9f23-396b163a34a0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016607_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 602,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "5ab4edd886a625055b80a401f3ee13228a9853a8613507e1dd81d02a9cbaf99b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 30X30_07",
+      "id": "165171ee-3057-4029-bf5d-846fe360aad2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016607_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 728,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "16f099ace513fd5d6f9e99e21c942a4017f5011cfe3338810009cb9bddac37c0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 30X30_05",
+      "id": "e4e6a6d8-3442-493d-a66e-16b3698a23a4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016607_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 906,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_4.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "8d0fc1bce6a0aba5a2c2f00b3eb82774ae32027febc36846eaa73e145f148862",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 30X30_06",
+      "id": "ef7c6f80-02c7-41e3-a670-440d2a9098f8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016607_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1144,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "0443dd6796296ddbb7d3883990df9e680b47113e9b3ec06cfdbdfb3df1c03ea3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI CLAY 30X30_04",
+      "id": "beb2f25f-7172-4079-aae4-6dc83d8f7329",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016607_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 618,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "06dcbd6c4bc1641e56517b842638721b90484b207ba3384b329c209ef4de02a7",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI CLAY 30X30_10",
+      "id": "445b259e-8d34-4164-af8d-3ddf957509df",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016607_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 656,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "48f846d31b2790889aab607313a6747f84f8fba4b029bb7bafbffd3e5255acca",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI CLAY 30X30_08",
+      "id": "058170a1-c1a8-4ef1-a8e6-d8161dfc78ff",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016607_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 728,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "10711363df3c4bbd20072cf11d422e5debff8b48dbd7e6a1a9a3ecfbfb1a73fe",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI CLAY 30X30_03",
+      "id": "75bcd0ec-a50e-49a7-b06e-3a3ae13af8bf",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016607_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 588,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - CLAY - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "f56735f0fb8a51242c59de158acf12807d24c860ae4d133dfb29e5d98efc3e4e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI CLAY 30X30_02",
+      "id": "f47a2cf3-6ca9-46c0-8657-0d7b5d1acb34",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016461",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/clay/pf60016461-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016461_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-clay-0016461-10x60-nat-90314-0; wall gardenia-wall-tile-i-pigmenti-clay-0016461-10x60-nat-90314-0",
+   "faces": [
+    {
+     "file": "0016461_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 390,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "e6c4f99291a2b9747f0fc8dc828cc42626194c62cad58b52cc99f99becd04687",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI CLAY 10X60_01",
+      "id": "387f913e-3c11-460f-8cd9-e704ed326691",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016461_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 514,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "a510b172f0e5e89ef67748a01d7894c7cdda70940b731a3bf297c502e32d06d2",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI CLAY 10X60_09",
+      "id": "4a9e24d2-0cea-4b35-ac8d-3552763ee98c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016461_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 404,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "fe7e15e780f8258d9fa8733d76414f8fd3c5313e4eda752c62bfe59554614d0f",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI CLAY 10X60_10",
+      "id": "ac119137-3e03-4c30-aa8b-2917b48f9048",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016461_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 408,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "146d9f830ff8d52ae293e488186a66d65b0b9f0d086664d503bc8a8fe8d3a40e",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI CLAY 10X60_07",
+      "id": "e1d06ff1-8ab7-45a1-8c19-a63e8bef2b98",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016461_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 490,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "16979d0450e01d7be4d9091d1b23d82b0aba1b0cc60546d280b69c43a9662a32",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI CLAY 10X60_03",
+      "id": "59757eaf-19f9-4db2-985e-f70e69c212f6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016461_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 390,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "436db3b8f539b03b6bfb8eb70257bf19b9a7f52486ddc56af61d9087a0f1435b",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI CLAY 10X60_02",
+      "id": "f54c290f-1185-4b0d-8881-598f8659e069",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016461_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 504,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "903fa4396ac0675aa3b9056e60d71760e53dfbe9d02e6b53d0a1559ca865a00e",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI CLAY 10X60_06",
+      "id": "55a79cd6-fd72-418a-88cb-88bd575ec109",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016461_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 424,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "4077183e40966466d2ae239cee3a4501684371d06919582a2f64544d35276cab",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI CLAY 10X60_05",
+      "id": "73d6755d-c9dc-4da2-a94a-f5ee14e22630",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016461_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 450,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "eacb989948473e38f380d31f0f8c7f3e828e6bcca94d4ea8497d43441bf4bf65",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI CLAY 10X60_04",
+      "id": "a79aa062-f5f1-4bf0-a5bc-2b4541846977",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016461_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 586,
+     "source_zip": "I PIGMENTI - CLAY - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - CLAY - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "b0c45f3f0db836a9546a0e671b3735e48b9bccf436c1f08b9111f794d7826cfc",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI CLAY 10X60_08",
+      "id": "a61f118a-d903-4dd9-84e1-9507f3fdebc4",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

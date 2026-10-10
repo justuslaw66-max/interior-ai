@@ -117,8 +117,7 @@ export default function FloorPlanAddressSearch({
       className={`${dark ? "designer-recessed rounded-xl border border-white/10 p-3" : "rounded-xl border border-blue-100 bg-blue-50/70 p-3"} ph-no-capture`}
       data-testid="floor-plan-address-library"
     >
-      <div className="text-sm font-semibold">Find your home by address</div>
-      <p className={`mt-1 text-xs ${subtle}`}>
+      <p className={`text-xs ${subtle}`}>
         Add both floor and stack to search privately for an exact unit match.
       </p>
       <FloorPlanAddressFields
@@ -205,7 +204,7 @@ export default function FloorPlanAddressSearch({
           />
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button type="button" className={control} onClick={cancelPendingApplication}>Cancel</button>
-            <button type="button" className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white" disabled={applicationDisabled} onClick={confirmPendingApplication}>
+            <button type="button" className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white" disabled={applicationDisabled} onClick={confirmPendingApplication}>
               Use selected reviewed layout
             </button>
           </div>

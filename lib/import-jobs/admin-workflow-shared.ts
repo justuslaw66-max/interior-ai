@@ -45,9 +45,11 @@ function parseImportReport(value: unknown): ImportJobReport {
   };
 }
 
-export function getPrimaryImportWorkflowQueue(
-  job: AdminImportWorkflowJob
-): ImportWorkflowQueueKey {
+/** Only a job's status and workflow stage decide its queue, so counts can come from a groupBy. */
+export function getPrimaryImportWorkflowQueue(job: {
+  status: string;
+  workflowStage: string | null;
+}): ImportWorkflowQueueKey {
   if (job.status === "received" || job.workflowStage === "intake") {
     return "scrape";
   }

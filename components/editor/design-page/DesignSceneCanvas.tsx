@@ -31,6 +31,7 @@ import { LoadingOverlay } from "@/components/scene/LoadingOverlay";
 import { RoomSkeleton } from "@/components/scene/RoomSkeleton";
 import { ScenePerformanceBridge } from "@/components/scene/ScenePerformanceBridge";
 import { SceneProgressBridge } from "@/components/scene/SceneProgressBridge";
+import { noRaycast } from "@/components/scene/stableSceneProps";
 import {
   LightingSystem,
   resolveEditorLighting,
@@ -90,11 +91,7 @@ type DesignSceneCanvasConfiguration = {
     centerX: number;
     centerZ: number;
   };
-  planSafeArea: {
-    leftPx: number;
-    rightPx: number;
-    bottomPx: number;
-  };
+  planSafeArea: { leftPx: number; rightPx: number; topPx: number; bottomPx: number };
   planRooms: HousePlanRoom2D[];
   orbit: {
     minDistance: number;
@@ -177,18 +174,14 @@ function WorkspacePlanningGrid({
         <mesh
           position={[centerX, WORKSPACE_GRID_FLOOR_Y_METERS, centerZ]}
           rotation-x={-Math.PI / 2}
-          raycast={() => null}
+          raycast={noRaycast}
         >
           <planeGeometry args={[size, size]} />
           <meshBasicMaterial color="#f3f5f5" toneMapped={false} />
         </mesh>
         <Grid
           args={[size, size]}
-          position={[
-            centerX,
-            WORKSPACE_GRID_FLOOR_Y_METERS + 0.01,
-            centerZ,
-          ]}
+          position={[centerX, WORKSPACE_GRID_FLOOR_Y_METERS + 0.01, centerZ]}
           cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
           cellThickness={0.45}
           cellColor="#ffffff"
@@ -204,7 +197,7 @@ function WorkspacePlanningGrid({
           material-depthTest
           material-depthWrite={false}
           material-toneMapped={false}
-          raycast={() => null}
+          raycast={noRaycast}
         />
       </group>
 
@@ -216,7 +209,7 @@ function WorkspacePlanningGrid({
         <mesh
           position={[centerX, ceilingY + 0.005, centerZ]}
           rotation-x={-Math.PI / 2}
-          raycast={() => null}
+          raycast={noRaycast}
         >
           <planeGeometry args={[size, size]} />
           <meshBasicMaterial
@@ -243,7 +236,7 @@ function WorkspacePlanningGrid({
           material-depthTest
           material-depthWrite={false}
           material-toneMapped={false}
-          raycast={() => null}
+          raycast={noRaycast}
         />
       </group>
     </>
@@ -449,7 +442,7 @@ export function DesignSceneCanvas({
           centerZ={planBounds.centerZ}
           safeAreaLeftPx={configuration.planSafeArea.leftPx}
           safeAreaRightPx={configuration.planSafeArea.rightPx}
-          safeAreaBottomPx={configuration.planSafeArea.bottomPx}
+          safeAreaBottomPx={configuration.planSafeArea.bottomPx} safeAreaTopPx={configuration.planSafeArea.topPx}
           zoomScale={WHOLE_HOME_FIT_ZOOM_SCALE}
         />
         <Plan2DCameraInvariantGuard

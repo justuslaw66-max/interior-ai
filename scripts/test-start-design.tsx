@@ -8,6 +8,7 @@ import { START_UPLOAD_CHOICE_ID } from "../components/editor/start/UploadSignInD
 import { HOUSE_PLAN_TEMPLATES, ROOM_DIMENSION_DEFAULTS, type HousePlanTemplate } from "../lib/design-page-house-plan";
 import { shouldConfirmPlanTemplateReplacement } from "../lib/design-page-template-furnishings";
 import { createRoom, migrateToV3, type DesignSnapshot } from "../lib/room-types";
+import { SINGLE_ROOM_TEMPLATES } from "../lib/single-room-templates";
 import {
   BLANK_ROOM_TEMPLATE,
   buildStartTemplateCards,
@@ -20,11 +21,18 @@ import {
   applyEntryLink,
   applyStartParam,
   buildStartChooserProps,
+  chooserAtTemplates,
   type StartChooserState,
   type UseDesignPageStartChooserInput,
 } from "../lib/useDesignPageStartChooser";
 import { answerFloorPlanUploadRequest, type FloorPlanUploadEntryInput } from "../lib/useFloorPlanUploadEntry";
 import type { FloorPlanUploadRequest } from "../lib/floor-plan-upload-request";
+import {
+  PLAN_TEMPLATE_LIBRARY_ACTION_ID,
+  requestStartTemplates,
+  START_TEMPLATES_REQUESTED_EVENT,
+  startTemplatesRequestOf,
+} from "../lib/start-templates-request";
 
 // Start a new design (audit findings FR1, FR3, ST2, ST3, ST7, ST8): the start links, the template
 // cards, the chooser's markup, what each choice does, and how the editor wires it.
@@ -53,7 +61,10 @@ assert.ok(blankRoom);
 assert.equal(blankRoom.roomType, "living");
 assert.equal(blankRoom.width, ROOM_DIMENSION_DEFAULTS.width);
 assert.equal(blankRoom.depth, ROOM_DIMENSION_DEFAULTS.depth);
-assert.deepEqual([BLANK_ROOM_TEMPLATE.doorways, BLANK_ROOM_TEMPLATE.windows, BLANK_ROOM_TEMPLATE.furnishingPacks], [[], [], []]);
+// It has the first visit's door and window too (UX 4g, ST9): a way in and daylight.
+assert.deepEqual(BLANK_ROOM_TEMPLATE.doorways, [{ fromRoomId: "room", wall: "east", offsetMeters: 0, widthMeters: 0.9 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.windows, [{ roomId: "room", wall: "west", offsetMeters: 0, widthMeters: 1.2 }]);
+assert.deepEqual(BLANK_ROOM_TEMPLATE.furnishingPacks, []);
 const base = migrateToV3({
   items: [],
   zones: [],
@@ -70,13 +81,21 @@ const cards = buildStartTemplateCards();
 assert.deepEqual(
   cards.map((card) => card.template.id),
   [
+    "one_room_living", "one_room_bedroom",
     "hdb_two_room", "studio", "one_bedroom", "living_dining", "three_room_flat", "small_condo",
     "compact_two_bed", "family_two_bed", "l_shaped_studio", "narrow_one_bed", "corner_one_bed",
     "railroad_apartment", "adu_guest_house",
   ]
 );
-assert.equal(cards.length, HOUSE_PLAN_TEMPLATES.length);
-for (const card of cards) {
+assert.equal(cards.length, HOUSE_PLAN_TEMPLATES.length + SINGLE_ROOM_TEMPLATES.length);
+// The one-room templates (UX 4g, ST8): "1 room · 20 m²", with a door, a window and a furnished pack.
+assert.deepEqual(cards.slice(0, 2).map((card) => [card.name, card.meta]), [["Living room", "1 room · 20 m²"], ["Bedroom", "1 room · 14 m²"]]);
+for (const template of SINGLE_ROOM_TEMPLATES) {
+  assert.equal(template.doorways.length, 1);
+  assert.equal(template.windows.length, 1);
+  assert.ok(template.furnishingPacks[0]?.intents.length);
+}
+for (const card of cards.slice(2)) {
   const area = Math.round(card.template.rooms.reduce((sum, room) => sum + room.width * room.depth, 0));
   const bedrooms = card.template.bedroomCount;
   const bedroomLabel = bedrooms === 0 ? "Studio" : bedrooms === 1 ? "1 bedroom" : `${bedrooms} bedrooms`;
@@ -87,17 +106,20 @@ for (const card of cards) {
 }
 const unknownTemplate: HousePlanTemplate = { ...BLANK_ROOM_TEMPLATE, id: "library_test" };
 assert.equal(buildStartTemplateCards([unknownTemplate, ...HOUSE_PLAN_TEMPLATES]).at(-1)?.template.id, "library_test");
-assert.equal(buildStartTemplateCards([unknownTemplate])[0]?.meta, "Studio · 1 room · 20 m²");
+assert.equal(buildStartTemplateCards([unknownTemplate])[0]?.meta, "1 room · 20 m²");
 const countFor = (key: (typeof START_TEMPLATE_FILTERS)[number]["key"]) =>
   cards.filter((card) => matchesStartTemplateFilter(card, key)).length;
 assert.equal(countFor("all"), cards.length);
-assert.equal(countFor(0) + countFor(1) + countFor(2), cards.length, "Every template is in one bedroom filter.");
+assert.equal(countFor("room"), 2, "The 1 room chip shows the one-room templates.");
+assert.equal(countFor("room") + countFor(0) + countFor(1) + countFor(2), cards.length, "Every template is under one chip.");
 assert.ok(cards.filter((card) => matchesStartTemplateFilter(card, 2)).every((card) => card.template.bedroomCount >= 2));
 
 // The chooser's markup.
 const noop = () => undefined;
 const chooserProps = (overrides: Partial<StartDesignChooserProps> = {}): StartDesignChooserProps => ({
   open: true,
+  atTemplates: false,
+  openerId: null,
   ready: true,
   isAuthenticated: false,
   onClose: noop,
@@ -168,7 +190,9 @@ type Recorder = {
   setChooser: Dispatch<SetStateAction<StartChooserState>>;
   last: () => StartChooserState | null;
 };
-const closedChooser: StartChooserState = { open: false, asNewDesign: false, signIn: false, signInOpenerId: null };
+const closedChooser: StartChooserState = {
+  open: false, asNewDesign: false, signIn: false, signInOpenerId: null, atTemplates: false, openerId: null,
+};
 function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}, chooser = closedChooser): Recorder {
   const calls: string[] = [];
   let latest: StartChooserState | null = null;
@@ -216,8 +240,8 @@ Object.assign(globalThis, {
     },
   },
 });
-const firstVisit: StartChooserState = { open: true, asNewDesign: false, signIn: false, signInOpenerId: null };
-const newDesign: StartChooserState = { open: true, asNewDesign: true, signIn: false, signInOpenerId: null };
+const firstVisit: StartChooserState = { ...closedChooser, open: true };
+const newDesign: StartChooserState = { ...closedChooser, open: true, asNewDesign: true };
 type ChooserInputState = Partial<UseDesignPageStartChooserInput["state"]>;
 const choose = (chooser: StartChooserState, run: (props: StartDesignChooserProps) => void, state: ChooserInputState = {}) => {
   const { input, calls, setChooser } = recorder(state, chooser);
@@ -248,6 +272,27 @@ assert.deepEqual(
 );
 assert.deepEqual(choose(newDesign, (props) => props.onChooseBlank()), ["chooser:closed", "requireChoice", "apply:blank_room"]);
 assert.deepEqual(choose(newDesign, (props) => props.onSearchAddress()), ["chooser:closed", "newDesignTemplatePicker"]);
+// Plan's "Choose a template" (ST8): the chooser at Templates, focus back to that button; a template
+// replaces a design with content only after asking (applyPlanTemplate's own check), as Plan's list did.
+const atTemplates = chooserAtTemplates(PLAN_TEMPLATE_LIBRARY_ACTION_ID);
+assert.deepEqual(atTemplates, { ...firstVisit, atTemplates: true, openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID });
+const atTemplatesProps = buildStartChooserProps(atTemplates, noop, recorder().input);
+assert.equal(atTemplatesProps.atTemplates, true);
+assert.equal(atTemplatesProps.openerId, PLAN_TEMPLATE_LIBRARY_ACTION_ID);
+assert.equal(buildStartChooserProps(newDesign, noop, recorder().input).atTemplates, false);
+assert.deepEqual(
+  choose(atTemplates, (props) => props.onChooseTemplate(firstCard, false), { designIsEmpty: false }),
+  ["chooser:closed", `apply:${firstCard.template.id}`]
+);
+assert.deepEqual(choose(atTemplates, (props) => props.onSearchAddress()), ["chooser:closed", "templatePicker"]);
+requestStartTemplates({ openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID });
+assert.deepEqual(dispatched.splice(0), [START_TEMPLATES_REQUESTED_EVENT]);
+assert.deepEqual(dispatchedDetails.splice(0), [{ openerId: PLAN_TEMPLATE_LIBRARY_ACTION_ID }]);
+assert.deepEqual(
+  startTemplatesRequestOf(new CustomEvent(START_TEMPLATES_REQUESTED_EVENT, { detail: { openerId: "plan-start-template-action" } })),
+  { openerId: "plan-start-template-action" }
+);
+assert.deepEqual(startTemplatesRequestOf(new Event(START_TEMPLATES_REQUESTED_EVENT)), { openerId: null });
 // A design with content, reached without New design (a guest's upload link): the template flow asks.
 assert.deepEqual(choose(firstVisit, (props) => props.onChooseDraw(), { designIsEmpty: false }), ["chooser:closed", "apply:blank_room+then", "drawRoom"]);
 // Upload: guests sign in first (ST3), and focus comes back to the Upload card; members get Plan
@@ -366,11 +411,26 @@ assert.match(
 assert.match(read("lib/design-page-dialog-layer-model.ts"), /startChooser: persistence\.startChooser,/);
 assert.match(read("lib/design-page-dialog-layer-adapter.ts"), /startChooser: dialogs\.startChooser,/);
 assert.match(read("components/editor/design-page/DesignPageDialogLayer.tsx"), /<StartDesignChooser \{\.\.\.dialogs\.startChooser\} \/>/);
+assert.match(
+  chooserHook,
+  /window\.addEventListener\(START_TEMPLATES_REQUESTED_EVENT, open\);[\s\S]*?useStartTemplatesRequest\(setChooser\);/,
+  "Plan's \"Choose a template\" opens the chooser wherever it is."
+);
 const chooserComponent = read("components/editor/start/StartDesignChooser.tsx");
 assert.match(
   chooserComponent,
-  /focusRestorationEnabledRef\.current = false;\s*handOverToAddressSearch\(onClose, props\.onSearchAddress\);/,
-  "Search by HDB address hands focus to Plan's template list, which returns it to More."
+  /focusRestorationEnabledRef\.current = false;\s*handOverToAddressSearch\(onClose, props\.onSearchAddress, props\.openerId\);/,
+  "Search by HDB address hands focus to Plan's address search, which returns it to the chooser's opener or More."
+);
+assert.match(
+  chooserComponent,
+  /\(openerId \? \[openerId, CLIENT_PREVIEW_FALLBACK_ACTION_ID\] : START_DESIGN_RETURN_FOCUS_IDS\)/,
+  "Closing hands focus back to Plan's \"Choose a template\", else More."
+);
+assert.match(
+  chooserComponent,
+  /if \(open && atTemplates\) templatesHeadingRef\.current\?\.scrollIntoView\(\{ block: "start" \}\);[\s\S]*?initialFocusRef: atTemplates \? templatesHeadingRef : undefined,/,
+  "Opened at Templates, it scrolls to them and focuses their heading."
 );
 
 console.log("Start a new design tests passed.");

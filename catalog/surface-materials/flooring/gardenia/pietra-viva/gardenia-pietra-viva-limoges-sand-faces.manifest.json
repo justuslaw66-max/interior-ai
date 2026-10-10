@@ -1,0 +1,853 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PIETRA VIVA - LIMOGES SAND - minimali.zip (47775137 bytes, sha256 b46fa170c29955504cab0f1093ff7bfceda79efc6195b4d0f32d565a55bbe4f0); PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip (7253598 bytes, sha256 49900c7d8bb837e6d6d18f5e1b4e7bdbc7fe88411f6126ea8b8a3149d5bae9f9).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/pietra-viva/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0012921",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/pf60012921-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012921_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0012322-120x120-139992-0 (uses 0012921's faces: ABK's 6 Antique 3D pictures are 0012921's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-limoges-sand-0012921-120x120-nat-139990-0; wall gardenia-wall-tile-pietra-viva-limoges-sand-0012322-120x120-139992-0 (uses 0012921's faces: ABK's 6 Antique 3D pictures are 0012921's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-sand-0012921-120x120-nat-139990-0",
+   "faces": [
+    {
+     "file": "0012921_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114628,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "47a2d450cdeb51dd7fba8f8012702a10a26e65e2284c96d194bbeecbd072dcab",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES SAND 120X120@1",
+      "id": "9b762705-1120-49bd-8357-6fffe8305d51",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012921_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114372,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "670bf0539bcc361a01ba170378b796b9a6b6fb6ee945a3a8a41366d06dea6274",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES SAND 120X120@2",
+      "id": "eea2732e-3140-4aec-9646-916197b3bb56",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012921_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107348,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "d2a292d43d1d16778151c826818c20dfe47c536af1c2e70f6259824dd9dc0d1c",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO LIMOGES SAND 120X120@3",
+      "id": "c4adec8c-b1a7-4fc5-bff1-cfccf9ce7ecd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012921_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 117662,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "78d9366bfc13661653a383493a64b380b8aa484f8c436e3922c070184dc5d9c8",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO LIMOGES SAND 120X120@4",
+      "id": "76ad5a54-8c75-4dba-9f5d-0ade40f1721e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012921_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 122020,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "afa654c0949f8e226238b4ff5453d2c9bd569e41a7fe156a2b71ad7a4524be9d",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO LIMOGES SAND 120X120@5",
+      "id": "6ba0e6f4-da22-40d4-8512-1828b283ecec",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012921_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110068,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "120X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2344,
+      2344
+     ],
+     "source_sha256": "845930ff30dc9a601ece259fc283a893588aae07972e5be4b6d2f84c6469e053",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO LIMOGES SAND 120X120@6",
+      "id": "902772e7-7d1a-466d-899e-2a803b5be7dc",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x160",
+   "item_code": "0014672",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/pf60014672-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 1600
+   },
+   "swatch": "0014672_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0014672-80x160-nat-139963-0; wall gardenia-wall-tile-pietra-viva-limoges-sand-0014672-80x160-nat-139963-0",
+   "faces": [
+    {
+     "file": "0014672_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 102846,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "4b86906db985b62d14128db6662ca29ef08708ce30ee06b48d0a1fbcfa8afefc",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_06",
+      "id": "b38430de-4586-49f7-994b-13ca3b4ba603",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014672_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 90646,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "ab770f203b261eca12b4cc08054d1acff484bec538d118ca7eb670e37b49f9af",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_08",
+      "id": "608cc650-bf6b-413b-afe5-46a52c63a016",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014672_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 96794,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "7fb0073754c28a55b798a8456a3ebf99803b1c53e6e9e6d121557198169a4e59",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_07",
+      "id": "307af02a-d9be-4e38-8ce4-dec43ac47a1d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014672_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 103598,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "3ab5e6b460fe05be07c78ba1ec5d867b3d7b2d14bf9a36b1cdc16912ddfef1df",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_05",
+      "id": "0cac8e22-a0ad-4b22-9ffd-bd92e0c5b1d0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014672_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 97456,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "7a83e99fa0a84bab0b4a572b6d6b8fbf7cc9f0b7b8a33072ff213e1371fb73c3",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_01",
+      "id": "a4bf683c-265b-4a96-b349-a9133738f79b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014672_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 95244,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "d3fbcae1afb9c996e01fa9354f1e1614e2b46297d91cf045987d26fc4c5c65d7",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_02",
+      "id": "d7954e11-8e42-4a9e-ba87-dea2b9bede8d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014672_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 92912,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "52d8086eeb69052d3fdbb361c0956d177fc650aaf93b469e10f24592044fad2a",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_03",
+      "id": "00588e1c-ac66-469b-92f3-a854fa314a06",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014672_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 1600,
+     "width_px": 480,
+     "height_px": 960,
+     "bytes": 90400,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "80X160-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 80X160 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2115,
+      4096
+     ],
+     "source_sha256": "af79c47cf4b1ab69b5b9a6f1072e400553a8fcb8b63a94aa404c510af7748884",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "cropped": "3.3% wider than 800x1600 mm: 67 px of width (13 mm per side) cut off, keeping the 1600 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "PIETRA VIVA LIMOGES SAND 80X160_04",
+      "id": "3b1eb78b-01b0-4a0d-9b32-a89c3b72748c",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012926",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/pf60012926-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012926_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    3,
+    4
+   ],
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0012318-60x120-139996-0 (uses 0012926's faces: ABK's 8 Antique 3D pictures are 0012926's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-limoges-sand-0012926-60x120-nat-139994-0; wall gardenia-wall-tile-pietra-viva-limoges-sand-0012318-60x120-139996-0 (uses 0012926's faces: ABK's 8 Antique 3D pictures are 0012926's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-sand-0012926-60x120-nat-139994-0",
+   "faces": [
+    {
+     "file": "0012926_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54012,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "ab862c2bc91897eefc8d14bc897e93cf472e83fca70057a94584bd78347f5580",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES SAND 60X120@1",
+      "id": "174cd9b8-1fff-4592-bc80-513080918af6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012926_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54856,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "62c487b9ca855aa46f88c906f82438be08d76734284c6370ab1b1849480fc7f6",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES SAND 60X120@2",
+      "id": "5408725b-587a-4063-84f1-88e9641ff636",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012926_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50626,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "82d0b6a200c659b5696b7171e099ccfe02c36042128c8c7e5135e5660d0aa09f",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO LIMOGES SAND 60X120@5",
+      "id": "226ce58d-66fe-457a-a3ac-964f44902586",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012926_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61426,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "b74830fcc6c6c7db9c0c80e153f076cb51af39fada0815483fb13315506d3f12",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO LIMOGES SAND 60X120@6",
+      "id": "a62e98e1-0a78-4a18-badd-abbd1bbbd5ff",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012926_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55650,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "8b85f7e534a458616831aa987377a6642077745c7e6332c98491414df08840ca",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO LIMOGES SAND 60X120@7",
+      "id": "d8b26017-56e4-4d33-a0d4-7527832b6063",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012926_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61180,
+     "source_zip": "PIETRA VIVA - LIMOGES SAND - minimali.zip",
+     "source_file": "60X120-Nat P.tech/PIETRA VIVA - LIMOGES SAND - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1172,
+      2344
+     ],
+     "source_sha256": "5b93d5e3998a435fb8f5d33f17aca0bb459a14b90c2b17dbb41fd172fd9b9085",
+     "source_px_per_mm": 1.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO LIMOGES SAND 60X120@8",
+      "id": "ba1a7e1c-c194-4306-892c-d7385d7eaec9",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012331",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/pf60012331-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012331_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-nat-140000-0 (uses 0012331's faces: ABK's 12 R11 pictures (on Plein Air's page) are 0012331's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-sand-0012331-80x80-nat-139998-0",
+   "faces": [
+    {
+     "file": "0012331_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50400,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "68c4fb6dc6984efe7722b300544eef77aa5bb7c8f521934b86fe8e5f014af72f",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "MEMENTO LIMOGES SAND 80X80@1",
+      "id": "5c574143-a7c9-4351-a82e-ab26c428b9b9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012331_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 53172,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "5e80c0fd8d30b47a97384a3f507053b3eeb2fe79b3dc089e36814f8efcf9becc",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2 (view_02)",
+      "name": "MEMENTO LIMOGES SAND 80X80@2",
+      "id": "21cb39aa-8259-4996-bf41-dc12a26d616c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012331_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50120,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "47d9c48aa451b108a984fefce33e797dc7543de4b181452077470fd915dd5d3a",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3 (view_03)",
+      "name": "MEMENTO LIMOGES SAND 80X80@3",
+      "id": "a680cb72-0060-4911-9e18-81654a1e6f74",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012331_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 59680,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1872,
+      1872
+     ],
+     "source_sha256": "37e2b5a2355e9caf5c47d8dae6ae7d46023db49413602953074cc31efd7c6f77",
+     "source_px_per_mm": 2.34,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4 (view_04)",
+      "name": "MEMENTO LIMOGES SAND 80X80@4",
+      "id": "cc37f53c-54b4-4bb9-acc3-b27ee3c853e9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012331_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57862,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "32d8abc6301a6e01dbed8f1048f8f32edfbc735edd1c47e331d552657892773e",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5 (view_05)",
+      "name": "MEMENTO LIMOGES SAND 80X80@5",
+      "id": "3f30c3ff-b82c-4200-aa1b-44edca81b6e4",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012331_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 59776,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "bccf383bafca7dfd706e3d96d37ca3f2e22f7ab3e68169063e4fb11091bb3d5c",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6 (view_06)",
+      "name": "MEMENTO LIMOGES SAND 80X80@6",
+      "id": "0badfa0e-1be4-48df-b6bf-30102d8a6971",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012331_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41854,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      1883,
+      1883
+     ],
+     "source_sha256": "2653fa65b6b5aeb8850e29b12c3e2b96a8ebdaf34e074168f15174d95ab54b8a",
+     "source_px_per_mm": 2.354,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7 (view_07)",
+      "name": "MEMENTO LIMOGES SAND 80X80@7",
+      "id": "069312f9-61eb-47a1-a4ad-6fce7625d7e2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012331_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 43538,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      1872,
+      1872
+     ],
+     "source_sha256": "53c18215f09083ffe6cf86e85e3c3d77255ce0786641d88b05a4f5151df086a0",
+     "source_px_per_mm": 2.34,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8 (view_08)",
+      "name": "MEMENTO LIMOGES SAND 80X80@8",
+      "id": "a9c3c4ac-1ec5-4a89-a092-cee31efab6ae",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012331_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50064,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      1853,
+      1853
+     ],
+     "source_sha256": "cce3904e712fb4f6dfc9fb57aaa1dcbd916b194b00c19ce0e3985fdf4be2152b",
+     "source_px_per_mm": 2.316,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9 (view_09)",
+      "name": "MEMENTO LIMOGES SAND 80X80@9",
+      "id": "12320288-7b34-46de-905e-4cb657cd6467",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012331_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 51008,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      1853,
+      1853
+     ],
+     "source_sha256": "870a15c1a4470762104b3cbea23488e0de1b39f86352b7a6f782991cfe84a814",
+     "source_px_per_mm": 2.316,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10 (view_10)",
+      "name": "MEMENTO LIMOGES SAND 80X80@10",
+      "id": "e8c9e772-eb9b-47e7-9c9f-5a65f0b54286",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012331_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48672,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      1853,
+      1853
+     ],
+     "source_sha256": "cc07f05f16492ccfc20589e2155e8d95481bfe1caf6709f336f0d1f8445447b3",
+     "source_px_per_mm": 2.316,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11 (view_11)",
+      "name": "MEMENTO LIMOGES SAND 80X80@11",
+      "id": "76661de9-6c89-48ef-8472-d8213d242f24",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012331_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48642,
+     "source_zip": "PLEIN AIR - PIETRA VIVA LIMOGES SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - PIETRA VIVA LIMOGES SAND - 80X80 - R11 - view_12.jpg",
+     "source_px": [
+      1853,
+      1853
+     ],
+     "source_sha256": "a6e50e6c604429f66a5d7cd31a8240920d7565fb68515c9cc5c31ab9d4f48e55",
+     "source_px_per_mm": 2.316,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12 (view_12)",
+      "name": "MEMENTO LIMOGES SAND 80X80@12",
+      "id": "c7188afb-4e09-4b33-a280-44775a4a940d",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

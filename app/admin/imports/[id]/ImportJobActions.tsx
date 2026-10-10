@@ -2,21 +2,10 @@
 
 import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-
-const STATUS_SEQUENCE = [
-  "received",
-  "normalizing",
-  "optimized",
-  "preview_generated",
-  "metadata_extracted",
-  "needs_mapping",
-  "needs_review",
-  "approved",
-  "published",
-  "failed",
-] as const;
-
-type ImportJobStatus = (typeof STATUS_SEQUENCE)[number];
+import { allowedImportStatusesFrom } from "@/lib/import-jobs/status";
+import type { ImportJobStatus } from "@/lib/import-jobs/types";
+import { describeAdminStatus } from "../../admin-status";
+import { useImportStatusChange } from "./useImportStatusChange";
 
 type ImportJobActionsProps = {
   jobId: string;
@@ -26,20 +15,6 @@ type ImportJobActionsProps = {
   initialCatalogItemId: string;
   initialNormalizedAssetId: string;
 };
-
-function getAllowedStatuses(currentStatus: string): ImportJobStatus[] {
-  if (!STATUS_SEQUENCE.includes(currentStatus as ImportJobStatus)) {
-    return ["failed"];
-  }
-
-  if (currentStatus === "failed" || currentStatus === "published") {
-    return [currentStatus as ImportJobStatus];
-  }
-
-  const fromIdx = STATUS_SEQUENCE.indexOf(currentStatus as ImportJobStatus);
-  const forward = STATUS_SEQUENCE.slice(fromIdx) as ImportJobStatus[];
-  return forward.includes("failed") ? forward : [...forward, "failed"];
-}
 
 export default function ImportJobActions(props: ImportJobActionsProps) {
   const router = useRouter();
@@ -52,7 +27,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
   const [normalizedAssetId, setNormalizedAssetId] = useState(props.initialNormalizedAssetId);
   const [feedback, setFeedback] = useState<string>("");
 
-  const statusOptions = useMemo(() => getAllowedStatuses(props.currentStatus), [props.currentStatus]);
+  const statusOptions = useMemo(() => allowedImportStatusesFrom(props.currentStatus), [props.currentStatus]);
 
   const runUpdate = (nextStatus: ImportJobStatus | string) => {
     setFeedback("");
@@ -86,14 +61,21 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
     });
   };
 
+  // A status change can't be undone, so it's confirmed first (AD4).
+  const { requestChange: requestUpdate, dialog } = useImportStatusChange(props.currentStatus, (nextStatus) => {
+    setStatus(nextStatus);
+    runUpdate(nextStatus);
+  });
+
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    runUpdate(status);
+    requestUpdate(status);
   };
 
   return (
     <section className="rounded-xl border p-4">
-      <h2 className="text-sm font-semibold">Workflow Actions</h2>
+      {dialog}
+      <h2 className="text-sm font-semibold">Workflow actions</h2>
       <form className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2" onSubmit={onSubmit}>
         <label className="text-xs text-neutral-600">
           Status
@@ -105,7 +87,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
           >
             {statusOptions.map((nextStatus) => (
               <option key={nextStatus} value={nextStatus}>
-                {nextStatus}
+                {describeAdminStatus("importJob", nextStatus).label}
               </option>
             ))}
           </select>
@@ -163,34 +145,25 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("needs_review")}
-            onClick={() => {
-              setStatus("needs_review");
-              runUpdate("needs_review");
-            }}
+            onClick={() => requestUpdate("needs_review")}
           >
-            Mark Needs Review
+            Mark needs review
           </button>
           <button
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("approved")}
-            onClick={() => {
-              setStatus("approved");
-              runUpdate("approved");
-            }}
+            onClick={() => requestUpdate("approved")}
           >
-            Mark Approved
+            Mark approved
           </button>
           <button
             type="button"
             className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
             disabled={isPending || !statusOptions.includes("published")}
-            onClick={() => {
-              setStatus("published");
-              runUpdate("published");
-            }}
+            onClick={() => requestUpdate("published")}
           >
-            Mark Published
+            Mark published
           </button>
           {feedback && <span className="text-xs text-neutral-600">{feedback}</span>}
         </div>

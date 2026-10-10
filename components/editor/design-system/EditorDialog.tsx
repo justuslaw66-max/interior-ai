@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  forwardRef,
-  useId,
-  useRef,
-  type ButtonHTMLAttributes,
-  type ReactNode,
-} from "react";
+import { useId, useRef, type ReactNode } from "react";
+import { Button } from "@/components/ui/Button";
 import { useEditorDialogLifecycle } from "@/components/editor/design-system/useEditorDialogLifecycle";
 
 export type EditorDialogProps = {
@@ -114,7 +109,7 @@ export function EditorDialog({
     <div
       ref={dialogRef}
       id={dialogId} tabIndex={-1}
-      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] outline-none motion-reduce:transition-none ${
+      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] outline-hidden motion-reduce:transition-none ${
         placement === "right" ? "justify-end p-0" : "justify-center p-4"
       } ${overlayClassName}`}
       data-testid={testId} data-editor-dialog-state="mounting"
@@ -135,7 +130,7 @@ export function EditorDialog({
       <div
         ref={panelRef}
         tabIndex={-1} data-editor-dialog-state="mounting"
-        className={`w-full max-w-md rounded-2xl border p-5 shadow-2xl outline-none transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
+        className={`w-full max-w-md rounded-2xl border p-5 shadow-2xl outline-hidden transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
       >
         <div className={`flex items-start justify-between gap-4 ${headerClassName}`}>
           <div className="min-w-0">
@@ -158,7 +153,7 @@ export function EditorDialog({
               aria-label={closeLabel}
               data-testid={closeButtonTestId}
               disabled={closeDisabled}
-              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close} ${closeButtonClassName}`}
+              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close} ${closeButtonClassName}`}
               onClick={requestClose}
             >
               <span aria-hidden="true">×</span>
@@ -186,30 +181,5 @@ export function EditorDialogActions({
   );
 }
 
-type EditorDialogButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger";
-};
-
-export const EditorDialogButton = forwardRef<
-  HTMLButtonElement,
-  EditorDialogButtonProps
->(function EditorDialogButton(
-  { variant = "secondary", className = "", type = "button", ...props },
-  ref
-) {
-  const variantClass =
-    variant === "primary"
-      ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
-      : variant === "danger"
-        ? "border-red-600 bg-red-600 text-white hover:bg-red-700"
-        : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-gray-600 dark:bg-[#1e2839] dark:text-gray-300 dark:hover:bg-gray-700";
-
-  return (
-    <button
-      ref={ref}
-      type={type}
-      className={`inline-flex min-h-11 items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none ${variantClass} ${className}`}
-      {...props}
-    />
-  );
-});
+/** Dialog actions are the shared Button (phase 4b); dialogs keep this name for it. */
+export const EditorDialogButton = Button;

@@ -12,7 +12,8 @@ import {
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import { createRoom, type DesignItem } from "@/lib/room-types";
+import { createRoom, type DesignItem, type DesignSnapshot } from "@/lib/room-types";
+import { resolveProductFixtureLight } from "@/lib/product-fixture-light";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
@@ -85,7 +86,7 @@ type FixtureOptions = {
   rooms?: HousePlanRoom2D[];
   activeRoomId?: string;
   viewMode?: "2d" | "3d";
-  editorMode?: "design" | "adjust" | "ai" | "buy" | "present";
+  editorMode?: "design" | "adjust" | "ai" | "buy";
   isDesigner?: boolean;
   isClientPreview?: boolean;
   selectedItem?: DesignItem | null;
@@ -386,11 +387,14 @@ assert.deepEqual(
   consumer2d.state.planSummary?.rooms.map((room) => room.id),
   ["room-a"]
 );
+// A lamp's light moved to the item panel (UX 4f); lib/product-fixture-light.ts keeps the rules.
+const lightingSnapshot = { rooms: [], activeRoomId: "room-a" } as unknown as DesignSnapshot;
 assert.equal(
-  consumer2d.state.selectionInspector.selectedFixtureLight,
+  resolveProductFixtureLight({ item: fixtureItem, product: null, designSnapshot: lightingSnapshot, isDesigner: false }),
   null,
   "Consumer mode should not expose Pro fixture controls."
 );
+assert.equal("selectedFixtureLight" in consumer2d.state.selectionInspector, false, "Plan's inspector has no lamp controls.");
 assert.equal(adaptReadModel(consumer2d).state.navigator, null);
 
 const pro3d = buildReadModel({
@@ -408,7 +412,7 @@ assert.deepEqual(
   "Viewport room ordering should preserve the canonical plan-room order."
 );
 assert.equal(pro3d.state.navigator.activeRoomId, "room-b");
-assert.deepEqual(pro3d.state.selectionInspector.selectedFixtureLight, {
+assert.deepEqual(resolveProductFixtureLight({ item: fixtureItem, product: null, designSnapshot: lightingSnapshot, isDesigner: true }), {
   isOn: true,
   dimmer: 0.5,
   cctKelvin: 3000,
@@ -435,11 +439,12 @@ assert.equal(preview.state.selectionControls.floorStack, null);
 assert.equal(preview.state.selectionControls.multiSelection, null);
 assert.equal(preview.state.selectionControls.selectedZone, null);
 
-const presentation = adaptReadModel(
-  buildReadModel({ rooms: [roomA, roomB], viewMode: "3d", editorMode: "present" })
+// Present mode retired with Present & export (phase 4's small PR): the navigator is never disabled.
+const furnishing = adaptReadModel(
+  buildReadModel({ rooms: [roomA, roomB], viewMode: "3d", editorMode: "adjust" })
 );
-assert.ok(presentation.state.navigator);
-assert.equal(presentation.configuration.navigator.disabled, true);
+assert.ok(furnishing.state.navigator);
+assert.deepEqual(Object.keys(furnishing.configuration.navigator), ["dark"]);
 
 const openingEdits: Parameters<BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"]>[] = [];
 const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, viewMode: "3d" }),

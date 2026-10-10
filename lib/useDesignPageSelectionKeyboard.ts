@@ -19,6 +19,7 @@ import {
   type SelectedItemKeyboardCommand,
   type SelectedPlanKeyboardCommand,
 } from "@/lib/design-page-selection-keyboard-commands";
+import { announceUndoableAction } from "@/lib/editor-action-toast";
 import type { DesignItem } from "@/lib/room-types";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
@@ -62,13 +63,11 @@ export type UseDesignPageDeleteSelectionShortcutInput = {
   actions: DesignPageDeleteSelectionShortcutActions;
 };
 
-function isDeleteShortcutTarget(target: EventTarget | null): boolean {
-  const element = target as HTMLElement | null;
-  return Boolean(
-    element?.tagName === "INPUT" ||
-      element?.tagName === "TEXTAREA" ||
-      element?.isContentEditable
-  );
+/** The Delete key removes products as the item panel's Remove does (UX audit ED3, FU12). */
+function productRemoval(names: readonly string[], count: number) {
+  return count === 1
+    ? { step: `Remove ${names[0]}`, message: `${names[0]} removed` }
+    : { step: `Remove ${count} items`, message: `${count} products removed` };
 }
 
 export function useDesignPageDeleteSelectionShortcut({
@@ -84,7 +83,8 @@ export function useDesignPageDeleteSelectionShortcut({
 
   useEffect(() => {
     const handleDeleteKey = (event: KeyboardEvent) => {
-      if (isClientPreview || isDeleteShortcutTarget(event.target)) return;
+      // Not from a field, a select or behind a dialog (UX audit ED12).
+      if (isClientPreview || isDesignPageSelectionShortcutBlocked(event.target)) return;
       if (event.key !== "Delete" && event.key !== "Backspace") return;
 
       if (selectedPlanOverlayId) {
@@ -103,17 +103,15 @@ export function useDesignPageDeleteSelectionShortcut({
           return item ? catalogItems[item.productId]?.title || "Item" : "Item";
         })
         .filter((name, index, names) => names.indexOf(name) === index);
-      const actionLabel =
-        selectedIds.length === 1
-          ? `Delete ${itemNames[0]}`
-          : `Delete ${selectedIds.length} items`;
+      const removal = productRemoval(itemNames, selectedIds.length);
 
       commitItems(
         (previous) =>
           previous.filter((item) => !selectedIds.includes(item.instanceId)),
-        actionLabel
+        removal.step
       );
       clearSelection();
+      announceUndoableAction({ message: removal.message, undoLabels: [removal.step] });
     };
 
     window.addEventListener("keydown", handleDeleteKey);
@@ -329,7 +327,7 @@ export function useDesignPageSelectionKeyboardController({
   }, [actions, refs, state]);
 
   useEffect(() => {
-    if (state.isClientPreview || state.editorMode === "present") return;
+    if (state.isClientPreview) return;
     const input = { state, refs, actions };
     const handleSelectedPlanObjectShortcut = (event: KeyboardEvent) =>
       routeSelectedPlanKeyboardEvent(event, input);

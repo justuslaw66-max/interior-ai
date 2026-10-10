@@ -2,12 +2,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { auditSurfaceMaterialEntry } from "../lib/surface-material-audit";
+import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
 import type { SurfaceMaterial } from "../lib/surface-material-schema";
 import type {
   SurfaceMaterialCatalogMetadata,
+  SurfaceMaterialRenderBaseTuple,
   SurfaceMaterialRenderRecord,
   SurfaceMaterialRenderTuple,
 } from "../lib/surface-material-runtime-types";
+import {
+  compactSurfaceTextureFaces,
+  expandSurfaceTextureFaces,
+} from "../lib/surface-texture-face-run";
 
 const GENERATED_RENDER_PATH = path.join(
   process.cwd(),
@@ -60,9 +66,10 @@ function findCatalogFiles(rootDir: string): string[] {
 function readSurfaceMaterial(filePath: string): SurfaceMaterialYamlEntry {
   const entry = parse(fs.readFileSync(filePath, "utf8")) as SurfaceMaterial;
   const audit = auditSurfaceMaterialEntry(entry, filePath);
-  if (audit.failures.length > 0) {
+  const failures = [...audit.failures, ...getSurfacePhysicalAssetFailures(entry)];
+  if (failures.length > 0) {
     throw new Error(
-      `Invalid surface material ${path.relative(process.cwd(), filePath)}:\n${audit.failures.join("\n")}`
+      `Invalid surface material ${path.relative(process.cwd(), filePath)}:\n${failures.join("\n")}`
     );
   }
   return { ...entry, file_path: filePath };
@@ -87,6 +94,17 @@ function assertUnique(entries: SurfaceMaterialYamlEntry[], label: string): void 
 }
 
 function toRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderTuple {
+  const base = toBaseRenderTuple(entry);
+  const imagePhysicalSizeMm = entry.texture_assets.image_physical_size_mm ?? null;
+  const faces = entry.texture_assets.faces ?? null;
+  // Trailing fields are emitted only when present, so existing tuples stay byte-identical.
+  // Numbered faces of one size are written as a run, which the runtime expands to the same list.
+  if (faces) return [...base, imagePhysicalSizeMm, compactSurfaceTextureFaces(faces) ?? faces];
+  if (imagePhysicalSizeMm) return [...base, imagePhysicalSizeMm];
+  return base;
+}
+
+function toBaseRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderBaseTuple {
   return [
     entry.surface_material.supplier,
     entry.surface_material.brand ?? null,
@@ -150,6 +168,8 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
       ao_url: tuple[18],
       preview_room_url: tuple[19],
       tileable: tuple[20],
+      ...(tuple[31] ? { image_physical_size_mm: tuple[31] } : {}),
+      ...(tuple[32] ? { faces: expandSurfaceTextureFaces(tuple[32]) } : {}),
     },
     rendering: {
       default_rotation_deg: tuple[21],
@@ -168,6 +188,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
 function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCatalogMetadata {
   return {
     material_id: entry.surface_material.material_id,
+    surface_material: { collection: entry.surface_material.collection ?? null },
     source: {
       source_url: entry.source.source_url,
       sample_request_url: entry.source.sample_request_url ?? null,

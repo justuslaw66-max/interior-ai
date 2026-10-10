@@ -612,7 +612,7 @@ function buildMaterial(
     schema_version: 1,
     surface_material: {
       supplier: "gardenia_orchidea",
-      brand: "Gardenia Orchidea",
+      brand: "Gardenia & Ariana",
       collection,
       material_id: materialId,
       product_name: productName,

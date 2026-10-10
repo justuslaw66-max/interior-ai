@@ -8,7 +8,6 @@ import {
   PlanCanvasGuidance,
   type PlanCanvasGuidancePrimaryAction,
 } from "@/components/editor/design-page/PlanCanvasGuidance";
-import { PlanGuidedActionsChoice } from "@/components/editor/design-page/PlanGuidedActionsChoice";
 import { PlanGuidedActionsToggle } from "@/components/editor/design-page/PlanGuidedActionsToggle";
 import { PlanManualQuickActions } from "@/components/editor/design-page/PlanManualQuickActions";
 import type {
@@ -19,10 +18,6 @@ export type DesignPagePlanCanvasOverlaysState =
   ResolvedPlanCanvasOverlaysState;
 
 export type DesignPagePlanCanvasOverlaysActions = {
-  guidedActionsChoice: {
-    close: () => void;
-    choose: (guided: boolean) => void;
-  };
   manualQuickActions: {
     select: () => void;
     startScale: () => void;
@@ -89,40 +84,51 @@ function resolveGuidancePrimaryAction(
   return null;
 }
 
+/**
+ * The quick actions and Tips. Tips sits in the quick actions' row, after them, and under them only
+ * when a phone's row is full (UX 4d): a second floating row covered the rooms' toolbars. `w-max`
+ * keeps the row one line wide where it fits (a centred box is otherwise squeezed to half the canvas).
+ */
+function PlanCanvasTools({ state, actions }: DesignPagePlanCanvasOverlaysProps) {
+  const quickActions = state.manualQuickActions ? (
+    <PlanManualQuickActions
+      state={state.manualQuickActions}
+      actions={{
+        select: actions.manualQuickActions.select,
+        scale: actions.manualQuickActions.startScale,
+        drawRoom: actions.manualQuickActions.startRoomDraw,
+        addOpening: actions.manualQuickActions.addOpening,
+        fit: actions.manualQuickActions.fit,
+      }}
+    />
+  ) : null;
+  const tips = state.guidedActionsToggle ? (
+    <PlanGuidedActionsToggle state={state.guidedActionsToggle} actions={actions.guidedActionsToggle} />
+  ) : null;
+
+  if (!quickActions) return tips;
+  return (
+    <div
+      data-testid="plan-canvas-tool-row"
+      className="pointer-events-none absolute left-1/2 top-bar-17 z-30 flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"
+    >
+      {quickActions}
+      {tips}
+    </div>
+  );
+}
+
 export function DesignPagePlanCanvasOverlays({
   state,
   actions,
 }: DesignPagePlanCanvasOverlaysProps) {
   const guidance = state.guidance;
-  const guidancePrimaryAction = guidance
-    ? resolveGuidancePrimaryAction(guidance.action, actions.guidance)
-    : null;
+  const guidancePrimaryAction =
+    guidance ? resolveGuidancePrimaryAction(guidance.action, actions.guidance) : null;
 
   return (
     <>
-      {state.guidedActionsChoiceVisible && (
-        <PlanGuidedActionsChoice actions={actions.guidedActionsChoice} />
-      )}
-
-      {state.manualQuickActions && (
-        <PlanManualQuickActions
-          state={state.manualQuickActions}
-          actions={{
-            select: actions.manualQuickActions.select,
-            scale: actions.manualQuickActions.startScale,
-            drawRoom: actions.manualQuickActions.startRoomDraw,
-            addOpening: actions.manualQuickActions.addOpening,
-            fit: actions.manualQuickActions.fit,
-          }}
-        />
-      )}
-
-      {state.guidedActionsToggle && (
-        <PlanGuidedActionsToggle
-          state={state.guidedActionsToggle}
-          actions={actions.guidedActionsToggle}
-        />
-      )}
+      <PlanCanvasTools state={state} actions={actions} />
 
       {state.focusControl && (
         <PlanCanvasFocusControl
@@ -137,6 +143,7 @@ export function DesignPagePlanCanvasOverlays({
             guidance: guidance.guidance,
             primaryAction: guidancePrimaryAction,
             dismissible: guidance.dismissible,
+            aboveStepSheet: guidance.aboveStepSheet,
           }}
           actions={{
             dismiss: () => actions.guidance.dismiss(guidance.key),

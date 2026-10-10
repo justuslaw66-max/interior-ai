@@ -9,12 +9,19 @@ import {
   getSurfaceMaterialColorLabel,
   getSurfaceMaterialEffectLabel,
   getSurfaceMaterialGroupSizeLabels,
+  getSurfaceMaterialModelName,
   getSurfaceMaterialProductDisplayName,
   getSurfaceMaterialSizeLabel,
-  getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
+  type SurfaceFilterState,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
+import {
+  buildSurfaceFilterOptions,
+  filterSurfaceMaterialGroups,
+  hasActiveSurfaceFilters,
+  withSurfaceFilter,
+} from "../components/editor/design-controls-plan/surfaceMaterialFilters";
 import { PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA } from "../lib/generated/surface-material-catalog.generated";
 import { NIPPON_PAINT_COLOURS } from "../lib/nippon-paint-colours";
 import {
@@ -44,7 +51,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 980, "the browser must join all 980 render and catalog identities");
+assert.equal(records.length, 994, "the browser must join all 994 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -76,11 +83,16 @@ const dorica120 = doricaGroup.variants.find(
   (variant) => variant.surface_material.material_id === DORICA_CREMA_120_ID
 );
 assert.ok(dorica120);
-assert.equal(getSurfaceMaterialSupplierLabel(dorica120), "Gardenia Orchidea");
+assert.equal(getSurfaceMaterialSupplierLabel(dorica120), "Gardenia & Ariana");
 assert.equal(
   getSurfaceMaterialCollectionLabel(dorica120),
-  "Gardenia Orchidea",
-  "collection labels must preserve the documented brand/supplier fallback when collection is not projected"
+  "Dorica",
+  "the browser must know each material's collection, not fall back to its brand"
+);
+assert.deepEqual(
+  records.filter((record) => !getSurfaceMaterialCollectionLabel(record)).map((record) => record.surface_material.material_id),
+  [],
+  "every catalogue material must reach the browser with its collection"
 );
 assert.equal(getSurfaceMaterialSizeLabel(dorica120), "1200x1200 mm");
 
@@ -91,7 +103,47 @@ const facets = {
   color: buildFacetOptions(records, getSurfaceMaterialColorLabel),
 };
 assert.ok(facets.effect.includes("Marble"));
-assert.ok(facets.collection.includes("Gardenia Orchidea"));
+assert.ok(facets.collection.includes("Dorica") && facets.collection.includes("Tabulae"));
+assert.ok(!facets.collection.includes("Gardenia & Ariana"), "the Collection filter must not list a brand");
+
+// Brand, then its collections, then the models on the cards (J, 2 Oct).
+const allOptions = buildSurfaceFilterOptions(records, undefined);
+assert.deepEqual(allOptions.brand, ["Florim", "Gardenia & Ariana", "Goodrich Global"]);
+assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
+const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");
+assert.equal(gardeniaOptions.collection.length, 13, "Gardenia & Ariana's 13 collections");
+assert.ok(gardeniaOptions.collection.includes("Dorica") && !gardeniaOptions.collection.includes("Ardoise"));
+assert.deepEqual(gardeniaOptions.size, allOptions.size, "only Collection follows the brand");
+assert.deepEqual(
+  withSurfaceFilter({ collection: "Ardoise" }, "brand", "Gardenia & Ariana", records),
+  { collection: undefined, brand: "Gardenia & Ariana" },
+  "another brand clears a collection that isn't the brand's"
+);
+assert.deepEqual(
+  withSurfaceFilter({ collection: "Dorica" }, "brand", "Gardenia & Ariana", records),
+  { collection: "Dorica", brand: "Gardenia & Ariana" }
+);
+assert.deepEqual(withSurfaceFilter({ brand: "Florim", collection: "Ardoise" }, "brand", "", records), {
+  brand: undefined,
+  collection: "Ardoise",
+});
+assert.equal(hasActiveSurfaceFilters(" ", { brand: "Florim" }), true);
+assert.equal(hasActiveSurfaceFilters(" ", {}), false);
+assert.equal(getSurfaceMaterialModelName(dorica120), "Crema", "the card names the model under its collection");
+const goodrich = records.find((record) => record.surface_material.supplier === "goodrich_global");
+assert.ok(goodrich);
+assert.equal(
+  getSurfaceMaterialModelName(goodrich),
+  getSurfaceMaterialProductDisplayName(goodrich),
+  "a name that doesn't start with its collection stays whole"
+);
+for (const record of records.filter((entry) => entry.surface_material.supplier !== "goodrich_global")) {
+  assert.notEqual(
+    getSurfaceMaterialModelName(record),
+    getSurfaceMaterialProductDisplayName(record),
+    `${record.surface_material.material_id}: Gardenia's and Florim's names start with their collection`
+  );
+}
 assert.ok(facets.size.includes("1200x1200 mm"));
 assert.ok(facets.color.includes("White"));
 
@@ -123,11 +175,17 @@ assert.match(
   /\{\(room\.floorLabel \?\? "Floor"\)\} · \{formatDisplayArea\(room\.floorAreaSqm, measurementUnit\)\}/,
   "Surfaces room list areas must show the polygon-aware floor area in the display unit"
 );
-const surfaceFilterBody = extractRequiredBody(
+assert.match(
   panelSource,
-  /const filteredSurfaceMaterialGroups = \(\(\) => \{([\s\S]*?)\n  \}\)\(\);\n  const visibleFilteredSurfaceMaterialGroups/,
-  "surface-material search/filter"
+  /const filteredSurfaceMaterialGroups = filterSurfaceMaterialGroups\(surfaceMaterialProductGroups, \{\n    search: flooringSearch,\n    filters: surfaceFilters,\n    favoriteIds: favoriteSurfaceMaterialIdSet,\n    roomType: activeRoomType,\n  \}\);/,
+  "the Surfaces browser must filter with the shared predicate"
 );
+assert.match(
+  panelSource,
+  /renderSurfaceFilterSelect\("brand", "Brand", surfaceFilterOptions\.brand\)\}\n\s*\{renderSurfaceFilterSelect\("collection", "Collection", surfaceFilterOptions\.collection\)/,
+  "Brand comes first, then its collections"
+);
+assert.match(panelSource, /\{getSurfaceMaterialCollectionLabel\(material\)\}<\/span>[\s\S]{0,240}\{getSurfaceMaterialModelName\(material\)\}/);
 const runProductionSurfaceFilter = ({
   search = "",
   filters = {},
@@ -136,25 +194,17 @@ const runProductionSurfaceFilter = ({
   productGroups = groups,
 }: {
   search?: string;
-  filters?: Record<string, string | boolean>;
+  filters?: SurfaceFilterState;
   favorites?: string[];
   roomType?: string;
   productGroups?: typeof groups;
 }) =>
-  vm.runInNewContext(`(() => {${surfaceFilterBody}})()`, {
-    flooringSearch: search,
-    surfaceMaterialProductGroups: productGroups,
-    surfaceFilters: filters,
-    favoriteSurfaceMaterialIdSet: new Set(favorites),
-    activeRoomType: roomType,
-    getSurfaceMaterialProductDisplayName,
-    getSurfaceMaterialSupplierLabel,
-    getSurfaceMaterialCollectionLabel,
-    getSurfaceMaterialSizeLabel,
-    getSurfaceMaterialSizeOptionLabel,
-    getSurfaceMaterialEffectLabel,
-    getSurfaceMaterialColorLabel,
-  }) as typeof groups;
+  filterSurfaceMaterialGroups(productGroups, {
+    search,
+    filters,
+    favoriteIds: new Set(favorites),
+    roomType,
+  });
 
 const searchFixture = JSON.parse(JSON.stringify(dorica120)) as typeof dorica120;
 searchFixture.surface_material.product_name = "product-sentinel";
@@ -187,7 +237,8 @@ for (const [field, query] of [
   );
 }
 
-const mismatchingFilterCases: Array<[string, Record<string, string | boolean>]> = [
+const mismatchingFilterCases: Array<[string, SurfaceFilterState]> = [
+  ["brand", { brand: "impossible-brand" }],
   ["effect", { effect: "Impossible Effect" }],
   ["collection", { collection: "impossible-collection" }],
   ["size", { size: "1x1 mm" }],
@@ -210,6 +261,7 @@ for (const [field, filters] of mismatchingFilterCases) {
 assert.equal(
   runProductionSurfaceFilter({
     filters: {
+      brand: getSurfaceMaterialSupplierLabel(searchFixture),
       effect: getSurfaceMaterialEffectLabel(searchFixture),
       collection: getSurfaceMaterialCollectionLabel(searchFixture),
       size: getSurfaceMaterialSizeLabel(searchFixture),
@@ -222,7 +274,7 @@ assert.equal(
     productGroups: searchFixtureGroups,
   }).length,
   1,
-  "surface filtering must execute effect, collection, size, color, favorites, and recommendation facets"
+  "surface filtering must execute brand, effect, collection, size, color, favorites, and recommendation facets"
 );
 
 const nipponFilterBody = extractRequiredBody(

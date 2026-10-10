@@ -274,8 +274,9 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
   if (tunedFurnishedTemplateIds.has(template.id)) {
     const styledStarter = template.furnishingPacks.find((pack) => pack.id === "styled_starter");
     assert.ok(styledStarter, `${template.id} should include a styled starter pack`);
+    // Five: the packs' rugs went in UX 4g. Rugs have no model, so the app always skipped them.
     assert.ok(
-      styledStarter.intents.length >= 6,
+      styledStarter.intents.length >= 5,
       `${template.id} styled starter pack should be hand-tuned with a lived-in starter count`
     );
     assert.ok(

@@ -1,11 +1,13 @@
 "use client";
 
-import { Ellipsis } from "lucide-react";
 import type { ReactNode, RefObject } from "react";
-import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
+import { CommandBarMenuTrigger } from "./CommandBarMenuTrigger";
 
 type CommandBarMoreMenuProps = {
   dark: boolean;
+  /** Phones: the Menu at the start of the bar, ending with the account's items (UX 4d). */
+  phone: boolean;
+  accountSlot?: ReactNode;
   containerRef: RefObject<HTMLDivElement | null>;
   buttonRef: RefObject<HTMLButtonElement | null>;
   open: boolean;
@@ -17,7 +19,6 @@ type CommandBarMoreMenuProps = {
   showLoadDesign: boolean;
   isDesigner: boolean;
   isClientPreview: boolean;
-  presentModeActive: boolean;
   lightingAvailable: boolean;
   overflowSlot?: ReactNode;
   /** Goes to the My designs page, saving the design's latest edits first. */
@@ -25,8 +26,6 @@ type CommandBarMoreMenuProps = {
   onNewPlan: () => void;
   onToggleDesignerMode: () => void;
   onToggleClientPreview: () => void;
-  onOpenPresentExport: () => void;
-  onExport: () => void;
   onOpenLightingSettings: () => void;
   onCloseLightingSettings: () => void;
   onFeedback: () => void;
@@ -36,35 +35,16 @@ type CommandBarMoreMenuProps = {
   onRenameDesign?: () => void;
 };
 
-/** The command bar's More button and menu. */
+/** The command bar's More button and menu; on phones, the Menu (UX 4d). */
 export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
-  const { dark, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
+  const { dark, phone, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <button
-        ref={buttonRef}
-        id={CLIENT_PREVIEW_FALLBACK_ACTION_ID}
-        type="button"
-        data-testid="editor-command-overflow"
-        aria-label="More"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-controls={
-          lightingSettingsOpen ? "lighting-settings-drawer" : undefined
-        }
-        className={
-          dark
-            ? "designer-control inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border text-sm font-semibold leading-none lg:w-auto lg:px-3"
-            : "inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 lg:w-auto lg:px-3"
-        }
-        onClick={onToggle}
-      >
-        <Ellipsis className="h-4 w-4 lg:hidden" aria-hidden="true" />
-        <span className="hidden lg:inline">More</span>
-      </button>
+      <CommandBarMenuTrigger dark={dark} phone={phone} buttonRef={buttonRef} open={open}
+        lightingSettingsOpen={lightingSettingsOpen} onToggle={onToggle} />
       {open && (
         <div
-          data-testid="editor-command-overflow-menu"
+          data-testid="editor-command-overflow-menu" data-touch-area
           role="menu"
           className={props.menuPanelClass}
         >
@@ -72,6 +52,11 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
           <MoreMenuModeItems {...props} />
           <MoreMenuViewItems {...props} />
           <MoreMenuFooter {...props} />
+          {phone && props.accountSlot ? (
+            <div data-testid="editor-command-overflow-account" className="mt-1 border-t border-neutral-200 pt-1">
+              {props.accountSlot}
+            </div>
+          ) : null}
         </div>
       )}
     </div>
@@ -113,9 +98,9 @@ function MoreMenuDesignItems({
       )}
       {onRenameDesign ? (
         <button type="button" role="menuitem" data-testid="editor-command-overflow-rename-design"
-          className={`${menuButtonClass} xl:hidden`}
+          className={`${menuButtonClass} md:hidden`}
           onClick={() => {
-            // Rename design hands focus back to More when the bar has no design name.
+            // Rename design from the Menu hands focus back to the Menu (the dialog's opener).
             buttonRef.current?.focus();
             onClose();
             onRenameDesign();
@@ -170,38 +155,15 @@ function MoreMenuModeItems({
   );
 }
 
+// Present & export retired (phase 4's small PR): Share and Download are in the bar.
 function MoreMenuViewItems({
   menuButtonClass,
   onClose,
-  presentModeActive,
   lightingAvailable,
-  onOpenPresentExport,
-  onExport,
   onOpenLightingSettings,
 }: CommandBarMoreMenuProps) {
   return (
     <>
-      <button
-        type="button"
-        role="menuitem"
-        data-testid="editor-workflow-export"
-        data-active={presentModeActive ? "true" : "false"}
-        className={menuButtonClass}
-        onClick={() => {
-          onClose();
-          onExport();
-        }}
-      >
-        {presentModeActive ? "Back to editing" : "Present & export"}
-      </button>
-      {presentModeActive && (
-        <button
-          type="button" data-testid="editor-command-overflow-present-export" className={menuButtonClass}
-          onClick={() => { onClose(); onOpenPresentExport(); }}
-        >
-          Export & Camera
-        </button>
-      )}
       {lightingAvailable ? (
         <button
           type="button"

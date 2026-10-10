@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Bon Ton
   material_id: gardenia-wall-tile-bon-ton-botticino-pf60020846-5x120-197633-0
   product_name: Gardenia Bon Ton Botticino 5x120
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 18 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/bon-ton/botticino/pf60020846-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-bon-ton-botticino-faces.manifest.json. Each covers 50x1200 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60020846/0/197633 for wall use.
     - "Configurator format: 5x120; surface destination: ENTRAMBE."
@@ -63,16 +64,74 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/bon-ton/pf60020774.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/bon-ton/pf60020774.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 5
+  image_physical_size_mm:
+    width: 50
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_01.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_02.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_03.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_04.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_05.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_06.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_07.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_08.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_09.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_10.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_11.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_12.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_13.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_14.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_15.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_16.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_17.webp
+      width_mm: 50
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/bon-ton/0020846_18.webp
+      width_mm: 50
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.48
@@ -99,12 +158,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

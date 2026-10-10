@@ -68,10 +68,12 @@ assert.match(
   /duplicateItem:[\s\S]*?selection\.boundaries\.selection\.actions\.interaction[\s\S]*?duplicateSelectedItem,[\s\S]*?deleteItem:[\s\S]*?deleteSelectedItem/,
   "Presentation commands should delegate selected-item mutations to selection."
 );
-assert.match(
+// Exports are Download's alone since Present & export retired: they stay owned by the backup/export
+// registration, which the workspace hands to Download.
+assert.doesNotMatch(
   registrationSource,
-  /exportImages: presentationBackup\.actions\.exportImages,[\s\S]*?exportPdf: presentationBackup\.actions\.exportPdf/,
-  "Presentation exports should remain owned by the backup/export registration."
+  /exportImages:|exportPdf:|createShareLink:/,
+  "The presentation tools neither export nor share: Download and the bar's Share do."
 );
 assert.match(
   registrationSource,

@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/rattan/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - RATTAN - minimali.zip (1096804 bytes, sha256 d7a782cdb14cd28ac0447f089d87535432db610cc311f325fd5573ab53dcb3ce).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0014512",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/rattan/pf60014512-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014512_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-rattan-pf60014512-60x120-nat-90358-0; wall gardenia-wall-tile-i-pigmenti-rattan-pf60014512-60x120-nat-90358-0",
+   "faces": [
+    {
+     "file": "0014512_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39040,
+     "source_zip": "I PIGMENTI - RATTAN - minimali.zip",
+     "source_file": "60X120-Nat 3D/I PIGMENTI - RATTAN - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "ae1fbf156ac9a25c20fa10c953bc097b4b4a46417619eacc2e3c00ecd9f23452",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 1 (view_01)",
+      "name": "I PIGMENTI RATTAN ANT3D 60X120",
+      "id": "7044694e-5d3d-4d5c-b865-0b135b708408",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

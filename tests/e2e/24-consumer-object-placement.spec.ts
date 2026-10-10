@@ -302,7 +302,8 @@ test.describe("24. Consumer object placement", () => {
     await panel.getByTestId("selected-item-delete").click();
     await expect.poll(() => readFingerprint(page)).not.toBe(beforeDelete);
     const undo = page.getByTestId("command-undo");
-    await expect(undo).toHaveAccessibleName(/Undo Delete Hugg/i);
+    // One Remove for a product (UX audit ED3, FU12): the step is "Remove <product>".
+    await expect(undo).toHaveAccessibleName(/Undo Remove Hugg/i);
     await undo.click();
     await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
       "data-fingerprint",

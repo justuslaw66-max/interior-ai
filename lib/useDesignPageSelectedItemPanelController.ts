@@ -9,19 +9,15 @@ import {
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ResolvedCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { Style } from "@/lib/design-page-types";
+import { announceUndoableAction } from "@/lib/editor-action-toast";
 import type { DesignItem } from "@/lib/room-types";
-import { findSwapOptions } from "@/lib/swap";
+import { cheaperSwapFor, pricierSwapFor, withShoppingLineSwapped } from "@/lib/shopping-list";
 
 export type DesignPageSelectedItemLockLabel =
   | "Lock"
   | "Unlock"
   | "Lock selected"
   | "Unlock selected";
-
-export type DesignPageSelectedItemCommerceType =
-  | "affiliate"
-  | "shopify"
-  | "not_buyable";
 
 type SelectedItemLockState = Pick<DesignItem, "instanceId" | "locked">;
 
@@ -49,14 +45,6 @@ export function getDesignPageSelectedItemLockLabel({
 }
 
 type CommerceVariant = Pick<ResolvedCatalogVariant, "commerce">;
-
-export function getDesignPageSelectedItemCommerceType(
-  resolvedVariant: CommerceVariant | null | undefined
-): DesignPageSelectedItemCommerceType {
-  if (resolvedVariant?.commerce.type === "affiliate") return "affiliate";
-  if (resolvedVariant?.commerce.type === "shopify") return "shopify";
-  return "not_buyable";
-}
 
 export type DesignPageSelectedItemCommerceTarget = {
   buyUrl: string;
@@ -118,7 +106,6 @@ export type DesignPageSelectedItemPanelControllerConfiguration = {
 export type DesignPageSelectedItemPanelControllerRefs = {
   getSelectedIds: () => Set<string>;
   getItems: () => DesignItem[];
-  getPrimaryId: () => string | null;
 };
 
 export type DesignPageSelectedItemPanelControllerActions = {
@@ -140,7 +127,6 @@ export type DesignPageSelectedItemPanelControllerActions = {
     updater: DesignPageSelectedItemUpdater,
     actionName?: string
   ) => void;
-  updateSelection: (next: Set<string>, primaryId: string | null) => void;
 };
 
 export type UseDesignPageSelectedItemPanelControllerInput = {
@@ -168,7 +154,6 @@ export function useDesignPageSelectedItemPanelController({
   refs: {
     getSelectedIds,
     getItems,
-    getPrimaryId,
   },
   actions: {
     setShowInspectorDetails,
@@ -179,7 +164,6 @@ export function useDesignPageSelectedItemPanelController({
     switchSelectedProductModel,
     showToast,
     commitItems,
-    updateSelection,
   },
 }: UseDesignPageSelectedItemPanelControllerInput) {
   const toggleSelectedItemDetails = useCallback(() => {
@@ -217,46 +201,32 @@ export function useDesignPageSelectedItemPanelController({
     [catalogItems, showToast, switchSelectedProductModel]
   );
 
+  // The item panel names these swaps (UX audit FU10, FU12), and the Shopping list's rules pick them:
+  // the nearest product in the category that really costs less or more, never for a set.
   const swapSelectedItem = useCallback(
-    (direction: "cheaper" | "premium") => {
-      if (!selectedInstanceId || !selectedProduct) return;
-
-      const options = findSwapOptions({
-        productId: selectedProduct.id,
-        style,
-        direction,
-      });
-      const best = options[0];
-      if (!best) {
-        showToast(
-          direction === "cheaper"
-            ? "No cheaper alternatives found"
-            : "No pricier alternatives found"
-        );
+    (direction: "cheaper" | "pricier") => {
+      if (!selectedInstanceId || !selectedProduct || !selectedItem) return;
+      if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId) return;
+      const findSwap = direction === "cheaper" ? cheaperSwapFor : pricierSwapFor;
+      const target = findSwap(selectedProduct.id, style, catalogItems);
+      const product = target ? catalogItems[target.productId] : undefined;
+      if (!product) {
+        showToast(direction === "cheaper" ? "No cheaper alternatives found" : "No pricier alternatives found");
         return;
       }
-
-      commitItems((previous) =>
-        previous.map((item) =>
-          item.instanceId === selectedInstanceId
-            ? {
-                ...item,
-                productId: best.id,
-                variantId: best.defaultVariantId,
-              }
-            : item
-        )
-      );
+      const step = `Swap ${selectedProduct.title} for ${product.title}`;
+      commitItems((previous) => withShoppingLineSwapped(previous, selectedInstanceId, product), step);
+      announceUndoableAction({ message: `Swapped for ${product.title}`, undoLabels: [step] });
     },
-    [commitItems, selectedInstanceId, selectedProduct, showToast, style]
+    [catalogItems, commitItems, selectedInstanceId, selectedItem, selectedProduct, showToast, style]
   );
 
   const swapSelectedItemToCheaper = useCallback(() => {
     swapSelectedItem("cheaper");
   }, [swapSelectedItem]);
 
-  const upgradeSelectedItem = useCallback(() => {
-    swapSelectedItem("premium");
+  const swapSelectedItemToPricier = useCallback(() => {
+    swapSelectedItem("pricier");
   }, [swapSelectedItem]);
 
   const openSelectedItemCommerce = useCallback(async () => {
@@ -337,34 +307,12 @@ export function useDesignPageSelectedItemPanelController({
     );
   }, [commitItems, getItems, getSelectedIds, selectedItem]);
 
-  const removeSelectedItemFromDesign = useCallback(() => {
-    if (!selectedItem) return;
-
-    commitItems((previous) =>
-      previous.filter((item) => item.instanceId !== selectedItem.instanceId)
-    );
-    const selectedSet = getSelectedIds();
-    if (!selectedSet.has(selectedItem.instanceId)) return;
-
-    const next = new Set(selectedSet);
-    next.delete(selectedItem.instanceId);
-    const nextPrimary =
-      getPrimaryId() === selectedItem.instanceId
-        ? next.size
-          ? Array.from(next)[next.size - 1]
-          : null
-        : getPrimaryId();
-    updateSelection(next, nextPrimary);
-  }, [commitItems, getPrimaryId, getSelectedIds, selectedItem, updateSelection]);
-
   const selectedItemLockLabel = getDesignPageSelectedItemLockLabel({
     selectedCount: selectedIds.size,
     items: getItems(),
     selectedIds: getSelectedIds(),
     selectedItem,
   });
-  const selectedItemCommerceType =
-    getDesignPageSelectedItemCommerceType(selectedResolvedVariant);
 
   return {
     state: {
@@ -373,7 +321,6 @@ export function useDesignPageSelectedItemPanelController({
       showDeliveryWarranty,
       showRotationControls,
       selectedItemLockLabel,
-      selectedItemCommerceType,
     },
     actions: {
       toggleSelectedItemDetails,
@@ -383,10 +330,9 @@ export function useDesignPageSelectedItemPanelController({
       setSelectedItemPosition,
       applySelectedItemStyleAlternative,
       swapSelectedItemToCheaper,
-      upgradeSelectedItem,
+      swapSelectedItemToPricier,
       openSelectedItemCommerce,
       toggleSelectedItemLock,
-      removeSelectedItemFromDesign,
     },
   };
 }

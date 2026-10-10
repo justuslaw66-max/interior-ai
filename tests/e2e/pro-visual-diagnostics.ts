@@ -133,11 +133,11 @@ export async function installProVisualDiagnostics(page: Page) {
     };
     const onInput = (event: Event) => {
       const target = event.target instanceof Element ? event.target : null;
-      const control = target?.closest('[data-testid="create-share"], [data-testid="share-copy-button"]');
+      const control = target?.closest('[data-testid="editor-command-share"], [data-testid="share-copy-button"]');
       if (!control && !(event instanceof KeyboardEvent && event.key === "Enter")) return;
       record(event.type, { key: event instanceof KeyboardEvent ? event.key : null,
         target: identity(target), control: identity(control ?? null),
-        intended: eligibility(document.querySelector('[data-testid="create-share"]')),
+        intended: eligibility(document.querySelector('[data-testid="editor-command-share"]')),
         trusted: event.isTrusted, defaultPrevented: event.defaultPrevented });
     };
     const lifecycle = (event: Event) => record(event.type, {

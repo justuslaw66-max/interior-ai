@@ -20,7 +20,7 @@ async function addDawsonProduct(page: Page, productId: string) {
   await expect.poll(() => selectImportedProductById(page, productId), { timeout: 20000 }).toBeTruthy();
   await expect.poll(() => addImportedProductIfReady(page), { timeout: 20000 }).toBeTruthy();
 
-  await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
 }
 
 test.describe("107. Dawson Product Details", () => {

@@ -1,0 +1,844 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/brennero/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - BRENNERO - minimali.zip (20151692 bytes, sha256 ee43192754bbc0ab08d641aedf6a3e0d973c96931fc2551dd520b7d3b76e0471); PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip (11250409 bytes, sha256 0dff2a1752615ededdff4a4ea98df3811e0a123bbc9caf2da341d6f350d38b21).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0011721",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/brennero/pf60011721-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0011721_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-brennero-pf60011721-120x280-nat-90385-0; wall gardenia-wall-tile-la-geoteca-brennero-pf60011721-120x280-nat-90385-0",
+   "faces": [
+    {
+     "file": "0011721_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 234610,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BRENNERO - 120X280 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "2dc3d2acde8bbc728905ab8aac8af078ed57248d0cd5edde4ac2c8d45a9a9277",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BRENNERO RETT 120X280_01",
+      "id": "4986e2e0-0e0a-4074-9661-291b5f638220",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011721_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 213690,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BRENNERO - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "2715b292e4bed2f7c686f91368616b276e1f1fd685cdc26113e6aef177b857bc",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BRENNERO RETT 120X280_02",
+      "id": "a199dbcb-6fa0-4d91-9f09-c9147f2234c3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011721_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 226182,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BRENNERO - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "c94f2f46459c5068bba0cec0612b33c3c8d5c85e9b59135db91e9d1404c9f3a2",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BRENNERO RETT 120X280_03",
+      "id": "ed3c7767-a56e-4474-accc-9555ae71625f",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0011729",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/brennero/pf60011729-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0011729_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    8
+   ],
+   "used_by": "floor gardenia-flooring-la-geoteca-brennero-pf60011729-120x120-nat-90392-0; wall gardenia-wall-tile-la-geoteca-brennero-pf60011729-120x120-nat-90392-0",
+   "faces": [
+    {
+     "file": "0011729_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85004,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "9b5bccb8da6a8bd3f2e872cebabdb66a67848fb13e79115ceb3b530f3829613b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_01",
+      "id": "2448efbe-59c3-4265-b5a8-1aaa0d9b8527",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011729_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97744,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "41d8d81b66e071c7f6faba8033a74cc2fffe252b2582f56cdf8e88976c9839fe",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_07",
+      "id": "d2eb9e9b-2439-4fe2-af03-954dd2b86d29",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011729_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 97892,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "618d85dcae501e0398c174731dbdaccb3dc1286237dd78d31a5ad3b291159a72",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_05",
+      "id": "38486538-ab06-4210-8c90-a41d2895a202",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011729_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 91668,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "70698db3e0ef475c0e5c9e20c3e02894b77bdcfa84938c7be8b549cacd9de0b2",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_06",
+      "id": "4e3e81a7-11bc-4d77-b4e1-b49eb47776cc",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011729_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 103646,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "be0aef8bb267581d67ced1f0c19a83c47f68c26174a3539fd27174263831bac1",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_04",
+      "id": "e01b933b-b67d-4aa8-8cbb-992577a8a9b7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011729_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107796,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "951d8f98ccd749cdb698f420b051fd50f3653792617e7f3f2aee4f49bf4aab30",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_09",
+      "id": "f3ea122c-97c1-4722-be67-5b4d73391692",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011729_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109148,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "61ce4a95cb8f5d51bdff5975fc7b9635addc7d594fc470972190dae58a091442",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_02",
+      "id": "049172fc-7035-41e1-9129-0b8537153f47",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011729_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 83354,
+     "source_zip": "LA GEOTECA - BRENNERO - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BRENNERO - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2400,
+      2400
+     ],
+     "source_sha256": "fd8810bbfdd94862e08d0195ea6021a1b8f525d5a18edd40b5d9889603e17579",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA BRENNERO RETT 120X120_03",
+      "id": "9d141bd3-6e4d-4f7d-99fa-416146f35f36",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014522",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-brennero/pf60014522-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014522_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
+   "faces": [
+    {
+     "file": "0014522_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44400,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "329c32321b6a0e6ffeee85f1f5fe6a376601277dcd347c71393f6983d4398984",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_01",
+      "id": "5a9c4c31-16d0-4c04-a80c-8d5a56339b32",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014522_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51042,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "e8db35b66920b775c99243c833c8acf469cc757775591d119d739500e74496fb",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_10",
+      "id": "6fdde1bd-60c9-4db2-8011-4657511ba925",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014522_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38064,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7399b0696c3c615cabc6f61333e35d3c89b9a9635614c4360d8bbbbd92c89382",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_06",
+      "id": "768fa529-4028-405f-9506-20f0e8acf546",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014522_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51202,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "c93ef4a8111ec5ebc4eea4fe246d3badbb6c4ad2041942af6c1f369f73a68bd2",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_11",
+      "id": "3d7d77ea-0bdc-4470-9f0b-0832968c9ad4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014522_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57780,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7e4359c399f613c7cfcf20710aa0b3386f92ce5fc6f3aca0b7706384ff107da8",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_08",
+      "id": "b7d90f64-4d33-40bb-8ff0-0515e0146656",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014522_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40768,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "207c0c966585627bda963e2c79f46e08f1bb22d5ec3d752594d84ecbb0be9a30",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_12",
+      "id": "b7b7260d-a93f-49e3-8903-6e22d91d0f4c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014522_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42220,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "7b0a1cff01b9c4097c3c051b524c0216467b1c6989a5bfa46044a0b24e065fcd",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_02",
+      "id": "d47d53ba-7c39-4f29-89d5-5442238ccf53",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014522_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45522,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "b638a36583f3849e2944ad0bcac671ef223de28d729783ac9676909f156c2aa9",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_09",
+      "id": "3caea56f-828d-4c98-af44-d00462be56a3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014522_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47368,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "701b8fb9d2bd9c50615bab23af7983206650b9e60c45936b378fee4c3c5f89f1",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_07",
+      "id": "c17231a3-58e2-4709-9d22-a9ddbc854c5c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014522_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56576,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "677f759391ac3f0b724d640726cb044e74a89f61af224dc5c410c0c51b97318d",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_04",
+      "id": "f0871e97-b621-4514-bde9-9a9ef36440aa",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014522_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54886,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "6bd0e922c8e6ab40eb848baa4044519e9d0d4e71fc674f65bfc288b19b2046dc",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_03",
+      "id": "4859b423-3b80-4d22-b855-a0fe9de030f4",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014522_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45588,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA BRENNERO - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2400,
+      1200
+     ],
+     "source_sha256": "3b6b87a132e68f03edd57e88b3b56400374372a230fb1abd335a33b7e68215b8",
+     "source_px_per_mm": 2.0,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA BRENNERO 60X120 R11 20 MM_05",
+      "id": "428dd2b6-e72c-41eb-8dc5-48617b073a16",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012079",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/brennero/pf60012079-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012079_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-brennero-pf60012079-80x80-nat-90410-0; floor gardenia-flooring-la-geoteca-brennero-pf60012085-80x80-90415-0 (uses 0012079's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0012079's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-la-geoteca-brennero-pf60012079-80x80-nat-90410-0",
+   "faces": [
+    {
+     "file": "0012079_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44732,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "9e8df19ccaf4e793303337f542f845c946898f90fdad20dd72c407d6ea6b1bc8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_01",
+      "id": "b77150a8-3cd3-4f9d-9f43-f43cc829c3a7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012079_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46918,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "14eac7131a99127020e51f0cc935979cd78880de3af8add6cd739986e2910adf",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_05",
+      "id": "a55c2ac8-9be6-408d-a8bf-9e35354e7f81",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012079_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 39782,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "5daffd9c4472b83768d617b1eb9201da00c8c7be98fae44da7f3b0cfcded2047",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_06",
+      "id": "ef2aa84a-8ecf-403d-ae19-47ccab235a49",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012079_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41662,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3773f8b00cee4519dd6b6082b0d0b5e85032fc48b554af4b94a6e6dad5716a92",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_08",
+      "id": "dc777993-ad73-4765-8955-2d47f167661a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012079_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47602,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "bef5de5687662b6094bde3f0b2ab8aef9c265d97fb603f2ac69383bccb43e47e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_02",
+      "id": "5340e344-038e-4044-ab7d-ff1419a07bcb",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012079_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 39766,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "17f90ebe2370531d5a580fe35d2832fa7d389e11857e7eb001291dd5bb2cabc5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_07",
+      "id": "ac705696-b8c2-4109-abf2-7ed69a2a3302",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012079_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38658,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e7ddae9d39017fee87ac9411a167bc20236f69e5b6124a7d476512cbf5d100b3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_04",
+      "id": "e8e58ae3-14c0-4b0e-8690-6d0397b0068c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012079_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38802,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6760f88badd15cab0fa7362dba5d9a44489ae51679d2d2813ee18df3466cccf6",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_03",
+      "id": "610487e0-1eff-4678-b92d-773973d3b83c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012079_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44514,
+     "source_zip": "PLEIN AIR - LA GEOTECA BRENNERO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BRENNERO - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "82f4795d7c9838a16c5d020facd7d1f8c8f9707aff60a783644ddf25bb129da9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA BRENNERO RETT 80X80_09",
+      "id": "de5080b9-0a8a-4f23-8dcf-230b91d46ba1",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

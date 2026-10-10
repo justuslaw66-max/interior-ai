@@ -12,8 +12,10 @@ type CommandBarShareButtonProps = {
 
 /**
  * Share: copies a link to the design, saving it to the cloud first if it isn't there yet (audit
- * finding SX1). Guests are asked to sign in. Below `lg` it shows only the icon. While a link is on
- * its way the button ignores clicks but stays focusable, so keyboard users keep their place.
+ * finding SX1). Guests are asked to sign in. From md the bar's one black action (UX 4c, as in the
+ * mockup), with its label from lg; on phones a plain 44px icon at the end of the header (UX 4d,
+ * the PhonePlan mockup). While a link is on its way the button ignores clicks but stays
+ * focusable, so keyboard users keep their place.
  */
 export function CommandBarShareButton({ dark, isSharing, onShare }: CommandBarShareButtonProps) {
   if (!onShare) return null;
@@ -28,12 +30,12 @@ export function CommandBarShareButton({ dark, isSharing, onShare }: CommandBarSh
       aria-disabled={isSharing}
       className={
         dark
-          ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold leading-none aria-disabled:cursor-wait aria-disabled:opacity-70 lg:w-auto lg:px-3"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-800 hover:bg-neutral-50 aria-disabled:cursor-wait aria-disabled:opacity-70 lg:w-auto lg:px-3"
+          ? "designer-primary-action inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-[10px] text-sm font-bold leading-none aria-disabled:cursor-wait aria-disabled:opacity-70 md:h-9 md:w-9 md:rounded-lg lg:w-auto lg:pl-3.5 lg:pr-4"
+          : "inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-[10px] text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-100 aria-disabled:cursor-wait aria-disabled:opacity-70 md:h-9 md:w-9 md:rounded-lg md:border md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-neutral-800 lg:w-auto lg:pl-3.5 lg:pr-4"
       }
       onClick={isSharing ? undefined : onShare}
     >
-      <Share2 className="h-4 w-4" aria-hidden="true" />
+      <Share2 className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
       <span className="hidden lg:inline">{isSharing ? "Sharing…" : "Share"}</span>
     </button>
   );

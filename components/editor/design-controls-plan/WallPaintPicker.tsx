@@ -86,8 +86,8 @@ export function WallPaintPicker({
     const normalizedCustomPaintHex =
       normalizeWallPaintColorHex(customWallPaintHex) ?? DEFAULT_WALL_PAINT_SWATCH.hex;
     const wallPaintSearchInputClass = dark
-      ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100 outline-none placeholder:text-neutral-500"
-      : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 outline-none placeholder:text-neutral-400";
+      ? "designer-control h-9 w-full rounded-lg border px-2 text-xs font-semibold text-neutral-100 placeholder:text-neutral-500"
+      : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 placeholder:text-neutral-400";
     const applyWallPaintSwatch = (swatch: WallPaintSwatch, source: "swatch" | "nippon") => {
       setWallPaintFamilyFilter(swatch.family);
       applyWallPaintToActiveTarget(swatch.hex, getWallPaintSwatchLabel(swatch), source);

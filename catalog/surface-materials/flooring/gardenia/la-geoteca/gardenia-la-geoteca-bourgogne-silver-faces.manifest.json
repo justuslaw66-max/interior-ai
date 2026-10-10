@@ -1,0 +1,745 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-silver/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - BOURGOGNE SILVER - minimali.zip (71057805 bytes, sha256 c49974c78385470bbc486140f415404250caba4496a125c7f61871a31dc713e2); PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip (18838801 bytes, sha256 93697b8d8a19a5a26bdf63486d98d17a2803010fa7e07b2b043587e9c73310b6).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016056",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-silver/pf60016056-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016056_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-silver-pf60016056-120x280-nat-90434-0; wall gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016056-120x280-nat-90434-0",
+   "faces": [
+    {
+     "file": "0016056_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 183930,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1736,
+      4096
+     ],
+     "source_sha256": "147bef75bb086c658fb18cac4cdb994eb31d12d6fca80138eeddba41f1b4b821",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X280_01",
+      "id": "40d3cd54-bae6-4664-b730-65250df7e6a0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016056_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 193594,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X280 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1736,
+      4096
+     ],
+     "source_sha256": "d2ac32642b209ed2643c4f09d870b844ad85eb026e1992541b07ce90c2e6341c",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X280_02",
+      "id": "60de0844-63cc-46fd-a81c-e3eb0ae1eb8f",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016058",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-silver/pf60016058-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016058_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-silver-pf60016058-120x120-nat-90436-0; wall gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016058-120x120-nat-90436-0",
+   "faces": [
+    {
+     "file": "0016058_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 66218,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c3a769f99a7e79ca10e052de0f77da6fc1cb473de8da4b047320a57e994c19cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_01",
+      "id": "02f3e126-709f-4c6e-9c68-003f0877b56a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016058_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 61718,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_1_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "62e3b75e993191db4319e417c66bb6d6cc74b04182ac16084e7e7cb7946540d2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_03",
+      "id": "b6d46426-9466-4279-adcd-14fa4f8d100b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016058_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 62248,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c3aa7e52395608fdc9b5b60a486990ec0a38834bb7e0b7e887758742b2fb4251",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_05",
+      "id": "890f6586-f1a1-4cbb-a11a-b0fbdb64fd28",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016058_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 59734,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6d6ab9c51c47541abf855ebf38223fd3a435a76cb5787db2578cdef9133489a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_02",
+      "id": "50101a30-15d1-4546-9839-8f473d2d83e3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016058_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63906,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b1dd16eea502dfbe850785462940e9e0f9f0738ad4307ad78d2c7ed005376c05",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_04",
+      "id": "04100676-16df-4eeb-b987-2c0528bbcecd",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016058_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72422,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 120X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "18a12281e715c3a95f347d860626dad281d4025c21f28e73513f82d180282bd3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 120X120_06",
+      "id": "95096d71-d585-454c-b393-0c59eaecf0d6",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016060",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-silver/pf60016060-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016060_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-silver-pf60016060-60x120-nat-90438-0; wall gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016060-60x120-nat-90438-0",
+   "faces": [
+    {
+     "file": "0016060_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34954,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9721aca6572a6cb96656bebf79c5a4c65917ceab98ddba42e95fb60f2baf52cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_01",
+      "id": "a768545c-edde-4898-b96d-0c390c03e82d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016060_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30956,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_1_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4c2906cfc90387983febd984407f8eb09d87b62609eaacc355f38e767e40ec27",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_12",
+      "id": "4677143a-e31e-48b4-a956-c25412a684d7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016060_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31690,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3916a0b27f13f0a8f287b26f0ca1acbf3677f29ec97dfcdb84f7d0cd15e1e107",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_06",
+      "id": "ae4c4efb-e4bd-44f5-860e-10283c4b8e0a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016060_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33266,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "343fbcf0ed91e5afbffdd93951aab1f92f99fc7e2ab110a4ec2049756a99da2e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_07",
+      "id": "84aff827-b8f4-43a0-9453-ffa8751917a0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016060_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30024,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "382cf80fea106f724b6cee02c645001d7a6022f1457cd41c3a71e5ef8d65a645",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_08",
+      "id": "03d3cb54-b538-433c-9a59-6d9e42f9ef27",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016060_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43262,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "80cff009b22175d35a20f7dfb53b490cf1179831738c9bf1f2b84380a89485a7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_11",
+      "id": "a0952d03-f05d-4b6c-91c4-33c19985637d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016060_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29212,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_6_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cd9f5a532082258b6b66ad7c0c9514718836cdf1bfd5e068ed735d068792177b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_09",
+      "id": "45060de3-6740-4e2e-8fce-dec1bcf44834",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016060_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34636,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_7_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "54bd3b1452af118c0ede38681229ae658e75b08801b9d8d0b1818c212a5a6d24",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_10",
+      "id": "05748995-4948-45da-aed3-b45fc859b4ef",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016060_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26980,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_8_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c0ecf9e1053229db3ce1b7cd74a08e5187adc7424b3a05d23b0978d83f65793a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_04",
+      "id": "829fa314-d65e-4108-b3ec-0753d24ee830",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016060_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29860,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_9_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0751844ee9fb8c347b60684f65df1920eec4da4919925a07eef00232268692b5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_05",
+      "id": "6c3b61f2-c210-4876-91c7-cd4c66649807",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0016060_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32962,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_10_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "482d2580ee62cc033ed1009d83582d3aaf62062d3e66bc7c43af2d2f936a09c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_03",
+      "id": "48ecce8c-502c-4950-aa1e-cd7116fdc47f",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0016060_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31066,
+     "source_zip": "LA GEOTECA - BOURGOGNE SILVER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE SILVER - 60X120 - Nat P.tech - view_11_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e2ade782c05bafe119b1971517407014df90cf9764908b5249afd2883a3f8520",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 60X120_02",
+      "id": "9cbc53a7-de82-464d-a246-f2d5f95d437d",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016062",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-silver/pf60016062-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016062_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-silver-pf60016027-80x80-90432-0 (uses 0016062's faces: ABK's 8 R11 pictures (on Plein Air's page) are 0016062's Nat P.tech pictures, byte for byte); floor gardenia-flooring-la-geoteca-bourgogne-silver-pf60016062-80x80-nat-90440-0; wall gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016027-80x80-90432-0 (uses 0016062's faces: ABK's 8 R11 pictures (on Plein Air's page) are 0016062's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016062-80x80-nat-90440-0",
+   "faces": [
+    {
+     "file": "0016062_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31766,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6d6533019ccad84a7c553c53ae923c714ca845345225437acba0a96e3415df79",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_01",
+      "id": "0ac85083-0e54-4c87-a88c-480085470185",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016062_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28016,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6b47844e4957d7c019135a02b64b54ca895a6f001f1322edc8544d3a7e790f85",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_06",
+      "id": "5eb11a19-2edb-49ea-9dbf-d08eca362812",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016062_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33186,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e7c5173d05ae4007883c2cd5b66cbda355f32acf160bd0691d9fd977f32078cc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_07",
+      "id": "d5785cd2-d0b8-46d5-a6a3-31b348b5ebd2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016062_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31464,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "873f72ae47999d9b2738d41550f4e1de34bee07252e05e4be8b9e5ad5f29ff07",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_08",
+      "id": "7b254607-4b9d-4a05-bcfb-e80387576452",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016062_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29496,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bc52eba8042a26edbbe3b168e8ca6f09c25f3707111fee2bc82dc96ca9629a94",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_05",
+      "id": "0cbb7007-e383-49ba-ab3b-32e38114fb88",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016062_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26660,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4cc9b1fc598e71c11a23b86b6f240258f8a5547fb899d914e9c96fad2902ca60",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_02",
+      "id": "90f88e35-6e6c-48b8-b9ec-7ad17a6893dc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016062_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27014,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ac5ccf786c1782c08a307694406b263f6c7b627d8016dedeba0a6d991ed5555e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_03",
+      "id": "94a02cd6-43a4-4f88-86db-4d79273cb377",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016062_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23386,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE SILVER - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bcf09e322011ea9d221bb7cb253b58f14bc8d2cba3506b15e35dd182cbd772c8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BOURGOGNE SILVER RETT 80X80_04",
+      "id": "8718a788-43d3-42dd-b193-17b9671f5f5c",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

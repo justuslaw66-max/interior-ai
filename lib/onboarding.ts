@@ -71,34 +71,26 @@ export function getOnboardingProgress(
 /**
  * Eligibility rules for onboarding
  * Only show for a new user when the active experience does not skip guided
- * onboarding, and the design is not shared, read-only, or in Present mode.
+ * onboarding, and the design is not shared or read-only.
  */
 export function isOnboardingEligible(opts: {
   isNewUser?: boolean;
   skipGuidedOnboarding?: boolean;
   isShared?: boolean;
   isClientPreview?: boolean;
-  mode?: "design" | "adjust" | "buy" | "present";
 }): boolean {
   const {
     isNewUser = true,
     skipGuidedOnboarding = false,
     isShared = false,
     isClientPreview = false,
-    mode = "design",
   } = opts;
 
   // Not eligible if:
   // - The active experience intentionally skips guided onboarding
   // - Shared or client preview
-  // - In Present mode
   // - Not a new user
-  if (
-    skipGuidedOnboarding ||
-    isShared ||
-    isClientPreview ||
-    mode === "present"
-  ) {
+  if (skipGuidedOnboarding || isShared || isClientPreview) {
     return false;
   }
 
@@ -106,8 +98,8 @@ export function isOnboardingEligible(opts: {
 }
 
 /**
- * Activation conditions: Check if seating zone constraints pass.
- * Falls back to: sofa + (rug OR coffee_table) with no errors
+ * The first valid layout: a sofa (or a seating zone) with no constraint errors. The rug and coffee
+ * table flags stay in the call for its analytics.
  */
 export function checkActivation(opts: {
   constraintResults?: Array<{
@@ -119,31 +111,14 @@ export function checkActivation(opts: {
   hasCoffeeTable: boolean;
   hasSeatingZone: boolean;
 }): boolean {
-  const {
-    constraintResults = [],
-    hasSofa = false,
-    hasRug = false,
-    hasCoffeeTable = false,
-    hasSeatingZone = false,
-  } = opts;
+  const { constraintResults = [], hasSofa = false, hasSeatingZone = false } = opts;
 
-  // Primary: seating zone constraints pass
-  if (hasSeatingZone) {
-    const hasErrors = constraintResults.some((r) => r.level === "error");
-    if (!hasErrors) {
-      return true;
-    }
-  }
-
-  // Fallback: sofa + (rug OR coffee table) with no errors
-  if (hasSofa && (hasRug || hasCoffeeTable)) {
-    const hasErrors = constraintResults.some((r) => r.level === "error");
-    if (!hasErrors) {
-      return true;
-    }
-  }
-
-  return false;
+  // The first sofa with no constraint errors is the first valid layout. The first sofa used to make
+  // a seating zone and the zone was the milestone; zones are Pro's now (UX 4g, FU6), so the sofa
+  // itself counts. A rug or a coffee table no longer matters: a sofa already passes. A seating zone
+  // (Pro's) still counts too.
+  if (!hasSofa && !hasSeatingZone) return false;
+  return !constraintResults.some((r) => r.level === "error");
 }
 
 /**

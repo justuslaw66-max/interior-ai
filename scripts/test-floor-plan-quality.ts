@@ -494,4 +494,14 @@ assert.ok(
   "A living room with no window at all should still be asked for daylight."
 );
 
+// A report resolves each window's host room once, not once per room asking for its
+// windows: on "h1" (13 rooms, 11 windows) that was about 275 resolutions per report,
+// and the report is rebuilt each time a room is selected.
+const qualityReportSource = fs.readFileSync(path.join(process.cwd(), "lib", "floor-plan-quality.ts"), "utf8");
+assert.match(
+  qualityReportSource,
+  /const windows = openings\.filter\(\(\{ kind \}\) => kind === "window"\)\.map\(\(opening\) => \(\{ opening, hostRoomId: openingHostRoomId\(opening, rooms\) \}\)\);/
+);
+assert.equal(qualityReportSource.match(/openingHostRoomId\(/g)?.length, 1, "Only the per-report window list resolves hosts.");
+
 console.log("Floor plan quality checks passed.");

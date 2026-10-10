@@ -44,7 +44,7 @@ export function DisplayUnitSelect({
           data-testid={testId}
           value={value}
           disabled={disabled}
-          className={`min-h-11 w-full appearance-none rounded-lg border px-3 pr-9 text-sm font-medium outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`min-h-11 w-full appearance-none rounded-lg border px-3 pr-9 text-sm font-medium outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             dark
               ? "designer-control text-neutral-100 focus-visible:border-blue-300 focus-visible:ring-blue-300/20"
               : "border-neutral-200 bg-white text-neutral-900 focus-visible:border-blue-600 focus-visible:ring-blue-600/20"

@@ -1,5 +1,6 @@
 import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import type { DesignSnapshot, PersistedPlanOpening } from "@/lib/room-types";
+import { storeyDisplayLabel, storeyLevelLabel } from "@/lib/storey-labels";
 
 type Point = { x: number; z: number };
 
@@ -87,7 +88,7 @@ function buildPreviewFloors(snapshot: DesignSnapshot): PreviewFloor[] {
     } else {
       floors.set(key, {
         key,
-        label: source?.floorLabel ?? room.floorLabel ?? `Floor ${floorLevel}`,
+        label: storeyDisplayLabel(source?.floorLabel ?? room.floorLabel ?? storeyLevelLabel(floorLevel)),
         rooms: [previewRoom],
         bounds,
       });

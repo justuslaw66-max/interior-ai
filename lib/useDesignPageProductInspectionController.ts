@@ -24,7 +24,6 @@ import {
 } from "@/lib/pendant-light-adjustment";
 import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { evaluateStyleConsistency } from "@/lib/style-consistency";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import { useDesignPageProductConfiguration } from "@/lib/useDesignPageProductConfiguration";
 import { useDesignPageProductSelectorState } from "@/lib/useDesignPageProductSelectorState";
 
@@ -40,7 +39,6 @@ export type DesignPageProductInspectionControllerState = {
   selectedItem: DesignItem | null;
   selectedInstanceId: string | null;
   activeRoom: RoomSnapshot | null;
-  editorMode: DesignPageEditorMode;
 };
 
 export type DesignPageProductInspectionControllerConfiguration = {
@@ -63,7 +61,6 @@ export type DesignPageProductInspectionControllerActions = {
     actionName?: string
   ) => void;
   ensureImportedCatalogItem: (productId: string) => void;
-  setHoveredCartInstanceId: (instanceId: string | null) => void;
 };
 
 export type UseDesignPageProductInspectionControllerInput = {
@@ -149,7 +146,6 @@ export function useDesignPageProductInspectionController({
     selectedItem,
     selectedInstanceId,
     activeRoom,
-    editorMode,
   } = state;
   const {
     catalogItems,
@@ -164,7 +160,6 @@ export function useDesignPageProductInspectionController({
     clearAllSelection,
     commitItems,
     ensureImportedCatalogItem,
-    setHoveredCartInstanceId,
   } = actions;
 
   const [showInspectorDetails, setShowInspectorDetails] = useState(false);
@@ -382,12 +377,6 @@ export function useDesignPageProductInspectionController({
     setShowRotationControls(false);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [selectedInstanceId]);
-
-  useEffect(() => {
-    if (editorMode !== "buy") {
-      setHoveredCartInstanceId(null);
-    }
-  }, [editorMode, setHoveredCartInstanceId]);
 
   return {
     state: {

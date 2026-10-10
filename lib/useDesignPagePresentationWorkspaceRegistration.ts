@@ -107,8 +107,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
           readyCount: planWorkspace.derived.exportReadinessReadyCount,
           score: planWorkspace.derived.exportReadinessScore,
         },
-        presentModeRoomId:
-          viewportShell.state.presentation.presentModeRoomId,
         cameraViewNameInput: presentationState.state.cameraViewNameInput,
         layoutVersionNameInput: presentationState.state.layoutVersionNameInput,
         simplePlanControls: viewportShell.state.plan.simplePlanControls,
@@ -127,13 +125,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         planTheme: viewportShell.state.plan.planTheme,
         annotationToolKind: planWorkspace.state.overlay.annotationToolKind,
         selectedPlanOverlayId: viewportShell.state.planSelection.selectedPlanOverlayId,
-        visiblePlanOpening: planWorkspace.state.inspector.visiblePlanOpening,
-        visiblePlanOpeningRoomName:
-          planWorkspace.state.inspector.visiblePlanOpeningRoomName,
-        visiblePlanOpeningWallSpanMeters:
-          planWorkspace.state.inspector.visiblePlanOpeningWallSpanMeters,
-        visiblePlanOpeningMaxHeightMeters:
-          planWorkspace.state.inspector.visiblePlanOpeningMaxHeightMeters,
         houseRoomCount: documentRoom.derived.plan.housePlan2D.rooms.length,
         openingCount: viewportShell.state.plan.planOpenings.length,
         selectedPlanRoomId:
@@ -210,7 +201,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
     configuration: {
       commandPaletteScopeKey: [base.derived.navigation.pathname, base.derived.navigation.searchParams.get("designId") ?? "local", base.state.identity.designId ?? "local", base.derived.navigation.urlWorkspace ?? "default",
         base.state.brief.mode, viewportShell.state.editor.editorMode, base.state.access.plan, coreShell.derived.access.isDesigner ? "pro" : "consumer", coreShell.derived.access.isClientPreview ? "preview" : "editing"].join("|"),
-      presentOpen: viewportShell.state.editor.editorMode === "present" && viewportShell.state.presentation.showPresentModal,
       designerTheme: coreShell.derived.access.showDesignerTheme,
       canUseAdvancedPlanControls:
         coreShell.derived.access.capabilities.configurePlanLayers,
@@ -219,16 +209,10 @@ export function useDesignPagePresentationWorkspaceRegistration({
       canUseDesigner: coreShell.derived.access.canUseDesigner,
       compactRoomStatus: planWorkspace.derived.compactRoomPlanStatusBar,
       showRoomHealth: planWorkspace.derived.showRoomPlanStatusHealth,
-      eyeLevelTransitionDurationMs: 500,
-      focusTransitionDurationMs: 460,
     },
     actions: {
       shell: {
-        setPresentModalOpen:
-          viewportShell.actions.presentation.setShowPresentModal,
         setEditorMode: viewportShell.actions.editor.setEditorMode,
-        setPresentModeRoomId:
-          viewportShell.actions.presentation.setPresentModeRoomId,
         setDesignSnapshot: coreShell.actions.document.setDesignSnapshot,
         changeViewMode: camera.actions.navigation.handleEditorViewModeChange,
         setUpgradeReason: base.actions.paywall.setUpgradeReason,
@@ -240,10 +224,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         setUrlMode: coreShell.actions.paywall.setUrlMode,
       },
       camera: {
-        getEyeLevelView: camera.actions.navigation.getEyeLevelView,
-        getFocusView: camera.actions.navigation.getFocusView,
-        transitionToView:
-          viewportShell.actions.camera.transitionToCameraView,
         setName: presentationState.actions.setCameraViewNameInput,
         save: presentationState.actions.saveCurrentNamedView,
         open: presentationState.actions.openSavedCameraView,
@@ -276,8 +256,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
           planWorkspace.actions.overlay.selectAnnotationTool,
         deleteOverlay:
           selectionInspection.actions.selection.deletePlanOverlayById,
-        changeOpening:
-          planWorkspace.actions.overlay.handleUpdateOpeningMetrics2D,
         applyLayerPresetInTransaction:
           planWorkspace.actions.overlay.applyPlanLayerPresetInTransaction,
         addFloorPlanOpening:
@@ -287,9 +265,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
         deleteRoom: planWorkspace.actions.room.deleteRoom,
       },
       planCanvas: {
-        setGuidedActionsChoiceSeen:
-          viewportShell.actions.plan.setPlanGuidedActionsChoiceSeen,
-        chooseGuidedActionsMode: tracing.actions.choosePlanGuidedActionsMode,
         selectFloorPlanTool: tracing.actions.selectFloorPlanTool,
         setGuidedPlanStartMode:
           viewportShell.actions.editor.setGuidedPlanStartMode,
@@ -343,11 +318,7 @@ export function useDesignPagePresentationWorkspaceRegistration({
       betaStart: documentSelection.actions.betaStart,
       presentation: {
         ...presentationLighting.actions.presentation,
-        createShareLink:
-          persistence.actions.persistence.createShareLinkAndCopy,
         setExportStylePreset: viewportShell.actions.plan.setExportStylePreset,
-        exportImages: presentationBackup.actions.exportImages,
-        exportPdf: presentationBackup.actions.exportPdf,
         generateAiNotes: aiPanel.actions.notes.generate,
       },
       feedback: { showToast: coreShell.actions.feedback.showRuleToast },

@@ -46,7 +46,7 @@ function BuyListRow({ line, retailer, opened, busy, onOpenLine }: {
         aria-label={opened ? `Open ${line.title} at ${retailer.name} again` : `Open ${line.title} at ${retailer.name}`}
         disabled={busy}
         onClick={() => onOpenLine(line)}
-        className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 text-[13px] font-bold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+        className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 text-[13px] font-bold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
       >
         {opened ? <Check className="h-4 w-4 text-emerald-700" aria-hidden="true" /> : null}
         {opened ? "Opened" : "Open"}

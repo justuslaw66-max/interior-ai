@@ -20,6 +20,10 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPORT = []
+# The tesseract release the corpus was measured with. The engine decides which room labels and printed numbers are read,
+# and rooms, doors and windows follow the labels: on 2 Oct 2026 the same programs and the same eng.traineddata read 126 of
+# 138 rooms with 5.3.0 (the worker image), 127 with 5.3.4 and 122 with 5.5.3 (Homebrew).
+MEASURED_TESSERACT = "5.3"
 
 
 def check(name, ok, detail="", warn=False):
@@ -86,12 +90,34 @@ def check_tesseract():
         check("tesseract version", int(str(version).split(".")[0]) >= 4, str(version))
     except Exception as cause:  # noqa: BLE001
         return check("tesseract version", False, str(cause))
+    check_tesseract_release(str(version))
     try:
         languages = pytesseract.get_languages(config="")
         check("tesseract eng data", "eng" in languages, ", ".join(languages) or "no languages -- install tesseract-ocr-eng / set TESSDATA_PREFIX")
     except Exception as cause:  # noqa: BLE001
         check("tesseract eng data", False, str(cause))
     return ocr_smoke()
+
+
+def release_matches(version, wanted):
+    """5.3 matches 5.3, 5.3.0 and 5.3.4, not 5.30 or 5.5.3"""
+    wanted = wanted.strip().rstrip(".")
+    return version == wanted or version.startswith(wanted + ".")
+
+
+def check_tesseract_release(version):
+    """The release the scores were measured with. A machine that must read like the measured one says so with
+    FLOOR_PLAN_VECTORIZER_TESSERACT (the worker image does): then another release is a FAIL. Elsewhere it is a WARN."""
+    pinned = (os.environ.get("FLOOR_PLAN_VECTORIZER_TESSERACT") or "").strip()
+    why = "another release reads room labels and printed numbers differently (5.5.3 read 122 of 138 corpus rooms where 5.3.0 read 126)"
+    if pinned:
+        ok = release_matches(version, pinned)
+        check("tesseract release (pinned)", ok, "%s, FLOOR_PLAN_VECTORIZER_TESSERACT=%s%s" % (
+            version, pinned, "" if ok else "  <- %s; score the corpus with this engine before changing the pin" % why))
+    else:
+        ok = release_matches(version, MEASURED_TESSERACT)
+        check("tesseract release", ok, "%s%s" % (version, " (the measured %s line)" % MEASURED_TESSERACT if ok else
+              "  <- the corpus was measured with %s.x; %s" % (MEASURED_TESSERACT, why)), warn=True)
 
 
 def ocr_smoke():
@@ -145,6 +171,28 @@ def check_settings():
         check("temporary folder", True, tempfile.gettempdir())
     except OSError as cause:
         check("temporary folder", False, "%s: %s" % (tempfile.gettempdir(), cause))
+
+
+def check_seg_model():
+    """The learned reader (round 23) is off unless FV_SEG_MODEL names a model; then onnxruntime must be importable and the
+    model must load and answer a blank tile with one score per class."""
+    path = os.environ.get("FV_SEG_MODEL")
+    if not path:
+        check("FV_SEG_MODEL", True, "unset -- the learned reader is off (stage 1 as measured without it)")
+        return True
+    if not check("FV_SEG_MODEL", os.path.isfile(path), path + ("" if os.path.isfile(path) else "  <- no such file")):
+        return False
+    try:
+        import onnxruntime
+        import numpy
+        sess = onnxruntime.InferenceSession(path, providers=["CPUExecutionProvider"])
+        out = sess.run(["logits"], {"image": numpy.ones((1, 3, 64, 64), numpy.float32)})[0]
+        use = os.environ.get("FV_SEG_USE") or "prune"
+        return check("learned reader", out.shape[1] in (5, 6, 7), "onnxruntime %s, %d classes, FV_SEG_USE=%s" % (onnxruntime.__version__, out.shape[1], use))
+    except ImportError as cause:
+        return check("learned reader", False, "%s -- pip install onnxruntime (needed only with FV_SEG_MODEL)" % cause)
+    except Exception as cause:  # noqa: BLE001
+        return check("learned reader", False, "the model does not load or run: %s" % cause)
 
 
 def draw_plan(path):
@@ -237,6 +285,7 @@ def main():
     tesseract = modules and check_tesseract()
     programs = check_programs(directory, note)
     check_settings()
+    check_seg_model()
     if run is not None:
         if modules and tesseract and programs:
             run_programs(directory, None if run is True else run)

@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/gioia/primavera/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: GIOIA - PRIMAVERA - minimali.zip (1852615 bytes, sha256 ce768840aa151666051711e3ad9cf3d1047af345446ddba3f76c32786346891a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/gioia/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0010527",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/gioia/primavera/pf60010527-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010527_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "wall gardenia-wall-tile-gioia-primavera-pf60010527-60x120-90243-0",
+   "faces": [
+    {
+     "file": "0010527_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74284,
+     "source_zip": "GIOIA - PRIMAVERA - minimali.zip",
+     "source_file": "60X120-Natural/GIOIA - PRIMAVERA - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2045,
+      4096
+     ],
+     "source_sha256": "7defeedf4809a5d0e17552175cd6c2b4c2726f71ff87cfea52ef365139339583",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "GIOIA PRIMAVERA 60X120",
+      "id": "3fe0106c-898e-4f90-b625-1dcbac77a2be",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

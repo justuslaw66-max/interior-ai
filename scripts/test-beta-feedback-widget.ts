@@ -237,7 +237,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
   },
   ai: { notes: {} },
   presentation: {
-    presentExport: { configuration: { open: true }, state: {}, actions: {} },
+    presentExport: { configuration: {}, state: {}, actions: {} },
   },
   editing: { roomRename: {}, annotation: {} },
   placement: {
@@ -287,7 +287,7 @@ assert.doesNotMatch(
 );
 assert.match(
   designPageSource,
-  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}\s*\/>[\s\S]*?<DesignPageDialogLayer\s+\{\.\.\.dialogLayerModel\}\s*\/>/,
+  /<DesignPagePanelRegion\s+\{\.\.\.panelRegionModel\}(?:\s+planTools=\{presentExportDialog\})?\s*\/>[\s\S]*?<DesignPageDialogLayer\s+\{\.\.\.dialogLayerModel\}\s*\/>/,
   "the workspace should compose the fixed dialog layer after the panel region."
 );
 

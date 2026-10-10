@@ -1,0 +1,415 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/corda/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - CORDA - minimali.zip (18511684 bytes, sha256 a990683fa49bb5d3989588301a518e2b75cac5dafb22997b7173516b764704b2).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/make/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g73021",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/corda/g0073021-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73021_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-corda-g0073021-80x80-90774-0; wall gardenia-wall-tile-make-corda-g0073021-80x80-90774-0",
+   "faces": [
+    {
+     "file": "g73021_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8172,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - CORDA - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3273520e2d55a2140efbee2377f1d6b56e5eb29d4888420dc3f9743ee964b78c",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "MAKE_CORDA_80X80_3",
+      "id": "8fe20798-e97b-4a82-b360-b0ac1e674c3e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73021_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 5070,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - CORDA - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "32897955eb56d1aa116354f0647f3f07e19721bba607710b7b5790ce09bd1a84",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "MAKE_CORDA_80X80_1",
+      "id": "3fc32d37-3611-4579-baee-889fb7cf250f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73021_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 6548,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - CORDA - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f8cbb5e6ace421bf3ee515614973ea9752b70d418041d17713f8057943c3120e",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "MAKE_CORDA_80X80_2",
+      "id": "513df812-70af-4c33-8a6b-366d65704849",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73021_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 8424,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "80X80-Natural/MAKE - CORDA - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9fc4ca22da01243bce56f085c6bd7adf318f16cb04450b5290d8ac7ed490ea80",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "MAKE_CORDA_80X80_4",
+      "id": "4af6c0f4-fe4c-4818-bb77-ef3964434ad4",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "100x100",
+   "item_code": "g73041",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/corda/g0073041-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73041_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-corda-g0073041-100x100-90780-0; wall gardenia-wall-tile-make-corda-g0073041-100x100-90780-0",
+   "faces": [
+    {
+     "file": "g73041_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9706,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - CORDA - 100X100 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "73f328bde93431819f1c108eb8a9117b2e266813d05359271ad4b4a54de54aac",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "MAKE_CORDA_100X100_2",
+      "id": "a15b3f29-0337-4310-b5c9-506253e84e54",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73041_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 11746,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - CORDA - 100X100 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e3c3a9a286e8e0f433f2597070647e977400c32917ce003cc053495bb566f715",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "MAKE_CORDA_100X100_4",
+      "id": "0214cad9-a5a8-4c5f-8e2c-6129285253b8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73041_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 11188,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - CORDA - 100X100 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "195e9ea3825df435e562b5320c316e11ba4433c880ee51d9adca4342011493c2",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "MAKE_CORDA_100X100_3",
+      "id": "aad95b6d-ad0d-4a9f-b002-c88e6d27c825",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73041_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9170,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "100X100-Natural/MAKE - CORDA - 100X100 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d3cbb3fddabd8215506a59ef3f00ed41e5de70344f31203db919d19dee7732ec",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "MAKE_CORDA_100X100_1",
+      "id": "375cd607-cb14-45a1-8579-ee1f2b0ff88b",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g73221",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/corda/g0073221-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g73221_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    3
+   ],
+   "used_by": "floor gardenia-flooring-make-corda-g0073221-60x120-90806-0; wall gardenia-wall-tile-make-corda-g0073221-60x120-90806-0",
+   "faces": [
+    {
+     "file": "g73221_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7574,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - CORDA - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "03ff8b9044d413aeb7e6231d1c1d21cfba4ecbd3df6e715a459aec8ed18b9f42",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "MAKE_CORDA_60X120_4",
+      "id": "66d4258f-952f-4208-9675-3e0ee803ece6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73221_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6226,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - CORDA - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9b15810f75992a51106741e9959cb5ac901270bb260c67db084d0cf86cdf125d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "MAKE_CORDA_60X120_1",
+      "id": "d2cedeeb-8805-48ad-a388-a25410031910",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73221_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4368,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X120-Natural/MAKE - CORDA - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d7f208e61b11c4484106cd934c5281713862c1216d6cf594fa5af39be77ceae7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "MAKE_CORDA_60X120_3",
+      "id": "1b3c2f49-0a6d-44e9-8acc-b2b9c3ba6d88",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "g73211",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/corda/g0073211-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "g73211_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    4
+   ],
+   "used_by": "floor gardenia-flooring-make-corda-g0073211-60x60-90800-0; wall gardenia-wall-tile-make-corda-g0073211-60x60-90800-0",
+   "faces": [
+    {
+     "file": "g73211_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4138,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - CORDA - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a4524a5fd98bd84aebdc993f5a7cad5de9ede867fe4cc9e89beb71aa970ef0dc",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "MAKE_CORDA_60X60_4",
+      "id": "36640020-a600-404d-8aad-5cc140894cef",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73211_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3232,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - CORDA - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d7c1d466ffa975426ac6c4a7ab69cf3dd8b6d0c6289f3350953787a8bb6f3fc7",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "MAKE_CORDA_60X60_1",
+      "id": "c9393969-7f46-4512-9f3d-31c9aa2830cb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73211_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2442,
+     "source_zip": "MAKE - CORDA - minimali.zip",
+     "source_file": "60X60-Natural/MAKE - CORDA - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3c358930f34b078a611a6492d66d2a75bb24782af4ca183c9642ba5004e7e28a",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "MAKE_CORDA_60X60_3",
+      "id": "b73db641-13e4-4e52-8a68-7a10c132a8be",
+      "site_position": 3
+     }
+    }
+   ]
+  }
+ ]
+}

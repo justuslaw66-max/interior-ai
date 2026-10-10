@@ -1,0 +1,2248 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-miele/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: PLEIN AIR - TABULAE REFINED MIELE - minimali.zip (25485357 bytes, sha256 ea03855af2d3d4f4cbcd62fbff76374d9e1618167f3200f288715a7c18879b9a); TABULAE - REFINED MIELE - minimali.zip (72936425 bytes, sha256 81745cfa1f6250b1f334c4e0d4518d5e1c10788314c809a7b88549b0ec5bdfa0).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0021254",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/tabulae-refined-miele/pf60021254-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0021254_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-miele-nat-pf60021254-30x120-92271-0",
+   "faces": [
+    {
+     "file": "0021254_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 8018,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "28a10469cddcb4ce65469c5aaa5056f5426eebb8fb2fe37ff5b4f493e5eb26f4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_01",
+      "id": "ef8eb3a3-36ca-4494-818d-eb84197d7423",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021254_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 7476,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "9f7685e792069317985607d8934e4e0017a0f6a398805071f3954ab546907d96",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_10",
+      "id": "6f20b918-3650-4085-9e9b-bf22dfeea027",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021254_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 5138,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "8d682da59051a25ec9933b9bb579102b6c034ef7bf4f055b67dd648ea1c81bc3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_16",
+      "id": "24c60ba8-7653-4280-bd0a-347716f2f1e0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021254_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 6572,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "451a479ad0f8f6274acbfbcc2c7d766a773e8c7462c30315cae28b8cc9270b7e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_12",
+      "id": "d587b124-a805-4659-81c2-ec177efd3613",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021254_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 6242,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "419669d5a4cb9b0bff5047a708887bab4e4108c5056e11885d76c7f45713f2ad",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_14",
+      "id": "da7f950c-7664-4eba-bc44-2bec69a2aa9c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021254_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 6610,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_5.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "2e5dd7b204612384f3a6b222d1c4a004561b53fae420d285f49c31264ba6138b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_08",
+      "id": "0ebd9851-0ca8-4915-be95-b3eb456bfdaa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021254_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 7486,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "8d7e61d807addcbfcb481a366520a6330b68e69dc84d330370133666c5ea0ec1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_05",
+      "id": "13dafa7f-0387-49cb-9664-600e284b1449",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021254_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 6608,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "5965b64b676b2f7144f83601f1d1a69dd939885494234b98f7208354f8fb9d13",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_09",
+      "id": "0067dbf0-d4d6-440a-a761-b94281427cd1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021254_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 7368,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "27bc656c626bf65558387f7e7948f406196efd05a85e0d57c39d216605ac010c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_02",
+      "id": "2f18c618-bf9e-41e4-bf1b-7ff40acc16d1",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021254_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 8178,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "b91d2b302c8937602f55c2cf16035b9fe614bea797b578122e4c5488d05d935d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_06",
+      "id": "14f239ca-51e1-4363-915d-d15217d8be70",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021254_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 5918,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "f6ecd4129359e5dd073f67e98103cdb90c8442d5af70fd4bc390cdb384d6ed87",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_19",
+      "id": "19f84b2e-9e12-43e8-ac2d-ac2f6f21a6e1",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021254_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 5738,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "1d1daf53638e6e4716fd5be14069108ee69192ada13ab489f1008f6e77c63359",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_15",
+      "id": "573118cc-3a9b-4301-8994-dad7abb341de",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021254_13.webp",
+     "face": 13,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 5486,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "186069d4546133a64f775c10622c1ec3593d611685568db0dae0775c5e8d7c85",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_11",
+      "id": "6a42598a-95ff-41b8-bcbf-33417a6c7cb4",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021254_14.webp",
+     "face": 14,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 8720,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_13.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "a5b1e3f5ad39cebdd698106e8ff567640d0f232e03e3dcf2b7b737dde4bc49f5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_04",
+      "id": "9d885b7e-a96d-4267-a832-80a9f690faee",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021254_15.webp",
+     "face": 15,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 4972,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_14.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "2010f6b0d4f570878a2a0a7a3ec2bd29673025298d9d5253be725a816adbb154",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_17",
+      "id": "8c135504-8503-417c-a969-ef541daa931c",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021254_16.webp",
+     "face": 16,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 6020,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_15.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "171378ddcd6c5928cdee43e399d74beab0e40539ffd2266f9baaf02c165b1956",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_13",
+      "id": "ef90f7a1-a373-485b-8861-923d007c134d",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021254_17.webp",
+     "face": 17,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 7240,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_16.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "a9e1866527a7299d6710abbd8bba5b4460325072c3f95b57d055be3773812dc2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_03",
+      "id": "0629e853-0b87-42c4-bb13-1bfa03616981",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021254_18.webp",
+     "face": 18,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 4112,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_17.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "79023d164db0f48ec55f0d0f17e6eab84a5f04251f0f2698071f18e9efec2834",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_20",
+      "id": "a68346da-0d00-4c61-a681-8ebc8c0b3eda",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021254_19.webp",
+     "face": 19,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 8420,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_18.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "bdf246e6cfa9832474419905308fd5ec6d3116c84d14b7965f8a4665b39330b0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_07",
+      "id": "daaca6f0-54e5-482b-862a-a36bf18acd8e",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021254_20.webp",
+     "face": 20,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 4780,
+     "source_zip": "PLEIN AIR - TABULAE REFINED MIELE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - TABULAE REFINED MIELE - 30X120 - R11 - view_19.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "d14b0e54fcc33ee35546261ecf4139fb1da87e52b21a51f8d61ceb271a7fa77f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE REFINED MIELE 30X120 R11_20 MM_18",
+      "id": "770b984b-b897-4acb-a2ec-f675a633e64a",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "23,4x148",
+   "item_code": "0021109",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-miele/pf60021109-v102/",
+   "face_mm": {
+    "width": 234,
+    "height": 1480
+   },
+   "swatch": "0021109_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-miele-nat-pf60021109-23-4x148-nat-92251-0; wall gardenia-wall-tile-tabulae-refined-miele-nat-pf60021109-23-4x148-nat-92251-0",
+   "faces": [
+    {
+     "file": "0021109_01.webp",
+     "face": 1,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8386,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_1 (2).jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "8944bbe248ffede99b7e94b80a67188a7950b7e3a17fdebb4084c6b07b423d87",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MIELE 23,4X148_01",
+      "id": "9349b0f4-2dd1-40e5-a022-73aa60e67170",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021109_02.webp",
+     "face": 2,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 5440,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_1.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "09265396b6c0ad12a499687f5b2493bf3bf4742c82962050ab8ee77f73ea2c08",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MIELE 23,4X148_20",
+      "id": "b8216245-2309-402c-b60d-57022072be87",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021109_03.webp",
+     "face": 3,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 5896,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_2.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "83e514f53830b65c2b8ef66b405687ba9a91e1f647ca1d4adf93a66876cf5ae7",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MIELE 23,4X148_11",
+      "id": "5240a128-eb27-4435-a3b9-3ef76a07f1f6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021109_04.webp",
+     "face": 4,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6306,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_3.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "ed445d827f6b381451dc9eab5d186d83fc9b9cb31f8998be0275ec2cd819e5da",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MIELE 23,4X148_19",
+      "id": "961c0981-8fae-4aec-b3c6-70aa0a6107d4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021109_05.webp",
+     "face": 5,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6838,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_4.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "dda976893bdbf23c29cfaf00984e95c7cd8b4967b108c80c192d319450b8c097",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MIELE 23,4X148_12",
+      "id": "c834890f-bdcc-40f4-8645-b340935e9a06",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021109_06.webp",
+     "face": 6,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7818,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_5.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "aeb2efc1e727a6d9250e689437c00d309123057ea3afc1be0d64d2fe767e3d6e",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MIELE 23,4X148_10",
+      "id": "21fa5b8c-8bff-4e03-95bc-46b156cca408",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021109_07.webp",
+     "face": 7,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6014,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_6.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "cc9a477a73263b78533dbb6e071713c28620b70371f46fb48aacb813588290cc",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED MIELE 23,4X148_14",
+      "id": "7ac4e0ad-1345-4f25-9a86-74bc991a1581",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021109_08.webp",
+     "face": 8,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 5250,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_7.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "c3c1c622c912ef67785c1a5e87038c07742dff773a6f426daec6c153067077e1",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED MIELE 23,4X148_18",
+      "id": "29b49538-cad6-4b2d-bc14-f3f60183274c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021109_09.webp",
+     "face": 9,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6424,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_8.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "02a034c98279b8bd6149288454c2f8b77784e6ca30b46b6385ad6fbcb9527f52",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED MIELE 23,4X148_13",
+      "id": "32013b8f-66ce-41a5-8815-bb9f6cd67091",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021109_10.webp",
+     "face": 10,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 4720,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_9.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "6e7d1479ffafccf84e91a02b7c56fed4d5f39563c57d1277c3d1b0c784a22e77",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED MIELE 23,4X148_17",
+      "id": "716def34-5c05-4cb2-860c-7f3354a69433",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021109_11.webp",
+     "face": 11,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7110,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_10.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "b42fada1cc0f7d7475c102c990066d8eedbb73ab3530c624e3da8dcd3572655b",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED MIELE 23,4X148_16",
+      "id": "521c935e-5319-45d3-985e-2e225feac0c2",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021109_12.webp",
+     "face": 12,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9224,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_11.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "ad8a768264288ed250b2053eae27b664376cb4e9d0fc2533a444b428fdc5908f",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED MIELE 23,4X148_05",
+      "id": "fa513713-6b8a-45f4-aefa-0382d2f1cd63",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021109_13.webp",
+     "face": 13,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 6170,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_12.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "818939f57a371390be7ad171859ac42b10526660642306985e21c1b31b35ff31",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED MIELE 23,4X148_15",
+      "id": "c7f1fc01-97a8-4fda-a2ed-c0aa1343ad79",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021109_14.webp",
+     "face": 14,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7610,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_13.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "71b0d2a0206ca5017f153c4dd944906cf1647fb0b3d9bf8baf9283d785768f0a",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED MIELE 23,4X148_07",
+      "id": "f069b345-9c5a-46d4-a499-2ab5b092f28a",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021109_15.webp",
+     "face": 15,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7098,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_14.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "b25fac863d9337a79f5110a5b964b2e9bd38e6d9e63abc152c2d59e851309464",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED MIELE 23,4X148_06",
+      "id": "a61802d7-dfe2-4763-ab97-2c6ca7df9dbb",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021109_16.webp",
+     "face": 16,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9134,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_15.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "9425b054998eeb753f06ef4cfc33124212ee8ea63b3e21e2f0e380cf0c4d8079",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE REFINED MIELE 23,4X148_08",
+      "id": "633dc6a6-a5f0-4bfb-b072-0a48826ec34a",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021109_17.webp",
+     "face": 17,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 7478,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_16.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "6815c1fe2c09f2d8d215caa4881d2d3a71fa8e9857f77780f6095a3d17119e96",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE REFINED MIELE 23,4X148_09",
+      "id": "97bf8b43-fd40-496a-bf56-650b751ac6f4",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021109_18.webp",
+     "face": 18,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 9228,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_17.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "74df6c5605e85a82e8fa7441c1cd7d3e352b7e76996404bdd3287c9ed4e12411",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE REFINED MIELE 23,4X148_02",
+      "id": "17efc602-bc5f-40c9-a6e8-59adc5ab3908",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021109_19.webp",
+     "face": 19,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8532,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_18.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "5aae433eb7c4adf666054aaa9bff312c00e3314f40d874a09d5b5b7668e7d4df",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE REFINED MIELE 23,4X148_03",
+      "id": "a83263ba-13a1-4853-a99f-f4af8baa8e0e",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021109_20.webp",
+     "face": 20,
+     "width_mm": 234,
+     "height_mm": 1480,
+     "width_px": 140,
+     "height_px": 888,
+     "bytes": 8490,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "23,4X148-Natural/TABULAE - REFINED MIELE - 23,4X148 - Natural - view_19.jpg",
+     "source_px": [
+      648,
+      4096
+     ],
+     "source_sha256": "9433ff61c10da83cbb4367f95b7d22eb1b565161e50685a6b4e28c6ff9dae268",
+     "source_px_per_mm": 2.768,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE REFINED MIELE 23,4X148_04",
+      "id": "66394d01-a320-4999-a50d-fbc011aaa4ac",
+      "site_position": 20
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0021143",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-miele/pf60021143-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0021143_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-miele-nat-pf60021143-20x120-nat-92255-0; floor gardenia-flooring-tabulae-refined-miele-nat-pf60021158-20x120-92269-0 (uses 0021143's faces: ABK's 30 R11 pictures are 0021143's 30 Natural pictures, byte for byte); wall gardenia-wall-tile-tabulae-refined-miele-nat-pf60021143-20x120-nat-92255-0; wall gardenia-wall-tile-tabulae-refined-miele-nat-pf60021158-20x120-92269-0 (uses 0021143's faces: ABK's 30 R11 pictures are 0021143's 30 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0021143_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5318,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f10cd646aa19739c20d487df4522b8605b04cf713071a839f1503933218989ab",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MIELE 20X120_01",
+      "id": "77ef5fd2-0aa2-45d4-98a2-e86b916c9b2e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021143_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4244,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_1.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "d79c61a83372f4353ef4543b8854a0e458f26c803df3ad708daad5c351018fad",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MIELE 20X120_22",
+      "id": "3f33effc-23cb-4d6d-89a9-1815454c5bff",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021143_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3758,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_2.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "56c09d2140b9fd4835cb87391bfc50ed5a3a2c10269dae636b9f254efa4a6061",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MIELE 20X120_29",
+      "id": "7cecf32d-8c9e-4ea7-bbc8-2b9c65ff736a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021143_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3652,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_3.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "185516f3264f62f9b22d4e6f5433929460043088afcf2c880b73fad0d63f595c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MIELE 20X120_20",
+      "id": "43fbcfc8-698a-4b90-a46a-ee786b3a3795",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021143_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3934,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_4.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "c637869f383ca39dad16a2c2ee2810efc2e6658e7cc9fa11722a6ae90aac4130",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MIELE 20X120_17",
+      "id": "c86d7faf-67ee-4b90-9a17-96317dc9bb10",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021143_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4620,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_5.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "004ca9000677d6e50d83d9ab62c335e289c7981213bf4bd1dc92b9513427189f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MIELE 20X120_18",
+      "id": "29d6269f-d588-4bf1-8d40-757797a45e88",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021143_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4110,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_6.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "958ef13899a75785ab43708e17535010146fdd3575105d614bc1d5f396fb74c9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED MIELE 20X120_28",
+      "id": "524c4ce6-6e44-4ed6-9c74-1115301d92f4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021143_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4074,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_7.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "ccfc1d66ca4f6bd4a53b192d8a5ffe9c16e06c5bee194c1a1f26f37dcb14cc89",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED MIELE 20X120_13",
+      "id": "ce2ab8f8-7eba-4ee4-a24d-ec13a0299332",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021143_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2756,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_8.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "f8dab121d6f8718a810d42f4eab75169ae155efd6e8ac9a4c50028d72f7185c7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED MIELE 20X120_26",
+      "id": "ba0e547a-aac2-480f-80b6-592ede73f478",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021143_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4308,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_9.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "11b8fc6905f0666e487f456ad8288e854208ea70c749f01774b8b1aba057a2f2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED MIELE 20X120_19",
+      "id": "7ee16871-a073-41a6-a3df-460898ae6870",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021143_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5344,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_10.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "cd9d193c010179cfaf86b0336441967cc92d587d883b59cce260007da83f98de",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE REFINED MIELE 20X120_09",
+      "id": "707d619b-04b2-47e5-8501-b429a1a0253c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021143_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3796,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_11.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "c08b5f84054bbfaa0d432e4ccfc7500c6c3a3d09ef88f1dc3378ac93df1ac8ce",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE REFINED MIELE 20X120_16",
+      "id": "3428f48c-1f96-4121-a2b4-2b9926fe0bf1",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021143_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2482,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_12.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "db409037aa4f418b1f0460d6013f769addd595b0b664b0e6e197e7cac89a09e8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE REFINED MIELE 20X120_30",
+      "id": "605da8aa-4050-474e-a140-197c06366b30",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021143_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5516,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_13.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "e267dd4a256a086de944535f83f3d98e4e84e8070ed2da979845b86a193e48b9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE REFINED MIELE 20X120_11",
+      "id": "c0e97c48-095e-4da8-b6b1-39ff94a48d54",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021143_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5204,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_14.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "1b2a7c44607b5321115211768ed4ccb1bfe1d9365b0eaab568e3ad4e8df61221",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE REFINED MIELE 20X120_10",
+      "id": "b76c1028-ccfb-41c5-a46d-77b8ad3b288c",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021143_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3634,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_15.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "9fdaa1f069c4417604bb921c956c04dcfbbf23c81841da0498e9a517de034eaa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE REFINED MIELE 20X120_27",
+      "id": "786fb017-1fca-4d4a-9509-fbf217855f6a",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021143_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3534,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_16.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "0f33c2fd1ccc6818707c431440319fa202ada2a7d6afdbe8c2d889a06e326872",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE REFINED MIELE 20X120_25",
+      "id": "c3c18c94-88b1-4814-a165-445f1af09d73",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021143_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4256,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_17.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "b3694010b8c01c5a52e0f98cb05afcbea011ad1b718fb952f9e454e10f8ae3db",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE REFINED MIELE 20X120_23",
+      "id": "f65ecf06-6468-4820-98a0-ca49d7bc3cee",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021143_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5094,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_18.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "14a35e6135363b09b366e7691acf02d2e1d14a301566f43565766dbcceda4d20",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE REFINED MIELE 20X120_06",
+      "id": "7a9cc042-ae44-462a-b6a7-a744908a2951",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021143_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5300,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_19.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "894454cb3544cfa810e915fe3af36078fc59e94a8e75a510f7d3b57ac69d388d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE REFINED MIELE 20X120_15",
+      "id": "cc72c34a-10f3-4961-8611-96041e414ef1",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021143_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5254,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_20.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "9f9b3b107372800f4c41cb3efb329c65ffa636552911e128ed2bd5da5a92882b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE REFINED MIELE 20X120_08",
+      "id": "81154082-c70e-404e-81e2-e6f8b13c697f",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021143_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3764,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_21.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "6eafd67700566221f86cfe043b5ff5c9a7e1864a68a7e16ecb8644e75985d6eb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE REFINED MIELE 20X120_24",
+      "id": "63926a43-9604-46ef-8939-8f23355d1842",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021143_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5548,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_22.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "911ea6a08a49ef3665257e923fdc60be42b19acaa4b0f1976b7b56f1ba721bc8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE REFINED MIELE 20X120_05",
+      "id": "9701c3e0-84d0-479d-964a-4d03051aca18",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021143_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 3488,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_23.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "b5949c87b37b94b953ef7f925b8ea24dc59e93ba4a9b712ecbd9be29c1f0e92b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE REFINED MIELE 20X120_21",
+      "id": "6049e7d8-f2ac-4264-b571-64fa80bf6fd8",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021143_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4468,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_24.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "5fc5124bcebdc1ecaa48e1f22cd1ef56e5f767a49c761db0d7f272f14dd703e5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE REFINED MIELE 20X120_14",
+      "id": "5e953795-885d-44d4-b7da-02fca45c2566",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021143_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5118,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_25.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "412c4d0fedf14f0048de207b9aca7d372cfebaa66be4b95594633e5f4b9c20eb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE REFINED MIELE 20X120_07",
+      "id": "f3e468ba-8ae1-4d5f-a5a8-2e0d25ec9c96",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021143_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 4494,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_26.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "c2e5ac0e6dd25ad312c305582a0e65aab39f099a76bf03ddcd1649f0875b42f2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE REFINED MIELE 20X120_12",
+      "id": "830bfa86-d504-4028-95a8-58ec887ee780",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021143_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5404,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_27.jpg",
+     "source_px": [
+      683,
+      4096
+     ],
+     "source_sha256": "80613baeff517832518fd0c0885b7c7f4d1dcc92c7dfa2117d1d026ca6eb523b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE REFINED MIELE 20X120_02",
+      "id": "d83151f2-aebb-4086-80d4-17442ae09903",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021143_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 6074,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_28.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "ccfbce63f0440669ea4dfdb7cb4a2f7f3de406c3a80f1c18a139ae46281a14f1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE REFINED MIELE 20X120_03",
+      "id": "0709ed1b-87c0-4a5b-b935-01d7a5cc9fc1",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021143_30.webp",
+     "face": 30,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 5946,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "20X120-R11/TABULAE - REFINED MIELE - 20X120 - R11 - view_29.jpg",
+     "source_px": [
+      682,
+      4096
+     ],
+     "source_sha256": "5a61bde0d00d97cda7cb08ed75ae178f0c5308d9181cee66bc1957b321442889",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE REFINED MIELE 20X120_04",
+      "id": "59b34af1-7212-4926-85eb-eda7f75ce4e3",
+      "site_position": 30
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0021147",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-miele/pf60021147-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0021147_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-miele-nat-pf60021147-10x60-nat-92259-0; wall gardenia-wall-tile-tabulae-refined-miele-nat-pf60021147-10x60-nat-92259-0",
+   "faces": [
+    {
+     "file": "0021147_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1558,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "c2ffed0140799b15dbf616c539d4b57a3b37ec20efa5641c169cee9acff9b2c1",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MIELE 10X60_01",
+      "id": "c38b7dd2-61b8-42cf-8b30-19a50c924e5f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021147_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 786,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "b5a97a901596a247fbbce627ec08ed6e216081d7ad64b427f68d41f9cbd9759e",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MIELE 10X60_10",
+      "id": "99a33b9f-05cb-4ed9-9ee2-0f1ff3fcce8c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021147_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1178,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "2b864607db2d6a64b6ee5f70acb5bb256e6ba08ee18f5570935c206e03a1f946",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MIELE 10X60_04",
+      "id": "1e758434-2d4d-440d-968b-148c2b9b2200",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021147_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 950,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "6cde90b746a37331d68052b28775a93413f1660ca9d70f03fa60a18ff905ce32",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MIELE 10X60_09",
+      "id": "cf558ec9-3f4a-4b94-bd8d-a3a024a5b947",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021147_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1390,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "55e58710ba256f259f0f9392a46816412a5cf0f26a309b6fbb582d65e08c65f7",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MIELE 10X60_05",
+      "id": "d128177d-6473-42cf-b7eb-d5d438a4f9c3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021147_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1130,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "e9c4463ceff45a486f9096a18d349492612dc68eaf9c15a92d56e675c795f4a3",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MIELE 10X60_08",
+      "id": "11160c3d-6061-4d88-b9a9-25e6aa0d7d1b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021147_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1502,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "6a30b41b53831a9ab5e87c358eb978222d601f6169912ce575657f7b8f988934",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED MIELE 10X60_02",
+      "id": "51a86754-a999-40d7-9176-84fd7bf95556",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021147_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1076,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "24b1916ba2f02febad5411b562db29fb689e5fa7cd75743af945e4500f9f701b",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED MIELE 10X60_07",
+      "id": "77507dfc-ed68-463a-8662-f27a52407bb8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021147_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1136,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "40148468a248ea1b5487ffa424a9a380f61c99025d388d860004727d457ce237",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED MIELE 10X60_06",
+      "id": "2e24280d-efc3-42e7-8c11-61c874ae3660",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021147_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1610,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "10X60-Natural/TABULAE - REFINED MIELE - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      440,
+      2638
+     ],
+     "source_sha256": "4e53a59eaa251587cb9a7104e2959c88e0c34bc205c221114c7e448d864b36ba",
+     "source_px_per_mm": 4.397,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED MIELE 10X60_03",
+      "id": "fcb7dfc8-520f-4ec8-95cc-83301b639bfa",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "5x120",
+   "item_code": "0021149",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/refined-miele/pf60021149-v102/",
+   "face_mm": {
+    "width": 50,
+    "height": 1200
+   },
+   "swatch": "0021149_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 10 laid side by side",
+   "used_by": "floor gardenia-flooring-tabulae-refined-miele-nat-pf60021149-5x120-nat-92261-0; wall gardenia-wall-tile-tabulae-refined-miele-nat-pf60021149-5x120-nat-92261-0",
+   "faces": [
+    {
+     "file": "0021149_01.webp",
+     "face": 1,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1462,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      170,
+      4096
+     ],
+     "source_sha256": "605b4ec07d7283025c96185d9be7c1e2795fc0b00a439a70f8ea3ef3d9dfe19a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE REFINED MIELE 5X120_01",
+      "id": "58c9b5aa-8492-42c1-8af3-9b50739756ad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021149_02.webp",
+     "face": 2,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1688,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_1.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "8a8fb7e0bda0c01a88f3b4285c1d996b54d6f075dc223e9c3b58f59a89a3db28",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE REFINED MIELE 5X120_02",
+      "id": "23e8035e-d030-4e5a-b45e-88254e546428",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021149_03.webp",
+     "face": 3,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1584,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_2.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "f3cc76cc483c1d620f70bb12a09feffe6d1224cae41f301ffc65b7d06fb07a21",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE REFINED MIELE 5X120_03",
+      "id": "885b6d17-3b6c-497c-b9ea-ad8a8f03f4f5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021149_04.webp",
+     "face": 4,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1348,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_3.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "e08bb9023c6b577baa089070a78e48f9860d599c4ea5ecb0cf4beed139ad2369",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE REFINED MIELE 5X120_06",
+      "id": "59a67474-0fba-43e7-bfaf-66701598b7f0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021149_05.webp",
+     "face": 5,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1622,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_4.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "c651a23602c5b1753628625ef7690f1d3a399d25ad996e90efba4fc0b6fdb194",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE REFINED MIELE 5X120_04",
+      "id": "8f59d225-e38e-4f47-8769-db7b2dc2e69b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021149_06.webp",
+     "face": 6,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1362,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_5.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "7a2e8d0b596169aad916163e6ecc24e8ba3562d732c732440d375b19005c332b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE REFINED MIELE 5X120_07",
+      "id": "31d22f0c-b616-4ede-adfb-e845807be35b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021149_07.webp",
+     "face": 7,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1364,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_6.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "5d6618d405862c8d05acdcb7ce9ce3bb5af8dc056a7776dfc60ac07fab35381c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE REFINED MIELE 5X120_09",
+      "id": "48870464-e50f-4f34-8861-649305f3acfd",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021149_08.webp",
+     "face": 8,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1000,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_7.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "619f20ecb2d45fbff67a09e9825f31015482b92ba8e71ab9079a024f61177616",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE REFINED MIELE 5X120_10",
+      "id": "7854b4f4-117d-4f04-9678-541d2209a891",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021149_09.webp",
+     "face": 9,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 1192,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_8.jpg",
+     "source_px": [
+      170,
+      4096
+     ],
+     "source_sha256": "cd659bb24d20a8606cfdc257534d0c74d7aedcd3d777c61f6ad2496f76742781",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE REFINED MIELE 5X120_05",
+      "id": "2e1834b2-379f-4949-badb-686d3c387e06",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021149_10.webp",
+     "face": 10,
+     "width_mm": 50,
+     "height_mm": 1200,
+     "width_px": 30,
+     "height_px": 720,
+     "bytes": 944,
+     "source_zip": "TABULAE - REFINED MIELE - minimali.zip",
+     "source_file": "5X120-Natural/TABULAE - REFINED MIELE - 5X120 - Natural - view_10.jpg",
+     "source_px": [
+      171,
+      4096
+     ],
+     "source_sha256": "96ce4c96d12ac7fa22e4695428e01ad88a911b4eac5d37a28eca3b5bc53ae3dc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE REFINED MIELE 5X120_08",
+      "id": "8eb9bcd7-4b8f-499d-8c08-2b9ca3378556",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

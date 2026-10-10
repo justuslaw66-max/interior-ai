@@ -1,0 +1,905 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-06 (DORICA - CREMA - minimali.zip, 143026228 bytes, sha256 7857243084f9b865eaeb20d02fddbe00eeeb64abe2faab4615f01130d59ec5d6).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/dorica/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0010000",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010000-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0010000_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-crema-0010000-120x280-nat-196267-0; wall gardenia-wall-tile-dorica-crema-0010000-120x280-nat-196267-0",
+   "faces": [
+    {
+     "file": "0010000_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 167466,
+     "source_file": "120X280-Naturale/DORICA - CREMA - 120X280 - Naturale - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "2d2464ba9af6ed5b7280c423cf343d8cfcab3d448da1f0514378d0ce6c7f5003",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA CREMA 120X280_03",
+      "id": "b1237594-ed11-480f-b2d9-5c0ebea6aac0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010000_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 170864,
+     "source_file": "120X280-Naturale/DORICA - CREMA - 120X280 - Naturale - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "bbee80d3a9eec79c86680f3fcf75539477dd405ec037aee0ab74a8765e1ee24b",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA CREMA 120X280_01",
+      "id": "94522b00-eeb4-4b8b-844b-61880bd6fcc0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010000_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 168870,
+     "source_file": "120X280-Naturale/DORICA - CREMA - 120X280 - Naturale - view_3.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "19146487aac5a4eb698234afda123b8bbfc053da58694fd576f39fe25dedfc62",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA CREMA 120X280_02",
+      "id": "47be372f-52db-4541-ab86-15e2d5952d47",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010000_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 166570,
+     "source_file": "120X280-Naturale/DORICA - CREMA - 120X280 - Naturale - view_4.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "06efbb713a128a792d5d146776cfbb4cd3d5e9e02222347e2608907044bae165",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "57 px of width (19 mm per side) cut off, keeping the 2800 mm length at true scale",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA CREMA 120X280_04",
+      "id": "53aca31d-7cfe-42ed-8373-e7cf92433cab",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010006",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010006-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010006_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-crema-0010006-120x120-nat-196270-0; floor gardenia-flooring-dorica-crema-0010519-20x120-nat-196278-0 (for 0010519: ABK's plank pictures are the 120x120 graphic at 0.75 scale; the 120x120 faces are used, turned so the veins run along the plank); wall gardenia-wall-tile-dorica-crema-0010006-120x120-nat-196270-0; wall gardenia-wall-tile-dorica-crema-0010519-20x120-nat-196278-0 (for 0010519: ABK's plank pictures are the 120x120 graphic at 0.75 scale; the 120x120 faces are used, turned so the veins run along the plank)",
+   "faces": [
+    {
+     "file": "0010006_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86732,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04435dbec11530717f762b6c01071b2f30396f0af43491cd30b3318d790b16ec",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA CREMA 120X120_03",
+      "id": "686b74fb-5a99-4934-8cda-071f91f2f849",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010006_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85130,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2871d9534803546e949d9dae9453587c23f313052469300f5d953b0ca148769f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA CREMA 120X120_08",
+      "id": "8c9bc2a0-65ce-452d-a0a7-e8d614c28753",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010006_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82910,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab156babc2d2c7a5489347b6b04278844f5afebe1bd0a570c10bfe0ab08d285d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA CREMA 120X120_02",
+      "id": "9877c238-dd7f-4804-8a35-a456ad671962",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010006_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84408,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9586cef80e98ef5d7e43ae60dd4b3add6714ed949a06ae99322942efe9ca5d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA CREMA 120X120_04",
+      "id": "e462ad91-b377-49a2-b405-1fb578d94d4e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010006_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82598,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "891c696c34fa6ebdb7b864d9831ee656b82e2184a47b9b6b5529b3d8843f1849",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA CREMA 120X120_01",
+      "id": "3bfd9d21-f5cb-4750-89d4-384eba277968",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010006_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 83434,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f6b424cca477599d8c7b28963a6280a764ffa8daac160cfa776f94f0b5672887",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA CREMA 120X120_05",
+      "id": "1807e5ed-f0a2-44f5-a5b2-ff0400f38901",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010006_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84924,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e203c4b0b183811083b827fda1d30779f4a8c6b55694081a0f3130bc6dd06a8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA CREMA 120X120_07",
+      "id": "cabcc4fc-cb0c-4397-856a-1d895c821507",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010006_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86356,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "20d065372bf5bbc3a4f0f6b22a1181567c5f6ea1413e24415c7b936a16acbc09",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA CREMA 120X120_06",
+      "id": "ecbc0a0d-bc12-4b16-bfba-212f0487a712",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010519",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010006-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010519_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "not in the catalogue",
+   "faces": [
+    {
+     "file": "0010519_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84794,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04435dbec11530717f762b6c01071b2f30396f0af43491cd30b3318d790b16ec",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA CREMA 120X120_03",
+      "id": "686b74fb-5a99-4934-8cda-071f91f2f849",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010519_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85446,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2871d9534803546e949d9dae9453587c23f313052469300f5d953b0ca148769f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA CREMA 120X120_08",
+      "id": "8c9bc2a0-65ce-452d-a0a7-e8d614c28753",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010519_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82172,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab156babc2d2c7a5489347b6b04278844f5afebe1bd0a570c10bfe0ab08d285d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA CREMA 120X120_02",
+      "id": "9877c238-dd7f-4804-8a35-a456ad671962",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010519_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84802,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9586cef80e98ef5d7e43ae60dd4b3add6714ed949a06ae99322942efe9ca5d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA CREMA 120X120_04",
+      "id": "e462ad91-b377-49a2-b405-1fb578d94d4e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010519_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86946,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "891c696c34fa6ebdb7b864d9831ee656b82e2184a47b9b6b5529b3d8843f1849",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA CREMA 120X120_01",
+      "id": "3bfd9d21-f5cb-4750-89d4-384eba277968",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010519_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82934,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f6b424cca477599d8c7b28963a6280a764ffa8daac160cfa776f94f0b5672887",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA CREMA 120X120_05",
+      "id": "1807e5ed-f0a2-44f5-a5b2-ff0400f38901",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010519_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85122,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e203c4b0b183811083b827fda1d30779f4a8c6b55694081a0f3130bc6dd06a8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA CREMA 120X120_07",
+      "id": "cabcc4fc-cb0c-4397-856a-1d895c821507",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010519_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86472,
+     "source_file": "120X120-Nat P.tech/DORICA - CREMA - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "20d065372bf5bbc3a4f0f6b22a1181567c5f6ea1413e24415c7b936a16acbc09",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw so the veins run along the plank",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA CREMA 120X120_06",
+      "id": "ecbc0a0d-bc12-4b16-bfba-212f0487a712",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0010009",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010009-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010009_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-dorica-crema-0010009-60x120-nat-196273-0; floor gardenia-flooring-dorica-crema-0010148-60x120-196276-0 (for 0010148: same visible variant as 0010589 (R11), whose pictures are 0010009's); wall gardenia-wall-tile-dorica-crema-0010009-60x120-nat-196273-0",
+   "faces": [
+    {
+     "file": "0010009_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42588,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e3f0aa14a8ae297f3613c1748d99011f431dfe97849b90d032ae52db59ed1569",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1",
+      "name": "DORICA CREMA 60X120_08",
+      "id": "c15b1054-7e4a-402c-8e81-d4fd2bd7a0c6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010009_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47144,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8801fb096ac23334f6e2da4cc22d11aca57feca9d4abfdd655afbb917964777a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "DORICA CREMA 60X120_03",
+      "id": "aac8fe44-9de6-42e0-bd69-f12ab58f0700",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010009_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42618,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cb544db4d0125a9a5f27afef2fce3d101e39aeffed798d072f18468ce3806ad2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "DORICA CREMA 60X120_07",
+      "id": "698af944-0203-438e-8579-15d4bb6291f1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010009_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44096,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f46e9368c8cdc888746b17607baa132950fd0f168f49c5777f81239733be2341",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "DORICA CREMA 60X120_16",
+      "id": "a6394c1a-130c-4a96-9774-75a02a13f102",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010009_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42360,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6e988fda1ba105b7e2ed03562fcbd433f9d55b5ad7978d5cf76ef314c3cb40b0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "DORICA CREMA 60X120_01",
+      "id": "ba14d2a6-f459-4560-9625-a8fa926d3575",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010009_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41494,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6876f0a637332ac8dc21d1ed0e623a20e7685a4e200003a1db040c3bf26769e2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "DORICA CREMA 60X120_02",
+      "id": "e975fc72-8475-4c68-8a83-0b83120b6a67",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010009_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43242,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c7819d4ccb88b6e3c799026d0aa6a10841d27547ee71e685dea776d2edf99717",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "DORICA CREMA 60X120_09",
+      "id": "2802fc68-1c21-4eff-93ba-504520c6b057",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010009_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38550,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "edf0cd85ab24ecd3f9f477e565bf015af8d6047f3b4e6b227b02c3c2c6323eeb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "DORICA CREMA 60X120_14",
+      "id": "43874b20-b6a2-452b-8900-954f6feb96ec",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0010009_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41180,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e1357bd6257309a57e1de8fcdc74e68cbeec2618d55b6292060f58ddaac249bd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "DORICA CREMA 60X120_10",
+      "id": "16222fb1-aea9-49b6-aeed-356cddd0466c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0010009_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40060,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ed783be2909eba15ea838d02d334e158d87d63780f15897ea7784d277f118f02",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "DORICA CREMA 60X120_13",
+      "id": "efcca8ee-c70b-4191-89ee-6cc677028502",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010009_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39142,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7fb9af5525d8899015f2c952aff8a361d19ad65e4e6b07d53b5f40c47b1e812e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "DORICA CREMA 60X120_11",
+      "id": "c3c336ef-6e7f-451e-a30a-a992fc7dbd94",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0010009_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42680,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0b84f4ec6ee51f0b3b2523713de6782c8ed1b1185e73a6eafb037eb30cfe41fc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "DORICA CREMA 60X120_15",
+      "id": "2e669bb1-8f8d-4e6e-adf5-5c69692ba1a8",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0010009_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40722,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ff2cdb1cc0b22eb8440aa24f309d1ac9b3c36465a0c1b3bc75214170b569e186",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "DORICA CREMA 60X120_12",
+      "id": "ae09b941-871c-4c02-a0be-0699754624c1",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0010009_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46554,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6a09acc522fc64033829c43f5c7819c05b1ded5326acb324bfbf235d0ec5591b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "DORICA CREMA 60X120_06",
+      "id": "9eca955c-830c-4c93-b2ae-7da19a836a25",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0010009_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41830,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "25d8d344f44bc2d1b65edd71352fdb353eff0e24c1f957400f6775e0e3acd460",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "DORICA CREMA 60X120_04",
+      "id": "ecf1ffce-6365-4390-8c2d-0f584603ade1",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0010009_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43538,
+     "source_file": "60X120-R11/DORICA - CREMA - 60X120 - R11 - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ffcc0edd922f3ec92f2e12f9f0d15ce78277262450bb44ca73f0145f6c14a5b8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "DORICA CREMA 60X120_05",
+      "id": "c36c0a37-7044-4736-ade2-a093d56a27c9",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

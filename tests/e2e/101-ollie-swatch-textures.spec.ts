@@ -23,7 +23,7 @@ test.describe("101. Ollie Swatch Textures", () => {
     await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
-    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel).toBeVisible({ timeout: 10000 });
     await expect(selectedItemPanel.getByText(/Ollie Storage Ottoman/i).first()).toBeVisible();
 
     const expectedSwatches = [

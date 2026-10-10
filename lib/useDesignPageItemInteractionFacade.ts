@@ -188,8 +188,7 @@ export function useDesignPageItemInteractionFacade({
   refs,
   actions,
 }: UseDesignPageItemInteractionFacadeInput) {
-  const { items: itemsRef, selectedIds: selectedIdsRef, primaryId: primaryIdRef } =
-    refs;
+  const { items: itemsRef, selectedIds: selectedIdsRef } = refs;
   const getSelectedItemPanelSelectedIds = useCallback(
     () => selectedIdsRef.current,
     [selectedIdsRef]
@@ -197,10 +196,6 @@ export function useDesignPageItemInteractionFacade({
   const getSelectedItemPanelItems = useCallback(
     () => itemsRef.current,
     [itemsRef]
-  );
-  const getSelectedItemPanelPrimaryId = useCallback(
-    () => primaryIdRef.current,
-    [primaryIdRef]
   );
 
   const transforms = useDesignPageSelectionTransforms({
@@ -286,7 +281,6 @@ export function useDesignPageItemInteractionFacade({
     refs: {
       getSelectedIds: getSelectedItemPanelSelectedIds,
       getItems: getSelectedItemPanelItems,
-      getPrimaryId: getSelectedItemPanelPrimaryId,
     },
     actions: {
       setShowInspectorDetails:
@@ -303,7 +297,6 @@ export function useDesignPageItemInteractionFacade({
         actions.productInspection.switchSelectedProductModel,
       showToast: actions.feedback.showToast,
       commitItems: actions.document.commitItems,
-      updateSelection: actions.selection.updateSelection,
     },
   });
 

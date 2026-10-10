@@ -89,7 +89,7 @@ export const RoomSwitcher: React.FC<RoomSwitcherProps> = ({
                   setDraftName("");
                 }
               }}
-              className="w-28 rounded bg-white px-2 py-1 text-sm text-neutral-900 outline-none ring-1 ring-neutral-300"
+              className="w-28 rounded bg-white px-2 py-1 text-sm text-neutral-900 ring-1 ring-neutral-300"
             />
           ) : (
             <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export const RoomSwitcherVertical: React.FC<RoomSwitcherProps> = ({
                   setDraftName("");
                 }
               }}
-              className="w-full rounded bg-white px-2 py-1 text-sm text-neutral-900 outline-none ring-1 ring-neutral-300"
+              className="w-full rounded bg-white px-2 py-1 text-sm text-neutral-900 ring-1 ring-neutral-300"
             />
           ) : (
             <div className="flex items-center justify-between gap-2">

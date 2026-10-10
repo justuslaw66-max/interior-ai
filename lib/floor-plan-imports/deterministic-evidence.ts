@@ -1,5 +1,4 @@
-import type { SourceScaleSolution } from "./scale-diagnostics";
-import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
+import { scaleInspection, type DimensionCandidate, type SourceScaleInspection, type SourceScaleSolution } from "./scale-diagnostics";
 import { dimensionCandidateMatchesHint, dimensionHintDistance, outvoteOutliers, rasterDimensionCandidates } from "./dimension-span-candidates";
 import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
 import type { RasterOpeningSpanEvidence } from "./raster-opening-spans";
@@ -214,6 +213,7 @@ export type RegisteredRoomBoundary = {
   /** Non-architectural symbols used only to infer room meaning. */
   sourceFixtures?: SemanticFixtureSymbol[];
   registrationKind?: RoomBoundaryRegistrationKind;
+  void?: true; // a duct or shaft drawn as a dashed cross: kept only for the walls around it, never named, floored or furnished
   sourceEdges?: Array<{
     evidenceId: string;
     kind: "wall_centerline" | "supported_opening_span";

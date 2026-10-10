@@ -2,19 +2,10 @@
 
 import { useEffect } from "react";
 
-import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignPagePresentHotkey } from "@/lib/design-page-presentation-hotkey";
-import {
-  DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
-  useDesignPageCartHoverCameraFocus,
-} from "@/lib/useDesignPageCartHoverCameraFocus";
 import { useDesignPageExport } from "@/lib/useDesignPageExport";
 
-type CartFocusInput = Parameters<
-  typeof useDesignPageCartHoverCameraFocus
->[0];
 type ExportInput = Parameters<typeof useDesignPageExport>[0];
-type CartFocusState = CartFocusInput["state"];
 type ExportState = ExportInput["state"];
 type ExportRefs = ExportInput["refs"];
 type ExportActions = ExportInput["actions"];
@@ -22,8 +13,6 @@ type ExportActions = ExportInput["actions"];
 export type UseDesignPagePresentationExportRuntimeInput = {
   state: {
     access: { isDesigner: boolean };
-    editor: Pick<CartFocusState, "editorMode" | "viewMode">;
-    shopping: Pick<CartFocusState, "hoveredCartInstanceId">;
     document: Pick<ExportState, "items">;
     presentation: Omit<ExportState, "items">;
   };
@@ -33,13 +22,11 @@ export type UseDesignPagePresentationExportRuntimeInput = {
     controls: ExportRefs["controlsRef"];
     renderer: ExportRefs["rendererRef"];
     scene: ExportRefs["sceneRef"];
+    cameraView: ExportRefs["cameraViewRef"];
     designSnapshot: ExportRefs["designSnapshotRef"];
   };
   actions: {
     setClientPreview: ExportActions["setClientPreview"];
-    transitionToCameraView: CartFocusInput["actions"]["transitionToCameraView"];
-    setUpgradeReason: ExportActions["setUpgradeReason"];
-    setShowUpgrade: ExportActions["setShowUpgrade"];
     updateProjection: ExportActions["updateProjection"];
     showToast: ExportActions["showToast"];
     logFunnelEvent: ExportActions["logFunnelEvent"];
@@ -51,8 +38,8 @@ export type DesignPagePresentationExportRuntime = ReturnType<
 >;
 
 /**
- * Registers presentation keyboard behavior, cart camera focus, and export at
- * their established contiguous hook slot.
+ * Registers presentation keyboard behavior and export at their established
+ * contiguous hook slot.
  */
 export function useDesignPagePresentationExportRuntime({
   state,
@@ -64,10 +51,7 @@ export function useDesignPagePresentationExportRuntime({
 
   useEffect(() => {
     const handlePresentModeHotkey = (event: KeyboardEvent) => {
-      const command = resolveDesignPagePresentHotkey({
-        isDesigner,
-        key: event.key,
-      });
+      const command = resolveDesignPagePresentHotkey({ isDesigner, event });
       if (command !== "toggle-client-preview") return;
       event.preventDefault();
       setClientPreview((previous) => !previous);
@@ -78,27 +62,10 @@ export function useDesignPagePresentationExportRuntime({
       window.removeEventListener("keydown", handlePresentModeHotkey);
   }, [isDesigner, setClientPreview]);
 
-  useDesignPageCartHoverCameraFocus({
-    state: {
-      ...state.editor,
-      ...state.shopping,
-      items: state.document.items,
-      cameraView: state.presentation.cameraView,
-    },
-    configuration: {
-      ...DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION,
-      catalogItems: CATALOG_ITEMS,
-    },
-    refs: { camera: refs.camera, controls: refs.controls },
-    actions: { transitionToCameraView: actions.transitionToCameraView },
-  });
-
   const exportController = useDesignPageExport({
     state: { ...state.presentation, items: state.document.items },
     actions: {
       setClientPreview,
-      setUpgradeReason: actions.setUpgradeReason,
-      setShowUpgrade: actions.setShowUpgrade,
       updateProjection: actions.updateProjection,
       showToast: actions.showToast,
       logFunnelEvent: actions.logFunnelEvent,
@@ -109,6 +76,7 @@ export function useDesignPagePresentationExportRuntime({
       controlsRef: refs.controls,
       rendererRef: refs.renderer,
       sceneRef: refs.scene,
+      cameraViewRef: refs.cameraView,
       designSnapshotRef: refs.designSnapshot,
     },
   });

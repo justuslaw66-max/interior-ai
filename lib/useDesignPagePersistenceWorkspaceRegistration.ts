@@ -74,7 +74,7 @@ const conflictCopyRouteActions = {
 
 type PersistenceRegistration = ReturnType<typeof useDesignPagePersistenceRegistration>;
 
-/** New design opens Start a new design; Plan's template list stays behind "Search by HDB address". */
+/** New design opens Start a new design; its "Search by HDB address" opens Plan's address search. */
 function buildStartChooserInput(
   { coreShell, documentSelection, planAuthoring }: UseDesignPagePersistenceWorkspaceRegistrationInput["boundaries"],
   persistence: PersistenceRegistration

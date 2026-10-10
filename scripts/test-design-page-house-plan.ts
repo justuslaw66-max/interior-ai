@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import RoomConnectionChecklist from "@/components/editor/RoomConnectionChecklist";
+import { buildHouseRoomConnectionChecklist } from "@/lib/room-connection-checklist";
 import {
   buildHousePlan2D,
   buildHouseRoomAdjacencyGuides,
-  buildHouseRoomConnectionChecklist,
   buildHouseRoomConnectivityReport,
   buildHouseRoomDoorwaySuggestions,
   clampRoomDimension,
@@ -38,7 +39,7 @@ import {
 } from "@/lib/design-page-wall-cutaway";
 import { calculateFloorPlanPolygonAreaSqm } from "@/lib/floor-plan-types";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
-import type { RoomSnapshot } from "@/lib/room-types";
+import { migrateToV3, switchRoom, type DesignSnapshot, type RoomSnapshot } from "@/lib/room-types";
 
 function makeRoom(
   id: string,
@@ -966,5 +967,34 @@ assert.ok(
   "The drawn L-shape outline must enclose exactly the floor area the room reports."
 );
 assert.equal(getHouseRoomPlanPolygon(plan.rooms[0]).length, 4, "A rectangle room keeps its four-corner outline.");
+
+// The fallback size (the active room's) only widens the plan's extent; it never moves a
+// room. The design page builds the rooms without it, so selecting a room keeps every
+// room object (and everything memoized on them: room shapes, the quality report's inputs).
+const placedOnly = buildHousePlan2D([living, bedroom], 0, 0);
+for (const [width, depth] of [[5, 4], [4, 3], [40, 30]]) {
+  const withFallback = buildHousePlan2D([living, bedroom], width, depth);
+  assert.deepEqual(withFallback.rooms, placedOnly.rooms, "The fallback size never changes the placed rooms.");
+  assert.equal(withFallback.width, Math.max(width, placedOnly.width));
+  assert.equal(withFallback.depth, Math.max(depth, placedOnly.depth));
+}
+assert.deepEqual(buildHousePlan2D([], 5, 4), { rooms: [], width: 5, depth: 4 });
+assert.match(
+  readFileSync("lib/useDesignPageHousePlanState.ts", "utf8"),
+  /const placedPlan = useMemo\(\(\) => buildHousePlan2D\(activeFloorRooms, 0, 0\), \[activeFloorRooms\]\);[\s\S]*?rooms: placedPlan\.rooms, width: Math\.max\(roomWidth, placedPlan\.width\),\s*depth: Math\.max\(roomDepth, placedPlan\.depth\)/,
+  "The design page should place rooms without the active room's size."
+);
+
+// Selecting a room changes no room, so it keeps the room objects (migrating a snapshot copies
+// them all). A room the migration does change is still normalized.
+const selectable = migrateToV3({ version: 3, rooms: [living, bedroom], activeRoomId: living.id } as unknown as DesignSnapshot);
+const selected = switchRoom(selectable, bedroom.id);
+assert.equal(selected.activeRoomId, bedroom.id);
+assert.equal(selected.rooms, selectable.rooms, "Selecting a room keeps the rooms array.");
+assert.deepEqual(selected.rooms, migrateToV3(selectable).rooms);
+const partlyNormalized = { ...selectable, rooms: [{ ...selectable.rooms[0], items: undefined }, selectable.rooms[1]] };
+const reselected = switchRoom(partlyNormalized as unknown as DesignSnapshot, living.id);
+assert.deepEqual(reselected.rooms[0].items, [], "A room missing its items still gets them.");
+assert.equal(reselected.rooms[1], selectable.rooms[1], "The other room keeps its object.");
 
 console.log("Design page house-plan helper checks passed.");

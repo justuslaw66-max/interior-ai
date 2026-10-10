@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import { getFreshCatalogYamlMap, type CatalogYamlEntry } from "@/lib/catalog-yaml";
 import { getAdminImportWorkflowData, type AdminImportWorkflowJob } from "@/lib/import-jobs/admin-workflow";
+import { AdminPageHeader } from "../../AdminPageHeader";
+import { AdminStatusBadge } from "../../AdminStatusBadge";
+import { describeAdminStatus } from "../../admin-status";
+import { adminSection, adminTitle } from "../../admin-navigation";
+import { auth } from "../../admin-session";
+
+const SECTION = adminSection("/admin/catalog/review");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 function renderJson(value: unknown): string {
   if (value === null || value === undefined) return "-";
@@ -85,9 +93,7 @@ function buildDiffRows(job: AdminImportWorkflowJob, linkedPreset: CatalogYamlEnt
 
 export default async function AdminCatalogReviewPage() {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const workflow = await getAdminImportWorkflowData();
   const reviewJobs = workflow.jobs.filter(
@@ -97,23 +103,16 @@ export default async function AdminCatalogReviewPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <header className="space-y-1">
-        <div className="text-xs uppercase tracking-[0.16em] text-neutral-500">Phase B</div>
-        <h1 className="text-2xl font-semibold">Catalog Review Queue</h1>
-        <p className="max-w-3xl text-sm text-neutral-600">
-          Side-by-side review for imports that need human approval. Compare source metadata, import report,
-          and linked catalog preset data before publishing.
-        </p>
-      </header>
-
-      <div className="flex flex-wrap gap-3 text-xs">
-        <Link href="/admin/catalog/inbox" className="text-blue-600 hover:text-blue-700">
-          Back to inbox
-        </Link>
-        <Link href="/admin/imports" className="text-blue-600 hover:text-blue-700">
-          Open raw import jobs
-        </Link>
-      </div>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description="Imports that need a person's approval. Compare the source, the import report and the catalog entry before publishing."
+        actions={
+          <Link href="/admin/imports" className="text-xs text-blue-600 hover:text-blue-700">
+            Open import jobs
+          </Link>
+        }
+      />
 
       <section className="rounded-xl border p-4">
         <div className="text-sm font-semibold">Review queue size</div>
@@ -135,12 +134,14 @@ export default async function AdminCatalogReviewPage() {
             <section key={job.id} className="rounded-xl border p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs uppercase tracking-[0.14em] text-neutral-500">{job.workflowStage}</div>
+                  <div className="text-xs uppercase tracking-[0.14em] text-neutral-500">
+                    {describeAdminStatus("workflowStage", job.workflowStage).label}
+                  </div>
                   <h2 className="mt-1 text-lg font-semibold">{job.sourceFileName}</h2>
                   <div className="mt-1 text-sm text-neutral-600">
                     {job.sourceBrand ?? "Unknown brand"}
                     {job.sourceSku ? ` · SKU ${job.sourceSku}` : ""}
-                    {job.status ? ` · ${job.status}` : ""}
+                    {job.status ? ` · ${describeAdminStatus("importJob", job.status).label}` : ""}
                   </div>
                 </div>
                 <Link className="text-sm text-blue-600 hover:text-blue-700" href={`/admin/imports/${job.id}`}>
@@ -204,17 +205,7 @@ export default async function AdminCatalogReviewPage() {
                             <td className="px-3 py-2 text-neutral-700">{row.sourceValue}</td>
                             <td className="px-3 py-2 text-neutral-700">{row.presetValue}</td>
                             <td className="px-3 py-2">
-                              <span
-                                className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                                  row.state === "match"
-                                    ? "bg-green-100 text-green-700"
-                                    : row.state === "mismatch"
-                                      ? "bg-amber-100 text-amber-800"
-                                      : "bg-neutral-100 text-neutral-700"
-                                }`}
-                              >
-                                {row.state}
-                              </span>
+                              <AdminStatusBadge kind="sizeCheck" status={row.state} />
                             </td>
                           </tr>
                         ))}

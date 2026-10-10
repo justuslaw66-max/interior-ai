@@ -6,64 +6,38 @@ import {
   type SetStateAction,
 } from "react";
 
-import type { PresentExportDialogProps } from "@/components/editor/design-page/PresentExportDialog";
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import type {
-  CameraView,
-  PlanLayerPresetId,
-} from "@/lib/design-page-types";
+import type { PlanLayerPresetId } from "@/lib/design-page-types";
+import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
+import type { LightingPreset } from "@/lib/lightingPresets";
 import {
   DEFAULT_DOOR_WIDTH_MM,
   DEFAULT_WINDOW_WIDTH_MM,
 } from "@/lib/design-page-opening-dimensions";
-import {
-  switchRoom,
-  type DesignSnapshot,
-} from "@/lib/room-types";
 import type {
   ExportStylePreset,
   PlanLayers,
   PlanTheme,
 } from "@/lib/useDesignPagePlanState";
-import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
-type PresentExportDialogActions = PresentExportDialogProps["actions"];
+type PresentExportDialogActions = PresentationTools["actions"];
 type PresentExportUpgradeReason = "designer" | "export_images";
-type PlanMeasurementUnit = PresentExportDialogProps["state"]["planMeasurementUnit"];
+type PlanMeasurementUnit = PresentationTools["state"]["planMeasurementUnit"];
 type PlanOverlayPresetCommand = `preset:${PlanLayerPresetId}`;
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
 export type DesignPagePresentExportControllerState = {
-  dialog: PresentExportDialogProps["state"];
-  document: {
-    snapshot: DesignSnapshot;
-  };
+  tools: PresentationTools["state"];
 };
 
-export type DesignPagePresentExportControllerConfiguration = {
-  open: boolean;
-  designerTheme: boolean;
-  canUseAdvancedPlanControls: boolean;
-  canUseAdvancedExportStyles: boolean;
-  eyeLevelTransitionDurationMs: number;
-  focusTransitionDurationMs: number;
-};
+export type DesignPagePresentExportControllerConfiguration = PresentationTools["configuration"];
 
 export type DesignPagePresentExportControllerActions = {
   shell: {
-    setPresentModalOpen: (open: boolean) => void;
-    setEditorMode: (mode: DesignPageEditorMode) => void;
-    setPresentModeRoomId: (roomId: string) => void;
-    setDesignSnapshot: (snapshot: DesignSnapshot) => void;
-    changeViewMode: (viewMode: EditorViewMode) => void;
     setUpgradeReason: (reason: PresentExportUpgradeReason) => void;
     setUpgradeOpen: (open: boolean) => void;
   };
   camera: {
-    getEyeLevelView: () => CameraView;
-    getFocusView: () => CameraView;
-    transitionToView: (view: CameraView, durationMs: number) => void;
     setName: PresentExportDialogActions["onCameraViewNameChange"];
     save: PresentExportDialogActions["onSaveCameraView"];
     open: PresentExportDialogActions["onOpenCameraView"];
@@ -91,17 +65,14 @@ export type DesignPagePresentExportControllerActions = {
     selectOverlay: (id: string | null) => void;
     selectAnnotationTool: PresentExportDialogActions["onSelectAnnotationTool"];
     deleteOverlay: (id: string | null) => void;
-    changeOpening: PresentExportDialogActions["onOpeningChange"];
     applyLayerPresetInTransaction: (preset: PlanLayerPresetId) => void;
   };
   presentation: {
-    changeLightingPreset: PresentExportDialogActions["onLightingPresetChange"];
-    createShareLink: PresentExportDialogActions["onCreateShareLink"];
+    /** The Lighting drawer's mode buttons (UX audit ED14: lighting has one home). */
+    changeLightingPreset: (preset: LightingPreset) => void;
     setExportStylePreset: (
       next: FunctionalStateAction<ExportStylePreset>
     ) => void;
-    exportImages: PresentExportDialogActions["onExportImages"];
-    exportPdf: PresentExportDialogActions["onExportPdf"];
     generateAiNotes: PresentExportDialogActions["onGenerateAiNotes"];
   };
 };
@@ -116,43 +87,7 @@ export function useDesignPagePresentExportController({
   state,
   configuration,
   actions,
-}: UseDesignPagePresentExportControllerInput): PresentExportDialogProps {
-  const closeToDesign = useCallback(() => {
-    actions.shell.setPresentModalOpen(false);
-    actions.shell.setEditorMode("design");
-  }, [actions.shell]);
-
-  const selectRoom = useCallback(
-    (roomId: string) => {
-      actions.shell.setPresentModeRoomId(roomId);
-      actions.shell.setDesignSnapshot(
-        switchRoom(state.document.snapshot, roomId)
-      );
-    },
-    [actions.shell, state.document.snapshot]
-  );
-
-  const changeViewMode = useCallback(
-    (next: EditorViewMode) => {
-      actions.shell.changeViewMode(next);
-      if (next === "3d") {
-        actions.camera.transitionToView(
-          actions.camera.getEyeLevelView(),
-          configuration.eyeLevelTransitionDurationMs
-        );
-      }
-    },
-    [actions.camera, actions.shell, configuration.eyeLevelTransitionDurationMs]
-  );
-
-  const focusCamera = useCallback(() => {
-    actions.shell.changeViewMode("3d");
-    actions.camera.transitionToView(
-      actions.camera.getFocusView(),
-      configuration.focusTransitionDurationMs
-    );
-  }, [actions.camera, actions.shell, configuration.focusTransitionDurationMs]);
-
+}: UseDesignPagePresentExportControllerInput): PresentationTools {
   const enableProPlanControls = useCallback(() => {
     if (!configuration.canUseAdvancedPlanControls) {
       actions.shell.setUpgradeReason("designer");
@@ -246,8 +181,8 @@ export function useDesignPagePresentExportController({
   }, [actions.history, actions.plan]);
 
   const deleteSelectedOverlay = useCallback(() => {
-    actions.plan.deleteOverlay(state.dialog.selectedPlanOverlayId);
-  }, [actions.plan, state.dialog.selectedPlanOverlayId]);
+    actions.plan.deleteOverlay(state.tools.selectedPlanOverlayId);
+  }, [actions.plan, state.tools.selectedPlanOverlayId]);
 
   const changeExportStyle = useCallback(
     (preset: ExportStylePreset) => {
@@ -272,34 +207,13 @@ export function useDesignPagePresentExportController({
     ]
   );
 
-  const exportImages = useCallback(() => {
-    actions.presentation.exportImages();
-    closeToDesign();
-  }, [actions.presentation, closeToDesign]);
-
-  const exportPdf = useCallback(() => {
-    actions.presentation.exportPdf();
-    closeToDesign();
-  }, [actions.presentation, closeToDesign]);
-
-  const generateAiNotes = useCallback(() => {
-    actions.presentation.generateAiNotes();
-    closeToDesign();
-  }, [actions.presentation, closeToDesign]);
-
   return {
     configuration: {
-      open: configuration.open,
-      designerTheme: configuration.designerTheme,
       canUseAdvancedPlanControls: configuration.canUseAdvancedPlanControls,
       canUseAdvancedExportStyles: configuration.canUseAdvancedExportStyles,
     },
-    state: state.dialog,
+    state: state.tools,
     actions: {
-      onClose: closeToDesign,
-      onSelectRoom: selectRoom,
-      onViewModeChange: changeViewMode,
-      onFocusCamera: focusCamera,
       onCameraViewNameChange: actions.camera.setName,
       onSaveCameraView: actions.camera.save,
       onOpenCameraView: actions.camera.open,
@@ -318,13 +232,8 @@ export function useDesignPagePresentExportController({
       onAddOpening: addOpening,
       onAddBuiltIn: addBuiltIn,
       onDeleteSelectedPlanOverlay: deleteSelectedOverlay,
-      onOpeningChange: actions.plan.changeOpening,
-      onLightingPresetChange: actions.presentation.changeLightingPreset,
-      onCreateShareLink: actions.presentation.createShareLink,
       onExportStyleChange: changeExportStyle,
-      onExportImages: exportImages,
-      onExportPdf: exportPdf,
-      onGenerateAiNotes: generateAiNotes,
+      onGenerateAiNotes: actions.presentation.generateAiNotes,
     },
   };
 }

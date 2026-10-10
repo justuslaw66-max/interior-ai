@@ -3,12 +3,28 @@
 import {
   useEffect,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+
+/**
+ * Whether the Lighting drawer is open. It's a 3D drawer, so leaving 3D closes it, from the bar's
+ * 2D/3D or the canvas toolbar's (UX 4c).
+ */
+export function useLightingSettingsOpen(viewMode: EditorViewMode) {
+  const [open, setOpen] = useState(false);
+  const [openViewMode, setOpenViewMode] = useState(viewMode);
+  if (viewMode !== openViewMode) {
+    setOpenViewMode(viewMode);
+    if (viewMode !== "3d") setOpen(false);
+  }
+  return [open, setOpen] as const;
+}
 
 type LightingSettingsDrawerProps = {
   open: boolean;

@@ -1,11 +1,11 @@
 import type { SurfaceMaterial } from "./surface-material-schema";
+import type { SurfaceTextureFacesData } from "./surface-texture-face-run";
 
 export type SurfaceMaterialRenderRecord = {
   surface_material: Pick<
     SurfaceMaterial["surface_material"],
     | "supplier"
     | "brand"
-    | "collection"
     | "material_id"
     | "slug"
     | "product_name"
@@ -30,6 +30,8 @@ export type SurfaceMaterialRenderRecord = {
 
 export type SurfaceMaterialCatalogMetadata = {
   material_id: string;
+  /** The collection is browser-only (filters and cards), so it stays out of the render data. */
+  surface_material: Pick<SurfaceMaterial["surface_material"], "collection">;
   source: Pick<
     SurfaceMaterial["source"],
     "source_url" | "sample_request_url" | "license_status"
@@ -53,6 +55,8 @@ export type SurfaceMaterialCatalogMetadata = {
 };
 
 export type SurfaceMaterialCatalogRecord = SurfaceMaterialRenderRecord & {
+  surface_material: SurfaceMaterialRenderRecord["surface_material"] &
+    SurfaceMaterialCatalogMetadata["surface_material"];
   source: SurfaceMaterialCatalogMetadata["source"];
   classification: SurfaceMaterialRenderRecord["classification"] &
     SurfaceMaterialCatalogMetadata["classification"];
@@ -61,7 +65,7 @@ export type SurfaceMaterialCatalogRecord = SurfaceMaterialRenderRecord & {
   commerce: SurfaceMaterialCatalogMetadata["commerce"];
 };
 
-export type SurfaceMaterialRenderTuple = readonly [
+export type SurfaceMaterialRenderBaseTuple = readonly [
   supplier: string,
   brand: string | null,
   materialId: string,
@@ -93,6 +97,16 @@ export type SurfaceMaterialRenderTuple = readonly [
   availablePatternLayouts: SurfaceMaterial["rendering"]["available_pattern_layouts"] | null,
   publishStatus: SurfaceMaterial["import_governance"]["publish_status"],
   publishBlockers: string[],
+];
+
+/**
+ * The trailing fields are emitted only for materials with physical-scale image data. Faces
+ * are written as a run where their file names allow it (see surface-texture-face-run.ts).
+ */
+export type SurfaceMaterialRenderTuple = readonly [
+  ...SurfaceMaterialRenderBaseTuple,
+  imagePhysicalSizeMm?: { width: number; height: number } | null,
+  faces?: SurfaceTextureFacesData | null,
 ];
 
 export type SurfaceMaterialRenderInfo = SurfaceMaterialRenderRecord;

@@ -33,6 +33,50 @@ export function resolveTemplateFurnishingProduct(
   );
 }
 
+type TemplateFurnishingCategory = HousePlanTemplateFurnishingIntent["category"];
+
+const TEMPLATE_FURNISHING_NAMES: Readonly<Record<TemplateFurnishingCategory, [string, string]>> = {
+  sofa: ["sofa", "sofas"],
+  coffee_table: ["coffee table", "coffee tables"],
+  rug: ["rug", "rugs"],
+  dining_table: ["dining table", "dining tables"],
+  dining_bench: ["dining bench", "dining benches"],
+  accent_chair: ["armchair", "armchairs"],
+  floor_lamp: ["floor lamp", "floor lamps"],
+  tv_console: ["TV console", "TV consoles"],
+  sideboard: ["sideboard", "sideboards"],
+  ottoman: ["ottoman", "ottomans"],
+  side_table: ["side table", "side tables"],
+  bed: ["bed", "beds"],
+};
+
+/** "the rug", "the rug and the floor lamp", "the sofa, the rug and the side tables". */
+function namedFurnishings(categories: readonly TemplateFurnishingCategory[]): string {
+  const counts = new Map<TemplateFurnishingCategory, number>();
+  for (const category of categories) counts.set(category, (counts.get(category) ?? 0) + 1);
+  const names = [...counts].map(
+    ([category, count]) => `the ${TEMPLATE_FURNISHING_NAMES[category][count > 1 ? 1 : 0]}`
+  );
+  return names.length < 2
+    ? names.join("")
+    : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+/**
+ * What a template says once applied. A furnished one names what it couldn't place, instead of
+ * "Some items couldn't be added" (UX phase 4a).
+ */
+export function templateAppliedMessage(
+  templateLabel: string,
+  pack: { intents: readonly unknown[] } | null,
+  skipped: readonly TemplateFurnishingCategory[]
+): string {
+  if (!pack) return `${templateLabel} added`;
+  if (skipped.length === 0) return `${templateLabel} added with furniture`;
+  if (skipped.length >= pack.intents.length) return `${templateLabel} added without furniture`;
+  return `${templateLabel} added without ${namedFurnishings(skipped)}`;
+}
+
 export function isTemplateFurnishingNearDoorway(
   template: HousePlanTemplate,
   intent: HousePlanTemplateFurnishingIntent

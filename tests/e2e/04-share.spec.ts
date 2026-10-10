@@ -250,7 +250,12 @@ test.describe("4. Share Link Read-Only", () => {
         expect(publicPageSource).not.toContain(privateValue);
         expect(publicPageMetadata).not.toContain(privateValue);
       }
-      await expect(page.getByTestId("share-live-commerce")).toBeVisible();
+      // The Shopping list groups products by shop, as the editor's Shop does (UX audit SX7). The
+      // fixture's products are Castlery's, sold on its website, so there's no Checkout here.
+      const shoppingList = page.getByTestId("share-checkout-readiness");
+      await expect(shoppingList.getByRole("region", { name: "Castlery", exact: true })).toBeVisible();
+      await expect(shoppingList).toContainText("Products sold by other shops open on their own websites.");
+      await expect(page.getByTestId("share-live-commerce")).toHaveCount(0);
       await expect(page.getByTestId("share-availability-warning")).toBeVisible();
       await expect(page.getByText("Editing creates a private copy in your account.")).toBeVisible();
       await expect(page.getByTestId("share-copy-to-edit")).toBeVisible();
@@ -357,11 +362,6 @@ test.describe("4. Share Link Read-Only", () => {
         "data-saved-view-count",
         "3",
       );
-      const presentationViews = page.getByTestId("share-presentation-views");
-      await expect(presentationViews).toContainText("Client Preview");
-      await expect(presentationViews).toContainText("Dining Plan");
-      await expect(presentationViews).toContainText("Bedroom Preview");
-
       const clientPreview = viewer.getByRole("button", {
         name: "Client Preview",
         exact: true,

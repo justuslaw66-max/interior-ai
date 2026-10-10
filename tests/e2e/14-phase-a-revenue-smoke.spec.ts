@@ -6,7 +6,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { PDFDocument } from "pdf-lib";
 import { test, expect } from "./fixtures";
-import { getE2EBaseUrl, resolveE2EDatabaseUrl } from "./release-environment";
+import { getE2EBaseUrl, resolveE2EAdminEmail, resolveE2EDatabaseUrl } from "./release-environment";
 
 const baseURL = getE2EBaseUrl();
 
@@ -301,103 +301,44 @@ test.describe("14. Phase A Revenue Smoke", () => {
     }
   });
 
-  test("admin revenue funnel panel renders with seeded flow events", async ({ request }) => {
+  test("Admin shows its overview to admins and the access page to anyone else", async ({ request }) => {
     const dbReachable = await isDatabaseReachable();
-    test.skip(!dbReachable, "Skipping DB-backed admin funnel smoke because database is unavailable");
+    test.skip(!dbReachable, "Skipping DB-backed admin smoke because database is unavailable");
 
     const prisma = getPrismaClient();
-    let user: { id: string };
-    try {
-      user = await prismaWithRetry(() => prisma.user.create({
-        data: {
-          email: `phase-a-admin-${Date.now()}-${crypto.randomBytes(4).toString("hex")}@example.com`,
-          plan: "pro",
-        },
-      }));
-    } catch (error) {
-      if (isLikelyDbConnectivityError(error)) {
-        test.skip(true, "Skipping DB-backed admin funnel smoke because DB seeding failed in this run");
-      }
-      throw error;
-    }
-
-    const sessionToken = `sess_${crypto.randomBytes(12).toString("hex")}`;
+    const visitor = await createUserSession("pro");
+    const adminEmail = resolveE2EAdminEmail();
+    const existingAdmin = await prismaWithRetry(() => prisma.user.findUnique({ where: { email: adminEmail } }));
+    const admin = existingAdmin ?? await prismaWithRetry(() => prisma.user.create({ data: { email: adminEmail, plan: "free" } }));
+    const adminSessionToken = `sess_${crypto.randomBytes(12).toString("hex")}`;
     await prismaWithRetry(() => prisma.session.create({
-      data: {
-        sessionToken,
-        userId: user.id,
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      },
-    }));
-
-    await prismaWithRetry(() => prisma.appEvent.createMany({
-      data: [
-        ...[
-          "landing_viewed",
-          "design_started",
-          "first_item_added",
-          "third_item_added",
-          "export_clicked",
-          "upgrade_clicked",
-          "checkout_started",
-        ].map((eventType) => ({
-          eventType,
-          userId: user.id,
-          authority: "BROWSER_AUTHORIZED_ANALYTICS" as const,
-          producer: "SERVER_APPLICATION" as const,
-          verificationMethod: "SERVER_ACTION" as const,
-          provenanceVersion: 1,
-          createdAt: new Date(),
-        })),
-        {
-          eventType: "checkout_success_viewed",
-          userId: user.id,
-          authority: "BROWSER_AUTHORIZED_ANALYTICS",
-          producer: "SERVER_APPLICATION",
-          verificationMethod: "SERVER_ACTION",
-          provenanceVersion: 1,
-          createdAt: new Date(),
-        },
-      ],
+      data: { sessionToken: adminSessionToken, userId: admin.id, expires: new Date(Date.now() + 24 * 60 * 60 * 1000) },
     }));
 
     try {
-      const me = await requestWithSession(request, "GET", `${baseURL}/api/me`, sessionToken);
+      // The visitor's session works (so what follows isn't a sign-in failure) ...
+      const me = await requestWithSession(request, "GET", `${baseURL}/api/me`, visitor.sessionToken);
       expect(me.response.status()).toBe(200);
-      const meJson = await me.response.json();
-      expect(meJson.plan).toBe("pro");
+      expect((await me.response.json()).plan).toBe("pro");
 
-      const adminResponse = await requestWithSession(
-        request,
-        "GET",
-        `${baseURL}/admin`,
-        sessionToken
-      );
+      // ... and Admin tells them it's the team's area instead of redirecting or showing anything.
+      const visitorAdmin = await requestWithSession(request, "GET", `${baseURL}/admin`, visitor.sessionToken);
+      expect(visitorAdmin.response.status()).toBe(200);
+      const visitorHtml = await visitorAdmin.response.text();
+      expect(visitorHtml).toContain('data-testid="admin-access-denied"');
+      expect(visitorHtml).toContain("This area is for the Interior AI team");
+      expect(visitorHtml).not.toContain("Non-authoritative customer analytics");
 
-      if ([301, 302, 303, 307, 308].includes(adminResponse.response.status())) {
-        test.info().annotations.push({
-          type: "note",
-          description: `Skipping admin panel HTML assertion due redirect status ${adminResponse.response.status()} in headless auth context`,
-        });
-        return;
-      }
-
-      expect(adminResponse.response.status()).toBe(200);
-      const html = await adminResponse.response.text();
-      if (!html.includes("Revenue Funnel (7d)")) {
-        test.info().annotations.push({
-          type: "note",
-          description: "Admin session resolved to non-admin page in test context; funnel panel assertion skipped.",
-        });
-        return;
-      }
-      expect(html).toContain("Revenue Funnel (7d)");
-      expect(html).toContain("Start rate:");
-      expect(html).toContain("Paywall CTR:");
-      expect(html).toContain("Conversion:");
+      const adminOverview = await requestWithSession(request, "GET", `${baseURL}/admin`, adminSessionToken);
+      expect(adminOverview.response.status()).toBe(200);
+      const adminHtml = await adminOverview.response.text();
+      expect(adminHtml).toContain("Overview · Admin · Interior AI");
+      expect(adminHtml).toContain("Non-authoritative customer analytics");
+      expect(adminHtml).not.toContain('data-testid="admin-access-denied"');
     } finally {
-      await prisma.session.deleteMany({ where: { userId: user.id } });
-      await prisma.user.delete({ where: { id: user.id } });
+      await prisma.session.deleteMany({ where: { sessionToken: { in: [visitor.sessionToken, adminSessionToken] } } });
+      await prisma.user.delete({ where: { id: visitor.userId } });
+      if (!existingAdmin) await prisma.user.delete({ where: { id: admin.id } }).catch(() => {});
     }
   });
 

@@ -1,0 +1,1024 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: OROSEI - VANILLA - minimali.zip (150574353 bytes, sha256 f7ea8be97bfc1da274170697555a880746d0b465441241a30f002874fff5fd10).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/orosei/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0021724",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/pf60021724-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0021724_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60021724-120x280-nat-197544-0; wall gardenia-wall-tile-orosei-vanilla-pf60021724-120x280-nat-197544-0",
+   "faces": [
+    {
+     "file": "0021724_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 240146,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - VANILLA - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "c012c3bb28b349157632c5e86f72c2b3d39961c762920314276e02dfea64547a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "OROSEI VANILLA 120X280_03",
+      "id": "e50f1cd0-1cc6-4c88-9bd9-504c91cd5762",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021724_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 227468,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - VANILLA - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "774ab913aadb07506f8ac5f839f05e8b115f6435e091c7613c7690f27d5fb4d4",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "OROSEI VANILLA 120X280_02",
+      "id": "507e213d-b3cb-4938-9997-1b9cd2103e5f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021724_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 238550,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X280-Natural/OROSEI - VANILLA - 120X280 - Natural - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "3485f4091f6cb9f4677584c77f8a8c1f6c8def223bcee55d2b23f461a3cff9ef",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 3",
+      "name": "OROSEI VANILLA 120X280_01",
+      "id": "a73502f3-a938-4eee-b53f-cb7fb5a72508",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0021734",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/pf60021734-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0021734_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60021693-120x120-197532-0 (uses 0021734's faces: ABK's 9 Antique 3D pictures are 0021734's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-vanilla-pf60021734-120x120-nat-197549-0; wall gardenia-wall-tile-orosei-vanilla-pf60021693-120x120-197532-0 (uses 0021734's faces: ABK's 9 Antique 3D pictures are 0021734's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-vanilla-pf60021734-120x120-nat-197549-0",
+   "faces": [
+    {
+     "file": "0021734_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106890,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e96e1af9818322029b9974fc3167415caaf8ebd9dc3db1853c61b21a62108d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "OROSEI VANILLA 120X120_06",
+      "id": "0c0d8c00-c415-4b49-ad6a-20a49ee98813",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021734_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 111802,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6805e064a2496fc6cb00a5bf5121b2abcdc25cef3738c31284ed00476c7e71d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "OROSEI VANILLA 120X120_08",
+      "id": "5325b27d-b272-4754-9d0a-53f551a1b170",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021734_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110064,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b05dc57ac87ae7d8405b1466468cea085bb8a3352ff17147ef7aedf1e9bf65be",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "OROSEI VANILLA 120X120_07",
+      "id": "92d69929-d967-4a05-97d6-db0afe146373",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021734_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 109108,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4a752e67cb4693fe9c5944b6e6fa94101ddfccdea8a44fc3e3fc08c4537f22da",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "OROSEI VANILLA 120X120_09",
+      "id": "108f0083-f57a-4d01-8059-54dceef3ce85",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021734_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110348,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7437cfc42d48d49c74f8d55d5de9f8ab0ff45f0acb2b7c0f00f6d98a9f26b25f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "OROSEI VANILLA 120X120_04",
+      "id": "b30572c0-8d1c-4882-802e-231ef3b20fd2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021734_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 115354,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "547ea55e1c7efa2fd59c4d3e7488c309bb6d3c6e8719be557e36b70fe18054cd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "OROSEI VANILLA 120X120_02",
+      "id": "892e05b8-df70-4f81-85b8-1cba8761ac12",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021734_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107182,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1b6a62a3247df47fc57d160dc29c47eaaaa70e979ba9dd3a72b48752da2646a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "OROSEI VANILLA 120X120_03",
+      "id": "5cdf915d-3eb0-4f4c-89fb-d8a5cb03546a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021734_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 107936,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3802956c270956648c5e0ec1ba559e3f10b37be597bc8e0d61c48ca1db923f70",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "OROSEI VANILLA 120X120_05",
+      "id": "052f0c9a-6fc8-4deb-9dc5-45589686d2ce",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021734_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113940,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "120X120-R11/OROSEI - VANILLA - 120X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c03c7cc10d3fa7af0f3b9889c00a8ec6f79a3a02f0fa64dfedec21f69c7aacf",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "OROSEI VANILLA 120X120_01",
+      "id": "f6ed5b3d-eeef-4c86-bc6f-84eb1540c358",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0030224",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/pf60030224-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030224_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60030224-60x60-nat-197559-0; wall gardenia-wall-tile-orosei-vanilla-pf60030224-60x60-nat-197559-0",
+   "faces": [
+    {
+     "file": "0030224_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114488,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ab634628ed249d9924fe73dc4ab4cdea371bd5fbbfa2954cbee9e305aec1f54c",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "OROSEI VANILLA 60x60_07",
+      "id": "17bc3ac9-4342-4b96-901c-0f01cb7096dd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030224_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28078,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c87bd1d52ec8cec8fe1d638abe6e273f0c9e2f4afe05098783017fafbbf350b9",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "OROSEI VANILLA 60x60_09",
+      "id": "26a8d35d-92d8-47f0-b94a-8c08fbd957c9",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030224_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113266,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "de40645b19603ac161bddc35567c5394287df4bdf908b3ee4493a600e3518a7f",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "OROSEI VANILLA 60x60_08",
+      "id": "e8dd6892-e64b-4032-b52e-5252cbe9b613",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030224_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106960,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "a513d9e5359a108a81abdd019a3409eae70cb92f31ae2cc7204d735cc7a1e9d8",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "OROSEI VANILLA 60x60_03",
+      "id": "f77dc5bd-7625-41d8-8b89-b001e2969791",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030224_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 116296,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4030e4c04a1d62486b8fe0a83c5b873c3bea2954d62d059a775206817f5fceec",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "OROSEI VANILLA 60x60_02",
+      "id": "84a8dee9-04e6-43a7-a854-4fe00d968737",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030224_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 111918,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1bea8131bb3e35531acb65587bbf595875bfadda01d7bc660320641e77ae0f05",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "OROSEI VANILLA 60x60_04",
+      "id": "82d295ca-60d6-4925-a7d9-1de359a51cb4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030224_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110458,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e57b2ea16e3bd40f4f9f333afcac23d4af0f2ae352a695d889d368f015ede635",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "OROSEI VANILLA 60x60_05",
+      "id": "659aff24-13db-47c5-90e3-e69cfde2376d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030224_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 116326,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e3c7eb0e636b3172105dab72c7cc7f5db1b6efb19f833b74cec07ca1056b256d",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "OROSEI VANILLA 60x60_01",
+      "id": "461505fa-ee16-4833-969e-571806b64793",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030224_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108380,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X60-Natural/OROSEI - VANILLA - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "730a9b46abe6e8adac95bdd168f19fa13fc4d14191fe5d5787b8d7bdce97bad0",
+     "source_px_per_mm": 1.968,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "OROSEI VANILLA 60x60_06",
+      "id": "419f61ce-1fc4-4ecc-a497-8348fd4e831b",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0021739",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/pf60021739-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0021739_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60021700-60x120-197539-0 (uses 0021739's faces: ABK's 9 Antique 3D pictures are 0021739's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-vanilla-pf60021739-60x120-nat-197554-0; wall gardenia-wall-tile-orosei-vanilla-pf60021700-60x120-197539-0 (uses 0021739's faces: ABK's 9 Antique 3D pictures are 0021739's 9 Natural pictures, byte for byte); wall gardenia-wall-tile-orosei-vanilla-pf60021739-60x120-nat-197554-0",
+   "faces": [
+    {
+     "file": "0021739_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55816,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e6410c875638df85adcd405a74b62f372cee796afba076835811b3983b6df957",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "OROSEI VANILLA 60X120_04",
+      "id": "0c01c11e-644e-4231-a095-715f394726c6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021739_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54706,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f6d370f3e67e510dbe678da4298bbdca2e2e754a7199c02e002db179d2ace930",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "OROSEI VANILLA 60X120_07",
+      "id": "97d7e216-8ddc-46be-b6e7-1699e5cdba4d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021739_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56156,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "dc60361e87fd0fd26966b9ba35c448b69d548eefbfd4cda6045f51d06350703a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "OROSEI VANILLA 60X120_08",
+      "id": "01ba0642-618a-4a6b-ad59-9b3e294637ce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021739_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54002,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "70897e265951ca317462be2a9a1cf3275d1450a2f175306bd7f9299e019f8470",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "OROSEI VANILLA 60X120_06",
+      "id": "fb3572e3-90e2-4481-9035-e6af6a1598b9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021739_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53324,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fd5c76d93d14cc31a5e94cb287ac4b8972ca296390b809322f960b6243c54ead",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "OROSEI VANILLA 60X120_09",
+      "id": "15296c51-6b1b-40f5-a3fa-ffe170554c6a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021739_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56208,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c067e6fc6e39a0ce82e28b6f5eb705959327dc5247adc038b112263aef4da3bc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "OROSEI VANILLA 60X120_05",
+      "id": "73bbf463-fd1a-4659-aac4-ce11942de55d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021739_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55218,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7495136c08605f23ec98c4fb2cf3dfc06ef0f88ec16a9d2e7037f1c6b2c350fa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "OROSEI VANILLA 60X120_02",
+      "id": "6293bcb7-3fba-4696-8245-900445f232a2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021739_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53886,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8816f3276f3c4fff8ace57b8445473608ec56722fd8063cfd1c29ab94a2c646a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "OROSEI VANILLA 60X120_03",
+      "id": "4c154041-39f4-42c9-83b2-655ec2ffc9cb",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021739_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56014,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "60X120-R11/OROSEI - VANILLA - 60X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "28c9c3a4ad4f61a52048683aaa7121b9f0481a7f012f95829a4fba91433b3382",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "OROSEI VANILLA 60X120_01",
+      "id": "5d9ee3fa-5bbc-4a2f-b53f-2bd881ccab59",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0030230",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/orosei/vanilla/pf60030230-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0030230_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60030230-80x80-nat-197564-0; wall gardenia-wall-tile-orosei-vanilla-pf60030230-80x80-nat-197564-0",
+   "faces": [
+    {
+     "file": "0030230_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47500,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d294ee5ef281ba1353c48a7217b99b9621626b28ba2213562d8d68148b601e38",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "OROSEI VANILLA_8 80X80",
+      "id": "df4d1143-2e51-480a-b245-311b86c71eb7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030230_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48684,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ae2b6e6370b1045df2e00fd0ed55471b47e82057fdcf170d18d63710783aa6cc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "OROSEI VANILLA_9 80X80",
+      "id": "849efd83-303d-440d-8bc5-3014519e5be7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030230_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50250,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "da21f0699ee8cffa68856f8602cc02568d5cde9d1ea9651b7bb71a9280bbd684",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "OROSEI VANILLA_7 80X80",
+      "id": "eb72f998-4ca9-4dcd-8507-342402aebfae",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030230_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49052,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e6d114aa37b2d106cf7a436bbd2be161005658d02809f12b64bd7a47cc2b5cf3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "OROSEI VANILLA_6 80X80",
+      "id": "b5cab676-9061-4942-8611-825cfbd0c468",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030230_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48066,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "17fd0508101ad708e2576f20c21662627d8711b17ff1f0979e7d7f46efcbbb85",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "OROSEI VANILLA_2 80X80",
+      "id": "b9458eb5-dc47-44eb-b787-bb577ff11718",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030230_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47840,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "476b6d4e42b4e9e8be414d038ca5766f50e24f1ee2d1d710f3a350cbea9c20f6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "OROSEI VANILLA_4 80X80",
+      "id": "c3725e13-ca78-4668-860e-e5433f761cef",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030230_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49666,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0a3da092e6793834a881dff495aab4d0ebf0a782555822c38a40c3150af461bf",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "OROSEI VANILLA_1 80X80",
+      "id": "d8f5a73a-f112-4bd9-990d-1b6659612193",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030230_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48304,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4ff0234f37c603727b84f21c2879e597605b6463dec9b2fc9be5b037b6011547",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "OROSEI VANILLA_5 80X80",
+      "id": "2e0bcb2b-b968-4203-8dff-d432ea9cde67",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030230_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47948,
+     "source_zip": "OROSEI - VANILLA - minimali.zip",
+     "source_file": "80X80-Natural/OROSEI - VANILLA - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "017908a83b30e8aaf3bb7f9516f8b79dddc9d117b4ec2894967d86564afed3d3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "OROSEI VANILLA_3 80X80",
+      "id": "49ade7fb-e1b5-4316-a183-e0345a5bd36a",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

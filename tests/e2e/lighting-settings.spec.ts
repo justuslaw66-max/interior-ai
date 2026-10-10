@@ -143,7 +143,9 @@ test.describe("Lighting settings", () => {
     await expect(canvas).toHaveAttribute("data-client-hydrated", "true", {
       timeout: 30_000,
     });
+    // Quality lives in More › Scene quality alone (UX audit ED14, phase 4e).
     await openMoreMenu(page);
+    await page.getByTestId("scene-performance-quality").click();
     await page.getByTestId("editor-command-overflow-lighting").click();
     await expect(page.getByTestId("lighting-pro-controls")).toBeVisible();
 
@@ -164,7 +166,6 @@ test.describe("Lighting settings", () => {
     await page.getByTestId("lighting-latitude-input").fill("1.35");
     await page.getByTestId("lighting-longitude-input").fill("103.82");
     await page.getByTestId("lighting-fixture-master-toggle").click();
-    await page.getByTestId("lighting-quality-select").selectOption("quality");
 
     await expect
       .poll(() =>
@@ -202,15 +203,16 @@ test.describe("Lighting settings", () => {
       });
 
     await page.keyboard.press("Escape");
-    await page.getByTestId("editor-rail-present").click();
-    await expect(
-      page.getByRole("heading", { name: "Present & Export" })
-    ).toBeVisible();
-    await expect(page.getByTestId("presentation-lighting-status")).toBeVisible();
+    // Download shows the presentation lighting its pictures and PDFs use (J, 30 Sep).
+    await page.getByTestId("editor-command-download").click();
+    const download = page.getByRole("dialog", { name: "Download" });
+    await expect(download).toBeVisible();
+    await expect(download.getByTestId("presentation-lighting-status")).toBeVisible();
     await expect(canvas).toHaveAttribute("data-lighting-mode", "presentation");
     await expect(canvas).toHaveAttribute("data-lighting-quality", "high");
     await expect(canvas).toHaveAttribute("data-shadow-map-size", "4096");
-    await page.getByRole("button", { name: "Close export panel" }).click();
+    await download.getByRole("button", { name: "Close Download" }).click();
+    await expect(download).toHaveCount(0);
     await expect(canvas).toHaveAttribute("data-lighting-mode", "design");
   });
 });

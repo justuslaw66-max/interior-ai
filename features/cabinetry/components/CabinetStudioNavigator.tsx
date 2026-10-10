@@ -245,7 +245,7 @@ export function CabinetStudioNavigator({
                 type="button"
                 data-testid={`cabinet-module-sizing-${value}`}
                 aria-pressed={moduleSizingMode === value}
-                className={`rounded px-2 py-1.5 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                className={`rounded px-2 py-1.5 text-[11px] font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${
                   moduleSizingMode === value
                     ? "bg-white text-neutral-950 shadow-sm"
                     : "text-neutral-600"
@@ -321,7 +321,7 @@ export function CabinetStudioNavigator({
           <input
             data-testid="cabinet-property-search-input"
             type="search"
-            className="h-9 w-full rounded-md border border-neutral-300 bg-white pl-8 pr-3 text-xs outline-none focus:border-neutral-900"
+            className="h-9 w-full rounded-md border border-neutral-300 bg-white pl-8 pr-3 text-xs focus:border-neutral-900"
             placeholder="Filler, scribe, hinge, clearance…"
             value={propertyQuery}
             onChange={(event) => onPropertyQueryChange(event.target.value)}

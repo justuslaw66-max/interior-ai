@@ -1,3 +1,4 @@
+import { describeAdminStatus } from "../../admin-status";
 import { formatBytes, REVIEW_STAGES } from "./floorPlanReviewModel";
 import type { AdminJob } from "./floorPlanReviewTypes";
 
@@ -68,7 +69,7 @@ export function FloorPlanJobSummary({
                         : "border-neutral-200 text-neutral-400"
                   }`}
                 >
-                  {stage.replaceAll("_", " ")}
+                  {describeAdminStatus("floorPlanJob", stage).label}
                 </div>
               </div>
             );

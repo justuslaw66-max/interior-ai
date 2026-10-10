@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: Oxide
   material_id: gardenia-wall-tile-oxide-steel-g69331-80x80-90849-0
   product_name: Gardenia Oxide Steel 80x80
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 14 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/oxide/steel/g0069331-v102/), downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-oxide-steel-faces.manifest.json. Each covers 800x800 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/G69331/0/90849 for wall use.
     - "Configurator format: 80x80; surface destination: ENTRAMBE."
@@ -59,16 +60,62 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/oxide/g69311.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/oxide/g69311.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/oxide/g69331_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/oxide/g69331_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 80
     height: 80
+  image_physical_size_mm:
+    width: 800
+    height: 800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_01.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_02.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_03.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_04.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_05.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_06.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_07.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_08.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_09.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_10.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_11.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_12.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_13.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/oxide/g69331_14.webp
+      width_mm: 800
+      height_mm: 800
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -93,12 +140,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

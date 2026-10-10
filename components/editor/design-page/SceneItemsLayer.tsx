@@ -4,6 +4,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { Furniture } from "@/components/scene/FurnitureItem";
+import { SceneItemGroup } from "@/components/scene/SceneItemGroup";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
@@ -62,7 +63,6 @@ type SceneItemsLayerState = {
   selectedInstanceId: string | null;
   previewVariantId: string | null;
   previewMaterialPresetId: string | null;
-  hoveredCartInstanceId: string | null;
   activeSceneItemsForGuides: DesignItem[];
   itemPlanningBoundsByInstanceId: Record<string, SceneItemDimensionsMm>;
 };
@@ -156,7 +156,6 @@ export function SceneItemsLayer({
         if (isParametricCabinetItem(item)) {
           const selected =
             isActiveSceneRoom &&
-            configuration.editorMode !== "present" &&
             state.selectedIds.has(item.instanceId);
           const sceneRenderItemKey = `${sceneEntry.roomId}:${item.instanceId}:${item.productId}:${
             item.variantId ?? ""
@@ -167,14 +166,11 @@ export function SceneItemsLayer({
               : CabinetDesignItemPlan2D;
 
           return (
-            <group
+            <SceneItemGroup
               key={`${sceneEntry.roomId}:${item.instanceId}`}
               name={`${sceneEntry.layerId}:${item.instanceId}`}
               visible={sceneEntry.visible}
-              userData={{
-                sceneItemId: item.instanceId,
-                sceneLayerId: sceneEntry.layerId,
-              }}
+              sceneItemId={item.instanceId} sceneLayerId={sceneEntry.layerId}
             >
               <CabinetDesignItemRenderer
                 sceneEntry={sceneEntry}
@@ -182,7 +178,6 @@ export function SceneItemsLayer({
                 selected={selected}
                 interactive={
                   isActiveSceneRoom &&
-                  configuration.editorMode !== "present" &&
                   !configuration.isClientPreview
                 }
                 showPlanLabel={configuration.planShowLabels}
@@ -190,12 +185,7 @@ export function SceneItemsLayer({
                 onRenderReadyChange={actions.onRenderReadyChange}
                 onSelect={(id, additive) => {
                   if (!isActiveSceneRoom) return;
-                  if (
-                    configuration.editorMode === "buy" ||
-                    configuration.editorMode === "present"
-                  ) {
-                    return;
-                  }
+                  if (configuration.editorMode === "buy") return;
                   actions.onSelect(id, additive);
                 }}
                 locked={item.locked}
@@ -239,7 +229,7 @@ export function SceneItemsLayer({
                     : undefined
                 }
               />
-            </group>
+            </SceneItemGroup>
           );
         }
 
@@ -293,7 +283,6 @@ export function SceneItemsLayer({
             : item.materialPreset;
         const selected =
           isActiveSceneRoom &&
-          configuration.editorMode !== "present" &&
           state.selectedIds.has(item.instanceId);
         const continuity = resolveSceneItemViewContinuity(sceneEntry, {
           variantId: effectiveVariantId,
@@ -373,14 +362,11 @@ export function SceneItemsLayer({
         }:${configuration.renderQuality}`;
 
         return (
-          <group
+          <SceneItemGroup
             key={`${sceneEntry.roomId}:${item.instanceId}`}
             name={`${continuity.layerId}:${continuity.instanceId}`}
             visible={continuity.visible}
-            userData={{
-              sceneItemId: continuity.instanceId,
-              sceneLayerId: continuity.layerId,
-            }}
+            sceneItemId={continuity.instanceId} sceneLayerId={continuity.layerId}
           >
             <Furniture
               data-testid="item-in-scene"
@@ -426,11 +412,6 @@ export function SceneItemsLayer({
                 isActiveSceneRoom &&
                 (configuration.editorMode === "design" || configuration.editorMode === "adjust")
               }
-              cartPreviewed={
-                isActiveSceneRoom &&
-                configuration.editorMode === "buy" &&
-                state.hoveredCartInstanceId === item.instanceId
-              }
               viewMode={configuration.viewMode}
               planShowLabels={configuration.planShowLabels}
               planShowDimensions={configuration.planShowDimensions}
@@ -440,12 +421,7 @@ export function SceneItemsLayer({
               onRenderReadyChange={actions.onRenderReadyChange}
               onSelect={(id, additive) => {
                 if (!isActiveSceneRoom) return;
-                if (
-                  configuration.editorMode === "buy" ||
-                  configuration.editorMode === "present"
-                ) {
-                  return;
-                }
+                if (configuration.editorMode === "buy") return;
                 actions.onSelect(id, additive);
               }}
               onMove={(id, position) =>
@@ -493,7 +469,7 @@ export function SceneItemsLayer({
                 })
               }
             />
-          </group>
+          </SceneItemGroup>
         );
       })}
     </>

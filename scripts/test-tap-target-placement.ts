@@ -85,15 +85,15 @@ assert.deepEqual(
 assert.deepEqual(
   resolvePlacementAwareRoomSelectionDecision({
     pendingPlacementHandled: false,
-    editorMode: "present",
+    editorMode: "design",
     activeRoomId: "room-current",
     targetRoomId: "room-target",
   }),
   {
-    shouldSetDesignMode: false,
+    shouldSetDesignMode: true,
     shouldSwitchRoom: true,
   },
-  "presentation mode should be preserved while normal room switching remains available"
+  "normal room switching remains available"
 );
 assert.equal(
   resolvePlacementAwareRoomSelectionDecision({
@@ -258,7 +258,7 @@ assert.match(
 );
 assert.match(
   structureLayerSource,
-  /<RoomRenderer2D[\s\S]*?onSelectRoom=\{actions\.rooms\.select\}[\s\S]*?<HousePlanRenderer3D[\s\S]*?onSelectRoom=\{actions\.rooms\.select\}/
+  /const selectRoom = useLatestCallback\(actions\.rooms\.select\);[\s\S]*?<RoomRenderer2D[\s\S]*?onSelectRoom=\{selectRoom\}[\s\S]*?<HousePlanRenderer3D[\s\S]*?onSelectRoom=\{selectRoom\}/
 );
 assert.match(
   guidanceLayerSource,

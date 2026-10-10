@@ -1,0 +1,1462 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: I PIGMENTI - BARK - minimali.zip (21372419 bytes, sha256 e9bc5c349812d52049e579ad8f9782e9dbe5d514f286faa9a46c1b3ea6255069).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/i-pigmenti/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016998",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016998-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016998_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016998-120x280-nat-90342-0; wall gardenia-wall-tile-i-pigmenti-bark-0016998-120x280-nat-90342-0",
+   "faces": [
+    {
+     "file": "0016998_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 27534,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X280-Natural/I PIGMENTI - BARK - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "cdf8253b44a3cc53b611b86f914f56265d075ca0bb003de3cd826cd0bb43a14e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 120X280",
+      "id": "8e505a4e-6644-451e-a1f6-42d502abd03f",
+      "site_position": 1
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016970",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016970-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016970_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016970-120x120-nat-90336-0; wall gardenia-wall-tile-i-pigmenti-bark-0016970-120x120-nat-90336-0",
+   "faces": [
+    {
+     "file": "0016970_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12978,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - BARK - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f1ccbc137ef4566ac4f397b76ba7441a33ebdf1566d58fddba56b0c1f1bd45cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 120X120_01",
+      "id": "26f7c4f3-286d-4252-affd-41997b7a9eba",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016970_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11180,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - BARK - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2ad519498619c8e8569c29f0af43153fabbe846b099114d0885c116c803f7565",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 120X120_02",
+      "id": "ee134e7a-1f3c-40e3-8991-fd4078f3fcab",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016970_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12320,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - BARK - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1ef56cdada4c396445a1077fecff2f68a52c65c21baef9f178b453e8ec053f8b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 120X120_04",
+      "id": "1eca4651-7748-4b1b-8ca0-41e57cb1ce67",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016970_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11530,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - BARK - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b7a1a9505a372a52dddc78ea766173d8f9216ab805c891f3e23564c742fb89c9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 120X120_05",
+      "id": "4eb55210-9085-4917-ad26-27f150713378",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016970_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11080,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "120X120-Natural/I PIGMENTI - BARK - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "93efa80b9e751cfa0977425890b61b90e426cdf03a2b73cbfc38ce0109cfc925",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 120X120_03",
+      "id": "7c063251-ce2d-42e6-872e-d07917b95371",
+      "site_position": 5
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016432",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016432-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016432_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016432-60x120-nat-90285-0; wall gardenia-wall-tile-i-pigmenti-bark-0016432-60x120-nat-90285-0",
+   "faces": [
+    {
+     "file": "0016432_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6642,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "a13cf990cc5e2a810eca95e06bf4ecc7bb1326fa5efa8c281d8df5353279b87c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 60X120_01",
+      "id": "92b38634-3c04-4e13-ae61-53fb85d78951",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016432_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6066,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "1ce6a2031f32713326bb21969ceeda25f871f07574d7534754d4ce0c782b8a7f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 60X120_10",
+      "id": "d8aac568-8066-43d1-898c-efc02a6baef0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016432_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6688,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "9c831c645bd1cfd777cf157388ae7f27482fa2c0b330311c384875f701b7f241",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 60X120_05",
+      "id": "bd2746ae-49c9-4c28-abc1-f541c37f87ce",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016432_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5672,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "020e7fb0be0d14b6cdeab6c6acbeb48fedf31612d63547f435e6fafe7c88f3c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 60X120_09",
+      "id": "857b8547-2422-4284-80aa-cfd1ce173e2d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016432_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6196,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "5a54a4d45523d732a178f62c0701043c759b98680a4925ae15b63ec1f8fdbf48",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 60X120_07",
+      "id": "57803adb-7e5e-4662-9b94-57adc7cc3a86",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016432_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6508,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "fb0aed2a28b0f843ffc2efb78ac34ab1b392cbe5dfd71bb8c7935539766fb17d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI BARK 60X120_08",
+      "id": "134e85ad-286e-4e5f-8390-aa42bdcfe9ee",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016432_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5698,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "60557379b43de70e9f293ec568630615d8260d0b7afb7400a2abc5e155a7d7e0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI BARK 60X120_06",
+      "id": "3279d035-6f5b-494e-8acc-3a6eb4fa6a7c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016432_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5920,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "7e7d6bd7f12dd59cb542322867d6850b49791fe00d9ad9cbf73c7fe0deb28730",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI BARK 60X120_03",
+      "id": "d7741862-b58e-40fd-b3cf-3f8649ba1ec0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016432_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5544,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "bd64e1a66e48b5782ab6aa671264116ba2ae3b2804261da6d7a812deb58cf0ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI BARK 60X120_02",
+      "id": "eb979dfc-473f-4114-96e7-b0c8c5cb0d91",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016432_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6246,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X120-Natural/I PIGMENTI - BARK - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1281
+     ],
+     "source_sha256": "150990ea6ba9012bf089988aa37eb42e237da49b9ab41756aefccda8586428eb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI BARK 60X120_04",
+      "id": "b832f861-1d2c-43f0-9e5e-a1e1e550bbb9",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0016452",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016452-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0016452_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016452-60x60-nat-90305-0; wall gardenia-wall-tile-i-pigmenti-bark-0016452-60x60-nat-90305-0",
+   "faces": [
+    {
+     "file": "0016452_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4164,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_1 (2).jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e187f7bc5bf5665f8ee1a8f2bf8eac78b99ff2f895a2346f761fdcdd03728eff",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 60X60_01",
+      "id": "9ec97517-b2a9-4e0a-beb8-a6967a3467fa",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016452_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3778,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "9baed698070fbb2185ee3ff3d9f90c00eab69e0a9eb75109fba8f38d76c1a119",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 60X60_10",
+      "id": "6f6d2e17-f8f3-4c84-903f-77a28bb33214",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016452_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3768,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "9d2365bca14205127ec09dad83e274e5e4a0e470d6aa37c2fc67b0fdce41e37f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 60X60_08",
+      "id": "aa111838-5cb3-4e04-a0fb-e8e50a32f0da",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016452_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2628,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "f41ba1c24bd65afcb84ae56db069e166d0f8d34f476c8922e6ef3ca9c01efe39",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 60X60_09",
+      "id": "5636950e-6c70-4538-9e34-9bbf1a517f81",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016452_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2928,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "339522c0d6cac4f9c3254cb2b2c61a1e2364fc57493e58402ed653a7881d2931",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 60X60_06",
+      "id": "f3e81ba5-a5d8-4671-934a-6880514aae63",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016452_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3314,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "96f099a81cb1042408a334850ec9b03e2ca93ad155b54d10f59b16e89bd77592",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI BARK 60X60_05",
+      "id": "f98a0978-6409-4ee5-b670-69a48e4a8643",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016452_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2958,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e1d0761eb4e9445c52fc9d9d7803a858a11fa59d08eada489fbbe2f5c73f379e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI BARK 60X60_04",
+      "id": "22a52b77-256f-4a04-ad46-867f988e7407",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016452_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 3156,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "e863951cd2de8e3a867231e96c28d70583f49b3d1a20d8cf8f38f2297a5536bd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI BARK 60X60_02",
+      "id": "d9383ab2-dfd5-4455-8794-c97fc64fddc0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016452_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2892,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "22fa3f8cf06b85f7ce6943a66f6a055889c70097c460304d3770ea3e3bb03071",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI BARK 60X60_03",
+      "id": "cae8632b-c56e-47eb-9325-4ce0e292534c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016452_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2522,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "60X60-Natural/I PIGMENTI - BARK - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      1772
+     ],
+     "source_sha256": "07775d424067df1113815e0b6139a0ea57928f6e57d9a90461fae8620227e785",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI BARK 60X60_07",
+      "id": "a211e14a-2583-494d-89fd-75cffefe883a",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "0016442",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016442-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0016442_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016442-20x120-nat-90295-0; wall gardenia-wall-tile-i-pigmenti-bark-0016442-20x120-nat-90295-0",
+   "faces": [
+    {
+     "file": "0016442_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2688,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "c72245a7619d87b76dca30b860ddb4a12e00b6122c571f4f21acb3fb196485d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 20X120_01",
+      "id": "50436c5f-0410-453b-899e-e13fa767853f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016442_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1970,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "4b7b9261cfb6d795aa32d6b357899f51acfb4ac5bc2bc9b0f4b17b8f8e7ec779",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 20X120_10",
+      "id": "faa126be-e298-441b-9723-a677e58378ed",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016442_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2258,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "bac985bd957d25a9b84246f018156f0264f95aeee0b19b8474d3282699c478a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 20X120_06",
+      "id": "b2cdc77e-1787-4ff4-955f-fddb819233a4",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016442_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2758,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "ec2b69214b15a31add9fafd5dc95e19a65c5b6abe8289e3a35f4a7ac3cecdfc1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 20X120_08",
+      "id": "f7324b4d-8596-430e-8bb8-b2a9f88f0e91",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016442_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2402,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "6a260f815f5bbbc02e99ab928ce77a0ada9171740cbfc2139e53ae34a9833370",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 20X120_09",
+      "id": "00b14a0e-ed88-4f93-bdb2-4a1f328c1d36",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016442_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2094,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "4f178ff5d04dbcff117f9ed56dc8b047aa1a4de9fe698696e9750c671e00aed9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6",
+      "name": "I PIGMENTI BARK 20X120_05",
+      "id": "58565241-e849-4148-adaf-3b70c7a5fed8",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016442_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1806,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "d6ba79d803f1889014e488c57362cbf99b4e1ac51e3cbafe3e5e2eb985596a50",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7",
+      "name": "I PIGMENTI BARK 20X120_07",
+      "id": "dadc7ae5-493f-49c2-ae98-edde3599a1b4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016442_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 2456,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "9af0824223e471d0fc078c8aa5fbcb2fd35148a0a565490180dfab0bf07f9cd8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8",
+      "name": "I PIGMENTI BARK 20X120_03",
+      "id": "7288dc7f-5d06-460c-8dfe-96578a040ed4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016442_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1706,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "7287656133fb666a99263c7c7a8c6ee78d67c6529efba201bbd8042362920cf1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9",
+      "name": "I PIGMENTI BARK 20X120_02",
+      "id": "6cfb6989-2001-47a9-9595-ffa0d9d08aaf",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016442_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 1852,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "20X120-Natural/I PIGMENTI - BARK - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      428
+     ],
+     "source_sha256": "5fe9c6f78ebc42ffe18e5819304eddc718c7a673bfed0131d645809eb3a5f08c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10",
+      "name": "I PIGMENTI BARK 20X120_04",
+      "id": "cd64c308-be49-4e7d-919a-a48451850956",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "30x30",
+   "item_code": "0016608",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016608-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 300
+   },
+   "swatch": "0016608_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016608-30x30-nat-90325-0; wall gardenia-wall-tile-i-pigmenti-bark-0016608-30x30-nat-90325-0",
+   "faces": [
+    {
+     "file": "0016608_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1288,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_1 (2).jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "756d4c98f35568ab89396dfe773cd63bd1121dc88897293e2138ed8cc5bf6cf2",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 30X30_01",
+      "id": "5f1e9641-1853-4a84-a73b-1bf52fd2ad4d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016608_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 752,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_1.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "85162807421d33d902adce796b2dfe3bce9e7f416c3688bfa6edeb1cbcdb34bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 30X30_08",
+      "id": "64a3e22f-04bd-4f9e-a0f4-a82a55e9c60f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016608_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 814,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_2.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "2e7295dc4d8ee9a203681f09df0a3c635327d3e017ed8559424b810201b3af90",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 30X30_02",
+      "id": "9fa75068-6fe0-4733-b9a5-0585aa667e7e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016608_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 766,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_3.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "1b73790f0ce6e8456f9a5800718483aae343f1dd0fc8e6831a0d043ba009b591",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 30X30_10",
+      "id": "dda52711-4411-4018-a9a7-7c7c6b86915a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016608_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 888,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_5.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "5e1c01b29d3f76a39cc866810dfd86c865fe232329ebc05f40cdc67f712a405f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 30X30_09",
+      "id": "80a598e5-7b16-4933-b4d1-44aeff37e14e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016608_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1530,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_6.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "9583d6118d150480a8943ca5b17ecc89e84f8777c30475430eebf0b11e98c93c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 6",
+      "name": "I PIGMENTI BARK 30X30_03",
+      "id": "b09b32aa-1996-4eaf-a93e-a14967daf80b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016608_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 882,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_7.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "a740c1381109914e5d6367df451a03e69f24b3b14486cffabcd6aaadd8d9d7ce",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 7",
+      "name": "I PIGMENTI BARK 30X30_04",
+      "id": "ad4cad62-572e-498a-9e84-eead2ce92d7e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016608_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 746,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_8.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "aee8f33eee08a81d85e1ce7fe4490f9fc640213110764e4616d53384b6331ecb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 8",
+      "name": "I PIGMENTI BARK 30X30_07",
+      "id": "80e056b7-2adb-4582-a802-a7889dc35799",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016608_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 898,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_9.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "6e10f4b0a48aa2399e3cdd28c2f36ce0cf1f5e75596c4dd724939d105d3a8b6b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 9",
+      "name": "I PIGMENTI BARK 30X30_05",
+      "id": "8f32b4ee-b38a-42f5-b5f8-46a1055c4d3c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016608_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 300,
+     "width_px": 180,
+     "height_px": 180,
+     "bytes": 1180,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "30X30-Natural/I PIGMENTI - BARK - 30X30 - Natural - view_10.jpg",
+     "source_px": [
+      886,
+      886
+     ],
+     "source_sha256": "eab9f614e4c4d1a64489b2722ac1c04994ea3f0cca0bcec77bb1997c5121cf19",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X30 · Natural · Faccia 10",
+      "name": "I PIGMENTI BARK 30X30_06",
+      "id": "8057a894-c172-4893-88b4-398d81d22946",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "10x60",
+   "item_code": "0016462",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/bark/pf60016462-v102/",
+   "face_mm": {
+    "width": 100,
+    "height": 600
+   },
+   "swatch": "0016462_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 06 laid side by side",
+   "used_by": "floor gardenia-flooring-i-pigmenti-bark-0016462-10x60-nat-90315-0; wall gardenia-wall-tile-i-pigmenti-bark-0016462-10x60-nat-90315-0",
+   "faces": [
+    {
+     "file": "0016462_01.webp",
+     "face": 1,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 872,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_1.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "eae46d519cbe224a3dc5a3a80fda788a0088a10675e17dcf48bcd5e990ffa8a1",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 1 (view_01)",
+      "name": "I PIGMENTI BARK 10X60_01",
+      "id": "6dd3052e-2457-4074-bdc1-6c200a204903",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016462_02.webp",
+     "face": 2,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 628,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_2.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "6b4088e7e21573e0269160755a02604b5773ac9f4f4e6e992f39a7e32a13a42a",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 2",
+      "name": "I PIGMENTI BARK 10X60_05",
+      "id": "41c3d37c-a6b4-41fa-8509-71e8fb8a21fb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016462_03.webp",
+     "face": 3,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 522,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_3.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "cb6a167be66cde8eaa4ff07c356dddd3a212bbfbee072fbdafad0434cb6399f8",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 3",
+      "name": "I PIGMENTI BARK 10X60_09",
+      "id": "e59982e4-1549-4a6c-bf54-d0d9744a8b23",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016462_04.webp",
+     "face": 4,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 568,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_4.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "64441245bd5b31c3519ab5c40019a6fed9d3de0e34d927dc7a43ae2641db9871",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 4",
+      "name": "I PIGMENTI BARK 10X60_08",
+      "id": "e11d510e-59d2-48f8-b298-85b144fba7b5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016462_05.webp",
+     "face": 5,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 466,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_5.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "e005b48514f9fe06a0224119408b51bebde60778a669f736e05b44ef46019d45",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 5",
+      "name": "I PIGMENTI BARK 10X60_07",
+      "id": "5cb4b845-178b-438f-8084-4a4590080e13",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016462_06.webp",
+     "face": 6,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 730,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_6.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "df1c66d1a5df77d2079b7488a8cb86b3d0608ef6eb446d549c775ed8dd4bc39c",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 6",
+      "name": "I PIGMENTI BARK 10X60_10",
+      "id": "6d92a745-afce-4b2b-b843-f825a34c34e5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016462_07.webp",
+     "face": 7,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 496,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_7.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "f2ac0f07e077011155880d08a75d27c65cbe2dec4844eda05bd7be033da74277",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 7",
+      "name": "I PIGMENTI BARK 10X60_04",
+      "id": "ca86df96-dfda-4020-a226-9dd46a04a93d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016462_08.webp",
+     "face": 8,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 702,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_8.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "f411ca426f125bd25a89bee610160f18a884747cf532da548aba43711c5a917e",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 8",
+      "name": "I PIGMENTI BARK 10X60_02",
+      "id": "2818f369-fd1c-49be-af88-17d9dff90c77",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016462_09.webp",
+     "face": 9,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 734,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_9.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "eb0d9cc248a15d4baec1959f108f5a8a74336f9c6bf232163e74560c04956434",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 9",
+      "name": "I PIGMENTI BARK 10X60_06",
+      "id": "d951f018-08e9-403e-ba97-172d6dd42327",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016462_10.webp",
+     "face": 10,
+     "width_mm": 100,
+     "height_mm": 600,
+     "width_px": 60,
+     "height_px": 360,
+     "bytes": 1046,
+     "source_zip": "I PIGMENTI - BARK - minimali.zip",
+     "source_file": "10X60-Natural/I PIGMENTI - BARK - 10X60 - Natural - view_10.jpg",
+     "source_px": [
+      1772,
+      295
+     ],
+     "source_sha256": "db539bfa52abfb9ec27c07ddc1774f4bc414d19e757342e3e7eee336d4df7fca",
+     "source_px_per_mm": 2.953,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "10X60 · Natural · Faccia 10",
+      "name": "I PIGMENTI BARK 10X60_03",
+      "id": "3ee5f3fe-e238-4460-a3a0-38853f6a8e03",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

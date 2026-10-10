@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { ResolvedEditorLighting } from "./lightingTypes";
 import { EnvironmentController } from "./EnvironmentController";
 import { ExposureController } from "./ExposureController";
@@ -37,14 +38,11 @@ export function LightingSystem({
     roomHeight: number;
   };
 }) {
+  const { id: lightingMode, quality: lightingQuality } = lighting;
+  // Stable user data: a page re-render that changes nothing here doesn't make R3F redraw.
+  const userData = useMemo(() => ({ lightingMode, lightingQuality }), [lightingMode, lightingQuality]);
   return (
-    <group
-      name="editor-lighting-system"
-      userData={{
-        lightingMode: lighting.id,
-        lightingQuality: lighting.quality,
-      }}
-    >
+    <group name="editor-lighting-system" userData={userData}>
       <ExposureController lighting={lighting} />
       <EnvironmentController lighting={lighting} />
       {lighting.ambient.enabled ? (

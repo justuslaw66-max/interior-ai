@@ -1,7 +1,7 @@
 schema_version: 1
 surface_material:
   supplier: gardenia_orchidea
-  brand: Gardenia Orchidea
+  brand: Gardenia & Ariana
   collection: I Pigmenti
   material_id: gardenia-wall-tile-i-pigmenti-mou-0016465-10x60-nat-90318-0
   product_name: Gardenia I Pigmenti Mou 10x60 Nat
@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 9 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/i-pigmenti/mou/pf60016465-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-i-pigmenti-mou-faces.manifest.json. Each covers 100x600 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/0016465/0/90318 for wall use.
     - "Configurator format: 10x60 Nat; surface destination: ENTRAMBE."
@@ -60,16 +61,47 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016973.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016973.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 60
     height: 10
+  image_physical_size_mm:
+    width: 100
+    height: 600
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_01.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_02.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_03.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_04.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_05.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_06.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_07.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_08.webp
+      width_mm: 100
+      height_mm: 600
+    - url: /assets/catalog/surface-materials/gardenia/i-pigmenti/0016465_09.webp
+      width_mm: 100
+      height_mm: 600
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -94,12 +126,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

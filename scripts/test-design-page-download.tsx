@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -7,11 +7,6 @@ import {
   DownloadDialog,
   type DownloadDialogProps,
 } from "../components/editor/design-page/DownloadDialog";
-import {
-  IMAGES_UPGRADE_PROMPT,
-  PDF_UPGRADE_PROMPT,
-  promptUpgradeOnce,
-} from "../lib/export-upgrade-prompt";
 import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
 // The command bar's Download (audit findings SX2 and PR6).
@@ -36,6 +31,8 @@ assert.match(free, />Download</, "The dialog should be called Download.");
 assert.match(button(free, "download-images"), /aria-disabled="false"/);
 assert.doesNotMatch(button(free, "download-images"), /disabled=""/);
 assert.doesNotMatch(button(free, "download-pdf"), /disabled=""/, "A signed-in user with products can download a PDF.");
+assert.match(free, /data-testid="presentation-lighting-status"[^>]*>While this is open, the 3D view shows presentation lighting and quality, which pictures and PDFs use\.</,
+  "Download says the 3D view shows the lighting its files use.");
 assert.match(free, /data-testid="download-free-note"[\s\S]*?one view with a small watermark[\s\S]*?data-testid="download-see-pricing"[^>]*>See pricing</,
   "Free users should read the limits and find Pricing before they download.");
 assert.doesNotMatch(free, /download-pdf-sign-in|download-pdf-needs-items/);
@@ -67,24 +64,9 @@ assert.doesNotMatch(button(busy, "download-images"), /disabled=""/);
 assert.match(button(busy, "download-pdf"), /aria-disabled="true"/);
 assert.match(render({ exportingPdf: true }), /Preparing PDF…/);
 
-// Free exports ask to upgrade once a session, and never after the Download dialog stated the limits.
-const calls: string[] = [];
-const upgrade = {
-  setUpgradeReason: (reason: string) => calls.push(`reason:${reason}`),
-  setShowUpgrade: (open: boolean) => calls.push(`open:${open}`),
-};
-const prompted = { current: false };
-promptUpgradeOnce(prompted, true, IMAGES_UPGRADE_PROMPT, upgrade);
-assert.deepEqual(calls, [], "A download from the Download dialog should not open the upgrade dialog.");
-assert.equal(prompted.current, false);
-promptUpgradeOnce(prompted, false, IMAGES_UPGRADE_PROMPT, upgrade);
-assert.deepEqual(calls, ["reason:export_images", "open:true"]);
-promptUpgradeOnce(prompted, false, PDF_UPGRADE_PROMPT, upgrade);
-assert.equal(calls.length, 2, "The upgrade dialog should open at most once a session.");
-
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const commandBar = readEditorCommandBarSource();
-assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"designer-control hidden h-\[30px\][^"]*md:inline-flex/,
+assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"designer-control hidden h-9 w-9 [^"]*md:inline-flex/,
   "Download sits in the bar from tablet width up.");
 assert.match(commandBar, /data-testid="editor-command-overflow-download"\s*className=\{`\$\{menuButtonClass\} md:hidden`\}/,
   "Phones reach Download through More.");
@@ -93,9 +75,14 @@ assert.match(
   /const openDownload = \(\) => \{\s*actions\.navigation\.changeViewMode\("3d"\);\s*actions\.dialogs\.setDownloadOpen\(true\);[\s\S]*?onDownload: openDownload,/,
   "Download shows the 3D view it captures, then opens.",
 );
+assert.match(
+  read("lib/useDesignPageSceneRegionWorkspaceRegistration.ts"),
+  /lightingModeOverride:\s*[^\n]*base\.state\.dialogs\.downloadOpen\s*\?\s*"presentation"/,
+  "Download takes over Present & export's presentation lighting (J, 30 Sep).",
+);
 const workspace = read("components/editor/design-page/DesignPageWorkspace.tsx");
-assert.match(workspace, /onDownloadImages: \(\) => presentationBackupRegistration\.actions\.exportImages\(\{ limitsShown: true \}\)/);
-assert.match(workspace, /onDownloadPdf: \(\) => presentationBackupRegistration\.actions\.exportPdf\(\{ limitsShown: true \}\)/);
+assert.match(workspace, /onDownloadImages: presentationBackupRegistration\.actions\.exportImages,/);
+assert.match(workspace, /onDownloadPdf: presentationBackupRegistration\.actions\.exportPdf,/);
 assert.match(workspace, /onSeePricing: \(\) => \{ setPlansOpenerId\(EDITOR_DOWNLOAD_OPENER_ID\); setShowPlans\(true\); \}/,
   "Pricing from the Download note returns focus to Download.");
 assert.match(read("lib/design-page-dialog-layer-model.ts"), /freeLimits: !access\.capabilities\.exportWithoutWatermark,/,
@@ -103,8 +90,10 @@ assert.match(read("lib/design-page-dialog-layer-model.ts"), /freeLimits: !access
 assert.match(read("lib/design-page-dialog-layer-adapter.ts"), /download: dialogs\.download,/,
   "Download stays open while its export turns on Client Preview.");
 assert.match(read("components/editor/design-page/DesignPageDialogLayer.tsx"), /<DownloadDialog \{\.\.\.dialogs\.download\} \/>/);
+// Download states the Free limits before the file, so no export asks to upgrade afterwards (Present &
+// export, the one entry that didn't, retired in phase 4's small PR).
 const exportSource = read("lib/useDesignPageExport.ts");
-assert.doesNotMatch(exportSource, /setShowUpgrade\(true\)/, "Exports should only ask to upgrade through promptUpgradeOnce.");
-assert.equal((exportSource.match(/promptUpgradeOnce\(upgradePromptedRef, limitsShown,/g) ?? []).length, 2);
+assert.doesNotMatch(exportSource, /setShowUpgrade|setUpgradeReason|upgrade_prompt_shown|limitsShown/, "Exports don't ask to upgrade.");
+assert.equal(existsSync(join(process.cwd(), "lib/export-upgrade-prompt.ts")), false);
 
 console.log("Download dialog checks passed.");

@@ -1,0 +1,724 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: LA GEOTECA - BOURGOGNE BEIGE - minimali.zip (76687658 bytes, sha256 4e53727dc8dab43da49e1e69520d152a69d3d4d60a05bc82d08d8610e5fdddcb); PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip (20079695 bytes, sha256 7693d985e21daec1aaa0b67d08b49d181e50bd06e1b1c8df81cbda951bb62889).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016055",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-beige/pf60016055-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016055_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-beige-pf60016055-120x280-nat-90433-0; wall gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016055-120x280-nat-90433-0",
+   "faces": [
+    {
+     "file": "0016055_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 192512,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X280 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1736,
+      4096
+     ],
+     "source_sha256": "ec7a599aa23091e3463f5f2f30a8b12c2dd72aeaa5655b49a72e738972cf108e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X280_01",
+      "id": "69cb8806-6352-47c9-bcf1-9cc58cf0b551",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016055_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 191836,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X280-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1736,
+      4096
+     ],
+     "source_sha256": "f9b285fdc08efe4916cf958acd390e6d7f08a1430a9c24b36aae7cf97f3e4d4d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X280_02",
+      "id": "b9ad5500-dbea-421a-98b7-ab0c58722763",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016057",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-beige/pf60016057-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016057_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-beige-pf60016057-120x120-nat-90435-0; wall gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016057-120x120-nat-90435-0",
+   "faces": [
+    {
+     "file": "0016057_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67034,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b63a4f7cf3c88f80a73a7863ca69c62b2e8d63ed7221647619bd6baafd23be93",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_01",
+      "id": "71939ab7-a891-4b72-b9e6-f16601265887",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016057_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 72188,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_1_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c0b92ea758207c04d68f66ba4b4884707e79934d1d985d822b9d7695e0c99c1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_06",
+      "id": "4bbfa984-f7b3-4e55-bf13-b831254052f7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016057_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65342,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0d9b848f888095e90d78a680182addddaaf0072027476bf10b4626c4e2547cc6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_03",
+      "id": "f707e635-a3a5-4d5f-b078-ede504b04485",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016057_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65754,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "658f92f3440b4472b53ecfe7520a3f62a8d8e8c2d96a2c24a86d7bc64e42dc4f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_04",
+      "id": "d5b3accd-549b-46dd-a4af-bdd2391f8605",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016057_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65010,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2f1d50ea3bf83464ae097eba82c9ae596370513b0f2481faeb4938a0193044ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_05",
+      "id": "2311550c-13c3-4002-9c7f-56d5b115e655",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016057_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63062,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 120X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf98e54de2a772437012b0d4ab5b29fd049b2d1f2cd29b3d8291c063da1a75a3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 120X120_02",
+      "id": "cc5b5324-2d72-4781-93d5-eb9de5ec077a",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016059",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-beige/pf60016059-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016059_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    10
+   ],
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0; wall gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0",
+   "faces": [
+    {
+     "file": "0016059_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35060,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_1 (2)_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8eb49d1b40203de694fc04ffdec64f6be84c28d52947cdfa1ede6b0c2d23f3e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_01",
+      "id": "19d0c314-36f5-4f23-a9f9-bf6535491b7d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016059_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31086,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_9_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "613bc7284614c52a2a1b3d3395e2a230ec63272237767ae8c838a30071945cfc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_05",
+      "id": "e5d00baf-47ff-411d-9cf0-a3ded3705406",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016059_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34778,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_2_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4ebec4c15d4b793e4ce2ec0c55b4eb004ea1b4e0ed9d764ad0f081775a5ba365",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_07",
+      "id": "f4d66be5-7561-4423-b584-50c195534528",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016059_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44332,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_3_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c2497a0a9c2763ab0483f6d3563299e4b8e01e57191e48b2df46f3b3045a88c9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_11",
+      "id": "3ebca401-bd5d-48f4-b976-0521116b7b7d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016059_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32156,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_4_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d8f860bede0fff3dab015bc10c6038490c567be2f0ecb2b8d1a17ae596eefe8d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_12",
+      "id": "0c7697fc-5561-4f71-b10d-88023528a62f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016059_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36310,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_5_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4719612e8b483672ad3651dc8c426930baddeafc8f6e9d4303c37c6235b5d9e8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_10",
+      "id": "4fdc934c-20dd-41c6-b985-c836dc4c1abc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016059_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28008,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_6_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fb5f607dbcd43366bc1fc76e57e1c9fa214c926c65ca7ba3ccde66612ef2291f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_04",
+      "id": "515ae1e2-43b3-4ec0-80dc-9fbe764e4aba",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016059_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34020,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_7_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f6e4ba2f5a4761bf9c933f0597a3ff548253b20eb513bea8ae99ec0e84656cfa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_03",
+      "id": "820a4e8e-303c-446f-ae11-a108ffcfface",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016059_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30424,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_8_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "37680d17b18657190030684dc6b378543591e680ff802ecf526217a58e86b733",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_09",
+      "id": "e8a1f013-64c0-4646-9711-b1ce22d932bc",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016059_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34328,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_10_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "755395abe5249c742d3a90a2e85ebb56523ee64487e4194246f54be1f220baf6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_02",
+      "id": "8deb18d4-3633-4db1-a5fd-85de65b826f7",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0016059_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30848,
+     "source_zip": "LA GEOTECA - BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA GEOTECA - BOURGOGNE BEIGE - 60X120 - Nat P.tech - view_12_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f2040465739b53507bad3eb01741d394ed96ae394ad7b1c7df2b07dff78bd321",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 60X120_08",
+      "id": "b8dfcffe-abfa-45ee-9e94-c4914cdc9fe2",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016061",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/bourgogne-beige/pf60016061-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016061_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-bourgogne-beige-pf60016026-80x80-90431-0 (uses 0016061's faces: ABK's 8 R11 pictures (on Plein Air's page) are 0016061's Nat P.tech pictures, byte for byte); floor gardenia-flooring-la-geoteca-bourgogne-beige-pf60016061-80x80-nat-90439-0; wall gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016026-80x80-90431-0 (uses 0016061's faces: ABK's 8 R11 pictures (on Plein Air's page) are 0016061's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016061-80x80-nat-90439-0",
+   "faces": [
+    {
+     "file": "0016061_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31586,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "58be85b64fa4b7f2cc3c8747d79100f674902a28a5b082a8da812e5994819b88",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_01",
+      "id": "6046e194-95a9-4e65-8720-fc0fe6e5d451",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016061_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31254,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "79ead08f25141f33578ea32c0ee4fdbbe44498568396ee506df7ebdeb4f46792",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_08",
+      "id": "bc1a1812-c8ec-43bb-893d-946771c4f60d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016061_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28952,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ad494897bd94aca48d657d41e642c884aff43c68a022812b3424d1f6984e9b49",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_06",
+      "id": "18b7ca92-df4d-43ad-966a-6950cc3e38c8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016061_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29558,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3fec8f0f6b8a00bfb6c061945ff14068b8bcdb09ea598f5a2d9baeab102aac9a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_05",
+      "id": "056963b0-9839-4f7c-b26d-92beed5a19c9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016061_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32970,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9ac5d8e43e4095d32459db7d9dc07119cdc048773e45c617839ff6ca17f3200",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_07",
+      "id": "cac6c8ce-336d-4df2-9ca6-e329385a9725",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016061_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26048,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "591bf95696b797c64584729b46a226251e4bd2ccba1c1c3c13e6946d03658207",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_04",
+      "id": "bb63f237-196e-4bc4-9792-313dd13f32c9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0016061_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28080,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "523e9513a8ae603adc829530fa2d38b6cf89e92b5d693bfd3d02dbaeeb04d75b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_03",
+      "id": "07f6309d-c14b-44fc-88cf-0ebc0fc681b9",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0016061_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28064,
+     "source_zip": "PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LA GEOTECA BOURGOGNE BEIGE - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9f3f67933801c5fe4063b55b2d263d090727317ae7bc7a090f0a5f0aae846acb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "LA GEOTECA BOURGOGNE BEIGE RETT 80X80_02",
+      "id": "13c2754f-5708-4cdc-89b6-cd93ce624def",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

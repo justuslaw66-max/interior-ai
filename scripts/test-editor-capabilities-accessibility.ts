@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
@@ -115,6 +115,9 @@ for (const required of [
   "hasExternalEditorModal()",
   'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
   "...(options.returnFocusId ? [options.returnFocusId] : [])",
+  // The opener first among the return targets (UX 4d): Rename design from the Menu returns there.
+  "if (opener?.id && semanticIds.includes(opener.id)) {",
+  "semanticIds.unshift(opener.id);",
   ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
@@ -187,7 +190,7 @@ for (const relativePath of [
   "components/editor/design-page/PlansDialog.tsx",
   "components/editor/design-page/RoomRenameDialog.tsx",
   "components/editor/design-page/UpgradeDialog.tsx",
-  "components/editor/design-page/PresentExportDialog.tsx",
+  "components/editor/design-page/DownloadDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
   "components/editor/shop/ShoppingBuyListDialog.tsx",
 ]) {
@@ -204,23 +207,21 @@ for (const relativePath of [
   );
 }
 
-const presentExport = read(
-  "components/editor/design-page/PresentExportDialog.tsx"
+// Present & export retired in phase 4's small PR: Share and Download are in the command bar.
+assert.ok(
+  !existsSync(join(process.cwd(), "components/editor/design-page/PresentExportDialog.tsx")),
+  "Present & export is retired"
 );
+// The plan display moved from Present & export to Plan, for Pro (UX audit SX4, phase 4e).
 assert.match(
-  presentExport,
+  read("components/editor/design-page/PlanDisplaySection.tsx"),
   /dynamic\([\s\S]*PresentExportProfessionalPlanControls[\s\S]*ssr:\s*false/,
   "professional plan controls should remain behind a client-only lazy boundary"
 );
 assert.match(
-  presentExport,
-  /closeDisabled=\{Boolean\(configuration\.shareFallbackOpen\)\}[\s\S]*?closeButtonId=\{PRESENT_EXPORT_CLOSE_ACTION_ID\}[\s\S]*?manageBackground/,
-  "Present/Export must suppress parent dismissal while the nested share fallback is topmost"
-);
-assert.match(
-  presentExport,
-  /id=\{PRESENT_EXPORT_CREATE_SHARE_ACTION_ID\}\s+data-testid="create-share"/,
-  "Create Share must expose its stable semantic focus identity"
+  read("components/editor/command-bar/CommandBarShareButton.tsx"),
+  /id=\{GUEST_SHARE_OPENER_ID\}[\s\S]*?data-testid="editor-command-share"/,
+  "Share must expose its stable semantic focus identity"
 );
 
 const shareFallback = read(
@@ -257,8 +258,6 @@ assert.doesNotMatch(
 
 const shareFallbackFocus = read("lib/share-link-fallback-dialog-focus.ts");
 for (const semanticId of [
-  "present-export-create-share-action",
-  "present-export-close-action",
   "share-link-fallback-close-action",
   "share-link-fallback-copy-action",
   "share-link-fallback-open-action",
@@ -270,8 +269,8 @@ for (const semanticId of [
 }
 assert.match(
   shareFallbackFocus,
-  /SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS[\s\S]*PRESENT_EXPORT_CREATE_SHARE_ACTION_ID,[\s\S]*PRESENT_EXPORT_CLOSE_ACTION_ID/,
-  "fallback return must prefer the current Create Share action before the parent close fallback"
+  /SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS = \[GUEST_SHARE_OPENER_ID\] as const;/,
+  "fallback return must go to the current Share action"
 );
 
 const dialogLayer = read(
@@ -279,8 +278,8 @@ const dialogLayer = read(
 );
 assert.match(
   dialogLayer,
-  /getShareFallbackLayerState[\s\S]*dialogs\.presentExport\.state\.designId[\s\S]*overlays\.shareFallback\.lifecycleMode[\s\S]*parentOpen/,
-  "design, mode, and parent scope changes must create a new fallback lifecycle generation"
+  /getShareFallbackLayerState[\s\S]*overlays\.shareFallback\.designId[\s\S]*overlays\.shareFallback\.lifecycleMode/,
+  "design and mode changes must create a new fallback lifecycle generation"
 );
 const dialogLayerModel = read("lib/design-page-dialog-layer-model.ts");
 assert.match(
@@ -290,8 +289,8 @@ assert.match(
 );
 assert.match(
   dialogLayer,
-  /shareFallback\.open[\s\S]*<ShareLinkFallbackDialog[\s\S]*key=\{shareFallback\.scopeKey\}/,
-  "the fixed dialog layer must coordinate one nested parent/child ownership state"
+  /<DesignPageToasts \{\.\.\.shareFallback\.toasts\} \/>[\s\S]*<ShareLinkFallbackDialog\s+key=\{shareFallback\.scopeKey\}[\s\S]*url=\{shareFallback\.open \?/,
+  "the fixed dialog layer must give the fallback one lifecycle and keep its copy feedback out of the toasts"
 );
 
 const shareLink = read("lib/useDesignPageShareLink.ts");
@@ -413,14 +412,12 @@ const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
 for (const required of [
   'data-testid="starter-floor-plan-picker"',
   'aria-labelledby="starter-floor-plan-picker-title"',
-  'data-testid="skip-to-starter-layouts"',
   "templatePickerHeadingRef.current?.focus({ preventScroll: true })",
-  "firstTemplateActionRef.current?.focus()",
   "opener.focus({ preventScroll: true })",
 ]) {
   assert.ok(
     planPanel.includes(required),
-    `new-plan picker focus workflow must preserve ${required}`
+    `Plan's address search focus workflow must preserve ${required}`
   );
 }
 

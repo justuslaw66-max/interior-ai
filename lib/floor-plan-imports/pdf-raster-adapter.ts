@@ -17,6 +17,7 @@ import {
   type FloorPlanVectorizerProvider,
 } from "./vectorizer-evidence";
 import { z } from "zod";
+import { canonicalRoomName, canonicalRoomType, closedSpacesProduced, openPlanSourceLabels, VOID_ROOM_PROVENANCE_NOTE } from "@/lib/floor-plan-void-rooms";
 import type {
   FloorPlanAnnotationV2,
   FloorPlanDimensionV2,
@@ -63,9 +64,7 @@ import {
   isEnhancedFloorPlanImportEnabled,
 } from "./page-selection";
 import type { FloorPlanPageCandidate } from "./types";
-import {
-  normalizeRasterForLinework,
-} from "./raster-linework";
+import { normalizeRasterForLinework } from "./raster-linework";
 import {
   createDefaultFloorPlanLocalOcrProvider,
   type FloorPlanLocalOcrProvider,
@@ -1415,6 +1414,7 @@ function wallProvenanceNote(
 }
 
 function roomProvenanceNote(detected: RegisteredRoomBoundary, geometryEvidenceName: string): string {
+  if (detected.void) return VOID_ROOM_PROVENANCE_NOTE;
   if ((detected.sourceFixtures?.length ?? 0) > 0 && detected.roomType === "toilet") {
     return "Unlabeled bathroom classified from a sanitary fixture cluster; its closed boundary was accepted only after every edge registered to deterministic source wall linework";
   }
@@ -1687,12 +1687,12 @@ function buildCanonicalCandidate(
     }
     canonicalRooms.push({
       id: roomId,
-      name: detected.label,
-      roomType: detected.roomType,
+      name: canonicalRoomName(detected),
+      roomType: canonicalRoomType(detected),
       wallLoops: [{ kind: "outer", walls: roomWalls }],
       provenance: edgeProvenance(detected.confidence, roomProvenanceNote(detected, geometryEvidenceName)),
     });
-    if ((detected.sourceLabels?.length ?? 0) > 1 && page) {
+    if ((openPlanSourceLabels(detected)?.length ?? 0) > 1 && page) {
       for (const sourceLabel of detected.sourceLabels ?? []) {
         addSourceLabelAnnotation(
           sourceLabel,
@@ -1955,7 +1955,7 @@ function buildCanonicalCandidate(
       issue(
         "room-inventory-review",
         "rooms_confirmation",
-        `${canonicalRooms.length} closed spaces were produced. ${page.semantics.roomLabels.length} room labels were detected; unnamed spaces use generic Room 1, Room 2 labels and can be named later.`,
+        `${closedSpacesProduced(canonicalRooms)}. ${page.semantics.roomLabels.length} room labels were detected; unnamed spaces use generic Room 1, Room 2 labels and can be named later.`,
         "warning"
       )
     );

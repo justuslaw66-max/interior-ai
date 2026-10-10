@@ -11,6 +11,7 @@ import {
   isDesignPageSelectionShortcutBlocked,
   type DesignPageKeyboardInput,
 } from "@/lib/design-page-selection-keyboard-commands";
+import { hasCommandModifier } from "@/lib/editor-shortcut-guard";
 import type { FloorPlanDrawRoomMode } from "@/lib/floor-plan-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
@@ -98,10 +99,12 @@ function acceptShortcut(event: KeyboardEvent, action: () => void): void {
   action();
 }
 
+/** Drawing keys are Plan's, and leave ⌘, Ctrl and Alt to the browser (UX audit ED12). */
 function handleToolShortcut(
   event: KeyboardEvent,
   input: UseDesignPageFloorPlanTracingKeyboardInput
 ): void {
+  if (input.state.editorMode !== "design" || hasCommandModifier(event)) return;
   const key = event.key.toLowerCase();
   const keyboardInput = getKeyboardInput(event);
   const { keyboardOwnership } = input.capabilities;
@@ -162,9 +165,9 @@ export function bindDesignPageFloorPlanTracingKeyboard(
 export function useDesignPageFloorPlanTracingKeyboard(
   input: UseDesignPageFloorPlanTracingKeyboardInput
 ): void {
-  const { editorMode, isClientPreview, viewMode } = input.state;
+  const { isClientPreview, viewMode } = input.state;
   useEffect(() => {
-    if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
+    if (isClientPreview || viewMode !== "2d") return;
     return bindDesignPageFloorPlanTracingKeyboard(window, input);
-  }, [editorMode, input, isClientPreview, viewMode]);
+  }, [input, isClientPreview, viewMode]);
 }

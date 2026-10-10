@@ -246,28 +246,21 @@ async function openFurnishPanel(page: Page) {
   await expect(page.getByTestId("furnish-room-target-select")).toBeVisible();
 }
 
-async function openPresentExport(page: Page) {
-  await selectEditorWorkspace(page, "editor-workflow-export");
-  const dialog = page.getByTestId("present-export-dialog");
-  const cameraViewName = page.getByTestId("camera-view-name-input");
-  await expect(async () => {
-    if (await dialog.isVisible().catch(() => false)) return;
-    await page.getByTestId("editor-command-overflow").click({ timeout: 1_000 });
-    await page
-      .getByTestId("editor-command-overflow-present-export")
-      .click({ timeout: 1_000 });
-  }).toPass({ timeout: 30_000 });
-  await expect(dialog).toBeVisible();
-  await cameraViewName.scrollIntoViewIfNeeded();
-  await expect(cameraViewName).toBeVisible();
+// Saved views are on the 3D view's Views button (UX audit SX4, phase 4e).
+async function openSavedViews(page: Page) {
+  const toolbar = page.getByTestId("canvas-view-toolbar");
+  await toolbar.getByTestId("editor-view-3d").click();
+  await expect(toolbar.getByTestId("editor-view-3d")).toHaveAttribute("aria-pressed", "true");
+  await toolbar.getByTestId("canvas-saved-views").click();
+  await expect(page.getByTestId("canvas-saved-views-panel")).toBeVisible();
+  await expect(page.getByTestId("camera-view-name-input")).toBeVisible();
 }
 
-async function closePresentExport(page: Page) {
-  const close = page.getByRole("button", { name: "Close export panel" });
-  await expect(close).toBeVisible();
-  await expect(close).toBeEnabled();
-  await close.evaluate((button) => (button as HTMLButtonElement).click());
-  await expect(close).toBeHidden();
+async function closeSavedViews(page: Page) {
+  const views = page.getByTestId("canvas-saved-views");
+  await views.click();
+  await expect(page.getByTestId("canvas-saved-views-panel")).toHaveCount(0);
+  await expect(views).toHaveAttribute("aria-expanded", "false");
 }
 
 async function expectLoadedDesignRemainsStable(
@@ -388,9 +381,9 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
       await expectInspector("1600", "User confirmed");
 
-      await page.getByTestId("save-design").click();
+      // A design in the account saves itself, so the bar has no Save (Decision E): autosave sends it.
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       await expectCloudDesignReady(page, seed.designId);
-      // Autosave may have sent this state before the explicit Save click.
       await expect.poll(() => successfulWrites, { timeout: 30_000 }).toContainEqual(editedOpenings);
       await expectPersistedFingerprint(page, seed.designId, editedFingerprint);
       await expectCloudOpenings(editedOpenings);
@@ -442,7 +435,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await openFurnishPanel(page);
       await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(4);
 
-      await openPresentExport(page);
+      await openSavedViews(page);
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Client Preview",
       );
@@ -451,17 +444,16 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
-      await closePresentExport(page);
+      await closeSavedViews(page);
 
-      const saveButton = page.getByTestId("save-design");
-      await expect(saveButton).toBeVisible();
-      await saveButton.click();
+      // No Save on a design in the account (Decision E): autosave sends the view.
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       const saveStatus = page.getByTestId("save-status");
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
       await expect(saveStatus).toHaveAttribute("data-source", "cloud");
-      await expect(saveStatus).toContainText("Cloud saved");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Saved\. Saved to your account /);
       expect(designCreateRequests).toBe(0);
       const savedFingerprint = await readStableFingerprint(page);
       expect(savedFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
@@ -500,12 +492,12 @@ test.describe("3. Save + Reload Persistence", () => {
       );
       await openFurnishPanel(page);
       await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(4);
-      await openPresentExport(page);
+      await openSavedViews(page);
       await expect(page.getByTestId("saved-camera-view-list")).toContainText(
         "Persistence E2E View",
       );
-      await closePresentExport(page);
-      await saveButton.click();
+      await closeSavedViews(page);
+      await expect(page.getByTestId("save-design")).toHaveCount(0);
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
@@ -569,7 +561,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toHaveAttribute("data-status", "failed", {
         timeout: 30_000,
       });
-      await expect(saveStatus).toContainText("Cloud save failed");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Not saved\. /);
       await expect(page.getByTestId("save-status-retry")).toBeVisible();
       expect(rejectedWrite).toBe(true);
 
@@ -578,7 +570,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(saveStatus).toHaveAttribute("data-status", "saved", {
         timeout: 30_000,
       });
-      await expect(saveStatus).toContainText("Cloud saved");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Saved\. Saved to your account /);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

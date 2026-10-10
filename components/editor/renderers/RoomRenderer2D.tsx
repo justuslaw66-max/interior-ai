@@ -1,7 +1,7 @@
 "use client";
-import { Line } from "@react-three/drei/core/Line";
+import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -22,11 +22,12 @@ import {
   type TracedOpeningPreview,
 } from "@/lib/floor-plan-tracing";
 import {
-  buildHouseRoomAdjacencyGuides, buildHouseRoomDoorwaySuggestions,
+  buildHouseRoomAdjacencyGuides,
   HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS, ROOM_DIMENSION_DEFAULTS,
   resolveHouseRoomMove, type HouseRoomDoorwaySuggestion,
   type HouseRoomSnapPreview,
 } from "@/lib/design-page-house-plan";
+import { neededDoorwaySuggestions } from "@/lib/room-connection-checklist";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings, normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
@@ -62,6 +63,8 @@ import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
+import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "./canvasChipStyle";
+import { memoizeByObject } from "./memoizeByObject";
 type RectZone = {
   id: string;
   x: number;
@@ -271,7 +274,7 @@ function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], i
   return getSurfaceMaterialPlanColor(settings.materialId, fallback);
 }
 
-function HouseRoomFloorFill2D({
+const HouseRoomFloorFill2D = memo(function HouseRoomFloorFill2D({
   room,
   fillColor,
   dragStatus,
@@ -345,7 +348,7 @@ function HouseRoomFloorFill2D({
       />
     </mesh>
   );
-}
+});
 
 function HouseRoomComparisonOverlay2D({
   room,
@@ -566,11 +569,9 @@ const getRoomHoleOutlinePoints = (room: HouseRoom2D): Array<Array<[number, numbe
       return [...points, points[0]];
     });
 
-const buildRoomShapeGeometry = (room: HouseRoom2D) =>
-  buildRoomPlanShape(getRoomOutlinePoints(room), getRoomHoleOutlinePoints(room));
-
-const buildInnerFloorShapeGeometry = (room: HouseRoom2D) =>
-  buildRoomPlanShape(buildInnerFloorGeometry2D(room), getRoomHoleOutlinePoints(room));
+// One shape per room object, so a re-render (a hover, a selection) keeps each room's ShapeGeometry.
+const buildRoomShapeGeometry = memoizeByObject((room: HouseRoom2D) => buildRoomPlanShape(getRoomOutlinePoints(room), getRoomHoleOutlinePoints(room)));
+const buildInnerFloorShapeGeometry = memoizeByObject((room: HouseRoom2D) => buildRoomPlanShape(buildInnerFloorGeometry2D(room), getRoomHoleOutlinePoints(room)));
 
 function buildRectangleLinePoints(points: FloorPlanPoint[]): Array<[number, number, number]> {
   if (points.length !== 2) return [];
@@ -1569,24 +1570,15 @@ export default function RoomRenderer2D({
     if (traceOpeningMode || roomSnapPreview) {
       return { maxAdjacency: 4, maxDoorways: 6, scale: 0.9 };
     }
-    if (planZoom < 56) return { maxAdjacency: 0, maxDoorways: 0, scale: 0.48 };
+    if (planZoom < 50) return { maxAdjacency: 0, maxDoorways: 0, scale: 0.48 };
     if (planZoom < 74) return { maxAdjacency: 1, maxDoorways: 2, scale: 0.54 };
     if (planZoom < 94) return { maxAdjacency: 2, maxDoorways: 3, scale: 0.66 };
     if (planZoom < 124) return { maxAdjacency: 3, maxDoorways: 4, scale: 0.78 };
     return { maxAdjacency: 6, maxDoorways: 8, scale: 1 };
   }, [planZoom, roomSnapPreview, traceOpeningMode]);
-  const contextLabelScale = planLabelDensity.scale;
   const showAdjacencyLabels = planLabelDensity.maxAdjacency > 0 || Boolean(roomSnapPreview);
   const showDoorwaySuggestionLabels = planLabelDensity.maxDoorways > 0 || traceOpeningMode;
-  const compactContextLabelStyle = {
-    borderRadius: 5,
-    fontSize: 8,
-    fontWeight: 800,
-    padding: "1px 5px",
-    whiteSpace: "nowrap",
-    transform: `scale(${contextLabelScale})`,
-    transformOrigin: "center",
-  } as const;
+  const compactContextLabelStyle = { ...CANVAS_CHIP, borderRadius: 999 } as const;
 
   useFrame(() => {
     const nextZoom = readPlanZoom();
@@ -1855,19 +1847,10 @@ export default function RoomRenderer2D({
   const visibleDoorwaySuggestions = useMemo(() => {
     if (!onAddDoorwaySuggestion || rooms.length < 2) return [];
     const suppressedKeys = new Set(suppressedDoorwaySuggestionKeys);
-    return buildHouseRoomDoorwaySuggestions(rooms, activeRoomId)
-      .filter(
-        (suggestion) =>
-          !suppressedKeys.has(getDoorwaySuggestionKey(suggestion)) &&
-          !openings.some(
-            (opening) =>
-              opening.kind === "door" &&
-              opening.roomId === suggestion.roomId &&
-              opening.wall === suggestion.wall &&
-              Math.abs(opening.offset - suggestion.offsetMeters) <=
-                Math.max(0.15, suggestion.widthMeters / 2)
-          )
-      )
+    // Only where the connections checklist says a door is needed (UX 4g, ST9).
+    const connectionOpenings = openings.map((opening) => ({ ...opening, offsetMm: opening.offset * 1000, widthMm: opening.width * 1000 }));
+    return neededDoorwaySuggestions(rooms, connectionOpenings, activeRoomId)
+      .filter((suggestion) => !suppressedKeys.has(getDoorwaySuggestionKey(suggestion)))
       .sort((a, b) => {
         const activePriority =
           Number(b.roomId === activeRoomId) - Number(a.roomId === activeRoomId);
@@ -3376,8 +3359,8 @@ export default function RoomRenderer2D({
                       background: isSelectedRoom
                         ? "rgba(209,250,229,0.97)"
                         : "rgba(255,255,255,0.78)",
-                      fontSize: 11,
-                      fontWeight: 700,
+                      ...CANVAS_CHIP_TEXT,
+                      minHeight: 24,
                       color: isActiveRoom || isSelectedRoom ? "#166534" : "#525252",
                       border:
                         isSelectedRoom
@@ -3391,7 +3374,7 @@ export default function RoomRenderer2D({
                         : "none",
                       display: "flex",
                       gap: 4,
-                      padding: "2px 7px",
+                      padding: "4px 8px",
                       pointerEvents: "none",
                       whiteSpace: "nowrap",
                     }}
@@ -3401,7 +3384,7 @@ export default function RoomRenderer2D({
                         data-testid="house-room-2d-selection-badge"
                         data-room-id={room.id}
                         aria-hidden="true"
-                        style={{ fontSize: 10, fontWeight: 900 }}
+                        style={{ fontSize: 12, fontWeight: 900 }}
                       >
                         ✓
                       </span>
@@ -3442,8 +3425,8 @@ export default function RoomRenderer2D({
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 2,
-                      padding: 2,
+                      gap: 4,
+                      padding: 3,
                       border: "1px solid rgba(34,197,94,0.22)",
                       borderRadius: 999,
                       background: "rgba(255,255,255,0.9)",
@@ -3459,20 +3442,19 @@ export default function RoomRenderer2D({
                       aria-label="Move room"
                       title="Move room"
                       data-testid="selected-room-move"
+                      className={CANVAS_CHIP_TOUCH_CLASS}
                       disabled={!onMoveRoom}
                       onPointerDown={(event) => startExplicitRoomMove(room, event)}
                       onClick={(event) => event.stopPropagation()}
                       style={{
+                        ...CANVAS_CHIP_BUTTON,
                         border: "none",
-                        borderRadius: 5,
+                        borderRadius: 999,
                         background: "rgba(220,252,231,0.95)",
                         color: "#166534",
                         cursor: onMoveRoom ? "grab" : "not-allowed",
-                        fontSize: 9,
-                        fontWeight: 800,
                         opacity: onMoveRoom ? 1 : 0.45,
                         minWidth: 32,
-                        padding: "3px 6px",
                         touchAction: "none",
                         userSelect: "none",
                       }}
@@ -3480,7 +3462,7 @@ export default function RoomRenderer2D({
                       Move
                     </button>
                     {[
-                      { id: "floor", label: "Floor", action: onEditFloor },
+                      { id: "floor", label: "Surfaces", action: onEditFloor },
                       { id: "fit", label: "Fit", action: onFitRoom },
                       { id: "rename", label: "Name", action: onRenameRoom },
                       { id: "duplicate", label: "Copy", action: onDuplicateRoom },
@@ -3489,25 +3471,24 @@ export default function RoomRenderer2D({
                       <button
                         key={tool.id}
                         type="button"
-                        aria-label={`${tool.label} room`}
-                        title={`${tool.label} room`}
+                        aria-label={tool.id === "floor" ? "Room surfaces" : `${tool.label} room`}
+                        title={tool.id === "floor" ? "Room surfaces" : `${tool.label} room`}
                         data-testid={`selected-room-${tool.id}`}
+                        className={CANVAS_CHIP_TOUCH_CLASS}
                         disabled={!tool.action}
                         onClick={(event) => {
                           event.stopPropagation();
                           tool.action?.(room.id);
                         }}
                         style={{
+                          ...CANVAS_CHIP_BUTTON,
                           border: "none",
-                          borderRadius: 5,
+                          borderRadius: 999,
                           background: tool.id === "delete" ? "#fee2e2" : "rgba(243,244,246,0.9)",
                           color: tool.id === "delete" ? "#991b1b" : "#111827",
                           cursor: tool.action ? "pointer" : "not-allowed",
-                          fontSize: 9,
-                          fontWeight: 800,
                           opacity: tool.action ? 1 : 0.45,
-                          minWidth: tool.id === "delete" ? 34 : 26,
-                          padding: "3px 6px",
+                          minWidth: 32,
                         }}
                       >
                         {tool.id === "rename" ? "Name" : tool.id === "duplicate" ? "Copy" : tool.label}
@@ -3533,25 +3514,24 @@ export default function RoomRenderer2D({
                       background: "rgba(255,255,255,0.9)",
                       boxShadow: "0 5px 14px rgba(15,23,42,0.12)",
                       color: "#14532d",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: "4px 7px",
+                      ...CANVAS_CHIP_TEXT,
+                      padding: "4px 8px",
                       pointerEvents: "none",
                       transform: "translate(14px, -16px)",
                       whiteSpace: "nowrap",
                     }}
                   >
-                    <div style={{ color: "#166534", fontSize: 11 }}>
+                    <div style={{ color: "#166534" }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
                       <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
                         {formatDisplayArea(getPlanRoomFloorAreaSqm(room), measurementUnit)}
                       </span>
                     </div>
-                    <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 650, marginTop: 1 }}>
+                    <div style={{ color: "#4b5563", fontWeight: 600, marginTop: 2 }}>
                       Wall {formatDimension(room.wallThickness ?? 0.12)}
                     </div>
                     {canEditPlan && onCommitRoomDimensionEdit ? (
-                      <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 600, marginTop: 1 }}>
+                      <div style={{ color: "#4b5563", fontWeight: 600, marginTop: 2 }}>
                         Click Width or Depth to edit
                       </div>
                     ) : null}
@@ -3630,7 +3610,7 @@ export default function RoomRenderer2D({
                     raycast={() => null}
                   />
                   <Html
-                    zIndexRange={[20, 0]}
+                    zIndexRange={[19, 0]}
                     position={[0, 0.022, widthDimensionZ]}
                     center
                     transform={false}
@@ -3639,16 +3619,11 @@ export default function RoomRenderer2D({
                     editingRoomDimension.axis === "width" ? (
                       <div
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontSize: 10,
-                          fontWeight: 700,
+                          ...CANVAS_CHIP,
                           color: "#166534",
                           background: "rgba(255,255,255,0.98)",
                           border: "1px solid rgba(34,197,94,0.32)",
-                          borderRadius: 6,
-                          padding: "3px 6px",
+                          padding: "3px 8px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
                           boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
@@ -3677,12 +3652,11 @@ export default function RoomRenderer2D({
                             }
                           }}
                           style={{
-                            width: 58,
+                            width: 68,
                             border: "none",
                             background: "transparent",
                             color: "#166534",
-                            fontSize: 10,
-                            fontWeight: 700,
+                            ...CANVAS_CHIP_TEXT,
                             outline: "none",
                           }}
                         />
@@ -3698,14 +3672,12 @@ export default function RoomRenderer2D({
                         event.stopPropagation();
                         startDimensionEdit(room, "width");
                       }}
+                      className={CANVAS_CHIP_TOUCH_CLASS}
                       style={{
-                        fontSize: 10,
-                        fontWeight: 700,
+                        ...CANVAS_CHIP,
                         color: "#166534",
                         background: "rgba(240,253,244,0.88)",
                         border: "1px solid rgba(34,197,94,0.26)",
-                        borderRadius: 5,
-                        padding: "1px 5px",
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
@@ -3717,7 +3689,7 @@ export default function RoomRenderer2D({
                     )}
                   </Html>
                   <Html
-                    zIndexRange={[20, 0]}
+                    zIndexRange={[19, 0]}
                     position={[depthDimensionX, 0.022, 0]}
                     center
                     transform={false}
@@ -3726,16 +3698,11 @@ export default function RoomRenderer2D({
                     editingRoomDimension.axis === "depth" ? (
                       <div
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontSize: 10,
-                          fontWeight: 700,
+                          ...CANVAS_CHIP,
                           color: "#166534",
                           background: "rgba(255,255,255,0.98)",
                           border: "1px solid rgba(34,197,94,0.32)",
-                          borderRadius: 6,
-                          padding: "3px 6px",
+                          padding: "3px 8px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
                           boxShadow: "0 1px 6px rgba(15,23,42,0.12)",
@@ -3764,12 +3731,11 @@ export default function RoomRenderer2D({
                             }
                           }}
                           style={{
-                            width: 58,
+                            width: 68,
                             border: "none",
                             background: "transparent",
                             color: "#166534",
-                            fontSize: 10,
-                            fontWeight: 700,
+                            ...CANVAS_CHIP_TEXT,
                             outline: "none",
                           }}
                         />
@@ -3785,14 +3751,12 @@ export default function RoomRenderer2D({
                         event.stopPropagation();
                         startDimensionEdit(room, "depth");
                       }}
+                      className={CANVAS_CHIP_TOUCH_CLASS}
                       style={{
-                        fontSize: 10,
-                        fontWeight: 700,
+                        ...CANVAS_CHIP,
                         color: "#166534",
                         background: "rgba(240,253,244,0.88)",
                         border: "1px solid rgba(34,197,94,0.26)",
-                        borderRadius: 5,
-                        padding: "1px 5px",
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
@@ -4188,10 +4152,7 @@ export default function RoomRenderer2D({
                   color: "#166534",
                   pointerEvents: "none",
                   boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
-                  transform:
-                    guide.orientation === "vertical"
-                      ? `translate(28px, -12px) scale(${contextLabelScale})`
-                      : `translateY(16px) scale(${contextLabelScale})`,
+                  transform: guide.orientation === "vertical" ? "translate(28px, -12px)" : "translateY(16px)",
                 }}
               >
                 Shared wall
@@ -4221,6 +4182,7 @@ export default function RoomRenderer2D({
           <button
             type="button"
             data-testid="room-doorway-suggestion"
+            className={CANVAS_CHIP_TOUCH_CLASS}
             onPointerDown={(event) => {
               event.stopPropagation();
             }}
@@ -4229,7 +4191,8 @@ export default function RoomRenderer2D({
               onAddDoorwaySuggestion?.(suggestion);
             }}
             style={{
-              ...compactContextLabelStyle,
+              ...CANVAS_CHIP_BUTTON,
+              borderRadius: 999,
               border: "1px solid rgba(37,99,235,0.28)",
               background: "rgba(255,255,255,0.9)",
               color: "#1d4ed8",
@@ -4886,7 +4849,7 @@ export default function RoomRenderer2D({
             ))}
             {selectedOverlayId !== seg.id && seg.roomId === activeRoomId && (
               <Html
-                zIndexRange={[10, 0]}
+                zIndexRange={[20, 0]}
                 position={seg.identityLabelPosition}
                 center
                 transform={false}
@@ -4895,6 +4858,7 @@ export default function RoomRenderer2D({
                 <button
                   type="button"
                   data-testid="plan-opening-kind-label"
+                  className={CANVAS_CHIP_TOUCH_CLASS}
                   data-opening-kind={seg.kind}
                   data-opening-id={seg.id}
                   aria-label={`Select ${openingDisplayName(seg)}`}
@@ -4909,10 +4873,7 @@ export default function RoomRenderer2D({
                     borderRadius: 5,
                     background: "rgba(255,255,255,0.92)",
                     color: seg.kind === "door" ? openingDoorColor : openingWindowColor,
-                    fontSize: 10,
-                    fontWeight: 800,
-                    lineHeight: 1,
-                    padding: "3px 5px",
+                    ...CANVAS_CHIP,
                     pointerEvents: "auto",
                     cursor: "pointer",
                     whiteSpace: "nowrap",

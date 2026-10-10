@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
 import { chooseTemplateStart } from "./multi-room/helpers";
+import { chooseStartTemplate } from "./variant-test-utils";
 
 const PANEL_ATTRIBUTE = "data-selected-wall-panel-id";
 
@@ -22,6 +23,15 @@ type WorkspaceGridLeakMetrics = {
 type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
   cameraHandleCenter: { x: number; y: number };
 };
+
+
+/** Opens the surface inspector's "Adjust pattern" if it's closed (it is for consumers). */
+async function openAdjustPattern(page: Page) {
+  const adjust = page.getByTestId("surface-adjust-pattern");
+  await expect(adjust).toBeVisible();
+  if ((await adjust.getAttribute("open")) === null) await adjust.locator("summary").click();
+  await expect(adjust).toHaveAttribute("open", "");
+}
 
 async function frameLivingEastWall(page: Page) {
   const navigator = page.getByRole("region", { name: "Room navigator" });
@@ -64,8 +74,14 @@ async function clickPanelAt(page: Page, x: number, y: number) {
 async function scanLivingEastPanels(page: Page) {
   const hits = new Map<string, Array<{ x: number; y: number }>>();
   const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
+  // Only points where the 3D view is on top are clicked (UX 4c): the room focus pill and a picked
+  // door's Width and Delete bar sit over the view across the scan's first rows, and a click there
+  // would press "Focus room" or delete the door mid-scan.
+  const onCanvas = (x: number, y: number) =>
+    page.evaluate(([px, py]) => Boolean(document.elementFromPoint(px, py)?.closest('[data-testid="scene-canvas"]')), [x, y]);
   for (const y of [160, 200, 240, 280, 320, 360]) {
     for (let x = 300; x <= 900; x += 30) {
+      if (!(await onCanvas(x, y))) continue;
       await page.mouse.click(x, y);
       await page.waitForTimeout(40);
       if ((await selectedInspector.count()) === 0) continue;
@@ -106,6 +122,10 @@ async function setLivingEastWallAngle(
   angleDeg: number,
   direction: 1 | -1
 ) {
+  // The right rail scrolls. The wall's inspector runs below its fold at 1280x720, so pressing its
+  // "Change material" scrolls the rail (157px in the 2 Oct run) and the navigator out of view; its
+  // handles were then measured above the page. Bring the navigator back first.
+  await page.getByRole("region", { name: "Room navigator" }).scrollIntoViewIfNeeded();
   const livingRoom = page.getByRole("button", {
     name: /^Focus Living \/ Sleep$/,
   });
@@ -128,11 +148,16 @@ async function setLivingEastWallAngle(
 
 const THREE_DEGREES_TO_RADIANS = Math.PI / 180;
 
+// The canvas's view controls and the room focus pill float over the top of the 3D view (UX 4c),
+// where the selected piece's top edge can run; the render is measured without them.
+const HIDE_CANVAS_CONTROLS =
+  '[data-testid="canvas-view-toolbar"], [data-testid="active-room-focus-toolbar"] { visibility: hidden !important; }';
+
 async function wallPanelDiagonalMetrics(
   page: Page,
   suppliedBounds?: PixelBounds
 ) {
-  const screenshot = await page.screenshot();
+  const screenshot = await page.screenshot({ style: HIDE_CANVAS_CONTROLS });
   const { data, info } = await sharp(screenshot)
     .removeAlpha()
     .raw()
@@ -634,7 +659,7 @@ test.describe("Studio canonical wall panels", () => {
       .toBe(true);
 
     const floorPanel = page.getByTestId("coohom-floor-panel");
-    await floorPanel.getByRole("button", { name: "Expand floor panel" }).click();
+    await floorPanel.getByRole("button", { name: "Expand Levels" }).click();
     await floorPanel.locator("summary", { hasText: "Opacity" }).click();
     await floorPanel
       .locator("label")
@@ -708,7 +733,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
@@ -764,7 +789,8 @@ test.describe("Studio canonical wall panels", () => {
       PANEL_ATTRIBUTE,
       middlePanelId
     );
-    await page.getByText("Anima Beige", { exact: true }).first().click();
+    // A card names the model under its collection (Anima, then Beige); pick it by its full name.
+    await page.locator('[data-material-name="Anima Beige"] button').first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
 
     await clickPanelAt(page, finalHits[0].x, finalHits[0].y);
@@ -857,7 +883,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 },
@@ -882,8 +908,11 @@ test.describe("Studio canonical wall panels", () => {
     const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
     await clickPanelAt(page, middleHits[0].x, middleHits[0].y);
     await page.getByRole("button", { name: "Change material" }).click();
-    await page.getByText("Anima Beige", { exact: true }).first().click();
+    // A card names the model under its collection (Anima, then Beige); pick it by its full name.
+    await page.locator('[data-material-name="Anima Beige"] button').first().click();
     await expect(selectedInspector).toContainText("Anima Beige");
+    // Grout sits in "Adjust pattern", closed for consumers (UX audit ED5, phase 4f).
+    await openAdjustPattern(page);
     const wallGrout = page.getByTestId("selection-inspector-wall-grout");
     await expect(wallGrout).toBeVisible();
     await wallGrout.getByTestId("wall-surface-joint-size-5").click();
@@ -958,7 +987,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }
@@ -1047,7 +1076,7 @@ test.describe("Studio canonical wall panels", () => {
     });
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
-    await page.getByTestId("apply-plan-template-studio").click();
+    await chooseStartTemplate(page, "studio");
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
       "4 rooms",
       { timeout: 30_000 }

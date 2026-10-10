@@ -23,9 +23,12 @@ export const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;
 export const EDITOR_3D_MIN_POLAR_ANGLE = 0.02;
 export const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;
 
+/** The command bar's height from md, as `--editor-bar-h` in app/globals.css (UX 4c). */
+export const EDITOR_BAR_HEIGHT_PX = 56;
+
 export const PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH = 1024;
 export const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;
-export const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = 304;
+export const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX + 268;
 export const PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX = 264;
 export const PLAN_FLOATING_OVERLAY_STACK_GAP_PX = 8;
 

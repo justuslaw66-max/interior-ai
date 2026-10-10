@@ -13,7 +13,7 @@ export const myDesignActionsButtonId = (designId: string) => `my-design-actions-
 
 export type MyDesignCardAction = "share" | "copy" | "rename" | "delete";
 
-const FOCUS_RING = "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 const MENU_ITEM = `flex h-10 w-full items-center rounded-lg px-3 text-left text-sm font-bold hover:bg-neutral-100 ${FOCUS_RING}`;
 
 type MyDesignCardViewProps = {

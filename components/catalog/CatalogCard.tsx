@@ -24,7 +24,7 @@ type Props = {
   onHoverEnd?: () => void;
 };
 
-const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900";
+const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900";
 
 function CatalogCardImage({ item, inRoom }: Pick<Props, "item" | "inRoom">) {
   return (
@@ -58,6 +58,11 @@ function CatalogCardPrice({ item }: Pick<Props, "item">) {
   );
 }
 
+/** The heart's words, on the card and in details (UX 4g, FU3): it adds and removes, it doesn't "save". */
+export function favouriteLabel(title: string, isFavorite: boolean) {
+  return isFavorite ? `Remove ${title} from Favourites` : `Add ${title} to Favourites`;
+}
+
 function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props, "item" | "isFavorite" | "onToggleFavorite">) {
   return (
     <button
@@ -65,8 +70,8 @@ function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props
       onClick={onToggleFavorite}
       data-testid={`catalog-favorite-toggle-${item.id}`}
       aria-pressed={isFavorite}
-      aria-label={isFavorite ? `Remove ${item.title} from Favourites` : `Save ${item.title} to Favourites`}
-      className={`absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
+      aria-label={favouriteLabel(item.title, isFavorite)}
+      className={`absolute right-1.5 top-1.5 flex h-8 w-8 touch:h-11 touch:w-11 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
     >
       <Heart className={isFavorite ? "h-4 w-4 fill-current text-rose-600" : "h-4 w-4"} aria-hidden="true" />
     </button>
@@ -105,7 +110,7 @@ export default function CatalogCard(props: Props) {
         <button
           ref={previewRef}
           type="button"
-          data-testid={`catalog-preview-${item.id}`}
+          data-testid={`catalog-preview-${item.id}`} data-touch-exempt
           {...getCatalogDrawerFocusAttributes({ productId: item.id, action: "details", source: "product-card" })}
           className={`rounded text-left text-[13px] font-semibold leading-[17px] text-neutral-900 ${FOCUS_RING}`}
           onClick={(event) => props.onPreview(event.currentTarget)}

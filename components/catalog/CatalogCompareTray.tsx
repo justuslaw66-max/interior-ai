@@ -59,7 +59,7 @@ function AvailableCompareCard({
       <div className="line-clamp-1 text-xs font-semibold text-neutral-900">{card.title}</div>
       <div className="line-clamp-1 text-[11px] text-neutral-500">{card.brand ?? "Unknown brand"}</div>
       <div className="line-clamp-1 text-[11px] text-neutral-500" data-testid="catalog-compare-variant-label">{card.variantLabel}</div>
-      <div className="mt-1 text-[11px] text-neutral-700">{card.priceLabel ?? "External retailer"}</div>
+      <div className="mt-1 text-[11px] text-neutral-700">{card.priceLabel ?? "Price on request"}</div>
       <div className="text-[11px] text-neutral-500">{card.dimsLabel}</div>
       <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{card.badges.join(" • ")}</div>
 

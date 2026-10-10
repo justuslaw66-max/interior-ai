@@ -28,7 +28,7 @@ test.describe("103. Hugg Model Quick Links", () => {
     await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
-    await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(selectedItemPanel).toBeVisible({ timeout: 10000 });
     await expect(selectedItemPanel.getByText(/Hugg Nesting Rectangular Coffee Table/i).first()).toBeVisible();
     await expect(page.getByTestId("hugg-model-option-square")).toBeVisible();
     await expect(page.getByTestId("hugg-model-option-rectangular")).toBeVisible();

@@ -1,6 +1,5 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
 import {
   getRelativeCatalogPath,
@@ -17,7 +16,15 @@ import {
   getRelativeSurfaceMaterialPath,
   runSurfaceMaterialAudit,
 } from "@/lib/surface-material-audit";
+import { AdminPageHeader } from "../AdminPageHeader";
+import { AdminStatusBadge } from "../AdminStatusBadge";
+import { adminSection, adminTitle } from "../admin-navigation";
+import { auth } from "../admin-session";
 import AuditActions from "./AuditActions";
+
+const SECTION = adminSection("/admin/audit");
+
+export const metadata: Metadata = { title: adminTitle(SECTION.title) };
 
 function toneClass(hasIssue: boolean) {
   return hasIssue
@@ -27,13 +34,6 @@ function toneClass(hasIssue: boolean) {
 
 function formatAuditValue(value: string | null | undefined) {
   return value ? value.replace(/_/g, " ") : "Not set";
-}
-
-function statusPillClass(status: string) {
-  if (status === "published") return "bg-green-50 text-green-700 ring-green-100";
-  if (status === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
-  if (status === "blocked") return "bg-red-50 text-red-700 ring-red-100";
-  return "bg-neutral-100 text-neutral-700 ring-neutral-200";
 }
 
 type SurfaceMaterialAuditFilter =
@@ -144,9 +144,7 @@ export default async function AdminAuditPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await auth();
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
-    redirect("/");
-  }
+  if (!session?.user?.email || !isAdminEmail(session.user.email)) return null;
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const activeSurfaceMaterialFilter = normalizeSurfaceMaterialFilter(
@@ -187,21 +185,17 @@ export default async function AdminAuditPage({
 
   return (
     <div className="p-6 space-y-6">
-      <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">Catalog Audit</h1>
-          <Link href="/admin" className="text-sm text-blue-600 hover:text-blue-700">
-            Back to overview
-          </Link>
-          <AuditActions />
-        </div>
-        <p className="text-sm text-neutral-600">
-          Shared view of the same governance and quality checks enforced in local audit scripts and CI.
-        </p>
-        <p className="text-xs text-neutral-500" title={refreshedAt.toISOString()}>
-          Last refreshed: {refreshedAt.toLocaleString()}
-        </p>
-      </header>
+      <AdminPageHeader
+        crumbs={[{ title: SECTION.title }]}
+        title={SECTION.title}
+        description={
+          <>
+            The same governance and quality checks the audit scripts and CI run.{" "}
+            <span title={refreshedAt.toISOString()}>Last refreshed {refreshedAt.toLocaleString()}.</span>
+          </>
+        }
+        actions={<AuditActions />}
+      />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-7">
         <div className={`rounded-xl border p-4 ${toneClass(governance.hasFailures)}`}>
@@ -539,9 +533,7 @@ export default async function AdminAuditPage({
                           {getRelativeSurfaceMaterialPath(material.filePath)}
                         </div>
                       </div>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ring-1 ${statusPillClass(material.publishStatus)}`}>
-                        {formatAuditValue(material.publishStatus)}
-                      </span>
+                      <AdminStatusBadge kind="surfacePublication" status={material.publishStatus} />
                     </div>
 
                     <div className="mt-3 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-4">

@@ -274,7 +274,7 @@ assert.match(
 
 assert.match(
   cameraNavigationSource,
-  /pending3DViewRef\.current = hasWholeHousePlan[\s\S]*?: singleRoomDefaultCameraView;[\s\S]*?transitionToCameraView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 420\)/,
+  /pending3DViewRef\.current = open3DView \?\? \(hasWholeHousePlan[\s\S]*?: singleRoomDefaultCameraView\);[\s\S]*?transitionToCameraView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 420\)/,
   "3D entry and Fit Room should use the floor-relative single-room camera view."
 );
 
@@ -284,10 +284,11 @@ assert.match(
   "A ready single-room scene should apply its room-origin default camera view."
 );
 
-assert.match(
+// Present & export's Focus (the eye-level and item-focus views) retired with it (J, 5 Oct).
+assert.doesNotMatch(
   cameraNavigationSource,
-  /const getEyeLevelView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)[\s\S]*?const getFocusView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)/,
-  "Eye-level and item-focus views should translate their room-local composition to the active room's plan position and floor."
+  /getEyeLevelView|getFocusView/,
+  "The eye-level and item-focus views went with Present & export's Focus."
 );
 
 assert.match(

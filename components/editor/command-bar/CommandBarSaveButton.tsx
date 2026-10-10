@@ -6,15 +6,18 @@ import { GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
 type CommandBarSaveButtonProps = {
   dark: boolean;
   isSaving: boolean;
+  /** A design in the account saves itself: no Save (UX phase 4, Decision E). */
+  cloudBacked: boolean;
   onSave: () => void | Promise<void>;
 };
 
 /**
- * Save. Guests are asked to sign in first. Phones show only the icon (a spinner while saving), so
- * Share, More and Account still fit beside the Pro indicator; the label shows from `sm` up. Below
- * 390px even that is too wide, so the Pro indicator hides there (the dark Pro theme stays).
+ * Save, until the design's first save to the account. Guests are asked to sign in first. Phones show a 44px icon (a spinner while saving) in the
+ * header, as the PhonePlan mockup's plain icons (UX 4d); from md it's a 36px outline with its
+ * label, as Share is the bar's one black action (UX 4c).
  */
-export function CommandBarSaveButton({ dark, isSaving, onSave }: CommandBarSaveButtonProps) {
+export function CommandBarSaveButton({ dark, isSaving, cloudBacked, onSave }: CommandBarSaveButtonProps) {
+  if (cloudBacked) return null;
   const label = isSaving ? "Saving…" : "Save";
   const Icon = isSaving ? LoaderCircle : Save;
   return (
@@ -24,14 +27,14 @@ export function CommandBarSaveButton({ dark, isSaving, onSave }: CommandBarSaveB
       aria-label={label}
       className={
         dark
-          ? "designer-primary-action inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg text-sm font-semibold leading-none disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4"
-          : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-sm font-semibold leading-none text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-70 sm:w-auto sm:px-4"
+          ? "designer-control inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-sm font-bold leading-none disabled:cursor-wait disabled:opacity-70 md:h-9 md:w-auto md:rounded-lg md:border md:px-4"
+          : "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-70 md:h-9 md:w-auto md:rounded-lg md:border md:border-neutral-300 md:bg-white md:px-4 md:hover:bg-neutral-50"
       }
       onClick={onSave}
       disabled={isSaving}
     >
-      <Icon className={isSaving ? "h-4 w-4 motion-safe:animate-spin sm:hidden" : "h-4 w-4 sm:hidden"} aria-hidden="true" />
-      <span className="hidden sm:inline">{label}</span>
+      <Icon className={isSaving ? "h-5 w-5 motion-safe:animate-spin md:hidden" : "h-5 w-5 md:hidden"} aria-hidden="true" />
+      <span className="hidden md:inline">{label}</span>
     </button>
   );
 }

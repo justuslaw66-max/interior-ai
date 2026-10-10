@@ -439,6 +439,20 @@ assert.equal(
   false,
   "Gardenia Tabulae plank products should not use the aligned decor-sheet renderer"
 );
+for (const hasPhysicalFaces of [false, true]) {
+  // A decor drawn from one preview keeps the aligned decor-sheet path; once it has whole-tile faces,
+  // the physical tile painter draws them (turned to the tile, at real size, varied per tile).
+  assert.equal(
+    shouldUseContinuousPatternSourceForTest({
+      supplier: "gardenia_orchidea",
+      materialId: "gardenia-flooring-tabulae-genuine-sticks-3d-pf60021153-60x120-nat-92264-0",
+      productName: "Gardenia Tabulae Genuine Sticks 3D 60x120 Nat",
+      hasPhysicalFaces,
+    }),
+    !hasPhysicalFaces,
+    `Gardenia Tabulae Sticks ${hasPhysicalFaces ? "on whole-tile faces uses the physical tile painter" : "from a preview uses the decor-sheet renderer"}`
+  );
+}
 assert.deepEqual(
   getContinuousPatternRepeatSizeForTest({
     tileWidthPx: 240,
@@ -671,6 +685,10 @@ for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
       ao_url: sourceMaterial.texture_assets.ao_url ?? null,
       preview_room_url: sourceMaterial.texture_assets.preview_room_url ?? null,
       tileable: sourceMaterial.texture_assets.tileable,
+      ...(sourceMaterial.texture_assets.image_physical_size_mm
+        ? { image_physical_size_mm: sourceMaterial.texture_assets.image_physical_size_mm }
+        : {}),
+      ...(sourceMaterial.texture_assets.faces ? { faces: sourceMaterial.texture_assets.faces } : {}),
     },
     `${runtimeMaterial.surface_material.material_id} texture-map identities must match canonical YAML`
   );

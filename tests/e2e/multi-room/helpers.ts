@@ -179,6 +179,23 @@ export async function isDrawPointCountVisible(page: Page, count: number) {
   return drawPointCountLocator(page, count).isVisible({ timeout: 1000 }).catch(() => false);
 }
 
+async function openPlanWithoutTips(page: Page) {
+  const planTab = page.getByTestId("editor-workflow-plan");
+  if (await planTab.isVisible().catch(() => false)) {
+    await clickWithFallback(planTab);
+  }
+  // Tips off, as the first-visit "Manual editing" choice used to leave it (UX audit ED6).
+  const tipsSwitch = page.getByTestId("plan-guided-actions-toggle");
+  if (
+    (await tipsSwitch.isVisible().catch(() => false)) &&
+    (await tipsSwitch.getAttribute("data-enabled")) === "true"
+  ) {
+    await clickWithFallback(tipsSwitch);
+  }
+}
+
+// "Choose a template" opens Start a new design at Templates, the one template list (UX ST8):
+// pick one there with chooseStartTemplate (../variant-test-utils).
 export async function chooseTemplateStart(page: Page) {
   const betaTemplate = page.locator('[data-testid="beta-start-template"]:visible').first();
   if (await betaTemplate.isVisible().catch(() => false)) {
@@ -187,16 +204,20 @@ export async function chooseTemplateStart(page: Page) {
     return;
   }
 
-  const planTab = page.getByTestId("editor-workflow-plan");
-  if (await planTab.isVisible().catch(() => false)) {
-    await clickWithFallback(planTab);
-  }
-  const manualPlanChoice = page.getByTestId("plan-guided-actions-choice-manual");
-  if (await manualPlanChoice.isVisible().catch(() => false)) {
-    await clickWithFallback(manualPlanChoice);
-  }
+  await openPlanWithoutTips(page);
   const planStartTemplate = page.locator('[data-testid="plan-start-template"]:visible').first();
   await expect(planStartTemplate).toBeVisible({ timeout: 20000 });
   await expect(planStartTemplate).toBeEnabled({ timeout: 20000 });
   await clickWithFallback(planStartTemplate);
+}
+
+// Add one room is in the consumer palette's Templates (UX ST8), which starts collapsed.
+export async function addOneRoom(page: Page, templateId: "bedroom" | "kitchen" | "bathroom" | "dining" = "bedroom") {
+  await openPlanWithoutTips(page);
+  const templates = page.getByTestId("plan-tool-section-templates").getByRole("button", { name: "Templates", exact: true });
+  await expect(templates).toBeVisible({ timeout: 20000 });
+  if ((await templates.getAttribute("aria-expanded")) !== "true") await templates.click();
+  const addRoom = page.getByTestId(`add-room-template-${templateId}`);
+  await expect(addRoom).toBeEnabled({ timeout: 30000 });
+  await addRoom.click();
 }

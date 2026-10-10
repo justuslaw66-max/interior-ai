@@ -112,19 +112,17 @@ async function runClaimedJob(input: {
         }
       ),
     });
-    if (lostLease) {
-      return {
-        outcome: "lease_lost",
-        attemptNumber: input.lease.attemptNumber,
-        error: "Floor-plan worker lease was lost before completion",
-      };
-    }
+    // The pipeline only returns after its lease-guarded writes committed. A
+    // heartbeat that lands after the final status write fails its renewal, so
+    // release anyway: the token CAS still refuses a lease another worker took.
     const released = await input.leaseService.release({ lease: input.lease });
     if (!released) {
       return {
         outcome: "lease_lost",
         attemptNumber: input.lease.attemptNumber,
-        error: "Floor-plan worker completed but no longer owned its lease",
+        error: lostLease
+          ? "Floor-plan worker lease was lost before completion"
+          : "Floor-plan worker completed but no longer owned its lease",
       };
     }
     return { outcome: "completed", job, attemptNumber: input.lease.attemptNumber };

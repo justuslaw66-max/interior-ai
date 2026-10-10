@@ -6,7 +6,7 @@ import {
   ImportJobUpdateValidationError,
   updateImportJobStatus,
 } from "@/lib/import-jobs/update-import-job-status";
-import type { ImportJobStatus } from "@/lib/import-jobs/types";
+import { isImportJobStatus } from "@/lib/import-jobs/status";
 
 type ImportJobDetailRow = {
   id: string;
@@ -30,24 +30,6 @@ type ImportJobDetailRow = {
   createdAt: Date;
   updatedAt: Date;
 };
-
-const STATUSES: ImportJobStatus[] = [
-  "received",
-  "normalizing",
-  "optimized",
-  "preview_generated",
-  "metadata_extracted",
-  "needs_mapping",
-  "needs_review",
-  "approved",
-  "published",
-  "failed",
-];
-
-function asImportJobStatus(value: unknown): ImportJobStatus | null {
-  if (typeof value !== "string") return null;
-  return (STATUSES as string[]).includes(value) ? (value as ImportJobStatus) : null;
-}
 
 export async function GET(
   _request: Request,
@@ -117,8 +99,8 @@ export async function PATCH(
     catalogItemId?: string | null;
   };
 
-  const status = asImportJobStatus(body.status);
-  if (!status) {
+  const status = body.status;
+  if (!isImportJobStatus(status)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 

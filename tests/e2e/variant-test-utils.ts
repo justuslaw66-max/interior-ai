@@ -45,12 +45,9 @@ async function openFurnishPanel(page: Page): Promise<void> {
   }
 }
 
+/** The one item panel (UX audit FU12), whatever the product and wherever it is sold. */
 export function getSelectedItemPanel(page: Page): Locator {
-  return page
-    .locator('[data-testid="selected-item-panel"], main > div')
-    .filter({ hasText: "Selected Item" })
-    .filter({ has: page.getByRole("button", { name: "View retailer" }) })
-    .first();
+  return page.getByTestId("selected-item-panel").first();
 }
 
 async function dismissBlockingDialogs(page: Page): Promise<void> {
@@ -132,9 +129,8 @@ export async function chooseStartTemplate(
 }
 
 // Plan, Furnish and Shop are always-visible steps in the command bar. Suggest a layout and
-// Built-ins open from inside the Furnish step, and Present & export sits in the More menu.
+// Built-ins open from inside the Furnish step.
 const FURNISH_STEP_ENTRIES = new Set(["editor-workflow-ai", "editor-workflow-millwork"]);
-const MORE_MENU_ENTRIES = new Set(["editor-workflow-export"]);
 
 export async function selectEditorWorkspace(
   page: Page,
@@ -144,8 +140,6 @@ export async function selectEditorWorkspace(
   if (!(await item.isVisible().catch(() => false))) {
     if (FURNISH_STEP_ENTRIES.has(itemTestId)) {
       await selectEditorWorkspace(page, "editor-workflow-furnish");
-    } else if (MORE_MENU_ENTRIES.has(itemTestId)) {
-      await openMoreMenuFor(page, item);
     }
   }
   await expect(item).toBeVisible({ timeout: 20_000 });
@@ -389,7 +383,9 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
  */
 export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
   const confirmButton = page.getByTestId("catalog-placement-confirm");
-  const placedToast = page.getByTestId("editor-action-toast");
+  // Only an Add's toast ("<product> added to the <room>") means the product is in: a Remove's or a
+  // swap's toast can still be up from the step before.
+  const placedToast = page.getByTestId("editor-action-toast").filter({ hasText: / added to the / });
   const visible = await expect(confirmButton.or(placedToast).first())
     .toBeVisible({ timeout: 20000 })
     .then(() => true)

@@ -116,7 +116,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
     expect(await selectImportedProductById(page, SEB_LIFT_TOP_LARGE_ID)).toBeTruthy();
     expect(await addImportedProductIfReady(page)).toBeTruthy();
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole("heading", { name: /Seb Lift Top Coffee Table, Large/i })).toBeVisible({
       timeout: 10000,
     });
@@ -180,7 +180,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
     expect(await selectImportedProductById(page, SEB_STORAGE_120_ID)).toBeTruthy();
     expect(await addImportedProductIfReady(page)).toBeTruthy();
 
-    await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("seb-model-option-with-storage")).toHaveAttribute(
       "data-active",
       "true"

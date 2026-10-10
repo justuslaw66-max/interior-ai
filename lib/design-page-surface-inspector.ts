@@ -71,7 +71,6 @@ function getFlooringInspectorDisplayName(material: SurfaceMaterialRenderInfo) {
   const productName = material.surface_material.product_name.trim();
   const prefixes = [
     material.surface_material.brand,
-    "Gardenia Orchidea",
     "Gardenia",
   ].filter(Boolean) as string[];
 
@@ -117,7 +116,6 @@ function getFlooringInspectorGroupKey(material: SurfaceMaterialRenderInfo) {
   return [
     material.surface_material.supplier,
     material.surface_material.brand,
-    material.surface_material.collection,
     material.surface_material.surface_category,
     material.surface_material.material_family,
     material.classification?.design_effect,

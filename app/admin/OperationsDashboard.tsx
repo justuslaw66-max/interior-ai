@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Activity,
   ArrowRight,
   Boxes,
   CheckCircle2,
@@ -10,10 +9,8 @@ import {
   ExternalLink,
   Gauge,
   Inbox,
-  LayoutDashboard,
   MousePointerClick,
   PackageCheck,
-  PanelsTopLeft,
   ShieldCheck,
   TriangleAlert,
   UserRound,
@@ -27,6 +24,7 @@ import type {
   StatusTone,
   ToolContextData,
 } from "./operations-data";
+import { AdminPageHeader } from "./AdminPageHeader";
 import styles from "./operations-dashboard.module.css";
 
 type ToolDefinition = {
@@ -41,14 +39,6 @@ type ToolGroupDefinition = {
   description: string;
   tools: ToolDefinition[];
 };
-
-const PRIMARY_NAV = [
-  { label: "Overview", href: "/admin", icon: LayoutDashboard },
-  { label: "Catalog", href: "/admin/catalog/inbox", icon: Inbox },
-  { label: "Processing", href: "/admin/imports", icon: PackageCheck },
-  { label: "Reviews", href: "/admin/floor-plans", icon: ClipboardCheck },
-  { label: "Insights", href: "/admin/audit", icon: Activity },
-];
 
 const TOOL_GROUPS: ToolGroupDefinition[] = [
   {
@@ -74,7 +64,7 @@ const TOOL_GROUPS: ToolGroupDefinition[] = [
     description: "3D model preparation and pipeline control",
     tools: [
       {
-        title: "Model library",
+        title: "Models",
         description: "Inspect geometry and model metadata",
         href: "/admin/models",
         icon: Boxes,
@@ -104,7 +94,7 @@ const TOOL_GROUPS: ToolGroupDefinition[] = [
         icon: DraftingCompass,
       },
       {
-        title: "Quality audit",
+        title: "Catalog audit",
         description: "Inspect catalog and media issues",
         href: "/admin/audit",
         icon: ShieldCheck,
@@ -129,10 +119,6 @@ function cx(...classNames: Array<string | undefined | false>) {
   return classNames.filter(Boolean).join(" ");
 }
 
-function formatStatus(status: string) {
-  return status.replaceAll("_", " ");
-}
-
 function formatRelativeTime(date: Date) {
   const elapsedMinutes = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60_000));
   if (elapsedMinutes < 1) return "Just now";
@@ -153,77 +139,25 @@ function StatusBadge({ tone, children }: { tone: StatusTone; children: React.Rea
   );
 }
 
-function AppShell({ userEmail, children }: { userEmail: string | null; children: React.ReactNode }) {
-  const userInitial = userEmail?.trim().charAt(0).toUpperCase() || "A";
-
-  return (
-    <div className={styles.page}>
-      <header className={styles.appHeader}>
-        <div className={styles.appHeaderInner}>
-          <Link className={styles.brand} href="/admin" aria-label="Interior AI admin overview">
-            <span className={styles.brandMark}>
-              <PanelsTopLeft aria-hidden="true" />
-            </span>
-            <span className={styles.brandText}>
-              <strong>Interior AI</strong>
-              <span>Operations</span>
-            </span>
-          </Link>
-
-          <nav className={styles.primaryNav} aria-label="Admin sections">
-            {PRIMARY_NAV.map((item) => {
-              const Icon = item.icon;
-              const selected = item.href === "/admin";
-              return (
-                <Link
-                  aria-current={selected ? "page" : undefined}
-                  className={cx(styles.primaryNavItem, selected && styles.primaryNavItemSelected)}
-                  href={item.href}
-                  key={item.href}
-                >
-                  <Icon aria-hidden="true" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className={styles.headerActions}>
-            <Link className={styles.secondaryAction} href="/design">
-              Open designer
-              <ExternalLink aria-hidden="true" />
-            </Link>
-            <span className={styles.userAvatar} title={userEmail ?? "Local administrator"}>
-              <span className={styles.srOnly}>{userEmail ?? "Local administrator"}</span>
-              {userInitial}
-            </span>
-          </div>
-        </div>
-      </header>
-      {children}
-    </div>
-  );
-}
-
 function OperationsHeader({ lastUpdated }: { lastUpdated: Date }) {
   return (
-    <header className={styles.pageHeader}>
-      <div>
-        <div className={styles.breadcrumb}>Admin / Overview</div>
-        <h1>Catalog Operations</h1>
-        <p>Prioritize review work, monitor processing, and keep the live catalog healthy.</p>
-      </div>
-      <div className={styles.pageHeaderActions}>
-        <span className={styles.dateContext}>
-          <Clock3 aria-hidden="true" />
-          Last 24 hours · updated {formatRelativeTime(lastUpdated)}
-        </span>
-        <Link className={styles.primaryAction} href="/admin/catalog/review">
-          Open review queue
-          <ArrowRight aria-hidden="true" />
-        </Link>
-      </div>
-    </header>
+    <AdminPageHeader
+      crumbs={[{ title: "Overview" }]}
+      title="Overview"
+      description="Prioritize review work, monitor processing, and keep the live catalog healthy."
+      actions={
+        <>
+          <span className={styles.dateContext}>
+            <Clock3 aria-hidden="true" />
+            Last 24 hours · updated {formatRelativeTime(lastUpdated)}
+          </span>
+          <Link className={styles.primaryAction} href="/admin/catalog/review">
+            Open catalog review
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </>
+      }
+    />
   );
 }
 
@@ -475,7 +409,7 @@ function RecentOperationsTable({
                     <Link className={styles.operationLink} href={operation.href}>{operation.label}</Link>
                   </td>
                   <td data-label="Workflow">{operation.workflow}</td>
-                  <td data-label="Status"><StatusBadge tone={operation.statusTone}>{formatStatus(operation.status)}</StatusBadge></td>
+                  <td data-label="Status"><StatusBadge tone={operation.statusTone}>{operation.statusLabel}</StatusBadge></td>
                   <td className={styles.ownerCell} data-label="Owner">
                     <UserRound aria-hidden="true" />
                     <span title={operation.owner}>{operation.owner}</span>
@@ -535,40 +469,32 @@ function RuntimePolicy({ data }: { data: OperationsDashboardData }) {
   );
 }
 
-export default function OperationsDashboard({
-  data,
-  userEmail,
-}: {
-  data: OperationsDashboardData;
-  userEmail: string | null;
-}) {
+export default function OperationsDashboard({ data }: { data: OperationsDashboardData }) {
   return (
-    <AppShell userEmail={userEmail}>
-      <main className={styles.main}>
-        <OperationsHeader lastUpdated={data.health.lastUpdated} />
+    <main className={styles.main}>
+      <OperationsHeader lastUpdated={data.health.lastUpdated} />
 
-        <div className={styles.priorityGrid}>
-          <div className={styles.priorityMain}>
-            <AttentionQueue items={data.attentionItems} />
-            <ActivityOverview data={data} />
-          </div>
-          <SystemHealthSummary data={data.health} />
+      <div className={styles.priorityGrid}>
+        <div className={styles.priorityMain}>
+          <AttentionQueue items={data.attentionItems} />
+          <ActivityOverview data={data} />
         </div>
+        <SystemHealthSummary data={data.health} />
+      </div>
 
-        <AdminTools context={data.toolContext} />
+      <AdminTools context={data.toolContext} />
 
-        <RecentOperationsTable
-          available={data.recentOperationsAvailable}
-          operations={data.recentOperations}
-        />
+      <RecentOperationsTable
+        available={data.recentOperationsAvailable}
+        operations={data.recentOperations}
+      />
 
-        <RuntimePolicy data={data} />
+      <RuntimePolicy data={data} />
 
-        <footer className={styles.pageFooter}>
-          <span>Interior AI Catalog Operations</span>
-          <span>Operational data refreshes on page load.</span>
-        </footer>
-      </main>
-    </AppShell>
+      <footer className={styles.pageFooter}>
+        <span>Interior AI Admin</span>
+        <span>Operational data refreshes on page load.</span>
+      </footer>
+    </main>
   );
 }

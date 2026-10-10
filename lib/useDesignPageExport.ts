@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from "react";
+import { useCallback, useState, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
@@ -11,29 +11,24 @@ import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import { getItemPrice } from "@/lib/design-page-utils";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
-import { IMAGES_UPGRADE_PROMPT, PDF_UPGRADE_PROMPT, promptUpgradeOnce, type ExportOptions } from "@/lib/export-upgrade-prompt";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import type { ExportStylePreset } from "@/lib/useDesignPagePlanState";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
-type ExportUpgradeReason = "designer" | "export_images" | "export_pdf" | null;
 
 type DesignPageExportState = {
   designId: string | null;
   plan: Plan;
   exportStylePreset: ExportStylePreset;
   sceneReady: boolean;
-  cameraView: CameraView;
   clientPreview: boolean;
   items: DesignItem[];
 };
 
 type DesignPageExportActions = {
   setClientPreview: Dispatch<SetStateAction<boolean>>;
-  setUpgradeReason: Dispatch<SetStateAction<ExportUpgradeReason>>;
-  setShowUpgrade: Dispatch<SetStateAction<boolean>>;
   updateProjection: (camera: THREE.Camera | null) => void;
   showToast: (message: string) => void;
   logFunnelEvent: (eventType: FunnelEventName, meta?: Record<string, unknown>) => void;
@@ -45,6 +40,7 @@ type DesignPageExportRefs = {
   controlsRef: MutableRefObject<OrbitControlsImpl | null>;
   rendererRef: MutableRefObject<THREE.WebGLRenderer | null>;
   sceneRef: MutableRefObject<THREE.Scene | null>;
+  cameraViewRef: MutableRefObject<CameraView>; // live while the controls glide; the committed cameraView state trails it
   designSnapshotRef: MutableRefObject<DesignSnapshot>;
 };
 
@@ -90,20 +86,16 @@ export function useDesignPageExport({
 }) {
   const [isExporting, setIsExporting] = useState(false);
   const [isPdfExporting, setIsPdfExporting] = useState(false);
-  const upgradePromptedRef = useRef(false);
   const {
     designId,
     plan,
     exportStylePreset,
     sceneReady,
-    cameraView,
     clientPreview,
     items,
   } = state;
   const {
     setClientPreview,
-    setUpgradeReason,
-    setShowUpgrade,
     updateProjection,
     showToast,
     logFunnelEvent,
@@ -114,6 +106,7 @@ export function useDesignPageExport({
     controlsRef,
     rendererRef,
     sceneRef,
+    cameraViewRef,
     designSnapshotRef,
   } = refs;
   const capabilities = resolveEditorCapabilities(plan);
@@ -171,7 +164,7 @@ export function useDesignPageExport({
 
     const camera = cameraRef.current;
     const originalPosition = camera.position.clone();
-    const originalTarget = new THREE.Vector3(...cameraView.target);
+    const originalTarget = new THREE.Vector3(...cameraViewRef.current.target);
     const previousPreview = clientPreview;
     setClientPreview(true);
     await waitForFrames(2);
@@ -212,7 +205,7 @@ export function useDesignPageExport({
     return images;
   }, [
     cameraRef,
-    cameraView.target,
+    cameraViewRef,
     canvasRef,
     canExportMultipleViews,
     captureCanvasImageForPdf,
@@ -224,7 +217,9 @@ export function useDesignPageExport({
     updateProjection,
   ]);
 
-  const exportImages = useCallback(async ({ limitsShown = false }: ExportOptions = {}) => {
+  // Free users read the limits in Download before the file (audit findings SX2, PR6), so no export
+  // asks to upgrade afterwards.
+  const exportImages = useCallback(async () => {
     track("export_clicked", {
       design_id: designId,
       channel: "images",
@@ -247,7 +242,7 @@ export function useDesignPageExport({
     try {
       const camera = cameraRef.current;
       const originalPosition = camera.position.clone();
-      const originalTarget = new THREE.Vector3(...cameraView.target);
+      const originalTarget = new THREE.Vector3(...cameraViewRef.current.target);
       setClientPreview(true);
       await waitForFrames(2);
       const angles =
@@ -305,9 +300,6 @@ export function useDesignPageExport({
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!canExportMultipleViews) {
-        promptUpgradeOnce(upgradePromptedRef, limitsShown, IMAGES_UPGRADE_PROMPT, { setUpgradeReason, setShowUpgrade });
-      }
       showToast(`Exported ${images.length} ${exportStylePreset} images`);
     } catch (error) {
       console.error("Export error:", error);
@@ -318,7 +310,7 @@ export function useDesignPageExport({
     }
   }, [
     cameraRef,
-    cameraView.target,
+    cameraViewRef,
     canvasRef,
     captureCanvasImage,
     canExportMultipleViews,
@@ -330,13 +322,11 @@ export function useDesignPageExport({
     plan,
     sceneReady,
     setClientPreview,
-    setShowUpgrade,
-    setUpgradeReason,
     showToast,
     updateProjection,
   ]);
 
-  const exportPdf = useCallback(async ({ limitsShown = false }: ExportOptions = {}) => {
+  const exportPdf = useCallback(async () => {
     track("export_clicked", {
       design_id: designId,
       channel: "pdf",
@@ -427,9 +417,6 @@ export function useDesignPageExport({
         surface_material_floor_count: surfaceMaterialCount,
         surface_material_count: surfaceMaterialCount,
       });
-      if (!canExportPdf) {
-        promptUpgradeOnce(upgradePromptedRef, limitsShown, PDF_UPGRADE_PROMPT, { setUpgradeReason, setShowUpgrade });
-      }
     } catch (error) {
       const message =
         error instanceof Error && error.name === "AbortError"
@@ -450,8 +437,6 @@ export function useDesignPageExport({
     items,
     logFunnelEvent,
     plan,
-    setShowUpgrade,
-    setUpgradeReason,
     showToast,
   ]);
 
