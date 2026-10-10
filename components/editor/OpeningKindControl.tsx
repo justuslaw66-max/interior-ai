@@ -30,8 +30,8 @@ function BlockedKindPlan({
     <div
       data-testid={`${testId}-blocked`}
       className={dark
-        ? "mt-2 rounded-md border border-amber-400/40 bg-amber-400/10 p-2 text-[10px] text-amber-100"
-        : "mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-[10px] text-amber-900"}
+        ? "mt-2 rounded-md border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
+        : "mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
     >
       <div>{plan.explanation}</div>
       {proMode && plan.approvedOverridePatch ? (
@@ -61,8 +61,8 @@ export function OpeningKindControl({
   const [blockedPlan, setBlockedPlan] =
     useState<DesignPageOpeningKindMutationPlan | null>(null);
   const labelClass = dark
-    ? "text-[11px] font-medium text-neutral-300"
-    : "text-[11px] font-medium text-gray-600";
+    ? "text-xs font-medium text-neutral-300"
+    : "text-xs font-medium text-gray-600";
   const controlClass = dark
     ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100 focus:border-blue-300"
     : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 focus:border-teal-500";

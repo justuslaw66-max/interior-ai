@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { stringify } from "yaml";
 import type { SurfaceMaterial, SurfacePatternLayout } from "../lib/surface-material-schema";
+import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
 
 const CONFIG_URL = "https://www.realityremod.com/GARDENIA";
 const COLLECTIONS_INDEX_URL = "https://www.gardenia.it/en/collections";
@@ -864,8 +865,21 @@ function cleanGardeniaAssets() {
   if (fs.existsSync(root)) fs.rmSync(root, { recursive: true, force: true });
 }
 
+// Since July, Gardenia's entries moved to ABK's tile faces and gained collections the configurator doesn't have.
+// A write run would reset or delete them, so it refuses while any exist; --dry-run still compares.
+function refuseToLoseEntries() {
+  const lost = findGardeniaEntriesAWriteRunWouldLose(path.join(process.cwd(), "catalog"));
+  if (lost.size === 0) return;
+  const byCollection = [...lost].map(([collection, count]) => `${collection} ${count}`).join(", ");
+  throw new Error(
+    `Refusing to write: entries on tile faces or from ABK's pages would be reset or deleted (${byCollection}). ` +
+      "Run with --dry-run, or make the importer keep them first."
+  );
+}
+
 async function main() {
   const args = parseArgs();
+  if (!args.dryRun) refuseToLoseEntries();
   const config = await fetchGardeniaConfig();
   const groups = await fetchAllTileGroups(config, args.limit);
   const seriesCodes = Array.from(new Set(groups.map(getSeriesCode))).sort((a, b) =>

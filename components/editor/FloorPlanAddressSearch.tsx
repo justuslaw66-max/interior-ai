@@ -164,7 +164,7 @@ export default function FloorPlanAddressSearch({
       {exactSearchReady && results.length === 0 ? (
         <div className={dark ? "mt-2 rounded-lg border border-white/10 p-3" : "mt-2 rounded-lg border border-blue-200 bg-white p-3"}>
           <div className="text-xs font-semibold">No directory match yet</div>
-          <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+          <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Directory requests are not available yet. You can still upload your own floor plan now.
           </p>
           <button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} type="button" className={`${control} mt-2`} onClick={requestUpload}>
@@ -189,7 +189,7 @@ export default function FloorPlanAddressSearch({
       {pendingApplication?.template.canonical ? (
         <div role="region" aria-label="Confirm floor-plan configuration" data-testid="floor-plan-configuration-confirmation" className={dark ? "mt-3 rounded-xl border border-white/10 p-3" : "mt-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm"}>
           <div className="text-sm font-semibold">Confirm this source layout</div>
-          <p className={`mt-1 text-[11px] leading-4 ${subtle}`}>
+          <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Review the source-supported options before opening this immutable published layout.
           </p>
           <FloorPlanSelectionContext result={pendingApplication.result} subtle={subtle} />

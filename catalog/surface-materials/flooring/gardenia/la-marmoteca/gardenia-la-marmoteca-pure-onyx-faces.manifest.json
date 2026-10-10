@@ -1,0 +1,730 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/pure-onyx/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - PURE ONYX - minimali.zip (16432928 bytes, sha256 30d41b93741d32453906cd2dbb2ef10c739ec6251c46d3ecdaff61f9d6b6a725).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0014454",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/pure-onyx/pf60014454-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0014454_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014454-120x280-lux-90564-0; floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014457-120x280-soft-90566-0 (uses 0014454's faces: ABK's 4 Soft pictures are 0014454's 4 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014454-120x280-lux-90564-0; wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014457-120x280-soft-90566-0 (uses 0014454's faces: ABK's 4 Soft pictures are 0014454's 4 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0014454_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 21176,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PURE ONYX - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1756,
+      4096
+     ],
+     "source_sha256": "6ab8aa0dee34c9312efc6269d5cb1fffc9530cc76f74fee85b17397ff759c6d5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PURE ONYX 120X280_1",
+      "id": "2a02bcfe-9c10-414e-b442-89b8d942a177",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014454_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 22020,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PURE ONYX - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1756,
+      4096
+     ],
+     "source_sha256": "fd0cbc0a3dcefb961426a9ec34e4546b9635b751a18b8b8087b111f7f62022ad",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PURE ONYX 120X280_3",
+      "id": "7190ff3c-ad4c-4689-84a2-1c1fa02b0de2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014454_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 24580,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PURE ONYX - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "dd22e96f1da97e9e06a10ca425a51f88f3fa6d4e0c88f4c8676953d6f46e8c74",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PURE ONYX 120X280_4",
+      "id": "2dcd4d8f-321d-4834-bc3c-9502c835d569",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014454_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 25968,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PURE ONYX - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "bd21ddc98908c0096cb00c2f8c77b00cd54d15260b0fbd072848d9649dd9d1d5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_PURE ONYX 120X280_2",
+      "id": "a84d9706-6677-4ea9-a319-f412e3a0865a",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0017502",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/pure-onyx/pf60017502-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0017502_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014464-120x120-lux-90568-0 (uses 0017502's faces: ABK lists Pure Onyx 120x120 Lux as 0017502; the configurator's 0014464 has no page there (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0 (uses 0017502's faces: ABK has no Pure Onyx 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014464-120x120-lux-90568-0 (uses 0017502's faces: ABK lists Pure Onyx 120x120 Lux as 0017502; the configurator's 0014464 has no page there (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0 (uses 0017502's faces: ABK has no Pure Onyx 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017502_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10878,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3f6436611559a4974ad882fb75ecb99652b1537ce3f6725067f93871aacb46e7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_6",
+      "id": "c2578e5a-87a7-4444-be02-a304e66a4ec1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017502_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11514,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4be237587285708a46352bafc86baaef52a8588c45c6939710e9520cb610a685",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_7",
+      "id": "4204705d-44c2-497d-80c2-fbbfa5359d7e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017502_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7808,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "faa3c3d9fae27029097a67d46e7ca8af041ad5e18263e7482c9b1e31fc0e79b7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_5",
+      "id": "be1b7bcc-1f4e-4b83-bd84-99e6f195ee73",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017502_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10124,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1b7fd9f30d92c288be797b29ac639d066eefb3e02ade5f9de52ac1875fcd7f3e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_4",
+      "id": "a2d1ab39-38d9-42c8-8013-3d32436c0682",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017502_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10282,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "94a97a5fb4493999c8400579a6bc3a49cd58889637995dca152d38739cfe46db",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_8",
+      "id": "21f64624-cbdc-46f9-b159-11e8b4b09784",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017502_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8838,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3109d9c5f72e75e9475e6f3b2f072db572f80546bed945f52b792187cd42d3f7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_2",
+      "id": "dfbca194-1998-4775-bde7-b1c5d7537485",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017502_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9850,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11fc649e2ad812961ad2f7f8a957c7a625e0622f9fb7b7aed05ed2531fbbbe14",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_1",
+      "id": "4ea36510-25c4-4959-9209-29460960d035",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017502_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11816,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "666ca886551106f1995fe42ad92a56486bff037e59290a31caef3b2ffbebb88a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_PURE ONYX 120X120_3",
+      "id": "50d5cfb4-c6a5-4571-ac5c-834524c93556",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0017504",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/pure-onyx/pf60017504-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0017504_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014472-60x120-lux-90572-0 (uses 0017504's faces: ABK lists Pure Onyx 60x120 Lux as 0017504; the configurator's 0014472 has no page there (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-pure-onyx-pf60014475-60x120-soft-90574-0 (uses 0017504's faces: ABK has no Pure Onyx 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014472-60x120-lux-90572-0 (uses 0017504's faces: ABK lists Pure Onyx 60x120 Lux as 0017504; the configurator's 0014472 has no page there (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014475-60x120-soft-90574-0 (uses 0017504's faces: ABK has no Pure Onyx 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017504_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5580,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "803d205f5affe9bf0e6841a046359b37a6084b60ab9728277006d11ce32d94e6",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_7",
+      "id": "f21bb931-26e5-4472-81b1-6bfbe200f0a0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017504_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7038,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "44d4556d06b45498dc715c1a78319c8f2c559a06826de6cda72b34b5fa1bdb65",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_12",
+      "id": "38dc62b6-7a65-46c8-97d1-c8645091a278",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017504_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6350,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "3dfe08795f7028ed332747eef270fb2ddcacff66e7d7d65653d55d5655cabf83",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_6",
+      "id": "95e4800b-33fd-44e6-b8f4-5f49dc137d1e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017504_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6028,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "79f296a1bb63383685fc2c74cffb06288fd1ce005b6967413b77f48c1bed0df2",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_15",
+      "id": "fd18ab7f-7454-4789-a393-62ae28fbb001",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017504_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6020,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "2ef3c87e0531953dc93b8abe46f425fcd6c1125376e5931c7d88847dfbe9676e",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_5",
+      "id": "4a38805d-4f8b-4d3c-b6e0-67372691bdd7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017504_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5094,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "4dc3310f280bd51e89444e2a5a8621c28fb5a5adf7de42e4b09f5463340395f2",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_8",
+      "id": "ff41608d-ad53-41b3-94a4-3d5c8362c601",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017504_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3954,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "d0a3f22945fb2a015e6db38a26a873679fe48e911a65ae5006e57660d38c4962",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_9",
+      "id": "abfd41e8-dbe4-4bdd-ae0e-8de99ac5993a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017504_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5702,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "7c80997f86cbebb4bb02723490ac21de7ecf8b97301a5876eba50ce78a6d33ba",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_1",
+      "id": "15f9508d-2459-453d-9eff-a7e78dd86494",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017504_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5066,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "fab6ba07dca33699f7af7cfae526d15597dffacd30cd4181430b90dd4910aa57",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_3",
+      "id": "17ef23bf-7033-4ba1-87cb-a8470a7ceffa",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017504_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4606,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "d537881625304ed60c8e0fbe3d277fabc8d1dc6e4ea690a1c8c0fae5272aac73",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_2",
+      "id": "b9bba1ad-9a13-4f94-92e1-0a82eb593b5a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017504_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4588,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "338e64c38101c307f75d073a64377e3e91ed1e7acf7629d3d4a5deae444ace25",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_11",
+      "id": "54635f00-1db1-43e3-9e37-8d85e2214bde",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017504_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3668,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1458,
+      2915
+     ],
+     "source_sha256": "bc4f6414e93a9e24c9a768c2c3ec3952ff07d68b6f74045ec34efea2b894e5f4",
+     "source_px_per_mm": 2.429,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_4",
+      "id": "bd8cad17-8db7-4da5-8c0f-518a3617d95b",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017504_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6100,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "8a6c88aff9604a5f2128c38449ee956ee668e61bb00952b7b7802aad70550d5d",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_14",
+      "id": "2b38baae-c0b5-4a4e-8ea0-550be6e80b98",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017504_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5658,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "5fa5a2f6854648ce5cdd2210e6ae181d8acf0f1e034685ee42d7243f547f3a06",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_13",
+      "id": "b9fb45f4-8318-4af1-bed7-dfa34252bb4a",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017504_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3696,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "a0ec33c3949d127e60b6c3c073f25870be2c497ea22a503eca9d592a1ed6f44c",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_10",
+      "id": "f28ceea4-1f86-4750-ad63-6583f139163a",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017504_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4698,
+     "source_zip": "LA MARMOTECA - PURE ONYX - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PURE ONYX - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1459,
+      2917
+     ],
+     "source_sha256": "b87bb0a880a59a3d0b064d1e00dd07446dbb61f3f1995491b7ad579e1490b3ec",
+     "source_px_per_mm": 2.431,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_PURE ONYX 60X120_16",
+      "id": "05ea531d-af5d-4c07-9988-d080977ca835",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

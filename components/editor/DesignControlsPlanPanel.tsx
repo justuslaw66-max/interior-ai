@@ -682,26 +682,26 @@ export default function DesignControlsPlanPanel({
     ? "text-xs font-semibold text-neutral-100"
     : "text-xs font-semibold text-neutral-900";
   const progressMetaClass = dark
-    ? "mt-0.5 text-[11px] text-neutral-400"
-    : "mt-0.5 text-[11px] text-neutral-500";
+    ? "mt-0.5 text-xs text-neutral-400"
+    : "mt-0.5 text-xs text-neutral-500";
   const progressReadyClass = dark
-    ? "designer-status-ready rounded-full px-2 py-1 text-[11px] font-semibold"
-    : "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700";
+    ? "designer-status-ready rounded-full px-2 py-1 text-xs font-semibold"
+    : "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
   const progressTodoClass = dark
-    ? "designer-status-warning rounded-full px-2 py-1 text-[11px] font-semibold"
-    : "rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700";
+    ? "designer-status-warning rounded-full px-2 py-1 text-xs font-semibold"
+    : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
   const progressViewClass = dark
-    ? "designer-status-info rounded-full px-2 py-1 text-[11px] font-semibold"
-    : "rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700";
+    ? "designer-status-info rounded-full px-2 py-1 text-xs font-semibold"
+    : "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700";
   const progressActionClass = dark
-    ? "designer-control-active rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-50"
-    : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
+    ? "designer-control-active rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
+    : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
   const progressSecondaryActionClass = dark
-    ? "designer-control rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-50"
-    : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+    ? "designer-control rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
+    : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
   const collapsedToggleClass = dark
-    ? "designer-control shrink-0 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold"
-    : "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-100";
+    ? "designer-control shrink-0 rounded-lg border px-2.5 py-1.5 text-xs font-semibold"
+    : "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100";
   const renderCollapsibleHeader = ({
     section,
     title,
@@ -1188,8 +1188,8 @@ export default function DesignControlsPlanPanel({
   </label>
   );
   const floorMaterialMetaClass = dark
-    ? "block text-[10px] text-neutral-400"
-    : "block text-[10px] text-neutral-500";
+    ? "block text-xs text-neutral-400"
+    : "block text-xs text-neutral-500";
   const floorFieldLabelClass = dark
     ? "text-xs font-semibold text-neutral-200"
     : "text-xs font-semibold text-neutral-700";
@@ -1222,17 +1222,17 @@ export default function DesignControlsPlanPanel({
     ? "text-sm font-semibold text-neutral-100"
     : "text-sm font-semibold text-neutral-950";
   const measurementLabelClass = dark
-    ? "mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-400"
-    : "mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-500";
+    ? "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-400"
+    : "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-500";
   const measurementCheckClass = (ready: boolean) => {
     if (dark) {
       return ready
-        ? "rounded-full bg-emerald-400/15 px-2 py-1 text-[10px] font-semibold text-emerald-200"
-        : "rounded-full bg-amber-400/15 px-2 py-1 text-[10px] font-semibold text-amber-200";
+        ? "rounded-full bg-emerald-400/15 px-2 py-1 text-xs font-semibold text-emerald-200"
+        : "rounded-full bg-amber-400/15 px-2 py-1 text-xs font-semibold text-amber-200";
     }
     return ready
-      ? "rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
-      : "rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700";
+      ? "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
+      : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
   };
   const measurementChecks = [
     {
@@ -1371,10 +1371,10 @@ export default function DesignControlsPlanPanel({
               data-testid="surfaces-recommended-filter"
               className={
                 surfaceFilters.recommendedOnly
-                  ? "rounded-full bg-neutral-900 px-2 py-1 text-[11px] font-semibold text-white"
+                  ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
                   : dark
-                    ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
-                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
+                    ? "designer-status-pending rounded-full px-2 py-1 text-xs font-semibold"
+                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
               }
               onClick={toggleRecommendedSurfaceFilter}
             >
@@ -1385,10 +1385,10 @@ export default function DesignControlsPlanPanel({
               data-testid="surfaces-favorites-filter"
               className={
                 surfaceFilters.favoritesOnly
-                  ? "rounded-full bg-neutral-900 px-2 py-1 text-[11px] font-semibold text-white"
+                  ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
                   : dark
-                    ? "designer-status-pending rounded-full px-2 py-1 text-[11px] font-semibold"
-                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-600"
+                    ? "designer-status-pending rounded-full px-2 py-1 text-xs font-semibold"
+                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
               }
               onClick={toggleFavoriteSurfaceFilter}
             >
@@ -1479,24 +1479,24 @@ export default function DesignControlsPlanPanel({
                           {getSurfaceMaterialGroupMetaLabel(group)}
                         </span>
                         {selected ? (
-                          <span className="mt-1 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
+                          <span className="mt-1 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-800">
                             Active
                           </span>
                         ) : null}
                         <span className="mt-1 flex flex-wrap gap-1">
-                          <span className={publishStatus === "published" ? "rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700" : "rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700"}>
+                          <span className={publishStatus === "published" ? "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs font-semibold text-emerald-700" : "rounded-full bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-700"}>
                             {publishStatus === "published" ? "Published" : "Draft"}
                           </span>
-                          <span className={textureSource ? "rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700" : "rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600"}>
+                          <span className={textureSource ? "rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-semibold text-blue-700" : "rounded-full bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-600"}>
                             {textureSource ? "Texture" : "Swatch only"}
                           </span>
                           {tileable ? (
-                            <span className="rounded-full bg-cyan-50 px-1.5 py-0.5 text-[10px] font-semibold text-cyan-700">
+                            <span className="rounded-full bg-cyan-50 px-1.5 py-0.5 text-xs font-semibold text-cyan-700">
                               Tileable
                             </span>
                           ) : null}
                           {sampleAvailable ? (
-                            <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">
+                            <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-xs font-semibold text-violet-700">
                               Sample
                             </span>
                           ) : null}
@@ -1575,11 +1575,11 @@ export default function DesignControlsPlanPanel({
                 </div>
                 {isDesigner && selectedSurfaceMaterial ? (
                   <div className="mt-1 flex flex-wrap gap-1">
-                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
                       {selectedSurfaceMaterial.import_governance.publish_status.replace(/_/g, " ")}
                     </span>
                     {selectedSurfaceMaterial.import_governance.publish_blockers.length > 0 ? (
-                      <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700">
+                      <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-xs font-semibold text-orange-700">
                         {selectedSurfaceMaterial.import_governance.publish_blockers.length} blockers
                       </span>
                     ) : null}
@@ -1750,7 +1750,7 @@ export default function DesignControlsPlanPanel({
                   </span>
                 </div>
                 {row.sampleUrl ? (
-                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className={dark ? "mt-2 inline-block text-[11px] font-semibold text-blue-300" : "mt-2 inline-block text-[11px] font-semibold text-blue-700"}>
+                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className={dark ? "mt-2 inline-block text-xs font-semibold text-blue-300" : "mt-2 inline-block text-xs font-semibold text-blue-700"}>
                     Request sample / quote
                   </a>
                 ) : null}
@@ -1830,8 +1830,8 @@ export default function DesignControlsPlanPanel({
                     data-testid={`plan-quality-issue-${index}`}
                     className={
                       dark
-                        ? "designer-raised rounded-md px-2.5 py-1.5 text-[11px] text-neutral-300"
-                        : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-[11px] text-neutral-600"
+                        ? "designer-raised rounded-md px-2.5 py-1.5 text-xs text-neutral-300"
+                        : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-600"
                     }
                   >
                     <summary className="cursor-pointer font-semibold">
@@ -2292,24 +2292,24 @@ export default function DesignControlsPlanPanel({
                       className={
                         step.ready
                           ? dark
-                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400/20 text-[10px] font-bold text-emerald-100"
-                            : "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700"
+                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400/20 text-xs font-bold text-emerald-100"
+                            : "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700"
                           : step.active
                             ? dark
-                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-neutral-950"
-                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white"
+                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-bold text-neutral-950"
+                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white"
                             : dark
-                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[10px] font-bold text-neutral-300"
-                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] font-bold text-neutral-600"
+                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-neutral-300"
+                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600"
                       }
                     >
                       {index + 1}
                     </span>
-                    <span className={dark ? "truncate text-[11px] font-semibold text-neutral-100" : "truncate text-[11px] font-semibold text-neutral-900"}>
+                    <span className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-900"}>
                       {step.label}
                     </span>
                   </div>
-                  <div className={dark ? "mt-1 truncate text-[10px] text-neutral-400" : "mt-1 truncate text-[10px] text-neutral-500"}>
+                  <div className={dark ? "mt-1 truncate text-xs text-neutral-400" : "mt-1 truncate text-xs text-neutral-500"}>
                     {step.meta}
                   </div>
                 </div>
@@ -2398,7 +2398,7 @@ export default function DesignControlsPlanPanel({
                       : "flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2"
                   }
                 >
-                  <span className={dark ? "text-[11px] font-semibold text-neutral-300" : "text-[11px] font-semibold text-neutral-600"}>
+                  <span className={dark ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-600"}>
                     {check.label}
                   </span>
                   <span className={measurementCheckClass(check.ready)}>{check.value}</span>
@@ -2543,7 +2543,7 @@ export default function DesignControlsPlanPanel({
                   className={
                     simplePlanControls
                       ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
+                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
                   }
                   onClick={() => onSimplePlanControlsChange(true)}
                 >
@@ -2556,7 +2556,7 @@ export default function DesignControlsPlanPanel({
                   className={
                     !simplePlanControls
                       ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
+                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
                   }
                   onClick={() => {
                     if (isDesigner) onSimplePlanControlsChange(false);
@@ -2593,8 +2593,8 @@ export default function DesignControlsPlanPanel({
             <span
               className={
                 dark
-                  ? "rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold text-neutral-200"
-                  : "rounded-full bg-neutral-100 px-2 py-1 text-[10px] font-semibold text-neutral-600"
+                  ? "rounded-full bg-white/10 px-2 py-1 text-xs font-semibold text-neutral-200"
+                  : "rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-600"
               }
             >
               {floorOptions.length} level{floorOptions.length === 1 ? "" : "s"}
@@ -2844,7 +2844,7 @@ export default function DesignControlsPlanPanel({
                   <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
                     Pattern direction
                   </div>
-                  <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-neutral-500"}>
+                  <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
                     {activeFloorRotationDeg} deg
                   </div>
                 </div>
@@ -2873,7 +2873,7 @@ export default function DesignControlsPlanPanel({
                     <span className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
                       Pattern size
                     </span>
-                    <span className={dark ? "text-[11px] text-neutral-400" : "text-[11px] text-neutral-500"}>
+                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
                       {activeFloorScale.toFixed(1)}x
                     </span>
                   </div>
@@ -2915,7 +2915,7 @@ export default function DesignControlsPlanPanel({
                   ? "Pick two points along the same wall. Green means it fits."
                   : "Move near a wall, then click when the preview turns green."}
               </div>
-              <div className={dark ? "mt-1 text-[11px] font-semibold text-emerald-100/70" : "mt-1 text-[11px] font-semibold text-emerald-700"}>
+              <div className={dark ? "mt-1 text-xs font-semibold text-emerald-100/70" : "mt-1 text-xs font-semibold text-emerald-700"}>
                 Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
               </div>
             </div>

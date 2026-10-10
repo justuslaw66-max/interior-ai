@@ -2181,7 +2181,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 83
+        "maximum": 59
       }
     },
     "components/editor/SceneAdjustmentToolbar.tsx": {

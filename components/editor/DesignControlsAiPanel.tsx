@@ -224,7 +224,7 @@ export default function DesignControlsAiPanel({
                 onClick={() => applyAiLayoutGoal(goal)}
               >
                 <span className="block text-xs font-semibold">{goal.label}</span>
-                <span className={dark ? "mt-1 block text-[11px] text-neutral-400" : "mt-1 block text-[11px] text-neutral-500"}>
+                <span className={dark ? "mt-1 block text-xs text-neutral-400" : "mt-1 block text-xs text-neutral-500"}>
                   {goal.description}
                 </span>
               </button>

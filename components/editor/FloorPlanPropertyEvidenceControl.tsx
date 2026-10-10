@@ -35,16 +35,16 @@ function EvidenceStatus({
       : dark ? "bg-blue-400/15 text-blue-200" : "bg-blue-100 text-blue-800";
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${badgeClass}`} data-testid={`${testId}-badge`}>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass}`} data-testid={`${testId}-badge`}>
         {evidence === "assumed" && assumedLabel ? assumedLabel : floorPlanPropertyEvidenceLabel(evidence)}
       </span>
       {evidence === "assumed" ? (
-        <span className={dark ? "text-[10px] text-amber-200" : "text-[10px] text-amber-700"}>
+        <span className={dark ? "text-xs text-amber-200" : "text-xs text-amber-700"}>
           {assumedHelpText ?? "Not read from the source drawing."}
         </span>
       ) : null}
       {!editable ? (
-        <span className={dark ? "text-[10px] text-neutral-400" : "text-[10px] text-neutral-500"}>
+        <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
           Locked; use reviewed override workflow to replace it.
         </span>
       ) : null}
@@ -74,8 +74,8 @@ function EvidenceConfirmation({
           <option value="site_measured">Measured on site</option>
         </select>
         <button type="button" className={dark
-          ? "designer-work-control rounded-md px-2 py-1 text-[10px] font-semibold disabled:opacity-40"
-          : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-semibold text-neutral-700 disabled:opacity-40"}
+          ? "designer-work-control rounded-md px-2 py-1 text-xs font-semibold disabled:opacity-40"
+          : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 disabled:opacity-40"}
           disabled={disabled || (selectedEvidence === "site_measured" && measurementNote.trim().length < 4)}
           onClick={() => onConfirm(selectedEvidence, measurementNote.trim() || undefined)}>
           Confirm displayed value
@@ -106,8 +106,8 @@ export default function FloorPlanPropertyEvidenceControl({
 
   const editable = floorPlanPropertyEvidenceIsEditable(evidence);
   const controlClass = dark
-    ? "designer-control rounded-md border px-2 py-1 text-[10px] text-neutral-100"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] text-neutral-700";
+    ? "designer-control rounded-md border px-2 py-1 text-xs text-neutral-100"
+    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700";
 
   return (
     <div className="mt-1.5 grid grid-cols-1 gap-1.5" data-testid={testId}>

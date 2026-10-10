@@ -25,7 +25,7 @@ function UnavailableCompareCard({
       data-testid="catalog-compare-unavailable"
     >
       <div className="text-xs font-semibold text-neutral-900">Product unavailable</div>
-      <div className="mt-1 text-[11px] text-neutral-500">
+      <div className="mt-1 text-xs text-neutral-500">
         {item.reason === "variant"
           ? "The selected variant is no longer available in the public catalogue."
           : "This product is no longer available in the public catalogue."}
@@ -33,7 +33,7 @@ function UnavailableCompareCard({
       <button
         type="button"
         onClick={() => onRemove(item.productId)}
-        className="mt-2 w-full rounded border border-red-200 px-1.5 py-1 text-[10px] text-red-700"
+        className="mt-2 w-full rounded border border-red-200 px-1.5 py-1 text-xs text-red-700"
         data-testid={`catalog-compare-remove-${item.productId}`}
       >
         Remove
@@ -57,24 +57,24 @@ function AvailableCompareCard({
   return (
     <div className="rounded-md border border-neutral-200 bg-white p-2">
       <div className="line-clamp-1 text-xs font-semibold text-neutral-900">{card.title}</div>
-      <div className="line-clamp-1 text-[11px] text-neutral-500">{card.brand ?? "Unknown brand"}</div>
-      <div className="line-clamp-1 text-[11px] text-neutral-500" data-testid="catalog-compare-variant-label">{card.variantLabel}</div>
-      <div className="mt-1 text-[11px] text-neutral-700">{card.priceLabel ?? "Price on request"}</div>
-      <div className="text-[11px] text-neutral-500">{card.dimsLabel}</div>
-      <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{card.badges.join(" • ")}</div>
+      <div className="line-clamp-1 text-xs text-neutral-500">{card.brand ?? "Unknown brand"}</div>
+      <div className="line-clamp-1 text-xs text-neutral-500" data-testid="catalog-compare-variant-label">{card.variantLabel}</div>
+      <div className="mt-1 text-xs text-neutral-700">{card.priceLabel ?? "Price on request"}</div>
+      <div className="text-xs text-neutral-500">{card.dimsLabel}</div>
+      <div className="mt-1 line-clamp-1 text-xs text-neutral-500">{card.badges.join(" • ")}</div>
 
       <div className="mt-2 grid grid-cols-3 gap-1">
         <button
           type="button"
           onClick={(event) => onPreview(card.id, event.currentTarget)}
-          className="rounded border border-neutral-200 px-1.5 py-1 text-[10px] text-neutral-700"
+          className="rounded border border-neutral-200 px-1.5 py-1 text-xs text-neutral-700"
           data-testid={`catalog-compare-open-${card.id}`}
           {...getCatalogDrawerFocusAttributes({ productId: card.id, action: "details", source: "compare-tray" })}
         >
           Open
         </button>
-        <button type="button" onClick={() => onAdd(card.id, card.variantId)} className="rounded bg-neutral-900 px-1.5 py-1 text-[10px] text-white">Add</button>
-        <button type="button" onClick={() => onRemove(card.id)} className="rounded border border-red-200 px-1.5 py-1 text-[10px] text-red-700" data-testid={`catalog-compare-remove-${card.id}`}>Remove</button>
+        <button type="button" onClick={() => onAdd(card.id, card.variantId)} className="rounded bg-neutral-900 px-1.5 py-1 text-xs text-white">Add</button>
+        <button type="button" onClick={() => onRemove(card.id)} className="rounded border border-red-200 px-1.5 py-1 text-xs text-red-700" data-testid={`catalog-compare-remove-${card.id}`}>Remove</button>
       </div>
     </div>
   );

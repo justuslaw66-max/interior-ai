@@ -253,8 +253,8 @@ export default function FloorPlanImportHistory({
     ? "designer-control rounded-lg border border-white/10 p-2.5"
     : "rounded-lg border border-neutral-200 bg-white p-2.5";
   const secondary = dark
-    ? "designer-control rounded-md border px-2 py-1 text-[11px] font-semibold disabled:opacity-50"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-[11px] font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
+    ? "designer-control rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-50"
+    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
 
   return (
     <details
@@ -264,7 +264,7 @@ export default function FloorPlanImportHistory({
       onKeyDownCapture={guardConfirmationEscape}
     >
       <summary className="cursor-pointer text-xs font-semibold">Your uploads</summary>
-      <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+      <p className={`mt-1 text-xs leading-4 ${subtle}`}>
         Resume a review after refreshing or leaving the editor. Uploads stay private to your account.
       </p>
       {!loading && jobs.length > 0 ? (
@@ -276,7 +276,7 @@ export default function FloorPlanImportHistory({
           }`}
           data-testid="floor-plan-import-bulk-actions"
         >
-          <label className="flex cursor-pointer items-center gap-1.5 text-[11px] font-semibold">
+          <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold">
             <input
               type="checkbox"
               checked={allShownSelected}
@@ -285,7 +285,7 @@ export default function FloorPlanImportHistory({
             />
             Select shown
           </label>
-          <span className={`text-[10px] ${subtle}`}>
+          <span className={`text-xs ${subtle}`}>
             {selectedJobIds.size} selected
           </span>
           <div className="ml-auto flex flex-wrap gap-1.5">
@@ -323,7 +323,7 @@ export default function FloorPlanImportHistory({
         >
           <p
             id="floor-plan-bulk-delete-title"
-            className="text-[11px] font-semibold"
+            className="text-xs font-semibold"
           >
             {bulkDeleteScope === "all"
               ? "Delete all uploads from your history?"
@@ -331,7 +331,7 @@ export default function FloorPlanImportHistory({
                   selectedJobIds.size === 1 ? "upload" : "uploads"
                 }?`}
           </p>
-          <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+          <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Generated designs will stay. Unfinished uploads will be stopped
             when safe, and uploaded files continue to follow your private
             retention settings.
@@ -395,14 +395,14 @@ export default function FloorPlanImportHistory({
                   <div className="truncate text-xs font-semibold">
                     {job.sourceAsset.fileName ?? "Private floor plan"}
                   </div>
-                  <div className={`mt-0.5 text-[10px] capitalize ${subtle}`}>
+                  <div className={`mt-0.5 text-xs capitalize ${subtle}`}>
                     {job.status === "failed"
                       ? statusLabel(job)
                       : `${statusLabel(job)} · ${Math.round(job.progress)}%`}
                   </div>
                 </div>
                 {active ? (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-semibold text-emerald-800">
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
                     Open
                   </span>
                 ) : null}
@@ -461,11 +461,11 @@ export default function FloorPlanImportHistory({
                 >
                   <p
                     id={`floor-plan-delete-title-${job.id}`}
-                    className="text-[11px] font-semibold"
+                    className="text-xs font-semibold"
                   >
                     Delete this upload from your history?
                   </p>
-                  <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+                  <p className={`mt-1 text-xs leading-4 ${subtle}`}>
                     Any design already created from it will stay. Its uploaded
                     file continues to follow your private retention settings.
                     {CANCELLABLE_STATUSES.has(job.status)
@@ -501,7 +501,7 @@ export default function FloorPlanImportHistory({
           {loadingMore ? "Loading…" : "Show older uploads"}
         </button>
       ) : null}
-      {errorMessage ? <p role="alert" className="mt-2 text-[10px] text-red-600">{errorMessage}</p> : null}
+      {errorMessage ? <p role="alert" className="mt-2 text-xs text-red-600">{errorMessage}</p> : null}
     </details>
   );
 }

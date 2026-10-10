@@ -186,7 +186,7 @@ export default function MeasurementField({
       {!hideLabel ? (
         <label
           htmlFor={inputId}
-          className={dark ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300" : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"}
+          className={dark ? "flex items-center justify-between text-xs font-semibold text-neutral-300" : "flex items-center justify-between text-xs font-semibold text-neutral-600"}
         >
           <span>{label}</span>
           <span className={dark ? "font-normal text-neutral-400" : "font-normal text-neutral-500"}>{metadata.indicator}</span>
@@ -230,15 +230,15 @@ export default function MeasurementField({
           onBlur={(event) => commit(event.currentTarget.value)}
           onKeyDown={handleKeyDown}
         />
-        <span aria-hidden="true" className={dark ? "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-[11px] text-neutral-400" : "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-[11px] text-neutral-500"}>
+        <span aria-hidden="true" className={dark ? "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-400" : "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-500"}>
           {metadata.indicator}
         </span>
       </span>
-      <span id={statusId} role={error ? "alert" : undefined} className={error ? "text-[10px] leading-4 text-red-600" : "sr-only"}>
+      <span id={statusId} role={error ? "alert" : undefined} className={error ? "text-xs leading-4 text-red-600" : "sr-only"}>
         {error ?? ""}
       </span>
       {hint ? (
-        <span id={hintId} className={dark ? "text-[10px] text-neutral-400" : "text-[10px] text-neutral-500"}>
+        <span id={hintId} className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
           {hint}
         </span>
       ) : null}

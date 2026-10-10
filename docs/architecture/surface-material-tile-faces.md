@@ -19,6 +19,9 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Orosei, five colours and two Tessera decors | 78 drafts (39 floor, 39 wall) | 248 | `catalog/surface-materials/flooring/gardenia/orosei/gardenia-orosei-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Gioia, nine plain colours and seven printed decors | 21 drafts (5 floor, 16 wall) | 16 | `catalog/surface-materials/flooring/gardenia/gioia/gardenia-gioia-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | I Pigmenti, ten colours and three 3D decors | 146 of its 166 drafts (73 floor, 73 wall); the 20 Mos Confet mosaic entries keep their previews | 560 | `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-i-pigmenti-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | La Marmoteca, eighteen marbles | 193 of its 201 drafts (96 floor, 97 wall); the 8 book-matched A+B entries keep their previews | 497 | `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-la-marmoteca-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Hermione, three woods (new: imported from ABK's pages) | 6 drafts (3 floor, 3 wall) | 99 | `catalog/surface-materials/flooring/gardenia/hermione/gardenia-hermione-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Concrea Plain, three concretes (new: imported from ABK's pages) | 22 drafts (11 floor, 11 wall) | 107 | `catalog/surface-materials/flooring/gardenia/concrea-plain/gardenia-concrea-plain-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -41,7 +44,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia and I Pigmenti entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione and Concrea Plain entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -59,6 +62,8 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia Pietra Viva and La Geoteca originals | 1.0 (two Ceppo di Gre 60x120 pictures) to 3.4 |
 | Gardenia Orosei and Gioia originals | 1.46 (Orosei 120x280) to 3.4 (Gioia Primavera) |
 | Gardenia I Pigmenti originals | 1.46 (120x280) to 2.95 (60x60, 30x30 and most 10x60) |
+| Gardenia La Marmoteca originals | 1.46 (120x280) to 3.4 (some 60x120) |
+| Gardenia Hermione and Concrea Plain originals | 1.46 (Concrea Plain 120x280) to 3.2 (Concrea Plain 80x80); Hermione 2.13 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -149,3 +154,33 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
 - **Crocini, Pillole and Rattan** (60x120 Nat 3D) are one picture of the whole tile each, laid with the long side horizontal, as ABK shows them.
 - **Mos Confet mosaics** (29.3x33.3, ten colours, floor and wall): ABK's Single Item Picture pages have no mosaics, so the 20 entries keep their previews (J, 9 Oct 2026), like Make's T36 mosaics.
 - **Not in the catalogue:** the 5x120 strips, and the 120x120 R11 items of Ash, Cream and Sand (their pictures are the Natural item's, byte for byte). Both come in the colour ZIPs.
+
+## Gardenia La Marmoteca specifics (downloaded 10 Oct 2026)
+
+- As for the collections before: every site picture (982 on 96 size pages) matched to its ZIP file by sha256, and each colour's sizes checked against each other with the crop test (every picture used matches best at its labelled scale).
+- **One set of faces per colour and size.** ABK shows the same pictures for every finish of a colour and size (Lux, Nat P.tech, Soft, and the 3D finishes), byte for byte, so every entry of a colour and size draws one item's faces, normally the Lux item's.
+- **Sister collections' pictures.** Several pages show the same faces again under other names (image matching): Grey Stone's as NOBILE GREY GRAPHITE and SENSI 900 STONE GREY, Statuario Premium's as NOBILE STATUARIO, each in its own colour. Where ABK has pictures named MARMOTECA_ (Grey Stone and Statuario Premium), only those are used: they are nearest the configurator's colour (Grey Stone mean RGB 98/97/92 against the preview's 94/93/88; NOBILE GREY GRAPHITE 107/103/94). Grey Stone's and Statuario Premium's Lux 120x120 and 60x120 pages show only the NOBILE pictures, so those entries use the MARMOTECA pictures on the Nat P.tech pages. Calacatta's 120x280 Soft page also shows four NOBILE STATUARIO pictures, another marble, which are left out. The other colours' pictures are named LA MARMOTECA_ or NOBILE only.
+- **Repeats, used once:** byte-identical pictures on Montblanc's and Patagonia Emerald's pages.
+- **Wider 120x280 pictures are stretched, not wider crops.** Some 120x280 pictures are 1812 px wide for 4096 tall, 3.2% wider than 1200 x 2800 mm. Grey Stone shows three faces both 1768 px wide (NOBILE) and 1812 px wide (MARMOTECA), and they match only when drawn at the same size (fine detail r 0.90 to 0.92; 0.10 to 0.13 as wider crops); Calacatta's match its 120x120 pictures better squeezed to 1200 mm (r 0.52 to 0.59) than at their own aspect (0.39 to 0.40). So La Marmoteca's are drawn at the tile's width, not cut. (Earlier collections cut such pictures; whether theirs are stretched too is not checked.)
+- **Stand-ins** (J, 10 Oct: "Both, if they check out"; "Cut from the 60x120 Lux faces"), each named in its entry's note:
+  - Lux 120x120 and 60x120 of Frozen, Pure Onyx and Sahara White: ABK lists them under other codes (0017771, 0017775, 0017502, 0017504, 0017769, 0017765). Grey Stone's and Statuario Premium's (0006311, 0006313, 0010363, 0010365) show only NOBILE pictures, so the MARMOTECA pictures on the Nat P.tech pages are used (above).
+  - Soft 120x120 and 60x120 of Antique Brown, Frozen, Golden Carbon, Pure Onyx and Sahara White, and Grey Wonder 120x120 Soft: ABK has Soft only at 120x280, where its pictures are the Lux ones byte for byte, so the Lux pictures stand in.
+  - 40x120 Lux of Calacatta Elegance and Statuario Premium: no 40x120 on ABK; the colour's 60x120 faces are used and the renderer cuts true-scale 400x1200 windows from them.
+- **Book-matched A+B 120x280 pairs** (Dreami Rose, Emerald Quartz, Onyx Bronze, Grey Wonder; 2400x2800 entries) have no pictures on ABK's site and keep their previews.
+- **Names:** the catalogue writes Anti Brown, Calacat Elegance, Gold Carbon, Patagoni Emerald and Statuari Premium for ABK's Antique Brown, Calacatta Elegance, Golden Carbon, Patagonia Emerald and Statuario Premium; manifests use ABK's names. ABK's codes `g0027050.a` and `pfa0014677` read as `g27050` and `0014677`.
+
+## Gardenia Hermione and Concrea Plain specifics (downloaded 10 Oct 2026)
+
+These are the first two of ABK's ten Gardenia&Ariana collections that Gardenia's RealityRemod configurator never had, so the July import (`scripts/import-gardenia-surface-materials.ts`) never wrote them. Their entries are new, and each is born with its faces.
+
+- **Where the entries come from.** ABK's own pages: the collection page (description, product type, sizes, thicknesses; `gardenia.it/en/collections` now redirects to `abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/`), each colour page's format data (finish and thickness per format), and the signed-in download area (ABK's item code per colour, size and finish, and the pictures). Each entry's notes name its item page and colour page.
+- **The same rules as the July import** for everything else: ids `gardenia-<flooring|wall-tile>-<collection>-<colour>-<item>-<size>-<finish>`, product names ending in the size and finish (`Gardenia Hermione Beige 20x120 Nat`), the tile's long side as its width, classification, tone, style and rooms, roughness and drafts. `design_effect` comes from the collection page (Hermione "wood effect", Concrea Plain "resins and concretes"). The thickness is known for every format (Concrea Plain's 120x280 slabs 6 mm, everything else 8.5 mm), so no entry carries `confirm_physical_dimensions`. They are flagged `gardenia_abk_site_import` and carry no configurator pattern ids.
+- **J's decisions (10 Oct 2026):** ABK's pages don't say which sizes are for floors or walls, so every size is listed for both. Layouts are those of similar Gardenia tiles: Hermione's planks random stagger, straight and herringbone (as Tabulae's wood planks), Concrea Plain straight and half brick horizontal and vertical (Gardenia's default).
+- **The July importer refuses to write now.** A write run would delete every Gardenia entry and write back the configurator's, with their July previews: it would reset every collection on faces and delete Hermione and Concrea Plain. `scripts/gardenia-import-guard.ts` finds those entries, and the importer stops before touching the network unless `--dry-run` is given. `test-surface-material-physical-scale.ts` checks that the guard finds every Gardenia entry on faces.
+- **Hermione:** 33 different plank faces per colour (2560 x 427 px, the 200 x 1200 mm proportion). Fine-detail matching between every pair, turned or not, finds no repeat (r 0.06 at most). It comes in one size, so there is nothing to check the scale against.
+- **Concrea Plain:**
+  - **Sizes:** the 60x120, 80x80 and 120x120 pictures match each other at their labelled scale (crop test, r 0.64 to 0.98; 0.38 at most at the other scales).
+  - **The 120x280 slabs** (Silver and White, two pictures each, 1812 x 4096 px) are 3.2% wider than 1200 x 2800 mm. They match the colour's other sizes best drawn with the tile's proportion (r 0.84 to 0.88, against 0.66 to 0.75 with their own), so, as for La Marmoteca, they are copies stretched across and drawn at the tile's width. They match only when drawn about 0.77 times the tile's size (r 0.57 to 0.61 at the tile's size). So the slab's pattern comes out about 1.3 times larger than on the other sizes. Drawn 0.77 times as large, the pictures would no longer cover the tile, so they are used at the tile's size.
+  - **Pictures named LAB325.** The pages also name pictures LAB325 BASE SAND, ASH and PEARL (Ariana's Lab325 collection). Bone's are its CONCREA PLAIN BONE pictures byte for byte, so each Bone picture is listed twice and used once. Silver's and White's are other faces in the same colour (mean RGB within 3 levels of the CONCREA PLAIN pictures on the same page), so they are used too. White 60x120's pictures are all named LAB325 BASE PEARL.
+  - **Repeats, used once:** two of Silver's and two of White's 80x80 pictures are earlier ones exported anew (fine detail r 0.88 to 0.93, against 0.35 at most between different faces).
+  - Bone has no 120x280. Its download area also lists an 80x80 item `pfa0000240` with no pictures, which is not a catalogue item.

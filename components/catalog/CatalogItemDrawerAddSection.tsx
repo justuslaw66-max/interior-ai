@@ -101,7 +101,7 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
           Choose where it goes
         </button>
       ) : (
-        <div className="mt-2 text-center text-[11px] text-neutral-500">
+        <div className="mt-2 text-center text-xs text-neutral-500">
           Next: confirm the placement ghost before it becomes part of the room.
         </div>
       )}

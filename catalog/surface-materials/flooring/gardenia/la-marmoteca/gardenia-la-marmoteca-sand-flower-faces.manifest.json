@@ -1,0 +1,634 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sand-flower/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - SAND FLOWER - minimali.zip (110162002 bytes, sha256 b5161e964c2a9b0359119af1bf0d6b8af407e57a135e0430f0528502b373826d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0012246",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sand-flower/pf60012246-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0012246_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sand-flower-0012245-120x280-soft-139950-0 (uses 0012246's faces: ABK's 3 Soft pictures are 0012246's 3 Lux pictures, byte for byte); floor gardenia-flooring-la-marmoteca-sand-flower-0012246-120x280-lux-139951-0; wall gardenia-wall-tile-la-marmoteca-sand-flower-0012245-120x280-soft-139950-0 (uses 0012246's faces: ABK's 3 Soft pictures are 0012246's 3 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-sand-flower-0012246-120x280-lux-139951-0",
+   "faces": [
+    {
+     "file": "0012246_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 243940,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAND FLOWER - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1756,
+      4096
+     ],
+     "source_sha256": "e5256b9820dd777b4ca2b35edfcf6c448d2f08b2626f4898b2b11379da3e84c2",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE SAND FLOWER 120X280_1",
+      "id": "bab6a70e-ff8e-4a4b-9f6a-5377186db9a5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012246_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 276134,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAND FLOWER - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "e8de5858dc5c709c1d29f16f546b5858d37d215ef8be760d370abca40bc5408c",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE SAND FLOWER 120X280_2",
+      "id": "4b1407a9-3fc5-4f87-bd0c-ff36a4c25fbe",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012246_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 290200,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAND FLOWER - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "ea844389c9810004afa1ab00329cd9bbee255e5421c9c9faa7b33f3a612fc069",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE SAND FLOWER 120X280_3",
+      "id": "f1cbba9d-bb21-4efa-a3ed-a4bb7960f722",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012190",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sand-flower/pf60012190-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012190_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sand-flower-0012190-120x120-lux-139946-0; floor gardenia-flooring-la-marmoteca-sand-flower-0012247-120x120-nat-139952-0 (uses 0012190's faces: ABK's 9 Nat P.tech pictures are 0012190's 9 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-sand-flower-0012190-120x120-lux-139946-0; wall gardenia-wall-tile-la-marmoteca-sand-flower-0012247-120x120-nat-139952-0 (uses 0012190's faces: ABK's 9 Nat P.tech pictures are 0012190's 9 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0012190_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 105556,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bb2e08ea0bce70e30b6a84ffcd70ce0b89bcdcefaa6501f100edbe1887579258",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE SAND FLOWER 120X120_1",
+      "id": "aa5e616e-1796-4e19-99ff-90dfe471104b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012190_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 105038,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fc59777d25260bad45634c10c810a5f35df964145642522f7ba21635dbb01122",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE SAND FLOWER 120X120_2",
+      "id": "7d86e5d1-ea0c-4ba0-997b-e739782d4c8d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012190_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 119808,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a2138a8cf8c73abc8e427afc87f581dd34579dc8c1e8eca338fe83fb26e55021",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE SAND FLOWER 120X120_3",
+      "id": "28c6474d-0c12-4421-98c3-07f071971647",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012190_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 125936,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a2d63501028bfb448ad422a63900c470abea17580b8aaa2e75ef24dca270a3da",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE SAND FLOWER 120X120_4",
+      "id": "c5e965e5-4635-41f6-9b90-6ae027996adf",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012190_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 125962,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dce1cdeec873bfb752e42ba3995a027430a73a024f88d536c9e6199af4ce3323",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE SAND FLOWER 120X120_5",
+      "id": "1658f1eb-6b6e-4fe3-b78d-d1f414786555",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012190_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 123476,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c428f9a90853095495c1f8cfc8120eb6497f5ed6c7abe0ed7ac518d07f7b0a46",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE SAND FLOWER 120X120_6",
+      "id": "b39d225e-6f0a-45b9-8586-40fc76f326b1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012190_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 120174,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "12fbd0ef63dea2e49656af89b2db6f6118400a6e3a04da9b005f2ec81ce66063",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE SAND FLOWER 120X120_7",
+      "id": "c3cab1cc-d5ca-400b-9b11-6aecd8f2292d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012190_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 113764,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "eabac1c6f7f9a2ad65110464fcc3635308ce7aa93d061531ab491c66493a1ce1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE SAND FLOWER 120X120_8",
+      "id": "cd4952e6-a5cb-4307-94e0-c89009aaac2a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012190_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 110964,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "86075443312bbe07135069e08c114368b251e56132b47f1a44b2458b43d35f48",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE SAND FLOWER 120X120_9",
+      "id": "96a02494-212f-463e-9735-d3e1514d97fb",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012069",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sand-flower/pf60012069-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012069_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sand-flower-0012068-60x120-nat-139944-0 (uses 0012069's faces: ABK's 12 Nat P.tech pictures are 0012069's 12 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-sand-flower-0012068-60x120-nat-139944-0 (uses 0012069's faces: ABK's 12 Nat P.tech pictures are 0012069's 12 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-sand-flower-0012069-60x120-lux-139945-0",
+   "faces": [
+    {
+     "file": "0012069_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52024,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e2c5e16c916c53c72bff3695851674b4254539289467792cb10442d060be010e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE SAND FLOWER 60X120_1",
+      "id": "b34fd34d-af3f-46af-87d2-13c9edcd5073",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012069_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54078,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5f64f1ce17a49e1293e6fd5cc96e47eeaf83a4a35c615c720898ba4cee73b087",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE SAND FLOWER 60X120_2",
+      "id": "12ca0d2a-8d3a-4597-8cc4-705f96594e30",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012069_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52086,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "34cae5c69e20c9a4be8b3749b022db30940e30d7dc35c778fda16524843c7b50",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE SAND FLOWER 60X120_3",
+      "id": "5d7e3f0f-f780-451f-9a82-1737a16a9ac8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012069_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53566,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8b6dbc96ceacacda88e407953e2e90f290cf4de120616cc73d140692d641d301",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE SAND FLOWER 60X120_4",
+      "id": "fc0b8378-8958-467c-b595-2e4b5fac55d4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012069_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54312,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b1dcd2f05629df2e5a5f8211118a883ff59016476cef6272c4a4da5c5a5e0038",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE SAND FLOWER 60X120_5",
+      "id": "fd2016d0-6ea3-42a4-9264-9eb5341b4cd3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012069_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65626,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3edc0bcd1926d4653096c385de8ee08fbee3d368b4fbf220451733a0076fc503",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE SAND FLOWER 60X120_6",
+      "id": "98db9724-f9a7-4182-ae15-56cd22a05c41",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012069_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65424,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cce3bc7c3637dc481c45eba128b5b84a6ae47413a7bcaddcb4e16adaa962d525",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE SAND FLOWER 60X120_7",
+      "id": "20fe0ef7-6794-4fa4-86d9-7d9fe31c2ec3",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012069_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61694,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "dab2b975ae1f8bee5f3143456215397b110e7a3e8d9740412a970c4d1e7a9855",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE SAND FLOWER 60X120_8",
+      "id": "9e00e611-879c-4eb0-8d3e-87c18b5a595d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012069_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69726,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "43f257cb664622c93a4388d8977efd031fba3c9f12e21e3ae5d5bf1dad170d13",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE SAND FLOWER 60X120_9",
+      "id": "24ce4744-969b-4297-8e8d-2a06ad0e4703",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012069_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54392,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "26c76f700def62983dee5706950d5a5dfc59d322f905e87d0166bd589002f70c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10 (view_10)",
+      "name": "NOBILE SAND FLOWER 60X120_10",
+      "id": "acd7b26a-b126-4d6d-ad06-8451aca8087a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012069_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 59854,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3d97cb27dcbf3a30b7daa4c98a29b42123ee0293527e5ec3f05bde6caed8bc8e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11 (view_11)",
+      "name": "NOBILE SAND FLOWER 60X120_11",
+      "id": "e6343890-d6ab-4f20-a645-ccf6bf140d65",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012069_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61842,
+     "source_zip": "LA MARMOTECA - SAND FLOWER - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAND FLOWER - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2916a6610bf44a8fb7d08f679f08be2b4bbe2ec92ebe0a3f9bbdca7b98c6d974",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12 (view_12)",
+      "name": "NOBILE SAND FLOWER 60X120_12",
+      "id": "57ae5aab-c014-4b25-bdcb-0adc359240d6",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

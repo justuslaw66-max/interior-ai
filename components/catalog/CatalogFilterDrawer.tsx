@@ -109,7 +109,7 @@ export default function CatalogFilterDrawer({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{option.label}</span>
-                    <span className="block text-[10px] text-neutral-400">
+                    <span className="block text-xs text-neutral-400">
                       {count} {count === 1 ? "option" : "options"}
                     </span>
                   </span>

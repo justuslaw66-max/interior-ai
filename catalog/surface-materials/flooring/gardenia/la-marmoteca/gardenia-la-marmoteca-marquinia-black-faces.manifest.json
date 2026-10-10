@@ -1,0 +1,1072 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/marquinia-black/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - MARQUINIA BLACK - minimali.zip (66380131 bytes, sha256 3235226e167719a23175fe093a708b24c2ccb0c7ce4683a6705857efb2515bc1).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0009721",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/marquinia-black/pf60009721-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0009721_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-marquinia-black-pf60009721-120x280-lux-90530-0; floor gardenia-flooring-la-marmoteca-marquinia-black-pf60009722-120x280-soft-90531-0 (uses 0009721's faces: ABK's 6 Soft pictures are 0009721's 6 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-marquinia-black-pf60009721-120x280-lux-90530-0; wall gardenia-wall-tile-la-marmoteca-marquinia-black-pf60009722-120x280-soft-90531-0 (uses 0009721's faces: ABK's 6 Soft pictures are 0009721's 6 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0009721_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 94812,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "0c32b854464db1a440bdb9f41f4d325ff417d4d38ba2c86a91285c54e4458de1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_3",
+      "id": "b9d9ec61-e25a-4f48-9fa1-311833e06bf5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009721_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 98930,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "9ec34cb8034a0b26bfed2f1854ad04d46ebb166bbc0068112cbd52c2b6ef3044",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_5",
+      "id": "737436ce-2d05-47e1-9eef-baa2283c3e73",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009721_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 92154,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "3b80813b5764985a51cb8fbfdc2b61d30892e5e8e21204d16f3f3d42025da53a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_4",
+      "id": "22106498-138e-43d9-a1b1-f1a331bd4962",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009721_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 96634,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "2482a8143aa5c64ee630c751e860e51565f23dcb00cffa98e9f68dfeffcec1db",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_6",
+      "id": "e27733a7-3c21-431d-b2fe-f95bd1fb63e2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009721_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 92728,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_5.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "a4c8dd516d41b72cd63418812ff7e3d6f3c0ec37a4afc10c09160e90da476d4e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_2",
+      "id": "fadc24e2-613e-4d62-baa0-583597b49fad",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009721_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 92738,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - MARQUINIA BLACK - 120X280 - Soft - view_6.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "0a288299088d31a6d24a022ec21ac109f4ba30025cd465e9b2f9fcc759746f9f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_MARQUINIA_120X280_1",
+      "id": "ee060523-fef5-4ced-add7-39dca7eb898a",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010672",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/marquinia-black/pf60010672-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010672_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-marquinia-black-pf60010672-120x120-nat-90543-0; wall gardenia-wall-tile-la-marmoteca-marquinia-black-pf60010672-120x120-nat-90543-0",
+   "faces": [
+    {
+     "file": "0010672_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37858,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ed0c42ad90b17765107bf36024a6587e02edd30bf99f42b43ddeeb36b33ffa82",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_2",
+      "id": "ff9c8c29-2497-4d7b-88db-d2ac53fe70fd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010672_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 35966,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04e4848f084d899e41fddff0b49bbbf11b4d4b0e5ae1bba20c305986cc214882",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 2",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_1",
+      "id": "d8d1419d-ec87-4a15-8113-debc78f196df",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010672_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44218,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3fe30532f64e9f4371f60f5213a8d4a718a2b30c5236a48b4b6c6020d6af7799",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 3",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_10",
+      "id": "7cf5f472-72fe-49ea-84dd-6ec710fc66ca",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010672_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45508,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0fe502b4f155999d016afde345573d64f4e0e64b1a9ddf2f6f1e1be0aae37d88",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 4",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_5",
+      "id": "2b196a82-06c8-40ce-8350-2c49c5dcfe82",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010672_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40884,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3726b563a52006a939ddfccaa6bfb0302aa8a9abb5ff0752715e8ef74257ad3a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 5",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_7",
+      "id": "a73ec476-5b6b-4756-8ffd-36dcdf5f80c5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010672_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 39190,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "569687b09a382d0f27ea4e81cfcbac4c14323cb519613c1fc529a159cc778aef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 6",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_4",
+      "id": "153006c3-eee3-4a6e-bda1-852339c735e4",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010672_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36668,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8d7d7d9f3206a8fd93686d71441da455a52e95e2527c95403a6542c9b4a8e9b8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 7",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_8",
+      "id": "0f71369c-1600-4974-a448-92578660a36e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010672_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37252,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04247dbd42d8b98bc0f3c7213c6b4a7f636c1f5aae7a237e0171b7c445ec4e00",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_6",
+      "id": "ef8927f1-c2d7-463e-ad67-96bfcda1b3e1",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0010672_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44036,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "51e55406ad6c26c8dd5339560aef93732c80a728513c722b9ca77b8b330eb835",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_12",
+      "id": "f616b88e-1b6a-4275-a207-6e561589b81d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0010672_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37538,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8d0b6f824880659fc276ae4fefcd903651bb090ea47fab387c110cfdb275f439",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_11",
+      "id": "809c73f1-6716-438e-870f-79f70c973dc2",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010672_11.webp",
+     "face": 11,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40898,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aed5f92a63e0fd151b4e46f56ac564259a21a53f0814d6ad87f364e9a6ef1789",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_9",
+      "id": "1bdb9ae8-2d8f-4653-ad1b-a60036497fcb",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0010672_12.webp",
+     "face": 12,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40190,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 120X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6e8390efe11a14dbc91c31c4e1a843c045a336463143d9f957b7c37c8b0cfa3f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "LA MARMOTECA_MARQUINIA_120X120_3",
+      "id": "9a394202-423b-4a1d-9c4f-492bedc532d8",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27063",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/marquinia-black/g0027063.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27063_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-marquinia-black-g0027063-60x120-lux-90505-0; floor gardenia-flooring-la-marmoteca-marquinia-black-pf60010673-60x120-nat-90544-0 (uses g27063's faces: ABK's 24 Nat P.tech pictures are g27063's 24 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-marquinia-black-g0027063-60x120-lux-90505-0; wall gardenia-wall-tile-la-marmoteca-marquinia-black-pf60010673-60x120-nat-90544-0 (uses g27063's faces: ABK's 24 Nat P.tech pictures are g27063's 24 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "g27063_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17804,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "78cce64b9ee2040c7c640dbdbb906c25a33e99a3bdaac98172844aad4b2c81c1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_23",
+      "id": "6a118511-c7e2-4076-85e1-ae74b851f821",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27063_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21294,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "99be23714bc0c2e74b00190f6b98864eec740c94e6d622eceea0198f51d90aaf",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_19",
+      "id": "4ec86a20-bd68-4ae4-9b79-9da75119122e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27063_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22834,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b56dccc92ea055629d4fc213bbb6c6d2a377d2def3579e50bb539764d02c5f89",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_24",
+      "id": "090512f0-233b-4ed2-821f-e6e539cc7486",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27063_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20784,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d177eabe4cd56836888b00caae45abdf910512a9f8b14bd06905bd37c8bcd1bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_21",
+      "id": "391bf062-9f9e-4fd7-a4f3-0d1cad658a89",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27063_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20834,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5685d431156a6e79ef2be72aead7850284a721ad63b27fd4da1620ddbfb7bbf9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_22",
+      "id": "b9ea529d-a80a-4712-994d-f4ab2d9796b7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27063_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23466,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e1dfc725dedf266e2f55236e73e7709898d4505c657b310a477a363a30f9fd7c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_20",
+      "id": "4d8e602a-6665-4fdb-ae57-0c88fd6eb555",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27063_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19978,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "3a530783e4cb430a5f6ec333aabffee0a1993765cd7453c11b6ac33b41caac23",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_18",
+      "id": "36d06f76-586f-445b-902d-3f3460ae1c57",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27063_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22254,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "9aa32d20fe0c29f93d9ec728591bf4b3779bd198c71d9e9f0466c2108cc7a86b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_11",
+      "id": "387c6891-19f5-4aef-a642-50926f406a6e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27063_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21740,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e9a7bfee716612163a0e5477b559868ed1733b118f734e0f006df9d8b65674a1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_9",
+      "id": "91feb6d3-4b76-4488-8b15-45f6f59980a3",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27063_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16814,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "173a6f3f3baf7589a3634857f12855f3c6d0c7a4762e7561a62d02395d38db35",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_17",
+      "id": "30af6e1d-8cff-4921-880d-b27023a2d9ae",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27063_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24768,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "cb66f12fca25001f55653d1126e7953ec239f96d5d317236fd71d0abaa499c84",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_10",
+      "id": "589e241b-95c2-4f27-a431-bd68ef6faa46",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27063_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18236,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "888930720900aebcda615c4f01d4b3cdde461b681ad7b52594c59716382c63aa",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_12",
+      "id": "f1f5ad39-6e86-489c-84c2-0df33d3b6e08",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27063_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19770,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5588196037ddead90dfac55a47a4694b1c74803823bae4809a74e69a8f671c30",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_13",
+      "id": "0104796e-d946-42a2-a270-2a89096af973",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27063_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19418,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "9fb3f4d2190069dc5b69a182c9cd665514bd5ae38c928991002e3c60c629bfc4",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_14",
+      "id": "caf46822-b39a-4ace-acd4-a1e5e0085354",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27063_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23078,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "568f9e6ec0d62bc2bc4cb781f7f782b03fe38565bfef911c66f8c07e8571027f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_15",
+      "id": "cf537eb9-6e50-4f52-a93b-f8c7e1eda640",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27063_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20366,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d66bb34b55f29459efb02f4c443da730db5b4b50d327f15577873f2caffcae92",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_16",
+      "id": "ead178df-c012-4a6d-ade9-a59517805100",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "g27063_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19394,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "3fd5b17a46650201f79d239d38d1cef634d0dd8486e0593719942adb798e61bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 17",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_3",
+      "id": "3b9caea4-4917-468b-b0fa-a1a1e28f0471",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "g27063_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17400,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "94507eb36f9a99a09b66ea81e291bf31267c9be8bc31ed0d4a2c0a9135c4cffc",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_2",
+      "id": "ba753e26-db08-4a85-8881-831f76e311a7",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "g27063_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19428,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6aee358a9ed8d7c5f275d33c62a8254b36942b76aeb9a7580fda5c5de228de12",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 19",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_4",
+      "id": "6a59ecb3-191a-4322-b394-f67875abdcfd",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "g27063_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22178,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b7661b32cdff768c612c0e6882e18e0e5397c2f62ae9475d32bb53cb359532cc",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 20",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_1",
+      "id": "33e042ae-3611-4bb1-83ed-b47524f6321e",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "g27063_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18402,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "551fbfc2709e959312478a60dba0b9aa793366bb8a6b6685db382c7244584d58",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 21",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_5",
+      "id": "d7950882-4cf9-4e91-9a2d-999de9b8f064",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "g27063_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19592,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "7f50aa851494b9bd161251745eaba78bca49dfa06e62dd97587156d112842c51",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 22",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_6",
+      "id": "3973cef5-2ad7-4619-93c5-b4bd0823ead2",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "g27063_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23042,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "bcde4398ccf45704fb00daad5e4fd0409383f6c731a9536f648a0dd6c776bd4e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 23",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_7",
+      "id": "4e677e6a-2ff5-411c-8d9e-8146a3d372a7",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "g27063_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18398,
+     "source_zip": "LA MARMOTECA - MARQUINIA BLACK - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MARQUINIA BLACK - 60X120 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "069a719ec36f1d91c054d95a26d06a2a24aa41e6e1d5e5412d3b468bbdeb2360",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 24",
+      "name": "LA MARMOTECA_MARQUINIA_60X120_8",
+      "id": "6ebf9a85-86cc-45e4-b88b-52b3f78335c6",
+      "site_position": 24
+     }
+    }
+   ]
+  }
+ ]
+}

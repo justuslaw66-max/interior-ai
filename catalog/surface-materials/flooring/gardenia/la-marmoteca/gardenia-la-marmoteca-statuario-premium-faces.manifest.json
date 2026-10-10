@@ -1,0 +1,730 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/statuario-premium/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - STATUARIO PREMIUM - minimali.zip (24357290 bytes, sha256 92df96929745b17a8b3d8019ae06a18c9cd2fd9e6cf16879355f2176e554de53).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0010598",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/statuario-premium/pf60010598-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0010598_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-statuari-premium-pf60010598-120x280-lux-90540-0; floor gardenia-flooring-la-marmoteca-statuari-premium-pf60010602-120x280-soft-90542-0 (uses 0010598's faces: ABK's 8 Soft pictures are 0010598's 4 Lux pictures, byte for byte, and the same four faces named NOBILE STATUARIO, another collection's colour (image matching)); wall gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010598-120x280-lux-90540-0; wall gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010602-120x280-soft-90542-0 (uses 0010598's faces: ABK's 8 Soft pictures are 0010598's 4 Lux pictures, byte for byte, and the same four faces named NOBILE STATUARIO, another collection's colour (image matching))",
+   "faces": [
+    {
+     "file": "0010598_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 30864,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - STATUARIO PREMIUM - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "36fa8ec6a05b6717c0239a5be0560c387b8e88cdad98911248b7f9fd28da1822",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x280_1",
+      "id": "3ee172ef-5dab-4392-ae6d-0ca1b7c19041",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010598_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 28960,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - STATUARIO PREMIUM - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "437014a5bbc3b752b8c5c94c4594f2a8b99f7d82ee804a1cd1c4dc40b59c8d72",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x280_2",
+      "id": "0a8b4d33-36f8-4650-bf14-8a73e187588e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010598_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 32678,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - STATUARIO PREMIUM - 120X280 - Soft - view_3 (2).jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "98e51b6806dd78abbe2bc81a1daf3cf7eddcfaae2c59788d803eb7b0f1d15073",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x280_3",
+      "id": "58424b93-80f1-437c-90e8-8ba9506b7bde",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010598_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 28718,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - STATUARIO PREMIUM - 120X280 - Soft - view_4 (2).jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "e3a69740d6bdb7cebc25f86d677bdd5610b1855322d70cb51863db17201c8e3f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4 (view_04)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x280_4",
+      "id": "daf65b3e-0d52-4793-bad3-b9442da4be64",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0010392",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/statuario-premium/pf60010392-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0010392_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-statuari-premium-g0027055-120x120-lux-90499-0 (uses 0010392's faces: ABK lists Statuario Premium 120x120 Lux as 0010363, whose pictures are named NOBILE STATUARIO, another collection's colour of the same faces; the pictures named MARMOTECA_STATUARIO PREMIUM on the Nat P.tech page 0010392 are used (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-statuari-premium-pf60010392-120x120-nat-90536-0; wall gardenia-wall-tile-la-marmoteca-statuari-premium-g0027055-120x120-lux-90499-0 (uses 0010392's faces: ABK lists Statuario Premium 120x120 Lux as 0010363, whose pictures are named NOBILE STATUARIO, another collection's colour of the same faces; the pictures named MARMOTECA_STATUARIO PREMIUM on the Nat P.tech page 0010392 are used (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010392-120x120-nat-90536-0",
+   "faces": [
+    {
+     "file": "0010392_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17546,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5b451ea35862bcce57312fb2e2a9f1b64a3c77d72bcc141e0a074d66b7cf99c8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_1",
+      "id": "4895a0fb-6abc-4f81-83ec-87ba0d973c19",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010392_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18220,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1b7682ffc6ade34a6c67c2cf67bb8d83e647d57f957162cf8bb8afd3ad80c6a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 4 (view_02)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_2",
+      "id": "c7583fcc-1542-4301-882f-73fc67aab9cd",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0010392_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16166,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cdb9c3b35f22f12b00de3e4e55d24b9093b493d5301d43cf6007dc6907ad3d57",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 5 (view_03)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_3",
+      "id": "08b90ebb-c9a7-4c16-b48d-bf1c6788ef0c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0010392_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19536,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f9944bc467bb755eaa0bed70d8abfa5d19ad6dd51cf0d6ef9bb5bae85609d85a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8 (view_04)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_4",
+      "id": "77bd4aa3-0c63-49a8-8b81-b7083801361b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0010392_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16502,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bde17575db5debed44e46234b29786231a1f4fab6959068f7ec1daa270f753c8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10 (view_05)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_5",
+      "id": "b9b04478-09d7-493d-84c7-2642cf7b68be",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010392_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16580,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e3974143ad7a98cab4b88f1f702032a23b46bdb1031d7eff693f98c0ff765856",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12 (view_06)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_6",
+      "id": "c186dff7-0f0a-4b7e-b4b1-9b63fe66425f",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0010392_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15752,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1d9c58cb3dc3cc23b32c02dc57f9d927666ca4826e711dbd44b58aaeacb017a2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 14 (view_07)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_7",
+      "id": "83ce2265-c2d3-417a-90ec-9325dee79309",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0010392_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18296,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4bc20b185c0504451fbd362c5a971c89a04535962a7ca8c450b25cc21fd744a7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 15 (view_08)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_120x120_8",
+      "id": "43d7d1de-addd-40f7-b5e8-d2fc3d8df806",
+      "site_position": 15
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0010397",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/statuario-premium/pf60010397-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0010397_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-statuari-premium-g0027065-60x120-lux-90506-0 (uses 0010397's faces: ABK lists Statuario Premium 60x120 Lux as 0010365, whose pictures are named NOBILE STATUARIO, another collection's colour of the same faces; the pictures named MARMOTECA_STATUARIO PREMIUM on the Nat P.tech page 0010397 are used (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-statuari-premium-g0027075-40x120-lux-90510-0 (uses 0010397's faces: ABK has no 40x120 pictures; the colour's 60x120 faces (the MARMOTECA pictures on ABK's Nat P.tech page 0010397) are used, and the renderer cuts true-scale 400x1200 windows from them (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-statuari-premium-pf60010397-60x120-nat-90538-0; wall gardenia-wall-tile-la-marmoteca-statuari-premium-g0027065-60x120-lux-90506-0 (uses 0010397's faces: ABK lists Statuario Premium 60x120 Lux as 0010365, whose pictures are named NOBILE STATUARIO, another collection's colour of the same faces; the pictures named MARMOTECA_STATUARIO PREMIUM on the Nat P.tech page 0010397 are used (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-statuari-premium-g0027075-40x120-lux-90510-0 (uses 0010397's faces: ABK has no 40x120 pictures; the colour's 60x120 faces (the MARMOTECA pictures on ABK's Nat P.tech page 0010397) are used, and the renderer cuts true-scale 400x1200 windows from them (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010397-60x120-nat-90538-0",
+   "faces": [
+    {
+     "file": "0010397_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9382,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "47d040dfc55b14f63a94564d5369acf468b9961424361f73ffc892d6f68166a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_1",
+      "id": "77ed46fb-d8a6-47a9-8b5b-f646203af4f8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010397_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7886,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "77813205863b80f5dd344bbee853d9febaa30e63dced56bd5af2bcbf1eaca57f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 3 (view_02)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_2",
+      "id": "696fe296-56eb-4511-ab80-0eba6e76e329",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010397_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8992,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "40437c090e601dd636fd719b3e9ecb9356a981ab2c1cffcae98954b38085faea",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 6 (view_03)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_3",
+      "id": "e06e9c00-a3eb-4952-8952-a09d024cf3f2",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0010397_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9232,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6d9aea70e5f421e74ddc5f88dcbd51418d17318cf41741d336088092896f1f69",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 7 (view_04)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_4",
+      "id": "70c4bbc2-51a1-4634-9174-aa1da276ecd9",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0010397_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8902,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0d6e8f4ce6c5215397395b58988526b6f5de499899d484d692a743baf6c67f9b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 10 (view_05)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_5",
+      "id": "fb1dd2fa-1f0f-4044-baec-24e5b315a2cb",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0010397_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7216,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "addff4d19cc46b86c7b04ffa921aa021f395703ec469cacde077e81e28dc3e2c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 11 (view_06)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_6",
+      "id": "229994f7-3806-4aec-8af9-90b548e0f198",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0010397_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9132,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b986210d041406855f2ece657e07136c79a5376d9e54bb2afde897da32c0b6e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 13 (view_07)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_7",
+      "id": "93076995-6235-44b1-b231-cd358ec229be",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0010397_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10414,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2923ef91a2b983942b4e10ce9e87b178f54f040c5186fb2d2fbbdbb06b4b56e0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15 (view_08)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_8",
+      "id": "2c891d8e-e184-466a-b000-0440e1299095",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0010397_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8578,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3edd575dbbe3d104029c39b927c8fdf2b6321d8e6659278f426c83d4187755f3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17 (view_09)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_9",
+      "id": "8a5b934c-502c-471b-861a-588784b5c1a4",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0010397_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7944,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4ce0d48ee47aad892eeb41653ec3904c3f70b332b2ee9cc3f1e1d020b03245f0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19 (view_10)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_10",
+      "id": "5038dcf5-0d2c-49b2-aa46-58600352c16e",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0010397_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9744,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7afc31d3236415cd63cdd4316dea4142977ad9d32d2b46e84904b1bbd446ea8e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21 (view_11)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_11",
+      "id": "215d0f91-ccca-4c84-9cfc-b293a22e2624",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0010397_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6900,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cca39f402b8f45f513129547e5d126205822369b944c94bf72ede61ce9e7369f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23 (view_12)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_12",
+      "id": "086ca2e4-8bf5-4dc5-af21-6f55c2a344a9",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0010397_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6392,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "933cff542069a4ca1d49fbb473d4911769ecb7d834bd51f4b7ce56b5a8d26efe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 25 (view_13)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_13",
+      "id": "7b108bbe-571e-4d53-b588-d4383563ea29",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0010397_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9006,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8dcf7b4f7f2930deabe338349dd82b5c18aa55de88aa7358d9690ba6d0fa992b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 27 (view_14)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_14",
+      "id": "1daea20a-baa0-4cba-bbe4-00da234c1f71",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0010397_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9334,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_15 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ca0fd214e3d2da3a2eb95947866db56e7d258ddf3d213cd55b8733c1182c3177",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 30 (view_15)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_15",
+      "id": "c8dca347-450a-442c-9c53-ce77ff518cec",
+      "site_position": 30
+     }
+    },
+    {
+     "file": "0010397_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9046,
+     "source_zip": "LA MARMOTECA - STATUARIO PREMIUM - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - STATUARIO PREMIUM - 60X120 - Nat P.tech - view_16 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ede1b4b7644ef0c74fd88f9d90adc711742ff3804684ee6d27dd4ff57dc96a94",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 32 (view_16)",
+      "name": "MARMOTECA_STATUARIO PREMIUM_60x120_16",
+      "id": "e6c3fcae-5ab0-4666-993c-f937bae29454",
+      "site_position": 32
+     }
+    }
+   ]
+  }
+ ]
+}
