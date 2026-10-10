@@ -188,15 +188,17 @@ const isLaGeoteca = isGardeniaCollection("la-geoteca");
 const isOrosei = isGardeniaCollection("orosei");
 const isGioia = isGardeniaCollection("gioia");
 const isIPigmenti = isGardeniaCollection("i-pigmenti");
+const isLaMarmoteca = isGardeniaCollection("la-marmoteca");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
+  isLaMarmoteca,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia and I Pigmenti declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti and La Marmoteca declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -384,7 +386,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -903,6 +905,79 @@ assert.deepEqual(collectionFaceRows(isIPigmenti), [
   ...pigmentiRows("sand", ["0016963", "0016440", "0016430", "0017006", "0016606", "0016460", "0016450"]),
 ]);
 
+// Gardenia La Marmoteca (downloaded 10 Oct 2026). ABK shows the same pictures for every finish of a colour and size,
+// byte for byte, so each colour and size draws one set of faces, the Lux item's; for Grey Stone and Statuario
+// Premium, whose pages also show the faces under sister collections' names and colours, the pictures named
+// MARMOTECA_. Entries whose code has no page on ABK's site use the same colour, size and finish under ABK's code,
+// Soft 120x120 and 60x120 entries the Lux pictures, and the 40x120 entries the 60x120 faces (J, 10 Oct 2026).
+// The book-matched A+B pairs have no pictures and keep their previews.
+assert.equal(physicalMaterials.filter(isLaMarmoteca).length, 193, "La Marmoteca entries on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isLaMarmoteca).length, 201, "La Marmoteca entries in the catalogue");
+assert.ok(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isLaMarmoteca(material) && !physicalMaterials.includes(material)).every(
+    (material) => material.surface_material.material_id.includes("-a-b-")
+  ),
+  "only La Marmoteca's book-matched pairs keep their previews"
+);
+const marmotecaThree = ["120x280 Lux", "120x120 Lux", "60x120 Lux"];
+const marmotecaSoft = ["120x280 Lux", "120x280 Soft", "120x120 Lux", "120x120 Soft", "60x120 Lux", "60x120 Soft"];
+const marmotecaNat = ["120x280 Lux", "120x280 Soft", "120x120 Lux", "120x120 Nat", "60x120 Lux", "60x120 Nat"];
+const marmotecaCards = (sandFlower60: string[]) =>
+  (
+    [
+      ["Anti Brown", marmotecaSoft],
+      ["Blue Denim", marmotecaThree],
+      ["Calacat Elegance", [...marmotecaNat, "40x120 Lux"]],
+      ["Calacatta", marmotecaNat],
+      ["Cosmic Ivory", marmotecaThree],
+      ["Emerald Green", marmotecaThree],
+      ["Frozen", marmotecaSoft],
+      ["Gold Carbon", marmotecaSoft],
+      ["Grey Stone", marmotecaNat],
+      ["Grey Wonder", marmotecaSoft],
+      ["Marquinia Black", ["120x280 Lux", "120x280 Soft", "120x120 Nat", "60x120 Lux", "60x120 Nat"]],
+      ["Montblanc", ["120x280 Lux", "120x280 Soft", "120x120", "120x120 Lux", "60x120", "60x120 Lux"]],
+      ["Patagoni Emerald", marmotecaThree],
+      ["Port Noir", marmotecaNat],
+      ["Pure Onyx", marmotecaSoft],
+      ["Sahara White", marmotecaSoft],
+      ["Sand Flower", ["120x280 Lux", "120x280 Soft", "120x120 Lux", "120x120 Nat", ...sandFlower60]],
+      ["Statuari Premium", [...marmotecaNat, "40x120 Lux"]],
+    ] as const
+  ).map(([name, sizes]) => [`La Marmoteca ${name}`, [...sizes]]);
+assert.deepEqual(collectionCards(isLaMarmoteca, "flooring"), marmotecaCards(["60x120 Nat"]));
+assert.deepEqual(collectionCards(isLaMarmoteca, "wall_tile"), marmotecaCards(["60x120 Lux", "60x120 Nat"]));
+// One colour's floor rows: per tile size, how many entries (finishes) draw it, its face count and its faces' prefix.
+const marmotecaFace = { "1200x1200": "1200x1200", "1200x400": "600x1200", "1200x600": "600x1200", "2800x1200": "1200x2800" };
+const marmotecaRows = (colour: string, sizes: [keyof typeof marmotecaFace, number, number, string][]) =>
+  sizes.flatMap(([tile, entries, count, code]) =>
+    Array.from({ length: entries }, () => [colour, tile, count, marmotecaFace[tile], `${code}_01.webp`])
+  );
+assert.deepEqual(collectionFaceRows(isLaMarmoteca), [
+  ...marmotecaRows("anti-brown", [["1200x1200", 2, 8, "g27050"], ["1200x600", 2, 16, "g27060"], ["2800x1200", 2, 4, "0009718"]]),
+  ...marmotecaRows("blue-denim", [["1200x1200", 1, 9, "g27012"], ["1200x600", 1, 16, "g27022"], ["2800x1200", 1, 4, "g27002"]]),
+  ...marmotecaRows("calacat-elegance", [
+    ["1200x1200", 2, 8, "g27051"], ["1200x400", 1, 16, "g27061"], ["1200x600", 2, 16, "g27061"], ["2800x1200", 2, 4, "0010597"],
+  ]),
+  ...marmotecaRows("calacatta", [["1200x1200", 2, 9, "0009112"], ["1200x600", 2, 18, "0009118"], ["2800x1200", 2, 4, "0008839"]]),
+  ...marmotecaRows("cosmic-ivory", [["1200x1200", 1, 9, "g27011"], ["1200x600", 1, 16, "g27021"], ["2800x1200", 1, 4, "g27001"]]),
+  ...marmotecaRows("emerald-green", [["1200x1200", 1, 6, "0005359"], ["1200x600", 1, 12, "0005362"], ["2800x1200", 1, 5, "0008685"]]),
+  ...marmotecaRows("frozen", [["1200x1200", 2, 6, "0017771"], ["1200x600", 2, 12, "0017775"], ["2800x1200", 2, 3, "0014453"]]),
+  ...marmotecaRows("gold-carbon", [["1200x1200", 2, 9, "g27010"], ["1200x600", 2, 18, "g27020"], ["2800x1200", 2, 4, "g27000"]]),
+  ...marmotecaRows("grey-stone", [["1200x1200", 2, 9, "0006319"], ["1200x600", 2, 16, "0006322"], ["2800x1200", 2, 6, "0008688"]]),
+  ...marmotecaRows("grey-wonder", [["1200x1200", 2, 9, "0014677"], ["1200x600", 2, 18, "0014681"], ["2800x1200", 2, 3, "0014675"]]),
+  ...marmotecaRows("marquinia-black", [["1200x1200", 1, 12, "0010672"], ["1200x600", 2, 24, "g27063"], ["2800x1200", 2, 6, "0009721"]]),
+  ...marmotecaRows("montblanc", [["1200x1200", 2, 8, "0006899"], ["1200x600", 2, 10, "0006900"], ["2800x1200", 2, 6, "0008689"]]),
+  ...marmotecaRows("patagoni-emerald", [["1200x1200", 1, 9, "0012777"], ["1200x600", 1, 11, "0012778"], ["2800x1200", 1, 3, "0012774"]]),
+  ...marmotecaRows("port-noir", [["1200x1200", 2, 6, "0011496"], ["1200x600", 2, 10, "0011003"], ["2800x1200", 2, 3, "0010994"]]),
+  ...marmotecaRows("pure-onyx", [["1200x1200", 2, 8, "0017502"], ["1200x600", 2, 16, "0017504"], ["2800x1200", 2, 4, "0014454"]]),
+  ...marmotecaRows("sahara-white", [["1200x1200", 2, 8, "0017769"], ["1200x600", 2, 16, "0017765"], ["2800x1200", 2, 4, "0009717"]]),
+  ...marmotecaRows("sand-flower", [["1200x1200", 2, 9, "0012190"], ["1200x600", 1, 12, "0012069"], ["2800x1200", 2, 3, "0012246"]]),
+  ...marmotecaRows("statuari-premium", [
+    ["1200x1200", 2, 8, "0010392"], ["1200x400", 1, 16, "0010397"], ["1200x600", 2, 16, "0010397"], ["2800x1200", 2, 4, "0010598"],
+  ]),
+]);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -925,6 +1000,19 @@ const sharedFaces = new Map([
   ["0012083", "0012077"], ["0011775", "0010537"], ["0011776", "0010539"], ["0016136", "0017438"],
   ["0016138", "0017439"], ["0016137", "0012723"], ["0016139", "0012726"], ["0011738", "0014522"],
   ["0011735", "0014520"],
+  // La Marmoteca: one set of faces per colour and size (above), and the stand-ins.
+  ["0006902", "0006899"], ["0006903", "0006900"], ["0008677", "0008688"], ["0008678", "0008689"],
+  ["0009158", "0008839"], ["0009167", "0009112"], ["0009170", "0009118"], ["0009722", "0009721"],
+  ["0009725", "0009717"], ["0009726", "0009718"], ["0010391", "g27051"], ["0010396", "g27061"],
+  ["0010601", "0010597"], ["0010602", "0010598"], ["0010673", "g27063"], ["0010674", "0017769"],
+  ["0010675", "0017765"], ["0010680", "g27050"], ["0010681", "g27060"], ["0010684", "g27000"], ["0010687", "g27010"],
+  ["0010690", "g27020"], ["0010995", "0010994"], ["0011000", "0011003"], ["0011497", "0011496"],
+  ["0012068", "0012069"], ["0012245", "0012246"], ["0012247", "0012190"], ["0014457", "0014454"],
+  ["0014463", "0017771"], ["0014464", "0017502"], ["0014467", "0017502"], ["0014471", "0017775"],
+  ["0014472", "0017504"], ["0014475", "0017504"], ["0014616", "0014675"], ["0014678", "0014677"],
+  ["0014679", "0014681"], ["0014711", "0014453"], ["0014712", "0017771"], ["0014713", "0017775"],
+  ["g27052", "0006319"], ["g27055", "0010392"], ["g27057", "0017769"], ["g27062", "0006322"], ["g27065", "0010397"],
+  ["g27067", "0017765"], ["g27071", "g27061"], ["g27075", "0010397"],
   // Orosei: Antique 3D items on the Natural item's faces.
   ["0021692", "0021733"], ["0021699", "0021738"], ["0021694", "0021735"], ["0021701", "0021740"],
   ["0021696", "0021737"], ["0021703", "0021742"], ["0021695", "0021736"], ["0021702", "0021741"],
@@ -939,6 +1027,8 @@ const wallOnly = new Map([
   ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648", "0009655", "0010527"].map(
     (code) => [code, 1] as const
   ),
+  // La Marmoteca Sand Flower 60x120 Lux is wall-only; its floor entry is the Nat P.tech one, on the same faces.
+  ["0012069", 12],
 ]);
 // Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
 // and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
@@ -951,9 +1041,10 @@ const itemCode = (id: string) =>
 const collectionById = new Map(
   physicalMaterials
     .filter((material) =>
-      [isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti].some(
-        (filter) => filter(material)
-      )
+      [
+        isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
+        isLaMarmoteca,
+      ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])
 );

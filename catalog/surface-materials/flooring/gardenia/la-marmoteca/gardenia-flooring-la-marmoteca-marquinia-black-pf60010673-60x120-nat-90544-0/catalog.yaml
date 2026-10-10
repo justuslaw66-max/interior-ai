@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 24 single item pictures of item g27063 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/marquinia-black/g0027063.a-v102/), because ABK's 24 Nat P.tech pictures are g27063's 24 Lux pictures, byte for byte. Downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-marmoteca-marquinia-black-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60010673/0/90544 for floor use.
     - "Configurator format: 60x120 Nat; surface destination: ENTRAMBE."
@@ -66,16 +67,92 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027053.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027053.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 120
     height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_15.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_16.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_17.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_18.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_19.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_20.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_21.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_22.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_23.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g27063_24.webp
+      width_mm: 600
+      height_mm: 1200
 rendering:
   default_rotation_deg: 0
   roughness: 0.48
@@ -100,12 +177,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
