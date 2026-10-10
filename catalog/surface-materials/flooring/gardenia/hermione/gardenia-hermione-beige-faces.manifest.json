@@ -1,0 +1,820 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/beige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - BEIGE - minimali.zip (9353528 bytes, sha256 914db6002e713f1bef4a03c19bf742dcdc4d6ced1e729592f1b72f78548d963d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/hermione/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "20x120",
+   "item_code": "0202265",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/beige/020226512.-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0202265_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-hermione-beige-0202265-20x120-nat; wall gardenia-wall-tile-hermione-beige-0202265-20x120-nat",
+   "faces": [
+    {
+     "file": "0202265_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11180,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "1a99bfc948a720bcb18c8497a01d6deb0479350b0259a294c3503f73b7bfe7b4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "HERMIONE BEIGE 20X120_01",
+      "id": "283ed17c-1a62-4b78-bcf4-e8520ec514b8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202265_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14590,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "4a75b6604554b431579c67c63f2d4fc1a9e189535ff9bdb0b65cac1c19fe9cf3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "HERMIONE BEIGE 20X120_02",
+      "id": "d53e4016-2900-4d5c-a003-e2aef2e400d2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202265_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12418,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "55a346f5c83affe7e30a62c6b2ec39b3a8acdc3e65a21082e23642819322debc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "HERMIONE BEIGE 20X120_03",
+      "id": "39043ef5-e3df-4304-811c-0cf6248ab129",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202265_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13354,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "6f672124af14a0e7a67336082ca8350c3d376c5ca30743eb48b8ebae835a1309",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "HERMIONE BEIGE 20X120_04",
+      "id": "03a32173-9d53-4969-98a9-4f4bdb68daf7",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202265_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12094,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "af7c2ccef4f2b1d164ce570a6718a27dcdfaf4e0c1495d4b41743963f0d47ffc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "HERMIONE BEIGE 20X120_05",
+      "id": "71f2af31-3eb8-4157-8778-e8d99d798101",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202265_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12122,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "eb6f87fd791300edcda1f54e9a6cf6eb2fd940c5f1fd2d77b38974b2eb431e8e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "HERMIONE BEIGE 20X120_06",
+      "id": "2ddd9896-04e3-4f7d-b8ad-2b9e70cf1208",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202265_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12848,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "07b8d9895227e1cee98f3d580f7ac974ff75a35252167c5ccbc01b94f4ad90ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7 (view_07)",
+      "name": "HERMIONE BEIGE 20X120_07",
+      "id": "752d6716-02ae-485a-81a5-4972fc016c74",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202265_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14894,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "b4472f598b31e530bc00ed66699e8dc8d5037fa5582c053b15f8b317382ceff2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8 (view_08)",
+      "name": "HERMIONE BEIGE 20X120_08",
+      "id": "9207f4d5-7c5b-481d-bea1-4fc9850930a8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202265_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14686,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "b973c1ff0d8cd6c201c3555554360faacf6154c0e0cc68179d2b431152d00d7e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9 (view_09)",
+      "name": "HERMIONE BEIGE 20X120_09",
+      "id": "b7bd1a5c-c622-45c6-90ee-0a8daa59f2ae",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202265_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13478,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "91fadcc078392dd31889b0c2e16f114502d4131f62c9b9023b19f95fd067cc80",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10 (view_10)",
+      "name": "HERMIONE BEIGE 20X120_10",
+      "id": "d15a10c9-800a-4413-8319-cfac3f3861b9",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202265_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14602,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "19b504ba905992bd7ff214efa9b5fcdeac956c9fe53d1e9ec6147666a9a0b730",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 11 (view_11)",
+      "name": "HERMIONE BEIGE 20X120_11",
+      "id": "cd456fb5-ab5e-4b57-97a1-4cbe8ecb7abf",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202265_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14626,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "8bcbf992896ede873b1c8ed50b453e801662f224ffa3f082963a5c677d8a20f1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 12 (view_12)",
+      "name": "HERMIONE BEIGE 20X120_12",
+      "id": "2a3f5d63-c859-4a9a-82c8-6424376451ef",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202265_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15248,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_13.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "5076a923052e8caceec255bfeb8305ca52b790e90aba7f6d1980b9f730e46137",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 13 (view_13)",
+      "name": "HERMIONE BEIGE 20X120_13",
+      "id": "b546898c-470c-4ab1-8a7e-6f86b8ef04fd",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202265_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 16350,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_14.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "452aa7ee0b2e12286a87a85815748e646590d00d7949c3beb58a5afb0352ba03",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 14 (view_14)",
+      "name": "HERMIONE BEIGE 20X120_14",
+      "id": "dfa60212-0b93-4663-86b2-e20bd2b8a81c",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202265_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 16094,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_15.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "186290d07e1a07a041c398b65eb96427c68f19bf96f9e42f274a90cc44b05ede",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 15 (view_15)",
+      "name": "HERMIONE BEIGE 20X120_15",
+      "id": "0e13cc68-823c-4119-adfe-e8194bd0c4d5",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202265_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10754,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_16.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "6c73709e7004891f91a2ecb5173e25861105f3e02de5432fd0c9cf2a37ccbf88",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 16 (view_16)",
+      "name": "HERMIONE BEIGE 20X120_16",
+      "id": "563b02e5-4fd8-4a85-a0b0-7be6f2698f69",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0202265_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12884,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_17.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "19d1ffa81c7f504c4ca631cb0903ef09e73c35a352e392a931994424bbf51754",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 17 (view_17)",
+      "name": "HERMIONE BEIGE 20X120_17",
+      "id": "db69f190-ba00-408e-8a35-7776575a62e2",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202265_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10378,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_18.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f3016ab5ec15f57ad980741bf7cdb1287c7a499f278134294e51c01da785d9a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 18 (view_18)",
+      "name": "HERMIONE BEIGE 20X120_18",
+      "id": "ead97912-ebc2-4989-92e6-0e165cad0b06",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0202265_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12080,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_19.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "243947d2d10116053ba8fbee3b2b1cb3c4561591e8f4b4b9861ce070dd8bd6e7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 19 (view_19)",
+      "name": "HERMIONE BEIGE 20X120_19",
+      "id": "f63f8a61-6180-44f8-ab8c-2556a95e56a1",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0202265_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11510,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_20.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "dc7e99868dcddd886db8b36356bac9b131d58705b70507c2077ba0ea8e1e27aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 20 (view_20)",
+      "name": "HERMIONE BEIGE 20X120_20",
+      "id": "a4e62ac8-fc4f-4912-bc54-a4a25ad637fb",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0202265_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12872,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_21.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "74c4a3da5fbff41941baf8554ca32264a0fb78a078e4c6017eae898600f96aee",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 21 (view_21)",
+      "name": "HERMIONE BEIGE 20X120_21",
+      "id": "8b772cb9-cb86-4e1c-b074-00f0a39bde06",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0202265_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15926,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_22.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "3426079e8447de7b652330134ea5aab3598c91c2e1f9aabeaba23289b8143e88",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 22 (view_22)",
+      "name": "HERMIONE BEIGE 20X120_22",
+      "id": "4d941d45-ca33-4fde-9b3f-9be277fce435",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0202265_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15550,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_23.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "db6666af304eef7227705d0438039873d85f6f0587f6965e4de9f1c5ec9b4dc1",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 23 (view_23)",
+      "name": "HERMIONE BEIGE 20X120_23",
+      "id": "f5324ab3-c07d-47e1-b3dc-455ad720c54d",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0202265_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14926,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_24.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "42f2e5b32b38198d851a3206c362ab20866fbb1392cef0a908b0953583ef4ec8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 24 (view_24)",
+      "name": "HERMIONE BEIGE 20X120_24",
+      "id": "1935206d-3887-4536-b7d7-8cb9db133316",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0202265_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11724,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_25.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "c174747149cc502c5b7a31255b83996d49f753d83b38cb4131d3ba429c13457c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 25 (view_25)",
+      "name": "HERMIONE BEIGE 20X120_25",
+      "id": "31dcae7a-ebb2-42d2-9c67-e6964a875cf1",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0202265_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11060,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_26.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "30411f46428301e8863d100c698345965649e29b784cae492e3ca13fc9a56636",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 26 (view_26)",
+      "name": "HERMIONE BEIGE 20X120_26",
+      "id": "78295c7a-d14a-4060-9a93-129238f9323d",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0202265_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11516,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_27.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f6417e7f719acb0d242f28522cabefbf3543b802a58028bff21d5d50f696241c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 27 (view_27)",
+      "name": "HERMIONE BEIGE 20X120_27",
+      "id": "ce28a17f-93c8-48f9-b56f-ea09b657b7ee",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0202265_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12296,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_28.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "82c5311f6fe1f3085947ef550e2822cb1f4bc27702fe41993ff209b62bb396be",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 28 (view_28)",
+      "name": "HERMIONE BEIGE 20X120_28",
+      "id": "90e6228a-3034-45b5-abc0-843b6955b738",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0202265_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12924,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_29.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "085eb09cc0e3937909679c7a08aeced9d7d72e192e9e9bb8595c0bf9fa79766c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 29 (view_29)",
+      "name": "HERMIONE BEIGE 20X120_29",
+      "id": "326dcd66-2ab8-4383-90a4-bd87f34e7476",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0202265_30.webp",
+     "face": 30,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13140,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_30.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "c75ee75433b12f7df6c834e77d16641d3754fd352393d472d4bb0abfc592fdc8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 30 (view_30)",
+      "name": "HERMIONE BEIGE 20X120_30",
+      "id": "1a6bfa85-b52f-4617-b111-31ba762eb02b",
+      "site_position": 30
+     }
+    },
+    {
+     "file": "0202265_31.webp",
+     "face": 31,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10916,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_31.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "4c5101c1f375ac85f36118a0c5ac7c334a143486f82f3d895ceba2df5cf44d2f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 31 (view_31)",
+      "name": "HERMIONE BEIGE 20X120_31",
+      "id": "e38a1c91-2272-42c2-a5fc-3d56391b7fa6",
+      "site_position": 31
+     }
+    },
+    {
+     "file": "0202265_32.webp",
+     "face": 32,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11156,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_32.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "ceffc3dfc67cf540cb6213612b589e441071ecb8a669a56b69a6b5a449377f56",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 32 (view_32)",
+      "name": "HERMIONE BEIGE 20X120_32",
+      "id": "5604ff3c-2718-4996-abf2-8f7ebbb77135",
+      "site_position": 32
+     }
+    },
+    {
+     "file": "0202265_33.webp",
+     "face": 33,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12156,
+     "source_zip": "HERMIONE - BEIGE - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - BEIGE - 20X120 - Natural - view_33.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "7f882940e8f7ad0633d6990deccf00d84de02a214726f714d8c00e115b736dae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 33 (view_33)",
+      "name": "HERMIONE BEIGE 20X120_33",
+      "id": "828674fb-5fc6-466e-92b7-f8b54ef806a8",
+      "site_position": 33
+     }
+    }
+   ]
+  }
+ ]
+}

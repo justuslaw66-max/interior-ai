@@ -1,0 +1,992 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: CONCREA PLAIN - WHITE - minimali.zip (30998714 bytes, sha256 70f2b02ac21548a4087905e18bfe950fa1649b8d089b9855418ab2cff88cd2b5).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/concrea-plain/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008652",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/white/pf60008652-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008652_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-white-0008652-120x280-nat; wall gardenia-wall-tile-concrea-plain-white-0008652-120x280-nat",
+   "faces": [
+    {
+     "file": "0008652_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 24810,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X280-Natural/CONCREA PLAIN - WHITE - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "87d5e801e148d1e4d6f70091b9369350dbce8ad64bafe2d4d6d198ddc041bb82",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN WHITE 120X280_01",
+      "id": "71b0ca35-b86f-4f27-b123-e6112393ed73",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008652_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 19512,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X280-Natural/CONCREA PLAIN - WHITE - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "63e9785e4f070cefc5b1c117dd52b1ac0e842d67be2fb9510ddd371553625b73",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2 (view_02)",
+      "name": "CONCREA PLAIN WHITE 120X280_02",
+      "id": "4dd34780-bbe3-4764-a25b-83e5aa0937b1",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0003059",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/white/pf60003059-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0003059_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-white-0003059-120x120-nat; wall gardenia-wall-tile-concrea-plain-white-0003059-120x120-nat",
+   "faces": [
+    {
+     "file": "0003059_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8582,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2561
+     ],
+     "source_sha256": "16b519cf2699986027fca16c894403ac1af99a141a026163bb40a48631246e7b",
+     "source_px_per_mm": 2.134,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "LAB325 BASE PEARL 120X120_01",
+      "id": "67f0f0a4-564a-4d95-8e99-df770b080dd9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003059_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7878,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c5822ba3ebfd4c91feb0dde4b7a7c27f627a85b8741ae85c4f280b9d6366efc2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2 (view_01)",
+      "name": "CONCREA PLAIN WHITE 120X120_01",
+      "id": "e3c2154d-e9ae-432a-a650-e796e10218c1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003059_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6884,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11a5f3d776acd493186d85453abee4d160184815ebf8775cfa5d2c88cb558d7c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3 (view_02)",
+      "name": "LAB325 BASE PEARL 120X120_02",
+      "id": "2b589ebb-6325-401d-89bf-664d5f469b12",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003059_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6952,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "bf418ea3d708647f5b44d59f7b09d761285259ef3b88a12e4de84cc31488e553",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4 (view_02)",
+      "name": "CONCREA PLAIN WHITE 120X120_02",
+      "id": "d7c66f70-3514-40d5-9e84-4eb44772cbb1",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003059_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9458,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b990e9656a25d7f86b85c4b3221071d55ac7b1d3906e60ca0148337e70224c5f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5 (view_03)",
+      "name": "CONCREA PLAIN WHITE 120X120_03",
+      "id": "2f296778-caa3-4dc2-81f0-91e8e8308531",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003059_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12472,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "63d5502b7db92d462ac4f976e71a14895c16d30e5f5b2a92e60f9191a32558f0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6 (view_03)",
+      "name": "LAB325 BASE PEARL 120X120_03",
+      "id": "36f6ef0e-460c-4551-849e-acd3fba6cfee",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003059_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9246,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "b92c1fe837a0d5b0d05e923da3897a01cf23b400067fbd81401644342b04bb48",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7 (view_04)",
+      "name": "CONCREA PLAIN WHITE 120X120_04",
+      "id": "50d23de4-a5c7-4dd5-9309-24a0ae0819fb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003059_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8114,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a14dce90a51481d6503bc81c520d20769bdd04067a673d7e00213f02bc5f1add",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8 (view_04)",
+      "name": "LAB325 BASE PEARL 120X120_04",
+      "id": "fac1fe4b-1764-4010-b545-f5667808c084",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003059_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10240,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "592ec4b0fc0169b4bed54fecd18e346ca96f975163efade2121be48a515253d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9 (view_05)",
+      "name": "LAB325 BASE PEARL 120X120_05",
+      "id": "da0dfc41-6f50-4825-b6d1-162c788b95fd",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003059_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9436,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - WHITE - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0832ff49878a053585b40ae994f325b9e74401a476bfa47e3be321f6c269a89c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 10 (view_06)",
+      "name": "LAB325 BASE PEARL 120X120_06",
+      "id": "33fb992b-7ace-4ea2-be58-d06f4e8b35cd",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0002607",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/white/pf60002607-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0002607_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-white-0002607-60x120-nat; wall gardenia-wall-tile-concrea-plain-white-0002607-60x120-nat",
+   "faces": [
+    {
+     "file": "0002607_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4154,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f461e74b22ac9e8e0ce0fc516754f55bf25c8d11b8c5f43e92a70cb3b69ccfd5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "LAB325 BASE PEARL 60X120_01",
+      "id": "749410d4-ad4c-4977-94c6-da7a9b1fb962",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0002607_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5442,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ce1c6991ba961ba0f6d949de617953cda11395c3c44fde03e0970496c02d21ba",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2 (view_02)",
+      "name": "LAB325 BASE PEARL 60X120_02",
+      "id": "5947c38c-b24f-48ec-977c-58d1823acf20",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0002607_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4224,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "08345ce639df4c6621d83d2326ec5d149d83809a8f4d84c9fc25ce72006817e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3 (view_03)",
+      "name": "LAB325 BASE PEARL 60X120_03",
+      "id": "fe747b1d-8af5-4d7d-92bc-547f1594201b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0002607_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4108,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "93053ad949bd905cc7ac7dded13548921196f51428f7dbf0a49fe0d9584e2bde",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4 (view_04)",
+      "name": "LAB325 BASE PEARL 60X120_04",
+      "id": "7587600b-ae97-4f5a-9fdc-d7a0ff48500f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0002607_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3852,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a94edfd5bc35a2af3eac58527667deac81402a3b3d1bcc3083a0765e3838d658",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5 (view_05)",
+      "name": "LAB325 BASE PEARL 60X120_05",
+      "id": "4ab4d6c2-0693-4524-b31d-378bdf1822c7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0002607_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3120,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "65d81b32eb4b21086c7222509f224d0c975f95ff28af46cde2ac135372f65849",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6 (view_06)",
+      "name": "LAB325 BASE PEARL 60X120_06",
+      "id": "e27d566e-f4c5-4e62-bf42-af9285cac40b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0002607_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4354,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "51246935399b3e3525cac6d37eb6f03a93824b308c612abf1366a1d9a5947cda",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7 (view_07)",
+      "name": "LAB325 BASE PEARL 60X120_07",
+      "id": "4614414e-d0de-49d1-92a9-dedc02ba0682",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0002607_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4636,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - WHITE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6341a794aaf36d5b02ab1bb30000e8871051ebc7dd3a45871fff03b3fe8290d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8 (view_08)",
+      "name": "LAB325 BASE PEARL 60X120_08",
+      "id": "1ed82fc8-dedd-4cf9-a549-c300226aeae1",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0003063",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/white/pf60003063-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0003063_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    14,
+    16
+   ],
+   "duplicates_note": "picture 14 is picture 10 again, exported anew (image matching), so it is used once; picture 16 is picture 12 again, exported anew (image matching), so it is used once",
+   "used_by": "floor gardenia-flooring-concrea-plain-white-0003063-80x80-nat; wall gardenia-wall-tile-concrea-plain-white-0003063-80x80-nat",
+   "faces": [
+    {
+     "file": "0003063_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3834,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e5a9ab76a87a631918be4232d1058873a3ec884f1c37dda8c4f50e2820320e83",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN WHITE 80X80_01",
+      "id": "d09997bd-5032-4810-81e4-98a7f63155b7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003063_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4704,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c97b1b8d62abeda667bb10e656f74b4f6523f62c9bd56ded36a468a172799f0b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2 (view_01)",
+      "name": "LAB325 BASE PEARL 80X80_01",
+      "id": "f74b17fe-46c0-44f9-b649-f373acf33499",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003063_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3612,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fb8084b5ec8d012dfca75ae7fb81e93f27d889330b9327b55ddffbb0fa114260",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3 (view_02)",
+      "name": "CONCREA PLAIN WHITE 80X80_02",
+      "id": "bbe057d1-4c1c-49d1-b445-523173644ab0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003063_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3374,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ea2a908f03eaa0031c0f49489540be57560579789e5a3b3df584f9a8f6553485",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4 (view_02)",
+      "name": "LAB325 BASE PEARL 80X80_02",
+      "id": "e901f3de-cfab-45ea-8eab-1615231329b4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003063_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3232,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8c262b6b3251e91cbda528e6a7f1346276381d95f19cc2a277d79f70346750fe",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5 (view_03)",
+      "name": "CONCREA PLAIN WHITE 80X80_03",
+      "id": "8555848c-13fd-4423-a700-c7860613a859",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003063_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4352,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04b944e749fd4bb70e4c6df073ad2aed1749826c04fc467cdc1c47968d021bd2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6 (view_03)",
+      "name": "LAB325 BASE PEARL 80X80_03",
+      "id": "c50e2ee3-8dd8-47c7-9e6c-cd3bc37f01e8",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003063_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2872,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1e90f92623d34816667ce1bab5a84a224d12d108b042351e2185f632b62902ff",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7 (view_04)",
+      "name": "CONCREA PLAIN WHITE 80X80_04",
+      "id": "34db01d5-0af0-4272-b85b-075c050adc74",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003063_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4332,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3a4e36922e520723b39f3169cdaa4beabe831d2e05ff6c903a8df3ea0ae5f8f5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8 (view_04)",
+      "name": "LAB325 BASE PEARL 80X80_04",
+      "id": "cc098c1d-72c2-4943-adae-a6aef5fb07e2",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003063_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3788,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0d7d62bba700231ad326d0e0ad7d88d85cc04183c4715f943212ae46476e897d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9 (view_05)",
+      "name": "CONCREA PLAIN WHITE 80X80_05",
+      "id": "1586eea9-800a-412b-9dee-90c4da4a6b76",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003063_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3922,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9861246dcf124d9765bd6e88feba3054b0f17c7f77912e7bbfb421b6a3dd6e5d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 10 (view_05)",
+      "name": "LAB325 BASE PEARL 80X80_05",
+      "id": "eece739c-ec43-4908-b971-ab6dcbad002f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003063_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2644,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "653422fab5e66dfa8ff2d5ac9e82c7bb614421aa7ab4dcbf391b55be99bfe51b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11 (view_06)",
+      "name": "CONCREA PLAIN WHITE 80X80_06",
+      "id": "e43403fb-78c4-424c-bfe4-6de3002d5df9",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003063_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4148,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c67c9a7fedf7d1a825ae8069ce10f0641bd710910feb8ece81d25136b2d4c616",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 12 (view_06)",
+      "name": "LAB325 BASE PEARL 80X80_06",
+      "id": "ffa27c17-1bce-4c84-b8ca-9eff310a5317",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0003063_13.webp",
+     "face": 13,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5330,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1dc17f70337ca783248a4ef7b8da8ebdb80892e8de08eb7413b5f82936c5afe9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 13 (view_07)",
+      "name": "CONCREA PLAIN WHITE 80X80_07",
+      "id": "081c95fa-eb58-4609-bb4f-d122de426a70",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0003063_14.webp",
+     "face": 14,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3582,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "514c77db5b849eb410f237aac562e14ebfb0fc26fd31ca3fd2fe873d39923bbb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 15 (view_08)",
+      "name": "CONCREA PLAIN WHITE 80X80_08",
+      "id": "4b23bdb9-533a-4805-b133-cc2846a0437e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0003063_15.webp",
+     "face": 15,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4242,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d168c3c65b4debcc5c2123be7ed0b6d0f40119995f4fa8c11204ee7c183929f4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 17 (view_09)",
+      "name": "CONCREA PLAIN WHITE 80X80_09",
+      "id": "6788e97d-7022-46e0-8648-ff87b43ab16b",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0003063_16.webp",
+     "face": 16,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3646,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c552eb08c71877a1e2afe8fcda93186982205312581f1c40847d7d42e08cc682",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 18 (view_10)",
+      "name": "CONCREA PLAIN WHITE 80X80_10",
+      "id": "6f6c01c1-1e59-4822-8d0b-4b18478f5692",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0003063_17.webp",
+     "face": 17,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3476,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7f6245e9c71715a3a82aa69256e8ac59b3c95f84f103fb6dd7c01393143af122",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 19 (view_11)",
+      "name": "CONCREA PLAIN WHITE 80X80_11",
+      "id": "aa2324fa-8ca2-4271-bc95-69a98242aa55",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0003063_18.webp",
+     "face": 18,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3050,
+     "source_zip": "CONCREA PLAIN - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - WHITE - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "59f2c02ebeb8a5ca8c8e6b0fd277e7334024d0dacf19967a8518235cec54c850",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 20 (view_12)",
+      "name": "CONCREA PLAIN WHITE 80X80_12",
+      "id": "ba533ba5-5dcb-4c4d-8cc2-5396584529c8",
+      "site_position": 20
+     }
+    }
+   ]
+  }
+ ]
+}

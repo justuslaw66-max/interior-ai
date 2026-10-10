@@ -1,0 +1,156 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Concrea Plain
+  material_id: gardenia-flooring-concrea-plain-silver-0002608-60x120-nat
+  product_name: Gardenia Concrea Plain Silver 60x120 Nat
+  slug: gardenia-flooring-concrea-plain-silver-0002608-60x120-nat
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/concrea-plain/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 15 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60002608-v102/), downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-concrea-plain-silver-faces.manifest.json. Each covers 600x1200 mm. Seven of ABK's pictures are named LAB325 BASE ASH (Ariana's Lab325 collection): other faces in the same colour (mean RGB within 3 levels of the CONCREA PLAIN SILVER pictures), so they are used too."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-10: Concrea Plain is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0002608 (pf60002608) for floor use: 60X120 Natural, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60002608-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/concrea-plain/silver/60x120/: finish Natural, thickness 8,5 mm, porcelain stoneware."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: The Concrea Plain collection from Ariana offers a minimalist reinterpretation of industrial surfaces based on a stylistic fusion of resins and concretes. It is a versatile floor and wall tile collection consisting of 120x280 cm ceramic slabs and all the submultiples necessary to meet any design requirement. Concrea Plain comes in the 3 colours White, Silver and Bone and a smooth, soft-touch surface."
+    - "Collection page thicknesses: 6 mm, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 80x80, 60x120."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: concrete
+  color_family: grey
+  tone:
+    - neutral
+    - durable
+    - clean
+    - cool
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/concrea-plain/0002608_15.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry
