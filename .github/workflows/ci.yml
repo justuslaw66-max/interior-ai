@@ -376,6 +376,25 @@ jobs:
       - name: Run required Floor Plan Upload accessibility matrix
         run: npm run test:floor-plan-upload-accessibility-required
 
+      # A failed share or overlay matrix keeps its traces, screenshots and page snapshots, sanitised
+      # as Pro visual's diagnostics are, so a timeout can be read instead of only re-run.
+      - name: Prepare failed required matrix diagnostics
+        id: required-matrix-diagnostics
+        if: failure() && !cancelled() && hashFiles('.local/required-test-evidence/*/playwright.json') != ''
+        run: >-
+          node tests/e2e/required-matrix-diagnostics-upload.mjs
+          ci.public-share-responsive ci.cart-overlay-accessibility ci.retailer-confirmation-accessibility
+          ci.guest-save-overlay-accessibility ci.my-designs-overlay-accessibility ci.floor-plan-upload-accessibility
+
+      - name: Upload failed required matrix diagnostics
+        if: failure() && !cancelled() && steps.required-matrix-diagnostics.outputs.has_payload == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: required-matrix-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/required-matrix-diagnostics-upload/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Explain absent production evidence payload
         if: always() && !cancelled() && steps.stable-evidence.outputs.stable_evidence_ready != 'true'
         shell: bash
