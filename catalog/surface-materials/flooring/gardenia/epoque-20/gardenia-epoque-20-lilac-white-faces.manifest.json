@@ -1,0 +1,460 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/lilac-white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - LILAC WHITE - minimali.zip (19987119 bytes, sha256 2ef17c3203c67c40bbe89386315d16db5d00a2527eef16e81683a7435634d0bf).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009343",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/lilac-white/pf60009343-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009343_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-lilac-white-0009343-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-lilac-white-0009343-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009343_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18262,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "90712c77dccc1ed22a6dde5531d92792a3ce5c12e76b6a4043d82b03aa3ea2c2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_01",
+      "id": "e52bdaed-1a4a-4d78-acc8-ad44277f58c2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009343_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19674,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "25a684b9ed086b7f3f5ecdb0f13c03cd3453068d35d62e89830105c51553a968",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_02",
+      "id": "526b8a3a-46c2-47ee-b7dc-259d0c8ca8b8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009343_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17844,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f4a06b447804c5f633625065c4c0dae59e3a80b5f4ca226696b1e4f896535a8b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_03",
+      "id": "9c046f7f-8aa1-4d64-8e35-a42bcd4c85f0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009343_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22086,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "20f105e525e14db0e8e53a6106a850860a28549ff29ffbbbd24cc68c92b13a7b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_04",
+      "id": "bd9e0207-8bbf-4763-88de-f07129c2141a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009343_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23256,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7f64d025b94f6a697e02a7344f2fcfe30434aa383b699918b6b1e2a9f41bdd1f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5 (view_05)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_05",
+      "id": "79140160-0d2f-4195-ad79-72e0f7aca24e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009343_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25098,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "544bd8a70eb5476a6f67318d3a584995747b51d2600327ffe197442941f04524",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6 (view_06)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_06",
+      "id": "2b011b19-f5a5-4dd0-b250-5b4fba047b6d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009343_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20582,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a8b10e35a88cc68e85dbe315634344472e0463334f366423eaa2457bb9a7aa19",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7 (view_07)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_07",
+      "id": "0a956287-56b4-438d-b322-3f0ca9017116",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009343_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21314,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "160d5b7a6a766e5e7edb29acea79599c632460a7639f0dd6e3450f779d20ac50",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8 (view_08)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_08",
+      "id": "7ee97659-be8a-4225-9e0f-abf43f9ae7f8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009343_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17854,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "dfbb47a7b65b399dc041bf0783ec8e835f67302ff5604fe3927d2d8d316b8947",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9 (view_09)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_09",
+      "id": "51fe6d12-3115-436a-86ea-88b1e0c75c5c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009343_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14950,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5f42fbdd480fd0e82c8072cafe52726eadb6e7252afec1933d33262d4ec47fe0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10 (view_10)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_10",
+      "id": "5cea289e-3487-4129-8577-4850931ca367",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009343_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17766,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "42bc50967481ea0bffc8b2eb078bf07ded558c6dc0a94c27f3c5b4df08075743",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11 (view_11)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_11",
+      "id": "b816a77f-282d-41c0-b7bd-975faa8dd862",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009343_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21736,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ef5a1760db153d520f9a37b44b529f0c7825983914d7ca513aefcc2c4809b342",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12 (view_12)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_12",
+      "id": "67915c41-f372-461f-9cb9-c3fed757f9b8",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009343_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20992,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "81e6810cc90faa37a61936ba6e78f771b661a7a89022c14e325bb87cec71c216",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13 (view_13)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_13",
+      "id": "a708a4f0-59b4-4de9-908b-79547c079163",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009343_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19830,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7c0c3fa399ff79d2140cb3be08ead4c03bfb09ad9db17ddf982ac21fe7e17941",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14 (view_14)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_14",
+      "id": "82e7c8c6-0df0-4b92-83a9-21a131e65400",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009343_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18274,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "02e6db6e11ad8f7ebec3ea9fc3c228140cdee0c4e1819552bc31ea408f8e31c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15 (view_15)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_15",
+      "id": "cc8c6af9-b17c-43d3-9a72-7455b97353df",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009343_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23384,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bbf656bb2921dde1392f6428fed305cd7793f28576ea7dbcf34f95ca7224729b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16 (view_16)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_16",
+      "id": "c3ce041a-f434-4d64-a608-c20cf8b1c7d3",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0009343_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20014,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f2d7eb471095d88ee6d3593249551d24c8091c02c7192c2b2c3635b8f7eacc95",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17 (view_17)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_17",
+      "id": "3d83eb7a-c6d6-4baa-8e1e-8e5f07fecec0",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0009343_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23230,
+     "source_zip": "EPOQUE 2.0 - LILAC WHITE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - LILAC WHITE - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a23e82c18e9eb37063ab4504ada966dc937d2186a6ccb75c546ee1933c2b10c8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 18 (view_18)",
+      "name": "EPOQUE 21 LILAC WHITE 60X120_18",
+      "id": "34306f53-5712-466a-ad59-db0e72d384f9",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1225 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - SAND - minimali.zip (116611483 bytes, sha256 a37e82b211315f9ee8d910732499b1ca5f067ae13ee19909fbadff717d39b4a6).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/storm/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0003806",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/pf60003806-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0003806_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0003806-120x120-nat; wall gardenia-wall-tile-storm-sand-0003806-120x120-nat",
+   "faces": [
+    {
+     "file": "0003806_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64304,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "946402d038439822248c4b79cc78fcf64584e5479904ed7faf36858bfce0993b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "SAND 120X120_02",
+      "id": "ac5c2a85-3139-4510-80ef-20500406d747",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003806_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 71854,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf2690b0bb48c9a011561db77c9da87f78ba6fd9d77965f452112403a800d94e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "SAND 120X120_03",
+      "id": "2f57206f-1095-42d5-b0ee-e9b4b4d5e5a8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003806_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 60218,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "452b183741f9baa826823d03d0406798392a72336db141ac7bc630a5051a1c7e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "SAND 120X120_04",
+      "id": "882d72e4-0a6a-48dc-b140-c1e91d57c589",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003806_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64516,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0f7c9d84dea5f56f471a2429abcd28cfa13f68f3079fa9b2160ed20cd509b67a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "SAND 120X120_05",
+      "id": "55ec250e-956e-4aac-9334-246e2ba157c5",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003806_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 74872,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bae3c8783d540bcf77f47f695d57a31d6c08d08c3d79d797dda2de697171b975",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "SAND 120X120_01",
+      "id": "41e2d5d0-b645-4d53-854c-af3f81a080a7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003806_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 75418,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b391e19c2ffdce03aca43679a3ad2e77a8bef7a2288e54b6c59675c89c99f7ba",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "SAND 120X120_06",
+      "id": "90a2d1de-8be7-4a53-abaa-8549fbffd19a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003806_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64452,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "49704c0cb486284db5da123fdb7a9fd0630734d442a286b5615dfcd212ec5ea4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "SAND 120X120_09",
+      "id": "8cd5ed29-2a59-4db8-b0ee-760aa81fd9df",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003806_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65354,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ae7807f3804c27f8e9a24e2a26ba31dc18dc67992a40e0db250b43705a150c63",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "SAND 120X120_07",
+      "id": "d917d9c3-1be0-419c-bd60-ffafb5a54678",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003806_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 69508,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "120X120-Natural/STORM - SAND - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "26947198a116bda765f106024eb0317ed6b3de085285da58702c00c4c4fa8d44",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "SAND 120X120_08",
+      "id": "5fc261cd-cd95-45f5-8f5b-2a855f60366f",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0003978",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/pf60003978-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0003978_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0003978-60x120-nat; wall gardenia-wall-tile-storm-sand-0003978-60x120-nat",
+   "faces": [
+    {
+     "file": "0003978_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29172,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5a34a2e7ef7fe38e27b3ed591ab825e8b6011ac6c906d63b0680a063b10adb78",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "SAND 60X120_10",
+      "id": "9bb93483-008d-4d55-9dc2-eee80a6b3642",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003978_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37580,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ebd11f5821d03a5b47e580e6c8b426e21002ba5f4c8b08c3daadcfdb5fe05d53",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "SAND 60X120_01",
+      "id": "6ef00fdf-c681-4813-b9a9-6aba35a45f14",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003978_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37624,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1ff477891210082766623c1fea784876232f77d8e34adc2b916d4466a086dc0c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "SAND 60X120_15",
+      "id": "3300b9ad-7841-4a95-a4bf-f348ce75437e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003978_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33918,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "264e28b65fd4dbc17585c839a2264a936e5ffe8c2317484b4fd9483436d3ad83",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "SAND 60X120_02",
+      "id": "2ab251e2-a5da-4953-9283-39b6a8f6885a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003978_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35952,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "22871a6a517bdbef3c0628a2349e622bdf5ab788afa4b08edebcbee85f82b1d4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "SAND 60X120_11",
+      "id": "e891eabb-cef4-4312-acb1-e586c76de82b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003978_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34456,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cf47a33c1010b82f1bc187626349663fd1ad92c88d0de2fe45984d3e28478b26",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "SAND 60X120_04",
+      "id": "13c53aba-656e-4347-a519-75e1ffd89d5b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003978_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38904,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a41014c103bbda459904c54c578357c6321c7408fa4ecf266088e6723a54d2cc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "SAND 60X120_05",
+      "id": "b7f09bb2-f992-419a-ae17-0edfa78fde27",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003978_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33560,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c3a81a5e960f36c75b03d772e5562575839acf112ea695d2de4d48d89855c42b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "SAND 60X120_03",
+      "id": "12e62578-1270-4ed5-a414-a0d8b3d9cabf",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003978_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36858,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0ad62e50f4f6657be3ea658ebc3b0355d723106de661a0cccf97a53a2e56ec2c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "SAND 60X120_06",
+      "id": "2f7220d9-a5a6-4d53-b7d8-a630dc9f56da",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003978_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32130,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "df71c84f5dc31dd3adbc38ba9cf28d971e7d0656f4694aa1fb7b98129874ad1b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "SAND 60X120_09",
+      "id": "a3501196-05ed-4c35-bb77-522a203e766f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003978_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38368,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a71973c8014c3e8854b2141b699364f76642550ac052876c74fdd66730041e7f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "SAND 60X120_16",
+      "id": "d75f66e9-791b-4234-9fa6-06ed763c0431",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003978_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31068,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b6a20bd6c1c0d480573391f2a1547a71dd8bcd3ffd9632f64f52fd9cb9391bb7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "SAND 60X120_14",
+      "id": "d142be87-5033-4fa6-941a-1d0ad3d18dce",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0003978_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34174,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cf35e5fac42d0c03199ae7d6267843e84a610001ff9e7c88c0ee679b6c0e60c4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "SAND 60X120_08",
+      "id": "53e7b499-765c-45e8-a35d-9882377a2fee",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0003978_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35266,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f7248ee35f3acb4d69cf15d7cdf126196df29fa68e7fa6229ce785e695c20bdd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "SAND 60X120_12",
+      "id": "12f80acc-814e-407a-9843-48ac2f15cbad",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0003978_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33660,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "420578db1ba403ea37d0aec0883ee035c9a8bb55ff9000f17f1870b728549d7e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "SAND 60X120_07",
+      "id": "09233a28-66c6-4ebf-bd9e-5296e4bee68b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0003978_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34172,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3d55b2274c403db62b6e94183ff3cc0c9209fb4556c87d834c02633977216516",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "SAND 60X120_13",
+      "id": "029c1937-e933-458e-88fa-9b0030175498",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0003978_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35296,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ad68adff443e1ddca3158bf791e775aab2ea0154bbbaf09abea9dc9cea41ae4e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "SAND 60X120_18",
+      "id": "6a9e75e0-8bd0-499f-862d-1721ecf30c3d",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0003978_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30292,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X120-Natural/STORM - SAND - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9a11bd56f69d219c0d9475c7f08376e232c4b3386c34bb802f4b7434b839ffa4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "SAND 60X120_17",
+      "id": "325e9597-8bd0-47b0-aef5-6708089d254b",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0003998",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/pf60003998-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0003998_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0003998-80x80-nat; wall gardenia-wall-tile-storm-sand-0003998-80x80-nat",
+   "faces": [
+    {
+     "file": "0003998_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33376,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "88eb4c1d2af0fe023a27945ca5f64b775ddb926d8e6cef64b5b1524295e9fd42",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "SAND 80X80_01",
+      "id": "d8d6eafa-2467-41c8-9068-5c5f37a6f0e1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003998_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26534,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e9b260ba9a64bf525a20b389e9c58f9a0c0e0c5ff4583f9c520fbdb73a965ad0",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "SAND 80X80_02",
+      "id": "95b7eaad-9dc7-43c1-b9e5-d348a2f9cb81",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003998_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32150,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "20b225475bb19686e3e76ca1369e6b88eee8f83aad1b3b745379a1e2e1dfe89b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "SAND 80X80_03",
+      "id": "93eac119-73cf-491d-90f0-6b09210a9195",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003998_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28470,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d643b38f2193b9cfa6ea4f130945c6d7edbd83860a4a31f51e62bb9bdd13fac5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "SAND 80X80_05",
+      "id": "eac8939b-6e60-4ab5-8b78-fcdd261f2261",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003998_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22984,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9a149a99b8e42317a43716b12d277e0c325b690d0a8ac07944bbb312a173984c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "SAND 80X80_04",
+      "id": "afdf842b-752e-4320-b3a2-2550ec1f1a53",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003998_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26538,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "86526abcc31c4c0d5a1c86089b9270f6c4df0c5014515e0da35aa1565938c3c8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "SAND 80X80_07",
+      "id": "06238399-1b2f-43ec-8ea5-4f37cb00ca4e",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003998_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23372,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a6a3b9b2494176338f3f0d4f88d079930ffb7a356454eea9bfc4f8fed0398f2e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "SAND 80X80_09",
+      "id": "035f2a86-8997-4e13-adff-5b9413fc259b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003998_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26602,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e69b9d1a38beb2b0abda2854ccd3297a2a3b612014c6fb4a37c6f2bbe28b0475",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "SAND 80X80_08",
+      "id": "be22a2f0-b7e3-4a2e-8b55-5f30a1f0ecf3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003998_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33040,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "80X80-Natural/STORM - SAND - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3fe93c74f703b40bbd6568dda228c7129d7ea1ae472bb398e9d937850fa67e0f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "SAND 80X80_06",
+      "id": "147845d8-4e60-475d-abfe-3bc6533fe575",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0004006",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/pf60004006-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0004006_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0004006-60x60-nat; wall gardenia-wall-tile-storm-sand-0004006-60x60-nat",
+   "faces": [
+    {
+     "file": "0004006_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19170,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ad054224a00e14631e6dba23cbd131c057119e5882a0db632572f9d03d164b78",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "SAND 60X60_02",
+      "id": "9d0baca4-e3bd-454d-8b1f-1c8e79a8d0b6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004006_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15498,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9bf34231f24ce606be40b8ce3a47ce091049f8505220bf7da6857ac8fbcf4321",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "SAND 60X60_12",
+      "id": "0124ac46-4b56-48bb-9823-c86cd4601d07",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004006_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18316,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "76b72d5ede7474fd6af5f0bd9cf764b6f0a18d6039ed42141b709005c76dd8e3",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "SAND 60X60_10",
+      "id": "4e8526f3-ff1a-4cdb-9af0-2a7a4b89f9e4",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004006_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19032,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3978326a61dccdddf3bf1e4fccea001100b836a1507a3d23d13b374fcf271667",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "SAND 60X60_01",
+      "id": "e6920781-84b9-4ad3-855f-f39b9c675aa6",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004006_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18642,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "effdc52fa594cdb3e61a18214c68705610d20853e6a7a8d57828db4be07b75fa",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "SAND 60X60_07",
+      "id": "734a8c30-106b-4051-85dc-d12a06c5a2ed",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004006_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19756,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f528be91b2dde0e8aace4d709a7330fe07a8a7c9c093c46d9424d27c60844b55",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "SAND 60X60_09",
+      "id": "e9a1f10e-356c-4b3a-99f7-cbbf337dd12a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004006_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16758,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "45ba7d22b7db91a4ed28562c4e000c35c365a5ac15ec596c02d9c9f7cae122d6",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "SAND 60X60_03",
+      "id": "ec7876de-8380-4fdf-8d31-2c8482da05f0",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004006_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17958,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "096aa6c401e8a018145b634c899241e246fbd7c7e1dd3b386a5aa879f2edbcd8",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "SAND 60X60_11",
+      "id": "2f8e77af-5fff-4179-8bb5-5d9ab6478825",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0004006_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17502,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4ecb9977df2055b9ec9bb0f25cb03472c07f776fd601f6b778eae55c01e7ff90",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "SAND 60X60_06",
+      "id": "2f706642-daac-4c57-a48d-1f576819e1e8",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0004006_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18812,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "b9a2e72e60c9cf625e7485bb51c95a781e394520cde0fbad8a0fd4f031ca2674",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "SAND 60X60_05",
+      "id": "0d52b55e-06e5-4a71-ae24-94aa79eab7ac",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0004006_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13880,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c244d146543ff4abc6c965871ca4c8304fb0f085eb1c969c95dd17973dee5075",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 11",
+      "name": "SAND 60X60_04",
+      "id": "9fb4e0bf-b98f-4f9d-9e27-bf65dff7215a",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0004006_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17106,
+     "source_zip": "STORM - SAND - minimali.zip",
+     "source_file": "60X60-Natural/STORM - SAND - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3410c454f87afce86de83d6e6d8a4b7178b8aef8377f5e4a8ae255cdae9e7dcc",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 12",
+      "name": "SAND 60X60_08",
+      "id": "fb7ca5e7-d0cf-41b2-a30d-f853f60a133a",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

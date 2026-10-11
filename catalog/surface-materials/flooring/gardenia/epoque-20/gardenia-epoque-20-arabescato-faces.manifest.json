@@ -1,0 +1,460 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/arabescato/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - ARABESCATO - minimali.zip (22835872 bytes, sha256 ef68ce72c76efb71b9bfe944abf21ce64d2427ff66b3a44c3d58d3252a82fc27).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009341",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/arabescato/pf60009341-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009341_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-arabescato-0009341-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-arabescato-0009341-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009341_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37154,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "95a3d18fd8da556fdf84bb2ef38738cdc396e75e51599e8d3f37588748ba83c6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_01",
+      "id": "ba64ddb3-f2b1-4bdb-8d4e-27d5dffcc38a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009341_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38468,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c06ae3e732806eb1bce264a7c8838f0698e22b01e83934688b7955444340ce07",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_02",
+      "id": "c6bf7259-685e-4b3e-b5b1-13d23472f8e1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009341_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43280,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6c75e677e9fe8716786aad08f596095a4c31b3e601d2266ccc064c6205299f7e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_03",
+      "id": "a0324685-989e-42f1-a9f3-f649e2022779",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009341_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41962,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7e21c557c87f5c508456c73e8d659df1921de438177adeb7e8a49a0f3bc591e3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_04",
+      "id": "44a81469-ee54-40c1-b1ab-819a31b88792",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009341_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41680,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e8e8ecfe914db2fa3d9e375bcaa8051f6e16a318e772a5c6ab148c86658b4e04",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5 (view_05)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_05",
+      "id": "5af56ff0-9d8e-4503-a3f2-2f7fa5e86732",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009341_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36196,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ce5abc42daba0dd12ab0ef81a6a5b1560ffbe9ad9f45e0b762851e755b7acf7a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6 (view_06)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_06",
+      "id": "6cb15e47-15e7-4bc5-b8ab-3ded86a342dc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009341_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44646,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "56e599f5af91445827ccf82b3d1878a3986b352e510ab76d0db7fccc77293951",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7 (view_07)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_07",
+      "id": "7d653c13-1e4d-45b4-b5aa-7df6c31ca2f4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009341_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43742,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c7e26b28b5ee7989b2396a86edb5a36889466d88cd0b3003e35d838e8ff9e163",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8 (view_08)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_08",
+      "id": "7ea21c90-0666-4c9d-8861-6f167a4bfcdd",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009341_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43746,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "46bfb46aebb9c2cfc907ded0c020946cccea2d4ffaf5fd826a8a1077a9e17c62",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9 (view_09)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_09",
+      "id": "929cd7f6-65e0-49fb-b2fb-ac79ade59332",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009341_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44514,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b420e828d1d914db0aa3a6bcfb05d341b0f580aee341287c72caab914f39be11",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10 (view_10)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_10",
+      "id": "60524477-54a4-4932-bf88-a38a9021a79b",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009341_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47142,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f370481f93fbfdc491d53003c8c331baf9ff33fc8b5bbe61c0e9a88baccc9a4b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11 (view_11)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_11",
+      "id": "b1e0c049-0f3a-4f70-86b7-e5d280001480",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009341_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37280,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9ad2ddc63438717d5ba27d12347f1ab8e4cc620ac4c284b0832b4b22a2923950",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12 (view_12)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_12",
+      "id": "43339365-315b-48d0-bb88-cff1cd1f6921",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009341_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50642,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e5081324ebaa639cd93f773bced5b8ec0f6c9e757f9bd128d73835a606326b84",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13 (view_13)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_13",
+      "id": "a4fcc8e8-4633-4eb4-a529-ae4fea910f15",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009341_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47538,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "78eea4d0652959caa6a4b4544612329e9eb4014f38a85802a65d79ed211a8890",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14 (view_14)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_14",
+      "id": "36d65cef-007d-4da8-91af-3a52ff8f2588",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009341_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35400,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9e26d27c771aae83c7750e8c1b9e2c9182fd52b5e8c0a9bbe5688f5fbf355879",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15 (view_15)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_15",
+      "id": "c30ef6a7-8eb1-4cc4-8a1d-73d196a8495e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009341_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46006,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "553303aa4ab9f1728a465d7ac3bd78ce9c7b8770c79c9746bc245d1d6d540b7c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16 (view_16)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_16",
+      "id": "52745ee6-035e-46e9-9407-a23c3f418cf0",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0009341_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46876,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "038fb47e899e3c9fd2590e740e0e94d133b56f3ffbaa2914a8cc149cebd67ea9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17 (view_17)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_17",
+      "id": "73ce952a-9e45-432b-9505-28e24e43a065",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0009341_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38930,
+     "source_zip": "EPOQUE 2.0 - ARABESCATO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - ARABESCATO - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "05b759579122bd953615da66b90f391a3e5836b5db7905222ac260a600ac6e9b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 18 (view_18)",
+      "name": "EPOQUE 21 ARABESCATO 60X120_18",
+      "id": "71a81203-3e30-4f2a-b905-311ebaeecade",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

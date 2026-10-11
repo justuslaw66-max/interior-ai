@@ -1,0 +1,508 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/grigio-etrusco/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip (25193906 bytes, sha256 d44a2b42f74c898a08e3513608cce96f26ac3affaae6192669a8dee2cd66da29).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009342",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/grigio-etrusco/pf60009342-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009342_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-grigio-etrusco-0009342-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-grigio-etrusco-0009342-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009342_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36464,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "dbb7bec587eb950e8fb1edf81d2e0f918613042c99bfa1d1aef9669956376aa3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_01",
+      "id": "63dfbe9e-5565-4ec5-9160-7ace0872852b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009342_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23842,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "97eac3137c929eee61e5e6f9b40c051560f67c14675b7dc52de5f85d87dc4d45",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_02",
+      "id": "cef8e80f-6626-4a21-a6aa-ae0b75192db1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009342_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25768,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e02640d1c55da9c9cdcb66420ad9895ed8b50b94847966944a174dfcb6b31a36",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_03",
+      "id": "7b1fe716-573c-426a-8986-a22427b1d644",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009342_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23322,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "71315dd3b21a85d517209bc0eaa324ee0b84fc9b14b1f451b57f05209f56f515",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_04",
+      "id": "1909865d-b91a-4b00-9dec-f89748180a66",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009342_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26618,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "364dd127809e4766f6b03b0740cdba1be8390b679b8f44bfd1b9c600458fd1c1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5 (view_05)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_05",
+      "id": "6e61502c-2a42-401d-8708-fd2c4f6114c8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009342_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22714,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1742685e6ebc2587f4560248c06a24b3c70d505a1bdc76cb9b303dbb781683fb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6 (view_06)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_06",
+      "id": "10ee745d-df9e-4079-9985-7c56b28bedfb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009342_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35820,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4b97addfc15e0d8da4743c99767b95e0ab95cdfbc0de0fa32f0d03118111a427",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7 (view_07)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_07",
+      "id": "7b47ebb3-2637-423c-a4e7-06ed719d54a5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009342_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26302,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "626991873de3517f1879c8cb767935cf2219c71ad8484e6b9f1e1e2837f6d42b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8 (view_08)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_08",
+      "id": "f93db619-8a04-4a7c-a64f-39ccfa81765f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009342_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21804,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1f97ce0e651555228d5927db1c45b822affb069b6e58028058f58ed6c91a542f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9 (view_09)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_09",
+      "id": "c6502300-6639-44c8-801c-155e8c020f23",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009342_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26900,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "32f671d94eccbda2c23f0c250ddb65d48f97ef2328de3311b6dcf694d92d76b7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10 (view_10)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_10",
+      "id": "a03f9b66-7d35-4a87-9393-6d4b887deff7",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009342_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38674,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f0f5513a156f1fb4bcb7bb699fbc59db640933d3a40c2ef1e5fd007c8f7e36bc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11 (view_11)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_11",
+      "id": "54d96e5e-b07a-4a88-b726-b4df1d0b5207",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009342_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31860,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e535bcc9d2d8db2dfc123f5cbf6ce4826e9143b72e00f745c2a5b128227a5405",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12 (view_12)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_12",
+      "id": "ad5bbe80-1745-4478-8c22-1a1b062adb63",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009342_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27716,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a41d0747a0972abb80627b58dd641c59f4c6bf3f4ab56370bd4646db129249a5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13 (view_13)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_13",
+      "id": "469c00c7-e910-45e6-821b-7cf90a7d5fde",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009342_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33758,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "54a7dc0071667231d385b951355f466a47389d84e5157e28ff7f81bfbc9e575d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14 (view_14)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_14",
+      "id": "a94d897a-0b41-4fe8-8617-43d038ec0124",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009342_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25278,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d96fd24d809993b51beb53712a696ee6cbdf5c072ba0877a084a8d8ace20c0f1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15 (view_15)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_15",
+      "id": "d1b26a44-e261-4617-a660-5963bfc6fdf2",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009342_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40466,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d811ad574e0d7569ca5ee439e69fe05105eb35a1ca7fbbfc3e65d199c3c9daab",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16 (view_16)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_16",
+      "id": "b28f77e7-f98b-49b5-a0d6-96f28bd351e9",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0009342_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27568,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "fe653b515c53c1e796b3e831c62ddf6f96752e44c4acd1ffa21ad948fafc1a2d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17 (view_17)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_17",
+      "id": "3a11e812-b3ae-4ca6-9a6d-a0ca863283d7",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0009342_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26002,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0630f1db07b00dbf37df81afd45d178b86c9c266d06958534f8064c266dae7f2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 18 (view_18)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_18",
+      "id": "fbd3ddc4-7316-4f01-b83b-2a56e61a941f",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0009342_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25772,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_19.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "32f22207915ed55041d6bd6a07fafd8a642d4b889dcf2c4b24cbc5a5f885bec8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 19 (view_19)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_19",
+      "id": "948c1ef3-2b6e-48d3-82fd-9fa271838441",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0009342_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30606,
+     "source_zip": "EPOQUE 2.0 - GRIGIO ETRUSCO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - GRIGIO ETRUSCO - 60X120 - Antique 3D - view_20.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "edc5cc8db93f6bb333037505bab5d1c7fb99fac4133108bc346fa325e3dc3a3f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 20 (view_20)",
+      "name": "EPOQUE 21 GRIGIO ETRUSCO 60X120_20",
+      "id": "661fbd74-4539-4be0-85e6-d56a55b95b58",
+      "site_position": 20
+     }
+    }
+   ]
+  }
+ ]
+}
