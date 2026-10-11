@@ -25,7 +25,7 @@ export function FloorPlanJobSummary({
             {job.sourceAsset.mimeType} · {formatBytes(job.sourceAsset.byteLength)} ·
             candidate v{job.candidateVersion}
           </div>
-          <div className="mt-2 break-all font-mono text-[11px] text-neutral-500">
+          <div className="mt-2 break-all font-mono text-xs text-neutral-500">
             SHA-256 {job.sourceAsset.sha256}
           </div>
         </div>
@@ -61,7 +61,7 @@ export function FloorPlanJobSummary({
                   />
                 ) : null}
                 <div
-                  className={`rounded-full border px-2.5 py-1 text-[11px] ${
+                  className={`rounded-full border px-2.5 py-1 text-xs ${
                     current
                       ? "border-blue-600 bg-blue-600 font-medium text-white"
                       : complete

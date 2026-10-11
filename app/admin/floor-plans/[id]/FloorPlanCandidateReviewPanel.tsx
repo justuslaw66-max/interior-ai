@@ -85,22 +85,22 @@ export function FloorPlanCandidateReviewPanel({
         </span>
         Save and check
       </div>
-      <p className="mt-2 text-[10px] leading-4 text-neutral-600">
+      <p className="mt-2 text-xs leading-4 text-neutral-600">
         When the room outlines and visible openings match the drawing, save
         them. The app will check the plan automatically.
       </p>
 
       {floor ? (
         <details className="mt-3 rounded-md border bg-white p-2">
-          <summary className="cursor-pointer text-[10px] font-semibold text-neutral-700">
+          <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
             3D heights (optional)
           </summary>
-          <p className="mt-2 text-[10px] leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-neutral-500">
             These do not affect the 2D plan. Keep the defaults unless the source
             gives exact heights.
           </p>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <label className="text-[10px] text-neutral-600">
+            <label className="text-xs text-neutral-600">
               Storey
               <input
                 className="mt-1 w-full rounded border px-2 py-1.5 text-xs"
@@ -122,7 +122,7 @@ export function FloorPlanCandidateReviewPanel({
                 ["windowSillHeight", "Window sill"],
               ] as const
             ).map(([key, label]) => (
-              <label className="text-[10px] text-neutral-600" key={key}>
+              <label className="text-xs text-neutral-600" key={key}>
                 {label}
                 <input
                   className="mt-1 w-full rounded border px-2 py-1.5 text-xs disabled:opacity-60"
@@ -144,19 +144,19 @@ export function FloorPlanCandidateReviewPanel({
               </label>
             ))}
           </div>
-          <p className="mt-1 text-[9px] text-neutral-500">All values are millimetres.</p>
+          <p className="mt-1 text-xs text-neutral-500">All values are millimetres.</p>
         </details>
       ) : null}
 
       {rooms.length ? (
         <details className="mt-2 rounded-md border bg-white p-2">
-          <summary className="cursor-pointer text-[10px] font-semibold text-neutral-700">
+          <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
             Room names (optional) · {rooms.length}
           </summary>
           <div className="mt-2 space-y-2">
             {rooms.map(({ floor: roomFloor, floorIndex, room, roomIndex }) => (
               <div className="rounded border p-2" key={`${roomFloor.id}-${room.id}`}>
-                <div className="text-[9px] text-neutral-500">{roomFloor.name}</div>
+                <div className="text-xs text-neutral-500">{roomFloor.name}</div>
                 <input
                   aria-label={`Name ${room.id}`}
                   className="mt-1 w-full rounded border px-2 py-1 text-xs"
@@ -198,7 +198,7 @@ export function FloorPlanCandidateReviewPanel({
       ) : null}
 
       <details className="mt-2 rounded-md border bg-white p-2">
-        <summary className="cursor-pointer text-[10px] font-semibold text-neutral-700">
+        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
           Add a review note (optional)
         </summary>
         <textarea
@@ -218,7 +218,7 @@ export function FloorPlanCandidateReviewPanel({
       >
         {pending === "save" ? "Checking plan…" : "Save and check plan"}
       </button>
-      <div className="mt-2 text-[10px] text-neutral-500">
+      <div className="mt-2 text-xs text-neutral-500">
         {hasUnsavedChanges
           ? "You have unsaved changes."
           : `Saved draft v${job.candidateVersion}.`}
@@ -263,7 +263,7 @@ export function FloorPlanCandidateReviewPanel({
           verification state cannot be promoted here.
         </div>
         <textarea
-          className="mt-3 min-h-[30rem] w-full rounded-lg border p-3 font-mono text-[11px] disabled:opacity-60"
+          className="mt-3 min-h-[30rem] w-full rounded-lg border p-3 font-mono text-xs disabled:opacity-60"
           disabled={!reviewable || Boolean(pending)}
           onChange={(event) => onCandidateTextChange(event.target.value)}
           spellCheck={false}

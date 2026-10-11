@@ -229,7 +229,7 @@ export default function ModelEditForm({
               </div>
             </div>
             <div
-              className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                 presetValidation?.publishable
                   ? "bg-green-100 text-green-700"
                   : "bg-amber-100 text-amber-800"
