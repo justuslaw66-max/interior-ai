@@ -52,7 +52,7 @@ export function CabinetGuidedStepNavigation({
                 <StepIcon className="h-3.5 w-3.5" />
               )}
             </span>
-            <span className="truncate text-[11px] font-semibold sm:text-xs">{step.label}</span>
+            <span className="truncate text-xs font-semibold">{step.label}</span>
           </button>
         );
       })}

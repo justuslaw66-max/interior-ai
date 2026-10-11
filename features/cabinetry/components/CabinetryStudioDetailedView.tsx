@@ -862,7 +862,7 @@ export function CabinetryStudioDetailedView({
                           type="button"
                           data-testid="cabinet-shelf-spacing-lock"
                           aria-pressed={activeShelfSpacingLocked}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
                           onClick={toggleActiveShelfSpacingLock}
                         >
                           {activeShelfSpacingLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
@@ -915,7 +915,7 @@ export function CabinetryStudioDetailedView({
                     <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3" data-testid="cabinet-specialty-inspector">
                       <div>
                         <p className="text-xs font-semibold text-blue-950">{formatCabinetLabel(activeComponentType)} properties</p>
-                        <p className="mt-1 text-[11px] leading-5 text-blue-700">
+                        <p className="mt-1 text-xs leading-5 text-blue-700">
                           Only controls that generate this specialty component are shown.
                         </p>
                       </div>
@@ -948,7 +948,7 @@ export function CabinetryStudioDetailedView({
                         <div className="grid gap-3 rounded-lg border border-blue-200 bg-white p-3" data-testid="cabinet-wall-bed-controls">
                           <div>
                             <p className="text-xs font-semibold text-blue-950">Mattress and opening</p>
-                            <p className="mt-1 text-[11px] leading-5 text-blue-700">
+                            <p className="mt-1 text-xs leading-5 text-blue-700">
                               The preview can show either the closed front or deployed bed, plus its required floor clearance.
                             </p>
                           </div>
@@ -982,7 +982,7 @@ export function CabinetryStudioDetailedView({
                                     className="h-14 w-full"
                                   />
                                   <span className="block font-semibold">{formatCabinetLabel(size)}</span>
-                                  <span className="mt-1 block text-[10px]">{formatProjectMeasurement(dimensions.widthMm)} × {formatProjectMeasurement(dimensions.lengthMm)}</span>
+                                  <span className="mt-1 block text-xs">{formatProjectMeasurement(dimensions.widthMm)} × {formatProjectMeasurement(dimensions.lengthMm)}</span>
                                 </button>
                               );
                             })}
@@ -1038,7 +1038,7 @@ export function CabinetryStudioDetailedView({
                             />
                             <span>
                               <span className="block font-semibold">Show deployed clearance</span>
-                              <span className="mt-0.5 block text-[10px]">{formatProjectMeasurement(getCabinetConvertibleOpenDepth(activeModule))} projection from the cabinet.</span>
+                              <span className="mt-0.5 block text-xs">{formatProjectMeasurement(getCabinetConvertibleOpenDepth(activeModule))} projection from the cabinet.</span>
                             </span>
                           </label>
                           <div className="grid gap-2">
@@ -1175,7 +1175,7 @@ export function CabinetryStudioDetailedView({
                     }}
                   >
                     <span>{moduleOptionsOpen ? "Hide module options" : "More module options"}</span>
-                    <span className="text-[10px] font-medium text-neutral-400">
+                    <span className="text-xs font-medium text-neutral-400">
                       {formatCabinetLabel(activeModule.millworkComponentType ?? "cabinet")}
                     </span>
                   </button>
@@ -1370,7 +1370,7 @@ export function CabinetryStudioDetailedView({
                     <div className="grid gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-neutral-800" data-testid="cabinet-wall-panel-pattern-preview">
                       <div>
                         <p className="text-xs font-semibold text-neutral-800">Panel pattern</p>
-                        <p className="mt-1 text-[11px] text-neutral-500">
+                        <p className="mt-1 text-xs text-neutral-500">
                           Start with a visual arrangement, then refine rows and columns numerically.
                         </p>
                       </div>
@@ -1392,7 +1392,7 @@ export function CabinetryStudioDetailedView({
                               type="button"
                               data-testid={`cabinet-wall-panel-pattern-${columns}x${rows}`}
                               aria-pressed={selected}
-                              className={`grid gap-1 rounded-lg border p-2 text-left text-[10px] font-semibold transition ${selected ? "border-neutral-950 bg-white text-neutral-950 shadow-sm" : "border-neutral-200 bg-white/70 text-neutral-600 hover:border-neutral-400"}`}
+                              className={`grid gap-1 rounded-lg border p-2 text-left text-xs font-semibold transition ${selected ? "border-neutral-950 bg-white text-neutral-950 shadow-sm" : "border-neutral-200 bg-white/70 text-neutral-600 hover:border-neutral-400"}`}
                               onClick={() =>
                                 updateModule(activeModule.id, {
                                   panelColumnCount: columns,
@@ -1997,7 +1997,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable the laundry appliance bay to edit utility chase dimensions.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable the laundry appliance bay to edit utility chase dimensions.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -2059,7 +2059,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable the office workstation to edit power chase dimensions.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable the office workstation to edit power chase dimensions.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -2177,7 +2177,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable the ladder rail to edit standoff details.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable the ladder rail to edit standoff details.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -2254,7 +2254,7 @@ export function CabinetryStudioDetailedView({
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-neutral-500">
                       Manual preserves the current recommendation. Returning to Recommended replaces the override as width changes.
                     </p>
                   </div>
@@ -2298,7 +2298,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable concealed hinges to edit count and inset.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable concealed hinges to edit count and inset.</p>
                     )}
                   </div>
                     </>
@@ -2330,7 +2330,7 @@ export function CabinetryStudioDetailedView({
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-neutral-500">
                       Custom starts from the generated stack. Switching back replaces custom proportions.
                     </p>
                     {activeDrawerHeightMode === "custom" ? (
@@ -2387,7 +2387,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable drawer boxes to edit construction clearances.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable drawer boxes to edit construction clearances.</p>
                     )}
                   </div>
                   <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
@@ -2416,7 +2416,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-[11px] leading-5 text-neutral-500">Enable drawer slides to edit length and side clearance.</p>
+                      <p className="text-xs leading-5 text-neutral-500">Enable drawer slides to edit length and side clearance.</p>
                     )}
                   </div>
                     </>
@@ -2487,7 +2487,7 @@ export function CabinetryStudioDetailedView({
                           </button>
                         ))}
                       </div>
-                      <p className="text-[11px] leading-5 text-neutral-500">
+                      <p className="text-xs leading-5 text-neutral-500">
                         Custom shifts every generated handle from its safe automatic position. Returning to Automatic removes both offsets.
                       </p>
                       {activeHandlePlacementMode === "custom" && activeHandlePlacementAvailable ? (
@@ -2525,7 +2525,7 @@ export function CabinetryStudioDetailedView({
                       data-testid="cabinet-hardware-compatibility"
                       data-status={activeHardwareCompatibility.status}
                       role={activeHardwareCompatibility.status === "incompatible" ? "alert" : "status"}
-                      className={`rounded-md border p-2 text-[11px] leading-5 ${
+                      className={`rounded-md border p-2 text-xs leading-5 ${
                         activeHardwareCompatibility.status === "compatible"
                           ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                           : activeHardwareCompatibility.status === "review_required"
@@ -2568,7 +2568,7 @@ export function CabinetryStudioDetailedView({
                     <span aria-hidden="true">{fabricationOpen ? "−" : "+"}</span>
                   </button>
                   {!fabricationOpen ? (
-                    <p className="text-[11px] leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-neutral-500">
                       Grain, finished edges, exposed faces, and selected-part cut information.
                     </p>
                   ) : (
@@ -2647,9 +2647,9 @@ export function CabinetryStudioDetailedView({
                         </label>
                         {activeModule.exposedFaces !== undefined ? (
                           <fieldset className="grid grid-cols-2 gap-1.5">
-                            <legend className="mb-1 text-[11px] font-semibold text-neutral-600">Finished faces</legend>
+                            <legend className="mb-1 text-xs font-semibold text-neutral-600">Finished faces</legend>
                             {exposedFaceOptions.map((option) => (
-                              <label key={option.value} className="flex min-h-7 items-center gap-2 text-[11px] text-neutral-700">
+                              <label key={option.value} className="flex min-h-7 items-center gap-2 text-xs text-neutral-700">
                                 <input
                                   data-testid={`cabinet-input-exposed-face-${option.value}`}
                                   type="checkbox"
@@ -2668,13 +2668,13 @@ export function CabinetryStudioDetailedView({
                             ))}
                           </fieldset>
                         ) : (
-                          <p className="text-[11px] leading-5 text-neutral-500">
+                          <p className="text-xs leading-5 text-neutral-500">
                             Resolved for this module: {resolveCabinetModuleExposedFaces(definition, activeModule).map(formatCabinetLabel).join(", ")}.
                           </p>
                         )}
                       </div>
                       {selectedPart && selectedPartFabrication ? (
-                        <div className="grid gap-1 rounded-md border border-blue-200 bg-blue-50 p-2 text-[11px] leading-5 text-blue-900" data-testid="cabinet-selected-part-fabrication">
+                        <div className="grid gap-1 rounded-md border border-blue-200 bg-blue-50 p-2 text-xs leading-5 text-blue-900" data-testid="cabinet-selected-part-fabrication">
                           <span className="font-semibold">Selected {formatCabinetLabel(selectedPart.type)}</span>
                           <span>Cut face: {formatCabinetLabel(selectedPartFabrication.cutFace.widthAxis)} × {formatCabinetLabel(selectedPartFabrication.cutFace.heightAxis)}; thickness {formatCabinetLabel(selectedPartFabrication.cutFace.thicknessAxis)}</span>
                           <span>Grain: {formatCabinetLabel(selectedPartFabrication.grainDirection)} ({formatCabinetLabel(selectedPartFabrication.grainAxis)})</span>
@@ -2682,7 +2682,7 @@ export function CabinetryStudioDetailedView({
                           <span>Exposed faces: {selectedPartFabrication.exposedFaces.length ? selectedPartFabrication.exposedFaces.map(formatCabinetLabel).join(", ") : "none"}</span>
                         </div>
                       ) : (
-                        <p className="text-[11px] leading-5 text-neutral-500">
+                        <p className="text-xs leading-5 text-neutral-500">
                           Select a generated panel in the preview to inspect its resolved cut face, grain, and edges.
                         </p>
                       )}
@@ -2723,7 +2723,7 @@ export function CabinetryStudioDetailedView({
               </div>
               {advancedOpen ? (
                 <div className="grid gap-3">
-                  <p className="text-[11px] leading-5 text-neutral-500">
+                  <p className="text-xs leading-5 text-neutral-500">
                     Construction reset restores template geometry and options only. Module layout, finish assignments, and locked values remain unchanged.
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -2830,7 +2830,7 @@ export function CabinetryStudioDetailedView({
                             />
                           </Field>
                           {hasAutomaticProvenance ? (
-                            <div className="flex items-center justify-between gap-2 text-[10px] font-medium text-neutral-400">
+                            <div className="flex items-center justify-between gap-2 text-xs font-medium text-neutral-400">
                               <span
                                 data-testid={`cabinet-parameter-source-${parameterPath}`}
                                 data-parameter-path={parameterPath}

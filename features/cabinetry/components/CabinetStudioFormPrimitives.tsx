@@ -27,7 +27,7 @@ export function Field({
     <label className="grid gap-1 text-xs font-medium text-neutral-600">
       <span>{label}</span>
       {children}
-      {helper ? <span className="text-[10px] font-normal leading-4 text-neutral-400">{helper}</span> : null}
+      {helper ? <span className="text-xs font-normal leading-4 text-neutral-400">{helper}</span> : null}
     </label>
   );
 }

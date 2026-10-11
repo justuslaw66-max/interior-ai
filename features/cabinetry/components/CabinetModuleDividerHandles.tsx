@@ -388,7 +388,7 @@ export function CabinetModuleDividerHandles({
             />
             <span
               aria-hidden="true"
-              className={`relative mt-2 inline-flex min-h-8 items-center whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-semibold tabular-nums shadow-lg backdrop-blur transition-colors ${
+              className={`relative mt-2 inline-flex min-h-8 items-center whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold tabular-nums shadow-lg backdrop-blur transition-colors ${
                 drag
                   ? "border-sky-200 bg-sky-700 text-white"
                   : "border-white/20 bg-slate-950/90 text-slate-50 hover:border-sky-300 hover:bg-slate-900"

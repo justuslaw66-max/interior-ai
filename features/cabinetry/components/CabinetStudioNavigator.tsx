@@ -119,7 +119,7 @@ export function CabinetStudioNavigator({
         </div>
         {savedTemplates.length ? (
           <div className="mt-2 grid gap-1 border-t border-neutral-200 pt-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
               My templates
             </span>
             {savedTemplates.map((template) => (
@@ -245,7 +245,7 @@ export function CabinetStudioNavigator({
                 type="button"
                 data-testid={`cabinet-module-sizing-${value}`}
                 aria-pressed={moduleSizingMode === value}
-                className={`rounded px-2 py-1.5 text-[11px] font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                className={`rounded px-2 py-1.5 text-xs font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${
                   moduleSizingMode === value
                     ? "bg-white text-neutral-950 shadow-sm"
                     : "text-neutral-600"
@@ -256,7 +256,7 @@ export function CabinetStudioNavigator({
               </button>
             ))}
           </div>
-          <p className="mt-2 text-[10px] leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-neutral-500">
             {moduleSizingMode === "automatic"
               ? "Structural changes preserve the overall target and redistribute unlocked bays."
               : "Structural changes preserve entered bay widths and derive the overall width."}
@@ -307,7 +307,7 @@ export function CabinetStudioNavigator({
             </>
           ) : null}
         </div>
-        <p className="text-[11px] leading-5 text-neutral-500">
+        <p className="text-xs leading-5 text-neutral-500">
           Select a generated part in the preview to open its parent module and
           relevant properties.
         </p>
@@ -342,7 +342,7 @@ export function CabinetStudioNavigator({
                   <span className="block text-xs font-semibold text-neutral-900">
                     {property.label}
                   </span>
-                  <span className="mt-0.5 block text-[10px] text-neutral-500">
+                  <span className="mt-0.5 block text-xs text-neutral-500">
                     {formatCabinetLabel(property.section)} · {property.description}
                   </span>
                 </button>
@@ -354,7 +354,7 @@ export function CabinetStudioNavigator({
             )}
           </div>
         ) : (
-          <p className="text-[11px] leading-5 text-neutral-500">
+          <p className="text-xs leading-5 text-neutral-500">
             Search friendly or trade terms without opening every construction
             section.
           </p>

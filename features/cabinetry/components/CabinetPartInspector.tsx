@@ -139,7 +139,7 @@ export function CabinetPartInspector({
           {sectionTitle(
             selectedPart ? formatCabinetLabel(selectedPart.type) : "Selected part"
           )}
-          <p className="mt-1 text-[11px] leading-5 text-blue-800">
+          <p className="mt-1 text-xs leading-5 text-blue-800">
             These controls update the selected part&apos;s parent module without
             exposing unrelated module settings.
           </p>
@@ -150,7 +150,7 @@ export function CabinetPartInspector({
       {!selectedPart ? (
         <p
           role="status"
-          className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[11px] leading-5 text-amber-800"
+          className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-5 text-amber-800"
         >
           This generated part is updating. Open its parent module if you need
           the full controls now.
@@ -167,7 +167,7 @@ export function CabinetPartInspector({
                   type="button"
                   data-testid="cabinet-part-material-lock"
                   aria-pressed={materialLocked || frontMaterialLocked}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
                   onClick={onToggleMaterialLock}
                 >
                   {materialLocked || frontMaterialLocked ? (
@@ -200,7 +200,7 @@ export function CabinetPartInspector({
             ) : (
               <div className="rounded-md border border-neutral-200 bg-white px-2.5 py-2 text-xs text-neutral-700">
                 <span className="block font-semibold">{materialName}</span>
-                <span className="mt-0.5 block text-[10px] text-neutral-500">
+                <span className="mt-0.5 block text-xs text-neutral-500">
                   This generated or hardware finish is controlled by its parent
                   system.
                 </span>
@@ -400,7 +400,7 @@ export function CabinetPartInspector({
                   ? "alert"
                   : "status"
               }
-              className={`rounded-md border p-2 text-[11px] leading-5 ${
+              className={`rounded-md border p-2 text-xs leading-5 ${
                 hardwareCompatibility.status === "compatible"
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : hardwareCompatibility.status === "review_required"
@@ -435,7 +435,7 @@ export function CabinetPartInspector({
                   type="button"
                   data-testid="cabinet-part-shelf-spacing-lock"
                   aria-pressed={shelfSpacingLocked}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
                   onClick={onToggleShelfSpacingLock}
                 >
                   {shelfSpacingLocked ? (
@@ -593,7 +593,7 @@ export function CabinetPartInspector({
           ) : null}
 
           <dl
-            className="grid grid-cols-3 gap-2 rounded-md border border-neutral-200 bg-white p-2 text-[11px]"
+            className="grid grid-cols-3 gap-2 rounded-md border border-neutral-200 bg-white p-2 text-xs"
             data-testid="cabinet-part-dimensions"
           >
             {(["width", "height", "depth"] as const).map((axis) => (
@@ -608,7 +608,7 @@ export function CabinetPartInspector({
 
           {fabrication ? (
             <div
-              className="grid gap-1 rounded-md border border-blue-200 bg-white p-2 text-[11px] leading-5 text-blue-900"
+              className="grid gap-1 rounded-md border border-blue-200 bg-white p-2 text-xs leading-5 text-blue-900"
               data-testid="cabinet-selected-part-fabrication"
             >
               <span className="font-semibold">Resolved fabrication</span>
@@ -635,7 +635,7 @@ export function CabinetPartInspector({
               </span>
             </div>
           ) : (
-            <p className="rounded-md border border-neutral-200 bg-white p-2 text-[11px] leading-5 text-neutral-500">
+            <p className="rounded-md border border-neutral-200 bg-white p-2 text-xs leading-5 text-neutral-500">
               This generated marker has no cut-sheet fabrication treatment.
             </p>
           )}
@@ -649,7 +649,7 @@ export function CabinetPartInspector({
                 <button
                   key={issue.id}
                   type="button"
-                  className="rounded-md border border-neutral-200 bg-white p-2 text-left text-[11px] leading-5 text-neutral-700"
+                  className="rounded-md border border-neutral-200 bg-white p-2 text-left text-xs leading-5 text-neutral-700"
                   onClick={() => onFocusIssue(issue)}
                 >
                   <span className="font-semibold">
