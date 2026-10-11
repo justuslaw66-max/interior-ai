@@ -958,6 +958,9 @@
 }
 
 .tableScroller {
+  /* The table's visually hidden caption and "Action" label are positioned absolutely; this keeps
+     them inside the scroller, so a table wider than the screen scrolls here, not the page. */
+  position: relative;
   width: 100%;
   max-width: 100%;
   min-width: 0;
