@@ -1,0 +1,412 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/calacatta-bamboo/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip (18101326 bytes, sha256 4650248363371923e12a0ad6f81cea88287a5f928485a616deac6f351c937879).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009344",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/calacatta-bamboo/pf60009344-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009344_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-calacatta-bamboo-0009344-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-calacatta-bamboo-0009344-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009344_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29584,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1742c9a9776c7e344367fc19962f9942b857cb7c78ec1492e99698fdca09c0ac",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_01",
+      "id": "52cdf69a-fcc3-4967-9d35-d02de4fa166a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009344_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38068,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ffa5f01b20c8e1b683b4c998e6dff62a334208191921ad37735615604214c804",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_02",
+      "id": "39e4763a-abb7-498b-917e-be981a59b4d3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009344_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37168,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5c3d8571015631fdc0aa97b3096c3309a1258d26c872ad69f4b84229126e25ae",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_03",
+      "id": "529cf47d-b8dc-43ea-a3fd-8ff1fd38814a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009344_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29796,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5b34d3bbc4181b4ba92ff5e0e38a8d6d88fc2aaa70717f7d6463d608c2c8099c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_04",
+      "id": "842be634-e71d-4d98-89c9-a1a160fd9e03",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009344_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24742,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "08632b2925443dc9a48417ada1d0b4974b4ba1e5963ded6378e844f3eb5b77d8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5 (view_05)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_05",
+      "id": "ace77a29-f416-4cdd-83d0-0e5bf36177c5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009344_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26220,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4689eb9fda432cecf3bee3a34b5ef2d5d0ecdae07e78abd771af5c2129aea6ae",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6 (view_06)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_06",
+      "id": "fbef8424-6d13-47f9-bc93-9997e07e9b72",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009344_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34108,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "82f60784a98dbf1f713a0e5dffb0a070898be26b08ce1a47b460be3aa62661b9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7 (view_07)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_07",
+      "id": "3e5e6508-7304-4196-b2c6-656195a03311",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009344_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27994,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6b1ed2408f9558c1be7fbe3e80d9d6482ac46c720928a3723cdcd045eff83be6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8 (view_08)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_08",
+      "id": "88c3d4ae-98b7-42f2-9eeb-105d4c7b2d3a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009344_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20986,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "04bb93a4d8d27fbfb34d76a776f95ee544893d87f5eef575c44a037d49b674d2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9 (view_09)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_09",
+      "id": "119e4bf9-7891-45ca-b40b-2c3d6518643e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009344_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31594,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cbee7f97d41ee21e70a163223ea75be03d9d7fb34941c5ebda0c358c999a2951",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10 (view_10)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_10",
+      "id": "75c55daf-7e47-4984-97aa-690996f57ed6",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009344_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33322,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6e4ecea2bc5b491e84059247b5d6ff7d859652df4705dad0d86c45c80b88ff3d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11 (view_11)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_11",
+      "id": "dd4c4f86-c01c-4d1d-8ddd-b53997ce25cd",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009344_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33386,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "26c1e2288ce926069a1def049c3c922f3e36dc471ef5935ba7ee0784a2096bc1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12 (view_12)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_12",
+      "id": "c5f060b6-667f-4e9f-86b5-ff7eefd9bb4e",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009344_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29680,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8f1c19d86a1fb0ef67156f65f31bb1c682c627569784f299781109afa8ceeb4c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13 (view_13)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_13",
+      "id": "771a9416-ae59-405b-abe9-6b7112465336",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009344_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32350,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "15112784a4b37d2f9fc3395bee4c038ec986fdb36127a25fb70354705ff5b82c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14 (view_14)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_14",
+      "id": "6e440006-ed78-49d0-9101-11e202e5a51d",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009344_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26244,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "085463cdefafe269eb98918748b990b73f99d2a64a3a6f8c61f800de8ee3060b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15 (view_15)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_15",
+      "id": "a1f31575-996c-4d41-9027-14e0ff912c43",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009344_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23530,
+     "source_zip": "EPOQUE 2.0 - CALACATTA BAMBOO - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - CALACATTA BAMBOO - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "20b4bdde22489532ea1351466b7e10217d54c46c9fdf77acab2622148792be94",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16 (view_16)",
+      "name": "EPOQUE 21 CALACATTA BAMBOO 60X120_16",
+      "id": "34ecb255-2a34-4263-aa52-1455b739c158",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

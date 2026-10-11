@@ -1,0 +1,460 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/veria-green/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - VERIA GREEN - minimali.zip (53889207 bytes, sha256 718f06c3741f11179974aaca69790c810bec0fa47f28f6764a748d9f97520f75).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009345",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/veria-green/pf60009345-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009345_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-veria-green-0009345-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-veria-green-0009345-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009345_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 70644,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e9c1106d3fb733d18b5c388f3906ca283fee30c7049cb92cd4d4f9e5671219ea",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_01",
+      "id": "33c75898-159a-4168-9d41-9283348b012d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009345_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 72326,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bb36bd301dd85f2ad6c0bdbad8e621d75806abda549c21919c14fc7b2ff36a38",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_02",
+      "id": "d1ae9cdb-299a-46d4-808b-8a05a970683d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009345_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 69194,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ff08bcbd0e87c9fdae47f66dc8524879c0dddd4957eb57d16729f5367e5597a5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_03",
+      "id": "421e0799-cdc9-43a4-bc39-f2601577ebb1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009345_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74216,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "087c45441c140b346804b557d1b9ce8071d873ca9e2b6c3c3ff0f9665d087884",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_04",
+      "id": "f59b900e-4baf-4c49-889d-4d1f71989c20",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009345_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73318,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ace23115416397c73b04b2476ccc9cae566342f41431df8a51240ac02ba344f9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 5 (view_05)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_05",
+      "id": "e85cae95-fd1f-4fac-a8b1-f0e7494bbe10",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009345_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68662,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b2eb199d48597df5f8d45b5e5bb0082644dc06ed432d935b24e6e1ff6ee1de65",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 6 (view_06)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_06",
+      "id": "6c20f962-16f0-4bbf-a540-2632a5b5149c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009345_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 72548,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1e0484feddc97edcc77428659f45a3ce6142cd47e594f0450083992cae5807c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 7 (view_07)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_07",
+      "id": "cf18eec8-1a6e-4b39-834b-f8dc92b340cb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009345_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 72838,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9d13daa0e5e4d46f20350e2efac2bdb4c56ba993db687989d7466777afef9b6e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 8 (view_08)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_08",
+      "id": "cc087483-1965-4ffc-b84a-f9e292bfe8db",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009345_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 79074,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "562225fce780eda94cf09105c4664016ed3c8db3e6b54c1a25307f7e45dc4bd5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 9 (view_09)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_09",
+      "id": "8627c46f-62ce-4507-8009-d8a7c0d4c925",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009345_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73886,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "003baf06bccbcc7e17d2f12ce587dae4c30a696e87715f10ca55e4b8f2c362d1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 10 (view_10)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_10",
+      "id": "6d125e24-e0ef-49a8-b51e-76958db14e00",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009345_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 71266,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2a60044dd8c650dde252b0beaee7d2251a0c139dc566270d5c68cad0fac8304e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 11 (view_11)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_11",
+      "id": "8c2231fc-d85e-4f5c-b44e-4cb09bcfec58",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009345_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 71158,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "93a9eb12a6252f894eb00af21f0f552a2669a5a59a89480dcb31c20ce05b6290",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 12 (view_12)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_12",
+      "id": "fa32349c-c713-4875-a242-f17561d20a89",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009345_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 71928,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0cd2f7aada264fb6b6d148b418a3a78a405a7418a49b5ca06e48b061f72a7073",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 13 (view_13)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_13",
+      "id": "b97a878a-fe63-407c-81be-4431ef73cadb",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009345_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73526,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a7b3777cacb9f884e2becff03c3fea60916c20110b0064c9ff86f245d7e71619",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 14 (view_14)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_14",
+      "id": "29048f42-2cf1-4e95-8fd3-b9563f412cc7",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009345_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73904,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c61c0d788662f825fdf7da27e224785f5c89868269ae44ae6f2825352361a75d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 15 (view_15)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_15",
+      "id": "8bc04975-eac1-4010-a764-7643d25d570d",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009345_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 77394,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "360bdfe3330596aec264faac282906874b53354c2a164c85793caac952da6329",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 16 (view_16)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_16",
+      "id": "f7b0f71d-04a6-4534-abd6-2e27b3e99c40",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0009345_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 77736,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "959bf571104e09133b95e97cd27fb3dd65902a3e20f9635ce0cd5ac15377a820",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 17 (view_17)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_17",
+      "id": "b22543ae-dc90-4dd6-a694-38a78ae09d04",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0009345_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 76518,
+     "source_zip": "EPOQUE 2.0 - VERIA GREEN - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - VERIA GREEN - 60X120 - Antique 3D - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f822e71e90cfeb98f793534406bda1e59bf753ee59884a0f066ca870ac8c46f8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 18 (view_18)",
+      "name": "EPOQUE 21 VERIA GREEN 60X120_18",
+      "id": "a79a8b5b-ed22-4531-be08-7686a2479cba",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

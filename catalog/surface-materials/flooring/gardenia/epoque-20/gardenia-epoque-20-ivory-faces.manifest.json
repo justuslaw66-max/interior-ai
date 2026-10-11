@@ -1,0 +1,499 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/ivory/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - IVORY - minimali.zip (10254834 bytes, sha256 921429860548da7188e9df41c8bb3e66e31ea8bce2271765ec3799bf72b7cb06).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0004294",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/ivory/pf60004294-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0004294_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-ivory-0004294-60x120-nat; floor gardenia-flooring-epoque-20-ivory-0004298-60x120-lappato (uses 0004294's faces: ABK's 7 Lappato pictures are 0004294's 7 Natural pictures, byte for byte); wall gardenia-wall-tile-epoque-20-ivory-0004294-60x120-nat; wall gardenia-wall-tile-epoque-20-ivory-0004298-60x120-lappato (uses 0004294's faces: ABK's 7 Lappato pictures are 0004294's 7 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0004294_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24162,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "f51760ca4488179b6d252cc1ec639fbc4656f5516385a65633fb0d61bc14edf7",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "IVORY 60X120_01",
+      "id": "b3f19a4e-5588-4dfd-8932-97b75ae9f9cf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004294_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15012,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "872bacec0b4ceadb3258c8dadaa5ee825cf5fad626915ed18714a295f2a1c637",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2 (view_02)",
+      "name": "IVORY 60X120_02",
+      "id": "67c393fe-7c4c-4c8b-bc06-c293e7d6eb0a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004294_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15400,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "255ae7c3a27471b7bcfdee07dc07bfb1d8e717a37b135cdbe8923368cec99e45",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3 (view_03)",
+      "name": "IVORY 60X120_03",
+      "id": "f7db0958-2c80-4808-b3b7-08540433f973",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004294_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14674,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "484c5107996d617147a3112e94b1b06a6bc435a5e13a8dbcc30b92368c388fa3",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4 (view_04)",
+      "name": "IVORY 60X120_04",
+      "id": "8155d35d-70ac-41b5-ac69-1a350075fe03",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004294_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22012,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "cf991fbaff3e359f0bb964ac6ef7aea35c346472f636afc7e676cbac1e902d99",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5 (view_05)",
+      "name": "IVORY 60X120_05",
+      "id": "c8b2e4c0-8755-4f87-b1ed-38283e94bd5b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004294_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18416,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "4c4448753985687f975588f3b09848d4a47364ac33c9deb6eaf58c2c3623f069",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6 (view_06)",
+      "name": "IVORY 60X120_06",
+      "id": "c2d7f17d-fed8-4a41-b0ad-a4dce6265620",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004294_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15456,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - IVORY - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2276,
+      1139
+     ],
+     "source_sha256": "73cb36b5fe9a61732250bab2708ff1f0f936e52e2e3e326b1b6f9e604be647ad",
+     "source_px_per_mm": 1.897,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7 (view_07)",
+      "name": "IVORY 60X120_07",
+      "id": "4cb9b08f-1d4a-4a1b-a61f-2b1ec7bb150a",
+      "site_position": 7
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0004306",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/ivory/pf60004306-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0004306_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-ivory-0004306-60x60-nat; floor gardenia-flooring-epoque-20-ivory-0004310-60x60-lappato (uses 0004306's faces: ABK's 12 Lappato pictures are 0004306's 12 Natural pictures, byte for byte); wall gardenia-wall-tile-epoque-20-ivory-0004306-60x60-nat; wall gardenia-wall-tile-epoque-20-ivory-0004310-60x60-lappato (uses 0004306's faces: ABK's 12 Lappato pictures are 0004306's 12 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0004306_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11060,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "03f560847b7130209914f5f519379f737e9b9bd9a75e01a80b5a5a5db26eb864",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1 (view_01)",
+      "name": "IVORY 60X60_01",
+      "id": "b70ccd45-2663-4e9b-8892-816d36450834",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004306_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4316,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "de2737885f9cda4f8b740ef99e7dc86b3413de777166e3807dd8df9e5a5be2a7",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2 (view_02)",
+      "name": "IVORY 60X60_02",
+      "id": "71cb46a6-34a3-48c7-a6c5-ee91d3e26dab",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004306_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7580,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "5aa2660bb3e096f6a5d1c10518574a963dd39d5600d4e2bf31dc1ed420a21d3f",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3 (view_03)",
+      "name": "IVORY 60X60_03",
+      "id": "9adab149-4203-445d-8275-6200e963f1b9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004306_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7654,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "ce5c27dd88c6429d73a43f32f59492ac21bcad9981f52912fd389c065f131026",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4 (view_04)",
+      "name": "IVORY 60X60_04",
+      "id": "be376b05-ffe1-4618-b6af-a0e864aab1f9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004306_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10568,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "ed488aaa7f246cdb16d433429bec0409b0e21d8eb13d590b3a49ea3b9495bca1",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5 (view_05)",
+      "name": "IVORY 60X60_05",
+      "id": "399c7e1b-601c-473e-82e4-f71e3a007796",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004306_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11566,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "0edd09c7c7181b9ac23c16a0e54abedae95ab525f6e34a83458cb79ea8964594",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6 (view_06)",
+      "name": "IVORY 60X60_06",
+      "id": "cc64d2d2-c504-4963-a173-0f431ebdc855",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004306_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10100,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "86f4a14b0c42048fd7b6b321f86a8d4e3021a33639bdc634a7ac3b95c07a1ccf",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7 (view_07)",
+      "name": "IVORY 60X60_07",
+      "id": "114cb2c9-ce5f-402e-aa90-153a5c591742",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004306_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14270,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "9a8c693744a6f75a566303f2698825b79fc78e7d2a71aa24087a369b0714f2d9",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8 (view_08)",
+      "name": "IVORY 60X60_08",
+      "id": "17428092-fa37-4a0d-8940-caba7b0fc984",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0004306_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11366,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "6f12468e4b6c453fba31f3cfa8be2737cc68fdd8fcabe2a6a7608847439b3304",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9 (view_09)",
+      "name": "IVORY 60X60_09",
+      "id": "92adad30-12b1-457e-b22e-7b96280b1180",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0004306_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 4030,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "6023dee304aee3e45e472dc035f2b0661c00f9347a7a46087a3ef11354c7ffac",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10 (view_10)",
+      "name": "IVORY 60X60_10",
+      "id": "2a0ee8dd-6e70-409f-9176-a459bd88e7cc",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0004306_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7730,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "f7028acf9b91b9214c77744163588c35e86d6de877e2e1ab62038a37040356af",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 11 (view_11)",
+      "name": "IVORY 60X60_11",
+      "id": "e2af756e-c0b9-4306-aa26-f760297ec2e6",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0004306_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11470,
+     "source_zip": "EPOQUE 2.0 - IVORY - minimali.zip",
+     "source_file": "60X60-Natural/EPOQUE 2.0 - IVORY - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      1139,
+      1138
+     ],
+     "source_sha256": "278a65368097b8e1c2eb26c393fa08df24ed58737468d2dd44b100ba6eadc1c1",
+     "source_px_per_mm": 1.897,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 12 (view_12)",
+      "name": "IVORY 60X60_12",
+      "id": "a4b01ca8-8781-4007-a91f-1ac20b6a9b06",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

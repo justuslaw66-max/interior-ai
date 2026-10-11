@@ -1,0 +1,173 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Epoque 2.0
+  material_id: gardenia-wall-tile-epoque-20-grigio-etrusco-0009342-60x120-antique-3d
+  product_name: Gardenia Epoque 2.0 Grigio Etrusco 60x120 Antique 3D
+  slug: gardenia-wall-tile-epoque-20-grigio-etrusco-0009342-60x120-antique-3d
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/epoque-20/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 20 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/grigio-etrusco/pf60009342-v102/), downloaded signed in on 2026-10-11, stored at 0.6 px per mm; the originals are sharper, see gardenia-epoque-20-grigio-etrusco-faces.manifest.json. Each covers 600x1200 mm."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-11: Epoque 2.0 is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0009342 (pf60009342) for wall use: 60X120 Antique 3D, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/grigio-etrusco/pf60009342-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/epoque-20/grigio-etrusco/60x120/: finish Antique 3D, thickness 8,5 mm, porcelain stoneware."
+    - "Finish: Antique 3D, ABK's textured finish, which it says recreates the sensation of time-worn floors. The app draws ABK's pictures flat, so the relief shows only as their shading (J, 2026-10-11: include all six Antique 3D colours)."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Grigio Etrusco as grey (colour page pictures)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: Epoque 2.0 explores marble and colour in an elegant selection of highly decorative surfaces. The appeal of the surfaces is further enhanced by exclusive new finishes such as Antique 3D, which recreates the sensation of time-worn floors in historical italian buildings and stately homes."
+    - "Collection page thicknesses: 8.5 mm."
+    - "Collection page sizes: 60x120, 60x60."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: marble
+  color_family: grey
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - cool
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - commercial
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_15.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_16.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_17.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_18.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_19.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0009342_20.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.48
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

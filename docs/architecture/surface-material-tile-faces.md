@@ -24,6 +24,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Concrea Plain, three concretes (new: imported from ABK's pages) | 22 drafts (11 floor, 11 wall) | 107 | `catalog/surface-materials/flooring/gardenia/concrea-plain/gardenia-concrea-plain-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Just Nature, six woods (new: imported from ABK's pages) | 22 drafts (11 floor, 11 wall); Beige Scuro 30x120 is left out (ABK shows another colour's pictures for it) | 65 | `catalog/surface-materials/flooring/gardenia/just-nature/gardenia-just-nature-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Luce, five colours (new: imported from ABK's pages) | 28 drafts (14 floor, 14 wall) | 124 | `catalog/surface-materials/flooring/gardenia/luce/gardenia-luce-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Storm, four stones (new: imported from ABK's pages) | 32 drafts (16 floor, 16 wall) | 192 | `catalog/surface-materials/flooring/gardenia/storm/gardenia-storm-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Epoque 2.0, eleven marbles and decors in Natural, Lappato and Antique 3D (new: imported from ABK's pages) | 42 drafts (21 floor, 21 wall); Lappato entries draw the Natural faces | 173 | `catalog/surface-materials/flooring/gardenia/epoque-20/gardenia-epoque-20-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -46,7 +48,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature and Luce entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm and Epoque 2.0 entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -67,6 +69,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia La Marmoteca originals | 1.46 (120x280) to 3.4 (some 60x120) |
 | Gardenia Hermione and Concrea Plain originals | 1.46 (Concrea Plain 120x280) to 3.2 (Concrea Plain 80x80); Hermione 2.13 |
 | Gardenia Just Nature and Luce originals | 1.46 (Luce 120x280) to 3.2 (Luce 80x80); Just Nature 2.16 |
+| Gardenia Storm and Epoque 2.0 originals | 1.9 (Epoque 2.0 60x60 and most 60x120) to 3.94 (Storm 60x60); Storm 120x120 2.13 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -201,3 +204,15 @@ The next two collections the configurator never had, imported from ABK's pages t
   - 60x120, 80x80 and 120x120 match each other at their labelled scale (crop test, r 0.95 to 0.99; 0.19 at most at other scales).
   - **The 120x280 slabs** (Perla and Verderame, two pictures each, 1769 x 4096 px, 0.8% wider than 1200 x 2800 mm) match the other sizes best drawn about 0.95 times the tile's size (r 0.89 to 0.95; 0.35 to 0.36 at the tile's size). So, as for Concrea Plain's slabs (1.3 times), the slab's pattern comes out a little larger than the other sizes', here about 5%. Drawn 0.95 times as large, the pictures would no longer cover the tile, so they are used at the tile's size.
   - Acciaio's download area also lists a 60x120 item `pfa0006087` with no pictures; it isn't a catalogue item.
+
+## Gardenia Storm and Epoque 2.0 specifics (downloaded 11 Oct 2026)
+
+The next two collections the configurator never had, imported from ABK's pages like the four above, with the same decisions on floors and walls and layouts, and colour families from ABK's colour words (Storm Mud "black"; Epoque 2.0 Abstract and Tesserae "multicolour" and Veria Green "green", which the catalogue files as `mixed`). The catalogue's folder and ids use ABK's slug `epoque-20`; the collection is named Epoque 2.0.
+
+- **Storm** (four stones, 120x120, 80x80, 60x120 and 60x60 Natural): 60x60, 60x120 and 120x120 match each other at their labelled scale (crop test, r 0.97 to 1.00; 0.30 at most at other scales). The 80x80 pictures are a graphic of their own: the crop test finds them in no other size (r 0.17 to 0.35, best at the labelled scale), and their grain matches the 120x120 pictures' at the labelled scale (texture spectrum, best factor 1.00; Mud 1.03), unlike Make's and Pietra Viva's 80x80, which are a larger graphic squeezed. ABK's page also mentions a 20 mm R11 outdoor version; it isn't in the colour pages' formats or the download area.
+- **Epoque 2.0** (eleven colours, 60x120 and 60x60):
+  - **Natural and Lappato** (Black, Grey, Ivory, White; Abstract Natural only; Grey 60x60 Lappato only). ABK's Lappato pages list the Natural pages' pictures, byte for byte and in the same order, so both finishes of a colour and size draw the Natural faces (J, 11 Oct 2026: "Both, sharing faces"), as La Marmoteca's finishes do. Each finish is its own entry with ABK's item code; the Surfaces card lists them as size options ("60x120 Lappato", "60x120 Nat"). As for La Marmoteca, roughness follows the look, not the finish.
+  - **Antique 3D**, 60x120 only (Arabescato, Calacatta Bamboo, Grigio Etrusco, Lilac White, Tesserae, Veria Green; the pictures are named EPOQUE 21). ABK's textured finish, which it says recreates time-worn floors; the app draws ABK's pictures flat, so the relief shows only as their shading (J, 11 Oct 2026: "Include all six"). They come in one size, so there is nothing to check their scale against.
+  - Black, Grey and Ivory 60x60 match the 60x120 pictures at their labelled scale (crop test, r 0.99 to 1.00).
+  - **Black 60x120 picture 7** is 2109 x 4096 px, 2.98% wider than 600 x 1200 mm, while the other seven are 2294 x 1146. Drawn 618 x 1200 mm it matches the 60x60 pictures best (r 0.89, against 0.81 at 600 x 1200): a wider crop at true scale, so its extra width is cut off like the 3%-wider 120x280 pictures' (`CROP_PICTURES` in the build script).
+  - **Abstract 60x60**: each of ABK's eight 60x60 pictures is one half of one of its four 60x120 pictures, turned 90 degrees (image matching r 0.99 to 1.00; cutting the 60x120 pictures so reproduces all eight, r 0.996 to 0.998). Three pairs are cut within 12 px of the middle; pictures 3 and 4 are cut 80 mm off-centre (676 and 515 mm wide at true scale), so neither is a whole tile. Faces 03 and 04 are 60x120 picture 3 cut at its middle instead (J, 11 Oct 2026: "Recut 3 and 4"); the manifest marks them `recut`.

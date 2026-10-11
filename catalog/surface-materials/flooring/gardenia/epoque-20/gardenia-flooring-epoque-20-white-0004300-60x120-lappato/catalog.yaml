@@ -1,0 +1,138 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Epoque 2.0
+  material_id: gardenia-flooring-epoque-20-white-0004300-60x120-lappato
+  product_name: Gardenia Epoque 2.0 White 60x120 Lappato
+  slug: gardenia-flooring-epoque-20-white-0004300-60x120-lappato
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/epoque-20/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: the 8 single item pictures of item 0004296 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/white/pf60004296-v102/), because ABK's 8 Lappato pictures are 0004296's 8 Natural pictures, byte for byte. Downloaded signed in on 2026-10-11, stored at 0.6 px per mm; the originals are sharper, see gardenia-epoque-20-white-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-11: Epoque 2.0 is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0004300 (pf60004300) for floor use: 60X120 Lappato, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/white/pf60004300-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/epoque-20/white/60x120/: finish Lappato, thickness 8,5 mm, porcelain stoneware."
+    - "Finishes: ABK makes this colour and size in Natural and Lappato; both are listed, and ABK's Lappato pages show the Natural pictures (J, 2026-10-11: both, sharing faces)."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes White as white (colour page pictures)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: Epoque 2.0 explores marble and colour in an elegant selection of highly decorative surfaces. The appeal of the surfaces is further enhanced by exclusive new finishes such as Antique 3D, which recreates the sensation of time-worn floors in historical italian buildings and stately homes."
+    - "Collection page thicknesses: 8.5 mm."
+    - "Collection page sizes: 60x120, 60x60."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: marble
+  color_family: white
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - commercial
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/epoque-20/0004296_08.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.48
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

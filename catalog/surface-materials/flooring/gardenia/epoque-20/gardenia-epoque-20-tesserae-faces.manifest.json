@@ -1,0 +1,124 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/tesserae/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - TESSERAE - minimali.zip (3151143 bytes, sha256 e883431aa9d1228174467089a801dd3c376cb9c53bf46b07a826b9c02b1dfd46).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0009385",
+   "finish": "Antique 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/tesserae/pf60009385-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009385_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-tesserae-0009385-60x120-antique-3d; wall gardenia-wall-tile-epoque-20-tesserae-0009385-60x120-antique-3d",
+   "faces": [
+    {
+     "file": "0009385_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 59530,
+     "source_zip": "EPOQUE 2.0 - TESSERAE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - TESSERAE - 60X120 - Antique 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      1300
+     ],
+     "source_sha256": "63577f64dd4147cb79cc45e1e395c5bcc2ce81781652098638b6f5913cc450d3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 1 (view_01)",
+      "name": "EPOQUE 21 TESSERAE 60X120_01",
+      "id": "3512c4d0-108a-4cd9-b526-8ec9d87b6059",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009385_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55498,
+     "source_zip": "EPOQUE 2.0 - TESSERAE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - TESSERAE - 60X120 - Antique 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      1300
+     ],
+     "source_sha256": "5cefcf2f88ca146dee494d314b87f83b9d680b9ab5ddac0121b0e7ff7e84e3bd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 2 (view_02)",
+      "name": "EPOQUE 21 TESSERAE 60X120_02",
+      "id": "3c3ac834-5129-4e08-9897-1bb4025e0838",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009385_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50518,
+     "source_zip": "EPOQUE 2.0 - TESSERAE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - TESSERAE - 60X120 - Antique 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      1300
+     ],
+     "source_sha256": "5f10e6a98cdb4e908e20323ba1ce0f6b91b81f3fac5507f49bb28291de6b03c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 3 (view_03)",
+      "name": "EPOQUE 21 TESSERAE 60X120_03",
+      "id": "84db0520-3b55-463b-b210-1d536554b730",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009385_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55034,
+     "source_zip": "EPOQUE 2.0 - TESSERAE - minimali.zip",
+     "source_file": "60X120-Antique 3D/EPOQUE 2.0 - TESSERAE - 60X120 - Antique 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      1300
+     ],
+     "source_sha256": "434b423589871b89c196b18772faa1c146b368099f21d68e9f0d0e0d380032f5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Antique 3D · Faccia 4 (view_04)",
+      "name": "EPOQUE 21 TESSERAE 60X120_04",
+      "id": "1372ddb7-83ad-4b4d-8f63-0bfa8bc90666",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}
