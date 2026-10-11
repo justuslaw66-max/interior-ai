@@ -178,7 +178,7 @@ export default function FloorPlanVisualReviewTools({
         <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
           Advanced corrections (only if the outline is wrong)
         </summary>
-        <p className="mt-2 text-[10px] leading-4 text-neutral-500">
+        <p className="mt-2 text-xs leading-4 text-neutral-500">
           Most uploads do not need these controls. Use them only to repair a specific wall, opening, structural object, dimension, or orientation.
         </p>
         <FloorPlanTopologyCorrectionPanel

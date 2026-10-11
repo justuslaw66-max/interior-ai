@@ -53,8 +53,8 @@ export default function FloorPlanOrientationReviewPanel({
             type="button"
             className={
               dark
-                ? "rounded-md border border-white/10 p-1.5 text-[10px]"
-                : "rounded-md border border-neutral-200 bg-white p-1.5 text-[10px]"
+                ? "rounded-md border border-white/10 p-1.5 text-xs"
+                : "rounded-md border border-neutral-200 bg-white p-1.5 text-xs"
             }
             disabled={disabled || choice.id === "normal"}
             onClick={() => {
@@ -80,8 +80,8 @@ export default function FloorPlanOrientationReviewPanel({
       <p
         className={
           dark
-            ? "mt-1 text-[10px] text-neutral-400"
-            : "mt-1 text-[10px] text-neutral-600"
+            ? "mt-1 text-xs text-neutral-400"
+            : "mt-1 text-xs text-neutral-600"
         }
       >
         Thumbnails are relative to the current candidate. Registration points

@@ -51,7 +51,7 @@ export default function FloorPlanWallCorrectionFields({
 
   return (
     <div data-review-controls="wall" className="grid gap-2 border-t border-neutral-200 pt-2">
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Wall thickness and type
         <select
           className={`${controlClassName} mt-1 w-full`}
@@ -68,7 +68,7 @@ export default function FloorPlanWallCorrectionFields({
       </label>
       {wallId ? (
         <div className="grid grid-cols-2 gap-2">
-          <label className={`text-[10px] ${subtleClassName}`}>
+          <label className={`text-xs ${subtleClassName}`}>
             Thickness (mm)
             <input
               className={`${controlClassName} mt-1 w-full`}
@@ -79,7 +79,7 @@ export default function FloorPlanWallCorrectionFields({
               onChange={(event) => setThicknessMm(Number(event.target.value))}
             />
           </label>
-          <label className={`text-[10px] ${subtleClassName}`}>
+          <label className={`text-xs ${subtleClassName}`}>
             Classification
             <select
               className={`${controlClassName} mt-1 w-full`}

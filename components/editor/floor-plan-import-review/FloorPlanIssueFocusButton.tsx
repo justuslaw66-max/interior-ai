@@ -9,7 +9,7 @@ export function FloorPlanIssueFocusButton({ issue, document, pages, focusedIssue
 }) {
   const target = resolveFloorPlanReviewTarget(document, pages, issue), count = issue.entityIds?.length ?? 0;
   if (!count && !target) return null;
-  return <button type="button" className="mt-1 text-[10px] font-semibold text-blue-600" aria-pressed={focusedIssueId === issue.id}
+  return <button type="button" className="mt-1 text-xs font-semibold text-blue-600" aria-pressed={focusedIssueId === issue.id}
     onClick={() => setFocusedIssueId((current) => current === issue.id ? null : issue.id)}>
     {focusedIssueId === issue.id ? "Clear source focus" : count ? `Show ${count} affected item${count === 1 ? "" : "s"}` : `Show ${target!.label} review`}
   </button>;

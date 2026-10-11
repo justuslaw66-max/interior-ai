@@ -117,7 +117,7 @@ export default function FloorPlanDimensionCorrectionFields({
 
   return (
     <div data-review-controls="dimension" className="grid gap-2 border-t border-neutral-200 pt-2">
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Add or edit an exact source dimension
         <select
           className={`${controlClassName} mt-1 w-full`}
@@ -132,7 +132,7 @@ export default function FloorPlanDimensionCorrectionFields({
           ))}
         </select>
       </label>
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Label (optional)
         <input
           className={`${controlClassName} mt-1 w-full`}
@@ -145,7 +145,7 @@ export default function FloorPlanDimensionCorrectionFields({
           ["From vertex", fromVertexId, setFromVertexId],
           ["To vertex", toVertexId, setToVertexId],
         ].map(([fieldLabel, value, setter]) => (
-          <label key={String(fieldLabel)} className={`text-[10px] ${subtleClassName}`}>
+          <label key={String(fieldLabel)} className={`text-xs ${subtleClassName}`}>
             {String(fieldLabel)}
             <select
               className={`${controlClassName} mt-1 w-full`}
@@ -166,7 +166,7 @@ export default function FloorPlanDimensionCorrectionFields({
             </select>
           </label>
         ))}
-        <label className={`text-[10px] ${subtleClassName}`}>
+        <label className={`text-xs ${subtleClassName}`}>
           Axis
           <select
             className={`${controlClassName} mt-1 w-full`}
@@ -178,7 +178,7 @@ export default function FloorPlanDimensionCorrectionFields({
             {AXES.map((value) => <option key={value}>{value}</option>)}
           </select>
         </label>
-        <label className={`text-[10px] ${subtleClassName}`}>
+        <label className={`text-xs ${subtleClassName}`}>
           Printed distance (mm)
           <input
             className={`${controlClassName} mt-1 w-full`}
@@ -226,7 +226,7 @@ export default function FloorPlanDimensionCorrectionFields({
           </button>
         ) : null}
       </div>
-      <p className={`text-[10px] ${subtleClassName}`}>
+      <p className={`text-xs ${subtleClassName}`}>
         A printed distance that contradicts these vertices is rejected; the
         geometry is never silently stretched to make it fit.
       </p>

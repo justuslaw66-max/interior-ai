@@ -20,7 +20,7 @@ export function FloorPlanOpeningEvidenceLockNotice({
   if (floorPlanPropertyEvidenceIsEditable(evidence)) return null;
   return (
     <div
-      className="mt-1 text-[9px] leading-3 text-amber-700"
+      className="mt-1 text-xs text-amber-700"
       data-testid={`import-review-opening-${field}-locked`}
     >
       {floorPlanPropertyEvidenceLabel(evidence)} measurement is locked; other
