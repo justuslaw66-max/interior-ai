@@ -548,7 +548,7 @@ export function CabinetryStudioGuidedView({
                                   {formatCabinetLabel(preset.safetyClassification)}
                                 </span>
                               </span>
-                              <span className="line-clamp-1 text-xs text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
+                              <span className="line-clamp-2 text-xs text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
                                 Best for {preset.applicableRoomTypes.slice(0, 3).map(formatCabinetLabel).join(", ")}
                               </span>
                             </button>
