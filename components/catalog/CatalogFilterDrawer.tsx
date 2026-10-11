@@ -69,7 +69,7 @@ export default function CatalogFilterDrawer({
       {showSofaSeatCapacityFilter ? (
         <fieldset className="mt-3">
           <legend className="text-xs font-medium text-neutral-500">Seat capacity</legend>
-          <div className="mt-1 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
+          <div className="mt-1 grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-2">
             {SOFA_SEAT_CAPACITY_OPTIONS.map((option) => {
               const selectedBuckets = filters.sofaSeatCapacityBuckets ?? [];
               const selected = selectedBuckets.includes(option.value);
