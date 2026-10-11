@@ -49,7 +49,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
         Set scale
-        <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${status.className}`}>{status.label}</span>
+        <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${status.className}`}>{status.label}</span>
       </summary>
       {status.assumed ? <FloorPlanScaleAssumedNotice /> : null}
       {calibration && <div className="mt-2 flex gap-2">
@@ -62,7 +62,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
         document={document} floorId={floorId} calibration={calibration} scalePoints={scalePoints}
         onScalePointsChange={onScalePointsChange} onPickingScaleChange={onPickingScaleChange}
         onChange={onChange} onError={onError} disabled={disabled} control={control} /> : <div className="mt-2 grid gap-2">
-        <p className={`text-[10px] leading-4 ${subtle}`}>
+        <p className={`text-xs leading-4 ${subtle}`}>
           Find a printed measurement such as 2890. Select both ends of that
           measurement on the plan, then enter the number exactly as printed.
         </p>
@@ -88,7 +88,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
         <FloorPlanMeasurementInput input={input} control={control} disabled={disabled} />
         {!calibration && floor && canMapExistingVertices ? (
           <div className="grid grid-cols-2 gap-2">
-            <label className={`text-[10px] ${subtle}`}>
+            <label className={`text-xs ${subtle}`}>
               First selected point matches
               <select
                 className={`${control} mt-1 w-full`}
@@ -103,7 +103,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
                 ))}
               </select>
             </label>
-            <label className={`text-[10px] ${subtle}`}>
+            <label className={`text-xs ${subtle}`}>
               Second selected point matches
               <select
                 className={`${control} mt-1 w-full`}
@@ -120,7 +120,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
             </label>
           </div>
         ) : null}
-        <div className="rounded bg-white p-2 text-[10px] leading-4 text-neutral-600">
+        <div className="rounded bg-white p-2 text-xs leading-4 text-neutral-600">
           {scalePoints.length !== 2
             ? "No measurement selected yet."
             : scale?.measurementValid
@@ -137,7 +137,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
           ) : null}
         </div>
         {!calibration && (floor?.vertices.length ?? 0) < 2 ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900">
             Automatic wall detection was empty. That is okay—set this
             measurement first, then outline the rooms in Step 2.
           </div>

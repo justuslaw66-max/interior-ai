@@ -66,7 +66,7 @@ export default function FloorPlanOpeningAddFields({
 
   return (
     <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2">
-      <label className={`col-span-2 text-[10px] ${subtleClassName}`}>
+      <label className={`col-span-2 text-xs ${subtleClassName}`}>
         Add a missing door, window or passage
         <select
           className={`${controlClassName} mt-1 w-full`}
@@ -88,7 +88,7 @@ export default function FloorPlanOpeningAddFields({
         ["Height (mm, optional)", heightMm, setHeightMm, true],
         ["Sill (mm, optional)", sillHeightMm, setSillHeightMm, true],
       ].map(([label, value, setter, optional]) => (
-        <label key={String(label)} className={`text-[10px] ${subtleClassName}`}>
+        <label key={String(label)} className={`text-xs ${subtleClassName}`}>
           {String(label)}
           <input
             className={`${controlClassName} mt-1 w-full`}
@@ -104,28 +104,28 @@ export default function FloorPlanOpeningAddFields({
           />
         </label>
       ))}
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Kind
         <select className={`${controlClassName} mt-1 w-full`} value={kind}
           onChange={(event) => setKind(event.target.value as FloorPlanOpeningKindV2)}>
           {KINDS.map((value) => <option key={value} value={value}>{value.replace("_", " ")}</option>)}
         </select>
       </label>
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Operation
         <select className={`${controlClassName} mt-1 w-full`} value={operation}
           onChange={(event) => setOperation(event.target.value as FloorPlanOpeningOperationV2)}>
           {OPERATIONS.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
       </label>
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Hinge
         <select className={`${controlClassName} mt-1 w-full`} value={hinge}
           onChange={(event) => setHinge(event.target.value as FloorPlanOpeningV2["hinge"])}>
           {HINGES.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
       </label>
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Handing
         <select className={`${controlClassName} mt-1 w-full`} value={handing}
           onChange={(event) => setHanding(event.target.value as FloorPlanOpeningV2["handing"])}>

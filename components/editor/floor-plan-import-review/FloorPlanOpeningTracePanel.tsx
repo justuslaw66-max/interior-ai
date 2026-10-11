@@ -86,18 +86,18 @@ export default function FloorPlanOpeningTracePanel({
           3
         </span>
         Add visible doors and windows
-        <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-[10px] text-orange-800">
+        <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-800">
           {floor.openings.length
             ? `${floor.openings.length} added`
             : "Recommended"}
         </span>
       </summary>
       <div className="mt-2 grid gap-2">
-        <p className={`text-[10px] leading-4 ${subtle}`}>
+        <p className={`text-xs leading-4 ${subtle}`}>
           Choose the type, then select both ends of the opening directly on the
           plan. The wall, position and width are calculated automatically.
         </p>
-        <label className={`text-[10px] ${subtle}`}>
+        <label className={`text-xs ${subtle}`}>
           What are you adding?
           <select
             className={`${control} mt-1 w-full`}
@@ -115,7 +115,7 @@ export default function FloorPlanOpeningTracePanel({
           </select>
         </label>
         {!calibration || !floor.walls.length ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-900">
             Set scale and outline the rooms first.
           </div>
         ) : null}
@@ -149,7 +149,7 @@ export default function FloorPlanOpeningTracePanel({
               ? "First end selected. Now select the other end."
               : analysis?.message}
         </div>
-        <div className="flex flex-wrap gap-2 text-[10px]">
+        <div className="flex flex-wrap gap-2 text-xs">
           <button
             className={control}
             disabled={disabled || !openingPoints.length}
@@ -201,7 +201,7 @@ export default function FloorPlanOpeningTracePanel({
         >
           Add this opening
         </button>
-        <p className="rounded-md bg-white p-2 text-[10px] leading-4 text-neutral-600">
+        <p className="rounded-md bg-white p-2 text-xs leading-4 text-neutral-600">
           Add every visible opening. If the source truly shows none, skip this
           step and mark the checklist suggestion as reviewed.
         </p>

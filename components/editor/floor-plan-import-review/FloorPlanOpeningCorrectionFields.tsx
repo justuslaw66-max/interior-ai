@@ -65,7 +65,7 @@ export default function FloorPlanOpeningCorrectionFields({
   return (
     <div data-review-controls="opening" className="grid gap-3 border-t border-neutral-200 pt-2">
       <div className="grid gap-2">
-        <label className={`text-[10px] ${subtleClassName}`}>
+        <label className={`text-xs ${subtleClassName}`}>
           Edit or remove an opening
           <select
             data-testid="import-review-opening-select"
@@ -83,7 +83,7 @@ export default function FloorPlanOpeningCorrectionFields({
         </label>
         {openingId ? (
           <div className="grid grid-cols-2 gap-2">
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Start (mm)
               <input
                 data-testid="import-review-opening-offset"
@@ -95,7 +95,7 @@ export default function FloorPlanOpeningCorrectionFields({
                 onChange={(event) => correction.setValue("openingOffset", Number(event.target.value))}
               />
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Span (mm)
               <input
                 data-testid="import-review-opening-width"
@@ -111,7 +111,7 @@ export default function FloorPlanOpeningCorrectionFields({
                 proMode={proMode} approved={measurementOverrides.has("width")}
                 onApprove={() => correction.approveMeasurementOverride("width")} />
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Kind
               <select
                 className={`${controlClassName} mt-1 w-full`}
@@ -126,7 +126,7 @@ export default function FloorPlanOpeningCorrectionFields({
                 ))}
               </select>
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Operation
               <select
                 className={`${controlClassName} mt-1 w-full`}
@@ -142,7 +142,7 @@ export default function FloorPlanOpeningCorrectionFields({
                 ))}
               </select>
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Height (mm, optional)
               <input
                 data-testid="import-review-opening-height"
@@ -160,7 +160,7 @@ export default function FloorPlanOpeningCorrectionFields({
                 proMode={proMode} approved={measurementOverrides.has("height")}
                 onApprove={() => correction.approveMeasurementOverride("height")} />
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Sill (mm, optional)
               <input
                 data-testid="import-review-opening-sill"
@@ -178,14 +178,14 @@ export default function FloorPlanOpeningCorrectionFields({
                 proMode={proMode} approved={measurementOverrides.has("sill")}
                 onApprove={() => correction.approveMeasurementOverride("sill")} />
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Hinge
               <select className={`${controlClassName} mt-1 w-full`} value={hinge}
                 onChange={(event) => correction.setValue("hinge", event.target.value as FloorPlanOpeningV2["hinge"])}>
                 {HINGES.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>
             </label>
-            <label className={`text-[10px] ${subtleClassName}`}>
+            <label className={`text-xs ${subtleClassName}`}>
               Handing
               <select className={`${controlClassName} mt-1 w-full`} value={handing}
                 onChange={(event) => correction.setValue("handing", event.target.value as FloorPlanOpeningV2["handing"])}>

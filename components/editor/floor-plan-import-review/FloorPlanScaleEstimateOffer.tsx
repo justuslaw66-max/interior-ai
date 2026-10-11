@@ -18,7 +18,7 @@ export function scaleReviewStatus(
 
 export function FloorPlanScaleAssumedNotice() {
   return (
-    <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-900" data-testid="floor-plan-scale-assumed-notice">
+    <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900" data-testid="floor-plan-scale-assumed-notice">
       This scale rests on a door width that was assumed, not read off the plan; every length is approximate (about ±10 %).
       When you find a printed measurement, cross-check or set the scale from it.
     </p>
@@ -36,7 +36,7 @@ type EstimateOfferProps = {
 /** The door openings the vectorizer measured where a plan prints no dimensions: pick one to seed the scale. */
 export function FloorPlanScaleEstimateOffer({ marks, assumedMm, control, disabled, onPick }: EstimateOfferProps) {
   return (
-    <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] leading-4 text-amber-900" data-testid="floor-plan-scale-estimate">
+    <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900" data-testid="floor-plan-scale-estimate">
       <p className="font-semibold">No printed dimensions were found on this plan.</p>
       <p className="mt-1">
         The door openings below were measured on the plan; the width shown is what each would be if standard
