@@ -103,12 +103,10 @@ const subTwelvePixelUses = (text: string) =>
 const underTwelvePixels = sources.reduce((count, { text }) => count + subTwelvePixelUses(text), 0);
 
 // The 12px minimum (AX7, phase 5): text is at least 12px (text-xs) everywhere but these, which
-// follow in later steps: Built-ins, Admin's frame and Overview (their CSS module), the room
-// navigator's labels on the canvas (ED7's rules), and the finish swatches, whose snapshots change
-// with them.
+// follow in later steps: Built-ins, the room navigator's labels on the canvas (ED7's rules), and
+// the finish swatches, whose snapshots change with them.
 const SMALL_TEXT_STILL_TO_DO = [
   /^features\/cabinetry\//,
-  /^app\/admin\/operations-dashboard\.module\.css$/,
   /^components\/editor\/RoomPanNavigator\.tsx$/,
   /^components\/editor\/design-page\/Product(?:Finish|ModelVariant)Controls\.tsx$/,
   /^components\/catalog\/CatalogItemFinishPicker\.tsx$/,
