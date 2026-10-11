@@ -1,0 +1,424 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-green/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - VERNIS GREEN - minimali.zip (74472189 bytes, sha256 09a199e7135b4a741533477d2ca8efcda25583b552ef15ca35f159aafcf15f20).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0014264",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-green/pf60014264-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014264_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 3 is picture 7 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 4 is picture 9 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 5 is picture 8 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 6 is picture 10 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-vernis-green-0014264-120x120-nat; wall gardenia-wall-tile-camouflage-vernis-green-0014264-120x120-nat",
+   "faces": [
+    {
+     "file": "0014264_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81816,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a5322b28cecbd25d78384765a3c2b0aa5cd39d9ede2156602ba0bc70a743161a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE VERNIS GREEN 120X120_01",
+      "id": "8f1407ce-543b-4f44-9526-25982f0a3be5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014264_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81066,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7504106fe383de1a2142667a6c2598c66b04c7e54c760ad127f12f9d871ec83b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 7",
+      "name": "CAMOUFLAGE VERNIS GREEN 120X120_02",
+      "id": "60376e9d-f1bf-4c7f-8020-3d427f1f5580",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014264_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81216,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1714f66a917d4d37b28f044b064bed95eb8e2e35659ee31e291bb4ecded35a13",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE VERNIS GREEN 120X120_04",
+      "id": "9bafcb5e-76dc-448f-8a6e-77fd0536b9a3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014264_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 86600,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf8531c720c044b71799dfea6295f37c98139472a0930ef0536be21f947aed95",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE VERNIS GREEN 120X120_03",
+      "id": "c1927098-c502-4979-a2dd-4eb7084c109f",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014264_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81280,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9adb97f51a433ecc04d04cff2265ebf7965a84ca934a95584b2b5489e87dc541",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE VERNIS GREEN 120X120_05",
+      "id": "d410daae-42ae-4e58-a5ab-d62c89526be2",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014258",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-green/pf60014258-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014258_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "duplicates_note": "picture 10 is picture 19 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 11 is picture 17 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 3 is picture 18 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 4 is picture 20 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 5 is picture 14 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 6 is picture 13 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 7 is picture 16 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 8 is picture 15 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 9 is picture 12 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-vernis-green-0014258-60x120-nat; wall gardenia-wall-tile-camouflage-vernis-green-0014258-60x120-nat",
+   "faces": [
+    {
+     "file": "0014258_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45128,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a1f9c1821301611180f5b77c69c2fcbf29abdcf8adfe218de09634ddad54ced4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_01",
+      "id": "e055fccc-da2f-4cef-a455-abea22d1b14c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014258_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46878,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c1cbb03af2f8257fe94c63900a3c5495a34566a16a8ff727ba937b8923387dac",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_08",
+      "id": "1713e87a-2981-4475-a628-5908540622e9",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014258_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46046,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4b5f5d6e06f56a246d1a4f7f2db7279fce9782ae711cfab862d0e4a607f6010b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 13",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_05",
+      "id": "190771db-60c4-44ea-9d07-2f0670f029e4",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014258_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35894,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0ca61a645d8571905d96034891d8b5a7cfa26ec7efc31baaf42ee40a1db1cabc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_04",
+      "id": "26301b19-221d-4f5c-b17a-fc98b179563d",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014258_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34618,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8dfd621750ae8ff7b51d68c804a75113c7eae34c73f4d54fa8b379ef5b51a7c2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_07",
+      "id": "3c7fd3c6-58c2-4e51-ba2a-72351dcc23fc",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014258_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39672,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f3fc2ac56805980af4f3a24f511f75f2179354e64e959a47f28af368ea5a5d33",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_06",
+      "id": "5f26876a-ddea-4867-b3c3-f400e7ae6c75",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014258_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 45186,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_10 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "49e4fbd4347afd1e40f04ade50b643176ade7f803e9ef3bf4e579e2d98141716",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_10",
+      "id": "7e1847f4-37fe-48e9-95e4-1887af08aec0",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014258_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34246,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "616bc7c303116df893c68d90db9cc55d3c6acbd6ab84974e712aa780c047ca7a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_02",
+      "id": "907bca09-fe72-4a75-9d65-32c70e1375ee",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014258_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36792,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c5130bf1782c3ad3181de0ee9f66620495395bf5f4a3b2fafedc00d5a85e5836",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_09",
+      "id": "b3f6623c-f61d-435b-9c34-d3f85556c9b7",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014258_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46884,
+     "source_zip": "CAMOUFLAGE - VERNIS GREEN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GREEN - 60X120 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "af456e3e8fd89ad0bd21fea3f67edfc3430b19b880aa6c590ef22ca4912e3d06",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE VERNIS GREEN 60X120_03",
+      "id": "ea9f9ba8-9570-4794-93d8-2a5ee7e09de9",
+      "site_position": 20
+     }
+    }
+   ]
+  }
+ ]
+}

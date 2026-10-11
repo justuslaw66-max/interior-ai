@@ -1,0 +1,113 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Block
+  material_id: gardenia-wall-tile-block-righe-creta-0031183-60x120-nat
+  product_name: Gardenia Block Righe Creta 60x120 Nat
+  slug: gardenia-wall-tile-block-righe-creta-0031183-60x120-nat
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/block/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile face: the single item picture from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/righe-creta/pf60031183-v102/), downloaded signed in on 2026-10-12, stored at 0.6 px per mm; the original is sharper, see gardenia-block-righe-creta-faces.manifest.json. It covers 600x1200 mm. ABK's picture is the whole tile, its flutes running across the tile's short side, shown with the long side horizontal as the tile is laid here. The app draws the picture flat, so the flutes show only as their shading."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-12: Block is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0031183 (pf60031183) for wall use: 60X120 Natural, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/righe-creta/pf60031183-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/block/righe-creta/60x120/: finish Natural, thickness 8,5 mm, porcelain stoneware."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Righe Creta as beige (colour page pictures)."
+    - "Look: ABK describes Righe Creta as a solid colour effect, so it is filed as plain (J, 2026-10-10: per colour, as ABK)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: BLOCK draws on an understated, stone-inspired material with subtle tonal variations. The flat surface, enhanced by natural low-relief textures, is complemented by a fluted geometry that introduces rhythm and depth and a new perception of light. Two interpretations of the same material, designed to be used in alternation to create continuity throughout the space through texture, colour and proportion."
+    - "Collection page thicknesses: 6 mm, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 60x120, 60x60."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: plain
+  color_family: beige
+  tone:
+    - neutral
+    - durable
+    - clean
+    - warm
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/block/0031183_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/block/0031183_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/block/0031183_01.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

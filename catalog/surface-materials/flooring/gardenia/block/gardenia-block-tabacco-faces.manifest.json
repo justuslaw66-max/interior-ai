@@ -1,0 +1,220 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/tabacco/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: BLOCK - TABACCO - minimali.zip (46590288 bytes, sha256 c3c49d6a2c60d346078a15e615dbc85107480f577352684c2762f8914404cd84).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/block/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0031176",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/tabacco/pf60031176-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0031176_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-tabacco-0031176-120x120-nat-3d; floor gardenia-flooring-block-tabacco-0031180-60x120-nat-3d (uses 0031176's faces: they stand in for Tabacco 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-tabacco-0031188-60x60-nat-3d (uses 0031176's faces: they stand in for Tabacco 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-tabacco-0031404-120x120-r11 (uses 0031176's faces: ABK's 8 R11 pictures are 0031176's 8 Nat 3D pictures, byte for byte); floor gardenia-flooring-block-tabacco-0031408-60x60-r11 (uses 0031176's faces: they stand in for Tabacco 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-tabacco-0031176-120x120-nat-3d; wall gardenia-wall-tile-block-tabacco-0031180-60x120-nat-3d (uses 0031176's faces: they stand in for Tabacco 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-tabacco-0031188-60x60-nat-3d (uses 0031176's faces: they stand in for Tabacco 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-tabacco-0031404-120x120-r11 (uses 0031176's faces: ABK's 8 R11 pictures are 0031176's 8 Nat 3D pictures, byte for byte); wall gardenia-wall-tile-block-tabacco-0031408-60x60-r11 (uses 0031176's faces: they stand in for Tabacco 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120))",
+   "faces": [
+    {
+     "file": "0031176_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130602,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "63eaae10daa10613b22bb7be50b5fd326bfb2cf4d8b0d2b6643286d3f0bb3087",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 1",
+      "name": "BLOCK TABACCO 120x120 NAT_04",
+      "id": "11a6718d-d6d7-4cda-93e3-a42965bff278",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031176_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129764,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8892e76d427f3d2d829b386a75df2d82ab1134fbacfff39da4904ce3a2229ff5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 2",
+      "name": "BLOCK TABACCO 120x120 NAT_01",
+      "id": "204a7d4e-eca0-46b7-be9a-668385d17c6c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031176_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 144602,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "07a1b0af6827093e2092c4ba5850508c56858af20dcc9e9c5ba03cc330fd156b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 3",
+      "name": "BLOCK TABACCO 120x120 NAT_08",
+      "id": "568ab771-e0a1-465a-ac05-424d104cf7a1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0031176_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 148002,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "068d31f146d0b6fa2a1c31e95bda62142731272d4c50b9af5721e0d1687c9ac4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 4",
+      "name": "BLOCK TABACCO 120x120 NAT_07",
+      "id": "8096557f-adba-44ff-8b6c-0c892a0bda10",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0031176_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 133286,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "451e3e80fad1dde3a9f13127e2f25219ca912590190223aa6337ba05e4085682",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 5",
+      "name": "BLOCK TABACCO 120x120 NAT_06",
+      "id": "9d860841-7478-4125-87b2-b43354da1b9d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0031176_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 140814,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "81fb6bc0f233c9a2018e016352cae4aacfec931fe775ecf5f091c305ea405e1d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 6",
+      "name": "BLOCK TABACCO 120x120 NAT_03",
+      "id": "b27c75ea-8ee0-4f3d-9e99-9d7ea5a80d6d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0031176_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 142698,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "af4265e0ed303da8a0ca1f1e9acb21de262e44ddb1eee4a404915e6cb4210008",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 7",
+      "name": "BLOCK TABACCO 120x120 NAT_09",
+      "id": "e6d018ad-9b66-49c0-be99-5485335fa736",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0031176_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 135388,
+     "source_zip": "BLOCK - TABACCO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - TABACCO - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f25d8667021d6b446d8506a3fa2520822c1e28b46858ec0df439cd746bc97396",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 8",
+      "name": "BLOCK TABACCO 120x120 NAT_05",
+      "id": "eb0ce5b3-aeed-4a65-9faa-1e2ba747108d",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

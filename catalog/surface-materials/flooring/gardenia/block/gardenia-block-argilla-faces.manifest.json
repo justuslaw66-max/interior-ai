@@ -1,0 +1,466 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/argilla/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: BLOCK - ARGILLA - minimali.zip (72393069 bytes, sha256 4c2f1e9d14d5b63b089cd7aceddef7a9194b486160ac52ba5142703716fb7544).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/block/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0031145",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/argilla/pf60031145-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0031145_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-argilla-0031145-120x280-nat-3d; wall gardenia-wall-tile-block-argilla-0031145-120x280-nat-3d",
+   "faces": [
+    {
+     "file": "0031145_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 276486,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - ARGILLA - 120X280 - Nat 3D - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "802e3f874bc4cc44c28a0b30ef4641a61f08e61afb9e8425d372c2a66c3a1156",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 1",
+      "name": "BLOCK ARGILLA 120x280 NAT_01",
+      "id": "134676e3-c6d6-4c0f-bf62-ffb65ae230e6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031145_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 302360,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - ARGILLA - 120X280 - Nat 3D - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "bce6296cc7a07e37f17e54edb83f9c98addafe1ff93278e7529bf0913a3984ea",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 2",
+      "name": "BLOCK ARGILLA 120x280 NAT_03",
+      "id": "1ad405de-5965-4eaa-8170-8c3671d8d33f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031145_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 263892,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - ARGILLA - 120X280 - Nat 3D - view_3.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "af279d899308e24bdf59dd3adb82258bf043c02e9ddb12e05b2bc25a755d7082",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 3",
+      "name": "BLOCK ARGILLA 120x280 NAT_02",
+      "id": "9b1db6fc-5d15-4f59-a3bb-acb34e309d45",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0031174",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/argilla/pf60031174-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0031174_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-argilla-0031174-120x120-nat-3d; floor gardenia-flooring-block-argilla-0031186-60x60-nat-3d (uses 0031174's faces: they stand in for Argilla 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-argilla-0031402-120x120-r11 (uses 0031174's faces: ABK's 9 R11 pictures are 0031174's 9 Nat 3D pictures, byte for byte); floor gardenia-flooring-block-argilla-0031406-60x60-r11 (uses 0031174's faces: they stand in for Argilla 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-argilla-0031174-120x120-nat-3d; wall gardenia-wall-tile-block-argilla-0031186-60x60-nat-3d (uses 0031174's faces: they stand in for Argilla 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-argilla-0031402-120x120-r11 (uses 0031174's faces: ABK's 9 R11 pictures are 0031174's 9 Nat 3D pictures, byte for byte); wall gardenia-wall-tile-block-argilla-0031406-60x60-r11 (uses 0031174's faces: they stand in for Argilla 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120))",
+   "faces": [
+    {
+     "file": "0031174_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114166,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "499d9efcb6fa2052751e76d996ba6699cb3e187e6579c8afc62454ae035f8bd5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 1",
+      "name": "BLOCK ARGILLA 120x120 NAT_06",
+      "id": "0341d737-47c1-447b-891e-4e060a4de9a6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031174_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 126764,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d9fce6d816aa7f987320ced5aa71a8c67434446e5d0c11d35e81184735d789c5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 2",
+      "name": "BLOCK ARGILLA 120x120 NAT_08",
+      "id": "055ce8fe-38db-40cf-93ee-1d6aec8b3929",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031174_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 106236,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2758ec9f55acd38301e5ee7b4dac012e13f4ea1498613c9a6bf03fc00a6998ff",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 3",
+      "name": "BLOCK ARGILLA 120x120 NAT_04",
+      "id": "06da4120-9b05-4f90-ad5a-d88fadbc2557",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0031174_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 130806,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9a208ef3aa2bd39c889a63235db4a58a82ca5862d49691658a91a94468908cad",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 4",
+      "name": "BLOCK ARGILLA 120x120 NAT_07",
+      "id": "88ca5397-0b56-4fdd-ae6e-03b5437b670f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0031174_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 120578,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1f5aca6279b962c4a0ada2b94cdd0138e642a38ca3fb7f21f0171bdc3ab3d3b0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 5",
+      "name": "BLOCK ARGILLA 120x120 NAT_02",
+      "id": "dbbf1a1b-5bfa-4973-b04e-403ac175f96b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0031174_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 108512,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "de82f0113fcce422c91ba7724cc20800d8459856ebda6083e4d9098bf6278843",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 6",
+      "name": "BLOCK ARGILLA 120x120 NAT_01",
+      "id": "e1a2401e-8f6c-42b5-9622-a5ddf12f4db7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0031174_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 114156,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8badb77bdc412cbf8e5238a979f57c10ed13a2c3adb32bc89fc1ae6e9ee31354",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 7",
+      "name": "BLOCK ARGILLA 120x120 NAT_05",
+      "id": "f41ac939-717b-4171-abe8-c1a9dc37965e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0031174_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 122654,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5ed90d45efe93269a3850f0b1bc7916e2afe29bdfc93bbe270f5d97e64cc45c1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 8",
+      "name": "BLOCK ARGILLA 120x120 NAT_03",
+      "id": "f5948c94-0e7c-45c7-afb5-45477afbfd71",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0031174_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 119616,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - ARGILLA - 120X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c533be6af4553a33674849de6a4e581a5efc67bc99a8816cbb07dcc3ff799fbc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 9",
+      "name": "BLOCK ARGILLA 120x120 NAT_09",
+      "id": "f9f69a17-ff1b-4687-8254-4beba9616384",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0031178",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/argilla/pf60031178-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0031178_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-argilla-0031178-60x120-nat-3d; wall gardenia-wall-tile-block-argilla-0031178-60x120-nat-3d",
+   "faces": [
+    {
+     "file": "0031178_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 59556,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BLOCK - ARGILLA - 60X120 - Nat 3D - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ce188e3e26f5175c1b0ab6940fb0ae12c1c4c366ee7a73b9575bc78c946d5089",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 1",
+      "name": "BLOCK ARGILLA 60x120 NAT_03",
+      "id": "61416683-f1d2-41d6-88c5-42476f413e30",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031178_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 51044,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BLOCK - ARGILLA - 60X120 - Nat 3D - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7f28a27db78583441c55755cbe53eb309953abd4687a1d6809f52f3060963a3c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 2",
+      "name": "BLOCK ARGILLA 60x120 NAT_01",
+      "id": "b6163e17-cac9-4b26-b357-a8b642432371",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031178_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60916,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BLOCK - ARGILLA - 60X120 - Nat 3D - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bc8f7a70e10c081f83571beb719484cabe654f765a4141da5bf77024836993cf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 3",
+      "name": "BLOCK ARGILLA 60x120 NAT_04",
+      "id": "bbdbe6d0-a3a3-4e6e-8447-f6155cc79bc1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0031178_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62450,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BLOCK - ARGILLA - 60X120 - Nat 3D - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cb319d61cca4ef2ac4675acceb6c66f99417e8bb12ab44a9e6f7571a76d12d5d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 4",
+      "name": "BLOCK ARGILLA 60x120 NAT_05",
+      "id": "f5ead53e-3c17-42f3-8321-09bc4876b4bb",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0031178_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 58834,
+     "source_zip": "BLOCK - ARGILLA - minimali.zip",
+     "source_file": "60X120-Nat 3D/BLOCK - ARGILLA - 60X120 - Nat 3D - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "24ad7aa56eee6e35e3f5a1bffa51eef3f1385ddb39f1db63c08ee11d3d2325d4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat 3D · Faccia 5",
+      "name": "BLOCK ARGILLA 60x120 NAT_02",
+      "id": "f731f39e-a150-42d3-b8f8-da32092ad459",
+      "site_position": 5
+     }
+    }
+   ]
+  }
+ ]
+}

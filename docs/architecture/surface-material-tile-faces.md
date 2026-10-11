@@ -26,6 +26,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Luce, five colours (new: imported from ABK's pages) | 28 drafts (14 floor, 14 wall) | 124 | `catalog/surface-materials/flooring/gardenia/luce/gardenia-luce-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Storm, four stones (new: imported from ABK's pages) | 32 drafts (16 floor, 16 wall) | 192 | `catalog/surface-materials/flooring/gardenia/storm/gardenia-storm-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Epoque 2.0, eleven marbles and decors in Natural, Lappato and Antique 3D (new: imported from ABK's pages) | 42 drafts (21 floor, 21 wall); Lappato entries draw the Natural faces | 173 | `catalog/surface-materials/flooring/gardenia/epoque-20/gardenia-epoque-20-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Camouflage, four concretes, two Vernis and a Plissé decor (new: imported from ABK's pages) | 46 drafts (23 floor, 23 wall) | 256 | `catalog/surface-materials/flooring/gardenia/camouflage/gardenia-camouflage-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Block, four stones in Nat 3D and R11, and four Righe decors (new: imported from ABK's pages) | 54 drafts (27 floor, 27 wall); R11 entries draw the Nat 3D faces, and 22 entries with no picture of their own draw the colour's 120x120 faces; Tabacco 120x280 is left out (no picture) | 52 | `catalog/surface-materials/flooring/gardenia/block/gardenia-block-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -48,7 +50,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm and Epoque 2.0 entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -70,6 +72,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia Hermione and Concrea Plain originals | 1.46 (Concrea Plain 120x280) to 3.2 (Concrea Plain 80x80); Hermione 2.13 |
 | Gardenia Just Nature and Luce originals | 1.46 (Luce 120x280) to 3.2 (Luce 80x80); Just Nature 2.16 |
 | Gardenia Storm and Epoque 2.0 originals | 1.9 (Epoque 2.0 60x60 and most 60x120) to 3.94 (Storm 60x60); Storm 120x120 2.13 |
+| Gardenia Camouflage and Block originals | 1.46 (120x280) to 3.94 (Camouflage 60x60); 120x120 and Block's Righe 2.13 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -216,3 +219,29 @@ The next two collections the configurator never had, imported from ABK's pages l
   - Black, Grey and Ivory 60x60 match the 60x120 pictures at their labelled scale (crop test, r 0.99 to 1.00).
   - **Black 60x120 picture 7** is 2109 x 4096 px, 2.98% wider than 600 x 1200 mm, while the other seven are 2294 x 1146. Drawn 618 x 1200 mm it matches the 60x60 pictures best (r 0.89, against 0.81 at 600 x 1200): a wider crop at true scale, so its extra width is cut off like the 3%-wider 120x280 pictures' (`CROP_PICTURES` in the build script).
   - **Abstract 60x60**: each of ABK's eight 60x60 pictures is one half of one of its four 60x120 pictures, turned 90 degrees (image matching r 0.99 to 1.00; cutting the 60x120 pictures so reproduces all eight, r 0.996 to 0.998). Three pairs are cut within 12 px of the middle; pictures 3 and 4 are cut 80 mm off-centre (676 and 515 mm wide at true scale), so neither is a whole tile. Faces 03 and 04 are 60x120 picture 3 cut at its middle instead (J, 11 Oct 2026: "Recut 3 and 4"); the manifest marks them `recut`.
+
+## Gardenia Camouflage and Block specifics (downloaded 12 Oct 2026)
+
+The next two collections the configurator never had, imported from ABK's pages like the six above, with the same decisions on floors and walls and layouts, and colour families from ABK's colour words. Camouflage is a cement look; Block is a stone look, and its Righe decors are described as a solid colour (`plain`).
+
+- **Downloads:** each colour's signed-in "Download all (.zip)", 15 ZIPs (Camouflage 928.0 MB, Block 222.9 MB). Every site picture (Camouflage 416 on 23 size pages, Block 86 on 16) was matched to its ZIP file by sha256, and every ZIP file is on the site.
+- **Camouflage** (Ecru, Silver, Taupe and White Beton in 60x60, 60x120, 80x80 and 120x120, Ecru and Silver also 120x280; Vernis Gold and Green in 60x120 and 120x120; Plissé White Beton 60x120, 8 mm):
+  - **Each face listed twice.** Every page but the 60x60 ones lists each face twice, once tagged sRGB and once with no colour profile, 0.6 to 2.8 levels darker (the same picture, image matching r 0.98 to 1.00). Each face is used once, from its sRGB copy, as on the 60x60 pages, whose pictures are all tagged sRGB and listed once (`SAME_FACE` in the build script; the manifests list the copies left out). 160 copies are left out, so 256 faces.
+  - **Sizes:** 60x60, 60x120 and 120x120 match each other at their labelled scale (crop test, r 0.99 to 1.00; 0.10 at most at the other scales), and so do Vernis's two sizes. The 80x80 pictures match best at the labelled scale (r 0.47 to 0.52, against 0.09 at most, and 0.06 drawn as 1200 mm), so they aren't the 120x120 graphic squeezed. The 120x280 slabs (1775 x 4096 px, 1.1% wider than 1200 x 2800 mm, so not cut) match the other sizes at about the tile's size (r 0.87 to 0.96 drawn 0.975 to 1 times the tile; 0.70 at most at 0.95 or 1.025 times).
+  - **Vernis:** ABK's colour words look swapped: Vernis Gold's page describes its pictures as "Green" and Vernis Green's as "Beige", but Gold's pictures are beige-gold and Green's grey-green. The entries go by the pictures: Gold is filed beige and Green `mixed` (as the catalogue files green). Each entry's notes say so.
+- **Block** (Argilla, Burro, Creta and Tabacco in 120x280, 120x120, 60x120 and 60x60, Nat 3D and, at 120x120 and 60x60, R11; four Righe decors in 60x120):
+  - **R11 and Nat 3D, sharing faces.** ABK's R11 120x120 pages list the Nat 3D pages' pictures, byte for byte and in the same order, so both finishes draw the Nat 3D faces (J, 12 Oct 2026: "Both, sharing faces"). On the Surfaces card they are size options ("120x120 Nat 3D", "120x120 R11"). Nat 3D is ABK's textured finish; the app draws the pictures flat.
+  - **Sizes:** Argilla's 60x120 pictures, the only smaller Block size with pictures, are found in its 120x120 pictures at the labelled scale (crop test, r 1.00; 0.12 at most at other scales). The 120x280 slabs (1769 x 4096 px, 0.8% wider, not cut) match the 120x120 pictures best at the tile's size (r 0.89 to 0.92; 0.70 to 0.74 at 0.975 times, 0.40 to 0.52 at 1.025 times).
+  - **Stand-ins** (J, 12 Oct 2026: "Cut from 120x120"): eleven items have no picture on ABK's download area: the 60x60 Nat 3D and R11 of every colour, and the 60x120 of Burro, Creta and Tabacco. They draw the colour's 120x120 Nat 3D faces, and the renderer cuts true-scale windows from them. Their entries carry the qa flag `stand_in_faces` and say so in their notes.
+  - **Tabacco 120x280 is left out** (J, 12 Oct 2026): ABK's page shows no pictures, and the colour's 120x120 faces can't cover a 1200 x 2800 mm slab.
+  - **Righe** (Argilla, Burro, Creta, Tabacco): one picture each (2560 x 1282 px), the whole tile with its flutes across the short side, shown with the long side horizontal as the tile is laid. Drawn flat, the flutes show only as their shading.
+
+## Sizes with no picture of their own
+
+A record of the catalogue's sizes with no picture of their own on ABK's download area (no picture, or another size's), kept up to date with each import (J, 12 Oct 2026). The qa flag `stand_in_faces` marks Block's stand-ins and `configurator_preview_asset` the previews; the earlier stand-ins are named in their notes.
+
+| Kind | What the app shows | Entries |
+| --- | --- | --- |
+| **Stand-in** (`stand_in_faces` from Block on) | Another item's faces of the same colour, cut to the tile at true scale. Each entry's notes name the item. | Block: the 60x60 Nat 3D and R11 of all four colours, and Burro, Creta and Tabacco 60x120 (11 items, 22 entries). Earlier, without the flag: La Marmoteca's Soft 120x120 and 60x120 of Antique Brown, Frozen, Golden Carbon, Pure Onyx and Sahara White, Grey Wonder 120x120 Soft 3D, and the 40x120 of Calacatta Elegance and Statuario Premium (13 items, 26 entries); Pietra Viva Aude Beige 120x120 Antique 3D, Aude Beige and Grey 80x80 R11, Aude Grey 60x120 Nat P.tech (4 items, 6 entries); La Geoteca Brennero and Serena 60x120 Nat P.tech (2 items, 4 entries). |
+| **Configurator preview** (`configurator_preview_asset`) | The July import's preview, one picture repeated. | Make's T36 mosaics, Tabulae's chevrons, La Geoteca Negresco 120x280 and 80x80, I Pigmenti's Mos Confet mosaics, La Marmoteca's book-matched A+B pairs (26 items, 52 entries). |
+| **Left out** | Not in the catalogue. | Just Nature Beige Scuro 30x120 (ABK shows Beige Medio's pictures for it); Block Tabacco 120x280 (no picture, and too large for the 120x120 faces). |

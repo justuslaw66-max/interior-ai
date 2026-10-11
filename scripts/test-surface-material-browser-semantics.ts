@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 1146, "the browser must join all 1146 render and catalog identities");
+assert.equal(records.length, 1246, "the browser must join all 1246 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -111,10 +111,10 @@ const allOptions = buildSurfaceFilterOptions(records, undefined);
 assert.deepEqual(allOptions.brand, ["Florim", "Gardenia & Ariana", "Goodrich Global"]);
 assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
 const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");
-assert.equal(gardeniaOptions.collection.length, 19, "Gardenia & Ariana's 19 collections");
+assert.equal(gardeniaOptions.collection.length, 21, "Gardenia & Ariana's 21 collections");
 assert.ok(gardeniaOptions.collection.includes("Dorica") && !gardeniaOptions.collection.includes("Ardoise"));
 assert.ok(
-  ["Hermione", "Concrea Plain", "Just Nature", "Luce", "Storm", "Epoque 2.0"].every((name) =>
+  ["Hermione", "Concrea Plain", "Just Nature", "Luce", "Storm", "Epoque 2.0", "Camouflage", "Block"].every((name) =>
     gardeniaOptions.collection.includes(name)
   )
 );
