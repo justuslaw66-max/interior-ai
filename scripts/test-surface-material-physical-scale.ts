@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import {
   SURFACE_PHYSICAL_SIZE_TOLERANCE,
@@ -195,16 +196,18 @@ const isHermione = isGardeniaCollection("hermione");
 const isConcreaPlain = isGardeniaCollection("concrea-plain");
 const isJustNature = isGardeniaCollection("just-nature");
 const isLuce = isGardeniaCollection("luce");
+const isStorm = isGardeniaCollection("storm");
+const isEpoque = isGardeniaCollection("epoque-20");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce,
+  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature and Luce declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm and Epoque 2.0 declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -392,7 +395,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -1029,10 +1032,14 @@ assert.deepEqual(collectionFaceRows(isConcreaPlain), [
 // What the entries take from ABK's pages: thickness per format (6 mm slabs, 8.5 mm otherwise), no configurator
 // pattern ids, the layouts J chose (planks for the wood collections), and no blocker but the price.
 const isFromAbkPages = (entry: { surface_material: { material_id: string } }) =>
-  [isHermione, isConcreaPlain, isJustNature, isLuce].some((filter) => filter(entry));
+  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque].some((filter) => filter(entry));
 const isWoodPlank = (entry: { surface_material: { material_id: string } }) => isHermione(entry) || isJustNature(entry);
 const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter(isFromAbkPages);
-assert.equal(abkSiteEntries.length, 78, "Hermione 3, Concrea Plain 11, Just Nature 11 and Luce 14 items, each for floor and wall");
+assert.equal(
+  abkSiteEntries.length,
+  152,
+  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16 and Epoque 2.0 21 items, each for floor and wall"
+);
 for (const entry of abkSiteEntries) {
   const id = entry.surface_material.material_id;
   assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
@@ -1053,8 +1060,8 @@ assert.equal(
   "the import guard finds every Gardenia entry on faces"
 );
 assert.deepEqual(
-  ["hermione", "concrea-plain", "just-nature", "luce"].map((collection) => lostToImport.get(collection)),
-  [6, 22, 22, 28]
+  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20"].map((collection) => lostToImport.get(collection)),
+  [6, 22, 22, 28, 32, 42]
 );
 
 // Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
@@ -1137,6 +1144,94 @@ assert.deepEqual(
   ]
 );
 
+// Gardenia Storm and Epoque 2.0 (downloaded 11 Oct 2026), from ABK's pages like the four above, each colour's family
+// from ABK's colour words. Storm's four sizes are true to their labels (80x80 is its own graphic, at the same grain).
+// Epoque 2.0's Lappato pages list the Natural pages' pictures, so both finishes of a colour and size draw the Natural
+// faces (J, 11 Oct 2026: both, sharing faces); Grey 60x60 comes only in Lappato. Its six Antique 3D colours come in 60x120
+// (J, 11 Oct 2026: include all six). Abstract's 60x60 pictures are its 60x120 pictures cut in two; pictures 3 and 4 are cut
+// 80 mm off-centre, so faces 03 and 04 are 60x120 picture 3 cut at its middle (J, 11 Oct 2026: recut 3 and 4).
+for (const [filter, label, count] of [[isStorm, "Storm", 32], [isEpoque, "Epoque 2.0", 42]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+const stormSizes = ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
+const epoqueBoth = ["60x120 Lappato", "60x120 Nat", "60x60 Lappato", "60x60 Nat"];
+const antique = ["60x120 Antique 3D"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isStorm, category),
+    ["Grey", "Mud", "Sand", "White"].map((name) => [`Storm ${name}`, stormSizes])
+  );
+  assert.deepEqual(
+    collectionCards(isEpoque, category),
+    (
+      [
+        ["Abstract", ["60x120 Nat", "60x60 Nat"]], ["Arabescato", antique], ["Black", epoqueBoth],
+        ["Calacatta Bamboo", antique], ["Grey", epoqueBoth.slice(0, 3)], ["Grigio Etrusco", antique], ["Ivory", epoqueBoth],
+        ["Lilac White", antique], ["Tesserae", antique], ["Veria Green", antique], ["White", epoqueBoth.slice(0, 2)],
+      ] as const
+    ).map(([name, sizes]) => [`Epoque 2.0 ${name}`, [...sizes]])
+  );
+}
+const stormRows = (colour: string, [big, long, medium, small]: readonly [string, string, string, string]) => [
+  [colour, "1200x1200", 9, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x600", 18, "600x1200", `${long}_01.webp`],
+  [colour, "600x600", 12, "600x600", `${small}_01.webp`],
+  [colour, "800x800", 9, "800x800", `${medium}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isStorm), [
+  ...stormRows("grey", ["0003805", "0003977", "0003997", "0004005"]),
+  ...stormRows("mud", ["0003807", "0003979", "0003999", "0004007"]),
+  ...stormRows("sand", ["0003806", "0003978", "0003998", "0004006"]),
+  ...stormRows("white", ["0003821", "0003980", "0004000", "0004008"]),
+]);
+// One row per finish of a colour and size; a Lappato row draws the Natural item's faces.
+const epoqueRow = (colour: string, tile: "60x120" | "60x60", faces: number, code: string) =>
+  tile === "60x120"
+    ? [colour, "1200x600", faces, "600x1200", `${code}_01.webp`]
+    : [colour, "600x600", faces, "600x600", `${code}_01.webp`];
+assert.deepEqual(collectionFaceRows(isEpoque), [
+  epoqueRow("abstract", "60x120", 4, "0005104"), epoqueRow("abstract", "60x60", 8, "0005105"),
+  epoqueRow("arabescato", "60x120", 18, "0009341"),
+  epoqueRow("black", "60x120", 8, "0004295"), epoqueRow("black", "60x120", 8, "0004295"),
+  epoqueRow("black", "60x60", 12, "0004307"), epoqueRow("black", "60x60", 12, "0004307"),
+  epoqueRow("calacatta-bamboo", "60x120", 16, "0009344"),
+  epoqueRow("grey", "60x120", 8, "0004297"), epoqueRow("grey", "60x120", 8, "0004297"), epoqueRow("grey", "60x60", 12, "0004313"),
+  epoqueRow("grigio-etrusco", "60x120", 20, "0009342"),
+  epoqueRow("ivory", "60x120", 7, "0004294"), epoqueRow("ivory", "60x120", 7, "0004294"),
+  epoqueRow("ivory", "60x60", 12, "0004306"), epoqueRow("ivory", "60x60", 12, "0004306"),
+  epoqueRow("lilac-white", "60x120", 18, "0009343"), epoqueRow("tesserae", "60x120", 4, "0009385"),
+  epoqueRow("veria-green", "60x120", 18, "0009345"),
+  epoqueRow("white", "60x120", 8, "0004296"), epoqueRow("white", "60x120", 8, "0004296"),
+]);
+// Abstract 60x60's faces 03 and 04 come from 60x120 picture 3, cut at its middle (its manifest says so).
+const abstractManifest = JSON.parse(
+  readFileSync(
+    path.join(process.cwd(), "catalog/surface-materials/flooring/gardenia/epoque-20/gardenia-epoque-20-abstract-faces.manifest.json"),
+    "utf8"
+  )
+) as { formats: { item_code: string; faces: { face: number; source_sha256: string; recut?: string }[] }[] };
+const abstractFaces = (code: string) => abstractManifest.formats.find((format) => format.item_code === code)?.faces ?? [];
+assert.deepEqual(
+  abstractFaces("0005105").filter((face) => face.recut).map((face) => [face.face, face.source_sha256]),
+  [[3, abstractFaces("0005104")[2]?.source_sha256], [4, abstractFaces("0005104")[2]?.source_sha256]],
+  "Abstract 60x60 faces 03 and 04 are 60x120 picture 3's halves"
+);
+// Colour and look as ABK describes them: Storm stone, Epoque 2.0 marble; Mud black; Abstract, Tesserae and Veria Green mixed.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter((material) => isStorm(material) || isEpoque(material)).map((material) =>
+    `${/-(storm|epoque-20)-([a-z-]+?)-\d/.exec(material.surface_material.material_id)?.slice(1).join(" ")}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "epoque-20 abstract: marble mixed", "epoque-20 arabescato: marble white", "epoque-20 black: marble black",
+    "epoque-20 calacatta-bamboo: marble white", "epoque-20 grey: marble grey", "epoque-20 grigio-etrusco: marble grey",
+    "epoque-20 ivory: marble beige", "epoque-20 lilac-white: marble white", "epoque-20 tesserae: marble mixed",
+    "epoque-20 veria-green: marble mixed", "epoque-20 white: marble white",
+    "storm grey: stone grey", "storm mud: stone black", "storm sand: stone beige", "storm white: stone white",
+  ]
+);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -1176,6 +1271,9 @@ const sharedFaces = new Map([
   ["0021692", "0021733"], ["0021699", "0021738"], ["0021694", "0021735"], ["0021701", "0021740"],
   ["0021696", "0021737"], ["0021703", "0021742"], ["0021695", "0021736"], ["0021702", "0021741"],
   ["0021693", "0021734"], ["0021700", "0021739"],
+  // Epoque 2.0: Lappato items on the Natural item's faces.
+  ["0004299", "0004295"], ["0004311", "0004307"], ["0004301", "0004297"], ["0004298", "0004294"],
+  ["0004310", "0004306"], ["0004300", "0004296"],
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
@@ -1202,7 +1300,7 @@ const collectionById = new Map(
     .filter((material) =>
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce,
+        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])

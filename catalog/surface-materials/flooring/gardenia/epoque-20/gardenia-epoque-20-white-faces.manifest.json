@@ -1,0 +1,220 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: EPOQUE 2.0 - WHITE - minimali.zip (7546322 bytes, sha256 5999e9e8ed094236685f8775ae8657b2be937315a15315ca8ccc9a8172ba84b2).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/epoque-20/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0004296",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/epoque-20/white/pf60004296-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0004296_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-epoque-20-white-0004296-60x120-nat; floor gardenia-flooring-epoque-20-white-0004300-60x120-lappato (uses 0004296's faces: ABK's 8 Lappato pictures are 0004296's 8 Natural pictures, byte for byte); wall gardenia-wall-tile-epoque-20-white-0004296-60x120-nat; wall gardenia-wall-tile-epoque-20-white-0004300-60x120-lappato (uses 0004296's faces: ABK's 8 Lappato pictures are 0004296's 8 Natural pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0004296_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31382,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "2cc6a8c23d18de7042f7010e1f3274c304b98a8bef6629c1d49c47b991309cc3",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "EPOQUE WHITE 60X120_01",
+      "id": "ee9953f0-696f-4385-b1a6-8c3a1895f0d9",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004296_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24562,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "169d971421e3e2fb12be8969ba75ded520de41bfa18ad1fa184b934ecb09cc64",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2 (view_02)",
+      "name": "EPOQUE WHITE 60X120_02",
+      "id": "4c438db4-ad1c-42ad-b4ad-b538673a4c17",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004296_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27458,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "97b162006e3e06317ab12603fc78ac6ab2922edcfb934c241142420decb84e7a",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3 (view_03)",
+      "name": "EPOQUE WHITE 60X120_03",
+      "id": "16633fcc-00bb-48e0-9784-a4c1f5e52c6f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004296_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29110,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "ed4fc3ab12d031eef6ef321961ee0877fff500fca47dc3b391d526cb2681d8e0",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4 (view_04)",
+      "name": "EPOQUE WHITE 60X120_04",
+      "id": "2dcce15b-21e9-42cf-9240-5a7aea273912",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004296_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28588,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "78497f09b14bfc2ed7c12279b9a7d9df32a55ad4449209f9221c3b5f51c16b98",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5 (view_05)",
+      "name": "EPOQUE WHITE 60X120_05",
+      "id": "3c169ba8-72cd-481e-86d9-93dccd231558",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004296_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24510,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "f84139dbd73b8bd457786be473b1862df59dfb2aa4f546d05c72ddd1ab168b04",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6 (view_06)",
+      "name": "EPOQUE WHITE 60X120_06",
+      "id": "fb249607-efa9-4642-ae5f-02ea4aac8a0a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004296_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20330,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "33365f658d454348c757feb613cf030522c71b0cc92fdbe2c870c1bb4ab98f05",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7 (view_07)",
+      "name": "EPOQUE WHITE 60X120_07",
+      "id": "2b5e53f9-e17d-4361-9122-8e4167dc8cbc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004296_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27442,
+     "source_zip": "EPOQUE 2.0 - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/EPOQUE 2.0 - WHITE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2294,
+      1146
+     ],
+     "source_sha256": "6496b079bd598c04edc8e0274cc0aa8ef4fa0bde589f2ddc46b1e00f5081cac3",
+     "source_px_per_mm": 1.912,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8 (view_08)",
+      "name": "EPOQUE WHITE 60X120_08",
+      "id": "6cf6c624-69b3-44a0-bb99-f9bc046c3bbc",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

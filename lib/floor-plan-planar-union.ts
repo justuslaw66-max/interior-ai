@@ -18,7 +18,9 @@ type PlanarEdge = {
 const COORDINATE_SCALE = 1000;
 const INTERSECTION_EPSILON = 1e-8;
 const MINIMUM_SEGMENT_MM = 0.001;
-const BOUNDARY_SAMPLE_MM = 0.05;
+const BOUNDARY_SAMPLE_MM = 0.00001;
+const SLIVER_WIDTH_MM = 0.05;
+const NEIGHBOUR_STEPS_MM = [0, -1, 1].map((step) => step / COORDINATE_SCALE);
 
 function roundedCoordinate(value: number) {
   return Math.round(value * COORDINATE_SCALE) / COORDINATE_SCALE;
@@ -54,11 +56,28 @@ function subtract(
   return { xMm: first.xMm - second.xMm, zMm: first.zMm - second.zMm };
 }
 
-function interpolate(edge: PlanarEdge, ratio: number): FloorPlanPointMmV2 {
-  return roundedPoint({
-    xMm: edge.start.xMm + (edge.end.xMm - edge.start.xMm) * ratio,
-    zMm: edge.start.zMm + (edge.end.zMm - edge.start.zMm) * ratio,
-  });
+function exactPointAt({ start, end }: PlanarEdge, ratio: number): FloorPlanPointMmV2 {
+  return { xMm: start.xMm + (end.xMm - start.xMm) * ratio, zMm: start.zMm + (end.zMm - start.zMm) * ratio };
+}
+
+/** One vertex per place: a point computed twice, or rounded into a neighbouring thousandth, is the vertex there. */
+function canonicalPoint(vertices: Map<string, FloorPlanPointMmV2>, point: FloorPlanPointMmV2) {
+  const rounded = roundedPoint(point);
+  for (const dx of NEIGHBOUR_STEPS_MM) {
+    for (const dz of NEIGHBOUR_STEPS_MM) {
+      const found = vertices.get(pointKey({ xMm: rounded.xMm + dx, zMm: rounded.zMm + dz }));
+      if (found) return found;
+    }
+  }
+  vertices.set(pointKey(rounded), rounded);
+  return rounded;
+}
+
+/** A loop thinner than SLIVER_WIDTH_MM on average (twice its area over its perimeter): a seam, not a wall or a gap. */
+function isSliverRing(ring: FloorPlanPointMmV2[]) {
+  const lengths = ringEdges(ring).map(({ start, end }) => Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm));
+  const perimeter = lengths.reduce((sum, length) => sum + length, 0);
+  return (2 * Math.abs(signedPlanarRingAreaSquareMm(ring))) / perimeter < SLIVER_WIDTH_MM;
 }
 
 function sanitizeRing(points: FloorPlanPointMmV2[]) {
@@ -269,7 +288,7 @@ function buildBoundaryLoops(segments: PlanarEdge[]) {
     }
     if (currentKey === firstStartKey) {
       const loop = simplifyRing(points.slice(0, -1));
-      if (loop.length >= 3 && Math.abs(signedPlanarRingAreaSquareMm(loop)) > 0.001) {
+      if (loop.length >= 3 && Math.abs(signedPlanarRingAreaSquareMm(loop)) > 0.001 && !isSliverRing(loop)) {
         loops.push(loop);
       }
     }
@@ -281,6 +300,36 @@ function polygonSortKey(polygon: PlanarUnionPolygonMm) {
   return polygon.outer
     .map(pointKey)
     .sort((left, right) => left.localeCompare(right))[0];
+}
+
+/** Each edge's pieces between crossings with occupied space on exactly one side, turned to keep it on their left. */
+// Sides are sampled just off the exact edge: a piece rounded to the thousandth can sit beyond a face running along it.
+function boundarySegmentsOf(edges: PlanarEdge[], splits: number[][], occupied: (point: FloorPlanPointMmV2) => boolean) {
+  const vertices = new Map<string, FloorPlanPointMmV2>();
+  const boundarySegments = new Map<string, PlanarEdge>();
+  edges.forEach((edge, edgeIndex) => {
+    const parameters = [...splits[edgeIndex]]
+      .sort((left, right) => left - right)
+      .filter((value, index, values) => index === 0 || Math.abs(value - values[index - 1]) > INTERSECTION_EPSILON);
+    for (let index = 0; index < parameters.length - 1; index += 1) {
+      const exactStart = exactPointAt(edge, parameters[index]);
+      const exactEnd = exactPointAt(edge, parameters[index + 1]);
+      const start = canonicalPoint(vertices, exactStart);
+      const end = canonicalPoint(vertices, exactEnd);
+      const dx = exactEnd.xMm - exactStart.xMm;
+      const dz = exactEnd.zMm - exactStart.zMm;
+      const length = Math.hypot(dx, dz);
+      if (start === end || length <= 0) continue;
+      const sample = Math.min(BOUNDARY_SAMPLE_MM, length / 10);
+      const midpoint = { xMm: (exactStart.xMm + exactEnd.xMm) / 2, zMm: (exactStart.zMm + exactEnd.zMm) / 2 };
+      const normal = { xMm: (-dz / length) * sample, zMm: (dx / length) * sample };
+      const leftOccupied = occupied({ xMm: midpoint.xMm + normal.xMm, zMm: midpoint.zMm + normal.zMm });
+      if (leftOccupied === occupied({ xMm: midpoint.xMm - normal.xMm, zMm: midpoint.zMm - normal.zMm })) continue;
+      const segment = leftOccupied ? { start, end } : { start: end, end: start };
+      boundarySegments.set(`${pointKey(segment.start)}>${pointKey(segment.end)}`, segment);
+    }
+  });
+  return [...boundarySegments.values()];
 }
 
 /**
@@ -329,52 +378,8 @@ export function buildPlanarUnionPolygons(
   const occupied = (point: FloorPlanPointMmV2) =>
     regions.some((region) => isPointInRegion(point, region)) &&
     !exclusions.some((ring) => isPointInPlanarRing(point, ring));
-  const boundarySegments = new Map<string, PlanarEdge>();
-  for (let edgeIndex = 0; edgeIndex < edges.length; edgeIndex += 1) {
-    const edge = edges[edgeIndex];
-    const parameters = [...splitParameters[edgeIndex]]
-      .sort((left, right) => left - right)
-      .filter(
-        (value, index, values) =>
-          index === 0 || Math.abs(value - values[index - 1]) > INTERSECTION_EPSILON
-      );
-    for (let index = 0; index < parameters.length - 1; index += 1) {
-      const start = interpolate(edge, parameters[index]);
-      const end = interpolate(edge, parameters[index + 1]);
-      const dx = end.xMm - start.xMm;
-      const dz = end.zMm - start.zMm;
-      const length = Math.hypot(dx, dz);
-      if (length < MINIMUM_SEGMENT_MM) continue;
-      const midpoint = {
-        xMm: (start.xMm + end.xMm) / 2,
-        zMm: (start.zMm + end.zMm) / 2,
-      };
-      const sampleDistance = Math.min(
-        BOUNDARY_SAMPLE_MM,
-        Math.max(MINIMUM_SEGMENT_MM * 2, length / 10)
-      );
-      const normal = {
-        xMm: (-dz / length) * sampleDistance,
-        zMm: (dx / length) * sampleDistance,
-      };
-      const leftOccupied = occupied({
-        xMm: midpoint.xMm + normal.xMm,
-        zMm: midpoint.zMm + normal.zMm,
-      });
-      const rightOccupied = occupied({
-        xMm: midpoint.xMm - normal.xMm,
-        zMm: midpoint.zMm - normal.zMm,
-      });
-      if (leftOccupied === rightOccupied) continue;
-      const segment = leftOccupied ? { start, end } : { start: end, end: start };
-      boundarySegments.set(
-        `${pointKey(segment.start)}>${pointKey(segment.end)}`,
-        segment
-      );
-    }
-  }
-
-  const loops = buildBoundaryLoops([...boundarySegments.values()]);
+  const boundarySegments = boundarySegmentsOf(edges, splitParameters, occupied);
+  const loops = buildBoundaryLoops(boundarySegments);
   const outers = loops
     .filter((loop) => signedPlanarRingAreaSquareMm(loop) > 0)
     .map((outer) => ({ outer, holes: [] as FloorPlanPointMmV2[][] }));
