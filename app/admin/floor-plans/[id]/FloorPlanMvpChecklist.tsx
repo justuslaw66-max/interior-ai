@@ -14,7 +14,7 @@ function addressBindingReady(binding: BindingDraft) {
 function StatusBadge({ ready, optional = false }: { ready: boolean; optional?: boolean }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
         ready
           ? "bg-emerald-100 text-emerald-800"
           : optional

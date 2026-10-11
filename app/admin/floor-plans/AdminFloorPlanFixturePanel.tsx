@@ -42,7 +42,7 @@ export default function AdminFloorPlanFixturePanel() {
                   {catalog.source.license_status.replaceAll("_", " ")}
                 </div>
               </div>
-              <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900">
                 {catalog.publication.visibility.replaceAll("_", " ")}
               </span>
             </div>
@@ -81,7 +81,7 @@ export default function AdminFloorPlanFixturePanel() {
                       {layout.label} · source p. {layout.source_page}
                     </a>
                     {counts ? (
-                      <div className="mt-1 text-[11px] leading-5 text-neutral-600">
+                      <div className="mt-1 text-xs leading-5 text-neutral-600">
                         {counts.rooms} rooms · {counts.walls} walls · {counts.openings} openings ·{" "}
                         {counts.structures} structures
                         <br />
@@ -91,7 +91,7 @@ export default function AdminFloorPlanFixturePanel() {
                     ) : null}
                     {stackBindings.map((binding) => (
                       <div
-                        className="mt-1 rounded border border-amber-200 bg-white px-2 py-1 text-[10px] leading-4 text-amber-950"
+                        className="mt-1 rounded border border-amber-200 bg-white px-2 py-1 text-xs leading-4 text-amber-950"
                         data-testid={`review-stack-binding-${layout.layout_id}-${binding.block}`}
                         key={`${binding.layout_id}-${binding.block}`}
                       >

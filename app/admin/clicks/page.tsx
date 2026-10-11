@@ -236,7 +236,7 @@ export default async function AdminClicksPage() {
                       <div className="text-xs text-neutral-500">
                         {product?.category ?? "unknown"} • {product?.commerce.type === 'affiliate' ? product.commerce.data.retailer : product?.commerce.type === 'shopify' ? 'Shopify' : "—"}
                       </div>
-                      <div className="text-[11px] font-mono text-neutral-400">
+                      <div className="text-xs font-mono text-neutral-400">
                         {row.productId}
                       </div>
                     </div>
@@ -282,7 +282,7 @@ export default async function AdminClicksPage() {
                     <div className="text-xs text-neutral-500">
                       Style: {design?.style ?? "Unknown"} • Budget: {design?.budget ?? "—"}
                     </div>
-                    <div className="text-[11px] font-mono text-neutral-400">
+                    <div className="text-xs font-mono text-neutral-400">
                       {row.designId}
                     </div>
                   </div>

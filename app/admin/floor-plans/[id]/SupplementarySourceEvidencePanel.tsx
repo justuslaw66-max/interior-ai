@@ -272,14 +272,14 @@ export default function SupplementarySourceEvidencePanel({
                 <div className="mt-1 text-xs text-neutral-500">
                   {source.sourceAsset.mimeType} · {formatBytes(source.sourceAsset.byteLength)} · {pages.length} page{pages.length === 1 ? "" : "s"}
                 </div>
-                <div className="mt-1 break-all font-mono text-[10px] text-neutral-500">
+                <div className="mt-1 break-all font-mono text-xs text-neutral-500">
                   Source ID {source.sourceAsset.id} · SHA-256 {source.sourceAsset.sha256}
                 </div>
                 {pages.length > 1 ? (
                   <div className="mt-2 flex max-h-24 flex-wrap gap-1 overflow-auto">
                     {pages.map((page) => (
                       <button
-                        className={`rounded border px-1.5 py-1 text-[10px] ${
+                        className={`rounded border px-1.5 py-1 text-xs ${
                           preview?.pageNumber === page.pageNumber
                             ? "border-blue-600 bg-blue-50 text-blue-700"
                             : ""

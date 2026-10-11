@@ -117,7 +117,7 @@ export function FloorPlanApprovalPanel({
           <div className="rounded-lg border bg-neutral-50 px-3 py-2 text-xs">
             <AdminStatusBadge kind="floorPlanPublication" status={job.revision.publicationStatus} />
             <div>{job.revision.verificationTier.replaceAll("_", " ")}</div>
-            <div className="mt-1 font-mono text-[10px]">{job.revision.id}</div>
+            <div className="mt-1 font-mono text-xs">{job.revision.id}</div>
           </div>
         ) : null}
       </div>
