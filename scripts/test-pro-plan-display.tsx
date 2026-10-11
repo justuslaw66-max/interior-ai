@@ -118,7 +118,7 @@ assert.match(read("components/editor/design-page/DesignPageWorkspace.tsx"), /<De
 assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+furnishFooter,\s+\};/);
 const controlsPanel = read("components/editor/DesignControlsPanel.tsx");
 assert.match(controlsPanel, /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
-assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
+assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
 assert.match(read("components/editor/DesignControlsFurnishPanel.tsx"), /<FurnishImportedModels[\s\S]*?\/>\n\s+\{props\.footer\}\n\s+<FurnishFooter/, "Above Furnish's own foot.");
 
 // Layout versions: save, compare, restore and delete, as their own section.

@@ -516,6 +516,7 @@ export default function CatalogPanel({
   };
 
   const addRememberedItem = (id: string, variantId?: string) => {
+    if (!canEdit) return; // Products can be browsed while the lists load; adding waits for them.
     rememberRecent(id);
     const product = itemById.get(id);
     trackProductEvent("product_placed", {
@@ -570,7 +571,7 @@ export default function CatalogPanel({
       />
 
       <div
-        ref={catalogGridRef} tabIndex={-1} data-testid="catalog-results-focus-target" data-catalog-drawer-focus-fallback
+        ref={catalogGridRef} tabIndex={-1} data-testid="catalog-results-focus-target" data-catalog-drawer-focus-fallback aria-busy={!canEdit}
         className="mt-2 overflow-y-auto"
         style={{ maxHeight: GRID_HEIGHT }}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
@@ -588,7 +589,7 @@ export default function CatalogPanel({
           onPreviewIntent={(id) =>
             onPreviewPlacementIntent?.(id, id ? variantSelectionByItem[id] : undefined)
           }
-          onCatalogDragStart={(id) => onCatalogDragStart?.(id, variantSelectionByItem[id])}
+          onCatalogDragStart={(id) => { if (canEdit) onCatalogDragStart?.(id, variantSelectionByItem[id]); }}
           onCatalogDragEnd={onCatalogDragEnd}
         />
         {!cardViews.length ? (
@@ -637,7 +638,7 @@ export default function CatalogPanel({
         }
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
-        placesDirectly={directAdd} onChooseSpot={onAutoPlaceInRoom} favourite={selectedDetail ? { title: selectedDetail.title, isFavorite: favoriteIds.includes(selectedDetail.id), onToggle: () => toggleFavorite(selectedDetail.id) } : undefined}
+        placesDirectly={directAdd} addDisabled={!canEdit} onChooseSpot={onAutoPlaceInRoom} favourite={selectedDetail ? { title: selectedDetail.title, isFavorite: favoriteIds.includes(selectedDetail.id), onToggle: () => toggleFavorite(selectedDetail.id) } : undefined}
         focusRestoration={focusRestoration}
         onClose={closeCatalogDrawer}
         configurationOptions={selectedConfigurationOptions}
@@ -715,9 +716,7 @@ export default function CatalogPanel({
         }}
       />
 
-      {!canEdit && (
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-white/50" aria-hidden />
-      )}
+      {!canEdit ? <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/50" aria-hidden><span data-testid="catalog-products-loading" className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-neutral-700 shadow-sm">Loading products…</span></div> : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
+import { ShoppingListRow } from "../components/editor/shop/ShoppingListRow";
 import { ShoppingSwapAll } from "../components/editor/shop/ShoppingSwapAll";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { DesignItem } from "../lib/room-types";
@@ -199,7 +200,20 @@ assert.doesNotMatch(free, /disabled=""/, "Free can press them: they open Pricing
 const read = (path: string) => readFileSync(path, "utf8");
 const shopStep = read("components/editor/shop/ShopStep.tsx");
 assert.match(shopStep, /if \(!plans\) return swapAll\.openPricing\(swapAllButtonId\(direction\)\);/);
-assert.match(shopStep, /return swapAll && canEdit \? \{ counts, disabled: false, onSwapAll \} : null;/, "No Swap all where the host doesn't supply it.");
+assert.match(shopStep, /return swapAll && canSwap \? \{ counts, disabled: false, onSwapAll \} : null;/, "No Swap all where the host doesn't supply it.");
+
+// Swaps pick other products, so they wait for the product lists; Remove doesn't (J, 10 Oct 2026).
+const swappable = shoppingListLines(list).find((line) => line.cheaperSwap);
+if (!swappable) throw new Error("The fixture has a line with a cheaper swap.");
+const rowMarkup = (canSwap?: boolean) =>
+  renderToStaticMarkup(<ShoppingListRow line={swappable} canEdit canSwap={canSwap} onRemove={noop} onSwapForCheaper={noop} />);
+assert.match(rowMarkup(), /data-testid="shopping-list-swap"/, "Without canSwap, a row follows canEdit.");
+assert.doesNotMatch(rowMarkup(false), /data-testid="shopping-list-swap"/, "No swap until the product lists load.");
+assert.doesNotMatch(rowMarkup(false), /data-testid="shopping-list-remove"[^>]*disabled=""/, "Remove works meanwhile.");
+assert.match(shopStep, /const edits = useShoppingListEdits\(\{ canEdit, canSwap, actions \}\);/);
+assert.match(shopStep, /if \(!canSwap \|\| !product\) return;/);
+assert.match(shopStep, /if \(!canSwap \|\| changes\.length === 0\) return;/);
+assert.match(read("lib/design-page-panel-registration.ts"), /canEdit: configuration\.canEdit, canSwap: configuration\.canChangeProducts,/);
 assert.match(shopStep, /swapAll\.commitItemsToRooms\(roomIds\.map\(\(roomId\) => \(\{ roomId, update: \(items\) => withSwapAllApplied\(items, roomId, changes\) \}\)\), step\);\s*announceUndoableAction\(\{ message: swapAllMessage\(changes\.length\), undoLabels: \[step\] \}\);/, "One step, one toast with Undo.");
 assert.match(read("lib/design-page-panel-registration.ts"), /swapAll: \{ canSwapAll: state\.document\.plan === "pro", commitItemsToRooms: actions\.shopping\.commitItemsToRooms, openPricing: actions\.shopping\.openPricing \}/);
 assert.match(read("lib/useCommitItemsToRooms.ts"), /history\.executeCommand<[^>]+>\(\{\s*id: "replace-rooms-items",/);

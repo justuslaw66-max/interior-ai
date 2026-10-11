@@ -103,6 +103,8 @@ export type SelectedItemPanelConfiguration = {
   isDesigner: boolean;
   isClientPreview: boolean;
   canEdit: boolean;
+  /** The product lists have loaded: a swap picks another product, so it waits for them. */
+  canChangeProducts: boolean;
 };
 
 export type SelectedItemPanelActions = {
@@ -134,7 +136,7 @@ export type SelectedItemPanelProps = {
  * second Delete are gone.
  */
 export function SelectedItemPanel({ state, configuration, actions }: SelectedItemPanelProps) {
-  const { dark, isDesigner, isClientPreview, canEdit } = configuration;
+  const { dark, isDesigner, isClientPreview, canEdit, canChangeProducts } = configuration;
   const { details, summary } = state;
   const title = details.selectedModelTitle || summary.title;
   const locked = Boolean(details.item?.locked);
@@ -180,7 +182,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
         <SelectedItemSwaps
           cheaper={summary.swaps.cheaper}
           pricier={summary.swaps.pricier}
-          disabled={editsDisabled}
+          disabled={editsDisabled || !canChangeProducts}
           onSwapToCheaper={actions.onSwapToCheaper}
           onSwapToPricier={actions.onSwapToPricier}
         />

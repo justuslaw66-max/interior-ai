@@ -20,6 +20,8 @@ type ImportedFamilyOption = {
 type DesignControlsFurnishPanelProps = {
   dark: boolean;
   canEdit: boolean;
+  /** The product lists have loaded: adding a product waits for it; choosing a room doesn't. */
+  canChangeProducts: boolean;
   /** Pro chooses Preview Add or Auto Add; consumers' Add places the product (FU4). */
   isDesigner?: boolean;
   /** Suggest a layout sits beside the search (ST12). */
@@ -94,7 +96,7 @@ function FurnishRoomRow({ rooms, activeRoomId, activeRoomName, canEdit, onSelect
 
 /** The products: search with Suggest a layout beside it (ST12), the chips, the cards. */
 function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
-  const { canEdit, isDesigner = false, activeRoomName, activeRoomTypeLabel, onAddCatalogItemToRoom } = props;
+  const { canChangeProducts, isDesigner = false, activeRoomName, activeRoomTypeLabel, onAddCatalogItemToRoom } = props;
   const recommendedCategories = useMemo(
     () => recommendedCatalogCategoriesForRoom(activeRoomTypeLabel),
     [activeRoomTypeLabel]
@@ -118,7 +120,7 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   return (
     <CatalogPanel
       items={props.catalogItems}
-      canEdit={canEdit}
+      canEdit={canChangeProducts}
       onAddToRoom={onAddCatalogItemToRoom} directAdd={!isDesigner}
       onAutoPlaceInRoom={props.onAutoPlaceCatalogItemInRoom}
       onPreviewPlacementIntent={props.onPreviewCatalogPlacementIntent}
@@ -163,7 +165,7 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
       />
       <FurnishImportedModels
         visible={isDesigner}
-        canEdit={canEdit}
+        canEdit={props.canChangeProducts}
         activeRoomName={activeRoomName}
         selectedFamilyKey={props.selectedImportedFamilyKey}
         selectedProductId={props.selectedImportedProductId}

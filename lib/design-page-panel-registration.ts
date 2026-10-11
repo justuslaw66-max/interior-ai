@@ -43,7 +43,7 @@ export function buildDesignPagePanelRegistration({
     state: {
       rooms: state.document.rooms, planOpenings: planDocument.state.planOpenings,
       style: state.editor.controls.style, designId: state.document.designId,
-      isGuest: !state.document.authenticated, canEdit: configuration.canEdit,
+      isGuest: !state.document.authenticated, canEdit: configuration.canEdit, canSwap: configuration.canChangeProducts,
       swapAll: { canSwapAll: state.document.plan === "pro", commitItemsToRooms: actions.shopping.commitItemsToRooms, openPricing: actions.shopping.openPricing },
     },
     actions: { commitItemsToRoom: actions.shopping.commitItemsToRoom, openGuestPrompt: actions.shopping.openGuestPrompt, goFurnish: actions.navigation.goFurnish },
@@ -125,7 +125,7 @@ export function buildDesignPagePanelRegistration({
         dark: configuration.designerTheme,
         isDesigner: configuration.isDesigner,
         isClientPreview: configuration.isClientPreview,
-        canEdit: configuration.canEdit,
+        canEdit: configuration.canEdit, canChangeProducts: configuration.canChangeProducts,
       },
       actions: {
         inspectionController:
@@ -163,7 +163,7 @@ export function buildDesignPagePanelRegistration({
       isAuthed: state.document.authenticated,
       floorPlanLifecycleIdentity: { authScopeKey: state.document.authScopeKey, currentDesignId: state.document.designId ?? null, subscriptionPlan: state.document.plan },
       isDesigner: configuration.isDesigner,
-      canEdit: configuration.canEdit,
+      canEdit: configuration.canEdit, canChangeProducts: configuration.canChangeProducts,
       canEditPlanGeometry: configuration.canEditPlanGeometry,
       aiDesignEnabled: configuration.aiDesignEnabled,
     },

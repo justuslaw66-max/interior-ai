@@ -12,6 +12,7 @@ import type { PendingAiLayoutProposal } from "@/lib/design-page-ai-layout-propos
 import type { DesignItem } from "@/lib/room-types";
 import { useDesignPageCoreShellBaseRegistration } from "@/lib/useDesignPageCoreShellBaseRegistration";
 import { useDesignPageEditorClientLifecycle } from "@/lib/useDesignPageEditorClientLifecycle";
+import { useClientHydrated } from "@/lib/useClientHydrated";
 import { useDesignPageLiveCatalog } from "@/lib/useDesignPageLiveCatalog";
 import type { UseDesignPageLocalBackupHydrationInput } from "@/lib/useDesignPageLocalBackupHydration";
 import { useDesignPageWorkspacePaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
@@ -48,6 +49,17 @@ function useClientPreviewBaseBoundary(
       },
     },
   };
+}
+
+/**
+ * Editing doesn't wait for the product lists (J, 10 Oct 2026); only what picks a product does:
+ * adding, furnished templates, swaps, variants and finishes. It does wait for the page to hydrate,
+ * so the server's HTML has its controls disabled and no click is lost before React handles it.
+ */
+function designPageEditAccess(isClientPreview: boolean, clientHydrated: boolean, liveCatalogReady: boolean) {
+  const canEdit = !isClientPreview && clientHydrated;
+  const canChangeProducts = canEdit && liveCatalogReady;
+  return { canEdit, canChangeProducts };
 }
 
 /**
@@ -231,7 +243,7 @@ export function useDesignPageCoreShellRegistration({
     refs: { designSnapshotRef },
   } = snapshotDocumentController;
   const liveCatalogReady = useDesignPageLiveCatalog();
-  const canEdit = !isClientPreview && liveCatalogReady;
+  const { canEdit, canChangeProducts } = designPageEditAccess(isClientPreview, useClientHydrated(), liveCatalogReady);
 
   return {
     boundaries: {
@@ -259,7 +271,7 @@ export function useDesignPageCoreShellRegistration({
         isClientPreview,
         showDesignerTheme,
         liveCatalogReady,
-        canEdit,
+        canEdit, canChangeProducts,
       },
       paywall: {
         primaryUpgradeCtaLabel,

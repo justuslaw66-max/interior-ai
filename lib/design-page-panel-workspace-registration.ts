@@ -127,7 +127,7 @@ export function buildDesignPagePanelWorkspaceRegistration({
       designerTheme: coreShell.derived.access.showDesignerTheme,
       isDesigner: coreShell.derived.access.isDesigner,
       isClientPreview: coreShell.derived.access.isClientPreview,
-      canEdit: coreShell.derived.access.canEdit,
+      canEdit: coreShell.derived.access.canEdit, canChangeProducts: coreShell.derived.access.canChangeProducts,
       canUseCabinetryStudio: cabinetry.state.canUseStudio,
       canEditPlanGeometry: placement.derived.canEditPlanGeometry,
       aiDesignEnabled: viewportShell.derived.aiDesignEnabled,

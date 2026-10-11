@@ -51,20 +51,21 @@ assert.match(
 const furnishPanel = read("components/editor/DesignControlsFurnishPanel.tsx");
 assert.match(furnishPanel, /<PlacementAddModeToggle visible=\{isDesigner\} mode=\{placementAddMode\} onChange=\{onPlacementAddModeChange\} \/>/);
 assert.match(furnishPanel, /onAddToRoom=\{onAddCatalogItemToRoom\} directAdd=\{!isDesigner\}/);
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} isDesigner=\{isDesigner\}/);
-assert.match(read("components/catalog/CatalogPanel.tsx"), /placesDirectly=\{directAdd\} onChooseSpot=\{onAutoPlaceInRoom\}/);
+assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\}/);
+const catalogPanel = read("components/catalog/CatalogPanel.tsx");
+assert.match(catalogPanel, /placesDirectly=\{directAdd\} addDisabled=\{!canEdit\} onChooseSpot=\{onAutoPlaceInRoom\}/);
 assert.equal(renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: false, mode: "auto", onChange: noop })), "");
 const toggle = renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: true, mode: "preview", onChange: noop }));
 assert.match(toggle, /data-testid="placement-add-mode-preview" data-active="true"[^>]*>Preview Add</);
 assert.match(toggle, /data-testid="placement-add-mode-auto" data-active="false"[^>]*>Auto Add</);
 
 // The drawer: consumers add in one step, or choose where it goes; Pro previews first.
-const drawer = (placesDirectly: boolean, onChooseSpot?: () => void) =>
+const drawer = (placesDirectly: boolean, onChooseSpot?: () => void, addDisabled?: boolean) =>
   renderToStaticMarkup(createElement(CatalogItemDrawerAddSection, {
     productId: "winora", variantId: "sand", purchaseOptionId: undefined, addQuantity: 1,
     summary: { finishLabel: "Sand", optionLabel: "Single", dimsLabel: "70.5 x 85 cm", roomLabel: "Living Room", price: "$549", compareAt: null },
     retailerUrl: "https://www.castlery.com/sg/products/winora-armchair", isCompared: false,
-    placesDirectly, onAdd: noop, onChooseSpot, onToggleCompare: noop, onClose: noop,
+    placesDirectly, onAdd: noop, onChooseSpot, onToggleCompare: noop, onClose: noop, addDisabled,
   }));
 const consumer = drawer(true, noop);
 assert.match(consumer, /data-testid="catalog-detail-add-to-room"[^>]*>Add to Living Room</);
@@ -76,6 +77,18 @@ assert.match(pro, /Ready to preview: /);
 assert.match(pro, /Next: confirm the placement ghost/);
 assert.doesNotMatch(pro, /catalog-detail-choose-spot/);
 assert.match(pro, /data-testid="catalog-compare-toggle-drawer-winora"[^>]*>Compare</);
+
+// While the product lists load (J, 10 Oct 2026), products can be browsed: the panel's cover lets
+// clicks through, so search, filters, details and Compare work. Only adding waits.
+const loading = drawer(true, noop, true);
+assert.match(loading, /<button type="button" disabled=""[^>]*data-testid="catalog-detail-add-to-room"[^>]*>Loading products…</);
+assert.match(loading, /data-testid="catalog-detail-choose-spot" disabled=""/);
+assert.match(loading, /data-testid="catalog-compare-toggle-drawer-winora"[^>]*>Compare</);
+assert.doesNotMatch(consumer, /disabled=""/);
+assert.doesNotMatch(catalogPanel, /inert=\{!canEdit\}/, "Browsing doesn't wait for the product lists.");
+assert.match(catalogPanel, /\{!canEdit \? <div className="pointer-events-none absolute inset-0 [^"]*" aria-hidden><span data-testid="catalog-products-loading"/);
+assert.match(catalogPanel, /const addRememberedItem = \(id: string, variantId\?: string\) => \{\s*if \(!canEdit\) return;/);
+assert.match(catalogPanel, /onCatalogDragStart=\{\(id\) => \{ if \(canEdit\) onCatalogDragStart\?\.\(/);
 
 // The toast lives with Undo in the command bar, portaled out of the bar's containing block.
 assert.match(

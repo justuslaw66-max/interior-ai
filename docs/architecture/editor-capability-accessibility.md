@@ -78,6 +78,33 @@ and public sharing is separate. The selected-item panel is also a separate
 persistent region; its P2 preview-transition hardening remains outside the
 command-bar lifecycle.
 
+## Editing before the product lists load
+
+`useDesignPageCoreShellRegistration` derives two access flags, and nothing
+else derives them:
+
+- `canEdit` is `!isClientPreview` once the page has hydrated
+  (`useClientHydrated`). The plan, rooms, doors and windows, moving and
+  removing placed items, and the start chooser's empty templates are usable as
+  soon as the editor's scripts run. The server's HTML keeps them disabled, so
+  a click before then isn't silently lost.
+- `canChangeProducts` is `canEdit && liveCatalogReady`. Anything that picks a
+  product waits for the live catalog and the imported catalogue (or their
+  10-second fallback): adding from Furnish and the imported models, furnished
+  templates, swaps in the item panel and in Shop (including Pro's Swap all),
+  and variants and finishes. While waiting, products can still be browsed
+  (search, filters, details, Compare) under a dimmed "Loading products…"
+  cover that lets clicks through; Add, dragging a card and "Choose where it
+  goes" wait, the details' Add button says "Loading products…", and the
+  furnished template cards say so too.
+
+The tradeoff (J, 10 Oct 2026): opening the editor no longer waits on the
+2.5 MB imported catalogue, at the cost of a second flag. A move or resize made
+in those first seconds uses the bundled catalogue's sizes; the live list only
+differs from them for products changed since the build. The imported catalogue
+is read when the editor opens and again on window focus at most every five
+minutes (`IMPORTED_CATALOG_REFRESH_AFTER_MS`), not on every focus.
+
 ## Loading boundaries
 
 The Cabinetry Studio remains client-only and dynamically loaded. Advanced plan

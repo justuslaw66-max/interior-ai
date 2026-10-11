@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { templateAppliedMessage } from "../lib/design-page-template-furnishings";
+import { IMPORTED_CATALOG_REFRESH_AFTER_MS, readNowAndAtMostEvery } from "../lib/imported-catalog-readiness";
 
 // A furnished template names what it couldn't place, and the editor waits for the imported
 // catalogue before products can be added, since sofas, floor lamps and dining benches come only
@@ -37,7 +38,7 @@ assert.match(source("lib/plan-template-document.ts"), /skippedFurnishings\.push\
 assert.match(controller, /showRuleToast\(templateAppliedMessage\(template\.label, built\.pack, built\.skippedFurnishings\)\);/);
 
 // Readiness: the imported catalogue marks itself answered once its products are in the catalogue,
-// and the editor's product readiness (`canEdit`) waits for it, with a time limit.
+// and the editor's product readiness (`canChangeProducts`) waits for it, with a time limit.
 assert.match(
   source("lib/useDesignPageImportedModels.ts"),
   /if \(cancelled\) return;[\s\S]*?setModelOptions\(imported\.options\);\s*markImportedCatalogHydrated\(\);/,
@@ -49,7 +50,34 @@ assert.match(readiness, /export const IMPORTED_CATALOG_WAIT_MS = 10_000;/);
 assert.match(readiness, /setTimeout\(markImportedCatalogHydrated, IMPORTED_CATALOG_WAIT_MS\)/);
 assert.match(
   source("lib/useDesignPageCoreShellRegistration.ts"),
-  /const liveCatalogReady = useDesignPageLiveCatalog\(\);\s*const canEdit = !isClientPreview && liveCatalogReady;/
+  /const liveCatalogReady = useDesignPageLiveCatalog\(\);\s*const \{ canEdit, canChangeProducts \} = designPageEditAccess\(isClientPreview, useClientHydrated\(\), liveCatalogReady\);/
+);
+// The imported catalogue (2.5 MB) is read on opening, and again on window focus at most every
+// five minutes, not on every focus (J, 10 Oct 2026).
+let clock = 1_000;
+let reads = 0;
+const onFocus = readNowAndAtMostEvery(IMPORTED_CATALOG_REFRESH_AFTER_MS, () => reads++, () => clock);
+assert.equal(reads, 1, "Read once on opening.");
+onFocus();
+clock += IMPORTED_CATALOG_REFRESH_AFTER_MS - 1;
+onFocus();
+assert.equal(reads, 1, "Focus within five minutes reads nothing.");
+clock += 1;
+onFocus();
+assert.equal(reads, 2, "Five minutes on, focus reads it again.");
+onFocus();
+assert.equal(reads, 2, "And the five minutes start again.");
+assert.equal(IMPORTED_CATALOG_REFRESH_AFTER_MS, 5 * 60_000);
+assert.match(
+  source("lib/useDesignPageImportedModels.ts"),
+  /const refreshOnFocus = readNowAndAtMostEvery\(IMPORTED_CATALOG_REFRESH_AFTER_MS, \(\) => void hydrate\(\)\);\s*window\.addEventListener\("focus", refreshOnFocus\);/
+);
+
+// Furnished templates are products, so their cards wait for that readiness; empty ones don't.
+assert.match(source("lib/useDesignPageStartChooser.ts"), /furnishedReady: state\.canChangeProducts,/);
+assert.match(
+  source("components/editor/start/StartTemplateGallery.tsx"),
+  /disabled=\{!ready \|\| \(withFurniture && !furnishedReady\)\}/
 );
 
 console.log("Template furnishing checks passed.");
