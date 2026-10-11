@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.22.0",
+ "exporterVersion": "app-evidence-0.24.0",
  "page": {
   "widthPx": 1440,
   "heightPx": 1424,
@@ -2111,39 +2111,12 @@
     "operation": "swing",
     "centerXRatio": 0.864062,
     "centerYRatio": 0.527739,
-    "spanStart": {
-     "xRatio": 0.864062,
-     "yRatio": 0.505618
-    },
-    "spanEnd": {
-     "xRatio": 0.864062,
-     "yRatio": 0.54986
-    },
-    "confidence": 0.75,
+    "confidence": 0.45,
     "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      1244.25,
-      720.0
-     ],
-     [
-      1244.25,
-      783.0
-     ]
-    ],
-    "widthMm": 898,
-    "hinge": "start",
-    "swingSide": -1,
+    "hinge": "unknown",
+    "swingSide": 0,
     "handing": "unknown",
-    "note": null,
-    "hingeSourcePx": [
-     1244.25,
-     720.0
-    ],
-    "swingTowardSourcePx": [
-     1212.75,
-     720.0
-    ]
+    "note": "door found, but the space beyond it did not close"
    },
    {
     "kind": "door",
@@ -5242,7 +5215,7 @@
   },
   {
    "id": "e117",
-   "kind": "supported_opening_span",
+   "kind": "wall_centerline",
    "sourcePx": [
     [
      1243.71408839779,
@@ -5253,30 +5226,9 @@
      720.0
     ]
    ],
-   "thicknessPx": 29.43,
-   "thicknessMm": 419,
-   "opening": {
-    "kind": "door",
-    "operation": "swing",
-    "hinge": "start",
-    "swingSide": -1,
-    "handing": "unknown",
-    "confidence": 0.75,
-    "hingeSourcePx": [
-     1244.25,
-     720.0
-    ],
-    "swingTowardSourcePx": [
-     1212.75,
-     720.0
-    ],
-    "note": null,
-    "widthMm": 898,
-    "between": [
-     "room-12",
-     "outside"
-    ]
-   }
+   "thicknessPx": 11.5,
+   "thicknessMm": 164,
+   "opening": null
   },
   {
    "id": "e118",
@@ -6212,7 +6164,7 @@
   "bars": 66,
   "gapsSeen": 199,
   "openings": {
-   "door": 12,
+   "door": 11,
    "window": 17,
    "open_passage": 2,
    "wall": 15
@@ -6221,12 +6173,18 @@
   "rooms": 12,
   "roomsWithheldAsIllegalGeometry": 0,
   "roomOutlinesMendedForTheApp": 0,
+  "slotsBetweenWallsClosed": 0,
   "facesLeftOutAsSlivers": 1,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 3,
   "leafRowsReadAsCasements": 0,
   "doorsNotPlacedBeyondOpenSpace": 0,
+  "doorsIntoWithheldRoomsNotPlaced": 0,
+  "secondWaysOutNotPlaced": 1,
+  "doorsBetweenTwoBedroomsNotPlaced": 0,
+  "doorsOntoLedgesNotPlaced": 0,
+  "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
@@ -6275,6 +6233,7 @@
   "pageCrop": null,
   "scaleBar": null,
   "areaCheck": null,
-  "wallThicknessUnified": 36
+  "wallThicknessUnified": 35,
+  "itemsLeftOutForTheAppsLimits": 0
  }
 }
