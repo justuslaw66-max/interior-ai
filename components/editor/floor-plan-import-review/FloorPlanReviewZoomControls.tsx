@@ -5,7 +5,7 @@ export function FloorPlanReviewZoomControls({ zoom, setZoom, pages, pageNumber, 
   pageNumber: number; onPageNumberChange: (value: number) => void; dark: boolean;
 }) {
   const control = "rounded border bg-white px-2 py-1 disabled:opacity-40";
-  return <div className="flex flex-wrap items-center justify-end gap-1 text-xs">
+  return <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 text-xs">
     <button aria-label="Zoom out" className={control} disabled={zoom <= 1} onClick={() => setZoom((current) => Math.max(1, current - 0.5))} type="button">−</button>
     <span className="min-w-10 text-center font-medium" aria-live="polite">{Math.round(zoom * 100)}%</span>
     <button aria-label="Zoom in" className={control} disabled={zoom >= 4} onClick={() => setZoom((current) => Math.min(4, current + 0.5))} type="button">+</button>
