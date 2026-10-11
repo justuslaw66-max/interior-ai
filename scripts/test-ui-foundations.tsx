@@ -13,16 +13,16 @@ import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
-function sourceFiles(directory: string): string[] {
+function sourceFiles(directory: string, pattern = /\.(ts|tsx)$/): string[] {
   return readdirSync(join(root, directory)).flatMap((name) => {
     const path = join(directory, name);
-    if (statSync(join(root, path)).isDirectory()) return sourceFiles(path);
-    return /\.(ts|tsx)$/.test(name) ? [path] : [];
+    if (statSync(join(root, path)).isDirectory()) return sourceFiles(path, pattern);
+    return pattern.test(name) ? [path] : [];
   });
 }
 
 const sources = ["app", "components", "features", "lib", "hooks"]
-  .flatMap(sourceFiles)
+  .flatMap((directory) => sourceFiles(directory))
   .map((path) => ({ path: relative(root, join(root, path)), text: read(path) }));
 
 // Focus (AX6): globals.css gives every control one 2px ring. A control that draws its own ring
@@ -103,10 +103,12 @@ const subTwelvePixelUses = (text: string) =>
 const underTwelvePixels = sources.reduce((count, { text }) => count + subTwelvePixelUses(text), 0);
 
 // The 12px minimum (AX7, phase 5): text is at least 12px (text-xs) everywhere but these, which
-// follow in later steps: Built-ins, the room navigator's labels on the canvas (ED7's rules), and
-// the finish swatches, whose snapshots change with them.
+// follow in later steps: Built-ins, Admin's frame and Overview (their CSS module), the room
+// navigator's labels on the canvas (ED7's rules), and the finish swatches, whose snapshots change
+// with them.
 const SMALL_TEXT_STILL_TO_DO = [
   /^features\/cabinetry\//,
+  /^app\/admin\/operations-dashboard\.module\.css$/,
   /^components\/editor\/RoomPanNavigator\.tsx$/,
   /^components\/editor\/design-page\/Product(?:Finish|ModelVariant)Controls\.tsx$/,
   /^components\/catalog\/CatalogItemFinishPicker\.tsx$/,
@@ -117,6 +119,18 @@ assert.deepEqual(
     .map(({ path }) => path),
   [],
   "Text is at least 12px (text-xs) outside the areas still to do."
+);
+// Stylesheets too, which the class count above doesn't see.
+const smallFontSizes = (text: string) =>
+  Array.from(text.matchAll(/font-size:\s*(\d*\.?\d+)(px|rem)\b/g)).filter(
+    ([, size, unit]) => Number(size) * (unit === "rem" ? 16 : 1) < 12
+  ).length;
+assert.deepEqual(
+  ["app", "components", "features"]
+    .flatMap((directory) => sourceFiles(directory, /\.css$/))
+    .filter((path) => smallFontSizes(read(path)) > 0 && !SMALL_TEXT_STILL_TO_DO.some((area) => area.test(path))),
+  [],
+  "Stylesheets set text at least 12px outside the areas still to do."
 );
 const rawButtons = sources
   .filter(({ path }) => path.endsWith(".tsx"))
