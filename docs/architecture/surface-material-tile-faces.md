@@ -22,6 +22,8 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | La Marmoteca, eighteen marbles | 193 of its 201 drafts (96 floor, 97 wall); the 8 book-matched A+B entries keep their previews | 497 | `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-la-marmoteca-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Hermione, three woods (new: imported from ABK's pages) | 6 drafts (3 floor, 3 wall) | 99 | `catalog/surface-materials/flooring/gardenia/hermione/gardenia-hermione-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Concrea Plain, three concretes (new: imported from ABK's pages) | 22 drafts (11 floor, 11 wall) | 107 | `catalog/surface-materials/flooring/gardenia/concrea-plain/gardenia-concrea-plain-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Just Nature, six woods (new: imported from ABK's pages) | 22 drafts (11 floor, 11 wall); Beige Scuro 30x120 is left out (ABK shows another colour's pictures for it) | 65 | `catalog/surface-materials/flooring/gardenia/just-nature/gardenia-just-nature-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Luce, five colours (new: imported from ABK's pages) | 28 drafts (14 floor, 14 wall) | 124 | `catalog/surface-materials/flooring/gardenia/luce/gardenia-luce-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -44,7 +46,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione and Concrea Plain entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature and Luce entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -64,6 +66,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia I Pigmenti originals | 1.46 (120x280) to 2.95 (60x60, 30x30 and most 10x60) |
 | Gardenia La Marmoteca originals | 1.46 (120x280) to 3.4 (some 60x120) |
 | Gardenia Hermione and Concrea Plain originals | 1.46 (Concrea Plain 120x280) to 3.2 (Concrea Plain 80x80); Hermione 2.13 |
+| Gardenia Just Nature and Luce originals | 1.46 (Luce 120x280) to 3.2 (Luce 80x80); Just Nature 2.16 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -184,3 +187,17 @@ These are the first two of ABK's ten Gardenia&Ariana collections that Gardenia's
   - **Pictures named LAB325.** The pages also name pictures LAB325 BASE SAND, ASH and PEARL (Ariana's Lab325 collection). Bone's are its CONCREA PLAIN BONE pictures byte for byte, so each Bone picture is listed twice and used once. Silver's and White's are other faces in the same colour (mean RGB within 3 levels of the CONCREA PLAIN pictures on the same page), so they are used too. White 60x120's pictures are all named LAB325 BASE PEARL.
   - **Repeats, used once:** two of Silver's and two of White's 80x80 pictures are earlier ones exported anew (fine detail r 0.88 to 0.93, against 0.35 at most between different faces).
   - Bone has no 120x280. Its download area also lists an 80x80 item `pfa0000240` with no pictures, which is not a catalogue item.
+
+## Gardenia Just Nature and Luce specifics (downloaded 10 Oct 2026)
+
+The next two collections the configurator never had, imported from ABK's pages the same way as Hermione and Concrea Plain (above), with the same decisions on floors and walls and layouts.
+
+- **Colour and look from ABK's own descriptions.** From these two on, an entry's colour family comes from the word ABK's colour page uses for the colour (Beige Scuro "beige", Noce Scuro "brown", Verderame "green", which the catalogue files as `mixed`, as the July importer files green). The July importer's word rules would file Beige Scuro and Noce Scuro as charcoal ("scuro") and most Luce colours as unknown. Hermione's and Concrea Plain's entries still have the importer's families. Luce's look follows ABK per colour (J, 10 Oct 2026): Acciaio, Peltro and Perla are described as a solid colour effect (`plain`), Piombo and Verderame as a cement effect (`concrete`). Each entry's notes say so.
+- **Just Nature** (six woods, 20x120 and 30x120 Natural):
+  - Six plank faces per size, so a plank's grain repeats about every sixth plank, never side by side. Sbiancato's 30x120 page lists one picture twice (identical bytes): five faces.
+  - **The 20x120 entries also draw the colour's 30x120 faces**, cut to the plank at true scale (J, 10 Oct 2026: "Use the 6, add 30x120's if same"). The crop test finds ABK's 20x120 pictures in the colour's 30x120 pictures at the same scale (r up to 1.00 for Grigio, Noce Scuro and Sbiancato, 0.96 for Beige Chiaro, 0.87 for Beige Medio; 0.40 at most at other scales for the same pictures), so they are the same graphic. A plank entry's face list therefore mixes 200x1200 and 300x1200 mm faces; the render data writes such lists in full rather than as a run.
+  - **Beige Scuro 30x120 is left out** (J, 10 Oct 2026). ABK's download page, its ZIP and the public colour page all show Beige Medio's 30x120 planks for it: the same bytes, and lighter (mean RGB 186/156/117 against Beige Scuro's 20x120 166/137/109). Beige Scuro's 20x120 has its own pictures and doesn't draw the 30x120 ones.
+- **Luce** (five colours, 120x280, 120x120, 60x120 and 80x80 Natural):
+  - 60x120, 80x80 and 120x120 match each other at their labelled scale (crop test, r 0.95 to 0.99; 0.19 at most at other scales).
+  - **The 120x280 slabs** (Perla and Verderame, two pictures each, 1769 x 4096 px, 0.8% wider than 1200 x 2800 mm) match the other sizes best drawn about 0.95 times the tile's size (r 0.89 to 0.95; 0.35 to 0.36 at the tile's size). So, as for Concrea Plain's slabs (1.3 times), the slab's pattern comes out a little larger than the other sizes', here about 5%. Drawn 0.95 times as large, the pictures would no longer cover the tile, so they are used at the tile's size.
+  - Acciaio's download area also lists a 60x120 item `pfa0006087` with no pictures; it isn't a catalogue item.

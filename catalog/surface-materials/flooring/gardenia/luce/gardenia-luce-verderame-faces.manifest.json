@@ -1,0 +1,538 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/verderame/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LUCE - VERDERAME - minimali.zip (21507887 bytes, sha256 99667e45b49bf8f77f2122052af15f1cb211c7aa71d119c27b70b86a5ceb9cf4).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/luce/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008182",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/verderame/pf60008182-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008182_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-verderame-0008182-120x280-nat; wall gardenia-wall-tile-luce-verderame-0008182-120x280-nat",
+   "faces": [
+    {
+     "file": "0008182_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 45696,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X280-Natural/LUCE - VERDERAME - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "138977ee377dc98331b951272b5a10fc5a04d7dd7de5e26f6a9618ce09311761",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "LUCE VERDERAME 120X280_01",
+      "id": "a3d0813f-df1a-471e-89dc-52587e7f0857",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008182_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 55862,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X280-Natural/LUCE - VERDERAME - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "a6127ca0aebbf3d3e7037936798d2af4a39364ec392cc9615a8d50861df71a09",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "LUCE VERDERAME 120X280_02",
+      "id": "ebbff54c-04e5-43a4-97fe-3861495c3a83",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0006159",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/verderame/pf60006159-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006159_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-verderame-0006159-120x120-nat; wall gardenia-wall-tile-luce-verderame-0006159-120x120-nat",
+   "faces": [
+    {
+     "file": "0006159_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18848,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "41f2477d1e3fe910758ccc447619293850b324c1618110b58deeb1434ecfe859",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "LUCE VERDERAME 120X120_03",
+      "id": "d58fde50-eb76-4113-ac90-f19bae284ae8",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006159_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18664,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8cfc69004558b8254a01e78e2c86f109f89be53c43159e24c4010130b72605be",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "LUCE VERDERAME 120X120_01",
+      "id": "d83c4c6a-9710-40c5-81df-5d0174c2ba3a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006159_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17086,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "286c49761d499813247210bbe980aa4186f30700829de17886477fd8d5123211",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "LUCE VERDERAME 120X120_02",
+      "id": "b52ab1aa-26d8-466b-8a9c-9f4351359f80",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006159_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20090,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d7b3a29360525ee257dd022c4460bf022462f7b215d936c97995ee9b6ea54992",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "LUCE VERDERAME 120X120_04",
+      "id": "2f95de19-cfa2-46de-87b7-2b248fbfddc8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006159_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 23644,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d47a7fe09f42d00157a05b5ffd0e0f51acaaae9093553984e94cf3326b0c4b05",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "LUCE VERDERAME 120X120_06",
+      "id": "69de0416-ab74-4c2f-863d-d6e52906a634",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006159_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 24906,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - VERDERAME - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d1d4f796cc684a8619b1360b38f28a935c5bbe4296e4f2c6580ff74ed9c3df54",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "LUCE VERDERAME 120X120_05",
+      "id": "a60e81fb-8f72-4857-90d6-51f46f7fcefa",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006161",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/verderame/pf60006161-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006161_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-verderame-0006161-60x120-nat; wall gardenia-wall-tile-luce-verderame-0006161-60x120-nat",
+   "faces": [
+    {
+     "file": "0006161_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8964,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "81d1deccfffa67e402f2cb950b15e036db3d4ce14106668da42b3a5b7a42c610",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "LUCE VERDERAME 60X120_09",
+      "id": "5e0a8f97-7adf-422d-8c8d-af319a4d026b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006161_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10222,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cf042710e501f67dd569364da68c5ef34c490668f6af5d5085e5fafa4937c482",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "LUCE VERDERAME 60X120_04",
+      "id": "3a178604-3ce6-4694-9f11-1bfe5d4860b3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006161_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10568,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "02dc41df050692eafd08a24013830f7e78682fedb8d8e60fbebbcc803943cb42",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "LUCE VERDERAME 60X120_01",
+      "id": "5f1b83cb-c67f-4afe-818a-63be341c36fb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006161_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9302,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b0e890a3a9a37617c74c019783b8be6691ee715a1bbf367e1b000f2f7b1ccecb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "LUCE VERDERAME 60X120_02",
+      "id": "dba6d412-31c7-4407-9b0d-5eada2feca05",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006161_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9416,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bb59e8e33b8de0b618202ea5d90abccb0659dc9c690b5964c5df087454416f57",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "LUCE VERDERAME 60X120_03",
+      "id": "afdf4d4f-5850-4d66-a8b6-b320437413de",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006161_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12802,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "91ab8106a817e251525cccf1da9bd78d2db27ae70ccf8030f920f835fc3623e7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "LUCE VERDERAME 60X120_12",
+      "id": "3cbeb50c-88de-4c53-9195-07b6017133aa",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006161_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10428,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9b3dda6525e0796c02bf2f03568cac819568b1b18e7940aaa95b7f29a4735bf3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "LUCE VERDERAME 60X120_10",
+      "id": "c85c7b67-f7d6-4d4c-8168-155077dd7942",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006161_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11602,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "83aeab03783fa1cde3de701fee2cec1d7f1d70c9527d36e4b5b67b2b01155082",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "LUCE VERDERAME 60X120_11",
+      "id": "fa56f442-59da-4a32-9b0e-afd892ad9c97",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006161_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8920,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4378a6cc93b483767ab5d4b5d76e2bbea493e277632dc552648bf8c5d593dccb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "LUCE VERDERAME 60X120_08",
+      "id": "bda40c80-f52f-4350-af7d-64f040fac118",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006161_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8848,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "99a1df3f940c0f5b2a1f0a376d77bc1f66d77c00b6c387cd0bc76321cac8b36d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "LUCE VERDERAME 60X120_07",
+      "id": "ab4500e1-aeb2-4638-a887-fd0b37f5f416",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006161_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9930,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ab164a2c221ed422fb3c09f683b58496cc58ab6c7c17aaa7019122c07f7f3ebd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "LUCE VERDERAME 60X120_06",
+      "id": "ea4f33eb-ab2b-4981-b483-c144235cade5",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006161_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14034,
+     "source_zip": "LUCE - VERDERAME - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - VERDERAME - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d46fcb3f035f8ad60fd77e7e612413f8710a68015dadda018b4a32b992bd5452",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "LUCE VERDERAME 60X120_05",
+      "id": "c7bf95f3-13f8-4ae7-9cd5-d49c42f302a1",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

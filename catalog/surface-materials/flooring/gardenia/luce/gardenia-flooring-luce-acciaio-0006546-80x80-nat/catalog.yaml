@@ -1,0 +1,148 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Luce
+  material_id: gardenia-flooring-luce-acciaio-0006546-80x80-nat
+  product_name: Gardenia Luce Acciaio 80x80 Nat
+  slug: gardenia-flooring-luce-acciaio-0006546-80x80-nat
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/luce/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 12 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/pf60006546-v102/), downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-luce-acciaio-faces.manifest.json. Each covers 800x800 mm."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-10: Luce is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0006546 (pf60006546) for floor use: 80X80 Natural, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/pf60006546-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/luce/acciaio/80x80/: finish Natural, thickness 8,5 mm, porcelain stoneware."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Acciaio as grey (colour page pictures)."
+    - "Look: ABK describes Acciaio as a solid colour effect, so it is filed as plain (J, 2026-10-10: per colour, as ABK)."
+    - "Collection page technology: Full body porcelain - UGL."
+    - "Collection page description: Luce is a ceramic surface with a distinctive style and personality. Inspired by the unique appeal of resin, it comes in an on-trend colour palette in which neutral tones encounter unexpected influences from the world of metals."
+    - "Collection page thicknesses: 6 mm, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 80x80, 60x120."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: plain
+  color_family: grey
+  tone:
+    - neutral
+    - durable
+    - clean
+    - cool
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 800
+  tile_length_mm: 800
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/luce/0006546_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/luce/0006546_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 80
+    height: 80
+  image_physical_size_mm:
+    width: 800
+    height: 800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_01.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_02.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_03.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_04.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_05.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_06.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_07.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_08.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_09.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_10.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_11.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/luce/0006546_12.webp
+      width_mm: 800
+      height_mm: 800
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

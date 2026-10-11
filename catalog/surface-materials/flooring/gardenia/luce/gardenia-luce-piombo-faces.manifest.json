@@ -1,0 +1,475 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/piombo/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LUCE - PIOMBO - minimali.zip (16790540 bytes, sha256 f7bf30acb156409492896df5512d8c1d27ef1be9752a7907fbe98d1e427578f4).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/luce/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0006085",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/piombo/pf60006085-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006085_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-piombo-0006085-120x120-nat; wall gardenia-wall-tile-luce-piombo-0006085-120x120-nat",
+   "faces": [
+    {
+     "file": "0006085_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 14010,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b60365b51824a9e78aaf8b87681e731b445c839faae9a74277c9167d264459bc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "LUCE PIOMBO 120X120_04",
+      "id": "24bf840c-5d49-4ad3-b736-a08b15041947",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006085_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10774,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7c70a5f32bb5ab510b2e4664364a1406c5e382f53c7b952fe6abf45d73486e12",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "LUCE PIOMBO 120X120_03",
+      "id": "6213279c-4708-4071-9441-d535912d8d8c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006085_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11756,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d85fcd50ccdb53dab5791945991c4645f6c61948020bf1bb0031e227964fa39e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "LUCE PIOMBO 120X120_01",
+      "id": "257b1bb2-439d-4df2-af06-1071aabf0ed8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006085_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10948,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a406542599d56448c7335bd157662f2d1982b4a1f7089ac8439e255b740aab40",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "LUCE PIOMBO 120X120_02",
+      "id": "6546bb86-48d0-4d4a-a231-1ef1e47e1502",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006085_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 14638,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "003e357846e98502c90d4384914eaf71a6deab0b22099b389cb7451111f4f63c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "LUCE PIOMBO 120X120_06",
+      "id": "e8f0c028-e4c8-4231-bdda-b85f7642bf60",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006085_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15154,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PIOMBO - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7331f90db3a3c52477e3d2d41605e5412a5f069c0e692b7de4321b9ac586ef18",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "LUCE PIOMBO 120X120_05",
+      "id": "b107ce20-5b0e-45eb-933e-9c05426d6a15",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006089",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/piombo/pf60006089-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006089_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-piombo-0006089-60x120-nat; wall gardenia-wall-tile-luce-piombo-0006089-60x120-nat",
+   "faces": [
+    {
+     "file": "0006089_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5368,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "21d873133dc9362df92c875221e8192189c9a7a30c93a59a95896f78103ffcff",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "LUCE PIOMBO 60X120_07",
+      "id": "16add2f1-25ea-4c4d-8bd6-5258a1f5f712",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006089_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5886,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a4e475e2e502afa8e36d8f6828ac9721e727bdf5a78a6b712ca57310b16dffae",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "LUCE PIOMBO 60X120_09",
+      "id": "a7905b35-f0c5-4a72-a026-b3b9f924fdc8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006089_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7432,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cd508f130631146f780e4daffea2dfd10c97284307b71c44a9a1ba6b7216a71e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "LUCE PIOMBO 60X120_06",
+      "id": "17ed4bae-7ce4-4786-a1bf-a7aafc1c7ce3",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006089_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8630,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e2030128ed0bed9fb35916b7dbabb9e1398e167f5ef055c7634160dcf62fff93",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "LUCE PIOMBO 60X120_05",
+      "id": "155d0a56-aa7d-443a-8252-1f9d62004ba8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006089_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6826,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0ba76ac53a31a90502d6b03ca4bb16dd39ca7cead2d45792be7a59cc8baaceb4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "LUCE PIOMBO 60X120_01",
+      "id": "f77d9d73-e8c0-401a-944b-b3f4adbcc3de",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006089_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5780,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b3c7811d858de5acfb1e4d5df3a68d910a897bff959ea14bc3717e617b18da59",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "LUCE PIOMBO 60X120_03",
+      "id": "40f88431-d217-4dc2-a7e2-699007552aa5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006089_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7166,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bad326bccd1e462e930c583cba429f37dd62e272e13f38973d17562737d24a34",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "LUCE PIOMBO 60X120_10",
+      "id": "8762d23e-8c3a-4e61-a871-a014bdb789ff",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006089_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7324,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c8c249d3bd5dab05be21f4c37f1c7dfd4f4c55494eb72e3a34074a0c332615cf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "LUCE PIOMBO 60X120_11",
+      "id": "a44b01ec-92e0-40fb-a5de-c80d684feb16",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006089_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6100,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4a25d01943f74b9b15284c685a147c66421799899b412489a1c8be835f17b81b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "LUCE PIOMBO 60X120_08",
+      "id": "ce65ad45-eff0-4a87-8c06-5cc50ee2dfa5",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006089_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6960,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "eda7363f7332febba9f6f1951abde2d5f593c32947d23ca61ea9599002d23ce2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "LUCE PIOMBO 60X120_04",
+      "id": "91fe94c1-393e-4e7c-936b-28a493642063",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006089_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8062,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "8c93143b55209f6228c2fb27740b2e5b82d548843ca3690bce9f03d2c59d0a38",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "LUCE PIOMBO 60X120_12",
+      "id": "1ff4fc3b-0567-4bd1-a324-747b640c6c12",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006089_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5808,
+     "source_zip": "LUCE - PIOMBO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PIOMBO - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1acbbe4dfd11ab065167b7e083623c9f4b0ed830005ca59462f399bad60ed60c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "LUCE PIOMBO 60X120_02",
+      "id": "31192224-ceed-4502-8042-d1f90e531461",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}
