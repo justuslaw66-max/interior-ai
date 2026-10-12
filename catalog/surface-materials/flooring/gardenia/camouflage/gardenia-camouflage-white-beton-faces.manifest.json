@@ -1,0 +1,1408 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/white-beton/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - WHITE BETON - minimali.zip (199412042 bytes, sha256 59e6164455a1ceab02cfabacab3207b9a7a918efaa9f8d4dba08c36ad5ece558).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0014259",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/white-beton/pf60014259-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014259_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 9 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 4 is picture 10 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 12 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 11 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 8 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-white-beton-0014259-120x120-nat; wall gardenia-wall-tile-camouflage-white-beton-0014259-120x120-nat",
+   "faces": [
+    {
+     "file": "0014259_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 70112,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "73f1057f1a5b97e30c780853bf3fc9f06f11e72b03327b7e2ff2d8b66c17c183",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_01",
+      "id": "2e3784dd-8957-4458-b278-b45da00b71f1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014259_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 80660,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1e19661c8b76104b2bfe56912581890fc8a200de1f23f58948d1829315d1fb20",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_06",
+      "id": "06db78d8-0a74-4d27-b235-6fddc5e0d18e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014259_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 89986,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "05bd355e133db35ff7139a0ea6f96256a6dcca032911504d67caa5e4e57888c6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_02",
+      "id": "0fcf22b0-f42f-45ab-b2d7-9c8b7ba0e55d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014259_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 84788,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2ee3d049323028e24f305bf10a980fa78c7e7ad883de87e114cf9b6e501b1ee2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_03",
+      "id": "1c07b988-3712-417d-a37d-b136daf41bae",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014259_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 94116,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b0b8b9d105493aa44d814a747dd531f7d829dc28487727d2f7cc8d8f62700b25",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_05",
+      "id": "bb181a66-d594-4730-965e-6e16512a227d",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014259_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81954,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 120X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a57fb45948582105f280624bc1f746d53b1fa70717ad7dea3c5c7973ffcee714",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE WHITE BETON 120X120_04",
+      "id": "c0be0d78-6fb3-4113-9976-c3caac5f87b0",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014253",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/white-beton/pf60014253-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014253_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 10 is picture 15 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 11 is picture 19 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 12 is picture 18 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 21 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 16 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 4 is picture 22 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 23 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 20 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 8 is picture 17 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 9 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-white-beton-0014253-60x120-nat; wall gardenia-wall-tile-camouflage-white-beton-0014253-60x120-nat",
+   "faces": [
+    {
+     "file": "0014253_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35292,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d245a61256f35aed0fc40ca7e3f352f9a85cff12d213aaf338c7425ee1ddccc2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_01",
+      "id": "4cfe3b8c-4433-4953-81ea-18ce782bda25",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014253_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 49058,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3e8284fb84ca1f45254aa061d9437807cefa26540c4745ab051c5499db26df38",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_08",
+      "id": "0a277f10-36de-41dd-ab82-d85f689aaf11",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014253_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44186,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7598da7946445c04f7cb9e0857a2c8565bbf3f308af76e9079bcfd588d5bf814",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_09",
+      "id": "4164f675-59d7-4dd4-9726-9a773c57effd",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014253_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33578,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_9 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "def4046cdc8f09de2e805efc69239ec6f53ba3b4dba7fb932623debed9a786ec",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_02",
+      "id": "59a602a5-3128-407e-a332-ed060b4f6d09",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014253_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33402,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d70eb8b171e1c6b3990aba17503d796cd8650795cc3f655bfcc1d91f78280f10",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_07",
+      "id": "68545252-7393-4d24-8f93-6008b51d0367",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014253_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41052,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_12 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8719f3d39b7f9bf78e0bce9b6001aad6b0256ac9b6ad901bb2497486f576de49",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_11",
+      "id": "6a158b5d-77f5-45ea-b2b3-caa808c8d178",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014253_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 47714,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "800289129612ce39812f0a94bce44b3aa2a8434ce7a5ea034bdff9880386f0e2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_10",
+      "id": "6ebbb613-9a63-4784-85fa-d917598ba104",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014253_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36934,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ca1862e4bf5f51676d7549030f3b324c1b269cb3187549519c8322bc41035b86",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_05",
+      "id": "c669dabc-51b5-4955-811a-911c60b46682",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0014253_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40388,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "81e733166a5a86d5ca9b1342b1fde1081b1e89b1a0ad7a7f0d59fe49bf6d8595",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_12",
+      "id": "d19bf96f-3886-4fee-a225-40c3a997ff85",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0014253_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 44978,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "73d84edfec93fdca709e1f5b1a17eabed6681d148d1df007b07b63ec2cb4bca1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_03",
+      "id": "d49ce4a2-5275-4697-b7cf-6a49c1663ec5",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0014253_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 46086,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "302bb4e3cc3eff138869025b711057c3553bdc7c7a5adb057b8443362c7c1d60",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_04",
+      "id": "fa05169b-aebf-42e7-9bf8-3f70839d9dff",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0014253_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 50938,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X120 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3a4bc21c991e84f614cc85d63bec719cb2fc808d6c8d5d0fee23179c35c83d05",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE WHITE BETON 60X120_06",
+      "id": "fafa7dd3-ee53-4b51-b96a-cdfb0009d695",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0014395",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/white-beton/pf60014395-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0014395_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 10 is picture 18 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 11 is picture 16 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 12 is picture 23 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 22 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 4 is picture 15 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 17 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 19 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 8 is picture 21 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 9 is picture 20 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-white-beton-0014395-80x80-nat; wall gardenia-wall-tile-camouflage-white-beton-0014395-80x80-nat",
+   "faces": [
+    {
+     "file": "0014395_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25970,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "46b27fa47114e18bea77692a4e03f13cec4a4c855e944637ef7ecf7378274a87",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_01",
+      "id": "f806e573-c034-4a2b-a4b4-28b7e14c08c0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014395_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28306,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cbb6757980a360f4a2b74e5c30c19cdbdf5369250f0e18943bd3eb41fae0853e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_02",
+      "id": "19875d5f-29f5-458b-8b94-44e2feb36148",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014395_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34476,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9251a6e425226b3dcda728ca4465cbcb2606c4f97dd4364e06b8fb650de91e95",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_03",
+      "id": "37cfe053-e402-40aa-a38f-c7024f8fed40",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014395_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 35766,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "318708d8f0f1cb2d0a6a44a42efc415609e239ab2bfaf3f8a0647c9c9f2a37e5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_10",
+      "id": "415adfb3-c881-44f6-88b2-fb9acb91866f",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014395_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36090,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d1f225d49f3185d6a06220e758d5e68a84a2761e9b37e4da9413534cadb285eb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_04",
+      "id": "54fe8122-952d-4774-a159-06a91e99981f",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014395_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34462,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b7107a7f31ec27d55c147c344b4b674aff884487201fb64f65e17bd3846b770d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_09",
+      "id": "57164eaf-97a1-4e86-8a77-6096bca40f9e",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014395_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34098,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "28f6cefa21ef5bb663d92c6cf305bc9d440d1e0ff9830f236694301e56aba5cb",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_05",
+      "id": "5c1a5faa-7a29-4f5e-8a0b-ba1bfe2add21",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014395_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41798,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_12 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6e57944edf1b96a82382683b4fc7f637bf3afe55621d0c1583a12fd5ca067f87",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_08",
+      "id": "6c5982fc-57c8-48ce-82e7-b6e336971230",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0014395_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29540,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a868f941b8c759bdd1d42d134560f464f55b04abccdd7dbc1676444cca268cf3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_07",
+      "id": "738fc2ba-894e-4cee-9f5d-04bea3c03854",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0014395_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 30276,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "945e5916260b3dc683c437266a7e66225fd223cfdc3ad34b0d490bab93f67694",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_12",
+      "id": "8058e505-f50a-4a47-8028-2b525fff85ec",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0014395_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38558,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "715b84a3404c4e5ce2ed9760b3cf47e9b99a1c2ecb109b027912df182c2d3b9c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_11",
+      "id": "a89d2bb2-0059-40cb-8177-9022efb57f93",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0014395_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36058,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - WHITE BETON - 80X80 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9e89ba80760216d527a11d4a19ecc0e04e7fd6604d98fa7c70ab80b297f41aac",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE WHITE BETON 80X80_06",
+      "id": "d8523a7f-990f-43bd-b78c-30b6a5ff1d65",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0018157",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/white-beton/pf60018157-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0018157_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-camouflage-white-beton-0018157-60x60-nat; wall gardenia-wall-tile-camouflage-white-beton-0018157-60x60-nat",
+   "faces": [
+    {
+     "file": "0018157_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12812,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6094e075b72bb0e4b45463b5f72b2afc73195ad7369f0432a1c1067052db7926",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_01",
+      "id": "06104b90-ad5d-4664-a7ed-c7eadc6cf0d4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0018157_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21332,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c080fd8288657112eaa5c36094da7124d985fe920cb1d9e7869f468f083e92eb",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 2",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_06",
+      "id": "0083cd6e-66c8-41d8-898c-7d40db5521d7",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0018157_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22998,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4102b0ccdebab6cf8a19060eb8cc7e6d8c039f041acfe5d53da93a67a0d68123",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 3",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_12",
+      "id": "04b256f3-9fe5-472d-af51-8312d2077d28",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0018157_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24500,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "908add3c9c1b1945a02b0e5c2663f2ee7e5839fdd125be3253cfd2477cc8c24a",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 4",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_05",
+      "id": "10fc92e3-9795-417d-837e-932b52a117fa",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0018157_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20966,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "864e471485ab14f6ca7d9b7231939d4bdf561beee6e9102183b65593c24c8760",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 5",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_14",
+      "id": "24df4cc9-1fff-41ba-ac1f-883c405e7378",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0018157_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21762,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e3f6fe06201e3aad655b1406ed424ed1d5477cf2fd6da30457bded3f28f6c74c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 6",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_07",
+      "id": "26b51f09-8ecb-4ccf-8794-9f3cd4daa6d7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0018157_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26700,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "fca1009e223e086630515f759f58c7a0d9e338bd7ac515cc1f3be4e3084c1191",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 7",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_16",
+      "id": "2838c379-72a5-46af-900a-9f541ea8169d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0018157_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14400,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "82d69f0a86382d0c6f716ee9935ab0b5a04bdd515c1569edae83f06bb76d33b0",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_13",
+      "id": "44803508-1e60-43e2-812f-dbea41ea29bc",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0018157_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15382,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8e43c92dea6141d0b8e72307fb55b1cb0b10769bed042e880ef7518e01f150b7",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_24",
+      "id": "4821ea76-7021-447e-8c0e-98f6b27b9227",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0018157_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14198,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6c9bff4e9ad1fa534505643c658dec1f1bbe4c58a7de719d249b7a082721251d",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_03",
+      "id": "493abb85-6db3-40a5-817a-5448d1c8f534",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0018157_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26924,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7d8ba45e0ee43d8863eec56e0efae417c10f5dbe4f2db2d461ea71b1074a3f18",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_11",
+      "id": "4d9c25f6-6bac-45b6-9ad3-4a9b4aff7262",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0018157_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24748,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "7ff261fbb010ab242d79c2e65413ed70ca794477a4a5e5dc057d88183649293b",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_21",
+      "id": "4eca1f70-eaae-49bc-9546-9d7ddb98d5ad",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0018157_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21392,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "c7cb1ef96a7c0c598104f2997e166c604b8d3f32df7827bd85b6dbf3843aca61",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 13",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_09",
+      "id": "59664f3d-2807-43f3-b5b6-fea62c8a01cd",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0018157_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22876,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "88510a02d66c67a1ba25dd4b38ec69e5eb515e60ff47f561b8fbbaa320fb9491",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_02",
+      "id": "6872948b-056c-48a2-b3ca-85965818ae3a",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0018157_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23126,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "48e337a71adbc6ef924c14bae6b41b05e4e639fa55b8f432fcc69e9bb440f329",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_15",
+      "id": "6b7a08c6-ceac-4346-b6da-a454cf903473",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0018157_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22596,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0ddf8bdb2bd19e6bacb327365a289584be37b9c8109b74ea61a7f875b64d3e9c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_20",
+      "id": "7cee19f4-518c-4de2-8724-9ba1b51a3c7c",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0018157_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24080,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e48c96881e22a8d7e989311635cf89ce222760376bd467d436f05f2f96e35bb0",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_18",
+      "id": "830ffe68-e834-4de8-9f45-2e19655e7b97",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0018157_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25808,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5a1d0bc565a6e4f163f6a29455046f2d8fa0ebff0dbb1010120fe70f6dc4a252",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_19",
+      "id": "857d2736-6cfa-4902-9d50-a7d81200637c",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0018157_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25692,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "57d7deac9a418ae08960c5aa18645b0955950378010d9a1ca9368441c4f70737",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_08",
+      "id": "bc748d81-96fe-4a7c-bddd-77a01d2b8593",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0018157_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16096,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "b4a247f05919f33e1d805428aa5fd035578a0be6c9c1151fa8046b47437cab2a",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_22",
+      "id": "c831b8dd-891a-4148-bbee-f0900cefa706",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0018157_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14234,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4743bdb0bbda891a6975ab40a5e1e625906b7d50b08a949a6855c1ec3e9d93b8",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_10",
+      "id": "e412eb53-3023-4877-aeec-99095c8ce1e6",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0018157_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21328,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "a5de9510e311d8206e38f55e411c50d26bdf5495dd1d1f0e5abc107210b4bf3c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_17",
+      "id": "f47c664a-9f8d-4124-b7d2-3c4cae24b65f",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0018157_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24046,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "156254c66d5fd4a22da6abb4201487dda87437bd407dddbfce2442c65d0186f0",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_23",
+      "id": "f4ec51cf-24e6-4099-b989-6e8d7e7e8c3c",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0018157_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19062,
+     "source_zip": "CAMOUFLAGE - WHITE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - WHITE BETON - 60X60 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e6b13ab89665720328c4e575c1b90f4c55988c3ddd67f3880b7263d4c17b8c79",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE WHITE BETON 60X60_04",
+      "id": "f5ddb6ec-b13a-48fb-8b48-2275834debf0",
+      "site_position": 24
+     }
+    }
+   ]
+  }
+ ]
+}

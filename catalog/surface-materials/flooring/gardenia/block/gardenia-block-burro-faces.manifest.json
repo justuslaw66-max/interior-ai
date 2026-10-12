@@ -1,0 +1,307 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/burro/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: BLOCK - BURRO - minimali.zip (42480885 bytes, sha256 c75763d0f3c881d3a3a5623a1a5ceec884eda3ca4ab1b14cad73222017cfcadc).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/block/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0031144",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/burro/pf60031144-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0031144_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-burro-0031144-120x280-nat-3d; wall gardenia-wall-tile-block-burro-0031144-120x280-nat-3d",
+   "faces": [
+    {
+     "file": "0031144_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 196266,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - BURRO - 120X280 - Nat 3D - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "183fe93400580eed0b82829fef53d808b6dac46e97b0bc7c636c978c310bfcb8",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 1",
+      "name": "BLOCK BURRO 120x280 NAT_03",
+      "id": "3265e5a2-1530-4594-8309-58fc18f93c15",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031144_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 151938,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - BURRO - 120X280 - Nat 3D - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "2a2322f5d648839ef2ac26c8ee60984fa9243d61dac2c0d5ee010bfaa9eed9ea",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 2",
+      "name": "BLOCK BURRO 120x280 NAT_02",
+      "id": "6ffbb75b-53d0-4b4f-a017-d80f587e5c37",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031144_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 156858,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - BURRO - 120X280 - Nat 3D - view_3.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "c805b511a3c24985a3b69dcddd7520326092e0e9d2dade99e904d27bf63540fa",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 3",
+      "name": "BLOCK BURRO 120x280 NAT_01",
+      "id": "bbf4e6d1-8577-484e-8d8d-ea209b96e287",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0031173",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/burro/pf60031173-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0031173_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-burro-0031173-120x120-nat-3d; floor gardenia-flooring-block-burro-0031177-60x120-nat-3d (uses 0031173's faces: they stand in for Burro 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-burro-0031185-60x60-nat-3d (uses 0031173's faces: they stand in for Burro 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-burro-0031401-120x120-r11 (uses 0031173's faces: ABK's 8 R11 pictures are 0031173's 8 Nat 3D pictures, byte for byte); floor gardenia-flooring-block-burro-0031405-60x60-r11 (uses 0031173's faces: they stand in for Burro 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-burro-0031173-120x120-nat-3d; wall gardenia-wall-tile-block-burro-0031177-60x120-nat-3d (uses 0031173's faces: they stand in for Burro 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-burro-0031185-60x60-nat-3d (uses 0031173's faces: they stand in for Burro 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-burro-0031401-120x120-r11 (uses 0031173's faces: ABK's 8 R11 pictures are 0031173's 8 Nat 3D pictures, byte for byte); wall gardenia-wall-tile-block-burro-0031405-60x60-r11 (uses 0031173's faces: they stand in for Burro 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120))",
+   "faces": [
+    {
+     "file": "0031173_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67792,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e27a8efd820c365cc21f6e78b98824f2ac9f3adc81941a92afae5eca2180cc5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 1",
+      "name": "BLOCK BURRO 120x120 NAT_05",
+      "id": "181f2b67-6ae8-41ce-aded-6a4dbcab1e80",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031173_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 73562,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a8bca846b90f55d4b5001c3d9870147caf05cc727473982540b7ae5402e74835",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 2",
+      "name": "BLOCK BURRO 120x120 NAT_03",
+      "id": "473704ec-9a17-4b7d-8318-c9bebc751d15",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031173_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 85700,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3a12cf800732fc4cd43931bcd1b88e4ef8f29eba3907b5d2c155c2ef9e5a8ab7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 3",
+      "name": "BLOCK BURRO 120x120 NAT_07",
+      "id": "76597e15-b105-42d2-85c6-25a9db0a304c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0031173_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 62872,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "512d94190b8a3368ddadd367a5ef9dcb4e1b0cb398d66145e5797aa6a9682c0f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 4",
+      "name": "BLOCK BURRO 120x120 NAT_06",
+      "id": "828cb759-ac0b-4ccb-8b26-61e932993abe",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0031173_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 67752,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b3ce887d942da96b2a679fb3f5fa1527c4352c78b7a44d4873fb4c50c493b1b7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 5",
+      "name": "BLOCK BURRO 120x120 NAT_02",
+      "id": "b774f88f-6a62-454a-8693-01d00079a14a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0031173_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 83260,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "66749ef8d7efcf4e0f65a73e3f1776dc1a99377ff30bebafb398b4a758e495d3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 6",
+      "name": "BLOCK BURRO 120x120 NAT_08",
+      "id": "bf596239-a302-47b6-a927-cf9a288f02ee",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0031173_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 61382,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "08a1ef6af45cddd2aa98f21c5f68b0da3b14186448e8fa1524f4ba3baec7088c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 7",
+      "name": "BLOCK BURRO 120x120 NAT_04",
+      "id": "f5118fe9-5732-4f1a-b617-12fd574d7c7e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0031173_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 75210,
+     "source_zip": "BLOCK - BURRO - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - BURRO - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "44cc989f3879d8429a481548a429700c08b070429009b605a21ddd8e01851e19",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 8",
+      "name": "BLOCK BURRO 120x120 NAT_09",
+      "id": "f6d04d59-49a3-4644-b0ea-7b1454d2b593",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

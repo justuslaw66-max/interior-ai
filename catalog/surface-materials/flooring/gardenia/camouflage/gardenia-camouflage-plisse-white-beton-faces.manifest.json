@@ -1,0 +1,181 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/plisse-white-beton/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip (25085825 bytes, sha256 93f8d686c4c598b0ec0c97536c3cb5550db0a0e7ee1713f9403dbb9fe2e00377).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0016636",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/plisse-white-beton/pf60016636-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016636_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 3 is picture 8 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 4 is picture 9 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 5 is picture 10 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 6 is picture 12 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 7 is picture 11 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-plisse-white-beton-0016636-60x120-nat; wall gardenia-wall-tile-camouflage-plisse-white-beton-0016636-60x120-nat",
+   "faces": [
+    {
+     "file": "0016636_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31566,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "601d3ff333c8455a8ae33403355e6b16fa9f655867b7de233aa2603feb5b053c",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_01",
+      "id": "e581b0a1-5180-42e9-a666-6ffb2ab8a13a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016636_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34574,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "3d3305f9fc6dedf5f4481ecb7308e82320a6e6333d1c54deb7e74afcd4af9393",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_02",
+      "id": "0858ceb9-c9ac-49f2-8502-4548fc4653cd",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016636_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43290,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "95294e71af44ef2cfd652d46fe28a7b3362bfe6f1812dcf4adbf651a46e765b7",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_03",
+      "id": "3d2e6296-cf38-4953-a01e-fcae7c650f47",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016636_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41698,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "c741c0adcdb3ece1733efb615a45e1c029a48a1fed89c107869055fd698d38b9",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_04",
+      "id": "cbcf8ea6-73e2-4427-a11e-b4b2354bc47d",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0016636_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31822,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "20e3f95c51b887cedc190151ada4d1c54f05cb73b56dafec5424e0a0c8f9c3c2",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_06",
+      "id": "e1e08a64-669d-4814-b120-090aac9ee505",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0016636_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34650,
+     "source_zip": "CAMOUFLAGE - PLISSÉ WHITE BETON - minimali.zip",
+     "source_file": "60X120-Natural/CAMOUFLAGE - PLISSÉ WHITE BETON - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2000,
+      4000
+     ],
+     "source_sha256": "ccb9a8dcba1af452b9e39cb9bda77cb136ec1b9a699e1fa0b2d0b5bf48abbc66",
+     "source_px_per_mm": 3.333,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "CAMOUFLAGE PLISSE' WHITE BETON 60x120_05",
+      "id": "ef68c478-1268-41d7-9bca-142353a1a060",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

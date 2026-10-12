@@ -1,0 +1,139 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Block
+  material_id: gardenia-wall-tile-block-burro-0031177-60x120-nat-3d
+  product_name: Gardenia Block Burro 60x120 Nat 3D
+  slug: gardenia-wall-tile-block-burro-0031177-60x120-nat-3d
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/block/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: the 8 single item pictures of item 0031173 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/burro/pf60031173-v102/), because they stand in for Burro 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120). Downloaded signed in on 2026-10-12, stored at 0.6 px per mm; the originals are sharper, see gardenia-block-burro-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-12: Block is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0031177 (pf60031177) for wall use: 60X120 Nat 3D, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/burro/pf60031177-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/block/burro/60x120/: finish Nat 3D, thickness 8,5 mm, porcelain stoneware."
+    - "Picture: ABK's download area shows no picture of this item, so it draws item 0031173's faces, the colour's 120x120 Nat 3D faces, cut to the tile at true scale (J, 2026-10-12: cut from 120x120)."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Burro as white (colour page pictures)."
+    - "Look: ABK describes Burro as a stone effect, so it is filed as stone (J, 2026-10-10: per colour, as ABK)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: BLOCK draws on an understated, stone-inspired material with subtle tonal variations. The flat surface, enhanced by natural low-relief textures, is complemented by a fluted geometry that introduces rhythm and depth and a new perception of light. Two interpretations of the same material, designed to be used in alternation to create continuity throughout the space through texture, colour and proportion."
+    - "Collection page thicknesses: 6 mm, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 60x120, 60x60."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: white
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+    - commercial
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/block/0031173_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/block/0031173_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 1200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_01.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_02.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_03.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_04.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_05.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_06.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_07.webp
+      width_mm: 1200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/block/0031173_08.webp
+      width_mm: 1200
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry
+    - stand_in_faces

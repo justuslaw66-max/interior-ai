@@ -1,0 +1,1476 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - ECRU BETON - minimali.zip (190342426 bytes, sha256 c8b6e5e8b26eab55ddb2931e5001b387f65640b7f01d8e02c8ff896df33b72f8).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0016235",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/pf60016235-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0016235_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3
+   ],
+   "duplicates_note": "picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 4 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016235-120x280-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0016235-120x280-nat",
+   "faces": [
+    {
+     "file": "0016235_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 160720,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X280-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X280 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "fc983fd092b69ce7edbd1e9aadecd970efce52b5c8bf7c84fe260b75faf446a0",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE ECRU BETON 120X280_01",
+      "id": "693e7c91-c324-4c40-9af8-a6cd30f64500",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016235_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 140546,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X280-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X280 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "211c43a294fc594612ed1b5e9bb1bed4c84e9297a688be24076845c68d32ad1b",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat P.tech · Faccia 4",
+      "name": "CAMOUFLAGE ECRU BETON 120X280_02",
+      "id": "113031bc-40fd-44f8-b0b4-3236a4e98012",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0016239",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/pf60016239-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0016239_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "duplicates_note": "picture 2 is picture 1 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 3 is picture 11 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 4 is picture 12 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 5 is picture 8 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 9 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 7 is picture 10 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016239-120x120-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0016239-120x120-nat",
+   "faces": [
+    {
+     "file": "0016239_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42078,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6dd74fe1be0f2945be55633f04756791fed054debc0b9eb11c1b857a7d46de1b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_01",
+      "id": "8d2b6e06-6082-4438-9a80-c04a0e623781",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016239_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 70980,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3c4ad8864c4b0dabbbb592b2b0585468659a91ddab34c6a8a94fce256c319d55",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_04",
+      "id": "1cb776fa-fbb4-464e-b644-b4f06157f17d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0016239_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 59764,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "df1f33b36bcfa52374a14769c630ae47409b47375912da9b0ce32af7a1bfdec8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_05",
+      "id": "37a85c82-ad30-4901-bb91-740179e3173e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0016239_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 52530,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c6b72839c16ef199dee1a8ef2a32c0af02f6f1c43df7f65df6f5708bbaa752dc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_06",
+      "id": "842cd717-6720-4a62-a41f-616dc21e7d56",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0016239_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63278,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5f6ba1e3c6b1ccb0af7ef56d5a8d80da675f4add2ea648055053ef9c6a6829c3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_02",
+      "id": "b3d35994-af24-4e55-999a-cfde939a4cbd",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0016239_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 57718,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "275a39a3ceef2fc090db7cebc623a7c38ff99a2f3c4c0b01e0295a00fee2e22d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE ECRU BETON 120X120_03",
+      "id": "e21d9324-7f94-415c-8cdc-111a205192ad",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0016237",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/pf60016237-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0016237_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 10 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 11 is picture 20 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 12 is picture 23 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 21 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 15 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 4 is picture 22 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 18 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 6 is picture 17 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 19 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 8 is picture 16 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 9 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016237-60x120-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0016237-60x120-nat",
+   "faces": [
+    {
+     "file": "0016237_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23296,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "45aea6b0c31f6561e18a3246f1abf426d84c3bc63dafee734ec7fca79fb679b7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_01",
+      "id": "ea2d4eee-d8b2-4bca-bd9a-4a0267c646f5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016237_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32302,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c1bf53bbaa3029b0ab52db493cca2dd778b07d338e08590a331380cd321ccb86",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_08",
+      "id": "09994e7c-3986-4989-85e9-c44d0967cb16",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0016237_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20196,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e9f4b5b6bf6bfaed3ba2ca18ffca02b1bb71d5dd749d028f915ec80aea77339c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_02",
+      "id": "0caea14a-76e7-4cb9-a985-3eac386f081f",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0016237_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23868,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "011fb67ab848124b3215852326a723b8ae3b872451d3070518dfa4cff18daa81",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_07",
+      "id": "14447220-1578-4a8f-9141-fd299b50b8d3",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0016237_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30974,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cdc79dbc325a1fc98ebcb2d65dbf1e2677e9c83dd38d4ed8cccea6faf4de193b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_05",
+      "id": "1861fe68-72ec-475a-92a9-53f42a34eb9d",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0016237_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23846,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "aa8559b8eac8c31b1ecdc5376ab5e14853a5bb8bf385c594a4a5ab758232effe",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_04",
+      "id": "467f5b3b-e248-4ff0-bbd7-e1d491673063",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0016237_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31648,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0af6c0e1c0351ae6283401e02c59e6b7d1ba5d3b615e0d14abdce7eb292c3b2d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_06",
+      "id": "6ba9370c-7528-41f2-b870-7ff1f395ffa4",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0016237_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38874,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_12 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a68cb9eb945e7004fd5675ca210ab7c91c92320c1fdad9950411739b46096f99",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_10",
+      "id": "7ebeab3d-70d5-4465-bb23-3bd8f0866548",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0016237_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32266,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c843b1c25be5c1214d910aed8aab1ba2d1b48d593016c51d772de995fa2f00ee",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_12",
+      "id": "82d3b094-94c6-4d87-8c25-cf67facf451f",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0016237_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26020,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5fb6d652e675d08a77d16929941be3ecdc16555558ee309b359fb4c14adbf7df",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_03",
+      "id": "8308fd80-91fb-4e3f-8fc7-934bab36c39b",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0016237_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30188,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1fb6ca91947a5def52a0a7c9890c4fef503ac811d9e82e3488d71a84a95ac6a6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_11",
+      "id": "e45ed320-9e29-480d-a2b3-738c3f4006b8",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0016237_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29976,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X120 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "63fbd55f8afd3ac166c89b0ab456f25139a2446016b11804a0a1f6b27665a137",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE ECRU BETON 60X120_09",
+      "id": "e4718a95-60ec-4e3b-86fe-d0edf2b35403",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016241",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/pf60016241-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016241_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 10 is picture 16 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 11 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 12 is picture 23 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 18 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 19 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 4 is picture 15 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 22 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 21 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 8 is picture 17 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 9 is picture 20 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016241-80x80-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0016241-80x80-nat",
+   "faces": [
+    {
+     "file": "0016241_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 17668,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ef171a2eade7a992490fa774b16fc3636455035bf6230483d4656d87c41cec0b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_01",
+      "id": "5f7e5f62-55fd-40a4-9d58-05dcd736f182",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016241_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25510,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e61f63217730ce17134075e32652120befaa3b8bc7615ef3cbc96a6b219a2fc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_10",
+      "id": "05a48bc9-3dcf-47e8-8744-002b7873f369",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0016241_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25196,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0ae3533d2d06d10d70db7433d28984ba91afdc4f58680bd33914aa541c26ed7b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_03",
+      "id": "2a901012-b32a-4cce-a479-5bb7674e4f5d",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0016241_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23616,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "66b697a1b2437a0cc61849df3bc5893700e9f31b5553778ef212c24709e66b30",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_09",
+      "id": "57219e7d-be49-4a26-92e6-31c1d8da4e79",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0016241_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 18786,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "57e305bf520e3d9b50b21f5e21c7d4334f77002a68d26dbc869403fc399c4e72",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_07",
+      "id": "6deb9685-9c8c-4d59-9356-6309f7f07543",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0016241_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15562,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "115496f40815d832e0fdf2d56050222ef2ff152d4136f6e600da97c2eb3b5547",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_12",
+      "id": "7d700204-e18e-4bf2-ac54-ee3d3a89970b",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0016241_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21434,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "885e1b5ae78d748d740f8dc911a8ada6ebe9cb450a65ac93b482f8bae0d5ee4c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_02",
+      "id": "824f688d-0ea6-44e9-89d6-78bc0047cbc4",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0016241_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27244,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ffd697bfaa5722fd07dc0c7951e217bbe5ce11388a53d34e6e7288c755a040e9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_08",
+      "id": "95505e89-6865-4488-b7ad-100266c5ea6f",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0016241_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25882,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ba12e60029ac1c5f2d7bcae8365242477dd7efe20db24252d0cc8227c0958e71",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_06",
+      "id": "ad5b8b63-8715-44b1-8169-47bc306a8898",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0016241_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25482,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "27187a2c25c0cf60bc60b746a64042a0a5ca84e6ca05be2b06325eaf0221e59b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_04",
+      "id": "b5e94ebf-529d-407e-889e-6ce5440fe881",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0016241_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27352,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "eddcc5bea550e1f0a480d7aa6edaa8b4ca065b1a98dceea9c7418a07441394be",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_11",
+      "id": "b8c07463-1f36-47b5-a188-ed61ca36693e",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0016241_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26294,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - ECRU BETON - 80X80 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2550608ac058c86c9e5f0aa5e1adbc02ae2c52bd121af4b9c64282228fc16255",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE ECRU BETON 80X80_05",
+      "id": "e0db118b-ddf2-4da5-a393-249654ca0cbb",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0018160",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/ecru-beton/pf60018160-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0018160_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0018160-60x60-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0018160-60x60-nat",
+   "faces": [
+    {
+     "file": "0018160_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 8940,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "af1ed2db20e0579bc33c9b8a8864927c3c1f6ae223518973326e27937d42a591",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_01",
+      "id": "5fd33176-9ff6-48a5-8ddb-1bffc3561588",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0018160_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16422,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "133d9ff79d1902c4114f230adcc86c062fa38eac3d5d51b8968825d85b99fc65",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 2",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_14",
+      "id": "0883aff9-ccfb-43ab-977b-3bc87cf0d6b5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0018160_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16128,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "28bd26d67a6b97fc2a6e92198b75caf60a3e792e2d7cc420ded40719c3c46546",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 3",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_22",
+      "id": "1997fa2f-f456-4da9-ade5-6796e76db136",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0018160_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18716,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "16d738b340d7f2c7bd1627b77659720a8ea02aa72c9d8aebeb070886bd15ebe8",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 4",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_18",
+      "id": "210c257d-651f-4a52-affc-61f0f355f40e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0018160_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14358,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "b3548df829cfd0b74932662c16485716e66515636db63f7bb37003401a85f14e",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 5",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_21",
+      "id": "217b15f9-267c-4ee5-b0d8-49cdd426058e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0018160_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16232,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5f41cc58bd3dd89a740dbed3c9de01f7d67b941e215f01fa60e9f66df355f980",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 6",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_11",
+      "id": "2b5c3ad1-596d-4eed-b3e0-b5d595d44a30",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0018160_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16678,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f3753e686c678b05924b37699d59de92c0b1ea579780efcbe1fd62d1eae15b12",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 7",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_09",
+      "id": "3f6d048e-6cb0-456e-8a75-c337dadd41f0",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0018160_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18148,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e147bdbe471f12b445a7c7e03495c45cc251d0a33a2f153194ff15028743625e",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_15",
+      "id": "4f155353-01f4-4df4-983f-ea415e35435e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0018160_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21716,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "43bcce4e2325e55f4d5c1ba47186cbbd8cc9c01540494bbb501d1f4aeb1d9962",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_20",
+      "id": "5be531d3-c974-46ff-9c2d-0de7eea76c47",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0018160_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13086,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ed4053abb2514dea1cde7cbed1dcc8faa6196d5a335ab630738c47bf488135f4",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_17",
+      "id": "5e9c2e13-997c-4f23-b44f-4f6b6e2aeea1",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0018160_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14396,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "bbb2e7ae85e1bf79994c1b53b500c62acfbab433090258f3e0380ac0270ab7fe",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_02",
+      "id": "7b13aa7b-172f-4e3d-9363-69f00adfcd77",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0018160_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16384,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "bb6a68f8f01416d11a2a0bf6744a1244ac78fc3bf0ea44a6a05a35d874de336c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_24",
+      "id": "7dfed099-10f1-47ad-b3e6-bc00de2825b5",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0018160_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6980,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0cb570c28feb78775d4a7645685285dfabe6a6c97e04bff6f4cb564109ae97ae",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 13",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_03",
+      "id": "8a562578-3d39-468e-8fad-f520b6824d38",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0018160_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15206,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "a4857f2ac663b78e057a7ab131102911a64cb92fb6cb469240c4a74527c002df",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_16",
+      "id": "8dbe1188-afb8-4e11-9544-e8d581beae92",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0018160_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18214,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6bcfaeaae641c36a87c1a36aac20c8a4eda71bdfc09a537cbe2f29738820550e",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_19",
+      "id": "a4f55a54-6057-43d0-9631-c81ea1a2fec3",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0018160_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10628,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8a4961a4e155a3910eeea25d9b4d1b286bd21088b580ddd740dd295be4ccfe56",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_06",
+      "id": "acdcddd7-15d6-4de3-be6f-240d5c8c0404",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0018160_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16172,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "23446214c1b61b62fea6789a6910c938972d6e4f54a3f14e11e70c574e96bfdd",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_05",
+      "id": "ad4c8409-ec08-4d89-a9cf-6ba1c98de6a2",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0018160_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9496,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "bd2934dc981374f06a5061de75b17f70c02eb3f92a247da655b952db58f50238",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_08",
+      "id": "b38b8243-a045-4a9e-bf1f-873e5e5cab60",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0018160_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16398,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f9107aa26637e9f5e8b5548b65ce0de94cced6158cf86736108fa4c52ad393ce",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_23",
+      "id": "c2c3b10f-b312-4df0-a468-35e827777381",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0018160_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14400,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "25fd58e58a4e145380d629c2467f7b02d58215dc60908d1aefd604328fa6e037",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_07",
+      "id": "ca604987-ea91-4d05-93fd-b8234c64866f",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0018160_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7374,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "eb2a5875d117b3fd6e180156e0bdabfd91f2caa2b35eb03a6326b9de6ab876ca",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_10",
+      "id": "d16f9c64-4b9f-4cba-8f65-0d4f53668923",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0018160_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15644,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "384441f711b172a7eea2f0da6868f96508a2751ea984ff3df1d0933e436ed98d",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_13",
+      "id": "d53919fb-7abf-4aee-b3a7-642fec3d8c50",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0018160_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13754,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0d941d5fd8bbf37aac85ec18653fa6c4d7f7eb3558b04259a88e4310e751884d",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_04",
+      "id": "daaad67e-9937-43ee-a73f-859be846c47b",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0018160_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15236,
+     "source_zip": "CAMOUFLAGE - ECRU BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - ECRU BETON - 60X60 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6341d1daec417093f59a7c888cf2a6f2d21f323c02192f16c9e94cf404eb4a87",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE ECRU BETON 60X60_12",
+      "id": "f4ce816e-a41a-4da0-aea0-dece6b12bdee",
+      "site_position": 24
+     }
+    }
+   ]
+  }
+ ]
+}

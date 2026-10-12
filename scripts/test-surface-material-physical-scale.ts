@@ -198,16 +198,19 @@ const isJustNature = isGardeniaCollection("just-nature");
 const isLuce = isGardeniaCollection("luce");
 const isStorm = isGardeniaCollection("storm");
 const isEpoque = isGardeniaCollection("epoque-20");
+const isCamouflage = isGardeniaCollection("camouflage");
+const isBlock = isGardeniaCollection("block");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque,
+  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm and Epoque 2.0 declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block " +
+    "declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -223,11 +226,11 @@ for (const material of physicalMaterials) {
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's and Luce's; Bon Ton's decors (Network,
   // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
-  // decors (Crocini, Pillole, Rattan) have a single face.
-  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-/;
+  // decors (Crocini, Pillole, Rattan), and Block's Righe decors have a single face; Camouflage's 120x280 slabs have two.
+  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-block-righe-/;
   const minimumFaces = singleFace.test(id)
     ? 1
-    : /-(pietra-viva|la-geoteca|concrea-plain|luce)-.+-120x280-/.test(id)
+    : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-/.test(id)
       ? 2
       : 3;
   assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
@@ -395,7 +398,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -1032,18 +1035,22 @@ assert.deepEqual(collectionFaceRows(isConcreaPlain), [
 // What the entries take from ABK's pages: thickness per format (6 mm slabs, 8.5 mm otherwise), no configurator
 // pattern ids, the layouts J chose (planks for the wood collections), and no blocker but the price.
 const isFromAbkPages = (entry: { surface_material: { material_id: string } }) =>
-  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque].some((filter) => filter(entry));
+  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock].some((filter) => filter(entry));
 const isWoodPlank = (entry: { surface_material: { material_id: string } }) => isHermione(entry) || isJustNature(entry);
 const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter(isFromAbkPages);
 assert.equal(
   abkSiteEntries.length,
-  152,
-  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16 and Epoque 2.0 21 items, each for floor and wall"
+  252,
+  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16, Epoque 2.0 21, Camouflage 23 and Block 27 items, each for floor and wall"
 );
 for (const entry of abkSiteEntries) {
   const id = entry.surface_material.material_id;
   assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
-  assert.equal(entry.physical_specs.total_thickness_mm, id.includes("-120x280-") ? 6 : 8.5, `${id} thickness`);
+  assert.equal(
+    entry.physical_specs.total_thickness_mm,
+    id.includes("-120x280-") ? 6 : id.includes("-camouflage-plisse-") ? 8 : 8.5,
+    `${id} thickness`
+  );
   assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
   assert.deepEqual(
     entry.rendering.available_pattern_layouts,
@@ -1060,8 +1067,10 @@ assert.equal(
   "the import guard finds every Gardenia entry on faces"
 );
 assert.deepEqual(
-  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20"].map((collection) => lostToImport.get(collection)),
-  [6, 22, 22, 28, 32, 42]
+  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block"].map((collection) =>
+    lostToImport.get(collection)
+  ),
+  [6, 22, 22, 28, 32, 42, 46, 54]
 );
 
 // Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
@@ -1232,6 +1241,138 @@ assert.deepEqual(
   ]
 );
 
+// Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
+// and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
+// Gioia's decors carry an eight-digit code (00202274 -> 0202274_nn).
+const itemCode = (id: string) =>
+  (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?")
+    .replace(/^g0+/, "g")
+    .replace(/^pf6/, "")
+    .replace(/^0(\d{7})$/, "$1");
+// Block items with no picture on ABK's download area, and the item whose faces each draws (J, 12 Oct 2026: cut from 120x120).
+const blockStandIns = [
+  ...["0031186", "0031406"].map((code) => [code, "0031174"] as const),
+  ...["0031177", "0031185", "0031405"].map((code) => [code, "0031173"] as const),
+  ...["0031179", "0031187", "0031407"].map((code) => [code, "0031175"] as const),
+  ...["0031180", "0031188", "0031408"].map((code) => [code, "0031176"] as const),
+];
+// Gardenia Camouflage and Block (downloaded 12 Oct 2026), from ABK's pages like the six above. Camouflage's sizes are true to
+// their labels; every page but the 60x60 ones lists each face twice, tagged sRGB and with no profile, and each face is used
+// once, from its sRGB copy. Block's R11 120x120 pages list the Nat 3D pictures, so both finishes draw the Nat 3D faces (J,
+// 12 Oct 2026: both, sharing faces). Eleven Block items have no picture on ABK's download area and draw the colour's 120x120
+// Nat 3D faces, cut to the tile at true scale (J, 12 Oct 2026: cut from 120x120); their entries carry the qa flag
+// stand_in_faces. Tabacco 120x280 has no picture and is left out. The Righe decors are one picture each.
+for (const [filter, label, count] of [[isCamouflage, "Camouflage", 46], [isBlock, "Block", 54]] as const) {
+  assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
+}
+const camouflageSizes = ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
+const blockSizes = ["120x280 Nat 3D", "120x120 Nat 3D", "120x120 R11", "60x120 Nat 3D", "60x60 Nat 3D", "60x60 R11"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isCamouflage, category),
+    (
+      [
+        ["Ecru Beton", camouflageSizes], ["Plisse White Beton", ["60x120 Nat"]], ["Silver Beton", camouflageSizes],
+        ["Taupe Beton", camouflageSizes.slice(1)], ["Vernis Gold", camouflageSizes.slice(1, 3)],
+        ["Vernis Green", camouflageSizes.slice(1, 3)], ["White Beton", camouflageSizes.slice(1)],
+      ] as const
+    ).map(([name, sizes]) => [`Camouflage ${name}`, [...sizes]])
+  );
+  assert.deepEqual(
+    collectionCards(isBlock, category),
+    (
+      [
+        ["Argilla", blockSizes], ["Burro", blockSizes], ["Creta", blockSizes], ["Righe Argilla", ["60x120 Nat"]],
+        ["Righe Burro", ["60x120 Nat"]], ["Righe Creta", ["60x120 Nat"]], ["Righe Tabacco", ["60x120 Nat"]],
+        ["Tabacco", blockSizes.slice(1)],
+      ] as const
+    ).map(([name, sizes]) => [`Block ${name}`, [...sizes]])
+  );
+}
+const camouflageRows = (colour: string, [big, long, slab, small, medium]: readonly (string | null)[], [bigN, longN] = [6, 12]) =>
+  (
+    [
+      [big, "1200x1200", bigN, "1200x1200"],
+      [long, "1200x600", longN, "600x1200"],
+      [slab, "2800x1200", 2, "1200x2800"],
+      [small, "600x600", 24, "600x600"],
+      [medium, "800x800", 12, "800x800"],
+    ] as const
+  ).flatMap(([code, tile, faces, face]) => (code ? [[colour, tile, faces, face, `${code}_01.webp`]] : []));
+assert.deepEqual(collectionFaceRows(isCamouflage), [
+  ...camouflageRows("ecru-beton", ["0016239", "0016237", "0016235", "0018160", "0016241"]),
+  ...camouflageRows("plisse-white-beton", [null, "0016636", null, null, null], [0, 6]),
+  ...camouflageRows("silver-beton", ["0016238", "0016236", "0016234", "0018159", "0016240"]),
+  ...camouflageRows("taupe-beton", ["0014261", "0014255", null, "0018158", "0014398"]),
+  ...camouflageRows("vernis-gold", ["0014263", "0014257", null, null, null], [5, 10]),
+  ...camouflageRows("vernis-green", ["0014264", "0014258", null, null, null], [5, 10]),
+  ...camouflageRows("white-beton", ["0014259", "0014253", null, "0018157", "0014395"]),
+]);
+// Each Block colour: 120x120 Nat 3D and R11 on the Nat 3D faces; the 120x280 slab on its own; 60x120 on its own (Argilla) or
+// on the 120x120 faces; 60x60 Nat 3D and R11 on the 120x120 faces.
+const blockRows = (colour: string, big: string, faces: number, slab: string | null, long: string | null) => [
+  [colour, "1200x1200", faces, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x1200", faces, "1200x1200", `${big}_01.webp`],
+  long ? [colour, "1200x600", 5, "600x1200", `${long}_01.webp`] : [colour, "1200x600", faces, "1200x1200", `${big}_01.webp`],
+  ...(slab ? [[colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`]] : []),
+  [colour, "600x600", faces, "1200x1200", `${big}_01.webp`],
+  [colour, "600x600", faces, "1200x1200", `${big}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isBlock), [
+  ...blockRows("argilla", "0031174", 9, "0031145", "0031178"),
+  ...blockRows("burro", "0031173", 8, "0031144", null),
+  ...blockRows("creta", "0031175", 9, "0031146", null),
+  ["righe-argilla", "1200x600", 1, "600x1200", "0031182_01.webp"],
+  ["righe-burro", "1200x600", 1, "600x1200", "0031181_01.webp"],
+  ["righe-creta", "1200x600", 1, "600x1200", "0031183_01.webp"],
+  ["righe-tabacco", "1200x600", 1, "600x1200", "0031184_01.webp"],
+  ...blockRows("tabacco", "0031176", 8, null, null),
+]);
+// The entries with no picture of their own are flagged, for the admin audit page (J, 12 Oct 2026).
+const flaggedStandIns = getAllSurfaceMaterialYamlEntries().filter(
+  (entry) => isBlock(entry) && entry.import_governance.qa_flags.includes("stand_in_faces")
+);
+assert.deepEqual(
+  [...new Set(flaggedStandIns.map((entry) => itemCode(entry.surface_material.material_id)))].sort(),
+  blockStandIns.map(([code]) => code).sort(),
+  "Block's stand-ins carry stand_in_faces"
+);
+assert.equal(flaggedStandIns.length, 22, "11 stand-in items, floor and wall");
+// Camouflage: every face that ABK lists twice is used once, from its sRGB copy (the manifests name the copy left out).
+for (const colour of ["ecru-beton", "plisse-white-beton", "silver-beton", "taupe-beton", "vernis-gold", "vernis-green", "white-beton"]) {
+  const manifest = JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/camouflage/gardenia-camouflage-${colour}-faces.manifest.json`),
+      "utf8"
+    )
+  ) as { formats: { format: string; faces: unknown[]; duplicates_dropped_site_positions?: number[]; duplicates_note?: string }[] };
+  for (const format of manifest.formats) {
+    const listedTwice = format.format !== "60x60";
+    assert.equal(
+      format.duplicates_dropped_site_positions?.length ?? 0,
+      listedTwice ? format.faces.length : 0,
+      `Camouflage ${colour} ${format.format}: each face is listed twice but on the 60x60 pages`
+    );
+    if (listedTwice) assert.match(format.duplicates_note ?? "", /from its sRGB copy/, `Camouflage ${colour} ${format.format}`);
+  }
+}
+// Colour and look as ABK describes them: Camouflage concrete, Block stone and its Righe decors plain; Vernis Green mixed.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter((material) => isCamouflage(material) || isBlock(material)).map((material) =>
+    `${/-(camouflage|block)-([a-z-]+?)-\d/.exec(material.surface_material.material_id)?.slice(1).join(" ")}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "block argilla: stone beige", "block burro: stone white", "block creta: stone beige", "block righe-argilla: plain beige",
+    "block righe-burro: plain white", "block righe-creta: plain beige", "block righe-tabacco: plain beige",
+    "block tabacco: stone beige",
+    "camouflage ecru-beton: concrete beige", "camouflage plisse-white-beton: concrete white",
+    "camouflage silver-beton: concrete grey", "camouflage taupe-beton: concrete beige", "camouflage vernis-gold: concrete beige",
+    "camouflage vernis-green: concrete mixed", "camouflage white-beton: concrete white",
+  ]
+);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -1274,6 +1415,9 @@ const sharedFaces = new Map([
   // Epoque 2.0: Lappato items on the Natural item's faces.
   ["0004299", "0004295"], ["0004311", "0004307"], ["0004301", "0004297"], ["0004298", "0004294"],
   ["0004310", "0004306"], ["0004300", "0004296"],
+  // Block: R11 items on the Nat 3D item's faces, and the stand-ins on the colour's 120x120 Nat 3D faces.
+  ["0031402", "0031174"], ["0031401", "0031173"], ["0031403", "0031175"], ["0031404", "0031176"],
+  ...blockStandIns,
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
@@ -1287,20 +1431,12 @@ const wallOnly = new Map([
   // La Marmoteca Sand Flower 60x120 Lux is wall-only; its floor entry is the Nat P.tech one, on the same faces.
   ["0012069", 12],
 ]);
-// Make's ids carry ABK's zero-padded code (g0073022), its faces drop the zeros (g73022_nn); Tabulae's
-// and Bon Ton's carry pf6 before the code (pf60021141 -> 0021141_nn), and 23,4 is written 23-4.
-// Gioia's decors carry an eight-digit code (00202274 -> 0202274_nn).
-const itemCode = (id: string) =>
-  (/-((?:g|pf)?\d{5,10})-\d+(?:-\d+)?x\d+/.exec(id)?.[1] ?? "?")
-    .replace(/^g0+/, "g")
-    .replace(/^pf6/, "")
-    .replace(/^0(\d{7})$/, "$1");
 const collectionById = new Map(
   physicalMaterials
     .filter((material) =>
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque,
+        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])

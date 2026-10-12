@@ -1,0 +1,424 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-gold/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - VERNIS GOLD - minimali.zip (70467916 bytes, sha256 d8e6eb2fa8d5c0620fb5a8ff23f6feac4232c7b4e81da0a8f8695ad9a67bf911).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0014263",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-gold/pf60014263-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014263_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 3 is picture 10 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 4 is picture 7 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 5 is picture 9 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 6 is picture 8 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-vernis-gold-0014263-120x120-nat; wall gardenia-wall-tile-camouflage-vernis-gold-0014263-120x120-nat",
+   "faces": [
+    {
+     "file": "0014263_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65788,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 120X120 - Nat P.tech - view_1 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "814c5336adc71385552d2c5778e7049b5117610d1bc33f35e3c108afb946c22b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE VERNIS GOLD 120X120_01",
+      "id": "8ab8095c-6609-4e7a-b602-6dd630adf3cc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014263_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 65932,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1945052ff7327b2e110d25bbfd141b57f261aba093deb2b7c39a3102b65eb9e6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 7",
+      "name": "CAMOUFLAGE VERNIS GOLD 120X120_03",
+      "id": "1e71c453-ada0-4076-b62a-9062d2005b0d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014263_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 60786,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "36cc447d30d18c9d56973b352787d2d45679477b675a369ba1fabeb51503cf65",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE VERNIS GOLD 120X120_05",
+      "id": "38558209-e571-4f5d-8474-678d47cfa2c2",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014263_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 63164,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a3a61088cb9ad1c46fc30c52dc67dd005874cfb30d520c0122d2569ca1729597",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE VERNIS GOLD 120X120_04",
+      "id": "e83bc182-d39d-4c67-a070-1cbb5e24f45d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014263_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64224,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 120X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be00c34c5e0ae40f2c51bfff639ff6e5122731f0e70eea58970b482e487aabc6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE VERNIS GOLD 120X120_02",
+      "id": "f67bfc1e-5f01-4e51-a103-93f14ffceb86",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014257",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/vernis-gold/pf60014257-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014257_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 10 is picture 13 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 11 is picture 12 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 3 is picture 16 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 4 is picture 18 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 5 is picture 14 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 6 is picture 20 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 7 is picture 15 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 8 is picture 19 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy; picture 9 is picture 17 exported again without a colour profile (image matching r 1.00), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-vernis-gold-0014257-60x120-nat; wall gardenia-wall-tile-camouflage-vernis-gold-0014257-60x120-nat",
+   "faces": [
+    {
+     "file": "0014257_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38362,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ab71cde679fbcfa6127de0bae8c4cb804a75149c2b7449b6f790f229b82fe035",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_01",
+      "id": "541c9d13-f755-4d10-94b2-6705e1b92844",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014257_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34968,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e8beaa29538d3a415ed6f7d03778c5ddda43f0dc91f878d2d88aa76037c290fb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_10",
+      "id": "1e024b8e-3659-48d0-9d00-23dd1f06aa40",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014257_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27906,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b43c05103db8d2a322f4d4df452caed1e2b3fb42185ffc7ba850190b44277a13",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 13",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_09",
+      "id": "3091205e-fd74-4bf7-8b4e-1655f4576b29",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014257_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27974,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "32544b1bc34a66f5e6f2e3bfa68560c85bdab02c19aedbc4e4807d0b9ae777e6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_04",
+      "id": "3cec3b52-981e-4766-a82f-5f0bfbf646c0",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014257_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31458,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e02f3ba8c9b3346d32f988c4ee9452159f71f2be8a378f51734dfa28dd237f12",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_06",
+      "id": "3d88c455-d018-44d2-b2c5-314b7b9dad0e",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014257_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30008,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b636913921b36674444ffa5e64db104e78d38711c151c3038acd474206936bd2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_02",
+      "id": "5a225791-8bd4-4bc0-9fd2-b26a9c68d8c5",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014257_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37992,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1200e3e0f1cfa44af028387eb770415bcc09bbc7b64d73f3962cd3237a15821c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_08",
+      "id": "77635d60-b0ff-4c61-8904-98b8c06693ac",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014257_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37572,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1303984d335a698eea0763672a46da34d963cc26db377f6848bd848bb8bf0361",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_03",
+      "id": "7da33833-49a4-4300-9646-7f36ef9b9d44",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014257_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28092,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cfdc5a7cfc8d74e07fe68c61ad4fa352a5fb9168c6c9cc18d77c38c4d31570e6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_07",
+      "id": "a7be3c55-0c2a-4b95-bee8-78ce1bd41279",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014257_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36896,
+     "source_zip": "CAMOUFLAGE - VERNIS GOLD - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - VERNIS GOLD - 60X120 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6753bbc7fe717dcd869b3b7625406affc514934327822e3303bcb0d0da020112",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE VERNIS GOLD 60X120_05",
+      "id": "aee1ecfb-a4b4-46ae-ba5c-4de27ff37c50",
+      "site_position": 20
+     }
+    }
+   ]
+  }
+ ]
+}
