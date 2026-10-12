@@ -9,7 +9,7 @@
   },
   "oversizedFiles": {
     "app/admin/audit/page.tsx": {
-      "lines": 720,
+      "lines": 404,
       "limit": 250
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
@@ -113,7 +113,7 @@
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
-      "lines": 723,
+      "lines": 722,
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
@@ -277,7 +277,7 @@
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
-      "lines": 381,
+      "lines": 367,
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
@@ -700,12 +700,12 @@
   "functionMetrics": {
     "app/admin/audit/page.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 580
+        "count": 1,
+        "maximum": 366
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 20
       }
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
@@ -1453,7 +1453,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 606
+        "maximum": 605
       }
     },
     "components/common/LazyImage.tsx": {
@@ -2171,7 +2171,7 @@
     "components/editor/RoomPanNavigator.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 289
       }
     },
     "components/editor/RoomPlanStatusBar.tsx": {
@@ -2181,7 +2181,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 83
+        "maximum": 59
       }
     },
     "components/editor/SceneAdjustmentToolbar.tsx": {
@@ -3734,12 +3734,6 @@
         "maximum": 17
       }
     },
-    "lib/floor-plan-planar-union.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 104
-      }
-    },
     "lib/floor-plan-quality.ts": {
       "overlongFunctions": {
         "count": 1,
@@ -4231,7 +4225,7 @@
     "lib/useDesignPageImportedModels.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 167
       },
       "complexFunctions": {
         "count": 1,

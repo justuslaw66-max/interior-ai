@@ -1,0 +1,641 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/montblanc/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - MONTBLANC - minimali.zip (44107468 bytes, sha256 0dc680df6068b07f24a9e6c7bb5641c18666f5c1bc6fd23864fac4724eeb4904).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008689",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/montblanc/pf60008689-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008689_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-montblanc-0008678-120x280-soft-139960-0 (uses 0008689's faces: ABK's 6 Soft 3D pictures are 0008689's 6 Lux pictures, byte for byte); floor gardenia-flooring-la-marmoteca-montblanc-0008689-120x280-lux-139962-0; wall gardenia-wall-tile-la-marmoteca-montblanc-0008678-120x280-soft-139960-0 (uses 0008689's faces: ABK's 6 Soft 3D pictures are 0008689's 6 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-montblanc-0008689-120x280-lux-139962-0",
+   "faces": [
+    {
+     "file": "0008689_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 64796,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_1.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "fc9d931a638e77bfd46279c833aa75a9cd50464724c63c1c094383658d3f285d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE MONTBLANC 120X280_01",
+      "id": "e2b7bedd-d02b-4d6c-b2c6-b3e593da15c5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008689_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 56608,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_2.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "76d0d4ec29057b8498427feee26c73ff73b23747011b96a57720e9a78ebbd700",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE MONTBLANC 120X280_02",
+      "id": "46ff5e7a-817e-4afe-b5ef-971540143433",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0008689_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 50030,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_3.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "c6401a76b0c2e58199443e371e22efca0490c5fad14ed4201a6d7feeae2f9e10",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE MONTBLANC 120X280_03",
+      "id": "1dd615d4-6d73-4550-aeba-34c12f3f077f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0008689_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 52440,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_4.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "122ffa23d1087bbe6e0d2ce5da7cd03b68006802c94131db1f9648ff0b314e9f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE MONTBLANC 120X280_04",
+      "id": "355df9f5-1117-46cd-8282-44d6f8e56c91",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0008689_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 54980,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_5.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "c3c6fbed8b1bd546e6212fdf296de848684cfab61bfe1f91a5497219ceff2d34",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE MONTBLANC 120X280_05",
+      "id": "f4436f9b-00c4-48e4-99de-0a52e874829f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0008689_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 60530,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - MONTBLANC - 120X280 - Soft 3D - view_6.jpg",
+     "source_px": [
+      1768,
+      4096
+     ],
+     "source_sha256": "f218b4df72f1b255baa9fda0860ff9afe804b26b648ad6930ae1bb2087270391",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE MONTBLANC 120X280_06",
+      "id": "1d24d6c7-af63-4930-8706-d5218123ea7e",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0006899",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/montblanc/pf60006899-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006899_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    6
+   ],
+   "used_by": "floor gardenia-flooring-la-marmoteca-montblanc-0006899-120x120-lux-139956-0; floor gardenia-flooring-la-marmoteca-montblanc-0006902-120x120-139958-0 (uses 0006899's faces: ABK's 9 Nat P.tech pictures are 0006899's 9 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-montblanc-0006899-120x120-lux-139956-0; wall gardenia-wall-tile-la-marmoteca-montblanc-0006902-120x120-139958-0 (uses 0006899's faces: ABK's 9 Nat P.tech pictures are 0006899's 9 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0006899_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28146,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "722996a9858365511f10e6398d3f752ca6bcd0abf32fa77725afc6c9377f4a54",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE MONTBLANC 120X120_01",
+      "id": "3d84638e-8917-4d5d-b82f-7e12cf4345c4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006899_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20252,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "566974d6196f5ae4c31ebc1035993b9e1c6b2d54af0275c773a71573e3937786",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE MONTBLANC 120X120_02",
+      "id": "fbc8577e-f051-489d-afe6-547224ebf9fb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006899_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28882,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e4636d13d341ef07659ae0bc3bdf2bdd80a9b747458400cb9ab5af5c0457248",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE MONTBLANC 120X120_03",
+      "id": "8d3477b7-6b60-4468-b50a-2de7d2686a3c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006899_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17834,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f993bcc33e3ccc38842e8de4eef7cefa998679492f321a336722251617e76f43",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE MONTBLANC 120X120_04",
+      "id": "64efc46d-a7d0-4bcc-875d-9fbeac57eb45",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006899_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20154,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "561ae636fa29796cd3534ff2723f3813516961b374bd7a4bbace860ce8a45f05",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE MONTBLANC 120X120_05",
+      "id": "3e4c757c-f88c-4409-962f-23a8ed2d0350",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006899_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28458,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d9003519d7c0aa20c94715ccf4ee9fb73434c6597673dbd0cd4ff6c42ee6f44a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE MONTBLANC 120X120_07",
+      "id": "1c714fed-e42a-4822-937e-8502c5cc6c5f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006899_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20400,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3e4b9702debd48df266794f1708024973ec12ac57704ba17985a0e4e1aad6a26",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE MONTBLANC 120X120_08",
+      "id": "6b4268fb-0341-4aa6-b820-53dc34951c7b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006899_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 24540,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "180a546c7b8cc36b1c63c70d6588a1f71c4dccb77ec964e697ad8a8ad8ddef1b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE MONTBLANC 120X120_09",
+      "id": "79d91b9c-4eb4-4576-a0c2-84e3015e6bd1",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006900",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/montblanc/pf60006900-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006900_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    3,
+    4
+   ],
+   "used_by": "floor gardenia-flooring-la-marmoteca-montblanc-0006900-60x120-lux-139957-0; floor gardenia-flooring-la-marmoteca-montblanc-0006903-60x120-139959-0 (uses 0006900's faces: ABK's 12 Nat P.tech pictures are 0006900's 12 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-montblanc-0006900-60x120-lux-139957-0; wall gardenia-wall-tile-la-marmoteca-montblanc-0006903-60x120-139959-0 (uses 0006900's faces: ABK's 12 Nat P.tech pictures are 0006900's 12 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0006900_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10734,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "47dd85b08b4bfb7a1453e3063a8d0f213f3e489d61dfb9ea9d1c9fc0785736c4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE MONTBLANC 60X120_01",
+      "id": "3cfa33fc-c594-4fd3-aa3b-4a470017360a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006900_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9822,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e282d55a390626afb1242d81c83dec2bdacee55b571c448b77632b807e40e4e8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE MONTBLANC 60X120_02",
+      "id": "b181a906-b23c-4de2-8546-29b5042f9b67",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006900_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8272,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0805f60671a8c18c805ac88b4015b96bf10b06cc3f50d40d5579b1a7c4406908",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE MONTBLANC 60X120_05",
+      "id": "256f06ba-a73a-41cd-a80b-0f8f8661a9ec",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006900_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16330,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "781ee566abc3c86bd05d4cf27ff3f65831a19f34d436c072c7b0c12d75932d8c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE MONTBLANC 60X120_06",
+      "id": "8dac5b49-b6f9-4a49-9967-5d7fc21dd2bc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006900_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10852,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e8c73a26ccbd990ab7cb45eca98c086ed480d1e3e3f08b9522fad409e44eec0e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE MONTBLANC 60X120_07",
+      "id": "f46d5bc9-865c-40aa-a043-e5b1bf804ba2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006900_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16030,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "caa9831e12da45206ac32b87a84f4d87d6a9986f5c719a9dd7198aacb48136de",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE MONTBLANC 60X120_08",
+      "id": "dab5eb50-fbd1-4eda-9321-af42e047039a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006900_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13862,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3ced12295c13d79f097e8f37251de938f7df1dafcd0c788771cde5066182b221",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE MONTBLANC 60X120_09",
+      "id": "48efc985-be5a-43e5-93cd-7942d304868b",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006900_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10022,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "468f935dd2a585afb68a961fe46f9958c7968e43cb7668fe4f4a55f77d77719e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10 (view_10)",
+      "name": "NOBILE MONTBLANC 60X120_10",
+      "id": "48eff375-1efd-4e11-ae4e-9a955238b82c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006900_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13308,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c8fb71adde95f343b94fa6ef428f83d39c4ed47cbd36dd5dcbb129f4ee75fff4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11 (view_11)",
+      "name": "NOBILE MONTBLANC 60X120_11",
+      "id": "61aa3393-dafa-47ae-91aa-c029b661231f",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006900_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15442,
+     "source_zip": "LA MARMOTECA - MONTBLANC - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - MONTBLANC - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3f1ba76ec91b7162ed39602fa936a4a2f1b592beb062d6e2ec4791be901b9558",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12 (view_12)",
+      "name": "NOBILE MONTBLANC 60X120_12",
+      "id": "01a81225-cd99-4fdb-931a-c338422713a1",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

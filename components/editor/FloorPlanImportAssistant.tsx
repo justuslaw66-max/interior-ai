@@ -395,7 +395,7 @@ export default function FloorPlanImportAssistant({
             <span className="flex items-center gap-2 text-left">
               {state.message}
               {estimate?.heartbeatHealthy ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-800">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Live
                 </span>
@@ -470,17 +470,17 @@ export default function FloorPlanImportAssistant({
             {deletingSource ? "Deleting upload…" : "Delete private upload now"}
           </button>
         ) : sourceDeletionPending ? (
-          <p className={`mt-2 text-[10px] ${subtle}`}>
+          <p className={`mt-2 text-xs ${subtle}`}>
             Deletion requested; removal from private storage is queued.
           </p>
         ) : (
-          <p className={`mt-2 text-[10px] ${subtle}`}>
+          <p className={`mt-2 text-xs ${subtle}`}>
             {savedUnderlaysScrubbed > 0
               ? "Your upload and its floor plan image in your designs were deleted."
               : "Private upload deleted."}
           </p>
         )}
-        {deleteError && <p className="mt-2 text-[10px] text-red-600">{deleteError}</p>}
+        {deleteError && <p className="mt-2 text-xs text-red-600">{deleteError}</p>}
       </div>
     );
   }
@@ -539,7 +539,7 @@ export default function FloorPlanImportAssistant({
           Opens in Plan, in 2D, so you can check it before you furnish. Your planning review does not grant source verification or construction approval.
         </p>
         {createError ? (
-          <p className="mt-2 text-[10px] leading-4 text-red-600">
+          <p className="mt-2 text-xs leading-4 text-red-600">
             Creation paused: {createError}
           </p>
         ) : null}
@@ -614,7 +614,7 @@ export default function FloorPlanImportAssistant({
             </button>
           ) : null}
           {deleteError ? (
-            <p className="mt-2 text-[10px] text-red-600">{deleteError}</p>
+            <p className="mt-2 text-xs text-red-600">{deleteError}</p>
           ) : null}
         </details>
       </div>

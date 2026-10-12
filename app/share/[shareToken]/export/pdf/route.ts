@@ -304,7 +304,7 @@ export async function GET(
     drawTextLine(page, [publicDesign.style && `Style: ${publicDesign.style}`, publicDesign.budget && `Budget: ${publicDesign.budget}`].filter(Boolean).join("   "), MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
     y -= 32;
 
-    y = drawSectionHeading(page, "Export Overview", y, fonts);
+    y = drawSectionHeading(page, "Export overview", y, fonts);
     const overviewRows = [
       `Rooms: ${rooms.length}`,
       `Items: ${homeSummary.itemCount}`,
@@ -320,10 +320,10 @@ export async function GET(
     }
     y -= 12;
 
-    y = drawSectionHeading(page, "Room Schedule", y, fonts);
+    y = drawSectionHeading(page, "Room schedule", y, fonts);
     for (const room of roomSummaries) {
       const metric = metricsByRoomId.get(room.roomId);
-      ({ page, y } = ensureSpace(pdfDoc, page, y, 28, watermarked, "Room Schedule", fonts));
+      ({ page, y } = ensureSpace(pdfDoc, page, y, 28, watermarked, "Room schedule", fonts));
       drawTextLine(page, room.roomName, MARGIN, y, fonts.bold, 10);
       drawTextLine(page, formatRoomType(room.roomType), 180, y, fonts.regular, 9, rgb(0.35, 0.35, 0.35));
       drawTextLine(page, `${metric ? formatMeasurement(metric.areaSqm, "m2") : "Area n/a"}`, 285, y, fonts.regular, 9, rgb(0.35, 0.35, 0.35));
@@ -386,13 +386,13 @@ export async function GET(
     }
 
     ({ page, y } = ensureSpace(pdfDoc, page, y, 120, watermarked));
-    y = drawSectionHeading(page, "Shopping & Checkout Readiness", y, fonts);
+    y = drawSectionHeading(page, "Shopping & checkout readiness", y, fonts);
     if (shoppingRows.length === 0) {
       drawTextLine(page, "No catalog products were saved in this design yet.", MARGIN, y, fonts.regular, 10);
       y -= 16;
     } else {
       for (const item of shoppingRows) {
-        ({ page, y } = ensureSpace(pdfDoc, page, y, 46, watermarked, "Shopping & Checkout Readiness", fonts));
+        ({ page, y } = ensureSpace(pdfDoc, page, y, 46, watermarked, "Shopping & checkout readiness", fonts));
         y = drawWrappedText(page, `${item.roomName}: ${item.title}`, MARGIN, y, 330, fonts.bold, 9, 11);
         const status = item.hasValidCommerce
           ? item.commerceMode === "shopify"
@@ -406,12 +406,12 @@ export async function GET(
 
     if (surfaceMaterialBomRows.length + surfaceMaterialBomWarnings.length > 0) {
       ({ page, y } = ensureSpace(pdfDoc, page, y, 100, watermarked));
-      y = drawSectionHeading(page, "Surface Material BOM", y, fonts);
+      y = drawSectionHeading(page, "Surface material BOM", y, fonts);
       surfaceMaterialBomWarnings.slice(0, 1).forEach(() => {
         y = drawWrappedText(page, formatSurfaceMaterialBomWarning(surfaceMaterialBomWarnings), MARGIN, y, 500, fonts.bold, 8, 10, rgb(0.66, 0.38, 0.02));
       });
       for (const row of surfaceMaterialBomRows) {
-        ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface Material BOM", fonts));
+        ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface material BOM", fonts));
         y = drawWrappedText(page, `${row.roomName} ${row.surfaceLabel}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);
         drawTextLine(
           page,
@@ -463,12 +463,12 @@ export async function GET(
 
     if (publicDesign.notes) {
       ({ page, y } = ensureSpace(pdfDoc, page, y, 90, watermarked));
-      y = drawSectionHeading(page, "Design Notes", y, fonts);
+      y = drawSectionHeading(page, "Design notes", y, fonts);
       y = drawWrappedText(page, publicDesign.notes, MARGIN, y, PAGE_SIZE[0] - MARGIN * 2, fonts.regular, 10, 13);
     }
 
     ({ page, y } = ensureSpace(pdfDoc, page, y, 70, watermarked));
-    y = drawSectionHeading(page, "Practical Checks", y, fonts);
+    y = drawSectionHeading(page, "Practical checks", y, fonts);
     const checks = [
       totalAreaSqm > 0
         ? `Measurements captured across ${rooms.length} room${rooms.length === 1 ? "" : "s"}.`

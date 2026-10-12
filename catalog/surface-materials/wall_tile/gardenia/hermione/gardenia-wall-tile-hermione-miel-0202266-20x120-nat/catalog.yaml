@@ -1,0 +1,209 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Hermione
+  material_id: gardenia-wall-tile-hermione-miel-0202266-20x120-nat
+  product_name: Gardenia Hermione Miel 20x120 Nat
+  slug: gardenia-wall-tile-hermione-miel-0202266-20x120-nat
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/hermione/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 33 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/miel/020226612.-v102/), downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-hermione-miel-faces.manifest.json. Each covers 200x1200 mm."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-10: Hermione is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0202266 (020226612.) for wall use: 20X120 Natural, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/miel/020226612.-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/hermione/miel/20x120/: finish Natural, thickness 8,5 mm, porcelain stoneware."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: random stagger, straight and herringbone, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Collection page technology: Porcelain stoneware."
+    - "Collection page description: Wood is the natural material par excellence. Naturalness and authenticity are the watchwords that define the aesthetics of this wood effect. A very realistic, varied and graphically characterized product, never too rustic. HERMIONE perfectly meets contemporary taste in its multiple styles."
+    - "Collection page thicknesses: 8.5 mm."
+    - "Collection page sizes: 20x120."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: wood
+  color_family: unknown
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 200
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/hermione/0202266_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/hermione/0202266_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 20
+  image_physical_size_mm:
+    width: 200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_01.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_02.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_03.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_04.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_05.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_06.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_07.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_08.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_09.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_10.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_11.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_12.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_13.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_14.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_15.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_16.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_17.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_18.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_19.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_20.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_21.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_22.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_23.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_24.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_25.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_26.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_27.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_28.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_29.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_30.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_31.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_32.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/hermione/0202266_33.webp
+      width_mm: 200
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - random_stagger
+    - straight
+    - herringbone
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

@@ -1,0 +1,664 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/bone/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: CONCREA PLAIN - BONE - minimali.zip (21567764 bytes, sha256 a129a49c7762a95160d5ded78cb8a00424cd825716ef6a4171ed0910a23b4610).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/concrea-plain/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0000256",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/bone/pf60000256-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0000256_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    4,
+    6,
+    8
+   ],
+   "used_by": "floor gardenia-flooring-concrea-plain-bone-0000256-120x120-nat; wall gardenia-wall-tile-concrea-plain-bone-0000256-120x120-nat",
+   "faces": [
+    {
+     "file": "0000256_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 5210,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - BONE - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "77f993dff83c9a1408da585ef8784bc55789cc78b3e87abf367869ac52f1602b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "LAB325 BASE SAND 120X120_01",
+      "id": "4b85d64e-9303-4a8a-b58d-457e20c34bdd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0000256_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 4826,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - BONE - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "9fc36a1ae3ff6234b2e810bb99d9ee8e5d543d4c5d5bbf69a5b9cf164341c4ad",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3 (view_02)",
+      "name": "CONCREA PLAIN BONE 120X120_02",
+      "id": "1e864783-5ea0-4efc-9ed0-3bf05f57031e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0000256_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 5442,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - BONE - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c8093c547eea97d8fd730d71b1811dd1b6df6f1d3979ace51d84778b0315b36d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5 (view_03)",
+      "name": "LAB325 BASE SAND 120X120_03",
+      "id": "08202eb4-ab5a-403a-b7be-dacafcd3a9f7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0000256_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 5790,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - BONE - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "e40c224c28c862325ca2807a44cf8108fe90f361535aeb8a80e233ea0e049667",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7 (view_04)",
+      "name": "LAB325 BASE SAND 120X120_04",
+      "id": "97e98c85-5d75-47c3-ae83-70ec402c6870",
+      "site_position": 7
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0007986",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/bone/pf60007986-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0007986_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16
+   ],
+   "used_by": "floor gardenia-flooring-concrea-plain-bone-0007986-60x120-nat; wall gardenia-wall-tile-concrea-plain-bone-0007986-60x120-nat",
+   "faces": [
+    {
+     "file": "0007986_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2956,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6afd9486812191d3a2e6ff7f0011e7be3daafb83031c19817737e92ebb9a3949",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN BONE 60X120_01",
+      "id": "6a51ed47-f9d8-42af-9ae6-fcd57476c9b2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0007986_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2454,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "32bc319da71557667c05b04ce00e47492bb98983a7c5ca449f8e23ad820d25cb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3 (view_02)",
+      "name": "CONCREA PLAIN BONE 60X120_02",
+      "id": "4b9f9258-e787-404f-b2b8-3cc4ddf1e7da",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0007986_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2802,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "642a10c55a3a574eaf3a251a9a231a71cb1cfb6a9a8329e34c6ead7e28f0748d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5 (view_03)",
+      "name": "LAB325 BASE SAND 60X120_03",
+      "id": "a06a1959-d876-46bd-a83f-6ace480f5031",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0007986_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3168,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2f393718418e2044131e38e27bb5245912b2facaebc0a37e06d02b7d9ab67d68",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7 (view_04)",
+      "name": "LAB325 BASE SAND 60X120_04",
+      "id": "07252e97-49c3-4a44-bfa0-73d3f37eb883",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0007986_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2912,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "86a27ccba91baad49ad9b93a2faf518c09063b0702504d89a2998160b1cf0c28",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9 (view_05)",
+      "name": "CONCREA PLAIN BONE 60X120_05",
+      "id": "36130703-74f8-434c-88cb-e894b5d29577",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0007986_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2768,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1d19b9e5d286e5f987f0605ed8c6079d8bb9bfa03298f402f3415e2eb707546d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11 (view_06)",
+      "name": "LAB325 BASE SAND 60X120_06",
+      "id": "89824262-56f7-4d13-b8b3-aeae90618328",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0007986_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2388,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5c0fbaa0febac9b2697319873733d8235639c4bba045505dd01b6025769304ec",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13 (view_07)",
+      "name": "CONCREA PLAIN BONE 60X120_07",
+      "id": "2fe144be-ad38-4c6b-bec4-3b1da7b56cf9",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0007986_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2652,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - BONE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2d59a8d25ea19e79ab48be47290c674ac5868b9d110f7e891cab22d37fde1e78",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15 (view_08)",
+      "name": "CONCREA PLAIN BONE 60X120_08",
+      "id": "2efa2277-617b-4eaa-a147-bddb6244c84d",
+      "site_position": 15
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0000240",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/bone/pf60000240-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0000240_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24
+   ],
+   "used_by": "floor gardenia-flooring-concrea-plain-bone-0000240-80x80-nat; wall gardenia-wall-tile-concrea-plain-bone-0000240-80x80-nat",
+   "faces": [
+    {
+     "file": "0000240_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2442,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a91d4946b2bcb546224bb6df730b56a9b9c869b2e5bb41abcf423569bb7254ab",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN BONE 80X80_01",
+      "id": "11c6432e-1bf7-47e0-9c81-0a320da308d1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0000240_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2304,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "82a099d7772baa699a01ba922ff0338a78af53dbe4be9f7cdc5519c406fcd77d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3 (view_02)",
+      "name": "CONCREA PLAIN BONE 80X80_02",
+      "id": "6df7b61c-098b-406f-8521-45287c9d6b41",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0000240_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2108,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "87e5b0b835f451d4cbfd1ed98ddffe018e8a71575dbe1708562b1b73a8549b50",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5 (view_03)",
+      "name": "CONCREA PLAIN BONE 80X80_03",
+      "id": "10892d7a-5329-423d-8ad8-090153d24421",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0000240_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2148,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "adb66d2acad70765af1dafbd1fa38371aa143af72c965985b3aad5a4c9350d5d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7 (view_04)",
+      "name": "LAB325 BASE SAND 80X80_04",
+      "id": "202d90eb-2422-48de-ab20-9dd9ca867cd1",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0000240_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2424,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e500cef062cb9e1e4eea9dde43adc3d4295472092810744c3c9d7676ffe521a8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9 (view_05)",
+      "name": "CONCREA PLAIN BONE 80X80_05",
+      "id": "8c7b974a-2da7-4945-8af0-9f001648a64c",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0000240_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 1800,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "802a5dc3365fd9d55d50ffb08c83f518fd43ee4b75de16d644fdbb277331689e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11 (view_06)",
+      "name": "LAB325 BASE SAND 80X80_06",
+      "id": "7f03945f-5ff4-4ae2-9474-0f2ab4c6bd63",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0000240_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3182,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d82f8ce3989f1c1795b3f122ba2ef21fead267b9cda90c439ca754bf7ffe681b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 13 (view_07)",
+      "name": "LAB325 BASE SAND 80X80_07",
+      "id": "1d5d912d-959d-4c6a-83bf-6631ce1c102c",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0000240_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2206,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1212a96a0d11efed328c806cb0f57f03d4cc5a270a9b78afca200929317ede19",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 15 (view_08)",
+      "name": "CONCREA PLAIN BONE 80X80_08",
+      "id": "07134bd5-b96f-43eb-aead-5e3726cff013",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0000240_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2522,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0cece51f063e48bd69124f33e7b046b562fa5ea390113c26ed469ba6109f138e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 17 (view_09)",
+      "name": "CONCREA PLAIN BONE 80X80_09",
+      "id": "0bb96a60-fab8-4617-b840-9e422045037e",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0000240_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2540,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "affd26a7403b50bbdfa0126726ba4f9dbf840189bd062ed25cdf057b6f6a0f30",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 19 (view_10)",
+      "name": "LAB325 BASE SAND 80X80_10",
+      "id": "bdf46380-bf3e-4f3d-bdd5-27036ebee619",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0000240_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2228,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0ae86bb880fe7b2a2ff372c4b45d2aa3fc40ac8d6a37a0d6b2985620f63c12b6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 21 (view_11)",
+      "name": "LAB325 BASE SAND 80X80_11",
+      "id": "08fdcb16-911b-40a2-b5a4-1fc4ff141a83",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0000240_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 1972,
+     "source_zip": "CONCREA PLAIN - BONE - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - BONE - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c92db90a21a88bbd628db0e8231542e4ca121e615daa7c6b6d170f11e1bc5e29",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 23 (view_12)",
+      "name": "CONCREA PLAIN BONE 80X80_12",
+      "id": "4daf5eab-8a88-47d5-81df-bdf8c0402e07",
+      "site_position": 23
+     }
+    }
+   ]
+  }
+ ]
+}

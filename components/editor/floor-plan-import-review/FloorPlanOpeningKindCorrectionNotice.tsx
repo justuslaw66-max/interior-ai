@@ -11,7 +11,7 @@ export function FloorPlanOpeningKindCorrectionNotice({
 }) {
   if (plan.locked) {
     return (
-      <div className="col-span-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-[10px] text-amber-900">
+      <div className="col-span-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
         <div>Changing this window to a door requires changing its documented sill.</div>
         {proMode ? (
           <button
@@ -30,7 +30,7 @@ export function FloorPlanOpeningKindCorrectionNotice({
     );
   }
   return plan.resetsSill ? (
-    <div className={`col-span-2 text-[10px] ${subtleClassName}`}>
+    <div className={`col-span-2 text-xs ${subtleClassName}`}>
       This kind change will atomically reset the sill to 0 mm and record it as user confirmed.
     </div>
   ) : null;

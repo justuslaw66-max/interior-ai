@@ -1,0 +1,514 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/port-noir/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - PORT NOIR - minimali.zip (26846334 bytes, sha256 aa09ea0f1b59cd9306c7b7c72a2fa9c55fd88951706194ca87157a69242ed68f).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0010994",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/port-noir/pf60010994-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0010994_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-port-noir-0010994-120x280-lux-139938-0; floor gardenia-flooring-la-marmoteca-port-noir-0010995-120x280-soft-139939-0 (uses 0010994's faces: ABK's 3 Soft pictures are 0010994's 3 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-port-noir-0010994-120x280-lux-139938-0; wall gardenia-wall-tile-la-marmoteca-port-noir-0010995-120x280-soft-139939-0 (uses 0010994's faces: ABK's 3 Soft pictures are 0010994's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0010994_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 88012,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PORT NOIR - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "7615267c8231175f759f4f1c99c1643b0d82f7b2c9a0807e5d590fd15e4e9352",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE PORT NOIR 120X280_01",
+      "id": "8519b5fb-3d42-408b-9108-2b622892583f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010994_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 91926,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PORT NOIR - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "22327eb73a8e9e8982e1c6196515f28b952cc033349e16cc31d77781ccd18179",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE PORT NOIR 120X280_02",
+      "id": "340c5d0c-9dcd-4ce3-b95e-6f6b463721b1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010994_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 87864,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - PORT NOIR - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "fb64cd9283c3e76a8ef80c9f77d6e7e9f25357e546c67ab608ff55d67061b57b",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE PORT NOIR 120X280_03",
+      "id": "8f949524-5ae0-448b-99f7-0714d1478081",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0011496",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/port-noir/pf60011496-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0011496_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-port-noir-0011496-120x120-lux-139942-0; floor gardenia-flooring-la-marmoteca-port-noir-0011497-120x120-nat-139943-0 (uses 0011496's faces: ABK's 6 Nat P.tech pictures are 0011496's 6 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-port-noir-0011496-120x120-lux-139942-0; wall gardenia-wall-tile-la-marmoteca-port-noir-0011497-120x120-nat-139943-0 (uses 0011496's faces: ABK's 6 Nat P.tech pictures are 0011496's 6 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0011496_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44250,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9663a49e5153768814c59e33e6eb8a670d96099f9b5d6748d02017cc0e86d3e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE PORT NOIR 120X120_01",
+      "id": "0a4f161e-4739-4c18-9e26-b37e722c5b8f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011496_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44032,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1b2a77f0d92c9bfc023caf550c542d6cc1afab23c7bb3a6326cd0ecf6c8a3e94",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE PORT NOIR 120X120_02",
+      "id": "e0ec29a2-f49e-4674-b24c-fae08ffb34be",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011496_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 47196,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6668582161102010a28f321a1f83a91270291bfd46805c6f293a272d8f7fe190",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE PORT NOIR 120X120_03",
+      "id": "6b154713-0ca0-45fb-9b58-0db14a03cb36",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011496_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42072,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "109fc5d8562214031fd3766eb6edf03dee4ab51d435a3b95c7b672211f11d9cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE PORT NOIR 120X120_04",
+      "id": "6b12e988-ae47-41d0-8bbc-5c071c59df68",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011496_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44074,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "055efcaa19db1ba7d1218be0aaf2e1ae8bb31ba4d0ddadb1b04714196e056221",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE PORT NOIR 120X120_05",
+      "id": "9ee52d5b-624e-46f9-8055-6cdda89e8d5b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011496_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43582,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d461899be3f89974882a57c1c46e0bfe10505ae9e7f0a3697ed5ffa0c75d75d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE PORT NOIR 120X120_06",
+      "id": "781610be-ea00-4004-830e-7e7f787f7de2",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0011003",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/port-noir/pf60011003-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0011003_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-port-noir-0011000-60x120-nat-139940-0 (uses 0011003's faces: ABK's 10 Nat P.tech pictures are 0011003's 10 Lux pictures, byte for byte); floor gardenia-flooring-la-marmoteca-port-noir-0011003-60x120-lux-139941-0; wall gardenia-wall-tile-la-marmoteca-port-noir-0011000-60x120-nat-139940-0 (uses 0011003's faces: ABK's 10 Nat P.tech pictures are 0011003's 10 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-port-noir-0011003-60x120-lux-139941-0",
+   "faces": [
+    {
+     "file": "0011003_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18190,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1771,
+      3543
+     ],
+     "source_sha256": "065a233301de86b651cb52b8b6a791b98fe5b8acc78f57783722ab4567f39d77",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE PORT NOIR 60X120_01",
+      "id": "38403c02-de7e-46cf-8c57-8192f4be7962",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0011003_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18344,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "3208622ad94c338ed9b5e837160c694d0391a0c91cb7672e9105dbd4bda9fea8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE PORT NOIR 60X120_02",
+      "id": "a6de6bae-a083-471b-a3e7-aaeb61edfdbc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0011003_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19710,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "4946854042f00ed59ecfd6e02607c53cc3053be6d230074a232dfef6b5f4b0b6",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE PORT NOIR 60X120_03",
+      "id": "ba07b187-57c8-4648-b281-06c394a32a31",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0011003_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18630,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "8da28bbfa7c5b98f2cdd5d28ae613b971d01833230601809b57a5e77a39680ad",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE PORT NOIR 60X120_04",
+      "id": "a2b85a0b-7ee3-455b-9311-e22be2e7169c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0011003_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18502,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6bba8a9f3a508b28e3e1e6ad5bd333d5329baaf796642c9a1ab687d127228f9f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE PORT NOIR 60X120_05",
+      "id": "f2dd0bf0-87aa-444e-9a21-105cc2a83f89",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0011003_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18810,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e3a878e942d35f66e00422966a50b6ec6ce4a22bab59e8c9a64e08a7ff080443",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE PORT NOIR 60X120_06",
+      "id": "f0aa232a-b622-4916-a8a0-932a679feb6b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0011003_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14838,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "edf31dbdb0a93adcdf60c42b1712357346258d6f18a30c46510698821b4f1da5",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE PORT NOIR 60X120_07",
+      "id": "ca8d0228-9d6a-43b0-961b-56fb23e71055",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0011003_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18994,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6fbe939c9531c7f1e75d954bff016836ac7f40ae0a0e2b12b29d1ff1d3570972",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE PORT NOIR 60X120_08",
+      "id": "5cde164f-d90f-4603-9e77-688ded82ae9d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0011003_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17598,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d8e377a49a33128f6f6cf45801e0207924cb1890f48385096c74961116a8c7ac",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE PORT NOIR 60X120_09",
+      "id": "9b36b807-ef6f-470c-9d9e-5dd370fdc790",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0011003_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17020,
+     "source_zip": "LA MARMOTECA - PORT NOIR - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - PORT NOIR - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5ce058bd80fbf83e5e249ed98a308a863f55090f6eba44653912a5886857ab0e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10 (view_10)",
+      "name": "NOBILE PORT NOIR 60X120_10",
+      "id": "210ff0d5-1b29-45a7-b485-ca3944ac24e3",
+      "site_position": 10
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -46,7 +46,7 @@ function PlacedItemRow({
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[13px] font-semibold text-neutral-900">{item.title}</span>
-          {detail ? <span className="block truncate text-[11px] text-neutral-600">{detail}</span> : null}
+          {detail ? <span className="block truncate text-xs text-neutral-600">{detail}</span> : null}
         </span>
         <span className="shrink-0 text-xs font-semibold text-neutral-900">{item.priceLabel}</span>
       </button>

@@ -13,16 +13,16 @@ import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 
-function sourceFiles(directory: string): string[] {
+function sourceFiles(directory: string, pattern = /\.(ts|tsx)$/): string[] {
   return readdirSync(join(root, directory)).flatMap((name) => {
     const path = join(directory, name);
-    if (statSync(join(root, path)).isDirectory()) return sourceFiles(path);
-    return /\.(ts|tsx)$/.test(name) ? [path] : [];
+    if (statSync(join(root, path)).isDirectory()) return sourceFiles(path, pattern);
+    return pattern.test(name) ? [path] : [];
   });
 }
 
 const sources = ["app", "components", "features", "lib", "hooks"]
-  .flatMap(sourceFiles)
+  .flatMap((directory) => sourceFiles(directory))
   .map((path) => ({ path: relative(root, join(root, path)), text: read(path) }));
 
 // Focus (AX6): globals.css gives every control one 2px ring. A control that draws its own ring
@@ -96,14 +96,49 @@ assert.equal(
   "A caller's classes come last."
 );
 
-// Ratchets: text under 12px, raw <button>s outside Button, and emoji in button labels.
-const underTwelvePixels = sources.reduce(
-  (count, { text }) =>
-    count +
-    Array.from(text.matchAll(/(?<![\w-])text-\[(\d+(?:\.\d+)?)px\]/g)).filter(([, size]) => Number(size) < 12)
-      .length,
-  0
+// The 12px minimum (AX7, phase 5): text is at least 12px everywhere, set by a class (text-xs and
+// up), in a stylesheet, or inline, as the canvas labels set it.
+const subTwelvePixelUses = (text: string) =>
+  Array.from(text.matchAll(/(?<![\w-])text-\[(\d+(?:\.\d+)?)px\]/g)).filter(([, size]) => Number(size) < 12)
+    .length;
+assert.deepEqual(
+  sources.filter(({ text }) => subTwelvePixelUses(text) > 0).map(({ path }) => path),
+  [],
+  "Text is at least 12px (text-xs)."
 );
+const smallFontSizes = (text: string) =>
+  Array.from(text.matchAll(/font-size:\s*(\d*\.?\d+)(px|rem)\b/g)).filter(
+    ([, size, unit]) => Number(size) * (unit === "rem" ? 16 : 1) < 12
+  ).length;
+assert.deepEqual(
+  ["app", "components", "features"]
+    .flatMap((directory) => sourceFiles(directory, /\.css$/))
+    .filter((path) => smallFontSizes(read(path)) > 0),
+  [],
+  "Stylesheets set text at least 12px."
+);
+// An inline fontSize: every number in its value counts, so both sides of a choice are checked.
+const smallInlineFontSizes = (text: string) =>
+  Array.from(text.matchAll(/\bfontSize\s*(?::|=)\s*(\{[^}\n]*\}|"[^"\n]*"|[^,}\n]+)/g)).filter(([, value]) =>
+    Array.from(value.matchAll(/\d+(?:\.\d+)?/g)).some(([size]) => Number(size) < 12)
+  ).length;
+// The plan tool picker's import icon letters "JPG" and "CAD" in its 64-unit drawing, which the
+// icons step replaces with a lucide icon.
+const ICON_ARTWORK = ["components/editor/design-controls-plan/PlanToolIcon.tsx"];
+assert.deepEqual(
+  sources
+    .filter(({ path, text }) => smallInlineFontSizes(text) > 0 && !ICON_ARTWORK.includes(path))
+    .map(({ path }) => path),
+  [],
+  "Inline font sizes are at least 12px."
+);
+assert.equal(smallInlineFontSizes('style={{ fontSize: 11, fontWeight: 800 }}'), 1);
+assert.equal(smallInlineFontSizes('fontSize: note.kind === "room_tag" ? 12 : 11,'), 1);
+assert.equal(smallInlineFontSizes('<text fontSize="8">'), 1);
+assert.equal(smallInlineFontSizes('fontSize: "11px",'), 1);
+assert.equal(smallInlineFontSizes('fontSize={16} style={{ fontSize: 12, lineHeight: "16px" }}'), 0);
+
+// Ratchets: raw <button>s outside Button, and emoji in button labels.
 const rawButtons = sources
   .filter(({ path }) => path.endsWith(".tsx"))
   .reduce((count, { text }) => count + (text.match(/<button\b/g)?.length ?? 0), 0);
@@ -117,13 +152,13 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { underTwelvePixels: 672, rawButtons: 784, emojiButtons: 7 };
-const counts = { underTwelvePixels, rawButtons, emojiButtons };
+const LIMITS = { rawButtons: 784, emojiButtons: 7 };
+const counts = { rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);
   if (counts[name] < limit) console.log(`${name} fell to ${counts[name]}: lower its limit here to keep it there.`);
 }
 
 console.log(
-  `UI foundation checks passed: ${underTwelvePixels} sub-12px text uses, ${rawButtons} raw buttons, ${emojiButtons} buttons with emoji.`
+  `UI foundation checks passed: no text under 12px, ${rawButtons} raw buttons, ${emojiButtons} buttons with emoji.`
 );

@@ -102,7 +102,7 @@ function PivotMarker({ asset }: { asset: Asset }) {
       </mesh>
       <axesHelper args={[0.25]} />
       <Html position={[0, 0.08, 0]} center>
-        <div className="rounded bg-black/70 px-2 py-0.5 text-[10px] text-white">pivot</div>
+        <div className="rounded bg-black/70 px-2 py-0.5 text-xs text-white">pivot</div>
       </Html>
     </group>
   );
@@ -477,7 +477,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
           <b>Model file</b>: {modelExists === null ? "checking..." : modelExists ? "found" : "missing"}
         </div>
         {modelLoadError && (
-          <div className="mt-1 rounded border border-red-300 bg-red-50 p-2 text-[11px] text-red-800">
+          <div className="mt-1 rounded border border-red-300 bg-red-50 p-2 text-xs text-red-800">
             {modelLoadError}
           </div>
         )}

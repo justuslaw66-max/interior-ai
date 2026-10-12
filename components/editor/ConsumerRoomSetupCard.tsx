@@ -183,8 +183,8 @@ export function ConsumerRoomSetupCard({
       <p
         className={
           dark
-            ? "mt-2 text-[11px] leading-4 text-neutral-400"
-            : "mt-2 text-[11px] leading-4 text-neutral-500"
+            ? "mt-2 text-xs leading-4 text-neutral-400"
+            : "mt-2 text-xs leading-4 text-neutral-500"
         }
       >
         Enter applies, Escape restores the last valid value, and arrow keys

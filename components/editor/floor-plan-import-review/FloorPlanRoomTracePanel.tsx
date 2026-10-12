@@ -58,21 +58,21 @@ export default function FloorPlanRoomTracePanel({
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-xs text-white">2</span>
         Outline each room
-        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] text-emerald-800">
+        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">
           {floor.rooms.length
             ? `${floor.rooms.length} added`
             : calibration
               ? "Ready"
-              : "After Step 1"}
+              : "After step 1"}
         </span>
       </summary>
       <div className="mt-2 grid gap-2">
-        <p className={`text-[10px] leading-4 ${subtle}`}>
+        <p className={`text-xs leading-4 ${subtle}`}>
           Start with one room. Click its inside corners in order around the room,
           then add it. Repeat until every room is outlined.
         </p>
         {!calibration ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-900">
+          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-900">
             Set scale above before tracing rooms.
           </div>
         ) : null}
@@ -93,7 +93,7 @@ export default function FloorPlanRoomTracePanel({
               : `${roomPoints.length} corners selected. Add the room when the outline looks correct.`
             : "The selected corners will appear directly on the plan."}
         </div>
-        <div className="flex flex-wrap gap-2 text-[10px]">
+        <div className="flex flex-wrap gap-2 text-xs">
           <button
             className={control}
             disabled={disabled || !roomPoints.length}
@@ -148,11 +148,11 @@ export default function FloorPlanRoomTracePanel({
           Add this room
         </button>
         <details className="rounded-md border border-emerald-200 bg-white p-2">
-          <summary className="cursor-pointer text-[10px] font-semibold text-neutral-700">
+          <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
             Room details (optional)
           </summary>
           <div className="mt-2 grid gap-2">
-            <label className={`text-[10px] ${subtle}`}>
+            <label className={`text-xs ${subtle}`}>
               Room name
               <input
                 className={`${control} mt-1 w-full`}
@@ -162,7 +162,7 @@ export default function FloorPlanRoomTracePanel({
                 value={roomName}
               />
             </label>
-            <label className={`text-[10px] ${subtle}`}>
+            <label className={`text-xs ${subtle}`}>
               Room type
               <select
                 className={`${control} mt-1 w-full`}
@@ -180,7 +180,7 @@ export default function FloorPlanRoomTracePanel({
                 <option value="service_yard">Service yard</option>
               </select>
             </label>
-            <label className={`text-[10px] ${subtle}`}>
+            <label className={`text-xs ${subtle}`}>
               Wall thickness (mm)
               <input
                 className={`${control} mt-1 w-full`}

@@ -39,7 +39,7 @@ function WorkspaceHeader({
   return (
     <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 sm:px-6 sm:py-4">
       <div className="min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+        <div className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
           Private upload
         </div>
         <h2 id="floor-plan-import-dialog-title" className="truncate text-lg font-semibold sm:text-xl">

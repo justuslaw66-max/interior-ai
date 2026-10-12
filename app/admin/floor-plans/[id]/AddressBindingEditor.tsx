@@ -182,7 +182,7 @@ export function AddressBindingEditor({
             testId={`floor-plan-binding-google-address-${index}`}
             value={binding.addressNormalized}
           />
-          <p className="text-[11px] leading-4 text-neutral-500">
+          <p className="text-xs leading-4 text-neutral-500">
             Selecting a result fills the address components below. It confirms
             the location only; the uploaded plan still needs independent source proof.
           </p>
@@ -223,7 +223,7 @@ export function AddressBindingEditor({
               </p>
             </div>
             <span
-              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 proofReady
                   ? "bg-emerald-100 text-emerald-800"
                   : "bg-amber-100 text-amber-800"
@@ -287,7 +287,7 @@ export function AddressBindingEditor({
           <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
             Advanced settings
           </summary>
-          <p className="mt-2 text-[11px] leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-neutral-500">
             Manual address fields, layout orientation, and raw audit data are
             available here for exceptional cases.
           </p>
@@ -338,7 +338,7 @@ export function AddressBindingEditor({
             <label className="text-xs font-medium text-neutral-700 sm:col-span-2 lg:col-span-4">
               Raw proof data (support use only)
               <textarea
-                className="mt-1 min-h-32 w-full rounded border p-2 font-mono text-[11px]"
+                className="mt-1 min-h-32 w-full rounded border p-2 font-mono text-xs"
                 onChange={(event) => {
                   const value = event.target.value;
                   setProofConfirmed(hasConfirmedProof(value));

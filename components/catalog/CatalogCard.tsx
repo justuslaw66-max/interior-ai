@@ -37,7 +37,7 @@ function CatalogCardImage({ item, inRoom }: Pick<Props, "item" | "inRoom">) {
       {inRoom ? (
         <span
           data-testid={`catalog-in-room-${item.id}`}
-          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-bold text-emerald-800 shadow-sm"
+          className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-0.5 text-xs font-bold text-emerald-800 shadow-sm"
         >
           <Check className="h-3 w-3" aria-hidden="true" />
           In this room
@@ -118,7 +118,7 @@ export default function CatalogCard(props: Props) {
           <span className="line-clamp-2 h-[34px]" title={item.title}>{item.title}</span>
           <span className="sr-only">, view details</span>
         </button>
-        <span className="mt-0.5 truncate text-[11px] leading-4 text-neutral-600">{item.dimsLabel}</span>
+        <span className="mt-0.5 truncate text-xs leading-4 text-neutral-600">{item.dimsLabel}</span>
         <CatalogCardPrice item={item} />
         <button
           type="button"

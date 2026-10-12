@@ -23,8 +23,10 @@ export type UseDesignPageStartChooserInput = {
     /** Nothing to keep: the first visit's room, untouched. */
     designIsEmpty: boolean;
     localBackupHydrated: boolean;
-    /** Products have loaded and this isn't Client Preview: Plan's own template buttons wait for it too. */
+    /** Not Client Preview: Plan's own template buttons wait for it too. */
     canEdit: boolean;
+    /** The product lists have loaded too: a furnished template waits for it, or it would leave products out. */
+    canChangeProducts: boolean;
   };
   actions: {
     applyPlanTemplate: (template: HousePlanTemplate, options?: HousePlanTemplateApplyOptions) => void;
@@ -168,6 +170,7 @@ export function buildStartChooserProps(
     atTemplates: chooser.atTemplates, openerId: chooser.openerId,
     // The choices wait for the session too, so Upload never asks a member to sign in.
     ready: state.canEdit && state.sessionKnown,
+    furnishedReady: state.canChangeProducts,
     isAuthenticated: state.isAuthenticated,
     onClose: close,
     onChooseTemplate: (card, furnished) =>

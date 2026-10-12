@@ -65,7 +65,7 @@ export function OnboardingChecklist({
             background: "color-mix(in oklab, var(--accent) 18%, transparent)",
           }}
         >
-          Save and Share
+          Save and share
         </button>
       </div>
     );

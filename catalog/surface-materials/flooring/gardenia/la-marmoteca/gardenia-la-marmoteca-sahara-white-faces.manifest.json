@@ -1,0 +1,730 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - SAHARA WHITE - minimali.zip (16098930 bytes, sha256 6a82014d63e3d108693959945750f8dbc9a1c6be90a98dad2783c1eaec122573).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0009717",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/pf60009717-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0009717_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sahara-white-pf60009717-120x280-lux-90527-0; floor gardenia-flooring-la-marmoteca-sahara-white-pf60009725-120x280-soft-90533-0 (uses 0009717's faces: ABK's 4 Soft pictures are 0009717's 4 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-sahara-white-pf60009717-120x280-lux-90527-0; wall gardenia-wall-tile-la-marmoteca-sahara-white-pf60009725-120x280-soft-90533-0 (uses 0009717's faces: ABK's 4 Soft pictures are 0009717's 4 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0009717_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 27332,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAHARA WHITE - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "249026e02243374f3aca0046cc450b2ecb8146ca06726f0575e4989845f12f30",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X280_1",
+      "id": "5ff128c3-4776-4df1-9af3-31e3440c38af",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009717_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 25880,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAHARA WHITE - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "21121edfde4cea5683fb09fefb08ae082e3f263a0b377418dfba16a8e443725f",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X280_3",
+      "id": "13b4d8c6-d6d2-4409-9e26-1408c4f3456a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009717_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 25460,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAHARA WHITE - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "58704364110e366a1724268c53f7b12b66391623d5d8a75afbe32d672d23bf96",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X280_4",
+      "id": "86516855-4750-434d-a279-aab6fd481e84",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009717_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 26506,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - SAHARA WHITE - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "923f104c634d3d7c8e8297afe9c7274ea2596d898845c6629aa0a39e00f742cd",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X280_2",
+      "id": "948025ce-5c91-49a5-85a6-0cc4424d84df",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0017769",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/pf60017769-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0017769_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sahara-white-g0027057-120x120-lux-90501-0 (uses 0017769's faces: ABK lists Sahara White 120x120 Lux as 0017769; the configurator's g27057 has no page there (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-sahara-white-pf60010674-120x120-soft-90545-0 (uses 0017769's faces: ABK has no Sahara White 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-sahara-white-g0027057-120x120-lux-90501-0 (uses 0017769's faces: ABK lists Sahara White 120x120 Lux as 0017769; the configurator's g27057 has no page there (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-sahara-white-pf60010674-120x120-soft-90545-0 (uses 0017769's faces: ABK has no Sahara White 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017769_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10634,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c0ecc28100814701aa820da7ddeea53b5532c1d4cb9de39eb5602938a9135c46",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_8",
+      "id": "bcad375d-1bbe-4c0a-a872-ef19408c4507",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017769_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11198,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b8195f62d709a74c67057853e13557a912071d094334604949d01357f09403f1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_4",
+      "id": "e60b9d13-c013-4f7d-bfcc-55c3df6e3ec6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017769_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11190,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b2069c7ff2d62f5894196b0b31fd2b945aeaaca53983eec46984f8505993fb4d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_7",
+      "id": "3abc4a3d-4217-4969-8be4-a50e08a10bc0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017769_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9870,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "628a42d38b680de335cd158b8ff85c8ff073ed8a70465fa6a82e44fe2d3f2529",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_6",
+      "id": "43618e8c-b321-42f1-883e-e6622a1642e8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017769_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12622,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b62e83c9d9062c7e0f0f4b88eff5c13dee52e014f4325fe16067b3d15b54ceef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_5",
+      "id": "68c6e9fd-7e48-450b-a56c-0d39a926dec2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017769_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10738,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9534233801e1befca18bf71acd0a0e8eac829ad8b7c861833507f35204034e2d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_3",
+      "id": "5e8d63c4-23b4-4e1f-acc2-8856b5d8781c",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017769_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13346,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6e5e14b8125a07254c4e3d00bec0ecbc268a22ed1ba2bf20151e84946a66e065",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_2",
+      "id": "cdd5a7d2-add4-42d8-a9c5-e5b153988e6b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017769_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10746,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9fac822e16bf1009b002b05e5d5899e49264e1fd52bbfda9c3e3e78e76003a0c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_SAHARA WHITE_120X120_1",
+      "id": "f94350d8-700f-47fe-a73a-bcde2a38d90b",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0017765",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/pf60017765-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0017765_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-sahara-white-g0027067-60x120-lux-90508-0 (uses 0017765's faces: ABK lists Sahara White 60x120 Lux as 0017765; the configurator's g27067 has no page there (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-sahara-white-pf60010675-60x120-soft-90546-0 (uses 0017765's faces: ABK has no Sahara White 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-sahara-white-g0027067-60x120-lux-90508-0 (uses 0017765's faces: ABK lists Sahara White 60x120 Lux as 0017765; the configurator's g27067 has no page there (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-sahara-white-pf60010675-60x120-soft-90546-0 (uses 0017765's faces: ABK has no Sahara White 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "0017765_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5772,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "c1a97ecb09ebd79d8fa42d066f1874efa6fd91be0253dda40bcb8ecfc5b17ac0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_10",
+      "id": "860704fe-ef10-416c-96c4-72245df5161f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0017765_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5390,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "dc13202ccf86902a7febd7f37b2228569837b82c9cd9d79acc99e56b993b1433",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_14",
+      "id": "6894b642-4477-4ece-90f4-4da25efd8692",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0017765_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4936,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e63782a85893106a1b1084632ab04e6e14d01eaae769173f09598b94bb5c75da",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_3",
+      "id": "a3d2c5bc-ea20-4791-b3ad-fbd90a29f17d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0017765_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5290,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d665a623b464bfc4ab3ee8698d31a4136ddbca95cb5ccb52d5ecf3853c3c50ff",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_13",
+      "id": "11ef64ee-ac77-418f-82f9-4ff3df2df1df",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0017765_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5264,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "127532561713be8a8684f5e9f43f1186c9b013a6caeb20289fe346fc3c19e72d",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_6",
+      "id": "e21bf0e0-9bd0-43b7-bab6-b55da2defc4b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0017765_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7234,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2d1a9534125c88753f71c174b5309282527efef34d4163227771a3afd39db196",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_5",
+      "id": "fc01f0f2-47b5-4677-815b-0cd5aa7b064a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0017765_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6584,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "cec56626169ea3eaa571dfcc26fcb5adf4c7cb55a18389f4be4d3201148b0731",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_4",
+      "id": "ae4ea5ed-65c1-4423-8bc7-4d56cb34cd8a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0017765_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5210,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "f38d3de35b733acdbb3a03cec12073b1adecd155ac179550199d0a214ca74159",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_1",
+      "id": "6b26ac40-b0c6-436b-9885-6bc67fe95dc4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0017765_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6096,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "45d659aba9b620dde757a40cfdae6facef53ac6553e847ac5a548d6ddfdb28c1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_2",
+      "id": "b2c9aeac-7549-4cd1-ac74-1744ce79d2df",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0017765_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5032,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "898674b89085a5609d0d7a875be109d811782796c94483e7e48ce34243928a5f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_9",
+      "id": "5131530c-3a00-486f-a363-401ab447198c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0017765_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6682,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "12229e79139f8a26efc10d078fdc516f639886680e906d5ee7c6c23200554200",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_8",
+      "id": "bf95679e-2b23-4b81-8b07-6025562d68aa",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0017765_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5702,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "7acdb0f3e1c87cacdb8e363a15600b041690837eb247c672a24f25831d9021a0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_16",
+      "id": "5e47a252-8119-4300-8b29-90667f0ba783",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0017765_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6210,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "aaf13abb1d83d3aaa907dbd33d7f6407da52b8b374bc4437f0e6534f88f828e3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_15",
+      "id": "e58f1ff1-3b18-4c0b-a4b1-1d757e3b7a83",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0017765_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7044,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "c6ea95cbe173395eb2e14535917036264be368f751b5c3e6cf487637396311f2",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_11",
+      "id": "2d790521-4986-4268-9f2c-b20297f8014f",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0017765_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5754,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "1cc710e815e6bd30556075a46d648cab1701e220c661bb4811b30078677750ad",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_7",
+      "id": "ac0649e3-ebf1-4227-90cf-9aa3714ede50",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0017765_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4836,
+     "source_zip": "LA MARMOTECA - SAHARA WHITE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - SAHARA WHITE - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "c5fa615680095df6bfd46fcef5ff525bd2db5eb5e769a312adcf5c7daa164e82",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_SAHARA WHITE_60X120_12",
+      "id": "ed63fc42-a58c-4edf-b685-9448d2358fd4",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

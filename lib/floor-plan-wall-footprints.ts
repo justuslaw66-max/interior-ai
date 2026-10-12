@@ -1,5 +1,5 @@
 import type { FloorPlanPointMmV2, FloorPlanWallPathV2 } from "@/lib/floor-plan-document-v2";
-import { squareAxisAlignedWallNode } from "@/lib/floor-plan-wall-square-corners";
+import { joinWallNodeWithoutMitre } from "@/lib/floor-plan-wall-square-corners";
 
 export type CanonicalFloorPlanWallFootprint = {
   startLeft: FloorPlanPointMmV2;
@@ -428,7 +428,7 @@ export function applyCanonicalWallFootprintJoins<TWall extends WallWithFootprint
     }
   }
   for (const references of endpointsByVertexId.values()) {
-    if (!squareAxisAlignedWallNode(references, squareCornerTools)) miterAuthoredWallNode(references);
+    if (!joinWallNodeWithoutMitre(references, squareCornerTools)) miterAuthoredWallNode(references);
   }
   stabilizeWallFootprints(walls);
   return walls;

@@ -109,8 +109,8 @@ export function EditorCommandPalette({
                 <span
                   className={
                     designerTheme
-                      ? "shrink-0 text-[11px] font-semibold text-neutral-600"
-                      : "shrink-0 text-[11px] font-semibold text-neutral-400"
+                      ? "shrink-0 text-xs font-semibold text-neutral-600"
+                      : "shrink-0 text-xs font-semibold text-neutral-400"
                   }
                 >
                   Unavailable

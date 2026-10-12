@@ -62,8 +62,8 @@ assert.match(
 );
 assert.match(
   coreShellSource,
-  /const canEdit = !isClientPreview && liveCatalogReady/,
-  "Editor mutations should remain gated by live catalog readiness."
+  /const canEdit = !isClientPreview && clientHydrated;\s*const canChangeProducts = canEdit && liveCatalogReady;[\s\S]*?const \{ canEdit, canChangeProducts \} = designPageEditAccess\(isClientPreview, useClientHydrated\(\), liveCatalogReady\);/,
+  "Editing waits for hydration, not for the product lists; what picks products (canChangeProducts) does."
 );
 assert.match(
   pageSource,

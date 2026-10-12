@@ -78,7 +78,7 @@ function PresetIcon() {
 
 function RailTooltip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute left-7 top-1/2 z-[80] hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block group-focus-visible:block">
+    <span className="pointer-events-none absolute left-7 top-1/2 z-[80] hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus-visible:block">
       {label}
     </span>
   );

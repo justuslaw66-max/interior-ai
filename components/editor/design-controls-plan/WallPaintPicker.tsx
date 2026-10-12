@@ -140,10 +140,10 @@ export function WallPaintPicker({
             style={{ backgroundColor: swatch.hex }}
           />
           <span className="min-w-0 flex-1">
-            <span className={dark ? "block truncate text-[11px] font-semibold text-neutral-100" : "block truncate text-[11px] font-semibold text-neutral-900"}>
+            <span className={dark ? "block truncate text-xs font-semibold text-neutral-100" : "block truncate text-xs font-semibold text-neutral-900"}>
               {swatch.name}
             </span>
-            <span className={dark ? "block truncate text-[10px] font-medium text-neutral-400" : "block truncate text-[10px] font-medium text-neutral-500"}>
+            <span className={dark ? "block truncate text-xs font-medium text-neutral-400" : "block truncate text-xs font-medium text-neutral-500"}>
               {swatch.code ?? swatch.hex}
             </span>
           </span>
@@ -181,7 +181,7 @@ export function WallPaintPicker({
               <button
                 type="button"
                 data-testid="wall-paint-family-clear"
-                className={dark ? "text-[11px] font-semibold text-neutral-300 hover:text-white" : "text-[11px] font-semibold text-neutral-500 hover:text-neutral-900"}
+                className={dark ? "text-xs font-semibold text-neutral-300 hover:text-white" : "text-xs font-semibold text-neutral-500 hover:text-neutral-900"}
                 onClick={() => setWallPaintFamilyFilter("all")}
               >
                 All

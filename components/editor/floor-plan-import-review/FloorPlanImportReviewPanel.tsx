@@ -464,7 +464,7 @@ export default function FloorPlanImportReviewPanel({
             {namedRooms.map((room) => (
               <label
                 key={room.id}
-                className={`grid grid-cols-[1fr_1.4fr] items-center gap-2 text-[11px] ${subtle}`}
+                className={`grid grid-cols-[1fr_1.4fr] items-center gap-2 text-xs ${subtle}`}
               >
                 <span className="truncate">{room.roomType}</span>
                 <input
@@ -503,8 +503,8 @@ export default function FloorPlanImportReviewPanel({
             const evidence =
               floor.verticalEvidence?.[property]?.evidence ?? "assumed";
             return (
-              <div key={property} className="min-w-0">
-                <label className={`text-[10px] ${subtle}`}>
+              <div key={property} className="col-span-2 min-w-0 min-[480px]:col-span-1">
+                <label className={`text-xs ${subtle}`}>
                   {label} (mm)
                   <input
                     className={`${control} mt-1 w-full`}
@@ -540,7 +540,7 @@ export default function FloorPlanImportReviewPanel({
               ["windowSillHeight", "Window sill"],
             ] as const
           ).map(([key, label]) => (
-            <label key={key} className={`text-[10px] ${subtle}`}>
+            <label key={key} className={`text-xs ${subtle}`}>
               {label} (mm)
               <input
                 className={`${control} mt-1 w-full`}
@@ -574,12 +574,12 @@ export default function FloorPlanImportReviewPanel({
         >
           Confirm all displayed defaults
         </button>
-        <p className={`mt-1 text-[10px] ${subtle}`}>
+        <p className={`mt-1 text-xs ${subtle}`}>
           This only records that you checked them; it does not mean the heights
           were read from your floor plan or measured on site.
         </p>
         {floor.openings.length > 0 ? (
-          <label className={`mt-3 block text-[11px] ${subtle}`}>
+          <label className={`mt-3 block text-xs ${subtle}`}>
             Main entrance (optional)
             <select
               className={`${control} mt-1 w-full`}
@@ -658,7 +658,7 @@ export default function FloorPlanImportReviewPanel({
                 />
                 <div className="min-w-0 flex-1">
                   <span
-                    className={`mb-0.5 block text-[9px] font-semibold uppercase tracking-wide ${
+                    className={`mb-0.5 block text-xs font-semibold uppercase tracking-wide ${
                       level === "blocking" ? "text-red-600" : subtle
                     }`}
                   >
@@ -671,7 +671,7 @@ export default function FloorPlanImportReviewPanel({
                   <span className="block font-semibold">{issue.message}</span>
                   {issue.code === "openings_confirmation" ? (
                     <span
-                      className={`mt-1 block text-[10px] leading-4 ${subtle}`}
+                      className={`mt-1 block text-xs leading-4 ${subtle}`}
                     >
                       Use Step 3 above to select both ends of each visible
                       opening on the plan. If none are shown, mark this
@@ -679,12 +679,12 @@ export default function FloorPlanImportReviewPanel({
                     </span>
                   ) : null}
                   {blocked ? (
-                    <span className={`mt-0.5 block text-[10px] ${subtle}`}>
+                    <span className={`mt-0.5 block text-xs ${subtle}`}>
                       {blocked}
                     </span>
                   ) : null}
                   {level === "blocking" ? (
-                    <label className={`mt-1 block text-[10px] ${subtle}`}>
+                    <label className={`mt-1 block text-xs ${subtle}`}>
                       What did you check or fix? (at least 12 characters)
                       <textarea
                         className={`${control} mt-1 min-h-14 w-full resize-y`}

@@ -81,6 +81,8 @@ export type BuildDesignPagePanelRegistrationInput = {
     isDesigner: boolean;
     isClientPreview: boolean;
     canEdit: boolean;
+    /** canEdit, once the product lists have loaded: what picks products waits for it. */
+    canChangeProducts: boolean;
     canUseCabinetryStudio: boolean;
       canEditPlanGeometry: boolean;
     aiDesignEnabled: boolean;

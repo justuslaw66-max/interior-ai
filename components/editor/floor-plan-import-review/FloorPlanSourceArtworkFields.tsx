@@ -56,7 +56,7 @@ export default function FloorPlanSourceArtworkSelection(props: {
   return <>
     {props.count ? <div className="mb-3 rounded border border-violet-200 bg-white p-2 text-xs text-neutral-700">
       <label className="flex flex-wrap items-center gap-2">Review overlay
-        <select aria-label="Review overlay" className="rounded border bg-white px-2 py-1" value={props.layer} onChange={event => props.onLayer(event.target.value)}>
+        <select aria-label="Review overlay" className="max-w-full rounded border bg-white px-2 py-1" value={props.layer} onChange={event => props.onLayer(event.target.value)}>
           {SOURCE_REVIEW_LAYERS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </label>

@@ -36,7 +36,7 @@ export default function FloorPlanCatalogResultList({
     <div id={resultListId} className="mt-2 grid gap-4" data-testid={testId}>
       {groups.map((group) => (
         <section key={group.projectName}>
-          <div className={`mb-2 text-[11px] font-semibold uppercase tracking-wide ${subtle}`}>
+          <div className={`mb-2 text-xs font-semibold uppercase tracking-wide ${subtle}`}>
             {group.projectName} · {group.plans.length} layout{group.plans.length === 1 ? "" : "s"}
           </div>
           <div className="grid gap-3">
@@ -70,26 +70,26 @@ export default function FloorPlanCatalogResultList({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="text-sm font-semibold">{result.label}</div>
-                        <div className={`mt-0.5 text-[11px] ${subtle}`}>
+                        <div className={`mt-0.5 text-xs ${subtle}`}>
                           {result.flatType}{result.floorAreaSqm ? ` · ${formatDisplayArea(result.floorAreaSqm, measurementUnit)}` : ""}
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap justify-end gap-1">
                         {exactMatch ? (
-                          <span data-testid="floor-plan-unit-match-badge" className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">
+                          <span data-testid="floor-plan-unit-match-badge" className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
                             Exact unit match
                           </span>
                         ) : null}
-                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">
+                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
                           {result.verificationTier === "construction_verified" ? "Construction verified" : "Source verified"}
                         </span>
                       </div>
                     </div>
-                    <div data-testid={exactMatch ? "floor-plan-unit-match" : undefined} className={`mt-2 text-[11px] ${subtle}`}>
+                    <div data-testid={exactMatch ? "floor-plan-unit-match" : undefined} className={`mt-2 text-xs ${subtle}`}>
                       {exactMatch ? "Private address match" : "Published layout"}
                     </div>
-                    <p data-testid="floor-plan-orientation" className={`mt-1 text-[11px] ${subtle}`}>{floorPlanOrientationLabel(result)} Preview shows the published source when available.</p>
-                    <p className={`mt-1 text-[11px] leading-4 ${subtle}`}>{result.verificationNote}</p>
+                    <p data-testid="floor-plan-orientation" className={`mt-1 text-xs ${subtle}`}>{floorPlanOrientationLabel(result)} Preview shows the published source when available.</p>
+                    <p className={`mt-1 text-xs leading-4 ${subtle}`}>{result.verificationNote}</p>
                     <div className="mt-3 grid gap-2">
                       <button
                         type="button"
@@ -108,21 +108,21 @@ export default function FloorPlanCatalogResultList({
                         disabled={!canEdit || applyingResultId !== null}
                         onClick={() => onUse(result, false)}
                         className={dark
-                          ? "designer-control rounded-md border px-3 py-1.5 text-[11px] font-semibold disabled:opacity-50"
-                          : "rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"}
+                          ? "designer-control rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                          : "rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"}
                       >
                         Replace current design…
                       </button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3">
                       {result.sourceUrl && result.sourcePage !== null ? (
-                        <a href={`${result.sourceUrl.split("#")[0]}#page=${result.sourcePage}`} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-blue-700">
+                        <a href={`${result.sourceUrl.split("#")[0]}#page=${result.sourcePage}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-700">
                           Source page {result.sourcePage}
                         </a>
-                      ) : <span className={`text-[10px] ${subtle}`}>Published revision</span>}
+                      ) : <span className={`text-xs ${subtle}`}>Published revision</span>}
                     </div>
                     {applyError?.id === result.id ? (
-                      <p role="alert" className="mt-2 text-[11px] text-red-700">{applyError.message}</p>
+                      <p role="alert" className="mt-2 text-xs text-red-700">{applyError.message}</p>
                     ) : null}
                   </div>
                 </article>
@@ -131,7 +131,7 @@ export default function FloorPlanCatalogResultList({
           </div>
         </section>
       ))}
-      {groups[0]?.plans[0] ? <p className={`text-[10px] leading-4 ${subtle}`}>{groups[0].plans[0].accuracyNotice}</p> : null}
+      {groups[0]?.plans[0] ? <p className={`text-xs leading-4 ${subtle}`}>{groups[0].plans[0].accuracyNotice}</p> : null}
     </div>
   );
 }

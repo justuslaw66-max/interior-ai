@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.21.0",
+ "exporterVersion": "app-evidence-0.26.1",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -1254,33 +1254,12 @@
     "operation": "sliding",
     "centerXRatio": 0.7881,
     "centerYRatio": 0.206626,
-    "spanStart": {
-     "xRatio": 0.7881,
-     "yRatio": 0.082992
-    },
-    "spanEnd": {
-     "xRatio": 0.7881,
-     "yRatio": 0.33026
-    },
-    "confidence": 0.6,
+    "confidence": 0.45,
     "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      755.0,
-      121.5
-     ],
-     [
-      755.0,
-      483.5
-     ]
-    ],
-    "widthMm": 4089,
-    "hinge": "none",
+    "hinge": "unknown",
     "swingSide": 0,
     "handing": "unknown",
-    "note": "three or more staggered panel strokes",
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null
+    "note": "door found, but the space beyond it did not close"
    },
    {
     "kind": "door",
@@ -5098,7 +5077,7 @@
   "bars": 63,
   "gapsSeen": 115,
   "openings": {
-   "door": 10,
+   "door": 9,
    "window": 11,
    "open_passage": 1,
    "wall": 4
@@ -5106,12 +5085,19 @@
   "doorSwingsWithoutGap": 1,
   "rooms": 15,
   "roomsWithheldAsIllegalGeometry": 0,
+  "roomOutlinesMendedForTheApp": 0,
+  "slotsBetweenWallsClosed": 0,
   "facesLeftOutAsSlivers": 0,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 0,
   "leafRowsReadAsCasements": 0,
   "doorsNotPlacedBeyondOpenSpace": 0,
+  "doorsIntoWithheldRoomsNotPlaced": 0,
+  "secondWaysOutNotPlaced": 1,
+  "doorsBetweenTwoBedroomsNotPlaced": 0,
+  "doorsOntoLedgesNotPlaced": 0,
+  "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
@@ -5148,6 +5134,7 @@
   "cornersSnappedToDucts": 1,
   "subPixelSidesDropped": 0,
   "cornersStraightened": 0,
+  "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 8,
   "unsupportedWallPx": 1193,
   "thickAxisWallPx": 1193,
@@ -5158,6 +5145,8 @@
   "pageCrop": null,
   "scaleBar": null,
   "areaCheck": null,
-  "wallThicknessUnified": 45
+  "wallThicknessUnified": 45,
+  "jogFacesFlushed": 0,
+  "itemsLeftOutForTheAppsLimits": 0
  }
 }

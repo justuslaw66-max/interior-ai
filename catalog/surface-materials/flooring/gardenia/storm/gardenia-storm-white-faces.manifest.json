@@ -1,0 +1,1225 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/white/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - WHITE - minimali.zip (89545033 bytes, sha256 83f1764c5b78ab8fc8cf26870f134efe5fbde9d893c54c013c0d109c73a3186a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/storm/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0003821",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/white/pf60003821-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0003821_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-white-0003821-120x120-nat; wall gardenia-wall-tile-storm-white-0003821-120x120-nat",
+   "faces": [
+    {
+     "file": "0003821_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22130,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a29b90bc9c6ca5d506854ecfd51338300f40b81798db160b81bcc02fb8c8df63",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "WHITE 120X120_08",
+      "id": "58bf4723-876b-4a70-89ec-64c31d6eb305",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003821_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 24928,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "966297ee55e4b8f4a50571bec3d1ab017ad25f41f82cb338b51e28139be4af92",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "WHITE 120X120_02",
+      "id": "9a3a38a2-3679-48ff-be7f-2aa7f2d36dd6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003821_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21056,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "81ec95f25303c9d68654092e28e5416b0a78e90df5136aaad915efc6f69c02fe",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "WHITE 120X120_05",
+      "id": "c5ad2d72-b1fc-4454-ad96-d1c6eaf1d9d3",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003821_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 23426,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4aab5bd1378a575695508fa89b45a34a4c0dcb68885a613c09b7257706505456",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "WHITE 120X120_04",
+      "id": "f1b51178-e983-4e49-a5c7-57445031f2ba",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003821_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22404,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4f8afdec9d8123573ae8fd1467f997999c0a8213e34d2e1d8ebc6c6c6bf77d2f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "WHITE 120X120_01",
+      "id": "7234df03-0179-44e1-b9d0-5721b528e412",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003821_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22828,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bb49238d1a149c4930b413866352c9e36299ffe807f7607f21b2d5105b27b6c3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "WHITE 120X120_03",
+      "id": "c71fb3ee-1aef-4462-8817-81c2cc3321df",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003821_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21556,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "48ad9f877ba742edf674776b886a7824cffeafe71527dac8f5a48be2ccc9a63b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "WHITE 120X120_06",
+      "id": "03c82e20-0de5-4352-b999-db03c6beb4f4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003821_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21478,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "00b18cb6fa7366058995a73c4642312aa0a428271eb2b001b56d929eab5a412d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "WHITE 120X120_09",
+      "id": "6ae4ac9a-d7a4-4f28-baf7-b43d1d8074bd",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003821_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 25528,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "120X120-Natural/STORM - WHITE - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "13c534f3d45a2d47385a84ed8ed77205b43be631104e13d3e039ae5cd78f7a0f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "WHITE 120X120_07",
+      "id": "2fa7f592-108d-435d-92eb-e1731ff9bdef",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0003980",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/white/pf60003980-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0003980_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-white-0003980-60x120-nat; wall gardenia-wall-tile-storm-white-0003980-60x120-nat",
+   "faces": [
+    {
+     "file": "0003980_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12620,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e8faeb01d1cd7d7b733564d6b36af9f763ff181186eab20e68400e328871a713",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "WHITE 60X120_14",
+      "id": "7279ed9a-34a8-4284-9267-0d494aaa9d9e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003980_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10530,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e5c8a0162ff3f5f5088ac7447aff39a834f1007dd959d3b91a62723a4b2a994f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "WHITE 60X120_02",
+      "id": "a4d4138a-17b3-44d3-82b0-f97b1cf2bad1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003980_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11016,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7cf68a6a89e9a1c502424b43afe96185ec464fc7c99be84f0724365df1692ab3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "WHITE 60X120_08",
+      "id": "e919cb96-a831-4926-91a6-22d88cc41690",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003980_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12332,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d73ea3880a43e793363b5a243fd948b3a5ff08e0dde502a18828592c1313cede",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "WHITE 60X120_09",
+      "id": "ca4e5976-0f2b-44ab-80ad-a2b63e985ab9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003980_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11820,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9800633a5a6a8c12131a48194652dec5fb6058f8c84c604d81553584216d5a02",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "WHITE 60X120_12",
+      "id": "39711418-7e95-4414-8879-d247dfac5cb8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003980_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11552,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2cdb357a6bd11a3ea9719a1e3597a37fd8f975152c24be3a2fbb2d22b8a7b9cc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "WHITE 60X120_10",
+      "id": "8cd414e7-f1ff-4368-9567-ae9349aa2736",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003980_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10772,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7b3caa91135da44ebe3a66bb300ac46aef2ee7510f81160e4dc49340c8f82a64",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "WHITE 60X120_15",
+      "id": "5bbf3849-46e8-4abc-9c86-72ab023bc133",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003980_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14942,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d6e58abd82ab06c9fee56ac68078d0ef64ae6d57f2a28d0b541c7c112d58ec7a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "WHITE 60X120_04",
+      "id": "ebd9c885-6d19-4e22-9325-648a1224263f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003980_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12436,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "aa9a750189077dc23410a57ddd88026fa3184819fbe7f26c692002fdb4fcaf19",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "WHITE 60X120_01",
+      "id": "96c3d27e-b239-404d-a00f-89e0dfac439f",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003980_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12188,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "153977021ac9d5c61ccdbb1e3575a5e40199f82a1fda5489d7508845e240ea27",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "WHITE 60X120_16",
+      "id": "a56ec57a-c738-4ac3-b429-4cc854c68000",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003980_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12922,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "eefb3548534804aa371aee7669e29ef91adc3105d87fa4b05a0fa79b305d97a7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "WHITE 60X120_03",
+      "id": "46192982-7e62-4b57-be56-d69c66c6abd0",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003980_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11016,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b551f453215585ff6f221cd401720d1566ef58e55893743f35447223e1d3a3c9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "WHITE 60X120_06",
+      "id": "4ce4454c-42f8-4502-be56-87c3b1e04a34",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0003980_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9950,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3ae2e84b64d93af6e362cd965a57450a5691c9b53294b0cd1cadbed548d4206a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "WHITE 60X120_17",
+      "id": "dc252fb8-3510-4efe-a79b-2a0e84f10a18",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0003980_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11100,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "92ef211c93113594a5f0c44c907c3557e66cdbcc662baa2fc24230fac1e3621d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "WHITE 60X120_05",
+      "id": "044b77b3-3e2e-48f1-89e2-d1b177856140",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0003980_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13758,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "884453fd24be5d2a1ac2bb0587ee985b18c849d63308fa6286b63be80090af65",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "WHITE 60X120_13",
+      "id": "e13c1176-b899-492e-86ff-1f94a0cec905",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0003980_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10748,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "42b83b4d4e65ca73b8ac3306e0d7cf2ae0f90baaa0b335283002689445508695",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "WHITE 60X120_07",
+      "id": "c568c122-4c62-4bd6-a9e0-44bc59ef720a",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0003980_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11636,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1c554d0c579e602465fd336c78903345f117fdeeca7595ddc1abde2b067f7e59",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "WHITE 60X120_11",
+      "id": "55cabbab-4a71-4f59-b29f-86886171104c",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0003980_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12200,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X120-Natural/STORM - WHITE - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "969c6fcfdc7e1e91d0be3891c02ae45d4728154bac505f0fff13d2c79c2f0507",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "WHITE 60X120_18",
+      "id": "3b6e0d81-9de7-4067-a433-42b1131b711c",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0004000",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/white/pf60004000-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0004000_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-white-0004000-80x80-nat; wall gardenia-wall-tile-storm-white-0004000-80x80-nat",
+   "faces": [
+    {
+     "file": "0004000_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9928,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6a7d32a17e0f9259754aec4a6a8c582cc3ea042570c8d46fa6cea48997bf5e9b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "WHITE 80X80_01",
+      "id": "d9c2eaa4-6cc1-4087-917a-26b6a9bfe768",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004000_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10992,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4c017b310d91f5870da569c9eb97f79d60bb38c495fe2e291a95ce5bbda6fe0a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "WHITE 80X80_02",
+      "id": "187f1894-01e1-453e-9d4b-dd73866e4fea",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004000_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10864,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e62a560fadee48229ac431c21f931ba4273aac30154f169805517413410e9b20",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "WHITE 80X80_07",
+      "id": "e98a2fe4-65ee-44c4-8595-505dba84409b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004000_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10596,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f7026e34cc03580eac9d0529978db1daaf78331b29eb43e1141fdf22fa4a7039",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "WHITE 80X80_03",
+      "id": "dfed3c85-4371-416b-b522-af04a78c71bb",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004000_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9800,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2304c80bbd905cf8e9d16e98e31b4c4afb7db16ca7e88d626f4da97304524f5d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "WHITE 80X80_06",
+      "id": "314e4511-c4f8-42e5-abea-5797fa37b93b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004000_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 8938,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "61d93002ee84f94a743eebcc2324387062d33481f2f951aaa4b5d4179f381087",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "WHITE 80X80_08",
+      "id": "b2d58746-dd8b-4d9f-a037-fe7eb8857cca",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004000_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9638,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "458610993561b3d05ed842ed545e17e7c997b8ca14e1a8ade46f8febe2bd3f92",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "WHITE 80X80_04",
+      "id": "54b12ca7-1342-4c99-9a84-acf7bde08744",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004000_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9670,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1ff3e0775bc926377f11eb754695d11164cfdc85232959ff012beab67118227c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "WHITE 80X80_05",
+      "id": "10a9cecc-d6cd-459c-9c93-e6e3955086c3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0004000_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10242,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "80X80-Natural/STORM - WHITE - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f1dbce002ddeede2bb67277844a88d6bf3acec0c509c8237646379abef6a3705",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "WHITE 80X80_09",
+      "id": "6995af30-84e7-4250-838e-7d7250aaa152",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0004008",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/white/pf60004008-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0004008_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-white-0004008-60x60-nat; wall gardenia-wall-tile-storm-white-0004008-60x60-nat",
+   "faces": [
+    {
+     "file": "0004008_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6300,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3f3ea3866404f78319f6b116228f0fed915dfa6d5649034b769551791f6b1f97",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "WHITE 60X60_02",
+      "id": "99271886-35a7-42a3-b170-b7c91fb7a3ee",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004008_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5576,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ef0f467d556d1b82c0b2cd64de61bff9e9abeffcf27bff80b07d1369696c3676",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "WHITE 60X60_08",
+      "id": "0eb30764-2182-42f6-aa8e-e00e0cdacf5a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004008_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5726,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "9ea03b044027349e6db9e05e17c1e240886e0cfe31a41a1a86110cec1f20af6c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "WHITE 60X60_10",
+      "id": "3e8847e3-5ae6-412e-afaa-66d2e9472dfe",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004008_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6434,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8143f99782303c0710d9c9dd63e46a1d945d6d5127a548d17a30b1c7f229d157",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "WHITE 60X60_09",
+      "id": "fbe177fb-6cd2-4381-8e8f-6938e5dfa20f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004008_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6486,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "564ff300499307f51021da60aacfd8279ab18cecff0e89054306d9f18fc948a9",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "WHITE 60X60_04",
+      "id": "fe40fbf8-b108-4c76-8c7d-e3af24f691b0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004008_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5562,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f73f21d1c594fa51df8851bf6fb315d58bc051a544f18d7083cbdc89ef2ea6bf",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "WHITE 60X60_01",
+      "id": "75c311c2-d23d-4fe6-a7df-4ba5e1fb6da5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004008_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5688,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f82a7f57ed048234882d3527d09abdeccd58e786e9fca9ec2745bce1f7a1556c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "WHITE 60X60_07",
+      "id": "1cbd964b-2cb7-456b-b3fb-9a58b31e10d4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004008_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6780,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1ffb017e12683fa44ef07a8fe8268ff76794f9971d54faa757218e633b18ad84",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "WHITE 60X60_05",
+      "id": "151d5b59-513b-4eb2-bf21-0549466f56da",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0004008_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6918,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "80d200a4897d04f3933cbacf2435b387a3f1a38e317d80628e45e6184634bcd8",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "WHITE 60X60_03",
+      "id": "c060e2dc-f985-40b8-b97d-6503ed422d59",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0004008_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6464,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "8e67e10ea8d883a720b27dac37086e2e42573107831b4716f1d479658d51c9a3",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "WHITE 60X60_12",
+      "id": "4c3f8a0c-80d7-4a46-9c2c-e7a9b77e0dfa",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0004008_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 5888,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "badbe9fa52a16a79905e47027b60497042f37baa1dbd26456d353805835ba9c5",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 11",
+      "name": "WHITE 60X60_11",
+      "id": "78feb08b-3cd4-4af2-a07b-2af47e135e0d",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0004008_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6596,
+     "source_zip": "STORM - WHITE - minimali.zip",
+     "source_file": "60X60-Natural/STORM - WHITE - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "2aa6d3bbe3044fe1ab06c754110a28e36909761c8b2fb83cfe3c9035b020e0af",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 12",
+      "name": "WHITE 60X60_06",
+      "id": "56cd01d3-fd48-4e55-b619-3fb99fb13297",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,841 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/perla/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LUCE - PERLA - minimali.zip (34864448 bytes, sha256 ae9cbbc4ab35a2bd6236e0a7d6c19f9821d1cd783bc6cc0670bbe022d5777eca).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/luce/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008183",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/perla/pf60008183-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008183_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-perla-0008183-120x280-nat; wall gardenia-wall-tile-luce-perla-0008183-120x280-nat",
+   "faces": [
+    {
+     "file": "0008183_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 29148,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X280-Natural/LUCE - PERLA - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "4d2188f85f43d7b6fe2bd2778cc4de5466d109a5a07d195aee53e14357df8c1a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1",
+      "name": "LUCE PERLA 120X280_02",
+      "id": "f1f8181e-989f-4900-a08a-db2044c7c7e0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008183_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 26564,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X280-Natural/LUCE - PERLA - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "1d5384e724f2bc9189c3c52cac9200aea68851274cf7574e0932bb9856cdb8b1",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2",
+      "name": "LUCE PERLA 120X280_01",
+      "id": "c3efca5a-2fb0-485c-adc8-50884f2af5cd",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0006540",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/perla/pf60006540-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006540_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-perla-0006540-120x120-nat; wall gardenia-wall-tile-luce-perla-0006540-120x120-nat",
+   "faces": [
+    {
+     "file": "0006540_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11502,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c8d22b23643106de95c77f10badb171597133466bdd98e11f6a872dbd214a6db",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "LUCE PERLA 120X120_04",
+      "id": "7d642a03-3916-4ce5-a204-642c8a12ff4c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006540_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10870,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a28847f47d2b329b14d8c0253f13ecb10cc1daa48e363f056c34e547f861c20d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "LUCE PERLA 120X120_06",
+      "id": "4e8dac1d-fb0d-4a38-8757-e5d153df77ba",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006540_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9486,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1331b97f5c5dd9ff14bfb31f1c7a340385def44398d3108ae8a85db82d24106d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "LUCE PERLA 120X120_01",
+      "id": "3b79f136-5176-4408-839c-a3571606d517",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006540_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10526,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "91008097cf1845056fc36d3a0a08fc89b06af39b1452d260bb72a5a24fbe3e1e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "LUCE PERLA 120X120_03",
+      "id": "c74f6e45-844c-4140-8a78-6dabe6e184be",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006540_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10738,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "876a65993e47c5fa0fa42a10d4cdd81533f767cb55b3286ad8f65f6fb94a945a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "LUCE PERLA 120X120_02",
+      "id": "49345d1a-c925-4c36-898d-f1f02da70bbb",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006540_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11780,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - PERLA - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dbf8536d2f035c2cd2645e57c0448ca5eca39a944525a844d419affaffe210c5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "LUCE PERLA 120X120_05",
+      "id": "c1968f53-573f-4418-89f6-f786ed67a391",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006541",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/perla/pf60006541-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006541_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-perla-0006541-60x120-nat; wall gardenia-wall-tile-luce-perla-0006541-60x120-nat",
+   "faces": [
+    {
+     "file": "0006541_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5876,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3f2cab63f49c3ee10fcf8f2f123bfa0eb783572c1f7c1e3b5f8864435bd96ed6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "LUCE PERLA 60X120_04",
+      "id": "7d8fe924-ae34-4c48-9c98-722efc4136aa",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006541_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6320,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "75e494303ff396b9d156d18f463063f7680c987fbfb6f0b498c9d0189fd652bd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "LUCE PERLA 60X120_05",
+      "id": "ebe74480-4c4c-44de-936b-5f8034f08f32",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006541_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6102,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "340efb47e9d3e9f2f58a93385937e62bee145a1fb9f6d9c840cb0bc42decc02b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "LUCE PERLA 60X120_06",
+      "id": "8ab14705-0a42-4261-8839-ed7c8decdd30",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006541_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4954,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "695aff68a84c376f1f07e7cef451537624fb1d0724f693b5e3c9c8092ef0709d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "LUCE PERLA 60X120_02",
+      "id": "eee68d24-8331-4ddb-bfbf-6db0f98af242",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006541_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5796,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "803030ba1084eab9fb06f4214d68acfaa505826a0262a119b32d832a1e3cc557",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "LUCE PERLA 60X120_03",
+      "id": "94ae348e-7d96-4586-9cc8-2378d6294fbe",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006541_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4664,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ffe664ca45417b5f1185889ff37e6bd87515e8ef366bbd520f0b2ea315f6cd4c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "LUCE PERLA 60X120_01",
+      "id": "409a8321-9376-41ae-bce2-1ced84868241",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006541_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6140,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "280e076cf26ea11fe088b194aa4bf2f30816a0bf08dad6baaf2c2cedc7c99dee",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "LUCE PERLA 60X120_10",
+      "id": "55a0f051-89f0-400a-8df0-dd3c071fd0c1",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006541_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5460,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "846db825cc2bef4fb6c5ab117d5688b0390feabeaa6415fa770c06fe32de67cc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "LUCE PERLA 60X120_12",
+      "id": "8ba62034-cb1a-436a-97fa-78e088e18d5d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006541_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6140,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2da79c1378bdb67d95654cf3046c29c28c7c4af038f21623d7b3eef55aab29a8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "LUCE PERLA 60X120_11",
+      "id": "560a2fcf-0558-4bcb-b329-a2e3d728da20",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006541_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6042,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e17aa85173a5ad0f47d3004a6c9cd6c229a611d26ead28a052a987923db1dcba",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "LUCE PERLA 60X120_08",
+      "id": "dd3fb6ab-85f9-419a-84ce-a48546ab589b",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006541_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5012,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "5941f3a338eb34f3c7b07f579c994a59d2c7a9ba60fe54aa11277b45d495504e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "LUCE PERLA 60X120_09",
+      "id": "9a33412e-5864-4038-b68f-2999bef50b63",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006541_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5186,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - PERLA - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fad43c1f8672f8f108e72123c638dd9b22b1397fce64237ae17d5cedafdfd0b8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "LUCE PERLA 60X120_07",
+      "id": "87f0ac13-33b5-431f-9e04-85264fb988bc",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0006549",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/perla/pf60006549-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0006549_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-perla-0006549-80x80-nat; wall gardenia-wall-tile-luce-perla-0006549-80x80-nat",
+   "faces": [
+    {
+     "file": "0006549_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4188,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "46828156d52b0ee937eb9906964b6e51e1f0a384b0f15f7157a6b2beb8bb940d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "LUCE PERLA 80X80_06",
+      "id": "1aafa828-f17d-438a-b460-36b5f58ff606",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006549_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5612,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f9fc9e78172491fc7009886fde1798a9f3bcc4bdd85d82567e4cc12df1ff67d2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "LUCE PERLA 80X80_04",
+      "id": "eed697bf-658c-405c-b199-dfc64faf37e2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006549_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4102,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bf55dc37e60ba8d09338fd64a332877a7dcf9771cf3836c4162b8d9075f0c3e3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "LUCE PERLA 80X80_05",
+      "id": "1f54f76d-f463-4198-9542-52684106d895",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006549_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4898,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "58fcb70bc29536f6ff831dec2e796fff302f61485c83c7a19e6728a93d999409",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "LUCE PERLA 80X80_08",
+      "id": "bbfa97e3-cd58-4208-bd02-15505c9f17f3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006549_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3654,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "544efad2cb3a15a07f7ae5d17d07ffaa149c66a728f40271dde9358d66037101",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "LUCE PERLA 80X80_07",
+      "id": "515afa83-4e1f-4b7a-b0e3-a93fa36d7a01",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006549_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4334,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fb63be1ae046c685aa1f0223bfc7441d7cfdc741201d05b15d44437bb6269c1f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "LUCE PERLA 80X80_09",
+      "id": "8119391b-e131-4b07-b773-6a9db1eb6a1b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006549_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4744,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d900c5ce5dfd2a95a22c310ba7d7040930b87f45ebebedac0937c31d6a1676ea",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "LUCE PERLA 80X80_02",
+      "id": "cd38415b-06a1-4768-a3ba-f736f31ed381",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006549_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4288,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7498fb20e4fc25afb7190df29c02448037de9220b4d8493d32d9424a23519929",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "LUCE PERLA 80X80_03",
+      "id": "e1150416-3184-4864-b846-3b425b9666e4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006549_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4122,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b747b3af54e1e032b85236cae140429385d9dfbb591b5a74d12f3d5daeedac54",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "LUCE PERLA 80X80_12",
+      "id": "a03ded72-ee7f-4eb5-9872-e7b30d38b31e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006549_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4544,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c53717cb3fa0a4c8f192a44924d62d272d07cd2a71859553ed2c634fd51967ac",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 10",
+      "name": "LUCE PERLA 80X80_10",
+      "id": "3d993537-0863-408f-8a0a-d71a940fac12",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006549_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4558,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c228b3a813be13301fbf9a9d51b243fa0bc9f54c8976cdb84078434bf87bce2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11",
+      "name": "LUCE PERLA 80X80_01",
+      "id": "806d98cf-eb3b-43b8-976b-88695e542800",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006549_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5186,
+     "source_zip": "LUCE - PERLA - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - PERLA - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8ad14cfd9704197a57216effe67200d1e08e28a71b406275469857f4e27c2e12",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 12",
+      "name": "LUCE PERLA 80X80_11",
+      "id": "468f4f57-c686-4ebf-b32c-6ac046eb90ca",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

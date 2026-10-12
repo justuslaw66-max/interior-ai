@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/righe-tabacco/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: BLOCK - RIGHE TABACCO++ - minimali.zip (156430 bytes, sha256 8022554e37a99cacef052c3c26e7476dca7eae62c0c6bc3b3250852bd7d07a71).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/block/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0031184",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/righe-tabacco/pf60031184-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0031184_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-righe-tabacco-0031184-60x120-nat; wall gardenia-wall-tile-block-righe-tabacco-0031184-60x120-nat",
+   "faces": [
+    {
+     "file": "0031184_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4502,
+     "source_zip": "BLOCK - RIGHE TABACCO++ - minimali.zip",
+     "source_file": "60X120-Natural/BLOCK - RIGHE TABACCO++ - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1282
+     ],
+     "source_sha256": "06d87cdf44db6a1ff19b6392223992a6989385d6d033f08381d183824f91377c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "BLOCK RIGHE TABACCO ++ 60X120 NAT",
+      "id": "5f0e84bb-379b-4605-8c88-f9866c90a24b",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

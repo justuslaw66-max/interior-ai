@@ -214,7 +214,7 @@ export default function SelectedItemDetailsPanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className={sectionTitleClass}>Hanging height</div>
-              <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-neutral-500"}>
+              <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
                 Adjusts only the central cable
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function SelectedItemDetailsPanel({
             }}
             aria-label="Adjust pendant hanging height"
           />
-          <div className={`flex justify-between text-[11px] ${dark ? "text-neutral-400" : "text-neutral-500"}`}>
+          <div className={`flex justify-between text-xs ${dark ? "text-neutral-400" : "text-neutral-500"}`}>
             <span>{formatCabinetMeasurement(adjustableHangingHeight.minCm * 10, measurementUnit)}</span>
             <span>{formatCabinetMeasurement(adjustableHangingHeight.maxCm * 10, measurementUnit)}</span>
           </div>
@@ -291,7 +291,7 @@ export default function SelectedItemDetailsPanel({
             data-testid="selected-item-precision"
           >
             <div
-              className={dark ? "text-[11px] text-neutral-400" : "text-[11px] text-neutral-500"}
+              className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}
               data-testid="selected-item-size-guidance"
             >
               Catalogue size is preserved. Choose an available model or size option below to resize accurately.
@@ -382,7 +382,7 @@ export default function SelectedItemDetailsPanel({
               <div className="flex items-center justify-between gap-2">
                 <div className={sectionTitleClass}>Style check</div>
                 <span
-                  className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize ${styleStatusClass}`}
+                  className={`rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${styleStatusClass}`}
                   data-testid="selected-item-style-status"
                 >
                   {styleConsistencyReport.status}
@@ -396,7 +396,7 @@ export default function SelectedItemDetailsPanel({
                   {styleConsistencyReport.findings.slice(0, 3).map((finding) => (
                     <div
                       key={`${finding.kind}-${finding.label}`}
-                      className={dark ? "text-[11px] text-neutral-400" : "text-[11px] text-neutral-600"}
+                      className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
                     >
                       <span className={dark ? "text-neutral-200" : "font-semibold text-neutral-800"}>
                         {finding.label}:
@@ -414,8 +414,8 @@ export default function SelectedItemDetailsPanel({
                       type="button"
                       className={
                         dark
-                          ? "w-full rounded-md border border-white/10 bg-white/5 px-2 py-1.5 text-left text-[11px] text-neutral-200 hover:bg-white/10"
-                          : "w-full rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-[11px] text-neutral-700 hover:bg-neutral-100"
+                          ? "w-full rounded-md border border-white/10 bg-white/5 px-2 py-1.5 text-left text-xs text-neutral-200 hover:bg-white/10"
+                          : "w-full rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-100"
                       }
                       data-testid={`selected-item-style-alternative-${alternative.productId}`}
                       disabled={itemActionsDisabled}

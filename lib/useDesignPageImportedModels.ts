@@ -22,7 +22,11 @@ import {
   IMPORTED_VARIANT_BY_PRODUCT_ID,
   IMPORTED_VARIANTS_BY_PRODUCT_ID,
 } from "@/lib/design-page-product-data";
-import { markImportedCatalogHydrated } from "@/lib/imported-catalog-readiness";
+import {
+  IMPORTED_CATALOG_REFRESH_AFTER_MS,
+  markImportedCatalogHydrated,
+  readNowAndAtMostEvery,
+} from "@/lib/imported-catalog-readiness";
 
 export type ImportedFamilyOption = {
   familyKey: string;
@@ -158,8 +162,7 @@ export function useDesignPageImportedModels() {
       markImportedCatalogHydrated();
     };
 
-    void hydrate();
-    const refreshOnFocus = () => void hydrate();
+    const refreshOnFocus = readNowAndAtMostEvery(IMPORTED_CATALOG_REFRESH_AFTER_MS, () => void hydrate());
     window.addEventListener("focus", refreshOnFocus);
     return () => {
       cancelled = true;

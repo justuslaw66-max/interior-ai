@@ -27,13 +27,13 @@ function OpeningHeader({ opening, roomName, dark }: {
     <div className="flex items-start justify-between gap-3">
       <div>
         <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>{opening.kind === "door" ? "Door" : "Window"}</div>
-        <div className={dark ? "mt-0.5 text-[11px] text-neutral-400" : "mt-0.5 text-[11px] text-gray-500"}>
+        <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-gray-500"}>
           On the {opening.canonicalHost ? "selected" : opening.wall} wall
         </div>
       </div>
       <div className={dark
-        ? "rounded-full bg-neutral-800 px-2 py-1 text-[10px] font-medium text-neutral-200"
-        : "rounded-full bg-gray-100 px-2 py-1 text-[10px] font-medium text-gray-600"}>
+        ? "rounded-full bg-neutral-800 px-2 py-1 text-xs font-medium text-neutral-200"
+        : "rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600"}>
         {roomName}
       </div>
     </div>
@@ -48,7 +48,7 @@ function OpeningBasics({ opening, wallSpanMeters, unit, dark, proMode, onChange 
   proMode: boolean;
   onChange: PlanOpeningInspectorProps["onChange"];
 }) {
-  const labelClass = dark ? "text-[11px] font-medium text-neutral-300" : "text-[11px] font-medium text-gray-600";
+  const labelClass = dark ? "text-xs font-medium text-neutral-300" : "text-xs font-medium text-gray-600";
   return (
     <div className="grid grid-cols-2 gap-2">
       <OpeningKindControl

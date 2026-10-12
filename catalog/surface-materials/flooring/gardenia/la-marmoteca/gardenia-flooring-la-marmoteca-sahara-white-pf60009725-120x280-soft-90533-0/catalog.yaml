@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: the 4 single item pictures of item 0009717 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/sahara-white/pf60009717-v102/), because ABK's 4 Soft pictures are 0009717's 4 Lux pictures, byte for byte. Downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-marmoteca-sahara-white-faces.manifest.json. Each covers 1200x2800 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60009725/0/90533 for floor use.
     - "Configurator format: 120x280 Soft; surface destination: ENTRAMBE."
@@ -65,16 +66,32 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027057.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/g0027057.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 280
     height: 120
+  image_physical_size_mm:
+    width: 1200
+    height: 2800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_01.webp
+      width_mm: 1200
+      height_mm: 2800
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_02.webp
+      width_mm: 1200
+      height_mm: 2800
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_03.webp
+      width_mm: 1200
+      height_mm: 2800
+    - url: /assets/catalog/surface-materials/gardenia/la-marmoteca/0009717_04.webp
+      width_mm: 1200
+      height_mm: 2800
 rendering:
   default_rotation_deg: 0
   roughness: 0.48
@@ -99,12 +116,12 @@ commerce:
 import_governance:
   publish_status: draft
   publish_blockers:
-    - confirm_texture_tileability
     - confirm_price_per_sqm_or_quote_mode
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

@@ -1,0 +1,1160 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: CONCREA PLAIN - SILVER - minimali.zip (32679055 bytes, sha256 722ce739afa4ee6c3f48b494f4206745ffd4f549ddc0fb06ba1a36ae5c7cba78).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/concrea-plain/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008653",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60008653-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008653_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-silver-0008653-120x280-nat; wall gardenia-wall-tile-concrea-plain-silver-0008653-120x280-nat",
+   "faces": [
+    {
+     "file": "0008653_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 28960,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X280-Natural/CONCREA PLAIN - SILVER - 120X280 - Natural - view_1.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "9a807876c9866dbbd375673782e30775496575117feb7badf8f7a7b23905ca72",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN SILVER 120X280_01",
+      "id": "ee3daa0b-79ad-4d85-ac22-417bee3fe196",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008653_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 25964,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X280-Natural/CONCREA PLAIN - SILVER - 120X280 - Natural - view_2.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "aa5f920e47e685a17d7bb7d7e14a1e26b1c488068a7d1e681d41e9578c26e2cc",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Natural · Faccia 2 (view_02)",
+      "name": "CONCREA PLAIN SILVER 120X280_02",
+      "id": "140d8c4b-d4b8-4e28-ad7e-991af7cc28a9",
+      "site_position": 2
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0003060",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60003060-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0003060_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-silver-0003060-120x120-nat; wall gardenia-wall-tile-concrea-plain-silver-0003060-120x120-nat",
+   "faces": [
+    {
+     "file": "0003060_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7524,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c1ab0df8ae54b348920b459809cb10d18d4e1b99e33d65d6d0409161beb44784",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN SILVER 120X120_01",
+      "id": "cfabdbd0-6325-43bf-b964-1896b874b5a6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003060_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7312,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2561
+     ],
+     "source_sha256": "3bfbc66ff496d1e6a306c7197a94806368295e4a8cbdfa6b4990d15e45e1f1ee",
+     "source_px_per_mm": 2.134,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2 (view_01)",
+      "name": "LAB325 BASE ASH 120X120_01",
+      "id": "f1c6620e-0099-4620-bfa8-ef60f0e06ad8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003060_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9266,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1cbede7dcb1c1f56a15e752cfb0772fe50854b1a129b5df6cae69c10d69a720f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3 (view_02)",
+      "name": "LAB325 BASE ASH 120X120_02",
+      "id": "5c21e21a-7153-4c26-acc6-e8d4dd8f0507",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003060_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6636,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "b312772d55d9af96aff5927275b2fc7ef5947618a39c998cfbfc46decefe3767",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4 (view_02)",
+      "name": "CONCREA PLAIN SILVER 120X120_02",
+      "id": "cfaaf9b6-8316-4a8e-83e4-78061af14571",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003060_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11150,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "78f37b383ae0fc2abdc4f21b930e2c640b20c01184628845de5d6224f0ab1a95",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5 (view_03)",
+      "name": "LAB325 BASE ASH 120X120_03",
+      "id": "3b1b7a7e-5566-46fd-abc1-fcf0a20e478d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003060_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7958,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9b69acd14ac3808a916714ba83e07e739b014aaa9bfcaf5b844c90929fcff8d1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6 (view_03)",
+      "name": "CONCREA PLAIN SILVER 120X120_03",
+      "id": "c7e406b5-5fbb-4434-8355-bc84270b4a35",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003060_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8024,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "56c7047dd704f2c5752c96eb40e6427d082b3fd69cb1ac66b4dee6aaaaa3d7f1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7 (view_04)",
+      "name": "LAB325 BASE ASH 120X120_04",
+      "id": "314fae80-1be4-4dee-a038-0fa9944dd325",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003060_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8978,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2625
+     ],
+     "source_sha256": "c74b59f7ec29e8c11ff61acb5e0a741102cd2f623350ad6bb50474b35cf67a38",
+     "source_px_per_mm": 2.188,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8 (view_04)",
+      "name": "CONCREA PLAIN SILVER 120X120_04",
+      "id": "b35b406c-eea5-4add-8923-04e4b3404f0f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003060_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 8366,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "94e268eb8b6079a02372af65688394d5529d4cb476f565fa6a262f5947f4b88e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9 (view_05)",
+      "name": "LAB325 BASE ASH 120X120_05",
+      "id": "6fb056ba-0da8-4329-b7ba-1caf439bd4b4",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003060_10.webp",
+     "face": 10,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9834,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "120X120-Natural/CONCREA PLAIN - SILVER - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "48a10a021bceefc271bd172ad2e4b20d2d87bb0acaa6b319fdbc5890158e223b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 10 (view_06)",
+      "name": "LAB325 BASE ASH 120X120_06",
+      "id": "b6bf9072-493f-4c77-933b-945ff454de7f",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0002608",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60002608-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0002608_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-concrea-plain-silver-0002608-60x120-nat; wall gardenia-wall-tile-concrea-plain-silver-0002608-60x120-nat",
+   "faces": [
+    {
+     "file": "0002608_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4120,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "9b5beb0899696ca1ecb90c25cd5a07a734e899aa2aa7f64856d886b1abe7b651",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN SILVER 60X120_01",
+      "id": "bd855bec-e9f5-4ffb-b4c7-ddcc2809c17a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0002608_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5994,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b0889bd3679668a8ef4a83b311d5b89723f5f6e123378fb9b430485557fcbb8b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2 (view_02)",
+      "name": "LAB325 BASE ASH 60X120_02",
+      "id": "dc76bedd-9a55-485a-8d28-0faa50bbad5b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0002608_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4392,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ac57918f55dc29bcc26fb1b53c004440b79d9c2d7512c67f98137cca8c8c658c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3 (view_02)",
+      "name": "CONCREA PLAIN SILVER 60X120_02",
+      "id": "f4860140-06f5-43a6-9c2b-794383e7b7a5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0002608_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3570,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1249
+     ],
+     "source_sha256": "a3ddc37d651b9abd122073af010cc9415e223b94fefb01866ef5e5f3f1e90b40",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4 (view_03)",
+      "name": "CONCREA PLAIN SILVER 60X120_03",
+      "id": "5399610d-b21e-4061-a891-6d56e2cdd5b0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0002608_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4568,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "6a66b791b527afc75a5c4efc0a6352513b424cd076b06f6e2d194efe397521a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5 (view_03)",
+      "name": "LAB325 BASE ASH 60X120_03",
+      "id": "fa37055c-7c58-4dc2-a6b3-fe585a70bd88",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0002608_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4100,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c8963b2108c9a8b18bf5fcdbc0358c14c1c39d129624c130a4f61f4c6f62b98b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6 (view_04)",
+      "name": "LAB325 BASE ASH 60X120_04",
+      "id": "0f3179cd-0946-46e4-9bc6-c351f4880df0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0002608_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3380,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      1249
+     ],
+     "source_sha256": "dc198afbbf01a1edc1a38266b8940068ea2fc78a2a0b3c8d123596d28eae4a1d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7 (view_04)",
+      "name": "CONCREA PLAIN SILVER 60X120_04",
+      "id": "8f00b10c-2d0f-46fa-98c8-e39098b0decc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0002608_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4376,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "4247a5a83b4c967323fe8873c6aa323a9fdd6ef17fd5913ecda9826d6c45ca4e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8 (view_05)",
+      "name": "CONCREA PLAIN SILVER 60X120_05",
+      "id": "b7a9edf2-cbe7-4a06-87c0-03dde7da32a8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0002608_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4590,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "b5ed087f148a41761763ff76ba3986e20a6f6814fba12e6523a2eefb9e482e4e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9 (view_05)",
+      "name": "LAB325 BASE ASH 60X120_05",
+      "id": "b89fc9a6-6881-4bea-9d70-86ebd0d76298",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0002608_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3508,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "25e02332ecab0f20a47cdb5631b167bf0e91a5c6ad5800979ab556bf2c688f5b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10 (view_06)",
+      "name": "CONCREA PLAIN SILVER 60X120_06",
+      "id": "69e55439-a54f-4d69-a2a7-9d035c4ce84d",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0002608_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3942,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "7f14909e0e5b8681c241c6400f04ab764bdcec32ffe913aa43f3f3424fdd10c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11 (view_06)",
+      "name": "LAB325 BASE ASH 60X120_06",
+      "id": "c54424b4-8d21-499d-a9bc-5a7e0936e1f7",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0002608_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6662,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e277ca8473902e2607d5315e2380d6e895af98a7a93a97000ffc5576429f77e5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12 (view_07)",
+      "name": "LAB325 BASE ASH 60X120_07",
+      "id": "6b368b5d-5b11-40ee-94c1-9bae480c1295",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0002608_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4994,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      1249
+     ],
+     "source_sha256": "67241392d41e725954998aca7ab7ab0a17d407a41c498bcea5b050d5051345aa",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13 (view_07)",
+      "name": "CONCREA PLAIN SILVER 60X120_07",
+      "id": "c976cd8b-959f-4179-a9bc-6ccea645823a",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0002608_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4092,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1249
+     ],
+     "source_sha256": "6dd5e811bdf10ce036627116c3db585f0384a83ebb2af51e122fa136ad4b9644",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14 (view_08)",
+      "name": "CONCREA PLAIN SILVER 60X120_08",
+      "id": "52f4879c-7c0e-459c-a185-1df0f97a1e1d",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0002608_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5242,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "60X120-Natural/CONCREA PLAIN - SILVER - 60X120 - Natural - view_8 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ca0935a9276e69fa6d1a6b8081399f67785a1728416037f7aadd6d95781049a2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15 (view_08)",
+      "name": "LAB325 BASE ASH 60X120_08",
+      "id": "d9d2add3-5ee4-43cd-b61e-337d45680d25",
+      "site_position": 15
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0003064",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/concrea-plain/silver/pf60003064-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0003064_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    9,
+    12
+   ],
+   "duplicates_note": "picture 12 is picture 3 again, exported anew (image matching), so it is used once; picture 9 is picture 2 again, exported anew (image matching), so it is used once",
+   "used_by": "floor gardenia-flooring-concrea-plain-silver-0003064-80x80-nat; wall gardenia-wall-tile-concrea-plain-silver-0003064-80x80-nat",
+   "faces": [
+    {
+     "file": "0003064_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3678,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "423df7f5699c69263842ce7fa8bd640ea7d86d49bf62bd4e58707c01638f04a4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1 (view_01)",
+      "name": "CONCREA PLAIN SILVER 80X80_01",
+      "id": "962aedb3-6465-4989-8166-a6379d2f5f6e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003064_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2568,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7b35f9be44e1b528ae71fd4068cd8eebcd84058e8f9f2204de464bd437d32652",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2 (view_01)",
+      "name": "LAB325 BASE ASH 80X80_01",
+      "id": "cf60c878-848b-4099-a4c7-5ee34b5057a9",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003064_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4632,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d95612523672d11393894a2a7a1d73738a99e09dcdf96d265c75297f9acb057a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3 (view_02)",
+      "name": "LAB325 BASE ASH 80X80_02",
+      "id": "140fd3db-ffb3-42dc-8c9d-aeff4997dab1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003064_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3480,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_2 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c12c12976019e2960cd6cbc32e7d4d22484e7c1f5ae5d8c0af9e8a6939e65e56",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4 (view_02)",
+      "name": "CONCREA PLAIN SILVER 80X80_02",
+      "id": "876f20ff-d12e-4656-999b-c14a7ecaa3a7",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003064_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4962,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "45724a37f513572bbf4cdcf43e24000fee688d5ab9ddf244c6e05674f78fcbf1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5 (view_03)",
+      "name": "LAB325 BASE ASH 80X80_03",
+      "id": "27d785ab-2e3a-4372-8ac0-fd289db2ee55",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003064_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3048,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "397dfaec8cfa75d0534154cee920b9f609e488b2251e042d26809d1af06aa486",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6 (view_03)",
+      "name": "CONCREA PLAIN SILVER 80X80_03",
+      "id": "6a090eca-a38a-4195-b12c-389185009b43",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003064_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3010,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4f00ef84420ff78faea7e3f614d16ce1e745a53ac064725987944fa5479eb99c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7 (view_04)",
+      "name": "CONCREA PLAIN SILVER 80X80_04",
+      "id": "750c2190-9ea2-4c10-97f0-717ccb55fec9",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003064_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4100,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2b1c7e854f3eeacc3734b4db845446952f52aaa4d8ab5a0cd61d5f7f13b95649",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8 (view_04)",
+      "name": "LAB325 BASE ASH 80X80_04",
+      "id": "953cdcf3-23f7-4687-a626-0442e241cc5c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003064_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3760,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "19bf446f521882339e7b68bc64de697e5bc3f0fc29de61ee5a550e5e8ecb06ec",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 10 (view_05)",
+      "name": "CONCREA PLAIN SILVER 80X80_05",
+      "id": "bc9bec4f-f159-4e7a-aaa2-34a132d9cc5c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003064_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2550,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "314e8c86ec71a3742f16de2bdd14983c72d41096aaf8ab56c5753483b4bae6f2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11 (view_06)",
+      "name": "CONCREA PLAIN SILVER 80X80_06",
+      "id": "240785a7-03eb-4b53-a6ff-d41e15cba6e7",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003064_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3670,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5f701688a9bf65b2183cde749164d05bdae9a21f50623e568babb9577899778c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 13 (view_07)",
+      "name": "LAB325 BASE ASH 80X80_07",
+      "id": "b73b8114-d82b-43ce-bf0f-139b5329726b",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0003064_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 5028,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dc5b1c24d32208711982156b26ed3f085c311bd57847ed7a099019b8c25175a0",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 14 (view_07)",
+      "name": "CONCREA PLAIN SILVER 80X80_07",
+      "id": "d231e989-674b-46ad-987b-cd6088f4ee32",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0003064_13.webp",
+     "face": 13,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4368,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "133165e0ebdc699dc0d67d198252639778ac9291682e00738094f3ca773d5a17",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 15 (view_08)",
+      "name": "LAB325 BASE ASH 80X80_08",
+      "id": "0346a24f-a25f-4c93-9aba-c97bce8f6681",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0003064_14.webp",
+     "face": 14,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3104,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_8 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d83e6ba93323d8c02bd0d308308edb64657dfee31082cfe63db1d5935ed0aa35",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 16 (view_08)",
+      "name": "CONCREA PLAIN SILVER 80X80_08",
+      "id": "fcd027d3-b987-4997-8c7f-ffb41808615d",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0003064_15.webp",
+     "face": 15,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3560,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d5253d6e5edf9d918db28b5761c8bb8ce6448ce09e4b9b08a8a26b5baf97a21c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 17 (view_09)",
+      "name": "CONCREA PLAIN SILVER 80X80_09",
+      "id": "51176e55-720d-425c-a553-3cc32030aff5",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0003064_16.webp",
+     "face": 16,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3852,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a16ebaebc39cb49f5badf5b2be3c40981bf3ade435f76d2368472fb8e9f1286f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 18 (view_10)",
+      "name": "CONCREA PLAIN SILVER 80X80_10",
+      "id": "e07e0593-5e86-4777-aeab-0e2084eaecd0",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0003064_17.webp",
+     "face": 17,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3136,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ca144e868e88e2efdc1452a2f5f28df4edc3f0c8d74d2b6890989d8b1f032db1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 19 (view_11)",
+      "name": "CONCREA PLAIN SILVER 80X80_11",
+      "id": "49bd9bbc-e221-4ecc-8dbf-6b0a81f58f7f",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0003064_18.webp",
+     "face": 18,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2744,
+     "source_zip": "CONCREA PLAIN - SILVER - minimali.zip",
+     "source_file": "80X80-Natural/CONCREA PLAIN - SILVER - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cddefd5fb117bacbd12994a769740332505ad6b6d93f119a494fa79b930bf998",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 20 (view_12)",
+      "name": "CONCREA PLAIN SILVER 80X80_12",
+      "id": "f09e18b1-68b8-4e7e-b052-bcf5ff6e593c",
+      "site_position": 20
+     }
+    }
+   ]
+  }
+ ]
+}

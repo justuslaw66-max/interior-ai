@@ -92,6 +92,7 @@ function buildStartChooserInput(
       sessionKnown: base.state.identity.sessionStatus !== "loading",
       localBackupHydrated: snapshotDocument.state.localBackupHydrated,
       canEdit: coreShell.derived.access.canEdit,
+      canChangeProducts: coreShell.derived.access.canChangeProducts,
       designIsEmpty: !shouldConfirmPlanTemplateReplacement(
         snapshotDocument.state.designSnapshot,
         viewportShell.state.plan.planOpenings

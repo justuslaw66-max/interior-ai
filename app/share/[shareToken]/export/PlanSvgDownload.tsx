@@ -201,7 +201,7 @@ export default function PlanSvgDownload({
         </button>
       </div>
       {message ? (
-        <div className="text-[11px] text-neutral-500" role="status">
+        <div className="text-xs text-neutral-500" role="status">
           {message}
         </div>
       ) : null}

@@ -221,7 +221,7 @@ export default function ItemRenderer2D({
               <div
                 data-testid="rotation-hud"
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   padding: "2px 6px",
                   borderRadius: 999,
                   background: "rgba(20,28,45,0.92)",
@@ -254,7 +254,7 @@ export default function ItemRenderer2D({
               }}
               style={{
                 appearance: "none",
-                fontSize: 11,
+                fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
                 background: "rgba(255,255,255,0.9)",
@@ -272,7 +272,7 @@ export default function ItemRenderer2D({
           ) : (
             <div
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
                 background: "rgba(255,255,255,0.9)",
@@ -293,7 +293,7 @@ export default function ItemRenderer2D({
           <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, depth / 2 + 0.12]} center transform={false}>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
                 background: "rgba(255,255,255,0.92)",
@@ -309,7 +309,7 @@ export default function ItemRenderer2D({
           <Html zIndexRange={htmlZIndexRange} position={[width / 2 + 0.12, 0.01, 0]} center transform={false}>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
                 background: "rgba(255,255,255,0.92)",

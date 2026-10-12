@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.21.0",
+ "exporterVersion": "app-evidence-0.26.1",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -399,7 +399,7 @@
       "yRatio": 0.048929
      },
      {
-      "xRatio": 0.383376,
+      "xRatio": 0.384021,
       "yRatio": 0.048929
      },
      {
@@ -958,6 +958,45 @@
    {
     "kind": "door",
     "operation": "swing",
+    "centerXRatio": 0.423969,
+    "centerYRatio": 0.046429,
+    "spanStart": {
+     "xRatio": 0.384021,
+     "yRatio": 0.046429
+    },
+    "spanEnd": {
+     "xRatio": 0.463918,
+     "yRatio": 0.046429
+    },
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      298.0,
+      65.0
+     ],
+     [
+      360.0,
+      65.0
+     ]
+    ],
+    "widthMm": 1055,
+    "hinge": "end",
+    "swingSide": 1,
+    "handing": "unknown",
+    "note": null,
+    "hingeSourcePx": [
+     360.0,
+     65.0
+    ],
+    "swingTowardSourcePx": [
+     360.0,
+     96.0
+    ]
+   },
+   {
+    "kind": "door",
+    "operation": "swing",
     "centerXRatio": 0.51192,
     "centerYRatio": 0.29875,
     "spanStart": {
@@ -1077,72 +1116,12 @@
     "operation": "folding",
     "centerXRatio": 0.078286,
     "centerYRatio": 0.416429,
-    "spanStart": {
-     "xRatio": 0.037371,
-     "yRatio": 0.416429
-    },
-    "spanEnd": {
-     "xRatio": 0.119201,
-     "yRatio": 0.416429
-    },
-    "confidence": 0.7,
+    "confidence": 0.45,
     "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      29.0,
-      583.0
-     ],
-     [
-      92.5,
-      583.0
-     ]
-    ],
-    "widthMm": 1080,
     "hinge": "unknown",
-    "swingSide": -1,
+    "swingSide": 0,
     "handing": "unknown",
-    "note": "dashed V from the two jambs",
-    "hingeSourcePx": null,
-    "swingTowardSourcePx": null
-   },
-   {
-    "kind": "door",
-    "operation": "swing",
-    "centerXRatio": 0.423647,
-    "centerYRatio": 0.046429,
-    "spanStart": {
-     "xRatio": 0.383376,
-     "yRatio": 0.046429
-    },
-    "spanEnd": {
-     "xRatio": 0.463918,
-     "yRatio": 0.046429
-    },
-    "confidence": 0.7,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      297.5,
-      65.0
-     ],
-     [
-      360.0,
-      65.0
-     ]
-    ],
-    "widthMm": 1063,
-    "hinge": "end",
-    "swingSide": 1,
-    "handing": "unknown",
-    "note": "pale or dashed swing arc",
-    "hingeSourcePx": [
-     360.0,
-     65.0
-    ],
-    "swingTowardSourcePx": [
-     360.0,
-     96.25
-    ]
+    "note": "door found, but the space beyond it did not close"
    },
    {
     "kind": "door",
@@ -2121,7 +2100,7 @@
      68.5
     ],
     [
-     297.5,
+     298.0,
      68.5
     ]
    ],
@@ -2133,17 +2112,17 @@
     "hinge": "end",
     "swingSide": 1,
     "handing": "unknown",
-    "confidence": 0.7,
+    "confidence": 0.9,
     "hingeSourcePx": [
      360.0,
      65.0
     ],
     "swingTowardSourcePx": [
      360.0,
-     96.25
+     96.0
     ],
-    "note": "pale or dashed swing arc",
-    "widthMm": 1063,
+    "note": null,
+    "widthMm": 1055,
     "between": [
      "outside",
      "room-1"
@@ -2155,7 +2134,7 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     297.5,
+     298.0,
      68.5
     ],
     [
@@ -3430,7 +3409,7 @@
      "y": 68.5
     },
     {
-     "x": 297.5,
+     "x": 298.0,
      "y": 68.5
     },
     {
@@ -4006,7 +3985,7 @@
   "bars": 58,
   "gapsSeen": 148,
   "openings": {
-   "door": 9,
+   "door": 8,
    "window": 8,
    "open_passage": 2,
    "wall": 7
@@ -4014,12 +3993,19 @@
   "doorSwingsWithoutGap": 0,
   "rooms": 10,
   "roomsWithheldAsIllegalGeometry": 0,
+  "roomOutlinesMendedForTheApp": 0,
+  "slotsBetweenWallsClosed": 0,
   "facesLeftOutAsSlivers": 2,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 0,
   "leafRowsReadAsCasements": 0,
   "doorsNotPlacedBeyondOpenSpace": 0,
+  "doorsIntoWithheldRoomsNotPlaced": 0,
+  "secondWaysOutNotPlaced": 1,
+  "doorsBetweenTwoBedroomsNotPlaced": 0,
+  "doorsOntoLedgesNotPlaced": 0,
+  "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
@@ -4046,7 +4032,7 @@
   "dimensionScrapsDropped": 0,
   "slidingPartitionsFromStrokes": 0,
   "wideDoorwaysKept": 0,
-  "swingsReadFromTheDrawing": 6,
+  "swingsReadFromTheDrawing": 4,
   "thresholdDoors": 0,
   "gentleSlopedStrokes": 17,
   "outdoorSpacesClosedByGentleSlopes": 0,
@@ -4059,6 +4045,7 @@
   "cornersSnappedToDucts": 0,
   "subPixelSidesDropped": 0,
   "cornersStraightened": 0,
+  "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 0,
   "unsupportedWallPx": 22490,
   "thickAxisWallPx": 19772,
@@ -4074,6 +4061,8 @@
    "source": "graphic scale bar"
   },
   "areaCheck": null,
-  "wallThicknessUnified": 36
+  "wallThicknessUnified": 36,
+  "jogFacesFlushed": 0,
+  "itemsLeftOutForTheAppsLimits": 0
  }
 }

@@ -1,0 +1,802 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/golden-carbon/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - GOLDEN CARBON - minimali.zip (62660590 bytes, sha256 693bb6f5d32ce489751f561846ac75dd1c2cd42ad6674e0d2ab1e4d1f4c0e7a5).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g27000",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/golden-carbon/g27000-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g27000_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-gold-carbon-g27000-120x280-lux-90511-0; floor gardenia-flooring-la-marmoteca-gold-carbon-pf60010684-120x280-soft-90552-0 (uses g27000's faces: ABK's 4 Soft pictures are g27000's 4 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-gold-carbon-g27000-120x280-lux-90511-0; wall gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010684-120x280-soft-90552-0 (uses g27000's faces: ABK's 4 Soft pictures are g27000's 4 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "g27000_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 132302,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GOLDEN CARBON - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "2383937718ba2a9fa8951d2ca6fe5a9755afe2c482f0c0401c5b1e35ac4f62c5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X280_1",
+      "id": "04a1a244-1d6d-4a58-9e71-dd8cdd6915e5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27000_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 123866,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GOLDEN CARBON - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1772,
+      4096
+     ],
+     "source_sha256": "01c8a9764e1c6a526bc24e55fbeac99a6b34a061b3babd85e52822303366dce5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X280_4",
+      "id": "8495386e-a558-4044-93ee-7ab7f1853eda",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27000_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 125130,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GOLDEN CARBON - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "74f8856b65cd3574c1963ffe055245941ec1e3d727a63b8a5a5a412bf5843047",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X280_2",
+      "id": "44838978-17ea-4539-959c-76a40be097a5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27000_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 102886,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GOLDEN CARBON - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "b989018bf49cf59826b55f549fdd36aa3dccfb670e8a22065e54583d12b7bfd0",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X280_3",
+      "id": "8b19738d-f2c7-40d6-a5ad-97259b1e1ec7",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g27010",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/golden-carbon/g0027010.a-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g27010_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-gold-carbon-g0027010-120x120-lux-90485-0; floor gardenia-flooring-la-marmoteca-gold-carbon-pf60010687-120x120-soft-90555-0 (uses g27010's faces: ABK has no Golden Carbon 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-gold-carbon-g0027010-120x120-lux-90485-0; wall gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010687-120x120-soft-90555-0 (uses g27010's faces: ABK has no Golden Carbon 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "g27010_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 54106,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ee5a781002685e00dc1c9682b9326da7af8b342119e5b1211f3ee7fbeba03889",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_4",
+      "id": "f0f9b8f0-b205-4527-85a1-021d09b5271c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27010_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43474,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c0f2d29da7e99a029044c3a61861b217b7656f2201338368e6406d1dc0cfef11",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_3",
+      "id": "fb3dbc30-519d-40fc-8c29-9105f8098ee2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27010_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 51476,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "84f39a70bf740faf2e2cd53d292b5db57da9c75269365c8d865815a4f3a00847",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_2",
+      "id": "8742a649-2f46-45d8-ad32-a29ca47c1ab7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27010_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 43980,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0d699cafe95e7f03d727332bd4ebbc60f7149be0c6161bb28bdeed1f35786658",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_9",
+      "id": "1fa6b8c9-5236-4931-befb-b56303b8591d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27010_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 57820,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "948421a2d993e909bc7f778fccc57fdcef7b8544ce3135151c40dabb1c01f3e0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_8",
+      "id": "2d19fc4e-a62f-43c6-9079-5b6507022a93",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27010_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 61042,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9759f78e31a7820459ed63969410c57bc8bdd865c04e7420cc9709a9d390418",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_1",
+      "id": "62999621-b116-4cb9-b063-f48fe6969a9d",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27010_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 47474,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9c7f455093e9635cf8ef7913bfdb53acc810320d6114375ee6a9be39f3bc9bc9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_6",
+      "id": "83989c14-9a7c-423d-899f-5b771605c5f2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27010_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44538,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fdff616546f96ec66dfbeffc4f8db655db5fee0b15248542ce2112c9c4681f4e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_7",
+      "id": "c55e1b15-0d81-4440-b16f-255703e0fbfa",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27010_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41872,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8fb0ea28110e1cba8039311c12e0411502f59411aac5d5c391bb5857faa52cd0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_GOLDEN CARBON_120X120_5",
+      "id": "d493a33c-2e6f-4996-9d82-7b5e2f8e0baf",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27020",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/golden-carbon/g0027020.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27020_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-gold-carbon-g0027020-60x120-lux-90490-0; floor gardenia-flooring-la-marmoteca-gold-carbon-pf60010690-60x120-soft-90558-0 (uses g27020's faces: ABK has no Golden Carbon 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-gold-carbon-g0027020-60x120-lux-90490-0; wall gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010690-60x120-soft-90558-0 (uses g27020's faces: ABK has no Golden Carbon 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "g27020_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21828,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "21b24d67f76cf99c34eb044096ca4fcdc7a9b582512d6572f6384d4e681d5d94",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_13",
+      "id": "e2747ca5-94ab-4e8d-87b8-0682709e9cca",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27020_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18104,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d23ab1e23c54c0ffda467ce404b0f28adcc13706160c50054d9a931b8fda78bd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_11",
+      "id": "1ec7d26b-a548-4021-b3e7-1e72ee8e5db8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27020_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23406,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "50bd188876c427c243bc1060884819e45a50e0039b0fa5b74ec904278d9093b8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_12",
+      "id": "ce4dff49-ca01-4d3d-9ca5-65155e106023",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27020_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23748,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "63adbbc69dded58f06061417434f9d12c0897bc41b5284e5704cc4e248b67e4f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_14",
+      "id": "c75a8c16-a0a5-4c77-8707-258786cdcbe0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27020_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22550,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "62dfda1eac74b5942c8d028f35e22dfe6f26efdc34601a50bd6a16470d551230",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_16",
+      "id": "a8269cdf-3e8a-4aa4-9f86-3c04e791a6a3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27020_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31624,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "38c54d9882632a23cc0e05d77cebd9f65182e540229aba7a71bb4176243c19e9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_15",
+      "id": "5f88ea8b-2c85-4050-a4fa-739d139dfddb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27020_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21594,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "798eae254de0da9acbc89f1251f7c586d3b03ac072f8f94cad82dcf1b5cdc688",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_18",
+      "id": "004cddea-39fc-42c3-9ef1-d25c7e16a9df",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27020_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26374,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "af892b4dfabef8e85c11994881036ac608b426b0ce67455bba7c4b923560b27f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_17",
+      "id": "486c51ff-f33b-4e51-9748-5d746979644a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27020_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24240,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "8bfc61163541c726f21c49f82d089c55fdbfccb40ac066c4162e210eacf426bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_9",
+      "id": "837aaa4b-5846-4825-9ad1-9933721c97f6",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27020_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16312,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "945a93f908b9df13804b5f1a6f74427a127070accf769c71997d5409b53b6c3b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_7",
+      "id": "cb6153fa-9766-41ec-9498-e813924045ce",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27020_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28976,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "db3e0bc0f2f0bfc8ac55ff15178569387aa14ce3afadeb1a02a92d888151dbc8",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_8",
+      "id": "139700a7-8fd6-42e9-a098-e19f53d027b8",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27020_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24814,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "72c5056ada5e2ce276a117954542093d780a4ae99f0bae4dfe8acd395e6d5e00",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_6",
+      "id": "d5dead3f-21fe-4b81-aaf0-10b8bfeaeddc",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27020_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30572,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b820ce0d5258b097b6e221f7aad518b133192ac5ec0efe662c4a881915c9571a",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_4",
+      "id": "c6c78478-0404-4ac2-a37e-c19869ac4886",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27020_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30562,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "a9f239d686a149c1df6e8263b09dc3a86335bf87c01abd54b0514cafd5f2983d",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_3",
+      "id": "1917daff-3fd1-4f5c-8633-10fe454784e4",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27020_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24248,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "4406fb3dd607017bd6e8cd482bede1fad121983e104d5dd5eda8b5021f07ff89",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_10",
+      "id": "e6659db7-011d-4af8-a88f-0a0809cdc794",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27020_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30712,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ecd22c59ce19805425246bbf2978b1fe623eedc781793ae63a382bb85062b3a6",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_1",
+      "id": "b44ca2a7-0331-45c7-8e2f-ab6248a14006",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "g27020_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28294,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2f68f1b31dd60903782ed6fb3fe5ffcceb9a58bd2dfce7b2bf00d36b0ec92ec1",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 17",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_5",
+      "id": "04ac8bc1-10e2-4558-a6c6-afe38e253d65",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "g27020_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21154,
+     "source_zip": "LA MARMOTECA - GOLDEN CARBON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GOLDEN CARBON - 60X120 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b5eac0cc0e3e6f8e297da89d6475b9c9e1c9418b50784347725482efb489dff9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18",
+      "name": "LA MARMOTECA_GOLDEN CARBON_60X120_2",
+      "id": "85937860-5a87-4a81-aa4b-902d485424ab",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

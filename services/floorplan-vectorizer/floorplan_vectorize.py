@@ -56,6 +56,48 @@ BOLD_NEEDS_DARK = os.environ.get("FV_BOLD_NEEDS_DARK", "1") != "0"
 # floor-drain triangle, a tap dot, lettering that could not be read) is traced as it is - plain strokes and small filled
 # shapes in an "unclassified" group of the SVG - so it is never lost.  The room model (app_evidence.py) does not read it.
 RESIDUAL = os.environ.get("FV_RESIDUAL", "1") != "0"
+# Blur, round 29 (10 Oct, J: "even a slightly blurry floor plan should trace and rebuild into a clean, sharp vector plan").
+# A blurred plan read as it is loses its thin lines, its lettering and its black: on the blur set (T0, 9 Oct) the soft copy
+# of p05 has its darkest ink at 71 and every wall failed the wall test; hatched walls at low resolution lost their hatch.
+# "1": a picture whose black is lifted AND whose edges are soft is restored before anything is read (restore_contrast).
+RESTORE = os.environ.get("FV_RESTORE", "1") != "0"
+# "1": on a picture whose edges are soft (as the restore measures them), only pale strokes at least 7 px from edge to middle are
+# a watermark: the drawing's own thin lines, blurred, are pale and fat too (round 30; see remove_watermark).
+WM_SOFT = os.environ.get("FV_WM_SOFT", "1") != "0"
+# "1": on a restored picture, hairline breaks (1-2 px) in a hatched wall's outline are closed before its cells are found: blurred
+# and restored, the outline's paler side breaks up and the cell inside leaks into the room, so the wall was not seen hatched
+# (round 30, J 11 Oct: d12 low-res "the shaded part is wrong, it should be like d13"; see detect_hatched_walls).
+HATCH_MEND = os.environ.get("FV_HATCH_MEND", "1") != "0"
+# On a restored picture the hatch lines are blurred hairlines: their grey is the blur's, not the drawing's (d11-d13 sharp: 93;
+# their soft and low-res copies 163-164; their photos 190-195, next to the paper, so the hatch was drawn all but white).
+# The hatch is drawn no paler than this grey there (0 = as measured).
+HATCH_INK = int(os.environ.get("FV_HATCH_INK", "165"))
+# A plan photographed at an angle is keystoned: the far edge is narrower, so plumb walls lean towards each other and no
+# rotation makes them all plumb again (round 30, J 11 Oct: "will you be able to reproduce the 2d vector plan straight").
+# The picture's level and plumb line families each meet at a vanishing point; where the lines of a family lean against
+# each other across the picture by at least this many degrees, the picture is put straight through the perspective that
+# sends both points back to infinity, instead of being turned (find_keystone).  "0" = off.  (The photo copies lean 1.8 -
+# 5 degrees; every scan and screenshot in the corpus under 1.1 - and a low-resolution scan put straight at 1.0 read worse.)
+# Off by default (round 31, J 11 Oct: "off for now, app support next"): the exporter maps every position back into the
+# photo as taken, and there the printed dimensions no longer agree on one scale, so the app accepted none on d11 - d13's
+# photos and placed no walls.  1.5 is the value tried; it waits for the app to take the straightening over.
+KEYSTONE_DEG = float(os.environ.get("FV_KEYSTONE", "0"))
+# Door swings drawn as a clean arc came out as broken, doubled strokes (round 30, J 11 Oct, c24's master bedroom door): a leaf
+# 10 wall widths long was beyond the hinge search, and the straightest stretch of its arc was taken for a bi-fold leg.
+# LONG_LEAF: the longest leaf the hinge search tries, in wall widths (6 before round 30; 12 = the longest swing radius the arc fit takes).
+# A leaf longer than 6 wall widths (a drawing with thin walls) is tried last: its door is kept only where no door found
+# before it already has that swing, and only where the floor it sweeps is clear: a quarter circle that long also fits a
+# bed's pillows, a wardrobe's zigzag, stair treads or a bathtub (13 of the 52 found on the unsealed plans, round 30).
+# ARC_DIAG "1": a straight "leg" lying on a door swing found afterwards is part of that swing, not a bi-fold door; and a
+# stroke left over along a door swing (a piece of the swing's own ink the swing as fitted runs a few pixels off) is not drawn
+# a second time beside it (drop_swing_strokes).
+LONG_LEAF = float(os.environ.get("FV_LONG_LEAF", "12"))
+ARC_DIAG = os.environ.get("FV_ARC_DIAG", "1") != "0"
+# FLAT_SWINGS "1": a swing drawn flatter than its leaf (the leaf drawn longer than the opening, so the arc is a quarter ellipse
+# from the leaf's tip to the far jamb) is looked for as such where no quarter circle fits; the leaf stays the long radius.
+# Only for leaves longer than 6 wall widths: among shorter ones a flat quarter found a chair back or a second reading of a
+# door already found (c21, c22, c25, p02).
+FLAT_SWINGS = os.environ.get("FV_FLAT_SWINGS", "1") != "0"
 # The other line of a two-line room name (round 25, J 6 Oct: "continue working on the remaining items"): 'BATH' under COMMON
 # with the door swing through it, 'BEDROOM' under MASTER in bold blurred lettering - read again beside the line that was read.
 SECOND_LINES = os.environ.get("FV_SECOND_LINES", "1") != "0"
@@ -74,6 +116,30 @@ R27_SHEET = os.environ.get("FV_R27_SHEET", "0") == "1"
 # The drawing (SVG only) cleaned where the trace's pieces meet: walls drawn as one, lines to where the drawing's lines end,
 # fixture outlines closed, a dashed line not cut by a stray short line (see clean_drawing).  Off: the SVG as before.
 CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
+# Where a piece of the drawing stops a little short of the wall it meets, the drawing shows a gap the plan does not have
+# (round 31, J 11 Oct on room4: "some of this small gaps I see can u ensure the 2d floor plan will be connected"): a
+# window or door band ending a few pixels before the column, a column a hair off the door frame beside it, a band's face
+# line stopping short of the next band.  Gaps up to this many wall thicknesses are closed, in the drawing only (see
+# close_drawing_gaps; the model is untouched).  0 = off.
+CLOSE_GAPS = float(os.environ.get("FV_CLOSE_GAPS", "1.5"))
+# round 34 (J 12 Oct: "include room name reading first"): blurred room names the reader leaves as unread lettering are named
+# by their shape - the plan's room words drawn at the cluster's size and width, compared with the pixels (see
+# name_unread_labels).  "0" = off.
+R34_SHAPE_NAMES = os.environ.get("FV_R34_SHAPE_NAMES", "1") != "0"
+# Blurred lettering that the glyph clustering never offers as lettering, "0" = off:
+#   WORD_BLOBS  a word whose letters the blur fused into one solid blob is refused as 'ruled strokes' (a window frame); it is
+#               still traced as before, and also offered to name_unread_labels, which names it only when its shape says so
+#   WORD_SIZE   the lettering size of the fused words (the ink-weighted height peak) gets its own clustering pass when the
+#               sizes already taken leave it out (room4 low-res: sizes 15 and 36 px, its room names 18 - 21 px)
+#   CRISP_GRAY  a page judged crisp (large, work scale 1) is also read the way soft pages are, from the grey image at its own
+#               resolution: d12 low-res reads BEDROOM, KITCHEN and LIVING/DINING there and not from the thresholded ink
+R34_WORD_BLOBS = os.environ.get("FV_R34_WORD_BLOBS", "1") != "0"
+R34_WORD_SIZE = os.environ.get("FV_R34_WORD_SIZE", "1") != "0"
+R34_CRISP_GRAY = os.environ.get("FV_R34_CRISP_GRAY", "1") != "0"
+#   SMALL_WORDS lettering 9 - 13 px high (a web plan's room names beside a large title: s080), which the clustering leaves
+#               alone because window dashes are that size too: its level runs are offered to name_unread_labels only -
+#               nothing there is read, erased or traced differently
+R34_SMALL_WORDS = os.environ.get("FV_R34_SMALL_WORDS", "1") != "0"
 
 # The learned reader (round 23), behind a switch.  FV_SEG_MODEL=<model.onnx> (made by the untracked tools/train/train.py) reads
 # the picture into a class per pixel - other / wall / door / window / text / rack / railing - and FV_SEG_USE says which of
@@ -849,6 +915,63 @@ def deskew(gray):
     return cv2.warpAffine(gray, M, (w, h), flags=cv2.INTER_CUBIC, borderValue=255), ang
 
 
+def _vanishing_point(seg, wt, iters=6, sigma=0.4):
+    """The point (homogeneous, in the coordinates of seg) a family of segments [x1, y1, x2, y2] runs to: weighted least
+    squares on the segments' lines, re-weighted by each segment's angle (degrees) off the way to the point (Cauchy)."""
+    p1 = np.c_[seg[:, 0:2], np.ones(len(seg))]; p2 = np.c_[seg[:, 2:4], np.ones(len(seg))]
+    ln = np.cross(p1, p2); ln /= np.hypot(ln[:, 0], ln[:, 1])[:, None]
+    mid = (seg[:, 0:2] + seg[:, 2:4]) / 2.0; d = seg[:, 2:4] - seg[:, 0:2]
+    w, v, res = wt.copy(), None, None
+    for _ in range(iters):
+        v = np.linalg.eigh((ln * w[:, None]).T @ ln)[1][:, 0]
+        to = np.c_[v[0] - mid[:, 0] * v[2], v[1] - mid[:, 1] * v[2]]
+        res = np.degrees(np.arctan2(np.abs(d[:, 0] * to[:, 1] - d[:, 1] * to[:, 0]), np.abs((d * to).sum(1)) + 1e-12))
+        w = wt / (1.0 + (res / sigma) ** 2)
+    return v, res
+
+
+def find_keystone(gray, min_deg):
+    """A keystoned picture (a plan photographed at an angle): the segments within 12 degrees of level, and of plumb, each
+    run to a vanishing point.  When either family's lines lean against each other across the picture by min_deg or more,
+    returns (H, report): H maps the picture's pixels to a straight one - the line through the two points sent to infinity,
+    then the two families turned level and plumb, lengths along them kept, the drawing kept inside the frame.  Else None."""
+    h, w = gray.shape; L = float(max(h, w)); c = np.array([w / 2.0, h / 2.0]); s = L / 2.0
+    out = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD).detect(gray)[0]
+    if out is None:
+        return None
+    sg = out[:, 0, :].astype(np.float64)
+    ln = np.hypot(sg[:, 2] - sg[:, 0], sg[:, 3] - sg[:, 1]); sg, ln = sg[ln >= 0.04 * L], ln[ln >= 0.04 * L]
+    ang = np.degrees(np.arctan2(sg[:, 3] - sg[:, 1], sg[:, 2] - sg[:, 0])) % 180.0
+    vps = []
+    for sel in (np.minimum(ang, 180.0 - ang) < 12.0, np.abs(ang - 90.0) < 12.0):
+        if sel.sum() < 8 or ln[sel].sum() < 1.5 * L:
+            return None
+        vps.append(_vanishing_point(np.c_[(sg[sel, 0:2] - c) / s, (sg[sel, 2:4] - c) / s], ln[sel] / L)[0])
+    v1, v2 = vps
+    def lean(v, p, q):                                      # the family's direction at p against its direction at q (degrees)
+        a_ = math.degrees(math.atan2(v[1] - p[1] * v[2], v[0] - p[0] * v[2])); b_ = math.degrees(math.atan2(v[1] - q[1] * v[2], v[0] - q[0] * v[2]))
+        return abs((a_ - b_ + 90.0) % 180.0 - 90.0)
+    rep_ = {"level_lines_lean_deg": round(lean(v1, (0, -h / L), (0, h / L)), 2), "plumb_lines_lean_deg": round(lean(v2, (-w / L, 0), (w / L, 0)), 2)}
+    if max(rep_.values()) < min_deg:
+        return None
+    lv = np.cross(v1, v2); lv = lv / lv[2]
+    Hp = np.array([[1.0, 0, 0], [0, 1.0, 0], [lv[0], lv[1], 1.0]])
+    d1, d2 = Hp @ v1, Hp @ v2
+    u1, u2 = d1[:2] / np.hypot(*d1[:2]), d2[:2] / np.hypot(*d2[:2])
+    u1, u2 = (u1 if u1[0] > 0 else -u1), (u2 if u2[1] > 0 else -u2)
+    Hn = np.eye(3); Hn[:2, :2] = np.linalg.inv(np.c_[u1, u2]); Hn = Hn @ Hp
+    T = np.array([[1 / s, 0, -c[0] / s], [0, 1 / s, -c[1] / s], [0, 0, 1.0]])
+    Hk = np.linalg.inv(T) @ Hn @ T
+    ys, xs = np.where(gray < 200)
+    if len(xs):                                             # the drawing stays inside the frame
+        q = Hk @ np.array([[xs.min(), xs.max(), xs.max(), xs.min()], [ys.min(), ys.min(), ys.max(), ys.max()], [1.0] * 4])
+        q = q[:2] / q[2]
+        k = min(1.0, (c[0] - 4) / max(1e-6, float(np.abs(q[0] - c[0]).max())), (c[1] - 4) / max(1e-6, float(np.abs(q[1] - c[1]).max())))
+        Hk = np.array([[k, 0, c[0] * (1 - k)], [0, k, c[1] * (1 - k)], [0, 0, 1.0]]) @ Hk
+        rep_["scale"] = round(k, 4)
+    return Hk / Hk[2, 2], rep_
+
+
 def flatten_background(bgr):
     """Marketing plans are printed on a tint, with rooms filled in colour and a watermark across the sheet.  The drawing is
     the DARK linework; everything else is background.  Returns (grey image with the background taken to white, True), or
@@ -864,12 +987,23 @@ def flatten_background(bgr):
     return np.clip(norm / 0.88 * 255.0, 0, 255).astype(np.uint8), True      # within 12 % of its background = paper (tints, watermark)
 
 
-def remove_watermark(gray):
+def remove_watermark(gray, min_radius=0):
     """A website or agency watermark is laid across the sheet in a PALE tone with strokes far fatter than any line of the
     drawing.  Pale ink (>= 170) that survives a 7 px opening is background; the pale rim around it goes with it.  Dark ink is
-    never touched, thin pale lines (furniture drawn in light grey) are never touched.  Returns (gray, fraction removed)."""
+    never touched, thin pale lines (furniture drawn in light grey) are never touched.  Returns (gray, fraction removed).
+    min_radius (round 30): on a blurred picture the drawing's own lines are pale and fat as well - a window band or a
+    double-line wall blurs into one pale band 7-12 px across, a grey wall fill turns pale, and taking them for watermark
+    left rooms open and openings gone (c22 low-res, h1's photo).  There only the pale strokes at least min_radius px from
+    edge to middle are watermark (the site and agency marks of the listing plans measure 7 - 40)."""
     pale = (((gray >= 170) & (gray < 240)) * 255).astype(np.uint8)
     fat = cv2.morphologyEx(pale, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+    if min_radius > 0 and fat.any():
+        n_, lab_, _st, _c = cv2.connectedComponentsWithStats(fat)
+        rad_ = np.zeros(n_, np.float32)
+        np.maximum.at(rad_, lab_.ravel(), cv2.distanceTransform(fat, cv2.DIST_L2, 5).ravel())
+        keep_ = rad_ >= min_radius
+        keep_[0] = False
+        fat = (keep_[lab_] * 255).astype(np.uint8)
     frac = float((fat > 0).mean())
     if frac < 0.004:
         return gray, 0.0                                   # nothing of the kind on this sheet: not a pixel is changed
@@ -901,10 +1035,11 @@ def normalise_wall_paint(gray):
     return out, tone
 
 
-def detect_hatched_walls(gray):
+def detect_hatched_walls(gray, mend=False):
     """CAD renders draw walls as a heavy outline filled with thin 45-degree hatching instead of solid black.  The walls are
-    the CLOSED CELLS of the heavy outline that are full of hatch.  Returns None, or {'solid': mask of the walls out to the
-    outer edge of their outline, 'spacing', 'slash', 'outline_px', 'grey'}."""
+    the CLOSED CELLS of the heavy outline that are full of hatch.  mend: close the outline's hairline breaks first (a
+    restored picture).  Returns None, or {'solid': mask of the walls out to the outer edge of their outline, 'spacing',
+    'slash', 'outline_px', 'grey'}."""
     ink = ((gray < 215) * 255).astype(np.uint8)
     thick = cv2.dilate(cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)), np.ones((3, 3), np.uint8))
     best = None
@@ -928,6 +1063,8 @@ def detect_hatched_walls(gray):
     if float(np.mean([abs(v - sp) <= 1 for v in gaps])) < 0.5:
         return None                                         # no steady rhythm: diagonal strokes of something else
     sep = cv2.morphologyEx(((gray < 100) * 255).astype(np.uint8), cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+    if mend:
+        sep = cv2.morphologyEx(sep, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
     n, lab, st, _c = cv2.connectedComponentsWithStats(((sep == 0) * 255).astype(np.uint8), connectivity=4)
     cnt_h = np.bincount(lab[d > 0], minlength=n)
     cells = np.zeros_like(d)
@@ -1150,6 +1287,47 @@ def _md5_file(p):
     return h.hexdigest()
 
 
+RESTORE_BLACK, RESTORE_EDGE = 20.0, 0.87
+
+
+def ink_paper_edge(g):
+    """-> (black, paper, steep): the plan's own black (1st percentile of the pixels darker than 160), its paper (the commonest
+    light grey) and how steep its edges are - the 99th percentile of the gradient across ink / paper edges, per unit of the
+    black-to-paper span: about 1 for a crisp drawing, about 0.8 / sigma for one blurred by a Gaussian of sigma px."""
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:]))
+    dark = g[g < 160]
+    black = float(np.percentile(dark, 1)) if dark.size >= 200 else 0.0
+    span = max(1.0, paper - black)
+    gf = g.astype(np.float32)
+    mag = np.hypot(cv2.Sobel(gf, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(gf, cv2.CV_32F, 0, 1, ksize=3)) / (4.0 * span)
+    k5 = np.ones((5, 5), np.uint8)
+    edge = mag[(cv2.dilate(gf, k5) - cv2.erode(gf, k5)) >= 0.5 * span]
+    steep = float(np.percentile(edge, 99)) if edge.size >= 500 else 1.0
+    return black, paper, steep
+
+
+def restore_contrast(g, sigma=1.2, amount=1.5):
+    """Blur, restore: the plan's own black (1st percentile of the dark pixels) to 0 and its paper (the commonest light grey) to
+    255, then an unsharp mask (sigma 1.2 px, amount 1.5).  Only for a picture that is BLURRED: its black lifted above
+    RESTORE_BLACK and its steepest edges soft - the 99th percentile of the gradient across ink / paper edges, per unit of the
+    black-to-paper span, below RESTORE_EDGE.  Measured on the dev / gate plans: their blurred copies with a lifted black
+    0.56-0.83, the sharp plans whose black is pale by drawing 0.91-1.0.  Restoring every plan, sharp ones too, cost the
+    tuned plans 22 rooms (128 -> 106 of 138), so a sharp picture is never touched.
+    -> (image, report); the image is g itself when the picture is not restored."""
+    black, paper, steep = ink_paper_edge(g)
+    span = max(1.0, paper - black)
+    gf = g.astype(np.float32)
+    rep = {"black": round(black, 1), "paper": paper, "edge": round(steep, 3)}
+    if not (black > RESTORE_BLACK and steep < RESTORE_EDGE):
+        rep["restored"] = False
+        return g, rep
+    st = np.clip((gf - black) * 255.0 / span, 0, 255)
+    us = np.clip(st + amount * (st - cv2.GaussianBlur(st, (0, 0), sigma)), 0, 255)
+    rep["restored"] = True
+    return np.rint(us).astype(np.uint8), rep
+
+
 def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
@@ -1158,8 +1336,14 @@ def extract(path):
     gray0, flattened = flatten_background(bgr0)
     if not flattened:
         gray0 = cv2.imread(path, cv2.IMREAD_GRAYSCALE)      # (exactly the decode used so far: a JPEG's own grey differs by 1 from BGR->grey)
-    gray0, wm_frac = remove_watermark(gray0)
+    soft_edges = WM_SOFT and ink_paper_edge(gray0)[2] < RESTORE_EDGE
+    gray0, wm_frac = remove_watermark(gray0, 7 if soft_edges else 0)
     gray0, wall_tone = normalise_wall_paint(gray0)
+    restored = None
+    if RESTORE:
+        g_r, restored = restore_contrast(gray0)
+        if restored["restored"]:
+            gray0 = g_r                                     # (from here on the plan is read as the restored picture it now is)
     # a bold scan: every stroke 5-7 px fat.  All of it would pass for 'wall'.  The drawing is brought to the stroke width the
     # pipeline is built for (the typical stroke is 1 px on every other plan seen; measured 7 on the one bold scan)
     ink0_ = ((gray0 < 128) * 255).astype(np.uint8)
@@ -1178,11 +1362,17 @@ def extract(path):
         gray0 = cv2.resize(gray0, None, fx=pre_scale, fy=pre_scale, interpolation=cv2.INTER_AREA)
         if seg_map is not None:
             seg_map = cv2.resize(seg_map, (gray0.shape[1], gray0.shape[0]), interpolation=cv2.INTER_NEAREST)
-    gray, skew = deskew(gray0)
+    keystone = find_keystone(gray0, KEYSTONE_DEG) if KEYSTONE_DEG > 0 else None
+    if keystone is not None:                                # (put straight in perspective: no turn on top of it)
+        gray = cv2.warpPerspective(gray0, keystone[0], (gray0.shape[1], gray0.shape[0]), flags=cv2.INTER_CUBIC, borderValue=255); skew = 0.0
+        if seg_map is not None:
+            seg_map = cv2.warpPerspective(seg_map, keystone[0], (gray0.shape[1], gray0.shape[0]), flags=cv2.INTER_NEAREST, borderValue=0)
+    else:
+        gray, skew = deskew(gray0)
     if seg_map is not None and skew != 0.0:
         seg_map = cv2.warpAffine(seg_map, cv2.getRotationMatrix2D((gray0.shape[1] / 2, gray0.shape[0] / 2), skew, 1.0),
                              (gray0.shape[1], gray0.shape[0]), flags=cv2.INTER_NEAREST, borderValue=0)
-    hatch = detect_hatched_walls(gray)
+    hatch = detect_hatched_walls(gray, HATCH_MEND and restored is not None and restored["restored"])
     if hatch is not None:
         gray = gray.copy(); gray[hatch["solid"] > 0] = 0    # from here on a hatched wall is a wall like any other; it is DRAWN hatched again at the end
     H0, W0 = gray.shape
@@ -1235,6 +1425,11 @@ def extract(path):
     ink = ((gray < thr) * 255).astype(np.uint8)
     model = {"size": [W, H], "source_size": [W0, H0], "work_scale": work_scale, "skew_deg": round(skew, 3),
              "ink_threshold": int(thr), "edge_softness": round(soft_R, 2), "soft_input": bool(soft)}
+    if keystone is not None:
+        # the page (pixels of the picture as read, before the working scale) -> the straightened page: the exporter maps
+        # every position back through its inverse, so the evidence stays on the picture as it was taken
+        model["page_homography"] = [[round(float(v_), 10) for v_ in row_] for row_ in keystone[0]]
+        model["keystone"] = keystone[1]
     if crop is not None:
         model["crop_offset"] = [int(crop[0]), int(crop[1])]     # of the traced part within the deskewed page, in page pixels
         model["page_size"] = [int(W0), int(H0)]
@@ -1251,10 +1446,13 @@ def extract(path):
         model["pre_scale"] = round(pre_scale, 4); model["source_size"] = orig_size
     if wm_frac:
         model["watermark_removed"] = round(wm_frac, 4)
+    if restored is not None and restored["restored"]:
+        model["restored"] = restored                              # (a picture that is not restored keeps its model byte for byte)
     if wall_tone is not None:
         model["wall_style"] = {"fill": int(wall_tone)}
     if hatch is not None:
-        model["wall_style"] = {"hatch": {"spacing": hatch["spacing"] * work_scale, "slash": hatch["slash"], "grey": hatch["grey"]},
+        grey_ = min(hatch["grey"], HATCH_INK) if HATCH_INK and restored is not None and restored["restored"] else hatch["grey"]
+        model["wall_style"] = {"hatch": {"spacing": hatch["spacing"] * work_scale, "slash": hatch["slash"], "grey": grey_},
                                "outline_px": hatch["outline_px"] * work_scale}
 
     # ---- 1. walls: thick ink only -------------------------------------
@@ -2113,6 +2311,8 @@ def extract(path):
         ocr(ocr_src, False)
         ocr(cv2.rotate(ocr_src, cv2.ROTATE_90_CLOCKWISE), "up")
         ocr(cv2.rotate(ocr_src, cv2.ROTATE_90_COUNTERCLOCKWISE), "down")
+        if R34_CRISP_GRAY:                                  # (the stricter word test of the soft reader; clashes go to the surer read below)
+            ocr_source_res(False); ocr_source_res("up")
     # (soft inputs: tesseract's own sparse-text detection returns noise on blurred lettering; labels are found below by
     #  clustering glyph-sized components, and each cluster is read from the grey image at a comfortable size)
     texts.sort(key=lambda t: -t["conf"]); keep = []
@@ -2145,6 +2345,7 @@ def extract(path):
             t["alt"], t["s"] = t["s"], s2                   # drawn dimensions are multiples of 5 mm; tesseract confuses 5 and 9
     th = float(np.median([t["box"][2] if t["vertical"] else t["box"][3] for t in texts])) if texts else T
     th_modes = [th]
+    small_modes = []
     if soft:
         # lettering sizes = peaks of the glyph-height histogram (labels, a larger title, a smaller scale note)
         n_, lab_, st_, _c = cv2.connectedComponentsWithStats(rest)
@@ -2165,11 +2366,24 @@ def extract(path):
             if all(abs(p_ - q_) > 0.3 * max(p_, q_) for q_ in th_modes):
                 th_modes.append(float(p_))
         sm_ = h_cnt
+        if R34_SMALL_WORDS:
+            small_modes = [p_ for p_ in th_modes if 9 <= p_ < 14][:1]   # (named by shape only, never read or erased: below)
         th_modes = [p_ for p_ in th_modes if p_ >= 14][:4] or [0.9 * T]   # nothing under 14 working px is legible lettering (window dashes are not)
         if len(online_h) >= 3:                              # numbers standing on their lines: their height is a lettering size too
             oh_ = float(np.median(online_h))
             if oh_ >= 10 and all(abs(oh_ - q_) > 0.2 * max(oh_, q_) for q_ in th_modes):
                 th_modes.append(oh_)
+        if restored is not None and restored["restored"]:
+            # A restored picture's lettering is sharp again, no longer blurred into the word blobs the peaks above expect:
+            # the words already read give its size too (c22 soft: 29 px, beside peaks of 18 and 42 from its strokes).
+            rh_ = [t_["box"][2] if t_["vertical"] else t_["box"][3] for t_ in texts if t_.get("source_res") and any(ch.isalpha() for ch in t_["s"])]
+            rs_ = float(np.median(rh_)) if len(rh_) >= 3 else 0.0
+            if rs_ >= 14 and all(abs(rs_ - q_) > 0.2 * max(rs_, q_) for q_ in th_modes):
+                th_modes.append(rs_)
+        if R34_WORD_SIZE:
+            pa_ = peaks_of(h_area, 6)
+            if pa_ and pa_[0] >= 14 and len(th_modes) < 4 and all(abs(pa_[0] - q_) > 0.15 * q_ for q_ in th_modes):
+                th_modes.append(float(pa_[0]))              # the fused words' own size, outside every clustering window taken
         th = th_modes[0]
         if DEBUG: print('lettering sizes', th_modes, [int(sm_[int(p)]) for p in th_modes])
 
@@ -2202,6 +2416,7 @@ def extract(path):
 
     # second chance: clusters of glyph-sized components that OCR skipped
     unread = []
+    word_blobs = []
     th_main = th
     for th in th_modes:                                    # one pass per lettering size (one only for crisp inputs)
         n, lab, st, _ = cv2.connectedComponentsWithStats(rest)
@@ -2297,6 +2512,8 @@ def extract(path):
                             long_ = cv2.morphologyEx(reg_, cv2.MORPH_OPEN, np.ones((1, max(3, int(0.5 * bw_))), np.uint8)) if bw_ >= bh_ else \
                                 cv2.morphologyEx(reg_, cv2.MORPH_OPEN, np.ones((max(3, int(0.5 * bh_)), 1), np.uint8))
                             if (long_ > 0).sum() >= 0.45 * (reg_ > 0).sum():
+                                if R34_WORD_BLOBS:          # (or a word the blur fused into one blob: its shape decides, later)
+                                    word_blobs.append({"box": box, "vertical": vertical, "read": s2, "conf": round(c2, 1)})
                                 continue                    # ruled strokes as long as half the cluster: a window frame, not a word
                     if soft:                                # what the cluster says if it is forced to be a number (used with geometry later)
                         bx_, by_, bw_, bh_ = [int(round(v_)) for v_ in box]
@@ -2310,6 +2527,11 @@ def extract(path):
                     unread.append(u); erase_text(u)
 
     th = th_main
+    # lettering under 14 px (R34_SMALL_WORDS): its level runs are offered to name_unread_labels only (upright runs at that
+    # size are dimension numbers and ticks: exec)
+    for th_s in small_modes:
+        for box in _glyph_runs(rest, th_s):
+            word_blobs.append({"box": box, "vertical": False, "read": "", "conf": 0.0, "size": th_s})
     # a trailing '/' that touches other ink (a WC bowl) is not a whole component, so erase_text leaves it behind:
     # find the stroke itself and remove it, the live text already carries the character
     rest_fat = cv2.dilate(rest, np.ones((3, 3), np.uint8))
@@ -2395,7 +2617,7 @@ def extract(path):
     tt = np.radians(np.linspace(4, 86, 60))
     for l in lines:
         ln = l["b"] - l["a"]
-        if not (0.9 * T <= ln <= 6 * T):
+        if not (0.9 * T <= ln <= LONG_LEAF * T):
             continue
         ends = [(l["a"], l["b"]), (l["b"], l["a"])]
         for hp, tp in ends:
@@ -2425,13 +2647,49 @@ def extract(path):
                         ring.append((ink[py, px] > 0).mean())
                     if max(ring) < 0.35:
                         found.append({"cx": hx2, "cy": hy2, "r": r2, "leaf": math.degrees(leaf_ang) % 360,
-                                      "sgn": sgn, "score": best[0]})
+                                      "sgn": sgn, "score": best[0], "long": ln > 6 * T})
+                elif FLAT_SWINGS and best[0] >= 0.45 and ln > 6 * T:
+                    flat = flat_swing(ink, ink3, hx, hy, leaf_ang, sgn, ln, tt)
+                    if flat is not None:
+                        found.append(dict(flat, leaf=math.degrees(leaf_ang) % 360, sgn=sgn, long=True))
     found.sort(key=lambda d_: -d_["score"])
     hinge_doors = []
     for d_ in found:
+        if d_.get("long"):
+            continue
         d_["start"] = (d_["leaf"] if d_["sgn"] == 1 else d_["leaf"] - 90) % 360
         if all(math.hypot(d_["cx"] - e["cx"], d_["cy"] - e["cy"]) > 0.6 * T
                or abs(((d_["start"] - e["start"] + 180) % 360) - 180) > 30 for e in hinge_doors):
+            hinge_doors.append(d_)
+    def swing_pts(d_, n_=12):
+        tt_ = np.radians(d_["start"] + np.linspace(5, 85, n_))
+        return np.c_[d_["cx"] + d_.get("rx", d_["r"]) * np.cos(tt_), d_["cy"] + d_.get("ry", d_["r"]) * np.sin(tt_)]
+    txt_ = np.zeros(ink.shape, np.uint8)
+    for t_ in texts:
+        x_, y_, w_, h_ = [int(v_) for v_ in t_["box"]]
+        txt_[max(0, y_ - 3):y_ + h_ + 4, max(0, x_ - 3):x_ + w_ + 4] = 1
+    def swept_clear(d_):
+        """the floor a long leaf sweeps (0.2 - 0.85 of the way out, lettering left out) and the quarter just inside the
+        swing carry ink on at most 12 % of their points"""
+        rx_, ry_ = d_.get("rx", d_["r"]), d_.get("ry", d_["r"])
+        f_, a_ = np.meshgrid(np.linspace(0.2, 0.85, 8), np.radians(d_["start"] + np.linspace(8, 82, 10)))
+        for pts_ in ((d_["cx"] + f_ * rx_ * np.cos(a_), d_["cy"] + f_ * ry_ * np.sin(a_)),
+                     (d_["cx"] + 0.85 * rx_ * np.cos(np.radians(d_["start"] + np.linspace(5, 85, 40))),
+                      d_["cy"] + 0.85 * ry_ * np.sin(np.radians(d_["start"] + np.linspace(5, 85, 40))))):
+            xs_ = np.clip(np.asarray(pts_[0]).astype(int).ravel(), 0, W - 1); ys_ = np.clip(np.asarray(pts_[1]).astype(int).ravel(), 0, H - 1)
+            ok_ = txt_[ys_, xs_] == 0
+            if ok_.any() and float((ink[ys_, xs_][ok_] > 0).mean()) > 0.12:
+                return False
+        return True
+    for d_ in found:                                        # (the long leaves last: a swing no door found before has)
+        if not d_.get("long"):
+            continue
+        d_["start"] = (d_["leaf"] if d_["sgn"] == 1 else d_["leaf"] - 90) % 360
+        if not swept_clear(d_):
+            continue
+        p_ = swing_pts(d_)
+        if not any(float(np.mean(np.min(np.hypot(p_[:, None, 0] - q_[None, :, 0], p_[:, None, 1] - q_[None, :, 1]), axis=1) <= max(4.0, 0.25 * T))) >= 0.3
+                   for q_ in [swing_pts(e, 40) for e in hinge_doors] + [swing_pts(dict(e, start=e["start"]), 40) for e in pre_arcs if 60 <= e.get("span", 0) <= 120]):
             hinge_doors.append(d_)
     merged = []                                            # same circle seen in pieces -> one arc
     for a_ in sorted(cand, key=lambda a_: -a_["span"]):
@@ -2455,10 +2713,13 @@ def extract(path):
     merged = [a_ for a_ in merged if not on_spent(a_["cx"], a_["cy"], a_["r"], a_["start"], a_["span"])]
     for d_ in hinge_doors:
         start = d_["leaf"] if d_["sgn"] == 1 else d_["leaf"] - 90
-        arcs.append({"cx": d_["cx"], "cy": d_["cy"], "r": d_["r"], "start": start % 360, "span": 90.0})
-        doors.append({"hinge": [round(d_["cx"], 1), round(d_["cy"], 1)], "leaf_px": round(d_["r"], 1),
+        arc_ = {"cx": d_["cx"], "cy": d_["cy"], "r": d_["r"], "start": start % 360, "span": 90.0}
+        if "rx" in d_:
+            arc_.update(rx=d_["rx"], ry=d_["ry"])
+        arcs.append(arc_)
+        doors.append({"hinge": [round(d_["cx"], 1), round(d_["cy"], 1)], "leaf_px": round(d_.get("leaf_px", d_["r"]), 1),
                       "leaf_angle_deg": round(d_["leaf"], 1), "swing": "cw" if d_["sgn"] == 1 else "ccw"})
-        cv2.ellipse(rest, (int(round(d_["cx"])), int(round(d_["cy"]))), (int(round(d_["r"])),) * 2,
+        cv2.ellipse(rest, (int(round(d_["cx"])), int(round(d_["cy"]))), (int(round(d_.get("rx", d_["r"]))), int(round(d_.get("ry", d_["r"])))),
                     0, start - 3, start + 93, 0, 7)
     for a_ in merged:
         if any(math.hypot(a_["cx"] - e["cx"], a_["cy"] - e["cy"]) < 0.5 * T and abs(a_["r"] - e["r"]) < 0.3 * T for e in arcs):
@@ -2486,6 +2747,22 @@ def extract(path):
         doors.append({"hinge": [round(cx, 1), round(cy, 1)], "leaf_px": round(r, 1), "leaf_angle_deg": round(leaf, 1)})
         cv2.ellipse(rest, (int(round(cx)), int(round(cy))), (int(round(r)), int(round(r))),
                     0, a_["start"] - 3, a_["start"] + a_["span"] + 3, 0, 5)
+    if ARC_DIAG and arcs:
+        def on_arc(p_):
+            for a_ in arcs:
+                r_ = float(a_["r"]); tol_ = max(3.0, 0.06 * r_)
+                ok_ = True
+                for t_ in np.linspace(0.0, 1.0, 5):
+                    x_ = p_[0][0] + (p_[-1][0] - p_[0][0]) * t_; y_ = p_[0][1] + (p_[-1][1] - p_[0][1]) * t_
+                    dd_ = math.hypot(x_ - a_["cx"], y_ - a_["cy"])
+                    rel_ = (math.degrees(math.atan2(y_ - a_["cy"], x_ - a_["cx"])) - a_["start"]) % 360
+                    if abs(dd_ - r_) > tol_ + (r_ - math.sqrt(max(0.0, r_ * r_ - (0.5 * math.hypot(p_[-1][0] - p_[0][0], p_[-1][1] - p_[0][1])) ** 2))) \
+                            or not (rel_ <= a_["span"] + 10 or rel_ >= 350):
+                        ok_ = False; break
+                if ok_:
+                    return True
+            return False
+        diag = [p for p in diag if not (len(p) == 2 and on_arc(p))]
     if ridge_diags:
         def near_ridge(pt):
             for (x0, y0), (x1, y1) in ridge_diags:
@@ -3177,6 +3454,8 @@ def extract(path):
         "walls": walls, "lines": lines, "arcs": arcs, "dots": dots,
         "fillets": fillets, "texts": texts, "unread_text": unread, "fixtures": fixtures, "fixture_solids": solids, "diagonals": diag, "doors": doors, "text_h": th, "grey_solids": greys})
     model["_gray"] = gray                                  # working-resolution grey, for checks against the pixels (not serialised)
+    if word_blobs:
+        model["_word_blobs"] = word_blobs                  # (name_unread_labels takes them out; not serialised)
     return model
 
 
@@ -3673,6 +3952,158 @@ def reread_crossed_labels(m):
                 m["unread_text"].remove(u_)
     if added:
         m.setdefault("dimension_report_pre", {})["labels_reread_over_arcs"] = added
+
+
+# Room words a plan's lettering spells, drawn by name_unread_labels (from general knowledge of how plans are lettered - NOT
+# collected from the benchmark's truth files).  Numbered words carry their usual numbers; the number is only kept when the
+# drawing tells it from the others (see name_unread_labels).
+SHAPE_WORDS = ["BEDROOM", "MAIN", "MASTER", "BATH", "BATH/", "BATHROOM", "W.C.", "WC", "LIVING", "LIVING/", "DINING", "KITCHEN",
+               "KITCHEN/", "SERVICE", "YARD", "SHELTER", "SHELTER)", "HOUSEHOLD", "STUDY", "STORE", "STORE/", "BALCONY", "UTILITY",
+               "FOYER", "ENTRANCE", "TOILET", "STOREROOM", "FAMILY", "JUNIOR", "GUEST", "CORRIDOR", "PLANTER", "LOBBY", "ACCESS",
+               "PANTRY", "LEDGE", "AIR-CON", "COMMON", "SUITE", "ENSUITE", "TERRACE", "COURTYARD", "PATIO", "LAUNDRY", "POWDER",
+               "DRESSING", "WARDROBE", "WALK-IN", "HALL", "LOUNGE", "PES"]
+SHAPE_LINES = SHAPE_WORDS + ["%s %d" % (w_, n_) for w_ in ("BEDROOM", "BATH", "W.C.", "WC", "STORE", "BALCONY", "STUDY") for n_ in (1, 2, 3, 4)] + \
+    ["MAIN BEDROOM", "MASTER BEDROOM", "LIVING/DINING", "BATH/WC", "BATH/W.C.", "AIR-CON LEDGE", "AC LEDGE", "A/C LEDGE",
+     "SERVICE YARD", "HOUSEHOLD SHELTER", "COMMON BATH", "JR. MASTER", "MASTER BATH", "DRY KITCHEN", "WET KITCHEN",
+     "SERVICE BALCONY", "ACCESS BALCONY", "LIVING ROOM", "DINING ROOM", "FAMILY ROOM", "STORE ROOM", "UTILITY ROOM",
+     "POWDER ROOM", "GUEST ROOM"]
+# What else blurred lettering of that size can be: a dimension, a scale, a note.  A room word must match clearly better than
+# every one of these.
+SHAPE_NUMBERS = ["650", "900", "1200", "1650", "2500", "2800", "3000", "3500", "4700", "10200", "10500", "13200"]
+SHAPE_OTHERS = SHAPE_NUMBERS + ["1:100", "1:50", "SCALE", "RC LEDGE", "TRELLIS"]
+
+
+def _glyph_runs(rest, th):
+    """Level runs of glyph-sized components of lettering size `th`, grouped as extract()'s second-chance clustering groups
+    a soft input's letters along a line (round 34, R34_SMALL_WORDS: for name_unread_labels only - nothing is read or
+    erased).  [x, y, w, h] per run of three glyphs or more, or at least 1.6 th long (letters the blur fused)."""
+    n, _lab, st, _c = cv2.connectedComponentsWithStats(rest)
+    gl = sorted(((int(st[i, 0]), int(st[i, 1]), int(st[i, 2]), int(st[i, 3])) for i in range(1, n)
+                 if 0.7 * th <= st[i, 3] <= 1.3 * th and st[i, 2] <= 9.0 * th and st[i, 4] >= 8), key=lambda g: g[0])
+    used, out = [False] * len(gl), []
+    for i, g in enumerate(gl):
+        if used[i]:
+            continue
+        grp = [g]; used[i] = True
+        for j in range(i + 1, len(gl)):
+            q, p_ = gl[j], grp[-1]
+            if not used[j] and min(q[1] + q[3], p_[1] + p_[3]) - max(q[1], p_[1]) >= 0.5 * min(q[3], p_[3]) and \
+                    -3 <= q[0] - (p_[0] + p_[2]) < 1.1 * th:
+                grp.append(q); used[j] = True
+        x0, y0 = min(q[0] for q in grp), min(q[1] for q in grp)
+        x1, y1 = max(q[0] + q[2] for q in grp), max(q[1] + q[3] for q in grp)
+        if len(grp) >= 3 or x1 - x0 >= 1.6 * th:
+            out.append([float(x0), float(y0), float(x1 - x0), float(y1 - y0)])
+    return out
+
+
+def _shape_family(a, b):
+    """The same word up to a slash, a bracket or its number ('BATH' / 'BATH/', 'W.C. 1' / 'W.C. 2')."""
+    wa, wb = re.sub(r"[^A-Z]", "", a), re.sub(r"[^A-Z]", "", b)
+    return wa == wb or (wa in wb and len(wb) - len(wa) <= 1) or (wb in wa and len(wa) - len(wb) <= 1)
+
+
+def _shape_scores(gray, box, v, cap, extra=()):
+    """[(match, string, box, cover)], best first: each of SHAPE_LINES + SHAPE_OTHERS (+ `extra`) drawn at lettering height
+    `cap` over the cluster `box`, at the widths 0.55 - 1.15 of the font's own that span the cluster's length within 25 %.
+    cover: the drawn string's length over the cluster's."""
+    x, y, w, h = [float(q) for q in box]
+    run = h if v else w
+    reg = (x - 0.5 * cap, y - 0.4 * cap, x + w + 0.5 * cap, y + h + 0.4 * cap) if v else \
+          (x - 0.4 * cap, y - 0.5 * cap, x + w + 0.4 * cap, y + h + 0.5 * cap)
+    scored = []
+    for s in SHAPE_LINES + SHAPE_OTHERS + [e for e in extra if e]:
+        a0 = _render_number(s)
+        nat = a0.shape[1] * cap * _template_cap(s)[0] / a0.shape[0]   # drawn length at this cap height, the font's own width
+        ok_w = tuple(wf for wf in (0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15) if 0.75 * run <= nat * wf <= 1.25 * run)
+        if not ok_w:
+            continue
+        sc, b = render_find(gray, reg, v, s, cap, ok_w)
+        if b is not None:
+            scored.append((sc, s, b, (b[3] if v else b[2]) / run))
+    return sorted(scored, key=lambda r_: -r_[0])
+
+
+def _shape_pick(scored, floor=0.55):
+    """(name, box, match) when the best room word matches clearly (see name_unread_labels), else None."""
+    named = [r_ for r_ in scored if r_[1] in SHAPE_LINES]
+    words = [r_ for r_ in named if 0.85 <= r_[3] <= 1.15]  # drawn as long as the run
+    if not words:
+        return None
+    sc, s, b, cover = words[0]
+    if sc < (floor if len(re.sub(r"[^A-Z]", "", s)) >= 5 else 0.8):
+        return None
+    if re.search(r"[()]", s) and not any(r_[1] == re.sub(r"[()]", "", s) and r_[0] >= floor for r_ in words):
+        return None                                         # the bracket's tall stroke matched, not the word's letters
+    if any(r_[0] >= sc for r_ in scored if r_[1] not in SHAPE_LINES):
+        return None                                         # as much a dimension or a note as a word
+    other = [r_[0] for r_ in named if r_[1] != s and not _shape_family(r_[1], s)]
+    if other and sc - other[0] < 0.06:
+        return None                                         # (also against a word drawn shorter or longer than the run)
+    if re.fullmatch(r".+ [1-4]", s):
+        twins = [r_[0] for r_ in words[1:] if r_[1][:-1] == s[:-1]]
+        if twins and sc - max(twins) < 0.03:
+            s = s[:-2]                                      # the number is not told apart: the word only
+    return s, b, sc
+
+
+def name_unread_labels(m):
+    """Round 34.  On a blurred, low-resolution or photographed plan the reader leaves many room names as unread lettering:
+    tesseract cannot read condensed lettering a few pixels high once it is soft ('BAIM/' for BATH/, nothing for BEDROOM),
+    though its shape is plain.  Each unread cluster of the plan's label lettering size (0.7 - 1.4 times it), each fused
+    word blob (R34_WORD_BLOBS) and each run of small lettering (R34_SMALL_WORDS, 0.7 - 1.4 times its own size) is compared
+    with the plan's room words (SHAPE_LINES) drawn at its lettering height, at
+    widths 0.55 - 1.15 of the font's own (plans letter in condensed and wide faces alike), only where the drawn word spans
+    the cluster's own length (0.85 - 1.15).  A name is taken only when it matches clearly:
+      - by 0.55 normalised correlation (a blob or small run by 0.6: window frames and dashes look alike; a word of fewer than
+        five letters by 0.8: short words fit any blot), and a bracketed word by its letters alone too (a bracket's tall
+        stroke fits a window band: c22 soft);
+      - by 0.06 more than any other word, whatever its length (its own slash, bracket or number aside);
+      - better than every dimension number, scale or note drawn the same way (SHAPE_OTHERS: blurred dimensions are unread
+        clusters too; c23's 'RC LEDGE AT 2ND STY' is one letter-shape from A/C LEDGE).
+    Where the numbers 1 - 4 of a numbered word match within 0.03 of each other the number is dropped and left to
+    number_after_label."""
+    gray = m.get("_gray")
+    blobs = m.pop("_word_blobs", None) or []                 # fused words refused as ruled strokes: traced all the same
+    if not R34_SHAPE_NAMES or gray is None:
+        return
+    seen = []
+    for b_ in blobs:                                         # (one blob is refused once per clustering pass)
+        if not any(abs(b_["box"][0] - q["box"][0]) < 2 and abs(b_["box"][1] - q["box"][1]) < 2 and b_["vertical"] == q["vertical"] for q in seen):
+            seen.append(b_)
+    caps = [float(t["box"][2] if t["vertical"] else t["box"][3]) for t in m["texts"] if t.get("angle") is None
+            and any(ch.isalpha() for ch in t["s"]) and len(t["s"].replace(" ", "")) >= 3]
+    th = float(np.median(caps)) if len(caps) >= 3 else float(m.get("text_h") or 0)      # the labels' own lettering size
+    if th < 8:
+        return
+    named = []
+    for u in [("unread", u_) for u_ in list(m.get("unread_text") or [])] + [("blob", b_) for b_ in seen]:
+        kind, u = u
+        v = u.get("vertical")
+        cap, run = (u["box"][2], u["box"][3]) if v else (u["box"][3], u["box"][2])
+        ref = u.get("size") or th                           # (small lettering: its own size, not the labels')
+        if v == "down" or not 0.7 * ref <= cap <= 1.4 * ref or run < 1.2 * cap:
+            continue                                        # not the plan's lettering size, or no longer than a letter or two
+        scored = _shape_scores(gray, u["box"], v, float(cap), [u.get("digits")] if len(u.get("digits") or "") >= 2 else [])
+        if os.environ.get("FV_LOG_SHAPE"):
+            print("SHAPE", [round(q) for q in u["box"]], repr(u.get("read")), [(round(r_[0], 3), r_[1], round(r_[3], 2)) for r_ in scored[:4]])
+        pick = _shape_pick(scored, 0.6 if kind == "blob" else 0.55)
+        if pick is None:
+            continue
+        s, (bx, by, bw, bh), sc = pick
+        if any(min(o["box"][0] + o["box"][2], bx + bw) - max(o["box"][0], bx) > 0.3 * min(bw, o["box"][2]) and
+               min(o["box"][1] + o["box"][3], by + bh) - max(o["box"][1], by) > 0.3 * min(bh, o["box"][3]) for o in m["texts"]):
+            continue                                        # lettering already read there
+        t = {"s": s, "box": [bx, by, bw, bh], "vertical": v, "conf": round(100.0 * sc, 1), "cap_px": float(cap),
+             "ink": [bx, by, bx + bw, by + bh], "named_by_shape": round(sc, 3), "read_as": u.get("read") or ""}
+        if kind == "blob":
+            t["fused_word"] = True
+        else:
+            m["unread_text"].remove(u)
+        m["texts"].append(t)
+        named.append(s)
+    if named:
+        m.setdefault("dimension_report_pre", {})["labels_named_by_shape"] = named
 
 
 def _second_line_apart(m, t, box, v, cap):
@@ -5955,6 +6386,92 @@ def window_bands(m):
             report.append({"o": o, "from": round(A), "to": round(B), "levels": len(new_lines), "dashed": sum(1 for l in new_lines if "dash" in l)})
     if report:
         m.setdefault("dimension_report", {})["window_bands"] = report
+
+
+def flat_swing(ink, ink3, hx, hy, leaf_ang, sgn, ln, tt):
+    """A quarter ellipse from the tip of a leaf (long radius = the leaf, along it) round to the jamb (short radius 0.8 - 1.0
+    of the leaf, across it), hinged at (hx, hy) give or take 2 px: the swing of a door whose leaf is drawn longer than its
+    opening.  None, or {'cx', 'cy', 'r', 'rx', 'ry', 'leaf_px', 'score'} - rx / ry along the image axes."""
+    H, W = ink.shape
+    ux, uy = math.cos(leaf_ang), math.sin(leaf_ang)
+    vx, vy = math.cos(leaf_ang + sgn * math.pi / 2), math.sin(leaf_ang + sgn * math.pi / 2)
+    ct, st_ = np.cos(tt), np.sin(tt)
+    best = (0.0, None)
+    for dr in (-4, -2, 0, 2, 4):
+        a_ = ln + dr
+        for bf in np.arange(0.8, 0.951, 0.025):
+            b_ = bf * ln
+            for jx in (-2, 0, 2):
+                for jy in (-2, 0, 2):
+                    px = (hx + jx + a_ * ct * ux + b_ * st_ * vx).astype(int)
+                    py = (hy + jy + a_ * ct * uy + b_ * st_ * vy).astype(int)
+                    if px.min() < 0 or py.min() < 0 or px.max() >= W or py.max() >= H:
+                        continue
+                    sc = float((ink3[py, px] > 0).mean())
+                    if sc > best[0]:
+                        best = (sc, (hx + jx, hy + jy, a_, b_))
+    if best[0] < 0.85:
+        return None
+    cx, cy, a_, b_ = best[1]
+    for d_ in (-7, 7):                                          # the inner and outer quarters are clear: not hatching
+        px = np.clip((cx + (a_ + d_) * ct * ux + (b_ + d_) * st_ * vx).astype(int), 0, W - 1)
+        py = np.clip((cy + (a_ + d_) * ct * uy + (b_ + d_) * st_ * vy).astype(int), 0, H - 1)
+        if float((ink[py, px] > 0).mean()) >= 0.35:
+            return None
+    rx, ry = (a_, b_) if abs(ux) > 0.5 else (b_, a_)
+    return {"cx": float(cx), "cy": float(cy), "r": (a_ + b_) / 2.0, "rx": float(rx), "ry": float(ry), "leaf_px": float(a_), "score": best[0]}
+
+
+def _door_swings(m):
+    """(cx, cy, rx, ry, start, span, tol) of every arc that is a door's swing (a quarter-ish arc on a door's hinge)"""
+    T = float(m["wall_thickness_px"]); sw = float(m.get("stroke_px", 1.0))
+    hinges = [d_["hinge"] for d_ in m.get("doors", []) if d_.get("hinge")]
+    out = []
+    for a_ in m.get("arcs", []):
+        if 60 <= a_["span"] <= 120 and any(math.hypot(a_["cx"] - h_[0], a_["cy"] - h_[1]) <= max(3.0, 0.3 * T) for h_ in hinges):
+            rx, ry = arc_radii(a_)
+            out.append((a_["cx"], a_["cy"], rx, ry, a_["start"], a_["span"], max(4.0, 0.07 * max(rx, ry)) + 1.5 * sw))
+    return out
+
+
+def swing_band(m, shape):
+    """mask of the band along every door swing (see drop_swing_strokes), or None"""
+    sws = _door_swings(m)
+    if not sws:
+        return None
+    band = np.zeros(shape, np.uint8)
+    for cx, cy, rx, ry, a0, sp, tol in sws:
+        cv2.ellipse(band, (int(round(cx)), int(round(cy))), (int(round(rx)), int(round(ry))), 0, a0 - 4, a0 + sp + 4, 255, max(3, int(round(2 * tol))))
+    return band > 0
+
+
+def drop_swing_strokes(m):
+    """A door swing drawn imprecisely (flatter than its leaf, or not quite round) leaves pieces of its own ink the fitted
+    swing runs a few pixels off; traced on their own they drew the swing twice - a straight 'bi-fold' leg or a curve beside
+    it (round 30, J 11 Oct: "the doors are a clean arc in the photo but ended up very messy in the vector").  An open
+    stroke lying along a door swing for 80 % of its length is that swing's ink: it goes."""
+    swings = _door_swings(m)
+    if not swings:
+        return 0
+    def along(pts):
+        if len(pts) < 3:
+            return False
+        for cx, cy, rx, ry, a0, sp, tol in swings:
+            dx, dy = pts[:, 0] - cx, pts[:, 1] - cy
+            rho = np.hypot(dx / rx, dy / ry)
+            rel = (np.degrees(np.arctan2(dy, dx)) - a0) % 360.0
+            on = (np.abs(rho - 1.0) * 0.5 * (rx + ry) <= tol) & ((rel <= sp + 8) | (rel >= 352))
+            if float(on.mean()) >= 0.8:
+                return True
+        return False
+    n0 = len(m.get("diagonals", [])) + len(m["fixtures"])
+    m["diagonals"] = [d_ for d_ in m.get("diagonals", []) if not along(np.array([np.array(d_[0]) + (np.array(d_[-1]) - np.array(d_[0])) * t_ for t_ in np.linspace(0, 1, 9)]) if len(d_) == 2
+                                                                   else np.array(d_, float))]
+    m["fixtures"] = [p_ for p_ in m["fixtures"] if p_["type"] in ("circle", "ellipse") or p_.get("closed") or not along(np.asarray(_sample_fixture(p_), float))]
+    dropped = n0 - len(m["diagonals"]) - len(m["fixtures"])
+    if dropped:
+        m["swing_strokes_dropped"] = dropped
+    return dropped
 
 
 def arc_radii(a_):
@@ -8353,6 +8870,10 @@ def to_svg(m):
             o.append('<path id="wall-%d" fill="#%02x%02x%02x" fill-rule="evenodd" stroke="none" d="%s"/>' % ((n_,) + (int(ws_["fill"]),) * 3 + (d,)))
             continue
         o.append('<path id="wall-%d" fill="#000" fill-rule="evenodd" stroke="none" d="%s"/>' % (n_, d))
+    ws_ = m.get("wall_style") or {}
+    wfill_ = "url(#wall-hatch)" if ws_.get("hatch") else "#%02x%02x%02x" % ((int(ws_["fill"]),) * 3) if ws_.get("fill") is not None else "#000"
+    for n_, (x0_, y0_, x1_, y1_) in enumerate(((m.get("residual") or {}).get("svg") or {}).get("gap_fill", []), 1):
+        o.append('<rect id="wall-joint-%d" fill="%s" stroke="none" x="%s" y="%s" width="%s" height="%s"/>' % (n_, wfill_, f(x0_), f(y0_), f(x1_ - x0_), f(y1_ - y0_)))
     cnt = {}
     svg_fix_ = (m.get("residual") or {}).get("svg") or {}
     skip_ = set(svg_fix_.get("skip_lines", [])); span_ = svg_fix_.get("line_span", {}); cfix_ = svg_fix_.get("line_c", {})
@@ -9427,6 +9948,135 @@ def close_wall_seams(m, gray):
     return added
 
 
+def close_drawing_gaps(m):
+    """Close the small gaps where a piece of the DRAWING stops short of the wall it meets (see CLOSE_GAPS); the model is
+    left as it is.  Three cases, each only where nothing else is drawn in the gap:
+    - a band (a window's, a door's threshold - a partition drawn filled) whose end stands at most CLOSE_GAPS walls short of
+      a wall's face across its whole width: the gap is filled as wall, from the band's end to the face (room4: the yard
+      window 9.7 px short of the bath's column);
+    - a line along a wall's face a hair off it - at most a third of a wall, along most of the face (room4: the balcony
+      door's frame 1.7 px off the column): the slit between is filled as wall;
+    - a stroke along a band's face line ending at most CLOSE_GAPS walls short of that band's end (room4: the service
+      balcony window's lower line, 5 px short of the door threshold beside it): it runs on to the band.
+    Traced scraps left wholly inside a filled gap go.  Writes m["residual"]["svg"]["gap_fill"] (rectangles drawn as wall)
+    and the strokes' new ends; returns the number of gaps closed."""
+    T = float(m["wall_thickness_px"]); sw = float(m.get("stroke_px", 1.0)); reach = CLOSE_GAPS * T
+    res = m.setdefault("residual", {}); fix = res.setdefault("svg", {})
+    skip = set(fix.get("skip_lines", [])); span = fix.get("line_span", {}); cfix = fix.get("line_c", {})
+    edges = []                                              # the walls' level / plumb sides: (orientation, place, from, to)
+    for w_ in m["walls"]:
+        P_ = w_["pts"]
+        for i_ in range(len(P_)):
+            (x1_, y1_), (x2_, y2_) = P_[i_], P_[(i_ + 1) % len(P_)]
+            if abs(x1_ - x2_) < 1e-6 and abs(y1_ - y2_) > 1.0:
+                edges.append(("v", float(x1_), min(y1_, y2_), max(y1_, y2_)))
+            elif abs(y1_ - y2_) < 1e-6 and abs(x1_ - x2_) > 1.0:
+                edges.append(("h", float(y1_), min(x1_, x2_), max(x1_, x2_)))
+    bands = [r_ for r_ in m.get("partitions", []) if r_.get("fill") is not None]
+    boxes = []                                              # what is drawn as an area: walls' and bands' boxes
+    for w_ in m["walls"]:
+        xs_ = [p_[0] for p_ in w_["pts"]]; ys_ = [p_[1] for p_ in w_["pts"]]
+        boxes.append((min(xs_), min(ys_), max(xs_), max(ys_), "wall", id(w_)))
+    for r_ in bands:
+        x0_, x1_, y0_, y1_ = (r_["a"], r_["b"], r_["c0"], r_["c1"]) if r_["o"] == "h" else (r_["c0"], r_["c1"], r_["a"], r_["b"])
+        boxes.append((x0_, y0_, x1_, y1_, "band", id(r_)))
+    def drawn_lines():
+        for li_, l in enumerate(m["lines"]):
+            if li_ in skip or "dash" in l or l.get("role") in ("door-leaf", "dimension", "extension"):
+                continue
+            a_, b_ = span.get(str(li_), (l["a"], l["b"]))
+            yield li_, l, float(cfix.get(str(li_), l["c"])), float(a_), float(b_)
+    def free(x0_, y0_, x1_, y1_, but=()):
+        """no wall or band drawn inside the box (a pixel in from its sides)"""
+        return not any(min(x1_, b_[2]) - max(x0_, b_[0]) > 1.0 and min(y1_, b_[3]) - max(y0_, b_[1]) > 1.0 for b_ in boxes if b_[5] not in but)
+    fill = []
+    for r_ in bands:                                        # (1) a band short of a wall's face
+        o_ = r_["o"]; c0_, c1_ = float(r_["c0"]), float(r_["c1"])
+        if c1_ - c0_ < 1.0:
+            continue
+        for end, sgn in ((float(r_["a"]), -1.0), (float(r_["b"]), 1.0)):
+            best = None
+            for eo, ec, e0, e1 in edges:
+                if eo == o_:
+                    continue                                 # (a face across the band's way)
+                gap = (ec - end) * sgn
+                if not 0.5 < gap <= reach or min(e1, c1_) - max(e0, c0_) < 0.6 * (c1_ - c0_):
+                    continue
+                if best is None or gap < best[0]:
+                    best = (gap, ec, max(e0, c0_), min(e1, c1_))
+            if best is None:
+                continue
+            t0_, t1_ = sorted((end, best[1]))
+            box = (t0_, best[2], t1_, best[3]) if o_ == "h" else (best[2], t0_, best[3], t1_)
+            if free(*box, but=(id(r_),)):
+                fill.append(box)
+    for li_, l, c, a_, b_ in drawn_lines():                 # (2) a line a hair off a wall's face, along it
+        hw = 0.5 * float(l.get("w", sw))
+        for eo, ec, e0, e1 in edges:
+            if eo != l["o"]:
+                continue
+            ov = min(b_, e1) - max(a_, e0)
+            if ov < 0.6 * (e1 - e0) or ov < 2.0:
+                continue
+            slit = abs(c - ec) - hw
+            if not 0.5 < slit <= T / 3.0:
+                continue
+            lo_, hi_ = max(a_, e0), min(b_, e1)
+            near = c - hw if c > ec else c + hw
+            p0_, p1_ = sorted((ec, near))
+            box = (lo_, p0_, hi_, p1_) if l["o"] == "h" else (p0_, lo_, p1_, hi_)
+            if free(*box):
+                fill.append(box)
+    runs = 0                                                # (3) a stroke along a band's face line, short of its end
+    paths = res.get("paths", [])
+    for p_ in paths:
+        pts = p_["pts"]
+        if len(pts) < 2:
+            continue
+        for k_, step_ in ((0, 1), (len(pts) - 1, -1)):
+            nb_ = k_ + step_                                 # (the way the stroke runs, past a pixel's hook at its very end)
+            while 0 <= nb_ + step_ < len(pts) and math.hypot(pts[nb_][0] - pts[k_][0], pts[nb_][1] - pts[k_][1]) <= 2.0:
+                nb_ += step_
+            (x_, y_), (xn_, yn_) = pts[k_], pts[nb_]
+            if abs(y_ - yn_) <= 1.0 and abs(x_ - xn_) > 1.5:
+                o_, cc_, tt_, sgn = "h", y_, x_, (1.0 if x_ > xn_ else -1.0)
+            elif abs(x_ - xn_) <= 1.0 and abs(y_ - yn_) > 1.5:
+                o_, cc_, tt_, sgn = "v", x_, y_, (1.0 if y_ > yn_ else -1.0)
+            else:
+                continue
+            best = None
+            for r_ in bands:
+                if r_["o"] != o_ or min(abs(cc_ - r_["c0"]), abs(cc_ - r_["c1"])) > 1.5:
+                    continue
+                for bend in (float(r_["a"]), float(r_["b"])):
+                    gap = (bend - tt_) * sgn
+                    if 0.5 < gap <= reach and (best is None or gap < best[0]):
+                        best = (gap, bend, id(r_))
+            if best is None:
+                continue
+            t0_, t1_ = sorted((tt_, best[1]))
+            box = (t0_, cc_ - 0.5, t1_, cc_ + 0.5) if o_ == "h" else (cc_ - 0.5, t0_, cc_ + 0.5, t1_)
+            if not free(*box, but=(best[2],)):
+                continue
+            if o_ == "h":
+                pts[k_] = [best[1], y_]
+            else:
+                pts[k_] = [x_, best[1]]
+            runs += 1
+    if fill:
+        tol_ = max(1.0, sw)                                  # (a scrap's edge a stroke past the gap's)
+        def inside(q_):
+            xs_ = [v[0] for v in q_["pts"]]; ys_ = [v[1] for v in q_["pts"]]
+            return any(min(xs_) >= b_[0] - tol_ and max(xs_) <= b_[2] + tol_ and min(ys_) >= b_[1] - tol_ and max(ys_) <= b_[3] + tol_ for b_ in fill)
+        if res.get("solids"):
+            res["solids"] = [q_ for q_ in res["solids"] if not inside(q_)]
+        if res.get("paths"):
+            res["paths"] = [q_ for q_ in res["paths"] if not inside(q_)]
+        fix["gap_fill"] = [[round(v, 2) for v in b_] for b_ in fill]
+    m["drawing_gaps_closed"] = len(fill) + runs
+    return len(fill) + runs
+
+
 def trace_residual(m, svg):
     """Drawn ink the trace has nowhere near, traced as it is (see RESIDUAL).  Returns the number of pieces added."""
     gray = m.get("_gray")
@@ -9479,6 +10129,10 @@ def trace_residual(m, svg):
     cov_y, cov_x = np.nonzero(R != 0)
     ink_d = cv2.distanceTransform((~ink).astype(np.uint8), cv2.DIST_L2, 3)   # how far each pixel is from drawn ink
     miss = ink & (dist > 2.0 + 0.5 * sw)
+    if ARC_DIAG:                                            # the ink of a door swing is the swing's, however far off it was fitted
+        band_ = swing_band(m, (H, W))
+        if band_ is not None:
+            miss &= ~band_
     copies = 0
     if CLEAN_DRAWING:
         # The blurred fringe of what IS traced (a black wall end's grey halo, a sill's pale edge a few pixels outside the
@@ -9751,6 +10405,8 @@ if __name__ == "__main__":
         if sl_:
             m.setdefault("dimension_report_pre", {})["label_lines_reread"] = sl_
     number_after_label(m, only="reread_over_arc")
+    name_unread_labels(m)
+    number_after_label(m, only="named_by_shape")
     validate_slash_labels(m)
     read_level_notes(m)
     recognise_fixtures(m)
@@ -9769,12 +10425,16 @@ if __name__ == "__main__":
     tidy_soft(m)
     partition_network(m)
     finish_soft(m)
+    if ARC_DIAG:
+        drop_swing_strokes(m)
     structure(m)
     match_symbols(m)
     if os.environ.get("FV_DUMP_PRE_RESIDUAL"):            # (development: the model just before this pass, to iterate on it alone)
         import pickle; pickle.dump(m, open(os.environ["FV_DUMP_PRE_RESIDUAL"], "wb"))
     if RESIDUAL and "--grouped" not in sys.argv:
         trace_residual(m, to_svg(m))
+    if CLOSE_GAPS > 0:
+        close_drawing_gaps(m)
     save_work_image(m, base + ".work.png")
     m.pop("_gray", None); m.pop("_unrect", None); m.pop("_page_gray", None)
     m["round_numbers"] = m.pop("_round_plan", None)

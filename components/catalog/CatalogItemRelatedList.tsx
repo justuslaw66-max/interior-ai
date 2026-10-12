@@ -24,7 +24,7 @@ export default function CatalogItemRelatedList({ sections, onPreviewRelated }: P
                 <button
                   key={id}
                   onClick={() => onPreviewRelated(id)}
-                  className="rounded-full border border-neutral-200 px-2 py-1 text-[11px] text-neutral-700"
+                  className="rounded-full border border-neutral-200 px-2 py-1 text-xs text-neutral-700"
                 >
                   {item.title}
                 </button>

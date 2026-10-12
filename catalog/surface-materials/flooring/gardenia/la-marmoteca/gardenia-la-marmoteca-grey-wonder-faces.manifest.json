@@ -1,0 +1,778 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-wonder/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - GREY WONDER - minimali.zip (42811030 bytes, sha256 9b5df9869f2b98872f54dde6c27c1312a22cf29e4ef259967245ec2121df5fcd).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0014675",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-wonder/pf60014675-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0014675_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014616-120x280-soft-90575-0 (uses 0014675's faces: ABK's 3 Soft 3D pictures are 0014675's 3 Lux 3D pictures, byte for byte); floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014675-120x280-lux-90577-0; wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014616-120x280-soft-90575-0 (uses 0014675's faces: ABK's 3 Soft 3D pictures are 0014675's 3 Lux 3D pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014675-120x280-lux-90577-0",
+   "faces": [
+    {
+     "file": "0014675_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 120576,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - GREY WONDER - 120X280 - Soft 3D - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "a734d1cfe716069252a3bad99e21f764ca972e6ad46805d484d4cfcb926e1d7e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux 3D · Faccia 1",
+      "name": "LA MARMOTECA_GREY WONDER 120X280_3",
+      "id": "a11c14c2-1b9c-4fc9-9a31-56aac2f73d30",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014675_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 94544,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - GREY WONDER - 120X280 - Soft 3D - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "33734d7422ffc0ceef03c5eaaa2e74cb5b101930f4f08774846328499db352ab",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux 3D · Faccia 2",
+      "name": "LA MARMOTECA_GREY WONDER 120X280_1",
+      "id": "956574ef-dae9-463c-ba99-c45d44390971",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014675_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 92520,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X280-Soft 3D/LA MARMOTECA - GREY WONDER - 120X280 - Soft 3D - view_3.jpg",
+     "source_px": [
+      1772,
+      4096
+     ],
+     "source_sha256": "8805f73e1d31701d032c168859d9c00e701252212167ee08657bda87e739acd4",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux 3D · Faccia 3",
+      "name": "LA MARMOTECA_GREY WONDER 120X280_2",
+      "id": "f4151dc8-5690-4537-a6b9-c19d9c239fba",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0014677",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-wonder/pfa0014677-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014677_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014677-120x120-lux-90579-0; floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014678-120x120-soft-90580-0 (uses 0014677's faces: ABK has no Grey Wonder 120x120 Soft 3D; its 120x280 and 60x120 Soft 3D pictures are the Lux 3D ones byte for byte, so the 120x120 Lux 3D pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014677-120x120-lux-90579-0; wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014678-120x120-soft-90580-0 (uses 0014677's faces: ABK has no Grey Wonder 120x120 Soft 3D; its 120x280 and 60x120 Soft 3D pictures are the Lux 3D ones byte for byte, so the 120x120 Lux 3D pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "0014677_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46860,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d2c24e3b32e93a87dc559f771eb0e6e39fb12c73555ce4f6a111c575af5ddba2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 1",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_9",
+      "id": "eb5d3266-c3f4-4c87-b59c-15e5038196f6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014677_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 50606,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d6a15772c036cc93b464465cb88d4e4cacc3499b716bf56ca7d957e176a5c2be",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 2",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_5",
+      "id": "2a022953-e626-4a26-a5b3-8697d1d6cec3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014677_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37016,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0a972893a03f693b2f932196aecf6d610ffbdd436a440dfa6b0372d366e3d655",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 3",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_1",
+      "id": "4a4c76cb-e49a-44d9-ac77-7f45a60fe890",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014677_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 42376,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "55e3acfa2ba4e596e6f0812475cdac0e4798fad4bb8309e38506579383c0a89a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 4",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_2",
+      "id": "454a41a1-97e6-4931-b907-89c87d66ee3f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014677_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 49152,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0a2466e303988620b567ede82f1986b05c570f9ebb6661e7059fb7ea40228469",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 5",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_7",
+      "id": "6a529967-2d76-462c-8f30-bdb3192cc44f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014677_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 35768,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1d80c67bff45b356c622b552730b7c1089fa622b4d46c211988b0d94017cf6e7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 6",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_8",
+      "id": "2115db15-5c98-4f49-bd37-3c2748f889b9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014677_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44054,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e70fab877f6c99967064a7a3e82c50088e897ac2f64bd7b7cddb35af4ca40bdd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 7",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_4",
+      "id": "56e3e241-39b6-412e-92ba-5241cf203474",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014677_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37382,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7327603cb0291ea7a784808ad326aee0fa79a6f7d71e779c760ac90e947018c0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 8",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_3",
+      "id": "cad4cdec-1f05-4318-a956-fb9fc2165191",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014677_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 48932,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "120X120-Lux 3D/LA MARMOTECA - GREY WONDER - 120X120 - Lux 3D - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e6577fdbee91ac4a087bab4e59b293502b33fea1715e340b1bc65f5986e334f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux 3D · Faccia 9",
+      "name": "LA MARMOTECA_GREY WONDER 120X120_6",
+      "id": "2e5c7eb7-a7de-4c2c-a2bb-38b93324b136",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014681",
+   "finish": "Lux 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-wonder/pfa0014681-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014681_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014679-60x120-soft-90581-0 (uses 0014681's faces: ABK's 18 Soft 3D pictures are 0014681's 18 Lux 3D pictures, byte for byte); floor gardenia-flooring-la-marmoteca-grey-wonder-pf60014681-60x120-lux-90583-0; wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014679-60x120-soft-90581-0 (uses 0014681's faces: ABK's 18 Soft 3D pictures are 0014681's 18 Lux 3D pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014681-60x120-lux-90583-0",
+   "faces": [
+    {
+     "file": "0014681_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22830,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_1.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "526189993d7abae6d1fec76ea16a81a57cd9734f93ab3789861f82c7e7c76eff",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 1",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_14",
+      "id": "6d34444b-3c6c-4115-bd01-f141b7579f84",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014681_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23788,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_2.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "fc255c11bd6ef080b0d084b9020a93620b8a3683def00f85641a5d06e563c693",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 2",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_18",
+      "id": "4b5f1996-bcc3-4d88-8c8a-789868517001",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014681_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26692,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_3.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "03dc2d47399201d88e39457de9a9cc13d818a150762bc2493bc2f22797b05fbe",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 3",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_13",
+      "id": "e99e3b63-6fab-4dc8-a943-f1b0eb888bcd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014681_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16756,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_4.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "0fc2f9fcb40c16848ddfb5573af16fc87dc958e8e09d3f29c20e7caada0e4076",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 4",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_16",
+      "id": "8094fb4d-61bd-4b4b-8bdc-549795fda6a2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014681_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28496,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_5.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "df9ccd80dd367caff9ad900b1b92ceb1f45a30fbb91ae07e5c15a6ae18383a26",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 5",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_9",
+      "id": "8db335a8-d59b-488c-be6d-7fc9a152ea4e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014681_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20452,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_6.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "acdfde3e429c1b9d116068967bb6a7689a8156047690b6abc2973008423297dd",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 6",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_15",
+      "id": "ea8750c1-033b-496f-81c1-bfe8385834b7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014681_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24836,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_7.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "61f3960ada6696cebfa911e27041d108e6532adf984ca6d8cf610938a39d089c",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 7",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_17",
+      "id": "689e8e76-f42a-4bd0-a8e7-f8827f84da9c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0014681_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26078,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_8.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "cd27ca1f213b9a48cdfbc170514aa9b4016f9f1ade8909200851dc691e7c6b1a",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 8",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_11",
+      "id": "3485667f-7c9f-482b-b69b-0790b1f2fc48",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014681_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22368,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_9.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "782a0577497d88f3ffff3895ae349f4c51cc3af0e346265d1d435c067199f026",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 9",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_12",
+      "id": "223bf646-7e27-4cfe-9442-5ed2596c16a9",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014681_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24118,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_10.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "4d73d5d604b191307077ab9452ce9ddd2322b2fbd3e3378a72fc52d31584a5a6",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 10",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_10",
+      "id": "beed72e6-0b52-4812-8659-ecf94b36bf58",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014681_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20450,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_11.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "c5a286d0d366ed9d2cef3494713c9c4e6f1a0e9724109a87edc6b17e9113ad83",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 11",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_1",
+      "id": "e114a906-0f62-4d17-95df-08940ee6e7fc",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014681_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22212,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_12.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "8b31a523942753bcf4afb809321a183e18b9b38ca9c6c28be71ace4ea8db7bd0",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 12",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_3",
+      "id": "5eb974ec-7d90-4d53-aba1-3f8b30e93aaa",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0014681_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23236,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_13.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "e0fce9cd3ecafdb65b07a42aecee607f0b7efad80b7c90591b8867fb7ad30136",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 13",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_7",
+      "id": "1d3dde7d-1458-4614-962c-b0a8793cb824",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0014681_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20724,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_14.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "bf15691431bce7233c8c259d9ffda2ae54ac381b5fdcf070470514f10d90cf4c",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 14",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_4",
+      "id": "218ac798-9ef3-4c8b-9ba3-66e5f7c70010",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014681_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20280,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_15.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "1b94d5c95641abac427a5c9d267bfa02954110af3e9329637fae55dab19776d2",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 15",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_6",
+      "id": "e8b8d3de-b59a-4cff-8795-bcaaae5a09c7",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014681_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16568,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_16.jpg",
+     "source_px": [
+      1461,
+      2921
+     ],
+     "source_sha256": "41fa8c63ef86a88e4f490ba65f6a62c53f5a6d6f5b8bed85359b006777281d91",
+     "source_px_per_mm": 2.434,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 16",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_2",
+      "id": "5492386f-dd6c-4c4c-8057-bc13b30af19d",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014681_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16090,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_17.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "0ffac6ae9874bf49d7ad1c8118bf807938ad93b16ccae2f678ac5de411b5659b",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 17",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_5",
+      "id": "b4598427-c0ca-4e9a-a1fc-03ee2b214ecc",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014681_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21002,
+     "source_zip": "LA MARMOTECA - GREY WONDER - minimali.zip",
+     "source_file": "60X120-Soft 3D/LA MARMOTECA - GREY WONDER - 60X120 - Soft 3D - view_18.jpg",
+     "source_px": [
+      1462,
+      2923
+     ],
+     "source_sha256": "ed383f0a9ef4451ab4685ee42247ac6aba05490a66ba52652fcd9bc54321666d",
+     "source_px_per_mm": 2.436,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux 3D · Faccia 18",
+      "name": "LA MARMOTECA_GREY WONDER 60X120_8",
+      "id": "3295e7dc-b41f-4415-a051-52c93ddab632",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,806 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - CALACATTA - minimali.zip (35051541 bytes, sha256 24cbb22a8c1c2226ec130621fc67028da1d719975599e68b164470d26d1a8808).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008839",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta/pf60008839-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008839_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacatta-0008839-120x280-lux-139930-0; floor gardenia-flooring-la-marmoteca-calacatta-0009158-120x280-soft-139934-0 (uses 0008839's faces: ABK's 8 Soft pictures are 0008839's 4 Lux pictures, byte for byte, and four named NOBILE STATUARIO, another marble); wall gardenia-wall-tile-la-marmoteca-calacatta-0008839-120x280-lux-139930-0; wall gardenia-wall-tile-la-marmoteca-calacatta-0009158-120x280-soft-139934-0 (uses 0008839's faces: ABK's 8 Soft pictures are 0008839's 4 Lux pictures, byte for byte, and four named NOBILE STATUARIO, another marble)",
+   "faces": [
+    {
+     "file": "0008839_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 58784,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA - 120X280 - Soft - view_1 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "5192ec7b7c8c072a24af6000e8408bdcda189029c7dde5247285b87be20a7ff0",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE CALACATTA 120X280_01",
+      "id": "8461274c-b574-42aa-9204-35f7492c5832",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0008839_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 56912,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA - 120X280 - Soft - view_2 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "894e4cc00cd314e96326c362e94c2550d404b1005d79c8fbd20773779b373f03",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE CALACATTA 120X280_02",
+      "id": "c9ad6565-da2a-4483-b27a-3d77447c6cfc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0008839_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 60802,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA - 120X280 - Soft - view_3 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "7fd0eef8b8eb93c8c975b8af378806b31b1a05a9df2baa05cce66ce4ce40752e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE CALACATTA 120X280_03",
+      "id": "f74725c9-850c-48c3-9686-3e4f7a3b67de",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0008839_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 64070,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA - 120X280 - Soft - view_4 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "a74117eaba8a57aedb9752c9923e93a96a98ff66da74d6a2bc68a791bcb0dc75",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE CALACATTA 120X280_04",
+      "id": "f687b104-6243-4a01-b6d5-e1626ef22725",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0009112",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta/pf60009112-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0009112_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacatta-0009112-120x120-lux-139931-0; floor gardenia-flooring-la-marmoteca-calacatta-0009167-120x120-nat-139935-0 (uses 0009112's faces: ABK's 9 Nat P.tech pictures are 0009112's 9 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-calacatta-0009112-120x120-lux-139931-0; wall gardenia-wall-tile-la-marmoteca-calacatta-0009167-120x120-nat-139935-0 (uses 0009112's faces: ABK's 9 Nat P.tech pictures are 0009112's 9 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0009112_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 25398,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a3cea91cd7f336d29b82eb2339fa98414aa14d8c64459c52994e08b7253ab0c3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE CALACATTA 120X120_01",
+      "id": "beea549a-4755-4a17-af42-6d7787277bda",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009112_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 24726,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e859993e5583d8f00bd9b35d0a7b193c8d9d951a4841af24d46385f6088b6ea7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE CALACATTA 120X120_02",
+      "id": "9bdfbaf7-4c51-4dd3-8e84-656561b019bc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009112_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21944,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ecb6513adbc6f08b0cce9ca173e3ef7f33140f513676ea0271e852652bf28971",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE CALACATTA 120X120_03",
+      "id": "2766eb38-5bb4-432d-a998-d01cd9fea982",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009112_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22060,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "161c53a3999d41eed6b2ae47efa7c5a612636cea65f9cafa31a7b97164528d22",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE CALACATTA 120X120_04",
+      "id": "72d912fd-9b34-4df0-b580-1a3b502ca152",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009112_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 23204,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "85c2252b4887ca20e1332bbbdb3131554352158623c43a12a4ff7698a7f77df6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE CALACATTA 120X120_05",
+      "id": "ba14fe18-db36-4dce-bf75-4c8b363e065e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009112_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29044,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5995cc74ef58d014acacd301febd2c539ba2ad6c1e609eec219d717d823a8a35",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE CALACATTA 120X120_06",
+      "id": "7b343e34-0c67-446a-a2ad-f98cbc715671",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009112_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28564,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "de67c9542cbe6176ad172e8368225e5b3a29c1d7ace5f68ea8e928c3d6606977",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE CALACATTA 120X120_07",
+      "id": "7f781ae6-dca2-4243-a1c2-e85f1bb6444a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009112_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 23308,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ec8a414b281d4febd74b20fd9dee47b0fe1cd24c2ea82d5df2115a3166d70e75",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE CALACATTA 120X120_08",
+      "id": "a7b1c674-d838-4f78-8e21-938d06527a69",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009112_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 22174,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - CALACATTA - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4dfb7793c0b0d3b76abad5ae4944e517b4cca59e73bd26c215518c3a91484159",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE CALACATTA 120X120_09",
+      "id": "1ba001bd-0e15-4379-a479-d963ffc12977",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0009118",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta/pf60009118-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0009118_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacatta-0009118-60x120-lux-139932-0; floor gardenia-flooring-la-marmoteca-calacatta-0009170-60x120-nat-139936-0 (uses 0009118's faces: ABK's 18 Nat P.tech pictures are 0009118's 18 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-calacatta-0009118-60x120-lux-139932-0; wall gardenia-wall-tile-la-marmoteca-calacatta-0009170-60x120-nat-139936-0 (uses 0009118's faces: ABK's 18 Nat P.tech pictures are 0009118's 18 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0009118_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12056,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8f9fff210df37a36fff6d88dee25698d625dedc6fd339eb99201885f66bee1a0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1 (view_01)",
+      "name": "NOBILE CALACATTA 60X120_01",
+      "id": "cbda95ab-dd69-4317-9eec-3a2e30d10ff0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009118_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10434,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c5267e3e0501a7236e2eb74b33b7f0854a2f449c238827ffe7f7d0c72693d726",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2 (view_02)",
+      "name": "NOBILE CALACATTA 60X120_02",
+      "id": "0b8f57cc-dc36-41ef-b9ee-198ee4c9a875",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009118_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15048,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c8adbca2007efbe7afc35bf55de90485c5652b4fce27747fbfc72243a996bd6d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3 (view_03)",
+      "name": "NOBILE CALACATTA 60X120_03",
+      "id": "f0619991-712d-4327-bf99-5d9cb5bbd7ac",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009118_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11128,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a46b8b573cd29e2059791a47d1a2c9df78f51f259c17bbaeade39bb6e371976a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4 (view_04)",
+      "name": "NOBILE CALACATTA 60X120_04",
+      "id": "0b8f81e8-ae65-4419-9b2e-b96706c277e2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0009118_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11458,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2a6dc18f83d1fef55a288cea69ffb33d392c0bdb3edfa44085750361984e129d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5 (view_05)",
+      "name": "NOBILE CALACATTA 60X120_05",
+      "id": "24c58b92-5720-4a3e-b377-daec7d08844c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0009118_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13784,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "48d5b203b3e9d32c7846160abae00999da7a2a4405dfaee07a55971746b038c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6 (view_06)",
+      "name": "NOBILE CALACATTA 60X120_06",
+      "id": "d0f78128-e004-432d-84dc-1249b6b6a510",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0009118_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11072,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f7d25c738e39fc21b648413cf6768fc81aeab1311274842a8c7c9b159b2e41ae",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7 (view_07)",
+      "name": "NOBILE CALACATTA 60X120_07",
+      "id": "0ab2c724-44f6-44a2-ae66-0f0f2d180f83",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0009118_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11336,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "63880b07d24b64c7689ac200e068faa1017f6b170b90a2177fd540ec3f777835",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8 (view_08)",
+      "name": "NOBILE CALACATTA 60X120_08",
+      "id": "d2d60048-c632-4bc1-a644-002db7805430",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0009118_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11020,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "daedd442e1c694be30399692f674766027e7219c8bde51c53539d9bf959f75fa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9 (view_09)",
+      "name": "NOBILE CALACATTA 60X120_09",
+      "id": "1bc96cd6-0204-475a-93f4-f27666678ce0",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0009118_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13224,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "aaa3b156079abe4bec480e4b13dd846840615c4c076c0f16115010999ee938c8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10 (view_10)",
+      "name": "NOBILE CALACATTA 60X120_10",
+      "id": "dbdf2507-1240-499e-9788-a2c80e0a5528",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0009118_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12930,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d4013f929711e7eb5ddc05bbb8e86f6dfd97a4550e767de1c4e731202071a612",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11 (view_11)",
+      "name": "NOBILE CALACATTA 60X120_11",
+      "id": "f26e9053-4fcb-470f-a4f4-b7771ba6cefd",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0009118_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15448,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cba72e520cf365ed5f8897ca778a844b386b2a8702bdcd07eb41c738a0e469e2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12 (view_12)",
+      "name": "NOBILE CALACATTA 60X120_12",
+      "id": "c397fa6e-7340-408b-b180-9550c8465fdd",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0009118_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15986,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1c7db174252180129486d42b1c1e03992e21071502831eb0b7efd2eee2793e0e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13 (view_13)",
+      "name": "NOBILE CALACATTA 60X120_13",
+      "id": "ec09525e-1d2a-42bd-a511-5e1d01adfc8c",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0009118_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13150,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "56a7f7c1fd3a70ad0ca8058a700c691ef0d4a805cbfea35d11d6a427b293eea8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14 (view_14)",
+      "name": "NOBILE CALACATTA 60X120_14",
+      "id": "67055938-ec97-4ef6-b237-3e5ed5440f8e",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0009118_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10398,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "53b123a9cbf289b42d9eece4445499bb7b7495d43e3f12fb802df8818deb2b2f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15 (view_15)",
+      "name": "NOBILE CALACATTA 60X120_15",
+      "id": "07fd3295-5d73-4253-ac7d-b4e6d5908084",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0009118_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13388,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "df65ce47bff659aeea5464db8f0e30f94a7e67066d66d4f9d8329a3311fe5b6a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16 (view_16)",
+      "name": "NOBILE CALACATTA 60X120_16",
+      "id": "41653beb-12a7-46dc-ac23-e2f9ca2a2af3",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0009118_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8976,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2952771e7c454b8febf20aa17554e1baa4a4e18369478f202620eec832cc05b6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 17 (view_17)",
+      "name": "NOBILE CALACATTA 60X120_17",
+      "id": "b4cc6eb1-c4ed-4e0f-9698-332178f10d01",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0009118_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13954,
+     "source_zip": "LA MARMOTECA - CALACATTA - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA - 60X120 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e1b91b661d7911fac6f90caf99cf960b2d806d1d35fd9230eef5780806a9219f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18 (view_18)",
+      "name": "NOBILE CALACATTA 60X120_18",
+      "id": "6cfb3a1a-411b-4ad1-889d-80dcc45e186d",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

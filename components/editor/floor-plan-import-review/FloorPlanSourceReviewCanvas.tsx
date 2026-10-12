@@ -409,17 +409,17 @@ export default function FloorPlanSourceReviewCanvas({
                   strokeWidth={Math.max(1, lensSize / 100)}
                 />
               </svg>
-              <div className="border-t bg-white px-2 py-1 text-center text-[10px] font-semibold text-violet-800">
+              <div className="border-t bg-white px-2 py-1 text-center text-xs font-semibold text-violet-800">
                 {hoverSnap.label ?? "Magnified selection"}
               </div>
             </div>
           ) : null}
         </div>
-        <figcaption className="border-t border-neutral-200 px-2 py-1.5 text-[10px] text-neutral-600">
+        <figcaption className="border-t border-neutral-200 px-2 py-1.5 text-xs text-neutral-600">
           {labels.caption}
         </figcaption>
       </figure>
-      <details className="mt-2 text-[10px] text-neutral-600">
+      <details className="mt-2 text-xs text-neutral-600">
         <summary className="cursor-pointer">Display options</summary>
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="col-span-2 flex items-center gap-2 rounded border bg-white p-2">

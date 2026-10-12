@@ -586,10 +586,10 @@ export function Furniture({
 
         // Wall snap points (flush to walls, no breathing room)
         const walls = [
-          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
+          { axis: "x" as const, coord: wallLeftX, label: "Left wall" },
+          { axis: "x" as const, coord: wallRightX, label: "Right wall" },
+          { axis: "z" as const, coord: wallFrontZ, label: "Front wall" },
+          { axis: "z" as const, coord: wallBackZ, label: "Back wall" },
         ];
 
         // Compute all snap candidates
@@ -890,7 +890,7 @@ export function Furniture({
                   background: chip.id === "delete" ? "#fee2e2" : "#f3f4f6",
                   color: chip.id === "delete" ? "#991b1b" : "#111827",
                   cursor: chip.disabled ? "not-allowed" : "pointer",
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 800,
                   opacity: chip.disabled ? 0.45 : 1,
                   minWidth: chip.id === "delete" ? 46 : 42,

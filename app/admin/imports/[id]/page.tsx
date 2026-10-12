@@ -206,7 +206,7 @@ export default async function ImportJobDetailPage({ params }: ImportJobDetailPag
       </section>
 
       <section className="rounded-xl border p-4">
-        <h2 className="text-sm font-semibold">Catalog Handoff</h2>
+        <h2 className="text-sm font-semibold">Catalog handoff</h2>
         <div className="mt-2 flex flex-wrap gap-4 text-sm">
           {job.catalogItemId ? (
             <>
@@ -233,7 +233,7 @@ export default async function ImportJobDetailPage({ params }: ImportJobDetailPag
           <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.reportJson)}</pre>
         </div>
         <div className="rounded-xl border p-4">
-          <h2 className="text-sm font-semibold">Raw Metadata JSON</h2>
+          <h2 className="text-sm font-semibold">Raw metadata JSON</h2>
           <pre className="mt-2 max-h-[420px] overflow-auto rounded bg-neutral-50 p-3 text-xs">{renderJson(job.rawMetadataJson)}</pre>
         </div>
       </section>

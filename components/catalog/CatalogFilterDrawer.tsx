@@ -43,7 +43,7 @@ export default function CatalogFilterDrawer({
       className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-white p-3 shadow-lg"
     >
       <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-neutral-100 bg-white px-3 py-3">
-        <div className="text-xs font-semibold text-neutral-900">Structured Filters</div>
+        <div className="text-xs font-semibold text-neutral-900">Structured filters</div>
         <button type="button" onClick={onClose} className="text-xs text-neutral-500">Close</button>
       </div>
 
@@ -69,7 +69,7 @@ export default function CatalogFilterDrawer({
       {showSofaSeatCapacityFilter ? (
         <fieldset className="mt-3">
           <legend className="text-xs font-medium text-neutral-500">Seat capacity</legend>
-          <div className="mt-1 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
+          <div className="mt-1 grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-2">
             {SOFA_SEAT_CAPACITY_OPTIONS.map((option) => {
               const selectedBuckets = filters.sofaSeatCapacityBuckets ?? [];
               const selected = selectedBuckets.includes(option.value);
@@ -109,7 +109,7 @@ export default function CatalogFilterDrawer({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{option.label}</span>
-                    <span className="block text-[10px] text-neutral-400">
+                    <span className="block text-xs text-neutral-400">
                       {count} {count === 1 ? "option" : "options"}
                     </span>
                   </span>

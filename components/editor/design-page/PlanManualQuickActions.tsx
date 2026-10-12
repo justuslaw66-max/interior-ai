@@ -41,7 +41,7 @@ const manualPlanQuickActionButtonClass = (active: boolean, disabled = false) =>
   ].join(" ");
 
 const manualPlanQuickActionTooltipClass =
-  "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block group-focus:block group-focus-visible:block";
+  "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus:block group-focus-visible:block";
 
 function ManualPlanActionIcon({ name }: { name: ManualPlanActionIconName }) {
   const lineProps = {

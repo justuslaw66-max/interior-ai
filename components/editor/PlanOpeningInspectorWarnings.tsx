@@ -5,8 +5,8 @@ import { formatDisplayLength } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
 const warningClass = (dark: boolean) => dark
-  ? "rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-[11px] text-amber-100"
-  : "rounded-lg border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900";
+  ? "rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
+  : "rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900";
 
 function HostWarning({
   opening,

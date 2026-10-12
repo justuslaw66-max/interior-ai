@@ -145,7 +145,7 @@ test.describe("command bar Share", () => {
     await share.focus();
     await page.keyboard.press("Enter");
 
-    const fallback = page.getByRole("dialog", { name: "Share Link" });
+    const fallback = page.getByRole("dialog", { name: "Share link" });
     await expect(fallback).toBeVisible();
     await expect(fallback.getByTestId("share-url-input")).toHaveValue(SHARE_URL);
     expect(requests).toEqual(["create", "share"]);

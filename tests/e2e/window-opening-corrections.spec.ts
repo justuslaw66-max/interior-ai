@@ -1136,9 +1136,14 @@ test("known unresolved marker selects, repairs, and remains discoverable in 3D",
   await expect.poll(async () => (await storedOpening(page, "known-unresolved"))?.offsetMm)
     .toBe(1200);
   // The repair closes the plan quality review. The plan was fitted around it and stays put: the
-  // camera never moves, not even for a frame.
+  // camera never moves, not even for a frame. Selecting the window writes the unmoved camera again
+  // and can change its last digits (about 1e-14 m), so only a difference beyond 1e-9 is a move.
   const repairCamera = await repairCameraStates();
-  expect(repairCamera.seen, "Repairing the wall keeps the plan where it is.").toEqual([repairCamera.initial]);
+  const cameraBeforeRepair: CameraState = JSON.parse(repairCamera.initial);
+  const repairMoves = repairCamera.seen.filter((state) =>
+    Object.values(cameraMotion(cameraBeforeRepair, JSON.parse(state))).some((distance) => distance > 1e-9)
+  );
+  expect(repairMoves, "Repairing the wall keeps the plan where it is.").toEqual([]);
   await dragOpening2D({ page, openingId: "known-unresolved", alongMeters: -0.8 });
   const repaired = await storedOpening(page, "known-unresolved");
   expect(repaired.id).toBe("known-unresolved");

@@ -1,0 +1,730 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/antique-brown/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - ANTIQUE BROWN - minimali.zip (37654080 bytes, sha256 d1dc1595cc5773d9d7a1d61cd2dab606b81dfddcbfbbb1224fb70f401d04cabf).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0009718",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/antique-brown/pf60009718-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0009718_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-anti-brown-pf60009718-120x280-lux-90528-0; floor gardenia-flooring-la-marmoteca-anti-brown-pf60009726-120x280-soft-90534-0 (uses 0009718's faces: ABK's 4 Soft pictures are 0009718's 4 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-anti-brown-pf60009718-120x280-lux-90528-0; wall gardenia-wall-tile-la-marmoteca-anti-brown-pf60009726-120x280-soft-90534-0 (uses 0009718's faces: ABK's 4 Soft pictures are 0009718's 4 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0009718_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 91282,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - ANTIQUE BROWN - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "9212a51dffa4bb1dc3826d6fc4ddb4dc2345124eb8a1bc9ace51a5cb695497bb",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_ 120x280_3",
+      "id": "352b2997-330e-4cbc-a2ab-9a2f8804300d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0009718_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 103556,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - ANTIQUE BROWN - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "21f316de5673e86a3a274d91b17f4bc1589799923612f580aa91fd44affd7614",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_ 120x280_2",
+      "id": "8a12dcf2-fee6-4496-bd27-9869e2fc0f80",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0009718_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 104974,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - ANTIQUE BROWN - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "d45bfe27ff3ed14dfeef708f1f60fa27e71fabc0f447f0a4f3f010dfd8310a88",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_ 120x280_4",
+      "id": "a8dadbf5-595c-4a42-a202-4021c000f902",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0009718_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 111020,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - ANTIQUE BROWN - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "d8cc51690db8e9f0352cfe33268df2e383b4a58bc67dea121116c430fc54ef27",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_ 120x280_1",
+      "id": "8d9c65e0-ea46-4355-88e5-4a60ac94dfec",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g27050",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/antique-brown/g0027050.a-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g27050_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-anti-brown-g0027050-120x120-lux-90495-0; floor gardenia-flooring-la-marmoteca-anti-brown-pf60010680-120x120-soft-90549-0 (uses g27050's faces: ABK has no Antique Brown 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-anti-brown-g0027050-120x120-lux-90495-0; wall gardenia-wall-tile-la-marmoteca-anti-brown-pf60010680-120x120-soft-90549-0 (uses g27050's faces: ABK has no Antique Brown 120x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 120x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "g27050_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45240,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c127b61ba1c1d4bcc3583e60054fa1bc1c99417f9ed4dc6212537e20beb7b76d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_01",
+      "id": "216292f2-98ad-4fc8-a1aa-ba64804bfb35",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27050_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 49530,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ef1a96677d7dcf18da8e6b30d61dabf32e164cf60453ee7df7914c08b7961910",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_04",
+      "id": "16651b5d-ac51-4272-b9b1-d20fe5127dc5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27050_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 47628,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9206ac61702002b877b2ed343b0da86ed59d7b61652b207bf4ce675f45609b49",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_02",
+      "id": "47b3a2e8-5b52-4238-ad86-38509ebe3b23",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27050_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41590,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6ade83d0250b83a8957deae94024b29deb87ef92cad2968bfacf132c9199704e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_06",
+      "id": "bbb3b1d0-355b-4d8f-8d1c-e6e6c36c68be",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27050_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45224,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2789b91da224cc0bca012ebe5f8d193dda6ec44b21d73fdfdde0fe4725d2adf7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_03",
+      "id": "3b155667-2061-4005-bc7c-ca851cb576e3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27050_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38640,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2c54c35389e53a4b8b7b8f5a43d6e2529e851356591873550c075c927a96dc1f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_05",
+      "id": "b4ef77d5-97bc-4613-a15f-de0e5fb6f997",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27050_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46338,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b7bae9c195b3f9c5c23a68fe50299149d6754c326bebe12aef682d7751d58c51",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_07",
+      "id": "48a1fe13-c0f6-4735-877a-68c76d22aa5b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27050_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40098,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "73f7f15e49725d9b8f7b6128e9f7d365feab72addf3d1f808025b6b1da53c57a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_120x120_08",
+      "id": "40dbf093-b444-4377-9383-8c54a98aaae3",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27060",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/antique-brown/g0027060.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27060_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-anti-brown-g0027060-60x120-lux-90502-0; floor gardenia-flooring-la-marmoteca-anti-brown-pf60010681-60x120-soft-90550-0 (uses g27060's faces: ABK has no Antique Brown 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-anti-brown-g0027060-60x120-lux-90502-0; wall gardenia-wall-tile-la-marmoteca-anti-brown-pf60010681-60x120-soft-90550-0 (uses g27060's faces: ABK has no Antique Brown 60x120 Soft; its pictures are the same for every finish wherever it shows more than one (the colour's 120x280 Soft and Lux pictures are byte-identical), so the 60x120 Lux pictures stand in (J, 10 Oct 2026))",
+   "faces": [
+    {
+     "file": "g27060_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20810,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "f3f73827a118ac231c4e79fc08bf42dc7eb48b2a0034ff52bc7c9003555ad719",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_15",
+      "id": "e8cf0570-3691-45dd-94d5-2a810e4baef5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27060_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23006,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "89dee63f39911a1fbdfff330ee9e4376f28e0a6550812dbe99000b1cb3683887",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_08",
+      "id": "ede10a88-db66-4821-86b8-80744f00cdfb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27060_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25130,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "7bf3205ad34c6c6abc6f3f3e78df24c0fa1b9a31d51b49520be4af1a37a64d29",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_03",
+      "id": "7d3e32ee-4bde-40a5-88ba-3df1dd31d272",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27060_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20362,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "168739425ab34f73944359eef2b5f4d0a7beffb2d4646ab01236aab5849646bf",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_05",
+      "id": "6c11dd12-6c1f-4717-84cd-a96a4322293b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27060_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19892,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "bdc1e1449fa9f4000b1f7f29b9caa7924dfdefd44057b17dc1ad9fa51c4ebc74",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_16",
+      "id": "fd438550-3b81-4e3f-bf76-33ea9d7e9025",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27060_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29318,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "4757c5ffc07522e30a888309215f1a3176c528226ae6d8e44c3865ead977a528",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_14",
+      "id": "60e77302-ba79-4253-a008-072d41bc1b33",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27060_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25480,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "f83ac5c800ba3ee3f93c1f91f81f80a37fbcafd342d5329d1e7c8e906f6c653a",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_06",
+      "id": "645cbcb7-6628-497f-9dcd-99d0419ae9db",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27060_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26520,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "3eefb516e32d8f50095022f567ac8e0ed8f75502d830e0fe301de249fdd988a3",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_07",
+      "id": "e0ebc58f-78c8-4e5f-94dd-21f806ef01c0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27060_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24348,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "4eb1e2710ca0b09e760087f5d36e1bdd18e54bd4aa24731a1e6274d118e7427c",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_04",
+      "id": "6a42cbce-b63d-4980-b889-8057490d62a0",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27060_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24620,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "34a418e56baa76b929780e6e026cbe892efbbd64a89063ed8f46a33a820174bd",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_10",
+      "id": "24cb040c-7211-489e-93ac-e596a7f9a548",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27060_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18052,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "ecef764d6408fdc5fbd33702d6619e5f88ebda6e61ec731389947a9e85144b34",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_13",
+      "id": "0b5f5d99-19a2-44c0-9738-13d89b01e5c5",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27060_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30998,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "9140ae3c6992db3eed66901273fdfe2d453465ba647bc4465daf4ba7887c0b00",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_11",
+      "id": "4da9211b-d1e3-466e-bb72-14946bb96af2",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27060_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11860,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "0e1067d16d982bdf63ec3f5217be4509df7c6608d1b8dc0465215b9af681cef8",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_12",
+      "id": "2f1b6743-0e76-48f3-bf63-32fb404ffbe5",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27060_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15996,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "60e3e548ec6abb900decd0b4ba41695144704bd291c9f1230709174bf4da9c7a",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_09",
+      "id": "1636a56d-5ceb-4b64-8554-2a7d55600c79",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27060_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27820,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "31426faa6a42e489c177d20c2e09af5f4b442b91362cbea4cdf9ca837ae87315",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_01",
+      "id": "d12252a5-4681-4168-8bd8-6d22dd4a57b1",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27060_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18916,
+     "source_zip": "LA MARMOTECA - ANTIQUE BROWN - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - ANTIQUE BROWN - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "70a65ecce4f71b7c9639fa91efcc1383218b9f40c7eee0d974f70d2714781cc5",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_ANTIQUE BROWN_60x120_02",
+      "id": "25cc940c-b092-444f-aba5-2cbb9ad35ff3",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

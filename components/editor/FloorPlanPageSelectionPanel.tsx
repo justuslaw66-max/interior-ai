@@ -82,7 +82,7 @@ export default function FloorPlanPageSelectionPanel({
                       : `Rank ${candidate.rank}`}
                   </span>
                 </div>
-                <div className={`mt-1 text-[10px] leading-4 ${subtle}`}>
+                <div className={`mt-1 text-xs leading-4 ${subtle}`}>
                   {candidate.roomLabelCount} room labels ·{" "}
                   {candidate.dimensionLabelCount} dimensions ·{" "}
                   {candidate.openingSymbolCount} openings

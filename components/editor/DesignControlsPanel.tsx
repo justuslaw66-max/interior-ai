@@ -62,7 +62,7 @@ export type DesignControlsPanelProps = {
   isClientPreview: boolean;
   isAuthed: boolean; floorPlanLifecycleIdentity: FloorPlanLifecycleIdentity;
   isDesigner: boolean;
-  canEdit: boolean;
+  canEdit: boolean; canChangeProducts: boolean;
   canEditPlanGeometry: boolean;
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
@@ -285,7 +285,7 @@ export default function DesignControlsPanel({
   dark, floorPlanLifecycleIdentity, stepFooter, furnishFooter,
   isClientPreview,
   isDesigner,
-  canEdit,
+  canEdit, canChangeProducts,
   canEditPlanGeometry,
   collapsed = false,
   onCollapsedChange,
@@ -694,7 +694,7 @@ export default function DesignControlsPanel({
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
             dark={dark}
-            canEdit={canEdit} isDesigner={isDesigner} footer={furnishFooter}
+            canEdit={canEdit} canChangeProducts={canChangeProducts} isDesigner={isDesigner} footer={furnishFooter}
             {...{ aiDesignEnabled, onGoAiDesign, activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
             activeRoomTypeLabel={activeRoomTypeLabel}

@@ -43,7 +43,7 @@ export default function FloorPlanAddressFields({
         countryCode="SG"
         id="floor-plan-address-search"
         label="Search address or postal code"
-        labelClassName={`mt-2 block text-[11px] font-semibold ${subtle}`}
+        labelClassName={`mt-2 block text-xs font-semibold ${subtle}`}
         onSelect={(selected) => onAddressChange(selected.addressNormalized)}
         onValueChange={onAddressChange}
         placeholder="810A Chai Chee Street"
@@ -51,7 +51,7 @@ export default function FloorPlanAddressFields({
         value={address}
       />
       <div className="mt-2 grid grid-cols-2 gap-2">
-        <label className={`text-[10px] ${subtle}`}>
+        <label className={`text-xs ${subtle}`}>
           Floor (required for exact match)
           <input
             data-testid="floor-plan-address-floor"
@@ -63,7 +63,7 @@ export default function FloorPlanAddressFields({
             className={`${inputClass} mt-1 w-full`}
           />
         </label>
-        <label className={`text-[10px] ${subtle}`}>
+        <label className={`text-xs ${subtle}`}>
           Stack / unit position (required for exact match)
           <input
             data-testid="floor-plan-address-stack"
@@ -88,9 +88,9 @@ export default function FloorPlanAddressFields({
       >
         <span className="min-w-0">
           <span className="block text-xs font-semibold">Browse approved floor plans</span>
-          <span className={`mt-0.5 block truncate text-[10px] ${subtle}`}>{browseAddressSummary}</span>
+          <span className={`mt-0.5 block truncate text-xs ${subtle}`}>{browseAddressSummary}</span>
         </span>
-        <span className={dark ? "shrink-0 text-[11px] font-semibold text-blue-200" : "shrink-0 text-[11px] font-semibold text-blue-700"}>
+        <span className={dark ? "shrink-0 text-xs font-semibold text-blue-200" : "shrink-0 text-xs font-semibold text-blue-700"}>
           {browseStatus === "loading" ? "Loading…" : browseStatus === "error" ? "Unavailable" : `${browseCount} plans`}
           <span aria-hidden="true" className="ml-1">{browseOpen ? "−" : "+"}</span>
         </span>

@@ -1,6 +1,7 @@
 import type { FloorPlanImportJobStatus, FloorPlanPublicationStatus } from "@prisma/client";
 import type { CatalogWorkflowStage, ImportJobStatus } from "@/lib/import-jobs/types";
 import type { ModelAssetStatus } from "@/lib/modelAssetStatus";
+import type { NoOwnPictureSource } from "@/lib/surface-material-picture-source";
 import type { SurfacePublishStatus } from "@/lib/surface-material-schema";
 
 // One label and one tone for every status Admin shows (UX audit AD5, phase 4i-2), one dictionary
@@ -67,6 +68,12 @@ const SURFACE_PUBLICATION: Dictionary<SurfacePublishStatus> = {
   blocked: { label: "Blocked", tone: "critical" },
 };
 
+/** A surface material with no picture of its own on the manufacturer's download area, in the audit's Surface material QA. */
+const SURFACE_PICTURE: Dictionary<NoOwnPictureSource> = {
+  stand_in: { label: "Borrowed faces", tone: "warning" },
+  configurator_preview: { label: "Configurator preview", tone: "warning" },
+};
+
 /** A supplier's size against the model's, row by row, in Catalog review. */
 const SIZE_CHECK: Dictionary<"match" | "mismatch" | "missing"> = {
   match: { label: "Match", tone: "success" },
@@ -81,6 +88,7 @@ export const ADMIN_STATUS_DICTIONARIES = {
   floorPlanPublication: FLOOR_PLAN_PUBLICATION,
   modelAsset: MODEL_ASSET,
   surfacePublication: SURFACE_PUBLICATION,
+  surfacePicture: SURFACE_PICTURE,
   sizeCheck: SIZE_CHECK,
 } as const;
 

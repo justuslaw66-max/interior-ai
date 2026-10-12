@@ -168,7 +168,7 @@ export default async function AdminCatalogReviewPage() {
                     <div className="text-neutral-500">Preset path</div>
                     <div className="break-all">{linkedPreset?.file_path ?? "-"}</div>
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
+                  <div className="mt-4 flex flex-wrap gap-2 text-xs">
                     <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">Matches: {matches}</span>
                     <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-800">Mismatches: {mismatches}</span>
                     <span className="rounded-full bg-neutral-100 px-2 py-1 text-neutral-700">Missing: {missing}</span>

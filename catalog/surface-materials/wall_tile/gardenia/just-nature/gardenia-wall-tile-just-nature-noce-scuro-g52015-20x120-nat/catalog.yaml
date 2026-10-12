@@ -1,0 +1,147 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Just Nature
+  material_id: gardenia-wall-tile-just-nature-noce-scuro-g52015-20x120-nat
+  product_name: Gardenia Just Nature Noce Scuro 20x120 Nat
+  slug: gardenia-wall-tile-just-nature-noce-scuro-g52015-20x120-nat
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/just-nature/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 6 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/noce-scuro/g0052015-v102/), downloaded signed in on 2026-10-10, stored at 0.6 px per mm; the originals are sharper, see gardenia-just-nature-noce-scuro-faces.manifest.json. Each covers 200x1200 mm. It also draws the 6 faces of item g52005 (300x1200 mm), cut to the tile at true scale, because image matching finds ABK's 20x120 planks in the colour's 30x120 pictures at the same scale (r up to 1.00): the same graphic, so more planks to vary (J, 2026-10-10)."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-10: Just Nature is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item g52015 (g0052015) for wall use: 20X120 Natural, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/noce-scuro/g0052015-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/just-nature/noce-scuro/20x120/: finish Natural, thickness 8,5 mm, porcelain stoneware."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: random stagger, straight and herringbone, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Noce Scuro as brown (colour page pictures)."
+    - "Collection page technology: Full body porcelain - UGL."
+    - "Collection page description: Fashion is a balance of details that reveals the style inherent in every gesture. It’s a solution of shapes and suggestions that are greater than the sum of their parts. Fashion is attention to detail. On the catwalks the motto is: style begins with shoes. We think it begins one step below that. A collection of ceramics can describe you in a unique way: among all the possible combination of JustNature sizes, colors and textures you will find a style that is only your own."
+    - "Collection page thicknesses: 8.5 mm."
+    - "Collection page sizes: 30x120, 20x120."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: wood
+  color_family: brown
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 200
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 20
+  image_physical_size_mm:
+    width: 200
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_01.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_02.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_03.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_04.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_05.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52015_06.webp
+      width_mm: 200
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_01.webp
+      width_mm: 300
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_02.webp
+      width_mm: 300
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_03.webp
+      width_mm: 300
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_04.webp
+      width_mm: 300
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_05.webp
+      width_mm: 300
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/just-nature/g52005_06.webp
+      width_mm: 300
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - random_stagger
+    - straight
+    - herringbone
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

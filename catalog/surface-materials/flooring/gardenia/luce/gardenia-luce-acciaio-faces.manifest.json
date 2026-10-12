@@ -1,0 +1,778 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LUCE - ACCIAIO - minimali.zip (47623996 bytes, sha256 dcf79ce2c59cf989b20a0e28c6cfce828e4e175bb538dd083b81dbeb060d8d81).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/luce/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0006083",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/pf60006083-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006083_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-acciaio-0006083-120x120-nat; wall gardenia-wall-tile-luce-acciaio-0006083-120x120-nat",
+   "faces": [
+    {
+     "file": "0006083_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 32860,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ca5907db5c6f3ceb41596f42b963c116dfdf251b31c884e327d702aca14d26a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "LUCE ACCIAIO 120X120_05",
+      "id": "c23cc97e-fbde-46e4-a68a-bc95a7aca5f2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006083_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 26578,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e7439cd59be3135b50819dd6915ffc3bc3a43ee583c6752e67a47b262ef7e3c9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "LUCE ACCIAIO 120X120_01",
+      "id": "de5aab15-69a9-4d9a-bebe-4eaffe78416b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006083_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 25862,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f835274752ad48c19fec1961ae866ec314b5d6af4415abf035a89c0fcd7f5944",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "LUCE ACCIAIO 120X120_03",
+      "id": "cc11235a-9fed-47d6-94f0-c04388b1b360",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006083_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 27796,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "08b6953657eac703757363e60c3fcc5ee047c852e52d1a28a32e6ebb1504ac09",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "LUCE ACCIAIO 120X120_04",
+      "id": "c32a82d8-9082-44e4-b695-3833e66a05d3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006083_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29050,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1c2191f983acb151ecce60c94604d95e87837948a86a7e05a11837e19e012e6e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "LUCE ACCIAIO 120X120_06",
+      "id": "8bd63dc3-4bde-4055-ba31-93f4aae278d2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006083_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 24418,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "120X120-Natural/LUCE - ACCIAIO - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be5ed2d22ea5cf6e6cdf61ad34fe4265c4b8f01dd5f17655aa3cb94f0ccbd8c9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "LUCE ACCIAIO 120X120_02",
+      "id": "6adedfdb-9dee-4f29-8b67-16ec8c48163e",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006087",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/pf60006087-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006087_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-acciaio-0006087-60x120-nat; wall gardenia-wall-tile-luce-acciaio-0006087-60x120-nat",
+   "faces": [
+    {
+     "file": "0006087_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15526,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "a9f503f1dbcdf9cac91865b30340b1f5f6716ec82b60ed71b84c1f9a85af3dd6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "LUCE ACCIAIO 60X120_11",
+      "id": "cebdb172-9294-4dba-b13e-92380316826d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006087_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15232,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "c89128873421140821c4c373253849c75662eb118b51b24eadb60540ae84d34d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "LUCE ACCIAIO 60X120_06",
+      "id": "be3c33f1-5b8f-4103-90de-3b78bf7e71f0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006087_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17334,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "77c7efe3857e0147167fa59ee9974be3f3e235b172e125055ba9cac5daa1df39",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "LUCE ACCIAIO 60X120_05",
+      "id": "81ca346e-bb57-46a8-afbf-ac9350bb1036",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006087_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13622,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "437bfed1e5cfa410dd342099b5d6e50dd0a0d1fc86740ce46838abd43447b819",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "LUCE ACCIAIO 60X120_04",
+      "id": "f218b6a4-0911-42bf-85ed-bdb9d546ff8f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006087_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14052,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "0ca4fedf3771bdf3defd8fd4ac03a058c1096ffb5aea4608b7961a2027743675",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "LUCE ACCIAIO 60X120_03",
+      "id": "ea0e9998-741c-4d90-9636-1588a60140f0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006087_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14594,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "3f6af3b89884f773858ae394e59424740b2c5c579d27ab742cf7d6e06986dc72",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "LUCE ACCIAIO 60X120_01",
+      "id": "19dc1877-db7a-438b-968f-0f7755b60232",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006087_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12070,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "f350710305b359f59be35a7e0d1bf94089a1b163d7d97f73820267e139635a9d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "LUCE ACCIAIO 60X120_02",
+      "id": "d75f91de-1ad1-445b-afda-a1ceb7a0e1a6",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006087_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16314,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "14d43727970547af09517261623fcef2ef6760614b797a0de1041e28b78d912b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "LUCE ACCIAIO 60X120_12",
+      "id": "f7db348d-1f1f-4bf4-ad8a-145dace20e6d",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006087_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12030,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "60ac33195528321547df2adc2f299541b2ced5059ffe7ab911cf1bd8442d2c34",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "LUCE ACCIAIO 60X120_09",
+      "id": "a7a7f8f6-d2ef-4528-b019-ad1d49b1ddf0",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006087_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12980,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "acfdcbb7ca83aa389a0225f5db15053d93c2f2d47097b30612af0ac9cb8cc0a2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "LUCE ACCIAIO 60X120_07",
+      "id": "88f7659f-0374-4d8c-9322-56b7c2ebc1ac",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006087_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13356,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "04cc68c2fb4a8006f7a037c476ec752d1f19813f99bbdf4b31d7cc9034d5cec0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "LUCE ACCIAIO 60X120_08",
+      "id": "f448908e-8de1-4b0a-9a1b-7e794ebe22f3",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006087_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13906,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "60X120-Natural/LUCE - ACCIAIO - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "db3c3472d9e24d2e9fd880867fc17f30580a586ddf72cfb62c004cc2cdb763d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "LUCE ACCIAIO 60X120_10",
+      "id": "5722876a-0993-46b7-87e3-3930c19d6289",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0006546",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/luce/acciaio/pf60006546-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0006546_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-luce-acciaio-0006546-80x80-nat; wall gardenia-wall-tile-luce-acciaio-0006546-80x80-nat",
+   "faces": [
+    {
+     "file": "0006546_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 13124,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9a46f8268db976fc04ec591e25f96aefea12ce0445c434f3f74dfa156febaa32",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "ACCIAIO 80X80_12",
+      "id": "b0780a9e-4090-4137-b517-367ce7d9dd12",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006546_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12258,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e094f7fddafa788a7ae4dc03828333801f360e722541b8760c389eadb4921cf7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "ACCIAIO 80X80_02",
+      "id": "4bcef758-1fe1-4974-aa75-0fd74c3696e4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0006546_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14728,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5755396eb3bd69ad8f11b0a6d872a64f52598616cf75347a2a567137a50a1bd3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "ACCIAIO 80X80_07",
+      "id": "0f7a22b6-a0ef-4246-925e-b99820dd3f88",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006546_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10070,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd73988622ca4a4dc883d91404ae3e6bf5d37705bde3c179d1ec2c20726706d7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "ACCIAIO 80X80_03",
+      "id": "85ef0097-122a-4ac2-a1d5-14e3ebe67b16",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006546_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 10012,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2cb1b2bf14320f1df9d15ff93c6cde3ccc34b35a8f386909e502ea1c3f7b3d92",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "ACCIAIO 80X80_01",
+      "id": "767798d3-3223-42ac-9f89-8226254fd975",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0006546_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11910,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "de016285e0c1308ba3c8013071d9c3b668a5a11c5e44e7c6d5920c9743721a76",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "ACCIAIO 80X80_05",
+      "id": "67fb3af8-537c-446d-b871-6a6cd5ead783",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006546_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11032,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2abf1bb76fcb7d62acf4828761cf640eed59fa8a4c296c22259e21679e64232f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "ACCIAIO 80X80_11",
+      "id": "8e7a8636-8ae0-4c41-ba84-cac25c156183",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006546_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11862,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "421f4f6de62f9fab1da2bf993fdce67716c0edfd93ecae07f9267b2f4f66825c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "ACCIAIO 80X80_04",
+      "id": "fe14c2bb-0e69-433d-a75d-49b44fd430e5",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0006546_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9936,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be95bbfaced276499795db7cb8e6e3d2a7073eff4b05ec4ee604565c6b92dca7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "ACCIAIO 80X80_06",
+      "id": "e834568b-a28e-4d9c-a16c-c3d618fecc4d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0006546_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14704,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f52b848149798c04e7dcd6e18bb4c234395390e6ea1f9901677806bbb6b50027",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 10",
+      "name": "ACCIAIO 80X80_10",
+      "id": "2bf7c4e7-9b0d-4763-aea3-dddeeac727aa",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006546_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 13282,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "75e93ae87d7447d9ac86801f4ad285eeeaddcfb912dbbeea9f60be2d01fa6c97",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 11",
+      "name": "ACCIAIO 80X80_09",
+      "id": "ce6e111e-cf2d-40ee-8a4c-917c1b418f05",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006546_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12190,
+     "source_zip": "LUCE - ACCIAIO - minimali.zip",
+     "source_file": "80X80-Natural/LUCE - ACCIAIO - 80X80 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5bdce9eb9dca7b2ee620c308daff4423e1989284325e4395d43d5050585ddd5d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 12",
+      "name": "ACCIAIO 80X80_08",
+      "id": "e224c484-4811-4aee-ab96-81e68d5ff160",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

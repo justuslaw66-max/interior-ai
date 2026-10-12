@@ -72,7 +72,7 @@ export default function HuggTestClient() {
             zIndex: 10,
             background: "white",
             padding: "2px 6px",
-            fontSize: 11,
+            fontSize: 12,
             fontFamily: "monospace",
             borderRadius: 4,
           }}
@@ -104,7 +104,7 @@ export default function HuggTestClient() {
             zIndex: 10,
             background: "white",
             padding: "2px 6px",
-            fontSize: 11,
+            fontSize: 12,
             fontFamily: "monospace",
             borderRadius: 4,
           }}

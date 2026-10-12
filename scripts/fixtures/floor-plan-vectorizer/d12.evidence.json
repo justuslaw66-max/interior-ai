@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.21.0",
+ "exporterVersion": "app-evidence-0.26.1",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -70,7 +70,7 @@
      "rightRatio": 0.259193,
      "bottomRatio": 0.365622
     },
-    "confidence": 0.955,
+    "confidence": 0.96,
     "evidenceKind": "vectorizer"
    },
    {
@@ -175,7 +175,7 @@
      "rightRatio": 0.567412,
      "bottomRatio": 0.787794
     },
-    "confidence": 0.95,
+    "confidence": 0.96,
     "evidenceKind": "vectorizer"
    }
   ],
@@ -879,6 +879,64 @@
     "readingClean": true
    },
    {
+    "valueMm": 2390,
+    "rawText": "2390",
+    "centerXRatio": 0.927722,
+    "centerYRatio": 0.673852,
+    "orientation": "vertical",
+    "extensionStart": {
+     "xRatio": 0.932588,
+     "yRatio": 0.571389
+    },
+    "extensionEnd": {
+     "xRatio": 0.932588,
+     "yRatio": 0.776876
+    },
+    "extensionEvidenceKind": "vectorizer",
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      2587.0,
+      1020.5
+     ],
+     [
+      2587.0,
+      1387.5
+     ]
+    ],
+    "readingClean": true
+   },
+   {
+    "valueMm": 3850,
+    "rawText": "3850",
+    "centerXRatio": 0.927722,
+    "centerYRatio": 0.37458,
+    "orientation": "vertical",
+    "extensionStart": {
+     "xRatio": 0.932588,
+     "yRatio": 0.208567
+    },
+    "extensionEnd": {
+     "xRatio": 0.932588,
+     "yRatio": 0.542553
+    },
+    "extensionEvidenceKind": "vectorizer",
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      2587.0,
+      372.5
+     ],
+     [
+      2587.0,
+      969.0
+     ]
+    ],
+    "readingClean": true
+   },
+   {
     "valueMm": 1305,
     "rawText": "1305",
     "centerXRatio": 0.840483,
@@ -903,6 +961,35 @@
      [
       2430.5,
       1619.0
+     ]
+    ],
+    "readingClean": true
+   },
+   {
+    "valueMm": 630,
+    "rawText": "630",
+    "centerXRatio": 0.380678,
+    "centerYRatio": 0.965566,
+    "orientation": "horizontal",
+    "extensionStart": {
+     "xRatio": 0.363735,
+     "yRatio": 0.973124
+    },
+    "extensionEnd": {
+     "xRatio": 0.397621,
+     "yRatio": 0.973124
+    },
+    "extensionEvidenceKind": "vectorizer",
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      1009.0,
+      1738.0
+     ],
+     [
+      1103.0,
+      1738.0
      ]
     ],
     "readingClean": true
@@ -937,93 +1024,6 @@
     "readingClean": true
    },
    {
-    "valueMm": 2390,
-    "rawText": "2390",
-    "centerXRatio": 0.927541,
-    "centerYRatio": 0.673852,
-    "orientation": "vertical",
-    "extensionStart": {
-     "xRatio": 0.932588,
-     "yRatio": 0.571389
-    },
-    "extensionEnd": {
-     "xRatio": 0.932588,
-     "yRatio": 0.776876
-    },
-    "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.95,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      2587.0,
-      1020.5
-     ],
-     [
-      2587.0,
-      1387.5
-     ]
-    ],
-    "readingClean": true
-   },
-   {
-    "valueMm": 3850,
-    "rawText": "3850",
-    "centerXRatio": 0.927541,
-    "centerYRatio": 0.37458,
-    "orientation": "vertical",
-    "extensionStart": {
-     "xRatio": 0.932588,
-     "yRatio": 0.208567
-    },
-    "extensionEnd": {
-     "xRatio": 0.932588,
-     "yRatio": 0.542553
-    },
-    "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.95,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      2587.0,
-      372.5
-     ],
-     [
-      2587.0,
-      969.0
-     ]
-    ],
-    "readingClean": true
-   },
-   {
-    "valueMm": 630,
-    "rawText": "630",
-    "centerXRatio": 0.380497,
-    "centerYRatio": 0.965286,
-    "orientation": "horizontal",
-    "extensionStart": {
-     "xRatio": 0.363735,
-     "yRatio": 0.973124
-    },
-    "extensionEnd": {
-     "xRatio": 0.397621,
-     "yRatio": 0.973124
-    },
-    "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.95,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      1009.0,
-      1738.0
-     ],
-     [
-      1103.0,
-      1738.0
-     ]
-    ],
-    "readingClean": true
-   },
-   {
     "valueMm": 900,
     "rawText": "900",
     "centerXRatio": 0.447549,
@@ -1043,6 +1043,25 @@
     "extensionEvidenceKind": "vectorizer"
    },
    {
+    "valueMm": 1520,
+    "rawText": "1520",
+    "centerXRatio": 0.44088,
+    "centerYRatio": 0.965566,
+    "orientation": "horizontal",
+    "confidence": 0.7,
+    "evidenceKind": "vectorizer",
+    "readingClean": false,
+    "extensionStart": {
+     "xRatio": 0.398572,
+     "yRatio": 0.973124
+    },
+    "extensionEnd": {
+     "xRatio": 0.483187,
+     "yRatio": 0.973124
+    },
+    "extensionEvidenceKind": "vectorizer"
+   },
+   {
     "valueMm": 3620,
     "rawText": "3620",
     "centerXRatio": 0.775234,
@@ -1058,25 +1077,6 @@
     "extensionEnd": {
      "xRatio": 0.875992,
      "yRatio": 0.058791
-    },
-    "extensionEvidenceKind": "vectorizer"
-   },
-   {
-    "valueMm": 1520,
-    "rawText": "1520",
-    "centerXRatio": 0.44106,
-    "centerYRatio": 0.965286,
-    "orientation": "horizontal",
-    "confidence": 0.7,
-    "evidenceKind": "vectorizer",
-    "readingClean": false,
-    "extensionStart": {
-     "xRatio": 0.398753,
-     "yRatio": 0.973124
-    },
-    "extensionEnd": {
-     "xRatio": 0.483367,
-     "yRatio": 0.973124
     },
     "extensionEvidenceKind": "vectorizer"
    },
@@ -3960,12 +3960,19 @@
   "doorSwingsWithoutGap": 0,
   "rooms": 9,
   "roomsWithheldAsIllegalGeometry": 0,
+  "roomOutlinesMendedForTheApp": 0,
+  "slotsBetweenWallsClosed": 0,
   "facesLeftOutAsSlivers": 0,
   "leakedWallChannels": 0,
   "swingsTooNarrowForADoor": 0,
   "doubleSwingsReadAsCasements": 0,
   "leafRowsReadAsCasements": 0,
   "doorsNotPlacedBeyondOpenSpace": 0,
+  "doorsIntoWithheldRoomsNotPlaced": 0,
+  "secondWaysOutNotPlaced": 0,
+  "doorsBetweenTwoBedroomsNotPlaced": 0,
+  "doorsOntoLedgesNotPlaced": 0,
+  "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
@@ -4002,6 +4009,7 @@
   "cornersSnappedToDucts": 0,
   "subPixelSidesDropped": 0,
   "cornersStraightened": 0,
+  "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 0,
   "unsupportedWallPx": 20297,
   "thickAxisWallPx": 20297,
@@ -4012,6 +4020,8 @@
   "pageCrop": null,
   "scaleBar": null,
   "areaCheck": null,
-  "wallThicknessUnified": 30
+  "wallThicknessUnified": 30,
+  "jogFacesFlushed": 0,
+  "itemsLeftOutForTheAppsLimits": 0
  }
 }

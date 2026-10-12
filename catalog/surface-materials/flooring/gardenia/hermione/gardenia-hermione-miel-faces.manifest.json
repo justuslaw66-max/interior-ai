@@ -1,0 +1,820 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/miel/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - MIEL - minimali.zip (10028212 bytes, sha256 b9d00d1ecca1f5bca691e86ae582621adc6daae906750e14f62682c9128c4744).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/hermione/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "20x120",
+   "item_code": "0202266",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/miel/020226612.-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "0202266_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-hermione-miel-0202266-20x120-nat; wall gardenia-wall-tile-hermione-miel-0202266-20x120-nat",
+   "faces": [
+    {
+     "file": "0202266_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10710,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "0b4154ff4cf8d98af0c50a72c56c6a875be95cd7504bdf650b7b4d031401fd65",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "HERMIONE MIEL 20X120_01",
+      "id": "ec61ba19-2eb9-4b58-b848-6527eac08c8c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202266_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13734,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "1bb75013cd38e7369d57fec2e7349d908ca8fce1121a49066e0a5c4304f2109a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "HERMIONE MIEL 20X120_02",
+      "id": "4c9f3c9a-255c-426a-b8a0-cd7d08d4389f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202266_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10942,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "4d5e0527328b12b4030845fa01f7c341dfa8cd699d1ecbd550da8d23ccff294b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "HERMIONE MIEL 20X120_03",
+      "id": "9185ec5c-1c47-4908-bfca-532507743ed7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202266_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11436,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "7b3cb5563d5e6bf952dd39afec088ef4c69838a489297cb1545207de58314765",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "HERMIONE MIEL 20X120_04",
+      "id": "8dfdcee6-d0b6-4c98-be9e-ad2ba8d9dfef",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202266_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10808,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "5087f3cbe1b906f2c0a56d54a54668f4ff58b61d2a05a5cc3e7093656433864b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "HERMIONE MIEL 20X120_05",
+      "id": "cc8dbc9d-4d3e-4f33-92b3-557b57689766",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202266_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10384,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "d4ac85cd6f04b1d505c42514c3ebb5188c8bcb4171e787417565f07f5e7dcc48",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "HERMIONE MIEL 20X120_06",
+      "id": "3b0965bd-6c74-4c3a-8f74-a99421bf6078",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202266_07.webp",
+     "face": 7,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14332,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f0f31cacd871c8168334fc6d191db07e6a77a932220086afc04fb40abf98fd23",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 7 (view_07)",
+      "name": "HERMIONE MIEL 20X120_07",
+      "id": "f81f5a1c-d3e0-4696-83b2-ce2a72401c0d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202266_08.webp",
+     "face": 8,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 18440,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "8d8f260719cee46691be3042fa0a2c04f2abd296b8f35ec21bcd4428c82f61a3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 8 (view_08)",
+      "name": "HERMIONE MIEL 20X120_08",
+      "id": "ebfbf483-66bd-4216-bdae-504382200822",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202266_09.webp",
+     "face": 9,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14300,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "cd478e23a2c28358f9010ef54ca0722452399d99e5918294809e0779d8c0adb4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 9 (view_09)",
+      "name": "HERMIONE MIEL 20X120_09",
+      "id": "310cbcb8-33ff-4abc-a756-281e3ca4eff8",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202266_10.webp",
+     "face": 10,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15404,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_10.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "9efe28a9af2b1c8a097ebfca652a1bfd5e2fee72ffcf8ace7e5817ba7b34b0dd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 10 (view_10)",
+      "name": "HERMIONE MIEL 20X120_10",
+      "id": "6f2a99ef-67ee-4083-a744-8c04b02cd2a4",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202266_11.webp",
+     "face": 11,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15352,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_11.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "9c96776561dce1143ac202fc20dbfac5b475c74e2e2e95fd4b832bf73a37c257",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 11 (view_11)",
+      "name": "HERMIONE MIEL 20X120_11",
+      "id": "d3ed2013-7c5f-4db5-84bb-34e04ca2fa1f",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202266_12.webp",
+     "face": 12,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14114,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_12.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "a76c076abefc772b2f06ccb5d6c05667e14846e561a10a5ae5c3d63bb19620bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 12 (view_12)",
+      "name": "HERMIONE MIEL 20X120_12",
+      "id": "1cca142d-5426-4959-9676-2532b3deeeff",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202266_13.webp",
+     "face": 13,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15696,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_13.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "5b218cad94002a22b72d48f121a6eda49964ea25a1f0a330e316b19ace30df3e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 13 (view_13)",
+      "name": "HERMIONE MIEL 20X120_13",
+      "id": "d60e9ad9-d454-44aa-be7d-8456364767ec",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202266_14.webp",
+     "face": 14,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15876,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_14.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "c27bf9b05790fb74bfe1cc3385dbdbbb83d555f8a171228eea3972af56ca7847",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 14 (view_14)",
+      "name": "HERMIONE MIEL 20X120_14",
+      "id": "bbc31218-5ff3-41db-b81a-69b5eea13359",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202266_15.webp",
+     "face": 15,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15132,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_15.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "19a00e8f446328261488d33487b1c0a4c370a4f9d1af03d93ff160820fa86a2a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 15 (view_15)",
+      "name": "HERMIONE MIEL 20X120_15",
+      "id": "20187a43-a458-47a1-9863-db09305b205c",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202266_16.webp",
+     "face": 16,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8092,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_16.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "9f3f5997061a61bae09952fb6de958fb3050b864dcc28471a92cc4bbc270b0cd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 16 (view_16)",
+      "name": "HERMIONE MIEL 20X120_16",
+      "id": "5c2b6269-79e8-4661-8aa4-5e68758deaea",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0202266_17.webp",
+     "face": 17,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8776,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_17.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "714dd02b9749f4f5bb7af396a66309081e487c32769dce46f0d6cc0d31493b5a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 17 (view_17)",
+      "name": "HERMIONE MIEL 20X120_17",
+      "id": "911a08b1-9ea0-4af5-9ab0-4e7d0990d36d",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202266_18.webp",
+     "face": 18,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 8030,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_18.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "ea8a5c014dd35c3f5e8a46607fdd73d72092b6c893b8f6ee73a0f433d2b85197",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 18 (view_18)",
+      "name": "HERMIONE MIEL 20X120_18",
+      "id": "7bd76a42-b46f-47d5-bc3e-e89c3cd36e4f",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0202266_19.webp",
+     "face": 19,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10626,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_19.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f2fb68daf34962af5cff6bf8bc9fa24359a291fdfff72c71c1fc1eee956d6f14",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 19 (view_19)",
+      "name": "HERMIONE MIEL 20X120_19",
+      "id": "fa1ef983-e4e6-4b4d-a56e-7eca4613edb8",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0202266_20.webp",
+     "face": 20,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10720,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_20.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f41652288da3b80c3dcc4523584fcfb6917486bd5b10b17bf4a777f3f3ecee9d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 20 (view_20)",
+      "name": "HERMIONE MIEL 20X120_20",
+      "id": "1f75d41a-02e3-4d1a-8718-b2aec1249f3d",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0202266_21.webp",
+     "face": 21,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10928,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_21.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "6aeabfa73b1eef6333922560c8dc257e9329b746291d90258d08f85cc461d98c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 21 (view_21)",
+      "name": "HERMIONE MIEL 20X120_21",
+      "id": "e586b1ca-b234-4662-86a4-69c4100e8ef5",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0202266_22.webp",
+     "face": 22,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13658,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_22.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "93cc54aa84ce91b8d84cdefd7dae257d03e198bb30ad7f6de9f94ece739cd2bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 22 (view_22)",
+      "name": "HERMIONE MIEL 20X120_22",
+      "id": "603e6480-aa99-485f-9d0c-db7996830f73",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0202266_23.webp",
+     "face": 23,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13550,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_23.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "1ef3a895ac8753312d1693ed5dc693d4a54c466a390b4b50d95975c59e65e0f2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 23 (view_23)",
+      "name": "HERMIONE MIEL 20X120_23",
+      "id": "0cbac4d1-b9f0-4007-9ae2-00bd048b2cc6",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0202266_24.webp",
+     "face": 24,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12688,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_24.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "832c2b0c11be603c9a4e8192699a70fde26705a039e5f4d9bfbccdb5c31250a0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 24 (view_24)",
+      "name": "HERMIONE MIEL 20X120_24",
+      "id": "7b6e4e98-9eb7-4c8e-a58c-7105387f7d41",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0202266_25.webp",
+     "face": 25,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11326,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_25.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "e7d8c81062a475d0f623d4e24a2e0d22e7d4eb4a0fcdbf644ee0498d09d28894",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 25 (view_25)",
+      "name": "HERMIONE MIEL 20X120_25",
+      "id": "61fdaacc-b0e7-44dd-97d6-656d38f1629a",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0202266_26.webp",
+     "face": 26,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11226,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_26.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "aadca14e2025f4227d5fbb71941f2c0b0d394f38e30c27f68a175f24f75cfa7b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 26 (view_26)",
+      "name": "HERMIONE MIEL 20X120_26",
+      "id": "e2bb76a4-661f-426f-a056-62bbe7f21d0b",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0202266_27.webp",
+     "face": 27,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 11286,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_27.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "ef1b1d965f787420633ca4335eee8619c5ecb2970812d8bbdbe589bdd1bef848",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 27 (view_27)",
+      "name": "HERMIONE MIEL 20X120_27",
+      "id": "ae19cfaa-5ca3-4851-8be9-196a0ab36c74",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0202266_28.webp",
+     "face": 28,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13728,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_28.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "81f9e359620c5edfdadf6cf574f40848206f28b941e828d95b1019abcbb1f7a9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 28 (view_28)",
+      "name": "HERMIONE MIEL 20X120_28",
+      "id": "91a5aa8c-b277-4615-a968-dec4607535e6",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0202266_29.webp",
+     "face": 29,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15188,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_29.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "6103c61d2ba2455f0ed3e4f724d4441c868b953b4454a32e426e68d0bba571d9",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 29 (view_29)",
+      "name": "HERMIONE MIEL 20X120_29",
+      "id": "5d8bc8e6-56ca-4e78-8a01-6dc4a35618c7",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0202266_30.webp",
+     "face": 30,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13954,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_30.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "69a16b0f0047b2f3560fe310e9f9bdd271ce9b5654b4b3262903d65999429a3a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 30 (view_30)",
+      "name": "HERMIONE MIEL 20X120_30",
+      "id": "233d89b4-a5f8-41f6-b005-6a5e80da34d6",
+      "site_position": 30
+     }
+    },
+    {
+     "file": "0202266_31.webp",
+     "face": 31,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9544,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_31.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "f181733a96816a4192c5c872750e0dc3e23fb936e520afd4eef338558ca88b65",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 31 (view_31)",
+      "name": "HERMIONE MIEL 20X120_31",
+      "id": "4849c6f3-0577-4fd9-9e5a-296c6e043c70",
+      "site_position": 31
+     }
+    },
+    {
+     "file": "0202266_32.webp",
+     "face": 32,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 9300,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_32.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "8e823bf8588397255ef139a2c8d32dcd37e8a61ccf73917b074c79445d4f2bbe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 32 (view_32)",
+      "name": "HERMIONE MIEL 20X120_32",
+      "id": "63dc8fdd-e402-4a41-b53c-2f0f1d0593ac",
+      "site_position": 32
+     }
+    },
+    {
+     "file": "0202266_33.webp",
+     "face": 33,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 10972,
+     "source_zip": "HERMIONE - MIEL - minimali.zip",
+     "source_file": "20X120-Natural/HERMIONE - MIEL - 20X120 - Natural - view_33.jpg",
+     "source_px": [
+      2560,
+      427
+     ],
+     "source_sha256": "94ffca36eb89c9b0dff8b84579f1010c612fb0547c16310b14287be7eee7c5ed",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 33 (view_33)",
+      "name": "HERMIONE MIEL 20X120_33",
+      "id": "e4541c49-fdb9-475e-baec-6346e6301431",
+      "site_position": 33
+     }
+    }
+   ]
+  }
+ ]
+}

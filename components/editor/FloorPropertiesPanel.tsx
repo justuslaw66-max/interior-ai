@@ -111,13 +111,13 @@ export default function FloorPropertiesPanel({
   const titleClass = dark
     ? "designer-text-primary text-sm font-semibold"
     : "text-sm font-semibold text-neutral-800";
-  const metaClass = dark ? "designer-text-muted mt-0.5 text-[11px]" : "mt-0.5 text-[11px] text-neutral-500";
+  const metaClass = dark ? "designer-text-muted mt-0.5 text-xs" : "mt-0.5 text-xs text-neutral-500";
   const panelClass = dark
     ? "designer-dock relative w-[16.5rem] max-[520px]:w-full rounded-lg p-2 backdrop-blur"
     : "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
   const secondaryButtonClass = dark
-    ? "designer-work-control rounded-lg px-2 py-1.5 text-[11px] font-semibold disabled:opacity-50"
-    : "rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-[11px] font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+    ? "designer-work-control rounded-lg px-2 py-1.5 text-xs font-semibold disabled:opacity-50"
+    : "rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
   const floorPanelButtonClass = dark
     ? "designer-work-control flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
     : "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
@@ -270,7 +270,7 @@ export default function FloorPropertiesPanel({
               <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
                 {pendingAddDirection === "upper" ? "New level above" : "New level below"}
               </div>
-              <div className={dark ? "mt-0.5 text-[10px] text-neutral-400" : "mt-0.5 text-[10px] text-neutral-500"}>
+              <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
                 Choose what to copy into the new level.
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function FloorPropertiesPanel({
                 onClick={() => commitFloorCreation(option.mode)}
               >
                 <span className="block font-semibold">{option.label}</span>
-                <span className={dark ? "block text-[10px] text-neutral-400" : "block text-[10px] text-neutral-500"}>
+                <span className={dark ? "block text-xs text-neutral-400" : "block text-xs text-neutral-500"}>
                   {option.description}
                 </span>
               </button>
@@ -356,7 +356,7 @@ export default function FloorPropertiesPanel({
                       />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{option.label}</span>
-                        <span className={dark ? "block text-[11px] text-neutral-400" : "block text-[11px] text-neutral-500"}>
+                        <span className={dark ? "block text-xs text-neutral-400" : "block text-xs text-neutral-500"}>
                           {option.roomCount} room{option.roomCount === 1 ? "" : "s"}
                         </span>
                       </span>
@@ -381,7 +381,7 @@ export default function FloorPropertiesPanel({
           </div>
 
           {hiddenFloorLevels.length > 0 ? (
-            <div className={dark ? "mt-1 text-[11px] text-neutral-400" : "mt-1 text-[11px] text-neutral-500"}>
+            <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
               Hidden levels stay out of stacked 3D until shown again.
             </div>
           ) : null}
@@ -580,8 +580,8 @@ export default function FloorPropertiesPanel({
                 data-testid="floor-rename-save"
                 className={
                   dark
-                    ? "designer-primary-action rounded-lg px-2 py-1.5 text-[11px] font-semibold disabled:opacity-50"
-                    : "rounded-lg bg-blue-600 px-2 py-1.5 text-[11px] font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                    ? "designer-primary-action rounded-lg px-2 py-1.5 text-xs font-semibold disabled:opacity-50"
+                    : "rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                 }
                 disabled={!renameValue.trim() || renameValue.trim() === activeFloorLabel}
                 onClick={commitRename}
@@ -603,7 +603,7 @@ export default function FloorPropertiesPanel({
             <div className={dark ? "text-xs font-semibold" : "text-xs font-semibold text-red-800"}>
               Delete {activeFloorLabel}?
             </div>
-            <div className={dark ? "mt-0.5 text-[10px]" : "mt-0.5 text-[10px] text-red-700"}>
+            <div className={dark ? "mt-0.5 text-xs" : "mt-0.5 text-xs text-red-700"}>
               This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and their doors and windows.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
@@ -619,8 +619,8 @@ export default function FloorPropertiesPanel({
                 data-testid="floor-delete-confirm"
                 className={
                   dark
-                    ? "designer-destructive-action rounded-lg px-2 py-1.5 text-[11px] font-semibold"
-                    : "rounded-lg bg-red-600 px-2 py-1.5 text-[11px] font-semibold text-white hover:bg-red-700"
+                    ? "designer-destructive-action rounded-lg px-2 py-1.5 text-xs font-semibold"
+                    : "rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
                 }
                 onClick={commitDelete}
               >

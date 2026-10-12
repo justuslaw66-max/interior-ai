@@ -42,8 +42,8 @@ export default function SelectedItemRotationControls({
     ? "designer-text-secondary mt-1 text-xs"
     : "mt-1 text-xs text-neutral-600";
   const hintClass = dark
-    ? "designer-text-secondary mt-2 text-[11px]"
-    : "mt-2 text-[11px] text-neutral-500";
+    ? "designer-text-secondary mt-2 text-xs"
+    : "mt-2 text-xs text-neutral-500";
   const buttonClass = dark
     ? "min-h-11 rounded-lg border border-white/15 px-2 py-2 text-xs"
     : "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
@@ -89,7 +89,7 @@ export default function SelectedItemRotationControls({
               title="Snap to coarse 15° increments for quick positioning"
               onClick={() => onSnapPresetChange(15)}
             >
-              Quick Turns
+              Quick turns
             </button>
             <button
               data-testid="rotation-snap-preset-5"
@@ -98,7 +98,7 @@ export default function SelectedItemRotationControls({
               title="Snap to fine 5° increments for precise angle control"
               onClick={() => onSnapPresetChange(5)}
             >
-              Precise Angle
+              Precise angle
             </button>
             <button
               data-testid="rotation-snap-preset-free"
@@ -107,7 +107,7 @@ export default function SelectedItemRotationControls({
               title="Disable snap for unrestricted rotation"
               onClick={() => onSnapPresetChange(0)}
             >
-              Free Rotate
+              Free rotate
             </button>
           </div>
 

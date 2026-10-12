@@ -1,0 +1,331 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/creta/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: BLOCK - CRETA - minimali.zip (60855399 bytes, sha256 d34c5143e944bd396eeb1ebf9882eb14150a5c6fe51a2f34f30cb5b54d650050).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/block/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0031146",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/creta/pf60031146-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0031146_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-creta-0031146-120x280-nat-3d; wall gardenia-wall-tile-block-creta-0031146-120x280-nat-3d",
+   "faces": [
+    {
+     "file": "0031146_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 346870,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - CRETA - 120X280 - Nat 3D - view_1.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "1d5508a6e7222abe1994a5ea05390c86b807b716be6f3b60272f3c551d52cfed",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 1",
+      "name": "BLOCK CRETA 120x280_02",
+      "id": "27da8b2a-8af0-46c2-8efd-342283fa195b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031146_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 367202,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - CRETA - 120X280 - Nat 3D - view_2.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "217cb155fd4d9fd1d32f09b6402c32fa8f87c1460eaf0fb5eee63de7e47820a5",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 2",
+      "name": "BLOCK CRETA 120x280_03",
+      "id": "6145815a-694f-4419-9d37-b99d676ef33d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031146_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 345164,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X280-Nat 3D/BLOCK - CRETA - 120X280 - Nat 3D - view_3.jpg",
+     "source_px": [
+      1769,
+      4096
+     ],
+     "source_sha256": "a62815655edf33c4dc37fed5ea2c41c69d9ff6354feb68b76952ec621d467773",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Nat 3D · Faccia 3",
+      "name": "BLOCK CRETA 120x280_01",
+      "id": "73406742-13a3-446d-8f58-926b519be131",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0031175",
+   "finish": "Nat 3D",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/block/creta/pf60031175-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0031175_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-block-creta-0031175-120x120-nat-3d; floor gardenia-flooring-block-creta-0031179-60x120-nat-3d (uses 0031175's faces: they stand in for Creta 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-creta-0031187-60x60-nat-3d (uses 0031175's faces: they stand in for Creta 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); floor gardenia-flooring-block-creta-0031403-120x120-r11 (uses 0031175's faces: ABK's 9 R11 pictures are 0031175's 9 Nat 3D pictures, byte for byte); floor gardenia-flooring-block-creta-0031407-60x60-r11 (uses 0031175's faces: they stand in for Creta 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-creta-0031175-120x120-nat-3d; wall gardenia-wall-tile-block-creta-0031179-60x120-nat-3d (uses 0031175's faces: they stand in for Creta 60x120 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-creta-0031187-60x60-nat-3d (uses 0031175's faces: they stand in for Creta 60x60 Nat 3D, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120)); wall gardenia-wall-tile-block-creta-0031403-120x120-r11 (uses 0031175's faces: ABK's 9 R11 pictures are 0031175's 9 Nat 3D pictures, byte for byte); wall gardenia-wall-tile-block-creta-0031407-60x60-r11 (uses 0031175's faces: they stand in for Creta 60x60 R11, which has no picture on ABK's download area (Argilla's 60x120 pictures are found in its 120x120 pictures at the same scale; J, 12 Oct 2026: cut from 120x120))",
+   "faces": [
+    {
+     "file": "0031175_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 145306,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2d805fd66592219fe7bc850fd3864f6230de16e133c994933a8dc0d34ddc7aef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 1",
+      "name": "BLOCK CRETA 120x120 NAT_04",
+      "id": "07cea908-6686-4773-8bac-16850184f9fb",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0031175_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 146452,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a620bf97bfa87c30f3399c229fea60674bcd32a1d78c13d876fbfa632d96e0ae",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 2",
+      "name": "BLOCK CRETA 120x120 NAT_06",
+      "id": "45930772-510b-449e-be3a-a224efb2f90b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0031175_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 157434,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f9bae923ee101e1366cbd9cc1bfa3e2593f0c8fea1c4fcb9538d8ea5e1e8cfee",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 3",
+      "name": "BLOCK CRETA 120x120 NAT_08",
+      "id": "6f42a8eb-897f-44e4-b54b-7434f41d6573",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0031175_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 154262,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b650bcf6397427f58181a430ef8b72965293e6e52c67af6fb9b8f339c1ba9cf2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 4",
+      "name": "BLOCK CRETA 120x120 NAT_09",
+      "id": "9305e7c4-2855-4550-877c-86c5568a9d4d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0031175_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 154214,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d95c7697a23ad055b1d9ce4884996ae4cad98e520910e22763afabca9bbbd4d7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 5",
+      "name": "BLOCK CRETA 120x120 NAT_03",
+      "id": "a4807136-de6e-4841-982c-e2f00ef6f483",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0031175_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 149918,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "65e29814c6e358f05164da53bbd4169dd6d0d66640bace5b1628290ebb215408",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 6",
+      "name": "BLOCK CRETA 120x120 NAT_05",
+      "id": "d3485af7-f2cb-4ec0-bdfc-0b9f3adaf6df",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0031175_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 158388,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2ea468c6e14b30b5973bf4b37b07556946a809b85be42dee8ef357612ca0cda5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 7",
+      "name": "BLOCK CRETA 120x120 NAT_07",
+      "id": "e0cfad16-dd64-47e4-adc8-923a65200453",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0031175_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 142306,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be4ba717c179e96445b7e55ad878fc4b1ec86da479feef8635e5da9a6cd3d6b3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 8",
+      "name": "BLOCK CRETA 120x120 NAT_01",
+      "id": "e3dbcb31-3ffd-4400-9250-ef54988ad04f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0031175_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 149928,
+     "source_zip": "BLOCK - CRETA - minimali.zip",
+     "source_file": "120X120-R11/BLOCK - CRETA - 120X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3c4104724a62784eed24ba192616d3ee2b430e55eb61d3f9a54424f7f155101c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat 3D · Faccia 9",
+      "name": "BLOCK CRETA 120x120 NAT_02",
+      "id": "f783f02c-22a9-4c32-9bf0-89adb2af9ee3",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

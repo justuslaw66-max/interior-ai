@@ -1,0 +1,331 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/beige-medio/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: JUST NATURE - BEIGE MEDIO - minimali.zip (6059303 bytes, sha256 e09c3bba361b6e9a5c902f5509b951ca82d3b0e720a724f500cebb93dbaf7104); JUST NATURE - BEIGE SCURO - minimali.zip (6881643 bytes, sha256 408c1ef8df10385ef82156eaed076a8a5b259b89339bb391d49f4423ef00a4e3).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/just-nature/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "g52006",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/beige-medio/g0052006-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "g52006_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-beige-medio-g52006-30x120-nat; wall gardenia-wall-tile-just-nature-beige-medio-g52006-30x120-nat; floor gardenia-flooring-just-nature-beige-medio-g52016-20x120-nat (also draws these faces, cut to its tile); wall gardenia-wall-tile-just-nature-beige-medio-g52016-20x120-nat (also draws these faces, cut to its tile)",
+   "faces": [
+    {
+     "file": "g52006_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20764,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_1.jpg",
+     "source_px": [
+      649,
+      2596
+     ],
+     "source_sha256": "be9e40d734ee7b3afc9ea58c39bea9f2a0a6578e08528c8205cdb592828dc5d4",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_1",
+      "id": "08894f3b-6f52-481f-b4b7-308df6726d55",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52006_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20546,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_2.jpg",
+     "source_px": [
+      649,
+      2596
+     ],
+     "source_sha256": "ede6bbf4a88e286464a99e771f99c2fe288df38f6f42a76794851c0766dd7d77",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_2",
+      "id": "0c2efbb6-2b6e-4b9f-9a49-07bfd1c16320",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52006_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22492,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_3.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "05e1932fa1597f6b16b27b0d7cc93b75607d75e2125b4964aa50ebaa89f41158",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_3",
+      "id": "250bf42f-8c8a-4a14-bb22-059989b0c1fb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52006_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22428,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_4.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "abcf6a620fca7464cec4572a1fc4b2d2e3025488ed5ce8999effce47dcd9d25a",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_4",
+      "id": "48ecf29d-663d-4f72-b32d-d4d9975283d0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52006_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20548,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_5.jpg",
+     "source_px": [
+      650,
+      2600
+     ],
+     "source_sha256": "f2832ba062c15b975d8159a7330924b4331d2b7c864b8ce19b0c448f4563ca12",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_5",
+      "id": "af663f9c-979a-4456-a5c6-ea14d36813e8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52006_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23246,
+     "source_zip": "JUST NATURE - BEIGE SCURO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - BEIGE SCURO - 30X120 - Natural - view_6.jpg",
+     "source_px": [
+      650,
+      2600
+     ],
+     "source_sha256": "47b9b21adcd0790e24835efda87be12bbecf2bbe8e14ce1aae5e6e70db4f75d8",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_BEIGE_MEDIO_30x120_6",
+      "id": "730a78a5-e94d-400e-9044-57ec323e6937",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "g52016",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/beige-medio/g0052016-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "g52016_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-beige-medio-g52016-20x120-nat; wall gardenia-wall-tile-just-nature-beige-medio-g52016-20x120-nat",
+   "faces": [
+    {
+     "file": "g52016_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14018,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      434,
+      2601
+     ],
+     "source_sha256": "119fc673b8676c0c84feab18ba894ec86f902ff2974df50fa894f22115bfa5bf",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_1",
+      "id": "80fa8210-4af6-4ddb-904f-e782b8c28a0f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52016_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13782,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      433,
+      2596
+     ],
+     "source_sha256": "4f2290c66b6d836f53891a4f77d18ceb2aabe1e4e568c8cd784a7e73b7177609",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_2",
+      "id": "e166b214-248d-4d90-93fb-84e0dae2e8eb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52016_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 12914,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      433,
+      2596
+     ],
+     "source_sha256": "13bb175716b407037d00cad62294c0a725ef2d25abef6e612796b3956ca27804",
+     "source_px_per_mm": 2.163,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_3",
+      "id": "5717e584-bfe6-48ac-bd5e-e842cc76d3e2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52016_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15096,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "809478a872572f80fe1b5908782d61f457e733dbbb321c92d7940a53d38eb911",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_4",
+      "id": "907eeae9-6235-4499-82f5-e2593261ac89",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52016_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15282,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "1b3a3adb5b9f400b9892520fd74c0c2f59cff9073b7c25eef0dddca9076a8607",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_5",
+      "id": "721313a9-6371-42d0-b786-55bf37668f83",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52016_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 13140,
+     "source_zip": "JUST NATURE - BEIGE MEDIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - BEIGE MEDIO - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "4350ae12dc3cc651032b1e969fda2cf521ed8c8c2ff9c50ff7e4f73ac2249e94",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_BEIGE_MEDIO_20x120_6",
+      "id": "73eedab8-09af-4bbb-9834-0041bf3994e0",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

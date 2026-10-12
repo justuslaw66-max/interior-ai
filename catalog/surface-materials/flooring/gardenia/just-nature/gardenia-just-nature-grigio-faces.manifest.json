@@ -1,0 +1,331 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/grigio/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: JUST NATURE - GRIGIO - minimali.zip (5536374 bytes, sha256 e2579cf8923b2c9aeab5fe3e2d9f815c5b3b09b741e829e31fa36a89319f59b7).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/just-nature/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "g52001",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/grigio/g0052001-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "g52001_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-grigio-g52001-30x120-nat; wall gardenia-wall-tile-just-nature-grigio-g52001-30x120-nat; floor gardenia-flooring-just-nature-grigio-g52011-20x120-nat (also draws these faces, cut to its tile); wall gardenia-wall-tile-just-nature-grigio-g52011-20x120-nat (also draws these faces, cut to its tile)",
+   "faces": [
+    {
+     "file": "g52001_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23490,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_1.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "e47d6b91b687da2eacc7db2a3fcef8e853695bac71d7d2f8b41bc7c6ebee333b",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_GRIGIO_30x120_1",
+      "id": "b8192414-21ec-471d-9791-7c76206bf79e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52001_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20372,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_2.jpg",
+     "source_px": [
+      650,
+      2599
+     ],
+     "source_sha256": "10e1d971a8b1977ee2be8f1423507ce42c65c9e371d668029a12d5659d17af10",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_GRIGIO_30x120_2",
+      "id": "938a1ade-b3bb-45fe-8091-a3901ea51de6",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52001_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23458,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_3.jpg",
+     "source_px": [
+      650,
+      2601
+     ],
+     "source_sha256": "cce621472461afd8d5456af56df61e142213bb0d2daf2172e30f22b1512082da",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_GRIGIO_30x120_3",
+      "id": "75dd9055-b8ff-4a95-86b8-649bd6ddce8a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52001_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20110,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_4.jpg",
+     "source_px": [
+      650,
+      2599
+     ],
+     "source_sha256": "f0491e4a1f4f3f678966b4743c21d24f9dd063cf97c7bee0396d1fc4e71711e0",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_GRIGIO_30x120_4",
+      "id": "62dd2a7a-74e6-45cf-9597-77f03fa7a353",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52001_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24776,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_5.jpg",
+     "source_px": [
+      650,
+      2599
+     ],
+     "source_sha256": "710a613b4ca23c615abd6afc6a8e4636648c652d0ce7d06b03d023ecfbbdc06e",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_GRIGIO_30x120_5",
+      "id": "5a937886-26f1-455d-be0a-8969b3103c8e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52001_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 26604,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "30X120-Natural/JUST NATURE - GRIGIO - 30X120 - Natural - view_6.jpg",
+     "source_px": [
+      650,
+      2599
+     ],
+     "source_sha256": "e21076d7d5542f6805bceb9e9723f2382c35cb65fbfdff303c6e16d3c8a9d4ae",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_GRIGIO_30x120_6",
+      "id": "3fddccba-471f-4155-b4b6-ca98a41221ab",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "20x120",
+   "item_code": "g52011",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/just-nature/grigio/g0052011-v102/",
+   "face_mm": {
+    "width": 200,
+    "height": 1200
+   },
+   "swatch": "g52011_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 03 laid side by side",
+   "used_by": "floor gardenia-flooring-just-nature-grigio-g52011-20x120-nat; wall gardenia-wall-tile-just-nature-grigio-g52011-20x120-nat",
+   "faces": [
+    {
+     "file": "g52011_01.webp",
+     "face": 1,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 16344,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_1.jpg",
+     "source_px": [
+      434,
+      2601
+     ],
+     "source_sha256": "9012c57cb93bdceb4e4c214eba9c21510c4652993006931c290631c0ec7ccf14",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 1 (view_01)",
+      "name": "JUST NATURE_GRIGIO_20x120_1",
+      "id": "68c07d46-7582-4a19-8eb7-aa5559effbd1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g52011_02.webp",
+     "face": 2,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14696,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_2.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "a8d4738f93baa831528a6ca1aae43c3801d39c6db80445e7c05b5c439c1f6310",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 2 (view_02)",
+      "name": "JUST NATURE_GRIGIO_20x120_2",
+      "id": "b215b4be-bfdf-49f7-abda-84a3c5662326",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g52011_03.webp",
+     "face": 3,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 16086,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_3.jpg",
+     "source_px": [
+      434,
+      2601
+     ],
+     "source_sha256": "6f5cbef57804f373c5f12e8bf63a560a917c675b1b5a7be7a6c740c3599c9e55",
+     "source_px_per_mm": 2.167,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 3 (view_03)",
+      "name": "JUST NATURE_GRIGIO_20x120_3",
+      "id": "23fbfe68-c903-4d78-998a-765bac6ae040",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g52011_04.webp",
+     "face": 4,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 14058,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_4.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "5129b5e054ab29b66e06c3d928fbe1a9a128044a2f6b3e2ed1639e09f30640eb",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 4 (view_04)",
+      "name": "JUST NATURE_GRIGIO_20x120_4",
+      "id": "02876910-3559-42f5-b921-76d50f4c313f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g52011_05.webp",
+     "face": 5,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 15308,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_5.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "12bdd6396a7199b679b8e90ef8da6d07888ba875a89457e1613d80dff2065cbc",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 5 (view_05)",
+      "name": "JUST NATURE_GRIGIO_20x120_5",
+      "id": "64e12628-9953-4aa0-9644-77bf80579414",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g52011_06.webp",
+     "face": 6,
+     "width_mm": 200,
+     "height_mm": 1200,
+     "width_px": 120,
+     "height_px": 720,
+     "bytes": 17262,
+     "source_zip": "JUST NATURE - GRIGIO - minimali.zip",
+     "source_file": "20X120-Natural/JUST NATURE - GRIGIO - 20X120 - Natural - view_6.jpg",
+     "source_px": [
+      433,
+      2599
+     ],
+     "source_sha256": "2e1ea143b85b351442bfed44654a1eba59388710db3047c070bf716fb3811df4",
+     "source_px_per_mm": 2.166,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "20X120 · Natural · Faccia 6 (view_06)",
+      "name": "JUST NATURE_GRIGIO_20x120_6",
+      "id": "b13f92a2-e0cf-4ac9-a1dc-8665fb752a8e",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

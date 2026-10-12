@@ -88,7 +88,7 @@ export function CabinetProductionOutputs({
               {documentation.assemblyProfile.placementKind.replace(/_/g, " ")}
             </span>
           </div>
-          <p className="mt-2 text-[11px] leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-neutral-500">
             {documentation.assemblyProfile.quoteDrivers.join(", ")}
           </p>
         </div>
@@ -132,7 +132,7 @@ export function CabinetProductionOutputs({
               {documentation.quoteSummary.contingency.toLocaleString()}
             </span>
           </div>
-          <p className="mt-2 text-[11px] leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-neutral-500">
             Preliminary only; supplier pricing and fabrication quotes are not
             connected yet.
           </p>
@@ -272,7 +272,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-dimension-schedule"
         countAttribute="data-dimension-schedule-count"
         count={documentation.dimensionSchedule.length}
-        title="Dimension Schedule"
+        title="Dimension schedule"
         maxHeightClass="max-h-40"
         headings={["Scope", "Size", "Offset"]}
         rows={documentation.dimensionSchedule.map((item) => ({
@@ -290,7 +290,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-drawing-view-schedule"
         countAttribute="data-drawing-view-schedule-count"
         count={documentation.drawingViewSchedule.length}
-        title="Drawing Views"
+        title="Drawing views"
         maxHeightClass="max-h-40"
         headings={["View", "Sheet", "Scale"]}
         rows={documentation.drawingViewSchedule.map((item) => ({
@@ -304,7 +304,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-material-schedule"
         countAttribute="data-material-schedule-count"
         count={documentation.materialSchedule.length}
-        title="Material Schedule"
+        title="Material schedule"
         headings={["Material", "Parts", "Area"]}
         rows={documentation.materialSchedule.map((item) => ({
           id: item.id,
@@ -317,7 +317,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-hardware-schedule"
         countAttribute="data-hardware-schedule-count"
         count={documentation.hardwareSchedule.length}
-        title="Hardware Schedule"
+        title="Hardware schedule"
         maxHeightClass="max-h-36"
         headings={["Hardware", "Qty", "Compatibility"]}
         emptyMessage="No hardware scheduled."
@@ -486,11 +486,11 @@ export function CabinetProductionOutputs({
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold">{item.label}</span>
-                <span className="shrink-0 rounded-sm bg-white px-1.5 py-0.5 text-[10px] uppercase text-neutral-500">
+                <span className="shrink-0 rounded-sm bg-white px-1.5 py-0.5 text-xs uppercase text-neutral-500">
                   {item.status}
                 </span>
               </div>
-              <div className="mt-1 text-[11px] text-neutral-500">
+              <div className="mt-1 text-xs text-neutral-500">
                 {item.owner} · {item.dueBefore.replace(/_/g, " ")}
               </div>
             </div>

@@ -348,7 +348,7 @@ assert.match(
   /data-testid=\{`\$\{family\}-configuration-selector`\}[\s\S]*Configuration[\s\S]*configurations/,
   "Mapped Castlery collections should render through the compact configuration selector.",
 );
-for (const family of ["STANDARD", "L-SHAPED", "U-SHAPED", "ARMCHAIR", "SLEEPER"] as const) {
+for (const family of ["Standard", "L-shaped", "U-shaped", "Armchair", "Sleeper"] as const) {
   assert.match(
     modelVariantControlsSource,
     new RegExp(`label: "${family}"`),

@@ -222,7 +222,7 @@ export function LightingSettingsControls({
           <div className="mt-5 flex items-center justify-between gap-4 border-t border-current/10 pt-4">
             <div>
               <div className="text-xs font-semibold">Shadows</div>
-              <div className="mt-0.5 text-[11px] opacity-60">
+              <div className="mt-0.5 text-xs opacity-60">
                 Adds depth in 3D; paused automatically in Lite mode.
               </div>
             </div>
@@ -251,7 +251,7 @@ export function LightingSettingsControls({
           <div className="mt-5 border-t border-current/10 pt-4">
             <div className="text-xs font-semibold">Daylight direction</div>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="text-[11px] font-semibold">
+              <label className="text-xs font-semibold">
                 Time of day
                 <input
                   type="time"
@@ -270,7 +270,7 @@ export function LightingSettingsControls({
                   }}
                 />
               </label>
-              <label className="text-[11px] font-semibold">
+              <label className="text-xs font-semibold">
                 Date
                 <input
                   type="date"
@@ -289,7 +289,7 @@ export function LightingSettingsControls({
                 />
               </label>
             </div>
-            <label className="mt-3 block text-[11px] font-semibold">
+            <label className="mt-3 block text-xs font-semibold">
               Plan north
               <span className="float-right font-normal opacity-60">
                 {Math.round(settings.planNorthDeg)}°
@@ -310,7 +310,7 @@ export function LightingSettingsControls({
               />
             </label>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <label className="text-[11px] font-semibold">
+              <label className="text-xs font-semibold">
                 Latitude
                 <input
                   type="number"
@@ -337,7 +337,7 @@ export function LightingSettingsControls({
                   }}
                 />
               </label>
-              <label className="text-[11px] font-semibold">
+              <label className="text-xs font-semibold">
                 Longitude
                 <input
                   type="number"
@@ -369,7 +369,7 @@ export function LightingSettingsControls({
               <button
                 type="button"
                 data-testid="lighting-location-clear"
-                className="mt-2 text-[11px] font-semibold underline opacity-65"
+                className="mt-2 text-xs font-semibold underline opacity-65"
                 onClick={() => onSettingsChange({ location: undefined })}
               >
                 Use neutral reference location
@@ -381,7 +381,7 @@ export function LightingSettingsControls({
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-xs font-semibold">Fixture lights</div>
-                <div className="mt-0.5 text-[11px] opacity-60">
+                <div className="mt-0.5 text-xs opacity-60">
                   {activeFixtureCount} active of {placedFixtureCount}
                   {estimatedFixtureCount > 0
                     ? ` · ${estimatedFixtureCount} estimated`
@@ -398,7 +398,7 @@ export function LightingSettingsControls({
                 }
               />
             </div>
-            <label className="mt-3 block text-[11px] font-semibold">
+            <label className="mt-3 block text-xs font-semibold">
               Fixture brightness
               <span className="float-right font-normal opacity-60">
                 {Math.round(settings.fixtureMasterLevel * 100)}%

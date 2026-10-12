@@ -48,7 +48,7 @@ export default function PresentExportProfessionalPlanControls({
   return (
     <div className="space-y-2" data-testid="professional-plan-controls">
       <div className="rounded-lg border border-gray-200/70 p-2">
-        <div className={dark ? "mb-2 text-[11px] text-neutral-400" : "mb-2 text-[11px] text-gray-500"}>
+        <div className={dark ? "mb-2 text-xs text-neutral-400" : "mb-2 text-xs text-gray-500"}>
           Layer presets
         </div>
         <div className="grid grid-cols-3 gap-2">

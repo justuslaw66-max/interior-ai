@@ -1,0 +1,754 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/cosmic-ivory/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - COSMIC IVORY - minimali.zip (26175801 bytes, sha256 e9dcea42dc71b27898d9efbae7479755f08927870f41d30529a334ba06aef656).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "g27001",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/cosmic-ivory/g27001-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "g27001_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-cosmic-ivory-g27001-120x280-lux-90512-0; wall gardenia-wall-tile-la-marmoteca-cosmic-ivory-g27001-120x280-lux-90512-0",
+   "faces": [
+    {
+     "file": "g27001_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 109850,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - COSMIC IVORY - 120X280 - Lux - view_1.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "95b1d9f4eaec0061a90b19b8535d55b589de408e73b6b4a4e129cbea4a350c09",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_COSMIC IVORY 120X280_3",
+      "id": "12f987d1-54a0-49ba-b1d4-09297189f7ba",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27001_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 119586,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - COSMIC IVORY - 120X280 - Lux - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "985192de7eb2618590ac40bd72b15edf7552e07ba8243ca2867df4b76d339a7d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_COSMIC IVORY 120X280_1",
+      "id": "a44a9086-cebd-43c9-b899-c1e516f63a52",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27001_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 104194,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - COSMIC IVORY - 120X280 - Lux - view_3.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "e71cc69f1956163755b39d96029b5b493c456d41bf58604022f0314442be180e",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_COSMIC IVORY 120X280_2",
+      "id": "81478e0f-6900-4226-ba91-937bb4e7aa27",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27001_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 111114,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - COSMIC IVORY - 120X280 - Lux - view_4.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "f4b981b7611839e5e339b83e92490942568ef41bc87ce8cdf3834e1c2f327d98",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_COSMIC IVORY 120X280_4",
+      "id": "9f7e003d-5446-4ce6-9ac4-1b00f276e8bd",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g27011",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/cosmic-ivory/g0027011.a-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g27011_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-cosmic-ivory-g0027011-120x120-lux-90486-0; wall gardenia-wall-tile-la-marmoteca-cosmic-ivory-g0027011-120x120-lux-90486-0",
+   "faces": [
+    {
+     "file": "g27011_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 52934,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf001b72342615decf851a4c11307ac41a224ba21890471fb7a9fae8aa6e87cb",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_6",
+      "id": "d7d27960-bfc9-4330-b336-47287c22c131",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27011_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38484,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6806e85ca73a7f1f021737ade54f749aa725c165639e8131e2f7768cf583ed9e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_3",
+      "id": "6102120c-30df-4711-9d53-dae5e1950ce8",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27011_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44412,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "75d094b14728f4d07419adfa35c279cd1407806ad2926d7a1d38765e63104d5b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_5",
+      "id": "20f5afac-0b14-44fd-ba15-94c9b9b5e0e6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27011_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 48898,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dc425d1660796d6178fecaebfe439c640a09817c1852248f0d565c16edddf547",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_8",
+      "id": "59616716-55f0-4465-9fda-a2b87999ba30",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27011_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 49504,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "59dd625d97d97f4c11a47d8a2ad4e593d139ccd4991a510cadc0ac39c2b5167c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_4",
+      "id": "4a0457f2-0ce7-4074-91cb-1f885d839659",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27011_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 46604,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9a2fc5cc0520b3b8121d50e937e845e42d22df253b01d99dd6c17ea999e06b05",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_7",
+      "id": "42c3249a-d96c-4ff1-9a3e-78e33829f968",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27011_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40476,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b05237e49f89d9e81dd3d8d0cf5afb58339097f16511b22156c25e4cd35ee25b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_9",
+      "id": "e5c62181-3ef8-4b61-9bbb-c43d8addc4af",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27011_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 58788,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "39e06263cd997c78c855511f4ed7066410226aebc7470d3bbd59c51a7a1fcf24",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_2",
+      "id": "ef65df11-5127-4ea9-b6b4-113c6adcb1b7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27011_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 44288,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - COSMIC IVORY - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "728396ce4d1650de5e1fd1c8e4728a247e0ed90df40c883e759cd80d61a0e27b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_COSMIC IVORY_120X120_1",
+      "id": "b87db309-96dc-4289-bbb4-5ad79042b1e4",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27021",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/cosmic-ivory/g0027021.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27021_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-cosmic-ivory-g0027021-60x120-lux-90491-0; wall gardenia-wall-tile-la-marmoteca-cosmic-ivory-g0027021-60x120-lux-90491-0",
+   "faces": [
+    {
+     "file": "g27021_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19820,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "08023b78ee5f7021775897c9c6763445c0918d00efa9c273c7645b7783815d63",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_6",
+      "id": "dfab0848-0fac-46c0-821d-99e35ac9e6da",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27021_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22360,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2154d89a81abaf2ba97565fa8574dbf7d1cd77c8a3e8d9c1d36765646438e530",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_1",
+      "id": "3498e516-4cd9-4b15-8a98-d48fa5e90bf3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27021_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25130,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_3.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ffe89e7b40ec39995f519a140889fc1ad924700485c7b165ad037b995e9da9a5",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_14",
+      "id": "b8846331-3c3a-4f08-a5f0-079a16cf3471",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27021_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24986,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ca452dfb9053c32062e43b568822fda99bc0d11cfcaab9ee58ef855411d5f0a3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_16",
+      "id": "b1b3965b-c2cf-4d08-8dcd-bf5b66e37c3f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27021_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24000,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_5.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "08fd2d5b124e83f1d4efe7a00222b432a4af5009c7c02d5116d6c31a3d28c43b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_15",
+      "id": "384fa615-4255-430c-970f-0a423cf72e53",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27021_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23332,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "cb3ed8ed67917e8b06bb093576a41eddbac2c816a189a767ea119d0926e8dd24",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_13",
+      "id": "5653199c-788e-415f-bbc5-9b189d4b49fb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27021_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27232,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_7.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ed0d81b1d798c7ba7a02fee2399c8c9d1b9ab13c893cb68ffac05a4890fd37fd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_8",
+      "id": "7e96bbaa-9aac-48d6-af56-f8032376b256",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27021_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22688,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "313c30fd51bc1bceea65e5d775044b286099c1bad560d02fe5663e62a6cbfd40",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_12",
+      "id": "ae4c6363-2ca5-42d3-82af-db0968e0b040",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27021_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26614,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "3bf08375710b4172a13a59766e6f904de1fdc8bfd104deac0982b199dc8771da",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_10",
+      "id": "438f0c4f-8d12-4d06-9d0b-9948f4b041f5",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27021_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29754,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5d15a9f86b0e7bb472ae33860a0b01f04ba928f509e3335ba1dba1f2887359a9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_11",
+      "id": "7f640d71-7af2-4d87-87fb-910116d787a7",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27021_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22346,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6bb2aad23e7df909bc76e21d8ab9d8ff1ccf683b10be3f72ed7f6cc724b9be80",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_7",
+      "id": "fa4c9153-6584-4da3-acc5-4b4fca981d1c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27021_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17992,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2cc30eb4a8e8bef05904f9b066cdba3a4f71efcfeda6553b6c509e8c24cc1b67",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_5",
+      "id": "db8482bf-499e-4b83-9823-f5c427549703",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27021_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26538,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_13.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6e2326ae841ee2e0d6df79dd43b6f6efea504984a6e802557f6832b33899dc31",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_3",
+      "id": "74a76f76-0d54-4a43-a67c-5392a8fba855",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27021_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18250,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_14.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6ba4a92536db9c577104f18f23aaff72305802d0ae6ab49495a199e00c2de4b3",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_9",
+      "id": "86a19361-4055-4c46-8808-a1f34d9b0868",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27021_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32474,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5cdc9c4961b581dd09013e2ea39990a23805981b90275874aa1cf1799491847e",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_4",
+      "id": "addc14d8-5105-46e0-b726-8e979b759944",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27021_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 22302,
+     "source_zip": "LA MARMOTECA - COSMIC IVORY - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - COSMIC IVORY - 60X120 - Lux - view_16.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "1dce2f7e85ff291b494bb5c1bc2ba19a744581f8304d0b99745b59474e8c70c0",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_COSMIC IVORY_60X120_2",
+      "id": "bcca901d-c35c-452e-a4d3-381c78951134",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

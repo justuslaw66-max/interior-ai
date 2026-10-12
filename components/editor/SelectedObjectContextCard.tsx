@@ -24,11 +24,11 @@ export function SelectedObjectContextCard({ dark, selectionContext }: SelectedOb
             className={
               selectionContext.tone === "furnish"
                 ? dark
-                  ? "designer-accent text-[11px] font-semibold uppercase tracking-wide"
-                  : "text-[11px] font-semibold uppercase tracking-wide text-blue-700"
+                  ? "designer-accent text-xs font-semibold uppercase tracking-wide"
+                  : "text-xs font-semibold uppercase tracking-wide text-blue-700"
                 : dark
-                  ? "designer-text-secondary text-[11px] font-semibold uppercase tracking-wide"
-                  : "text-[11px] font-semibold uppercase tracking-wide text-emerald-700"
+                  ? "designer-text-secondary text-xs font-semibold uppercase tracking-wide"
+                  : "text-xs font-semibold uppercase tracking-wide text-emerald-700"
             }
           >
             {selectionContext.label}
@@ -36,7 +36,7 @@ export function SelectedObjectContextCard({ dark, selectionContext }: SelectedOb
           <div className={dark ? "designer-text-primary mt-0.5 truncate text-sm font-semibold" : "mt-0.5 truncate text-sm font-semibold text-neutral-950"}>
             {selectionContext.title}
           </div>
-          <div className={dark ? "designer-text-muted mt-0.5 text-[11px]" : "mt-0.5 text-[11px] text-neutral-500"}>
+          <div className={dark ? "designer-text-muted mt-0.5 text-xs" : "mt-0.5 text-xs text-neutral-500"}>
             {selectionContext.detail}
           </div>
         </div>
@@ -44,11 +44,11 @@ export function SelectedObjectContextCard({ dark, selectionContext }: SelectedOb
           className={
             selectionContext.tone === "furnish"
               ? dark
-                ? "designer-status-info shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold"
-                : "shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-700"
+                ? "designer-status-info shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+                : "shrink-0 rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"
               : dark
-                ? "designer-status-ready shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold"
-                : "shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
+                ? "designer-status-ready shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+                : "shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
           }
         >
           {selectionContext.tone === "furnish" ? "Furnish" : "Plan"}

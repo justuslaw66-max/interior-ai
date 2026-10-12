@@ -163,7 +163,7 @@ export function FloorPlanReviewIssuesPanel({
             <div className="text-xs font-semibold">
               {friendlyIssueTitle(issue.code)}
             </div>
-            <div className="mt-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+            <div className="mt-0.5 text-xs uppercase tracking-wide text-neutral-500">
               {level === "blocking" ? "Required check" : level === "resolved" ? "Resolved" : "Suggestion"}
               {" · "}{issue.code.replaceAll("_", " ")}
             </div>
@@ -176,7 +176,7 @@ export function FloorPlanReviewIssuesPanel({
               </div>
             ) : null}
             {issue.entityIds?.length ? (
-              <div className="mt-1 break-all font-mono text-[10px] text-neutral-500">
+              <div className="mt-1 break-all font-mono text-xs text-neutral-500">
                 {issue.entityIds.join(", ")}
               </div>
             ) : null}
@@ -268,7 +268,7 @@ export function FloorPlanReviewIssuesPanel({
                     {action.description}
                   </p>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${
+                <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${
                   remaining
                     ? "bg-amber-100 text-amber-800"
                     : "bg-emerald-100 text-emerald-800"
@@ -279,7 +279,7 @@ export function FloorPlanReviewIssuesPanel({
               {remaining ? (
                 <>
                   {prerequisite ? (
-                    <p className="mt-2 text-[10px] font-medium text-amber-900">
+                    <p className="mt-2 text-xs font-medium text-amber-900">
                       {prerequisite}
                     </p>
                   ) : null}
@@ -309,7 +309,7 @@ export function FloorPlanReviewIssuesPanel({
                   </button>
                 </>
               ) : (
-                <p className="mt-3 text-[10px] font-medium text-emerald-800">
+                <p className="mt-3 text-xs font-medium text-emerald-800">
                   Confirmed against the source plan.
                 </p>
               )}

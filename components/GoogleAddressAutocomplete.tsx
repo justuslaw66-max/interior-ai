@@ -255,7 +255,7 @@ export default function GoogleAddressAutocomplete({
           </div>
         </div>
       ) : null}
-      <div className="mt-1 min-h-4 text-[11px] text-neutral-500" aria-live="polite">
+      <div className="mt-1 min-h-4 text-xs text-neutral-500" aria-live="polite">
         {availability === "checking" ? "Connecting address search…" : null}
         {availability === "unavailable"
           ? "Address suggestions are unavailable; manual entry still works."

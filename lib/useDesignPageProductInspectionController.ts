@@ -360,7 +360,7 @@ export function useDesignPageProductInspectionController({
       setItemConfigurationByInstanceId,
     },
     configuration: {
-      canEdit,
+      canEdit: canEdit && liveCatalogReady, // A variant or finish is another product: it waits for the lists.
       selectedConfigurationCode,
       selectedConfigUi,
       selectedConfigOptions,

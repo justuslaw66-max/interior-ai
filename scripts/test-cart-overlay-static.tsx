@@ -138,7 +138,7 @@ assert.deepEqual(rowOrder, ["a", "b", "c", "d", "e"], "Rows follow the reading o
 const pageSource = read("components/editor/shop/ShoppingListPage.tsx");
 assert.match(pageSource, /const \{ remove, swapForCheaper \} = useShoppingListFocus\(list, actions, pageRef\);/);
 assert.match(pageSource, /const rowActions = \{ \.\.\.actions, remove, swapForCheaper \};/);
-assert.match(pageSource, /<ShoppingListSections list=\{list\} canEdit=\{canEdit\} actions=\{rowActions\} \/>/);
+assert.match(pageSource, /<ShoppingListSections list=\{list\} canEdit=\{canEdit\} canSwap=\{canSwap\} actions=\{rowActions\} \/>/);
 assert.match(pageSource, /<section ref=\{pageRef\}/);
 const focusSource = read("components/editor/shop/useShoppingListFocus.ts");
 assert.match(focusSource, /useEffect\(\(\) => \{[\s\S]*?focusAfterShoppingListEdit\(pageRef\.current, pending, shoppingListLines\(list\)\);\s*\}, \[list, pageRef\]\);/);

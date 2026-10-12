@@ -230,7 +230,7 @@ const shareFallback = read(
 for (const required of [
   "<EditorDialog",
   "open={Boolean(url)}",
-  'title="Share Link"',
+  'title="Share link"',
   'closeButtonTestId="share-fallback-close"',
   "returnFocusIds={SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS}",
   "cancelFocusRestorationOnUnmount",

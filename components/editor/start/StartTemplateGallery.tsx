@@ -15,6 +15,8 @@ import {
 type StartTemplateGalleryProps = {
   headingRef: RefObject<HTMLHeadingElement | null>;
   ready: boolean;
+  /** The product lists have loaded: until then a furnished template waits, saying so. */
+  furnishedReady: boolean;
   onChooseTemplate: (card: StartTemplateCard, furnished: boolean) => void;
   onSearchAddress: () => void;
 };
@@ -29,7 +31,7 @@ const segmentClass = (pressed: boolean) =>
   }`;
 
 /** Templates, with the bedroom filters, Empty or Furnished, and the address search, as in the mockup. */
-export function StartTemplateGallery({ headingRef, ready, onChooseTemplate, onSearchAddress }: StartTemplateGalleryProps) {
+export function StartTemplateGallery({ headingRef, ready, furnishedReady, onChooseTemplate, onSearchAddress }: StartTemplateGalleryProps) {
   const cards = useMemo(() => buildStartTemplateCards(), []);
   const [filter, setFilter] = useState<StartTemplateFilter>("all");
   const [furnished, setFurnished] = useState(false);
@@ -65,7 +67,13 @@ export function StartTemplateGallery({ headingRef, ready, onChooseTemplate, onSe
           Search by HDB address
         </button>
       </div>
-      <StartTemplateCards cards={shown} furnished={furnished} ready={ready} onChooseTemplate={onChooseTemplate} />
+      {furnished && !furnishedReady ? (
+        <p role="status" data-testid="start-template-products-loading" className="mt-3 text-sm text-neutral-600">
+          Loading products for furnished templates…
+        </p>
+      ) : null}
+      <StartTemplateCards cards={shown} furnished={furnished} ready={ready} furnishedReady={furnishedReady}
+        onChooseTemplate={onChooseTemplate} />
       {!showAll && matching.length > shown.length ? (
         <button type="button" data-testid="start-templates-see-all" onClick={() => setShowAll(true)}
           className="mt-2.5 flex h-11 items-center gap-1.5 self-start rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
@@ -81,10 +89,11 @@ type StartTemplateCardsProps = {
   cards: StartTemplateCard[];
   furnished: boolean;
   ready: boolean;
+  furnishedReady: boolean;
   onChooseTemplate: (card: StartTemplateCard, furnished: boolean) => void;
 };
 
-function StartTemplateCards({ cards, furnished, ready, onChooseTemplate }: StartTemplateCardsProps) {
+function StartTemplateCards({ cards, furnished, ready, furnishedReady, onChooseTemplate }: StartTemplateCardsProps) {
   return (
     <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card) => {
@@ -95,7 +104,7 @@ function StartTemplateCards({ cards, furnished, ready, onChooseTemplate }: Start
             type="button"
             data-testid={`start-template-${card.template.id}`}
             aria-label={`${card.name}, ${card.meta}${withFurniture ? ", furnished" : ""}`}
-            disabled={!ready}
+            disabled={!ready || (withFurniture && !furnishedReady)}
             className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left text-neutral-950 outline-hidden transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
             onClick={() => onChooseTemplate(card, withFurniture)}
           >

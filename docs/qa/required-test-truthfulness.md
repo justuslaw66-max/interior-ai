@@ -1514,6 +1514,20 @@ does not accept identities merely because test and manifest fields agree with
 each other.
 The successful path remains fail closed and requires no failure provenance.
 
+## Failure diagnostics for the required matrices
+
+The Pro visual matrix always prepares sanitised diagnostics
+(`tests/e2e/pro-visual-diagnostics-upload.mjs`). Since 10 Oct 2026 the share and
+overlay matrices (public share, cart, Retailer Confirmation, Guest Save Prompt,
+My Designs, Floor Plan Upload) do the same when one fails:
+`tests/e2e/required-matrix-diagnostics-upload.mjs` takes each listed gate whose
+report is missing, unreadable or has unexpected results and applies the same
+collection. Only allowlisted files are kept; private headers and cookies are
+removed, text is audited, non-fixture emails are rejected, and rasters are
+re-encoded. CI uploads `required-matrix-diagnostics-<run>-<attempt>` for 14
+days. A passing run uploads nothing, and the matrix's outcome is unchanged. Two
+WebKit timeouts on 9 Oct (runs #396 and #397) had left nothing to read.
+
 ## External controls and rollback
 
 Repository checks cannot verify which GitHub checks branch protection requires,

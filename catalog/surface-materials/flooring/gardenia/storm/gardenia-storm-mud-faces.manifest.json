@@ -1,0 +1,1225 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/mud/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - MUD - minimali.zip (117536129 bytes, sha256 e495e48a83f51ad599cd94eed83cb9540c759f398154d53a4afeb80d356269f5).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/storm/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0003807",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/mud/pf60003807-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0003807_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-mud-0003807-120x120-nat; wall gardenia-wall-tile-storm-mud-0003807-120x120-nat",
+   "faces": [
+    {
+     "file": "0003807_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 57960,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a971b1bee8808d56be259d1e53cb45867e8305ac3b9a368414e0e60808eb4bf5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "MUD 120X120_02",
+      "id": "f5d5ac3f-90f5-4045-9358-33894dbdd586",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003807_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 81314,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "078f740b40110fd18c8b70d8e28eeae6abc7fa1ed8bc3b47a398a6f39b11593f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "MUD 120X120_01",
+      "id": "9e983fa6-de94-4f35-9fc4-36d3a9336b74",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003807_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 57394,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6ae69736bf31c1d4b39e2feba33f07018a02cef2e85c9447db1739c3bc8f6bcb",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "MUD 120X120_07",
+      "id": "a858535e-34e7-46ca-8a5e-8ae2575143c0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003807_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 71526,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "68812549367f678ad889c9c20bfcaea0284c5a80c67af5f565529428e48a174d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "MUD 120X120_03",
+      "id": "06ff960d-3ad3-4dc2-8df4-2d236855fc3e",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003807_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 68298,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a677f8d84628d7d7cf57f26aa0bf70cc9b14dd16aaec5b21daa3bc6ddf297ced",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "MUD 120X120_05",
+      "id": "aefa7af1-3632-436f-a1bf-f449d5c09a7f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003807_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 70072,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "07878229d96efd88edd225e5e890fc34c7b9c5c08ca9641dd48870c1444ebc7f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "MUD 120X120_08",
+      "id": "d7f102c2-5abe-40f1-8ddc-7afb708afceb",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003807_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 55432,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "70e3c7f29a3c61b0757b3de7163d67948c4d1b7200b5fd4268679fed0e17ec3f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "MUD 120X120_09",
+      "id": "853080ef-7655-4f72-910d-feeef99d2f9e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003807_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 54380,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "de22ad588075013d794e05f60b8d3fbbe25cf9b18211320580a60cb3d2ce225e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "MUD 120X120_04",
+      "id": "cea9d569-aa9d-4c41-b4fb-12eb0961c3f0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003807_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 82552,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "120X120-Natural/STORM - MUD - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a58b30668fd1f4be77e66dfbdcdc70d8e4c62c4d5ae05466636c32f3b53830f3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "MUD 120X120_06",
+      "id": "22f933f7-56f2-4c8d-9323-4e2deed04d99",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0003979",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/mud/pf60003979-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0003979_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-mud-0003979-60x120-nat; wall gardenia-wall-tile-storm-mud-0003979-60x120-nat",
+   "faces": [
+    {
+     "file": "0003979_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 33930,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5d5a2b23867d6b9d922752edda1f4696c3541e32ef2b6999ba5bd52c9ee84357",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "MUD 60X120_02",
+      "id": "f7b9cf2e-4564-4c7c-bde4-69a9525c445a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003979_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35678,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ccdd5f6d27ec920dd953e71f1e80e1e7b98b8a3c66c4e04061e3fc503147d6e0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "MUD 60X120_06",
+      "id": "7a8fe15f-c8d9-4a5a-9002-31ab953d04d0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003979_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26314,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e499cef3f2e6f23c83135ad72ce5ebd172704fa318dd43405423440b2a1658ec",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "MUD 60X120_11",
+      "id": "ef3f8184-ea4e-45a4-913a-b6057f55e5c7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003979_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31548,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "88533e51e2daa111394b16b58141c56fc3b0981a2377b542973a90dbf7b0691f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "MUD 60X120_07",
+      "id": "baa1d918-7746-41f7-a46a-6c15c3203bff",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003979_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34642,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0aff6589acc2ae7b712314f5d28d419b742a54e66d9829d38c4a9eb030141bda",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "MUD 60X120_01",
+      "id": "9be88c49-29ce-4e49-adda-952fc159ae32",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003979_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 41218,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b0f0251abb562e373ea7115b0ba99bb0c546959ba02a06f9a8a1fc8638491b84",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "MUD 60X120_09",
+      "id": "7d91fa41-327c-4e1a-a641-69aa15df0503",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003979_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25956,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cf3890844affd318c0019e2bea27d69323e220f4d99c3996bb94b7abce8db360",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "MUD 60X120_04",
+      "id": "00a0f634-ee70-4fa5-be8f-7bac1a94ca2a",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003979_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39472,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "280cde9ce3bf1ae58d32be6a439cea245d84c43f2cd9ab95100d32470f8fcd50",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "MUD 60X120_10",
+      "id": "67a8e8a4-146b-4ba6-b1b1-e04c358bf355",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003979_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29098,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "01fc6f6a6cd940ec1bc4242c62426041658640ba2da2538038bbe63113f87fb3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "MUD 60X120_03",
+      "id": "c8f56b2b-955b-4a7d-b930-0821d46b0689",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003979_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39376,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1b98698d9ddddc9e523a7dba52a3042d2ecb0b580377082b261a51d31a869e9a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "MUD 60X120_18",
+      "id": "66769a24-df6b-46a0-ab8e-ec8e232bdac3",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003979_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 37714,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7282c00bdd8c39bb77547df29cca496c51e2ceef7273bc1dcd4fa4822ad24e02",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "MUD 60X120_13",
+      "id": "87133154-3a4d-4a3f-982e-e49b9b3b6642",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003979_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 36192,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4055c8103731e010e17a365635488665bdf0589ebadcaec65749f05f705e42a8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "MUD 60X120_05",
+      "id": "fd848243-03b4-4c58-a05f-3f1ff9cb41d3",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0003979_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34144,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5b99728550e941589fbb8cc218047d78d743936c1a6ec2e9f2b1e13ad191bf2a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "MUD 60X120_14",
+      "id": "0370dbb1-44ec-438c-9ab3-2e81ef262adf",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0003979_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42858,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b79b39c2402a85f4405308e126facf9a273c78f92d1afbdb3a3ed8179ad46d36",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "MUD 60X120_17",
+      "id": "b8922533-99aa-4daf-8263-985b968fca0f",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0003979_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32572,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6386cad16430bee58db4b6f1e020ddacac1870a3aeaa2f1def502bb5c86a37b5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "MUD 60X120_12",
+      "id": "5ea3c9e5-a4e3-4037-8038-690f463909a2",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0003979_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27470,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b5ace6d48aa7bf9676e71b098d2f706898fb114d2c5de6a4de910277bf298564",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "MUD 60X120_08",
+      "id": "c3894e75-e93d-4400-82a7-1fdb0165daca",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0003979_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28720,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7b2c780cda04849cec3d5469ab518164f4540af5470c71cc5870d912aa85ab4f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "MUD 60X120_15",
+      "id": "7a656d45-6368-4f83-82e3-184c37fff83f",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0003979_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31216,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X120-Natural/STORM - MUD - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "59d7a4be9716c870bff840f91c7ce9078acb07472d55f2a1122136ff35f9cc68",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "MUD 60X120_16",
+      "id": "2d2fa1fc-9a82-4437-9ad6-52ae0504a1f7",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0003999",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/mud/pf60003999-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0003999_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-mud-0003999-80x80-nat; wall gardenia-wall-tile-storm-mud-0003999-80x80-nat",
+   "faces": [
+    {
+     "file": "0003999_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33340,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "636ab7f208139f99b4d7ae57c0507316348cc454b37f73e746de8cef96029244",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 1",
+      "name": "MUD 80X80_03",
+      "id": "103c0060-f0e0-4bee-9819-be1a2b492f48",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003999_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34448,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d5da31b3ca2552eac3c8cb874ec8bdc63bb1ca4adb1d212180ef41b312ddf3c1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 2",
+      "name": "MUD 80X80_01",
+      "id": "ce5a38d6-7dba-43c9-912d-26118e23886a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003999_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24336,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8fa4712ceed6e21c1047bbc2179c722dc00176618fb41619958f009c2dadb254",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 3",
+      "name": "MUD 80X80_02",
+      "id": "02e80b4e-750f-493c-8bf9-d71130ee1d64",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003999_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28480,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a6c6b512954bce87470db95d0dd19acc3483047295d286e7eacce9b37b9dde94",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 4",
+      "name": "MUD 80X80_05",
+      "id": "c74309af-257c-4d64-9c8c-05bc044d5feb",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003999_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36048,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "59343b290f92a381cb77aa663c61aca6911952e10665f8f8f447f0150befb1b6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 5",
+      "name": "MUD 80X80_06",
+      "id": "74beb966-f9d5-4c09-aaf7-2cc063f5cfe2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003999_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22168,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "992bcd939aade63c59c364d8b601fec5c3981ab4cf76c0dba725a1ef61b6176d",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 6",
+      "name": "MUD 80X80_04",
+      "id": "25be7a7b-20dd-47d5-947d-60d62ba733a1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003999_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29676,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aa2c945407f04e517a7cec00804c1a6685e0350555c55cabb2daccbda0e119f5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 7",
+      "name": "MUD 80X80_08",
+      "id": "8d2f6afd-5694-4a8f-b7a8-9754b1f60def",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003999_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21182,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b09f27f5116f4486f351450e7d9225f1e8a80531ce9b4da8be83359142df8d63",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 8",
+      "name": "MUD 80X80_09",
+      "id": "d55c26c5-4aa7-4c43-aa69-0e69e2ba20f9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003999_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24490,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "80X80-Natural/STORM - MUD - 80X80 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f6ec98b07eecd05bbcf9d00cb6e285272eeefef861a1f911a20b222447caedae",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Natural · Faccia 9",
+      "name": "MUD 80X80_07",
+      "id": "bf1bd4e1-c514-4982-b138-10d8d5ff9be8",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0004007",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/mud/pf60004007-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0004007_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-mud-0004007-60x60-nat; wall gardenia-wall-tile-storm-mud-0004007-60x60-nat",
+   "faces": [
+    {
+     "file": "0004007_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22526,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0cda819376f1ab75b419697fb7483fa92e467b31c908420d98076a5a21be0fbc",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 1",
+      "name": "MUD 60X60_01",
+      "id": "78276a8e-cc38-4043-8c8c-541d79c4c2b2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004007_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19182,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "cf2588f327d84c54ec476b3ec6a46d6c701e821eb10a43555db5cc89f8728730",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 2",
+      "name": "MUD 60X60_03",
+      "id": "d1e9ab8b-9d8c-491f-9079-289732479794",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004007_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17184,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "b6e65b9a7a606e87c061a0b5c49390d01cfbf7cba784789c57eb17a5a058bf13",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 3",
+      "name": "MUD 60X60_07",
+      "id": "10452880-40c1-4eee-9ab2-14de755ce251",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004007_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20642,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "56ecc6d20537c3e09e1efbf0f8fabe136045185c2aedc539a45e2b3fb14b8d3c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 4",
+      "name": "MUD 60X60_02",
+      "id": "de7f9b50-1e8e-48fe-ba8b-fe6bc11a6dfc",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004007_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12554,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6ae38dbf06aa6ed45e09393c4b25422bb7a003d539588b25a22534334bce100f",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 5",
+      "name": "MUD 60X60_06",
+      "id": "87665e0e-c5bc-4003-af6c-75a4eb8754c3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004007_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16744,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d93d8555af8bf6c3ba2d7dbe93cc85a20ec6251c27ac1631c680f9f706b47c00",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 6",
+      "name": "MUD 60X60_12",
+      "id": "ecead6b9-af0f-4896-84f9-07a89f86049f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0004007_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17426,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "874fa05a637135cb50822245af93a6483efaaa31403352e77f887d7b94d32621",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 7",
+      "name": "MUD 60X60_04",
+      "id": "f25d926d-2a6b-4050-b508-eeb3f02bab7b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0004007_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15342,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e1cc78a611f436183b2c23313ae2d3cb49e16011dad17037df4bc2536c675f0e",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 8",
+      "name": "MUD 60X60_11",
+      "id": "ed9d5e1f-a2ab-4552-a084-7bff86c0d3ed",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0004007_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18456,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "920a41533861f9aaae7edecc55220cb89cc4b6c9797a0efb55c886fcb85dbec5",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 9",
+      "name": "MUD 60X60_08",
+      "id": "4b09d71a-ebab-43b2-98b2-4e6bc46c077f",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0004007_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15422,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_10.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3be7077cd5d481185236394acbfce5f7e47ce26bbf4d17e1d52de794703e3584",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 10",
+      "name": "MUD 60X60_10",
+      "id": "b9433a5b-5e39-43c1-b3b3-963bffa51574",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0004007_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12306,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "3da42fa436a430c5c0713f34b579d0d09fc83c84a6c23a9b8ed813ad47c77247",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 11",
+      "name": "MUD 60X60_09",
+      "id": "34707b7b-b378-429f-8342-91a24c949b39",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0004007_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14622,
+     "source_zip": "STORM - MUD - minimali.zip",
+     "source_file": "60X60-Natural/STORM - MUD - 60X60 - Natural - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "1e690ca7418efd1c542ba771504e398b06a9eacd3c1cf74bd227d194a4c9f0af",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Natural · Faccia 12",
+      "name": "MUD 60X60_05",
+      "id": "79d459e7-091d-4a6e-91f6-a8f247d686e7",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

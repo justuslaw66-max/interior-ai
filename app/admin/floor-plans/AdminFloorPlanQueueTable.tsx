@@ -54,7 +54,7 @@ export default function AdminFloorPlanQueueTable({
                     <div className="mt-1 text-xs text-neutral-500">
                       {job.sourceAsset.mimeType} · {formatBytes(job.sourceAsset.byteLength)}
                     </div>
-                    <div className="mt-1 max-w-52 truncate font-mono text-[10px] text-neutral-400">
+                    <div className="mt-1 max-w-52 truncate font-mono text-xs text-neutral-400">
                       {job.sourceAsset.sha256}
                     </div>
                   </td>

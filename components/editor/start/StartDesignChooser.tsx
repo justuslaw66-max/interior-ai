@@ -18,8 +18,10 @@ export type StartDesignChooserProps = {
   /** Plan's "Choose a template" opened it (ST8): at Templates, and focus goes back to that button. */
   atTemplates: boolean;
   openerId: string | null;
-  /** The choices wait until the editor can change the design (products loaded, not Client Preview). */
+  /** The choices wait until the editor can change the design (not Client Preview, the session known). */
   ready: boolean;
+  /** Furnished templates also wait for the product lists. */
+  furnishedReady: boolean;
   isAuthenticated: boolean;
   onClose: () => void;
   onChooseTemplate: (card: StartTemplateCard, furnished: boolean) => void;
@@ -113,7 +115,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
         </div>
         <StartChoiceCards isAuthenticated={isAuthenticated} ready={props.ready} onTemplates={showTemplates}
           onDraw={props.onChooseDraw} onUpload={props.onChooseUpload} onBlank={props.onChooseBlank} />
-        <StartTemplateGallery headingRef={templatesHeadingRef} ready={props.ready}
+        <StartTemplateGallery headingRef={templatesHeadingRef} ready={props.ready} furnishedReady={props.furnishedReady}
           onChooseTemplate={props.onChooseTemplate} onSearchAddress={searchAddress} />
       </div>
       <UploadSignInDialog {...props.uploadSignIn} />

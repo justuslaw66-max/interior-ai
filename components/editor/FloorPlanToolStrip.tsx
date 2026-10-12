@@ -91,7 +91,7 @@ export default function FloorPlanToolStrip({
           );
         })}
       </div>
-      <div className={dark ? "designer-work-muted mt-2 text-[11px]" : "mt-2 text-[11px] text-neutral-500"}>
+      <div className={dark ? "designer-work-muted mt-2 text-xs" : "mt-2 text-xs text-neutral-500"}>
         {helperText}
       </div>
     </div>

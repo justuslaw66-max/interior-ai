@@ -103,14 +103,14 @@ export default function RoomPlanStatusBar({
   ].join(" ");
   const pillClass = dark
     ? isCommand
-      ? `rounded-full bg-white/10 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} text-neutral-200`
-      : `designer-work-muted rounded-full px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"}`
-    : `rounded-full bg-neutral-100 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} text-neutral-700`;
+      ? `rounded-full bg-white/10 px-2 py-1 text-xs text-neutral-200`
+      : `designer-work-muted rounded-full px-2 py-1 text-xs`
+    : `rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700`;
   const metaClass = dark
     ? isCommand
-      ? `${compact || isCommand ? "text-[11px]" : "text-xs"} font-medium text-neutral-300`
-      : `designer-work-muted ${compact || isCommand ? "text-[11px]" : "text-xs"} font-medium`
-    : `${compact || isCommand ? "text-[11px]" : "text-xs"} font-medium text-neutral-600`;
+      ? `text-xs font-medium text-neutral-300`
+      : `designer-work-muted text-xs font-medium`
+    : `text-xs font-medium text-neutral-600`;
   const roomCountClass = [
     metaClass,
     isCommand ? "hidden 2xl:block" : "hidden sm:block",
@@ -119,22 +119,22 @@ export default function RoomPlanStatusBar({
   const healthClass =
     healthLevel === "ready"
       ? dark
-        ? `designer-status-ready rounded-full px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold`
-        : `rounded-full bg-emerald-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-emerald-700`
+        ? `designer-status-ready rounded-full px-2 py-1 text-xs font-semibold`
+        : `rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700`
       : healthLevel === "review"
         ? dark
-          ? `designer-status-warning rounded-full px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold`
-          : `rounded-full bg-amber-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-amber-700`
+          ? `designer-status-warning rounded-full px-2 py-1 text-xs font-semibold`
+          : `rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700`
           : dark
-            ? `designer-status-blocked rounded-full px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold`
-            : `rounded-full bg-red-50 px-2 py-1 ${compact || isCommand ? "text-[11px]" : "text-xs"} font-semibold text-red-700`;
+            ? `designer-status-blocked rounded-full px-2 py-1 text-xs font-semibold`
+            : `rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700`;
   const healthActionClass = `${healthClass} disabled:cursor-default`;
   const buttonClass = dark
-    ? `${isCommand ? "designer-command-selection" : "designer-work-control-active"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
-    : `rounded-full bg-neutral-900 ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
+    ? `${isCommand ? "designer-command-selection" : "designer-work-control-active"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
+    : `rounded-full bg-neutral-900 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
   const secondaryButtonClass = dark
-    ? `${isCommand ? "border border-white/15 text-neutral-100 hover:bg-white/10" : "designer-work-control ml-auto"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
-    : `${isCommand ? "" : "ml-auto"} rounded-full border border-neutral-200 ${compact || isCommand ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
+    ? `${isCommand ? "border border-white/15 text-neutral-100 hover:bg-white/10" : "designer-work-control ml-auto"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
+    : `${isCommand ? "" : "ml-auto"} rounded-full border border-neutral-200 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
 
   return (
     <div

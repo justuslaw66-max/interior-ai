@@ -121,6 +121,7 @@ const chooserProps = (overrides: Partial<StartDesignChooserProps> = {}): StartDe
   atTemplates: false,
   openerId: null,
   ready: true,
+  furnishedReady: true,
   isAuthenticated: false,
   onClose: noop,
   onChooseTemplate: noop,
@@ -163,7 +164,8 @@ assert.match(guest, new RegExp(`data-testid="start-templates-see-all"[^>]*>See a
 assert.match(guest, new RegExp(`data-testid="start-template-preview-${cards[0]?.template.id}"`));
 assert.doesNotMatch(guest, /upload-sign-in-dialog/);
 assert.doesNotMatch(guest, /disabled=""/);
-// Until products load, the choices wait, as Plan's own template buttons do; Templates only scrolls.
+// Until the editor can change the design, the choices wait, as Plan's own template buttons do;
+// Templates only scrolls.
 const waiting = render(chooserProps({ ready: false }));
 for (const id of ["draw", "upload", "blank"]) {
   assert.match(waiting, new RegExp(`data-testid="start-choice-${id}" disabled=""`));
@@ -208,7 +210,7 @@ function recorder(state: Partial<UseDesignPageStartChooserInput["state"]> = {}, 
       calls.push(`chooser:${value.open ? "open" : "closed"}${value.asNewDesign ? "+new" : ""}${value.signIn ? "+signIn" : ""}`);
     },
     input: {
-      state: { isAuthenticated: true, sessionKnown: true, designIsEmpty: true, localBackupHydrated: true, canEdit: true, ...state },
+      state: { isAuthenticated: true, sessionKnown: true, designIsEmpty: true, localBackupHydrated: true, canEdit: true, canChangeProducts: true, ...state },
       actions: {
         applyPlanTemplate: (template, options) => {
           const pack = options?.furnishingPackId ? `+${options.furnishingPackId}` : "";
@@ -309,6 +311,17 @@ assert.equal(guestProps.uploadSignIn.open, true);
 assert.equal(guestProps.isAuthenticated, false);
 assert.equal(guestProps.ready, true);
 assert.equal(buildStartChooserProps(firstVisit, noop, recorder({ canEdit: false }).input).ready, false);
+// Editing doesn't wait for the product lists (10 Oct 2026); a furnished template does, saying so.
+const productsLoading = buildStartChooserProps(firstVisit, noop, recorder({ canChangeProducts: false }).input);
+assert.equal(productsLoading.ready, true, "Empty templates, Draw, Upload and Blank don't wait for products.");
+assert.equal(productsLoading.furnishedReady, false);
+assert.equal(guestProps.furnishedReady, true);
+const gallery = read("components/editor/start/StartTemplateGallery.tsx");
+assert.match(gallery, /disabled=\{!ready \|\| \(withFurniture && !furnishedReady\)\}/);
+assert.match(
+  gallery,
+  /\{furnished && !furnishedReady \? \([\s\S]*?role="status" data-testid="start-template-products-loading"[\s\S]*?Loading products for furnished templates…/
+);
 assert.equal(
   buildStartChooserProps(firstVisit, noop, recorder({ sessionKnown: false }).input).ready,
   false,

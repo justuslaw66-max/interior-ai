@@ -1,0 +1,808 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-stone/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - GREY STONE - minimali.zip (145282108 bytes, sha256 04adafd82e6e8511a0b07d0c68419f7f389508e4d8d7bc2859a377ce7cb11ecb).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0008688",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-stone/pf60008688-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0008688_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-stone-pf60008677-120x280-soft-90524-0 (uses 0008688's faces: ABK's 12 Soft pictures are 0008688's 12 Lux pictures, byte for byte); floor gardenia-flooring-la-marmoteca-grey-stone-pf60008688-120x280-lux-90525-0; wall gardenia-wall-tile-la-marmoteca-grey-stone-pf60008677-120x280-soft-90524-0 (uses 0008688's faces: ABK's 12 Soft pictures are 0008688's 12 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-grey-stone-pf60008688-120x280-lux-90525-0",
+   "faces": [
+    {
+     "file": "0008688_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 163466,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_1 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "cdf0d0bdff2730523afbc9a8c10b02dc45aff094b70a668c322f11e890c030fc",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2 (view_01)",
+      "name": "MARMOTECA_GREY STONE_120X280_1",
+      "id": "83ea8217-6b36-48b8-8640-8b68415db66c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0008688_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 157830,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_2 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "bcb536131fe0e791eb0ce25c4e236f7df081cdaa112b210e0232ea4e3b88b7ef",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4 (view_02)",
+      "name": "MARMOTECA_GREY STONE_120X280_2",
+      "id": "1ba441e1-c88b-45b7-8034-1c223a2f5430",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0008688_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 141996,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_3 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "e5b9dad699dc804944cb5247f0b782cce418c8bb3c2e031ac2d3efbbba33021d",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 6 (view_03)",
+      "name": "MARMOTECA_GREY STONE_120X280_3",
+      "id": "ad4e38fc-c4ee-49ac-a21e-ef98f2325c90",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0008688_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 134446,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "5cad6ed41dace3a9b5da1317cb53e27d8e9cee03e1e2f22b95fb5b37d2cf5269",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 7 (view_04)",
+      "name": "MARMOTECA_GREY STONE_120X280_4",
+      "id": "18ca939f-5a60-4d53-b69b-9c1c36cc28f6",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0008688_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 155080,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_5 (2).jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "22dd07fb5c56baa592c063d1e91cb0573403de5066e8506bfaaab7c5657cc697",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 10 (view_05)",
+      "name": "MARMOTECA_GREY STONE_120X280_5",
+      "id": "eb4c1c55-0870-46eb-8b8c-d3dd6b9bb010",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0008688_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 167506,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - GREY STONE - 120X280 - Soft - view_6.jpg",
+     "source_px": [
+      1812,
+      4096
+     ],
+     "source_sha256": "31bff04f0dc7749172cd45837df2115ca235a2ed1f8ae9b769bf5bd59d094eac",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "cropped": "3.2% wider than 1200x2800 mm, a copy stretched across; drawn at the tile's width",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 11 (view_06)",
+      "name": "MARMOTECA_GREY STONE_120X280_6",
+      "id": "583fbd6a-cc37-4cb8-84bd-a51d4746b02a",
+      "site_position": 11
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0006319",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-stone/pf60006319-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0006319_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-stone-g0027052-120x120-lux-90497-0 (uses 0006319's faces: ABK lists Grey Stone 120x120 Lux as 0006311, whose pictures are named NOBILE GREY GRAPHITE, another collection's colour of the same faces; the pictures named MARMOTECA_GREY STONE on the Nat P.tech page 0006319 are used (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-grey-stone-pf60006319-120x120-nat-90522-0; wall gardenia-wall-tile-la-marmoteca-grey-stone-g0027052-120x120-lux-90497-0 (uses 0006319's faces: ABK lists Grey Stone 120x120 Lux as 0006311, whose pictures are named NOBILE GREY GRAPHITE, another collection's colour of the same faces; the pictures named MARMOTECA_GREY STONE on the Nat P.tech page 0006319 are used (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-grey-stone-pf60006319-120x120-nat-90522-0",
+   "faces": [
+    {
+     "file": "0006319_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64978,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab9904f9b9686420ca62f41ddb7412f4be9893a19bacdbbf7cad1e9088bafdd6",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "MARMOTECA_GREY STONE_120x120_1",
+      "id": "01d9003a-7546-44c1-a236-e1fb8b583833",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006319_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 56882,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ac7e5cb5edb4a63261d642a5ff3ce3664b499f2d04e41e375bcb10cc76ab0359",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 4 (view_02)",
+      "name": "MARMOTECA_GREY STONE_120x120_2",
+      "id": "a69c35f8-e0d7-480a-bb3b-7c4f963f37a4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0006319_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 53418,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cfcd2e988c3dc705d315946beacd21c83c45b1ea23cab33211fee96086982698",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 7 (view_03)",
+      "name": "MARMOTECA_GREY STONE_120x120_3",
+      "id": "1b6c3d7b-0d76-444a-b41a-04fd36421ac4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006319_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 53234,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_4 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fedf2bea6bbf1b7877dbfeb4e570e862e3844446f31f492e884cc3ee760bcf17",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12 (view_04)",
+      "name": "MARMOTECA_GREY STONE_120x120_4",
+      "id": "6d71df40-ea0b-494f-85d8-8d3b02d68547",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0006319_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 54622,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0181118e2924ebac668ce0082b4f6858da936eab8601e287fe2faab326bec64d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 14 (view_05)",
+      "name": "MARMOTECA_GREY STONE_120x120_5",
+      "id": "5e0d7f8f-5d56-44c6-8e8a-f824055d9a56",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0006319_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 51254,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bc3253a39c2fafe91faee2fbb754eaa2dee5c2c610d457f7f7b3d43e7a62084a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 16 (view_06)",
+      "name": "MARMOTECA_GREY STONE_120x120_6",
+      "id": "245239ec-c0a5-4716-9077-3cf8f49b3700",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0006319_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 64254,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e92ffd6a939ec9239d93498101b2d80cf95415e914b880252a87407c71cfc095",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 20 (view_07)",
+      "name": "MARMOTECA_GREY STONE_120x120_7",
+      "id": "97ce8ffb-7db8-4d48-8164-b759ccfa1356",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0006319_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 58898,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ce7c9f797febbe4cc6422bd6232ff16766db378f176fe4e2268ff81af8916c99",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 22 (view_08)",
+      "name": "MARMOTECA_GREY STONE_120x120_8",
+      "id": "05acb04b-4d15-48ce-9a61-9b089bd50bff",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0006319_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 66116,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "120X120-Nat P.tech/LA MARMOTECA - GREY STONE - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a5372421dba5f46f89d119935b5bfeb0e83188c26454d345a678d75626961bf8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 25 (view_09)",
+      "name": "MARMOTECA_GREY STONE_120x120_9",
+      "id": "1e1beda8-e6c0-4b6e-b37d-90192fd52671",
+      "site_position": 25
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0006322",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/grey-stone/pf60006322-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0006322_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-grey-stone-g0027062-60x120-lux-90504-0 (uses 0006322's faces: ABK lists Grey Stone 60x120 Lux as 0006313, whose pictures are named NOBILE GREY GRAPHITE, another collection's colour of the same faces; the pictures named MARMOTECA_GREY STONE on the Nat P.tech page 0006322 are used (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-grey-stone-pf60006322-60x120-nat-90523-0; wall gardenia-wall-tile-la-marmoteca-grey-stone-g0027062-60x120-lux-90504-0 (uses 0006322's faces: ABK lists Grey Stone 60x120 Lux as 0006313, whose pictures are named NOBILE GREY GRAPHITE, another collection's colour of the same faces; the pictures named MARMOTECA_GREY STONE on the Nat P.tech page 0006322 are used (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-grey-stone-pf60006322-60x120-nat-90523-0",
+   "faces": [
+    {
+     "file": "0006322_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31862,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "2a734c530b0a69c81c76a3417806edceefe1aea635f103ea5a08971e6837ce78",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "MARMOTECA_GREY STONE_60x120_1",
+      "id": "54e0cf6f-4f62-411e-860c-00b191b89171",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0006322_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35196,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "4c3989fe110a35c6027adc8e1339ed4e32d71baeadff1a1202e10db9d9bbcfe4",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 3 (view_02)",
+      "name": "MARMOTECA_GREY STONE_60x120_2",
+      "id": "0f781ae6-91c7-40e8-ac49-7ab1742f6f08",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0006322_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30868,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_3 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "b4dfe4fcbfa631e855cce96a4b2a17c7f1a534981d459f8eabac8ddc0ba9c1bb",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 6 (view_03)",
+      "name": "MARMOTECA_GREY STONE_60x120_3",
+      "id": "8d0de304-dd08-4763-83bf-3ae41f20c0ad",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0006322_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27104,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "6433106320a71cf2a119cf74aa1398ec90edabd70db3e0f9c9067ec4a403683c",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 7 (view_04)",
+      "name": "MARMOTECA_GREY STONE_60x120_4",
+      "id": "004650c1-24b3-49df-af28-7c4ea650ce73",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0006322_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28658,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "86e878e70c365843e8b9824c2df3ac275177998688b7c2a25d9f30499ef77a29",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 10 (view_05)",
+      "name": "MARMOTECA_GREY STONE_60x120_5",
+      "id": "995dd479-4634-46e2-a0f0-49c13916246a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0006322_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24920,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "19fddacb1bdbfc7629ae76062a1c5593c11d63a2023eee9b36bdfc2884dc6473",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 11 (view_06)",
+      "name": "MARMOTECA_GREY STONE_60x120_6",
+      "id": "5451acb0-3156-40af-b6fe-ea0c94568cde",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0006322_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28644,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "5e317c33c7e2fa85b783d1d10f0ca4bc625d92c211018df43202e5ff63165024",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14 (view_07)",
+      "name": "MARMOTECA_GREY STONE_60x120_7",
+      "id": "c0360bd4-4da9-47d4-b664-3beaa86e02fe",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0006322_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25734,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_8 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "95e8666e9fe46bc7712226da87d7d66cb348c66a17bc722e9c9d94133ea87628",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16 (view_08)",
+      "name": "MARMOTECA_GREY STONE_60x120_8",
+      "id": "e6d24b5f-7d3e-49fb-abb3-1aa03c586426",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0006322_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27254,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d68f8016cf135aef76cc6ab4e0e19e75d9d22c9a67a091aa5314d1c3e06cc321",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17 (view_09)",
+      "name": "MARMOTECA_GREY STONE_60x120_9",
+      "id": "c211a62f-6e77-4265-991e-841a4da2e37a",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0006322_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27950,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "d852c089bf6703f1a8e80c5cc96572399ec1c7d50920b1b337c80095f090ef3f",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19 (view_10)",
+      "name": "MARMOTECA_GREY STONE_60x120_10",
+      "id": "431e5308-19e7-4819-abfc-31255a07306c",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0006322_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25788,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "f1647e0491c3bebf71a5a958d74c3997465e8a628c9bda50c054e1ce10362eab",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21 (view_11)",
+      "name": "MARMOTECA_GREY STONE_60x120_11",
+      "id": "a8deb923-3d35-46b4-899e-89537dce7778",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0006322_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25480,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "0dccd4b84d1d923548384b74e5adb7d47e85f0cbafe474dc09f22e1772cc22c4",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23 (view_12)",
+      "name": "MARMOTECA_GREY STONE_60x120_12",
+      "id": "2ca7541e-76bc-4a09-b3a4-b845dce51c97",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0006322_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29786,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_13 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "64993a5bbf734914ce71c3b6281e88cc6b5523fba3413b64d06b6856071b25d5",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 26 (view_13)",
+      "name": "MARMOTECA_GREY STONE_60x120_13",
+      "id": "82dd66a9-fc61-44d3-985f-65df30795f62",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0006322_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34518,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_14 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "ac88ae0deadf30267a197f6627eac6101d33c42345fc637965466f282f379323",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 28 (view_14)",
+      "name": "MARMOTECA_GREY STONE_60x120_14",
+      "id": "ca027cd4-d52b-492b-9b37-5f560a623fa8",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0006322_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26468,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e12bff46f77a9b29974fbe1c4ce2628e68f1fe47421ee5bb0e9580a6227d5ec9",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 29 (view_15)",
+      "name": "MARMOTECA_GREY STONE_60x120_15",
+      "id": "b6ffa7f0-16cd-4ca2-935c-7cb4dffb6fe5",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0006322_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32364,
+     "source_zip": "LA MARMOTECA - GREY STONE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - GREY STONE - 60X120 - Nat P.tech - view_16 (2).jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "32422cd937a1f397548874b062262ee7e3da100620bc691ca0ae4b591995c2dd",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 32 (view_16)",
+      "name": "MARMOTECA_GREY STONE_60x120_16",
+      "id": "42e52310-12d3-4294-b34c-e303ae9f1fa7",
+      "site_position": 32
+     }
+    }
+   ]
+  }
+ ]
+}

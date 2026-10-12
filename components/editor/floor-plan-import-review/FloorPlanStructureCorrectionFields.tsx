@@ -153,7 +153,7 @@ export default function FloorPlanStructureCorrectionFields({
 
   return (
     <div data-review-controls="structure" className="grid gap-2 border-t border-neutral-200 pt-2">
-      <label className={`text-[10px] ${subtleClassName}`}>
+      <label className={`text-xs ${subtleClassName}`}>
         Add or edit a structural rectangle
         <select
           className={`${controlClassName} mt-1 w-full`}
@@ -169,7 +169,7 @@ export default function FloorPlanStructureCorrectionFields({
         </select>
       </label>
       <div className="grid grid-cols-2 gap-2">
-        <label className={`text-[10px] ${subtleClassName}`}>
+        <label className={`text-xs ${subtleClassName}`}>
           Name
           <input
             className={`${controlClassName} mt-1 w-full`}
@@ -177,7 +177,7 @@ export default function FloorPlanStructureCorrectionFields({
             onChange={(event) => setName(event.target.value)}
           />
         </label>
-        <label className={`text-[10px] ${subtleClassName}`}>
+        <label className={`text-xs ${subtleClassName}`}>
           Type
           <select
             className={`${controlClassName} mt-1 w-full`}
@@ -199,7 +199,7 @@ export default function FloorPlanStructureCorrectionFields({
           ["Base (mm)", baseOffsetMm, setBaseOffsetMm],
           ["Height (mm)", heightMm, setHeightMm],
         ].map(([label, value, setter]) => (
-          <label key={String(label)} className={`text-[10px] ${subtleClassName}`}>
+          <label key={String(label)} className={`text-xs ${subtleClassName}`}>
             {String(label)}
             <input
               className={`${controlClassName} mt-1 w-full`}
@@ -212,7 +212,7 @@ export default function FloorPlanStructureCorrectionFields({
             />
           </label>
         ))}
-        <label className={`col-span-2 flex items-center gap-2 text-[10px] ${subtleClassName}`}>
+        <label className={`col-span-2 flex items-center gap-2 text-xs ${subtleClassName}`}>
           <input
             type="checkbox"
             checked={locked}
@@ -249,7 +249,7 @@ export default function FloorPlanStructureCorrectionFields({
           </button>
         ) : null}
       </div>
-      <p className={`text-[10px] ${subtleClassName}`}>
+      <p className={`text-xs ${subtleClassName}`}>
         Rectangles reuse matching plan vertices. Replaced vertices are removed
         only when no wall, annotation, dimension, or structure still uses them.
       </p>

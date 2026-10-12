@@ -1,0 +1,730 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta-elegance/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip (29355351 bytes, sha256 0686db61258480cbeb64229ef0eded8489bae12874b60dc88dc220376cd07f67).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0010597",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta-elegance/pf60010597-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0010597_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacat-elegance-pf60010597-120x280-lux-90539-0; floor gardenia-flooring-la-marmoteca-calacat-elegance-pf60010601-120x280-soft-90541-0 (uses 0010597's faces: ABK's 4 Soft pictures are 0010597's 4 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010597-120x280-lux-90539-0; wall gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010601-120x280-soft-90541-0 (uses 0010597's faces: ABK's 4 Soft pictures are 0010597's 4 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0010597_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 40464,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA ELEGANCE - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1770,
+      4096
+     ],
+     "source_sha256": "c7c0db68d029d665f14583611496509a9b015e4113d53b5b8aad019433013acb",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_120X280_1",
+      "id": "3f42f4ba-9157-4971-9d18-5fe39dcb7e22",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0010597_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 40092,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA ELEGANCE - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "252ce78253016ce501a7c38afae720515820e33c74b1107ea98d015fb09928ed",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_120X280_3",
+      "id": "c91ec893-1682-43b7-b4e9-06d93aca78cb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0010597_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 37368,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA ELEGANCE - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "fb166c5e4ac01713b93cf1bf7abfb08be1fff2d951cceac0d6e763d4de754116",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_120X280_2",
+      "id": "4eb6d130-279b-4dfb-8dc1-4f7f42419fb8",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0010597_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 41696,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X280-Soft/LA MARMOTECA - CALACATTA ELEGANCE - 120X280 - Soft - view_4.jpg",
+     "source_px": [
+      1771,
+      4096
+     ],
+     "source_sha256": "23fa87f43390a1566c22e3ed7d84af7be4183a2f7a1dfccb17d78c84ac470942",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_120X280_4",
+      "id": "d092397b-9297-4586-b801-fef85a4fce27",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "g27051",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta-elegance/g0027051.a-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "g27051_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacat-elegance-g0027051-120x120-lux-90496-0; floor gardenia-flooring-la-marmoteca-calacat-elegance-pf60010391-120x120-nat-90535-0 (uses g27051's faces: ABK's 8 Nat P.tech pictures are g27051's 8 Lux pictures exported again (image matching, r 0.97 to 0.99); byte for byte they are 0010362's, ABK's second Calacatta Elegance 120x120 Lux item); wall gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027051-120x120-lux-90496-0; wall gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010391-120x120-nat-90535-0 (uses g27051's faces: ABK's 8 Nat P.tech pictures are g27051's 8 Lux pictures exported again (image matching, r 0.97 to 0.99); byte for byte they are 0010362's, ABK's second Calacatta Elegance 120x120 Lux item)",
+   "faces": [
+    {
+     "file": "g27051_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19684,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c852694e6e2da6ea86d9a55a7f0b7a73ba09616498e2c781816c816329f1fd4b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1 (view_01)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_1",
+      "id": "ffabf9f5-5d88-4a20-922d-c8a2671cc166",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27051_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16976,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a01b3c6982d397fa595b8ec463bc7a1f3e4d919bf80057e3008fc971f4e48d7f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2 (view_02)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_2",
+      "id": "3df38663-174a-4e63-b877-de39c664ac81",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27051_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17514,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "412fbfc03b31638547972955668218c4ee9f866bc3c4ea626ab2544a0dc522d4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3 (view_03)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_3",
+      "id": "8c0c9894-7005-4395-afec-a42775435282",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27051_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15996,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "989baa4f290468ef65b1d027b4ea209e7613437a04b36b45418951fd04a177f7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4 (view_04)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_4",
+      "id": "4a24f00f-9305-4f1f-91ae-3c7178ceedd1",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27051_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16868,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bfc41587ba6e1577115635f1caa3fc8fa6faf2900dce9b09429d653a2263279e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5 (view_05)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_5",
+      "id": "ec2343ae-c34b-44b6-ac7e-0377a874d23c",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27051_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20486,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2197312f8a488a65aa21de0e3a7c6f3092ba28315a9b778ae46c1594074f4b66",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6 (view_06)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_6",
+      "id": "a23a9208-6b28-429d-98e5-616e3c55fadc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27051_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16448,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "059da91377f6886b85d20bfc571da66958f5bde729df4cd35ac637046d626729",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7 (view_07)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_7",
+      "id": "c786e4df-cfec-4ef0-884f-9b54d1dd4731",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27051_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19596,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - CALACATTA ELEGANCE - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2df1676f8bf23a3e740c61ed41b063cbbc1891c7435961208f2eaf59b593a3b1",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8 (view_08)",
+      "name": "MARMOTECA_CALACATTA ELEGANCE_120X120_8",
+      "id": "bee9acb6-2001-4e91-a0f4-018cc493cb10",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "g27061",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/calacatta-elegance/g0027061.a-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "g27061_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-calacat-elegance-g0027061-60x120-lux-90503-0; floor gardenia-flooring-la-marmoteca-calacat-elegance-g0027071-40x120-lux-90509-0 (uses g27061's faces: ABK has no 40x120 pictures; the colour's 60x120 Lux faces are used, and the renderer cuts true-scale 400x1200 windows from them (J, 10 Oct 2026)); floor gardenia-flooring-la-marmoteca-calacat-elegance-pf60010396-60x120-nat-90537-0 (uses g27061's faces: ABK's 16 Nat P.tech pictures are g27061's 16 Lux pictures, byte for byte); wall gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027061-60x120-lux-90503-0; wall gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027071-40x120-lux-90509-0 (uses g27061's faces: ABK has no 40x120 pictures; the colour's 60x120 Lux faces are used, and the renderer cuts true-scale 400x1200 windows from them (J, 10 Oct 2026)); wall gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010396-60x120-nat-90537-0 (uses g27061's faces: ABK's 16 Nat P.tech pictures are g27061's 16 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "g27061_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11992,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "528317eafcb3c825281da05c560bb0fc2ed5592d137993f8538737552ec68cd1",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_12",
+      "id": "383f14ad-e37a-46b4-8f52-7512b913e582",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g27061_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10418,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "60e4ee2e7a0e2e28189639910e3a9cd33aa9306783d2aa1199bec49f09ee12d0",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_15",
+      "id": "69a1bed6-4fee-4260-95f8-a2ea17dbd03e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g27061_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8418,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "8a1c18004985bb1977c107d299bb9981c01346dfbe9c20be69590eaa13a5bfc6",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_11",
+      "id": "6d1f2d74-b6c1-4dd0-bfac-6967a01bbb8e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g27061_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9234,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "5220f4a4251d75a565ad4354eb2b94a42e18023c2361e4773e98698b1f1690a4",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_13",
+      "id": "3bf50611-349a-4029-a5f5-6ae69cf625b9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "g27061_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7232,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "1c32b2aba17f63c38420371d81c5bb4a3200b747d4b2caa26db47c8031fb9e7e",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_14",
+      "id": "d68108f2-8466-4474-9b72-1a17bd5c1744",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "g27061_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8644,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "ff7cc9eb0606a181803eaf448713f827345b46f01b85c268f15e3586b85cd939",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_6",
+      "id": "69d3a233-23bd-4a3e-9a81-ef65e2859125",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "g27061_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8972,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "da0bb7f124963a3ab53432208d73944f5dae4926f8e50bb8a4bb66d64696827c",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_5",
+      "id": "68aa9281-0a58-48ec-97b5-7c0fd8e8975b",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "g27061_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6926,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "697fc359a7b2dd7bc054c271d92b6694d266b8a87324c1a73355e1b7df3c5d0b",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_9",
+      "id": "6933fd92-a766-48a6-a93e-ee6573bdf0c9",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "g27061_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10196,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      1772,
+      3543
+     ],
+     "source_sha256": "e479432055d96c0aaecc8dacc255f47b7a59807cf3a57ad103f267489e48d057",
+     "source_px_per_mm": 2.953,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_10",
+      "id": "e37ae6e6-5dee-4e94-8ef8-a22cb71c4268",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "g27061_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9614,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "638dbeb53a3fa1d80131ca5bf21752fafd35a17ec8cf8356f1b5eb008247143b",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_16",
+      "id": "24bbeb7d-9b39-4348-82af-0da32052dc7e",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "g27061_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10464,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "c3ca9d82c1e917c2c12862ecdd8d4bd2387e9f3cdbda857ee1b27923faad9b2d",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_8",
+      "id": "67b851be-b4a2-4393-b965-518b4893584a",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "g27061_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9746,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "35a71f6879892765f558dbb4e850c9726202830180eda2a00a24301c1ae6257d",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_4",
+      "id": "032adae0-5d43-4f0c-a7f1-59e223de367d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "g27061_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5518,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "ba695633235db488530f25b9bf44d12ed807db1fdf1818dc583fb885ce5cff2e",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_7",
+      "id": "9bbb8513-e85f-4fb4-8312-ce5a0df62ae9",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "g27061_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9988,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "7f451b5fdbe9a0222aba0b9a22a6578a6e039f54fb02e25c05011a00d0677f05",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_2",
+      "id": "da64f17f-bb86-46ed-b005-09ccde1428e5",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "g27061_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9598,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "b18f3392d69cee90540423e5cb7f46bccb88cd6e970151c0608637eb0d0d4528",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_1",
+      "id": "7a9a7dac-6041-4896-852d-b9ce2287aee3",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "g27061_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7530,
+     "source_zip": "LA MARMOTECA - CALACATTA ELEGANCE - minimali.zip",
+     "source_file": "60X120-Nat P.tech/LA MARMOTECA - CALACATTA ELEGANCE - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      1477,
+      2953
+     ],
+     "source_sha256": "fff0063e5d0ca7a2ade008aafd8f30cac716135abda58369baabce0a348e5aea",
+     "source_px_per_mm": 2.461,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "LA MARMOTECA_CALACATTA ELEGANCE_60X120_3",
+      "id": "62323205-26c2-47f8-b1d7-e1d69591c739",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

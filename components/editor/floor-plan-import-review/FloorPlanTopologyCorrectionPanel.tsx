@@ -81,7 +81,7 @@ export default function FloorPlanTopologyCorrectionPanel({
       </summary>
       <div className="mt-2 grid gap-3">
         <div className="grid gap-2">
-          <label className={`text-[10px] ${subtle}`}>
+          <label className={`text-xs ${subtle}`}>
             Wall vertex
             <select
               className={`${control} mt-1 w-full`}
@@ -98,7 +98,7 @@ export default function FloorPlanTopologyCorrectionPanel({
           </label>
           {selectedVertexId ? (
             <div className="grid grid-cols-2 gap-2">
-              <label className={`text-[10px] ${subtle}`}>
+              <label className={`text-xs ${subtle}`}>
                 X (mm)
                 <input
                   className={`${control} mt-1 w-full`}
@@ -108,7 +108,7 @@ export default function FloorPlanTopologyCorrectionPanel({
                   onChange={(event) => setVertexX(Number(event.target.value))}
                 />
               </label>
-              <label className={`text-[10px] ${subtle}`}>
+              <label className={`text-xs ${subtle}`}>
                 Z (mm)
                 <input
                   className={`${control} mt-1 w-full`}
@@ -176,7 +176,7 @@ export default function FloorPlanTopologyCorrectionPanel({
           onFocusIds={onFocusIds}
           onMutate={mutate}
         />
-        <p className={`text-[10px] ${subtle}`}>
+        <p className={`text-xs ${subtle}`}>
           Invalid loops, overlaps, detached spans and non-integer geometry are
           rejected before the candidate changes. Every accepted correction
           stays needs-review.

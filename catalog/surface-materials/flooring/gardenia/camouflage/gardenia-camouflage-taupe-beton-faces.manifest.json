@@ -1,0 +1,1408 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/taupe-beton/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: CAMOUFLAGE - TAUPE BETON - minimali.zip (190065378 bytes, sha256 78197564faf46faf4846acca296e9fcc333e8c5a0523655d522738ffc648c307).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/camouflage/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0014261",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/taupe-beton/pf60014261-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0014261_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "duplicates_note": "picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 8 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 4 is picture 12 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 5 is picture 9 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 6 is picture 10 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 7 is picture 11 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-taupe-beton-0014261-120x120-nat; wall gardenia-wall-tile-camouflage-taupe-beton-0014261-120x120-nat",
+   "faces": [
+    {
+     "file": "0014261_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 59280,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c65127165b6e7a099872d3f56013bd163c5bc087b6138eb3b6e843f2316e9e6a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_01",
+      "id": "281a8afd-0caa-4d53-9886-1e1457f4b1ec",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014261_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 60606,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d135efa992e05bcaee9faecc9d77046738fb28af751f91412ce73aa64114e36d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_02",
+      "id": "2b6c2941-ee83-4c55-80f9-7879f6f12131",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0014261_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 48872,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ba8b1cbd7cf9d7c65403eca3be055e673a25f68be90f7d89333fc553678cbadc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_04",
+      "id": "40cd57e4-bed8-4a2a-a4a6-d03bfd070d8a",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0014261_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 59208,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "19690f6c04d316ced8631e2856ab37b08d2bd4a7ebd8e02ec0d3fd672f0d0a7c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_05",
+      "id": "c55434e3-9465-48ca-922c-9e72515f730e",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0014261_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 45798,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9414e0d7acda372edcc3074f2c6316f72fb0d7eb7cce678a4174223355494d7a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_06",
+      "id": "ec1b6061-3481-4b88-940b-5a8901cfe7cd",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0014261_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 55540,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "120X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 120X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7dac8374d98e64a5c8d935cc4f1b4a2c2d6d164f3c3603aa5ce9e7cfbc2061c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE TAUPE BETON 120X120_03",
+      "id": "f7a85b21-b4ae-4b61-a32f-b95d1eb1932c",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0014255",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/taupe-beton/pf60014255-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0014255_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 10 is picture 20 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 11 is picture 22 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 12 is picture 18 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 13 is picture 23 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 16 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 4 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 21 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 6 is picture 15 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 7 is picture 19 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 8 is picture 17 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 9 is picture 14 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-taupe-beton-0014255-60x120-nat; wall gardenia-wall-tile-camouflage-taupe-beton-0014255-60x120-nat",
+   "faces": [
+    {
+     "file": "0014255_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30980,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e1650b8a4850be7ec60711c6a580f04a1108e425b4d62122d0a0421a1f8e077b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_01",
+      "id": "c9ca83c3-0912-4e72-86a0-a5f91cda882b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014255_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26776,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4d67b261ec7338c75b56aeaf121ff6beffe831bd8bdb2a5b080b8007126e46ac",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_08",
+      "id": "278800d8-f8eb-4691-8419-d0b614d35995",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014255_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 26730,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b0316c76d8e7bb1b4f66d5179f42dfecb2f31963d542ee8dc78d27dc2e9b85d5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_05",
+      "id": "49c019a7-ec6f-4877-be34-22fbc534fcb8",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014255_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 27230,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f480c776bb1318746457fd4638acb9559cde6a3f23e4ec5181ba910d8412b6fc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_02",
+      "id": "53fb6d05-9d6a-4e21-a33f-65fbe1ea9660",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014255_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 24622,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1aa027e055d812c7db9cb77aa9014a80b098e2e00dc14cd8eeb6a7147726ab88",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_07",
+      "id": "62155ac7-9906-4cdc-bff7-7216bbfef2f9",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014255_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25060,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_10 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a75d85bb5cff18036f933d431896eab370fe2c63d5d78d2f59388d83cd558e8c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_11",
+      "id": "891deb2d-aa42-4f4e-b326-3e89d8b3c9ed",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014255_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28620,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "07789fd36d3de1bfe14947b4ba6797c6e02e31e35de98f26fc37e3cfba1e43d0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_06",
+      "id": "8f91d2ce-f8b3-4662-a5c8-910471e7b82f",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014255_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30322,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_12 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7a1bb137efac006b176f8338bc66ba95e8b2735c0592ca6a07ebcc249dcc6d1d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_09",
+      "id": "94ad3859-ec96-4cd7-88cd-9f47f8400be3",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0014255_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30756,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3af2288f3eefe2c9a4080b8c2d7073efcdacda9e9786b5e75117fc4800a3aab8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_04",
+      "id": "c009e459-7b6b-4621-bfe0-dd3208766a7c",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0014255_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30240,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ae61284fa9639bb323c0ffc7ca190b4071bd35cdf29c94627f4b00ad086844c0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_10",
+      "id": "c9286a17-ed4f-4f1d-963b-2508c14ebb92",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0014255_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21278,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d44aba6f2175743495570b2672f2c9b436e214805f4b71b438f36d1ae26b01f3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_12",
+      "id": "e99a421a-3e9b-46ad-9078-062b00a6cea8",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0014255_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29334,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X120-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X120 - Nat P.tech - view_23.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "724d58f1a4f80aa18f07343463a50290dff745685fb6fcaa9446e84be23d7590",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE TAUPE BETON 60X120_03",
+      "id": "f59d1555-87f5-4d82-b979-48647a851b55",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0014398",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/taupe-beton/pf60014398-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0014398_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "duplicates_note": "picture 1 is picture 2 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 10 is picture 22 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 11 is picture 15 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 12 is picture 21 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 17 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 3 is picture 23 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 4 is picture 19 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 16 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 6 is picture 24 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 7 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 8 is picture 18 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 9 is picture 20 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy",
+   "used_by": "floor gardenia-flooring-camouflage-taupe-beton-0014398-80x80-nat; wall gardenia-wall-tile-camouflage-taupe-beton-0014398-80x80-nat",
+   "faces": [
+    {
+     "file": "0014398_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 16766,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "14d54c506f24c4a4b9dd5dde7579ea4c56f53f8fc7d844d1a6880efaf04e2e19",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 2 (view_01)",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_01",
+      "id": "eecf22c7-65b2-4b4b-8acc-33297a97aec3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014398_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25630,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8562dd969f22adc1f588c34cfd3cdf34ae77137f143087219463dc460d2b3aab",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_06",
+      "id": "203a95f3-8456-4a52-9a9b-9e36d447acff",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0014398_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23968,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6a43e15f7659b914cf3836d28a52e88ab13df33d425985b61910fe2ccb87fe84",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_10",
+      "id": "22baec5d-70cc-4360-ac1b-8761294295b8",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0014398_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24728,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c9cced183f880ec24268954f8bc442a396662ee7c771053897753852d1ddb0a8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_04",
+      "id": "6c0f3101-1c4b-4ca8-9c3b-8e1d1aafcc50",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0014398_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 16336,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_10 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "31b5ec0dd399b29af029b1a4446f1f627c686faec2496f56ee70a07a4aa01b79",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_12",
+      "id": "8a0ad6c7-ef12-46e0-9474-fd56aa402df3",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0014398_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 19082,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_11 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3ff1ca73f544aba28d0adc9699f257f368cca2537f14bada064ee85dfd6ab2ce",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_07",
+      "id": "966ef72f-55e2-4741-a423-3d599a70add1",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0014398_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24148,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6ddefeb35c9dad06bb3e63c5b2915bfe57156ed48b7ab7aaea43f0a983867569",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_03",
+      "id": "984268a5-dfc0-4617-870b-0a926d5c13c4",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0014398_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25566,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "42f622dfdf2216c940d04985700ba36b2f26658eaab9523036dd0ef16ac75799",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_08",
+      "id": "9f6e33c4-c24b-46b2-968b-527d59c6ab4c",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0014398_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25802,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0fe58ba69f372650aeeb9350e3b8a212f95119213df04f2d32cbd07af27bd4aa",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_11",
+      "id": "a2382b61-38ed-40a2-ad88-f1095ffbe1a5",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0014398_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23882,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11af06122dda68e89abad1937d066941ea114e85a66860d439ac21eed72df4a7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_09",
+      "id": "a35ee29a-580e-4b59-8550-b830a4922679",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0014398_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 19736,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b5f493ad30fa7a4b0fd6340474d595122d22052f5d10f526be932b12f2c515c8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_02",
+      "id": "c564ad30-e34a-4251-8096-99fe0750c040",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0014398_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25498,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "80X80-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 80X80 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0ee3ad992c7383debc1eacc6cc97d55581021084eba1a4456b964c8afba98730",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE TAUPE BETON 80X80_05",
+      "id": "ea184e31-e96f-4daf-957c-6d1ebf607d30",
+      "site_position": 24
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0018158",
+   "finish": "Nat P.tech",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/camouflage/taupe-beton/pf60018158-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0018158_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-camouflage-taupe-beton-0018158-60x60-nat; wall gardenia-wall-tile-camouflage-taupe-beton-0018158-60x60-nat",
+   "faces": [
+    {
+     "file": "0018158_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12084,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_1 (2).jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "76b08cd0c3a53c98220ad60642e480740d6eef092443a9772f7d7469a0b9fdf7",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 1 (view_01)",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_01",
+      "id": "e89dfbf6-3fb6-46d0-bae9-aebb777e0b90",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0018158_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9216,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_1.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f5f48cb61b0e3b64478d7c84ca53add65874ac7abb3e56eeefc48206ea12e301",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 2",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_13",
+      "id": "0b50614b-82bf-4b10-96df-a76e6d622211",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0018158_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14788,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_2.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e401fe22353400b5256460d98ce478b98061c0b01a5ee6bf8faf4864a569c3d4",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 3",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_21",
+      "id": "12ca94f4-d11b-4e3a-a0b1-957958e9e08f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0018158_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15442,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_3.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ddb5e8b7f88949b731e31866697068393a30bbdd4616d96e33f950d5fd76d667",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 4",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_05",
+      "id": "3ab17635-cd3c-42b8-a5e4-40049e181db8",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0018158_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11776,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_4.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4f975dc49cf7fe66b12644c768729a41f872e5596e58903787912b7521847adf",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 5",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_15",
+      "id": "439c70e5-1eb2-4805-95c2-6335a1ba003d",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0018158_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10482,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_5.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ad1ebd8b18b60cbd936cdf1c8b989061e863f8e8f7b8e62b1e7a057bd5925b41",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 6",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_10",
+      "id": "4cb52606-cb7a-4768-a120-8723689c1cde",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0018158_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18550,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_6.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "d825140142ab6217db901bd71aa441b809035877ba2dd1fbe4ba91eaa0dba7f0",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 7",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_02",
+      "id": "59b33150-68c5-4ea8-b7a0-fdc8e61e84ca",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0018158_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15500,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_7.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "6ad9cc43abbaa3028864e1d83e73bd08fb0822e4fa9e6ee1de50e650455b3280",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 8",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_14",
+      "id": "5aa7d37c-e63d-4bc7-b1e0-d83bcfcdd34a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0018158_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14374,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_8.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e4bd61455fd18a7208e0f9e2f0adbb4ca58030bb6ac287bebba3665e41e11cbe",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 9",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_06",
+      "id": "71f7af63-f64a-43b1-a3d7-9bb9299b9c6d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0018158_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19062,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_9.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "21f4d1b96477640b384463b8be2ade917ce627dc744e0d8c413599e71c767e93",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 10",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_04",
+      "id": "73bde51e-ec77-453d-8544-38cad1c8a63f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0018158_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14920,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_10.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "aeca9ac49984b3dd7007a32552c473f7cbc5552dea2350818d105da99f1b6261",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 11",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_16",
+      "id": "7f772f3a-f20f-48af-897b-fc33d4219103",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0018158_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6150,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_11.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "27a02a8f4201105f13a512863b55f01371c6b414634cdbdd915999773f66adb8",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 12",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_24",
+      "id": "82731d84-7951-4ca6-9174-000f85ede26a",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0018158_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10764,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_12.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "ddecf717bffdf02327e81597761b1efed798b471ba1f813ee9db09045763f584",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 13",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_22",
+      "id": "87087680-7190-4e15-9f42-32c1dd66793f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0018158_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15576,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_13.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "e3aba5b3985ac5788165674b9e91ac0b8c5c873ffbba68495e8c8749e692ff29",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 14",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_11",
+      "id": "a64ae24e-5bcf-4a27-9544-fbea3ad52eb5",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0018158_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14538,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_14.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "5279e4ca98b748f6d0d7272139de31119a9c73637c9d46ce9103aa9dc3bbf313",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 15",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_18",
+      "id": "aa335fe6-fa03-4198-93f9-090fbd11f236",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0018158_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15162,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_15.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "2d3d12da47dd18c5423ee357822554743b503e458edeec2250f9e63d42027b83",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 16",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_19",
+      "id": "b4127185-be21-47c3-aef2-4d1622d951d2",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0018158_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16714,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_16.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "a61bfabc856de924c10805e2e2fad41b4562ba08357a387d3716ce6e73b931ba",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 17",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_20",
+      "id": "b5b5ca59-a875-479b-a00c-96b61a230cfb",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0018158_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16182,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_17.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "76184cc4387412bd2a7ac1c48fa9df232ce33a64f08fa04596b7c1a9c3ca61d3",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 18",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_23",
+      "id": "c168aa10-b2ab-4320-a73d-915ccf75fafc",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0018158_19.webp",
+     "face": 19,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16422,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_18.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "4250f73fd295a61ace0d9ea4192ebf5fab71271338b5b0b05f570868b323aa9c",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 19",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_07",
+      "id": "caad0aa5-b246-46e5-a415-38c1da94fb20",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0018158_20.webp",
+     "face": 20,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16312,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_19.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "329a09aeea5dd9e80974ac2344b01de31483831871a0a15f9214a47ac1c0b1b0",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 20",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_09",
+      "id": "caadeacd-f7ef-4558-b7e3-a8c05138722b",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0018158_21.webp",
+     "face": 21,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15232,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_20.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "56b158c65d30673fbe00225d8e62da762980dad05921d46ea4f6372708416cdc",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 21",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_17",
+      "id": "d4d00811-1822-4f27-9fc7-76e0ec5198fe",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0018158_22.webp",
+     "face": 22,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14540,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_21.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "0593f7d9dff748d46c547ac3c2882b7819a94279ff93dfec54779cf71b2a1407",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 22",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_08",
+      "id": "df37f905-267c-428e-b6ea-1e1db1ecdf1b",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0018158_23.webp",
+     "face": 23,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14210,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_22.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "f88dbb74c3a77438b87eb49d676930a6842200d63684e0e3f075796b6c09e911",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 23",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_12",
+      "id": "dffc7ec2-d082-4015-9ed0-ba746e1290a3",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0018158_24.webp",
+     "face": 24,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9104,
+     "source_zip": "CAMOUFLAGE - TAUPE BETON - minimali.zip",
+     "source_file": "60X60-Nat P.tech/CAMOUFLAGE - TAUPE BETON - 60X60 - Nat P.tech - view_24.jpg",
+     "source_px": [
+      2362,
+      2362
+     ],
+     "source_sha256": "26137f603774bbccd7fe59509b715b5ceaf78680ef32bdad9cac332422ec3cc5",
+     "source_px_per_mm": 3.937,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · Nat P.tech · Faccia 24",
+      "name": "CAMOUFLAGE TAUPE BETON 60X60_03",
+      "id": "f7ec93a4-e9f4-468a-94c1-074056d9224e",
+      "site_position": 24
+     }
+    }
+   ]
+  }
+ ]
+}

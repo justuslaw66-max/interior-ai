@@ -1,0 +1,613 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/patagonia-emerald/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: LA MARMOTECA - PATAGONIA EMERALD - minimali.zip (54979654 bytes, sha256 ad5a65c694f67169ecc2e30db7e8373272b474440d36e36fb0e8cde7dfd17647).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-marmoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0012774",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/patagonia-emerald/pf60012774-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0012774_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012774-120x280-lux-90560-0; wall gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012774-120x280-lux-90560-0",
+   "faces": [
+    {
+     "file": "0012774_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 329294,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X280 - Lux - view_1.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "de6e1b8268f25283e47090c12bfb7919d6c6792c864f7e0ecb66e1a2769e6dd7",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x280_2",
+      "id": "93c23d8e-b509-414b-b6db-9813e7668c6b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012774_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 358436,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X280 - Lux - view_2.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "e04fad0fe8181c9780dc4f13fb3edf5bb03a55776d0a76cf87013ce63edcb7a2",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x280_1",
+      "id": "9cd53885-9bf2-44b4-84e2-a0ac6f1a2ffc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012774_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 320514,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X280-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X280 - Lux - view_3.jpg",
+     "source_px": [
+      1755,
+      4096
+     ],
+     "source_sha256": "b6d3881e6777c2ed4c2532707ceaee1592d859a1dfe9a6188250ac47be75b2bb",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x280_3",
+      "id": "8c116e6c-0f34-4272-a310-8b1b60d2d9b7",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0012777",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/patagonia-emerald/pfa0012777-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0012777_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012777-120x120-lux-90561-0; wall gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012777-120x120-lux-90561-0",
+   "faces": [
+    {
+     "file": "0012777_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 149620,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "148d10298cfe9544ba2b468b4265605a17590371023d5e687ba6a80ae6aeb593",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_3",
+      "id": "e4414465-f2fb-4684-8638-c4c6c70df8ae",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012777_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 156722,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "146fae85b746ea31fcd0cff6e27cef419402de816d2eea05ea39f4ec5e18fbb5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_8",
+      "id": "20c5b4bf-9b79-4a26-98f6-597d05345d49",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012777_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 142288,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "415351cb34ab6836c6fe065ce7a5c005ecf9a32f54cd4af07495f2762e60c643",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_7",
+      "id": "8b591a32-d57e-4fed-8c37-be3462fbbe1d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012777_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 144408,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4a3662cfccc9c6d2856537936743d7dcb772fb052b8e92a8297a37df2b7df683",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_6",
+      "id": "116239a9-b7ef-4cc6-bb2b-4b33e6c98b14",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012777_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 163312,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ea0340c10e152277ad01c6db34bff5c0a3524fa2dff0ee309c3f83b0ac5126ef",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_1",
+      "id": "f6838d2c-4434-4779-93f5-07cace891d7b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012777_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 148392,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1cd42dd899b74eec7d8832d3466fc3ffdb82725c99078794c4a9e83e46ef7ccf",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_2",
+      "id": "76475de5-fd9f-47ff-a74f-0368f7ac7ecd",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012777_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 137682,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "44c0fe3c25f22ab6c5cdf0b687b27ac9cee5c7268338d541cd0fea3fe8e01cad",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_9",
+      "id": "d5975c64-101b-430c-8ec9-8cd1269d991e",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012777_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 138112,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "137078f55e8dedb84f4968f69fd05fd6cfd266ddfd74b347481f3b19aedb874e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_4",
+      "id": "3248f051-d42f-4d5e-ad33-e4aff33d6bdd",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012777_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 129052,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "120X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9e0b1b092bb021b5d337202d078ec042f4bb0898b537758758e4eccc2e564c84",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 120x120_5",
+      "id": "f60c308f-0b5f-428a-b821-12f1f3530dcc",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0012778",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-marmoteca/patagonia-emerald/pfa0012778-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0012778_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    8
+   ],
+   "used_by": "floor gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012778-60x120-lux-90562-0; wall gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012778-60x120-lux-90562-0",
+   "faces": [
+    {
+     "file": "0012778_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68374,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7d411ec6759e473cd176ccf6c864d188570ca415e69c7f76382b3d5a1b9de24d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_7",
+      "id": "69724a9e-c77c-4b43-bd3b-5fcd8e138a83",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012778_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 78448,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a2d5b32157147d8ebd8cf8133f1efd11f5ce0ff7178d2bdd1760ce33dc1cba20",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_12",
+      "id": "19469f99-f432-49db-9177-0d76b8126105",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012778_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 70882,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "df7f2eaef3e8c42c5fa71298815565b2b267787705dffdf1228a4513ff0492a1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_8",
+      "id": "9d9df5db-9813-4012-8619-ea2df84610fb",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012778_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63882,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "dadfe99c04fc5c050d91c6456a0b9707fc6365075af80e4d896f6857137b4cf4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_10",
+      "id": "c282182b-20e1-48fb-86cd-49d86a3236c9",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012778_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73932,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7702e6636a49b04267035daece7a262a60a03752849660b9153972d6ba8f4031",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_2",
+      "id": "73711e9e-3e35-46df-909b-031b34005c77",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012778_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 73502,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "68f1c4e9e29f0ff464b6d42bff30dab691242ee95d6a44378d5045f4f3e0517a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_5",
+      "id": "60907121-95b6-4464-bf12-6d7fcc9678f7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012778_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 78380,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "7be98cf79cb4ae64355c2519ac1180a4252dc2e5aeae9e596199db1681470026",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_6",
+      "id": "baa1e5a4-1e0f-445f-ad5a-ce835eb6f860",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012778_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 64522,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b6279985a4a578959f2120d2c35d0e4871809b1d5ac2b6ed633893505b728f07",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_4",
+      "id": "710539de-b02e-4044-a624-12779f0e66ee",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012778_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 89658,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2c31c0eb4360bbbaa3f1a58f20e1a72e754bc31b3fae17ea1d525a5d328f4e0a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_1",
+      "id": "9f164dd8-e33b-4972-b46c-e910ab69f8d6",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012778_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 84256,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "325b647bf6b2f5a5e4e9f368815df827fbf00f431960b4ef4edb1f6585e4b14d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_3",
+      "id": "4e4917da-c70a-4d28-9fe6-1a86d71df4f3",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012778_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65326,
+     "source_zip": "LA MARMOTECA - PATAGONIA EMERALD - minimali.zip",
+     "source_file": "60X120-Lux/LA MARMOTECA - PATAGONIA EMERALD - 60X120 - Lux - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ede71122abf7c4323f2eeaec7df439bd0356893c103cf4f590005b8bfa56904b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "LA MARMOTECA_PATAGONIA EMERALD LUX 60x120_9",
+      "id": "9e23d101-48f0-4c6f-b998-8136aaf8129c",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -117,8 +117,8 @@ function OpeningDimensionWarning({
     <div
       data-testid="selection-inspector-opening-dimension-warning"
       className={dark
-        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-[10px] text-amber-100"
-        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] text-amber-900"}
+        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
+        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
     >
       Stored {length(state.heightMm)} at {length(state.bottomMm)}; effective render {length(state.effectiveHeightMm)} at {length(state.effectiveBottomMm)}.
       {state.dimensionIssues.map((issue) => <div key={issue} className="mt-0.5">{issue}</div>)}
@@ -136,8 +136,8 @@ function OpeningHostRepair({
     <div
       data-testid="selection-inspector-opening-host-warning"
       className={configuration.dark
-        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-[10px] text-amber-100"
-        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] text-amber-900"}
+        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
+        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
     >
       <div className="font-semibold">{state.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">Choose a wall that contains the requested position.</div>
