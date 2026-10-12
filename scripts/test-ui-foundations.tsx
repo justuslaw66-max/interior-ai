@@ -102,14 +102,9 @@ const subTwelvePixelUses = (text: string) =>
     .length;
 const underTwelvePixels = sources.reduce((count, { text }) => count + subTwelvePixelUses(text), 0);
 
-// The 12px minimum (AX7, phase 5): text is at least 12px (text-xs) everywhere but these, which
-// follow in later steps: the room navigator's labels on the canvas (ED7's rules), and the finish
-// swatches, whose snapshots change with them.
-const SMALL_TEXT_STILL_TO_DO = [
-  /^components\/editor\/RoomPanNavigator\.tsx$/,
-  /^components\/editor\/design-page\/Product(?:Finish|ModelVariant)Controls\.tsx$/,
-  /^components\/catalog\/CatalogItemFinishPicker\.tsx$/,
-];
+// The 12px minimum (AX7, phase 5): text is at least 12px (text-xs) everywhere but the room
+// navigator's labels on the canvas, which follow ED7's rules for canvas text in a later step.
+const SMALL_TEXT_STILL_TO_DO = [/^components\/editor\/RoomPanNavigator\.tsx$/];
 assert.deepEqual(
   sources
     .filter(({ path, text }) => subTwelvePixelUses(text) > 0 && !SMALL_TEXT_STILL_TO_DO.some((area) => area.test(path)))
@@ -142,7 +137,7 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { underTwelvePixels: 13, rawButtons: 784, emojiButtons: 7 };
+const LIMITS = { underTwelvePixels: 2, rawButtons: 784, emojiButtons: 7 };
 const counts = { underTwelvePixels, rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);
