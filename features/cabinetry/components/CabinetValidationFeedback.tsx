@@ -48,15 +48,15 @@ export function ValidationIssueCard({
         onClick={() => onFocus(issue)}
       >
         <span className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+          <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
             {issue.severity}
           </span>
           <span className="font-semibold">{formatFeedback(issue.title)}</span>
-          <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+          <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
             {issue.target.scope}
           </span>
           {issue.target.moduleIds?.length ? (
-            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-medium">
+            <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium">
               {issue.target.moduleIds.length === 1
                 ? issue.target.moduleIds[0]
                 : `${issue.target.moduleIds.length} modules`}
@@ -99,12 +99,12 @@ export function ModuleIssueBadges({ issues }: { issues: CabinetValidationIssue[]
       aria-label={`${errorCount} errors and ${warningCount} warnings`}
     >
       {errorCount ? (
-        <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-700">
+        <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">
           {errorCount}E
         </span>
       ) : null}
       {warningCount ? (
-        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">
+        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">
           {warningCount}W
         </span>
       ) : null}
@@ -149,7 +149,7 @@ export function ValidationFixPreview({
       data-testid="cabinet-fix-preview"
       className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950 shadow-sm"
     >
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
         Preview change
       </p>
       <h4 className="mt-1 text-sm font-semibold">{formatFeedback(pending.fix.label)}</h4>

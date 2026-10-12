@@ -72,7 +72,7 @@ export function CabinetOutputTabs({
           aria-selected={value === tabValue}
           aria-controls="cabinet-output-panel"
           tabIndex={value === tabValue ? 0 : -1}
-          className={`rounded-lg px-2 py-2 text-[10px] font-semibold ${
+          className={`rounded-lg px-2 py-2 text-xs font-semibold ${
             value === tabValue
               ? "bg-neutral-950 text-white"
               : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"

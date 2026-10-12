@@ -97,7 +97,7 @@ export function CabinetAssemblyInspector({
         {widthLocked ? "Overall width locked" : "Lock overall width"}
       </button>
       {widthBlockedByModuleLocks ? (
-        <p className="text-[11px] leading-5 text-amber-700">
+        <p className="text-xs leading-5 text-amber-700">
           Unlock a bay or release equal sizing before resizing the complete
           assembly.
         </p>

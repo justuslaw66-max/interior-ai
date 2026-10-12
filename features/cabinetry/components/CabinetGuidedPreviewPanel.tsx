@@ -67,7 +67,7 @@ export function CabinetGuidedPreviewPanel({
               type="button"
               data-testid="cabinet-preview-clearance-toggle"
               aria-pressed={showClearances}
-              className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-[11px] font-semibold shadow-sm backdrop-blur focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
+              className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-xs font-semibold shadow-sm backdrop-blur focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
                 showClearances
                   ? "bg-blue-600 text-white"
                   : "bg-white/90 text-neutral-700"
@@ -118,12 +118,12 @@ export function CabinetGuidedPreviewPanel({
                     ? "Valid with recommendations"
                     : "Design is valid"}
               </p>
-              <p className="mt-1 text-[11px] text-neutral-500">
+              <p className="mt-1 text-xs text-neutral-500">
                 {materialLabel} · {hardwareLabel}
               </p>
             </div>
             <span
-              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${
+              className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase ${
                 errorCount
                   ? "bg-red-100 text-red-700"
                   : warningCount

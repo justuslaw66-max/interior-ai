@@ -503,7 +503,7 @@ export default function FloorPlanImportReviewPanel({
             const evidence =
               floor.verticalEvidence?.[property]?.evidence ?? "assumed";
             return (
-              <div key={property} className="min-w-0">
+              <div key={property} className="col-span-2 min-w-0 min-[480px]:col-span-1">
                 <label className={`text-xs ${subtle}`}>
                   {label} (mm)
                   <input

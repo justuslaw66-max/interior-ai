@@ -68,7 +68,7 @@ function EvidenceConfirmation({
   return (
     <div className="grid grid-cols-1 gap-1.5">
       <div className="flex flex-wrap items-center gap-1.5">
-        <select aria-label="Measurement evidence" className={`${controlClass} min-w-0 grow basis-24`} disabled={disabled}
+        <select aria-label="Measurement evidence" className={`${controlClass} max-w-full grow`} disabled={disabled}
           value={selectedEvidence} onChange={(event) => setSelectedEvidence(event.currentTarget.value as FloorPlanConsumerMeasurementEvidenceV2)}>
           <option value="user_confirmed">I confirm this value</option>
           <option value="site_measured">Measured on site</option>

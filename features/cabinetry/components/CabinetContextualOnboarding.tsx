@@ -48,7 +48,7 @@ export function CabinetContextualOnboarding({
     >
       <div className="flex items-start justify-between gap-4">
         <div className="grid gap-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
             First-use tip
           </p>
           {actions.map((action) => (
