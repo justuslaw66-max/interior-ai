@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.26.0"
+VERSION = "app-evidence-0.26.1"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -4699,7 +4699,11 @@ def build(m, gray=None):
         if None in bt or bt[0] == bt[1]:
             continue
         labs = [[l["label"].upper() for l in rooms[i]["labels"]] for i in bt]
-        outdoor = [any(w_ in l for l in ls for w_ in ONTO) for ls in labs]
+        # (round 34) a balcony-type space holds outdoor names only - a room that a blurred trace merged with a bedroom is
+        # not one, one merged with its air-con ledge still is - and an ACCESS balcony is the common corridor outside the
+        # flat, whose windows stay windows
+        outdoor = [any(w_ in l for l in ls for w_ in ONTO) and all(any(w_ in l for w_ in OUTDOOR_WORDS) and "ACCESS" not in l for l in ls)
+                   for ls in labs]
         indoor = [any(room_type(l) in LIVING for l in ls) for ls in labs]
         if (outdoor[0] and indoor[1]) or (outdoor[1] and indoor[0]):
             g.update(kind="door", operation="sliding", hinge="none", swing_side=0, confidence=min(g.get("confidence", 0.7), 0.6), why="a wide window onto a balcony from a living space")
