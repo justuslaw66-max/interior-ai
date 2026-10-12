@@ -377,7 +377,7 @@ export function ProductFinishControls({
                         {state.structuredColour.preview.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-sm bg-[#f4f1eb] px-2 py-1 text-[11px] text-[#5b2d3c]"
+                            className="rounded-sm bg-[#f4f1eb] px-2 py-1 text-xs text-[#5b2d3c]"
                           >
                             {tag}
                           </span>
@@ -385,19 +385,19 @@ export function ProductFinishControls({
                       </div>
                     ) : null}
                     {state.structuredColour.preview.finishCode ? (
-                      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f4b31]">
+                      <div className="text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
                         {state.structuredColour.preview.finishCode}
                       </div>
                     ) : null}
                     {state.structuredColour.preview.compositionHeading ? (
                       <>
-                        <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-3 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
                           {state.structuredColour.preview.compositionHeading}
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">
                           {state.structuredColour.preview.composition}
                         </div>
-                        <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-2 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
                           Care
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">

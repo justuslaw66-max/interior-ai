@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { useLiveCameraView, type LiveCameraViewStore } from "@/lib/useDesignPageLiveCameraView";
+import RoomPanActiveRoom, { describeNavigatorRoom } from "./RoomPanActiveRoom";
 
 type RoomPanNavigatorProps = {
   rooms: HousePlanRoom2D[];
@@ -191,9 +192,13 @@ export default function RoomPanNavigator({
             : "flex items-center justify-between border-b border-neutral-200 px-2 py-1"
         }
       >
-        <div className="flex items-center gap-2.5 text-xs font-semibold">
+        <div className="flex min-w-0 items-center gap-2.5 text-xs font-semibold">
           <span className={dark ? "designer-text-primary" : "text-blue-600"}>2D</span>
-          <span className={dark ? "designer-text-secondary" : "text-neutral-600"}>Rooms</span>
+          <RoomPanActiveRoom
+            room={rooms.find((room) => room.id === activeRoomId)}
+            productCount={itemCountsByRoomId[activeRoomId] ?? 0}
+            dark={dark}
+          />
         </div>
         <div className="flex items-center gap-1" aria-label="Navigator controls">
           {!isCollapsed ? (
@@ -288,8 +293,6 @@ export default function RoomPanNavigator({
           const roomTop = toMapY(room.z - room.d / 2);
           const roomWidthPx = Math.max(10, room.w * mapScale);
           const roomHeightPx = Math.max(10, room.d * mapScale);
-          const showFullLabel = roomWidthPx >= 30 && roomHeightPx >= 15;
-          const label = showFullLabel ? room.name : isActive ? room.name.slice(0, 2) : "";
           return (
             <button
               type="button"
@@ -297,20 +300,20 @@ export default function RoomPanNavigator({
               data-testid="room-pan-map-room"
               data-room-nav-action="room"
               disabled={disabled}
-              title={itemCount > 0 ? `${room.name} · ${itemCount} item${itemCount === 1 ? "" : "s"}` : room.name}
+              title={describeNavigatorRoom(room.name, itemCount)}
               aria-label={`Focus ${room.name}`}
               onClick={(event) => {
                 event.stopPropagation();
                 onFocusRoom(room.id);
               }}
-              className={`absolute overflow-hidden border px-0.5 text-left text-[8px] font-semibold leading-[0.65rem] ${
+              className={`absolute border ${
                 isTarget
                   ? targetRoomValid
-                    ? "border-blue-600 bg-blue-100/90 text-blue-950 ring-2 ring-blue-500"
-                    : "border-red-600 bg-red-100/90 text-red-900 ring-2 ring-red-500"
+                    ? "border-blue-600 bg-blue-100/90 ring-2 ring-blue-500"
+                    : "border-red-600 bg-red-100/90 ring-2 ring-red-500"
                   : isActive
-                    ? "border-green-500 bg-green-100/80 text-green-900"
-                    : "border-neutral-500 bg-stone-200/75 text-neutral-700"
+                    ? "border-green-500 bg-green-100/80"
+                    : "border-neutral-500 bg-stone-200/75"
               }`}
               style={{
                 left: roomLeft,
@@ -318,24 +321,7 @@ export default function RoomPanNavigator({
                 width: roomWidthPx,
                 height: roomHeightPx,
               }}
-            >
-              <span className="block truncate">{label}</span>
-              {itemCount > 0 ? (
-                <span
-                  className={`absolute bottom-0.5 right-0.5 rounded-full px-1 text-[7px] leading-3 ${
-                    isTarget
-                      ? targetRoomValid
-                        ? "bg-blue-600 text-white"
-                        : "bg-red-600 text-white"
-                      : isActive
-                        ? "bg-green-700 text-white"
-                        : "bg-neutral-700 text-white"
-                  }`}
-                >
-                  {itemCount}
-                </span>
-              ) : null}
-            </button>
+            />
           );
         })}
 

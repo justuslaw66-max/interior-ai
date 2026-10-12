@@ -46,7 +46,7 @@ export function Measurements({ measures, visible = true }: MeasurementsProps) {
             occlude={false}
             style={{
               pointerEvents: "none",
-              fontSize: "11px",
+              fontSize: "12px",
               fontWeight: 600,
               padding: "4px 8px",
               borderRadius: "4px",

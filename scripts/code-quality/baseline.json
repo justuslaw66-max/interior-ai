@@ -277,7 +277,7 @@
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
-      "lines": 381,
+      "lines": 367,
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
@@ -2171,7 +2171,7 @@
     "components/editor/RoomPanNavigator.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 289
       }
     },
     "components/editor/RoomPlanStatusBar.tsx": {
