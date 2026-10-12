@@ -890,7 +890,7 @@ export function Furniture({
                   background: chip.id === "delete" ? "#fee2e2" : "#f3f4f6",
                   color: chip.id === "delete" ? "#991b1b" : "#111827",
                   cursor: chip.disabled ? "not-allowed" : "pointer",
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 800,
                   opacity: chip.disabled ? 0.45 : 1,
                   minWidth: chip.id === "delete" ? 46 : 42,
