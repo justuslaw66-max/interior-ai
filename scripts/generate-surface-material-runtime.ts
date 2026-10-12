@@ -222,14 +222,28 @@ function generatedHeader(sourceRoot = "catalog/surface-materials"): string[] {
   ];
 }
 
+// TypeScript reduces an array literal's element types to one union by comparing them pairwise. Every tuple with an
+// image size object is a type of its own, and past about 1,100 of them (1,246 materials, 12 Oct 2026) the check gives
+// up with TS2590 ("Expression produces a union type that is too complex to represent"), which fails `next build`. So
+// the tuples are written in parts of at most this many, each typed on its own, and joined.
+const RENDER_TUPLES_PER_PART = 500;
+
 function buildRenderFile(entries: SurfaceMaterialYamlEntry[]): string {
   const tuples = sortMaterials(entries).map(toRenderTuple);
+  const parts = Array.from({ length: Math.ceil(tuples.length / RENDER_TUPLES_PER_PART) }, (_, index) =>
+    tuples.slice(index * RENDER_TUPLES_PER_PART, (index + 1) * RENDER_TUPLES_PER_PART)
+  );
   return `${[
     ...generatedHeader(),
     'import type { SurfaceMaterialRenderTuple } from "../surface-material-runtime-types";',
     "",
     'export const SURFACE_MATERIAL_RENDER_GENERATED_MARKER = "surface_render_registry_v1";',
-    `export const PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES: readonly SurfaceMaterialRenderTuple[] = ${JSON.stringify(tuples)};`,
+    ...parts.map(
+      (part, index) => `const RENDER_TUPLES_${index + 1}: readonly SurfaceMaterialRenderTuple[] = ${JSON.stringify(part)};`
+    ),
+    `export const PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES: readonly SurfaceMaterialRenderTuple[] = [${parts
+      .map((_, index) => `...RENDER_TUPLES_${index + 1}`)
+      .join(", ")}];`,
   ].join("\n")}\n`;
 }
 
