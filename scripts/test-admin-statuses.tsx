@@ -26,6 +26,16 @@ import {
   describeAdminStatus,
   type AdminStatusKind,
 } from "../app/admin/admin-status";
+import { SurfaceMaterialAuditRow } from "../app/admin/audit/SurfaceMaterialAuditRow";
+import {
+  SURFACE_MATERIAL_AUDIT_FILTERS,
+  matchesSurfaceMaterialFilter,
+  normalizeSurfaceMaterialFilter,
+  normalizeSurfaceMaterialSort,
+  sortSurfaceMaterialSummaries,
+  surfaceAuditHref,
+} from "../app/admin/audit/surface-material-audit-view";
+import type { SurfaceMaterialAdminAuditSummary } from "../lib/surface-material-audit";
 import {
   IMPORT_JOB_STATUS_SEQUENCE,
   allowedImportStatusesFrom,
@@ -158,7 +168,7 @@ const statusViews: Record<string, Array<[RegExp, string]>> = {
   ],
   "app/admin/floor-plans/[id]/FloorPlanJobSummary.tsx": [[/describeAdminStatus\("floorPlanJob", stage\)\.label/, "the stage steps"]],
   "app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx": [[/kind="floorPlanPublication" status=\{job\.revision\.publicationStatus\}/, "the approval panel"]],
-  "app/admin/audit/page.tsx": [[/<AdminStatusBadge kind="surfacePublication" status=\{material\.publishStatus\} \/>/, "a surface's status"]],
+  "app/admin/audit/SurfaceMaterialAuditRow.tsx": [[/<AdminStatusBadge kind="surfacePublication" status=\{material\.publishStatus\} \/>/, "a surface's status"]],
   "app/admin/operations-data.ts": [
     [/statusLabel: label, statusTone: tone/, "a recent operation's label and tone"],
     [/\.\.\.operationStatus\("importJob", job\.status\)/, "an asset import"],
@@ -285,6 +295,73 @@ const pager = renderToStaticMarkup(<AdminPager previousHref="/admin/imports?befo
 assert.match(pager, /That page is no longer available/);
 assert.match(pager, /<a [^>]*href="\/admin\/imports\?before=r4"[^>]*>Previous<\/a>/);
 assert.match(pager, /<span [^>]*>Next<\/span>/, "Next isn't a link on the last page");
+
+// The audit page's Surface Material QA section (app/admin/audit/SurfaceMaterialQaSection.tsx): its filter and sort
+// travel in the page's search params, and each row shows a surface's status, facts and what it is missing.
+const surfaceSummary = (overrides: Partial<SurfaceMaterialAdminAuditSummary>): SurfaceMaterialAdminAuditSummary => ({
+  filePath: "catalog/surface-materials/flooring/test/catalog.yaml",
+  materialId: "test",
+  slug: "test",
+  productName: "Test Tile 60x60",
+  supplier: "gardenia_orchidea",
+  brand: null,
+  materialFamily: "tile",
+  surfaceCategory: "flooring",
+  publishStatus: "draft",
+  licenseStatus: "confirmed",
+  sampleAvailable: "unknown",
+  sampleRequestUrl: null,
+  sourceUrl: "https://example.com/tile",
+  missingAssets: [],
+  missingSpecs: [],
+  blockers: [],
+  failures: [],
+  warnings: [],
+  ...overrides,
+});
+assert.equal(normalizeSurfaceMaterialFilter("missing_assets"), "missing_assets");
+assert.equal(normalizeSurfaceMaterialFilter("anything else"), "all");
+assert.equal(normalizeSurfaceMaterialFilter(undefined), "all");
+assert.equal(normalizeSurfaceMaterialSort("supplier"), "supplier");
+assert.equal(normalizeSurfaceMaterialSort(undefined), "blocker_count");
+assert.equal(surfaceAuditHref("all", "blocker_count"), "/admin/audit#surface-material-qa");
+assert.equal(
+  surfaceAuditHref("draft", "supplier"),
+  "/admin/audit?surfaceFilter=draft&surfaceSort=supplier#surface-material-qa"
+);
+const blocked = surfaceSummary({
+  materialId: "blocked",
+  supplier: "goodrich",
+  licenseStatus: "needs_permission",
+  missingAssets: ["swatch_url"],
+  missingSpecs: ["wear_layer_mm"],
+  blockers: ["confirm_price_per_sqm_or_quote_mode", "confirm_supplier_image_usage_rights"],
+  failures: ["no faces"],
+});
+const live = surfaceSummary({
+  materialId: "live",
+  publishStatus: "published",
+  sampleAvailable: true,
+  sampleRequestUrl: "https://example.com/sample",
+});
+assert.deepEqual(
+  SURFACE_MATERIAL_AUDIT_FILTERS.map(({ id }) => [id, [blocked, live].filter((material) => matchesSurfaceMaterialFilter(material, id)).map((material) => material.materialId)]),
+  [
+    ["all", ["blocked", "live"]], ["draft", ["blocked"]], ["published", ["live"]], ["needs_permission", ["blocked"]],
+    ["missing_assets", ["blocked"]], ["missing_specs", ["blocked"]], ["unresolved_blockers", ["blocked"]],
+    ["sample_available", ["live"]], ["missing_links", ["blocked"]],
+  ],
+  "each Surface Material QA filter"
+);
+assert.deepEqual(sortSurfaceMaterialSummaries([live, blocked], "blocker_count").map((material) => material.materialId), ["blocked", "live"]);
+assert.deepEqual(sortSurfaceMaterialSummaries([live, blocked], "supplier").map((material) => material.materialId), ["live", "blocked"]);
+const surfaceRow = renderToStaticMarkup(<SurfaceMaterialAuditRow material={blocked} />);
+assert.match(surfaceRow, />Draft<\/span>/, "a surface row's status badge");
+assert.match(surfaceRow, /Swatch missing \/ Base ok/);
+assert.match(surfaceRow, /Missing assets<\/div><div class="mt-1">swatch url<\/div>/);
+assert.match(surfaceRow, /confirm price per sqm or quote mode; confirm supplier image usage rights/);
+assert.match(surfaceRow, /FAIL: no faces/);
+assert.doesNotMatch(renderToStaticMarkup(<SurfaceMaterialAuditRow material={live} />), /Audit detail/, "no audit detail without failures or warnings");
 
 console.log(
   "Admin status checks passed: one import-job sequence, used by the job page and both routes; " +
