@@ -122,6 +122,24 @@ CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
 # line stopping short of the next band.  Gaps up to this many wall thicknesses are closed, in the drawing only (see
 # close_drawing_gaps; the model is untouched).  0 = off.
 CLOSE_GAPS = float(os.environ.get("FV_CLOSE_GAPS", "1.5"))
+# round 34 (J 12 Oct: "include room name reading first"): blurred room names the reader leaves as unread lettering are named
+# by their shape - the plan's room words drawn at the cluster's size and width, compared with the pixels (see
+# name_unread_labels).  "0" = off.
+R34_SHAPE_NAMES = os.environ.get("FV_R34_SHAPE_NAMES", "1") != "0"
+# Blurred lettering that the glyph clustering never offers as lettering, "0" = off:
+#   WORD_BLOBS  a word whose letters the blur fused into one solid blob is refused as 'ruled strokes' (a window frame); it is
+#               still traced as before, and also offered to name_unread_labels, which names it only when its shape says so
+#   WORD_SIZE   the lettering size of the fused words (the ink-weighted height peak) gets its own clustering pass when the
+#               sizes already taken leave it out (room4 low-res: sizes 15 and 36 px, its room names 18 - 21 px)
+#   CRISP_GRAY  a page judged crisp (large, work scale 1) is also read the way soft pages are, from the grey image at its own
+#               resolution: d12 low-res reads BEDROOM, KITCHEN and LIVING/DINING there and not from the thresholded ink
+R34_WORD_BLOBS = os.environ.get("FV_R34_WORD_BLOBS", "1") != "0"
+R34_WORD_SIZE = os.environ.get("FV_R34_WORD_SIZE", "1") != "0"
+R34_CRISP_GRAY = os.environ.get("FV_R34_CRISP_GRAY", "1") != "0"
+#   SMALL_WORDS lettering 9 - 13 px high (a web plan's room names beside a large title: s080), which the clustering leaves
+#               alone because window dashes are that size too: its level runs are offered to name_unread_labels only -
+#               nothing there is read, erased or traced differently
+R34_SMALL_WORDS = os.environ.get("FV_R34_SMALL_WORDS", "1") != "0"
 
 # The learned reader (round 23), behind a switch.  FV_SEG_MODEL=<model.onnx> (made by the untracked tools/train/train.py) reads
 # the picture into a class per pixel - other / wall / door / window / text / rack / railing - and FV_SEG_USE says which of
@@ -2293,6 +2311,8 @@ def extract(path):
         ocr(ocr_src, False)
         ocr(cv2.rotate(ocr_src, cv2.ROTATE_90_CLOCKWISE), "up")
         ocr(cv2.rotate(ocr_src, cv2.ROTATE_90_COUNTERCLOCKWISE), "down")
+        if R34_CRISP_GRAY:                                  # (the stricter word test of the soft reader; clashes go to the surer read below)
+            ocr_source_res(False); ocr_source_res("up")
     # (soft inputs: tesseract's own sparse-text detection returns noise on blurred lettering; labels are found below by
     #  clustering glyph-sized components, and each cluster is read from the grey image at a comfortable size)
     texts.sort(key=lambda t: -t["conf"]); keep = []
@@ -2325,6 +2345,7 @@ def extract(path):
             t["alt"], t["s"] = t["s"], s2                   # drawn dimensions are multiples of 5 mm; tesseract confuses 5 and 9
     th = float(np.median([t["box"][2] if t["vertical"] else t["box"][3] for t in texts])) if texts else T
     th_modes = [th]
+    small_modes = []
     if soft:
         # lettering sizes = peaks of the glyph-height histogram (labels, a larger title, a smaller scale note)
         n_, lab_, st_, _c = cv2.connectedComponentsWithStats(rest)
@@ -2345,6 +2366,8 @@ def extract(path):
             if all(abs(p_ - q_) > 0.3 * max(p_, q_) for q_ in th_modes):
                 th_modes.append(float(p_))
         sm_ = h_cnt
+        if R34_SMALL_WORDS:
+            small_modes = [p_ for p_ in th_modes if 9 <= p_ < 14][:1]   # (named by shape only, never read or erased: below)
         th_modes = [p_ for p_ in th_modes if p_ >= 14][:4] or [0.9 * T]   # nothing under 14 working px is legible lettering (window dashes are not)
         if len(online_h) >= 3:                              # numbers standing on their lines: their height is a lettering size too
             oh_ = float(np.median(online_h))
@@ -2357,6 +2380,10 @@ def extract(path):
             rs_ = float(np.median(rh_)) if len(rh_) >= 3 else 0.0
             if rs_ >= 14 and all(abs(rs_ - q_) > 0.2 * max(rs_, q_) for q_ in th_modes):
                 th_modes.append(rs_)
+        if R34_WORD_SIZE:
+            pa_ = peaks_of(h_area, 6)
+            if pa_ and pa_[0] >= 14 and len(th_modes) < 4 and all(abs(pa_[0] - q_) > 0.15 * q_ for q_ in th_modes):
+                th_modes.append(float(pa_[0]))              # the fused words' own size, outside every clustering window taken
         th = th_modes[0]
         if DEBUG: print('lettering sizes', th_modes, [int(sm_[int(p)]) for p in th_modes])
 
@@ -2389,6 +2416,7 @@ def extract(path):
 
     # second chance: clusters of glyph-sized components that OCR skipped
     unread = []
+    word_blobs = []
     th_main = th
     for th in th_modes:                                    # one pass per lettering size (one only for crisp inputs)
         n, lab, st, _ = cv2.connectedComponentsWithStats(rest)
@@ -2484,6 +2512,8 @@ def extract(path):
                             long_ = cv2.morphologyEx(reg_, cv2.MORPH_OPEN, np.ones((1, max(3, int(0.5 * bw_))), np.uint8)) if bw_ >= bh_ else \
                                 cv2.morphologyEx(reg_, cv2.MORPH_OPEN, np.ones((max(3, int(0.5 * bh_)), 1), np.uint8))
                             if (long_ > 0).sum() >= 0.45 * (reg_ > 0).sum():
+                                if R34_WORD_BLOBS:          # (or a word the blur fused into one blob: its shape decides, later)
+                                    word_blobs.append({"box": box, "vertical": vertical, "read": s2, "conf": round(c2, 1)})
                                 continue                    # ruled strokes as long as half the cluster: a window frame, not a word
                     if soft:                                # what the cluster says if it is forced to be a number (used with geometry later)
                         bx_, by_, bw_, bh_ = [int(round(v_)) for v_ in box]
@@ -2497,6 +2527,11 @@ def extract(path):
                     unread.append(u); erase_text(u)
 
     th = th_main
+    # lettering under 14 px (R34_SMALL_WORDS): its level runs are offered to name_unread_labels only (upright runs at that
+    # size are dimension numbers and ticks: exec)
+    for th_s in small_modes:
+        for box in _glyph_runs(rest, th_s):
+            word_blobs.append({"box": box, "vertical": False, "read": "", "conf": 0.0, "size": th_s})
     # a trailing '/' that touches other ink (a WC bowl) is not a whole component, so erase_text leaves it behind:
     # find the stroke itself and remove it, the live text already carries the character
     rest_fat = cv2.dilate(rest, np.ones((3, 3), np.uint8))
@@ -3419,6 +3454,8 @@ def extract(path):
         "walls": walls, "lines": lines, "arcs": arcs, "dots": dots,
         "fillets": fillets, "texts": texts, "unread_text": unread, "fixtures": fixtures, "fixture_solids": solids, "diagonals": diag, "doors": doors, "text_h": th, "grey_solids": greys})
     model["_gray"] = gray                                  # working-resolution grey, for checks against the pixels (not serialised)
+    if word_blobs:
+        model["_word_blobs"] = word_blobs                  # (name_unread_labels takes them out; not serialised)
     return model
 
 
@@ -3915,6 +3952,158 @@ def reread_crossed_labels(m):
                 m["unread_text"].remove(u_)
     if added:
         m.setdefault("dimension_report_pre", {})["labels_reread_over_arcs"] = added
+
+
+# Room words a plan's lettering spells, drawn by name_unread_labels (from general knowledge of how plans are lettered - NOT
+# collected from the benchmark's truth files).  Numbered words carry their usual numbers; the number is only kept when the
+# drawing tells it from the others (see name_unread_labels).
+SHAPE_WORDS = ["BEDROOM", "MAIN", "MASTER", "BATH", "BATH/", "BATHROOM", "W.C.", "WC", "LIVING", "LIVING/", "DINING", "KITCHEN",
+               "KITCHEN/", "SERVICE", "YARD", "SHELTER", "SHELTER)", "HOUSEHOLD", "STUDY", "STORE", "STORE/", "BALCONY", "UTILITY",
+               "FOYER", "ENTRANCE", "TOILET", "STOREROOM", "FAMILY", "JUNIOR", "GUEST", "CORRIDOR", "PLANTER", "LOBBY", "ACCESS",
+               "PANTRY", "LEDGE", "AIR-CON", "COMMON", "SUITE", "ENSUITE", "TERRACE", "COURTYARD", "PATIO", "LAUNDRY", "POWDER",
+               "DRESSING", "WARDROBE", "WALK-IN", "HALL", "LOUNGE", "PES"]
+SHAPE_LINES = SHAPE_WORDS + ["%s %d" % (w_, n_) for w_ in ("BEDROOM", "BATH", "W.C.", "WC", "STORE", "BALCONY", "STUDY") for n_ in (1, 2, 3, 4)] + \
+    ["MAIN BEDROOM", "MASTER BEDROOM", "LIVING/DINING", "BATH/WC", "BATH/W.C.", "AIR-CON LEDGE", "AC LEDGE", "A/C LEDGE",
+     "SERVICE YARD", "HOUSEHOLD SHELTER", "COMMON BATH", "JR. MASTER", "MASTER BATH", "DRY KITCHEN", "WET KITCHEN",
+     "SERVICE BALCONY", "ACCESS BALCONY", "LIVING ROOM", "DINING ROOM", "FAMILY ROOM", "STORE ROOM", "UTILITY ROOM",
+     "POWDER ROOM", "GUEST ROOM"]
+# What else blurred lettering of that size can be: a dimension, a scale, a note.  A room word must match clearly better than
+# every one of these.
+SHAPE_NUMBERS = ["650", "900", "1200", "1650", "2500", "2800", "3000", "3500", "4700", "10200", "10500", "13200"]
+SHAPE_OTHERS = SHAPE_NUMBERS + ["1:100", "1:50", "SCALE", "RC LEDGE", "TRELLIS"]
+
+
+def _glyph_runs(rest, th):
+    """Level runs of glyph-sized components of lettering size `th`, grouped as extract()'s second-chance clustering groups
+    a soft input's letters along a line (round 34, R34_SMALL_WORDS: for name_unread_labels only - nothing is read or
+    erased).  [x, y, w, h] per run of three glyphs or more, or at least 1.6 th long (letters the blur fused)."""
+    n, _lab, st, _c = cv2.connectedComponentsWithStats(rest)
+    gl = sorted(((int(st[i, 0]), int(st[i, 1]), int(st[i, 2]), int(st[i, 3])) for i in range(1, n)
+                 if 0.7 * th <= st[i, 3] <= 1.3 * th and st[i, 2] <= 9.0 * th and st[i, 4] >= 8), key=lambda g: g[0])
+    used, out = [False] * len(gl), []
+    for i, g in enumerate(gl):
+        if used[i]:
+            continue
+        grp = [g]; used[i] = True
+        for j in range(i + 1, len(gl)):
+            q, p_ = gl[j], grp[-1]
+            if not used[j] and min(q[1] + q[3], p_[1] + p_[3]) - max(q[1], p_[1]) >= 0.5 * min(q[3], p_[3]) and \
+                    -3 <= q[0] - (p_[0] + p_[2]) < 1.1 * th:
+                grp.append(q); used[j] = True
+        x0, y0 = min(q[0] for q in grp), min(q[1] for q in grp)
+        x1, y1 = max(q[0] + q[2] for q in grp), max(q[1] + q[3] for q in grp)
+        if len(grp) >= 3 or x1 - x0 >= 1.6 * th:
+            out.append([float(x0), float(y0), float(x1 - x0), float(y1 - y0)])
+    return out
+
+
+def _shape_family(a, b):
+    """The same word up to a slash, a bracket or its number ('BATH' / 'BATH/', 'W.C. 1' / 'W.C. 2')."""
+    wa, wb = re.sub(r"[^A-Z]", "", a), re.sub(r"[^A-Z]", "", b)
+    return wa == wb or (wa in wb and len(wb) - len(wa) <= 1) or (wb in wa and len(wa) - len(wb) <= 1)
+
+
+def _shape_scores(gray, box, v, cap, extra=()):
+    """[(match, string, box, cover)], best first: each of SHAPE_LINES + SHAPE_OTHERS (+ `extra`) drawn at lettering height
+    `cap` over the cluster `box`, at the widths 0.55 - 1.15 of the font's own that span the cluster's length within 25 %.
+    cover: the drawn string's length over the cluster's."""
+    x, y, w, h = [float(q) for q in box]
+    run = h if v else w
+    reg = (x - 0.5 * cap, y - 0.4 * cap, x + w + 0.5 * cap, y + h + 0.4 * cap) if v else \
+          (x - 0.4 * cap, y - 0.5 * cap, x + w + 0.4 * cap, y + h + 0.5 * cap)
+    scored = []
+    for s in SHAPE_LINES + SHAPE_OTHERS + [e for e in extra if e]:
+        a0 = _render_number(s)
+        nat = a0.shape[1] * cap * _template_cap(s)[0] / a0.shape[0]   # drawn length at this cap height, the font's own width
+        ok_w = tuple(wf for wf in (0.55, 0.65, 0.75, 0.85, 0.95, 1.05, 1.15) if 0.75 * run <= nat * wf <= 1.25 * run)
+        if not ok_w:
+            continue
+        sc, b = render_find(gray, reg, v, s, cap, ok_w)
+        if b is not None:
+            scored.append((sc, s, b, (b[3] if v else b[2]) / run))
+    return sorted(scored, key=lambda r_: -r_[0])
+
+
+def _shape_pick(scored, floor=0.55):
+    """(name, box, match) when the best room word matches clearly (see name_unread_labels), else None."""
+    named = [r_ for r_ in scored if r_[1] in SHAPE_LINES]
+    words = [r_ for r_ in named if 0.85 <= r_[3] <= 1.15]  # drawn as long as the run
+    if not words:
+        return None
+    sc, s, b, cover = words[0]
+    if sc < (floor if len(re.sub(r"[^A-Z]", "", s)) >= 5 else 0.8):
+        return None
+    if re.search(r"[()]", s) and not any(r_[1] == re.sub(r"[()]", "", s) and r_[0] >= floor for r_ in words):
+        return None                                         # the bracket's tall stroke matched, not the word's letters
+    if any(r_[0] >= sc for r_ in scored if r_[1] not in SHAPE_LINES):
+        return None                                         # as much a dimension or a note as a word
+    other = [r_[0] for r_ in named if r_[1] != s and not _shape_family(r_[1], s)]
+    if other and sc - other[0] < 0.06:
+        return None                                         # (also against a word drawn shorter or longer than the run)
+    if re.fullmatch(r".+ [1-4]", s):
+        twins = [r_[0] for r_ in words[1:] if r_[1][:-1] == s[:-1]]
+        if twins and sc - max(twins) < 0.03:
+            s = s[:-2]                                      # the number is not told apart: the word only
+    return s, b, sc
+
+
+def name_unread_labels(m):
+    """Round 34.  On a blurred, low-resolution or photographed plan the reader leaves many room names as unread lettering:
+    tesseract cannot read condensed lettering a few pixels high once it is soft ('BAIM/' for BATH/, nothing for BEDROOM),
+    though its shape is plain.  Each unread cluster of the plan's label lettering size (0.7 - 1.4 times it), each fused
+    word blob (R34_WORD_BLOBS) and each run of small lettering (R34_SMALL_WORDS, 0.7 - 1.4 times its own size) is compared
+    with the plan's room words (SHAPE_LINES) drawn at its lettering height, at
+    widths 0.55 - 1.15 of the font's own (plans letter in condensed and wide faces alike), only where the drawn word spans
+    the cluster's own length (0.85 - 1.15).  A name is taken only when it matches clearly:
+      - by 0.55 normalised correlation (a blob or small run by 0.6: window frames and dashes look alike; a word of fewer than
+        five letters by 0.8: short words fit any blot), and a bracketed word by its letters alone too (a bracket's tall
+        stroke fits a window band: c22 soft);
+      - by 0.06 more than any other word, whatever its length (its own slash, bracket or number aside);
+      - better than every dimension number, scale or note drawn the same way (SHAPE_OTHERS: blurred dimensions are unread
+        clusters too; c23's 'RC LEDGE AT 2ND STY' is one letter-shape from A/C LEDGE).
+    Where the numbers 1 - 4 of a numbered word match within 0.03 of each other the number is dropped and left to
+    number_after_label."""
+    gray = m.get("_gray")
+    blobs = m.pop("_word_blobs", None) or []                 # fused words refused as ruled strokes: traced all the same
+    if not R34_SHAPE_NAMES or gray is None:
+        return
+    seen = []
+    for b_ in blobs:                                         # (one blob is refused once per clustering pass)
+        if not any(abs(b_["box"][0] - q["box"][0]) < 2 and abs(b_["box"][1] - q["box"][1]) < 2 and b_["vertical"] == q["vertical"] for q in seen):
+            seen.append(b_)
+    caps = [float(t["box"][2] if t["vertical"] else t["box"][3]) for t in m["texts"] if t.get("angle") is None
+            and any(ch.isalpha() for ch in t["s"]) and len(t["s"].replace(" ", "")) >= 3]
+    th = float(np.median(caps)) if len(caps) >= 3 else float(m.get("text_h") or 0)      # the labels' own lettering size
+    if th < 8:
+        return
+    named = []
+    for u in [("unread", u_) for u_ in list(m.get("unread_text") or [])] + [("blob", b_) for b_ in seen]:
+        kind, u = u
+        v = u.get("vertical")
+        cap, run = (u["box"][2], u["box"][3]) if v else (u["box"][3], u["box"][2])
+        ref = u.get("size") or th                           # (small lettering: its own size, not the labels')
+        if v == "down" or not 0.7 * ref <= cap <= 1.4 * ref or run < 1.2 * cap:
+            continue                                        # not the plan's lettering size, or no longer than a letter or two
+        scored = _shape_scores(gray, u["box"], v, float(cap), [u.get("digits")] if len(u.get("digits") or "") >= 2 else [])
+        if os.environ.get("FV_LOG_SHAPE"):
+            print("SHAPE", [round(q) for q in u["box"]], repr(u.get("read")), [(round(r_[0], 3), r_[1], round(r_[3], 2)) for r_ in scored[:4]])
+        pick = _shape_pick(scored, 0.6 if kind == "blob" else 0.55)
+        if pick is None:
+            continue
+        s, (bx, by, bw, bh), sc = pick
+        if any(min(o["box"][0] + o["box"][2], bx + bw) - max(o["box"][0], bx) > 0.3 * min(bw, o["box"][2]) and
+               min(o["box"][1] + o["box"][3], by + bh) - max(o["box"][1], by) > 0.3 * min(bh, o["box"][3]) for o in m["texts"]):
+            continue                                        # lettering already read there
+        t = {"s": s, "box": [bx, by, bw, bh], "vertical": v, "conf": round(100.0 * sc, 1), "cap_px": float(cap),
+             "ink": [bx, by, bx + bw, by + bh], "named_by_shape": round(sc, 3), "read_as": u.get("read") or ""}
+        if kind == "blob":
+            t["fused_word"] = True
+        else:
+            m["unread_text"].remove(u)
+        m["texts"].append(t)
+        named.append(s)
+    if named:
+        m.setdefault("dimension_report_pre", {})["labels_named_by_shape"] = named
 
 
 def _second_line_apart(m, t, box, v, cap):
@@ -10216,6 +10405,8 @@ if __name__ == "__main__":
         if sl_:
             m.setdefault("dimension_report_pre", {})["label_lines_reread"] = sl_
     number_after_label(m, only="reread_over_arc")
+    name_unread_labels(m)
+    number_after_label(m, only="named_by_shape")
     validate_slash_labels(m)
     read_level_notes(m)
     recognise_fixtures(m)
