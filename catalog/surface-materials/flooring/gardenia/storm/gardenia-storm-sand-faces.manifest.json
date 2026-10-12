@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/sand/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - SAND - minimali.zip (116611483 bytes, sha256 a37e82b211315f9ee8d910732499b1ca5f067ae13ee19909fbadff717d39b4a6).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - SAND - minimali.zip (116611483 bytes, sha256 a37e82b211315f9ee8d910732499b1ca5f067ae13ee19909fbadff717d39b4a6); and on 2026-10-13: PLEIN AIR - STORM SAND - minimali.zip (36742699 bytes, sha256 6379033e4636f0d3b14bef090fab5a021afaf16f230c426e5462f31c0f32faa7).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -688,6 +688,165 @@
    ]
   },
   {
+   "format": "60x120",
+   "item_code": "0004281",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/storm-sand/pf60004281-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0004281_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0004281-60x120-r11",
+   "faces": [
+    {
+     "file": "0004281_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30478,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "16e8eb76717f0025c234dc56535b84df8706eb55ac4490e413057eeab31bc30a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "STORM SAND 60X120 R11_20 MM_01",
+      "id": "99763adb-dfce-4c46-9bf4-3dc9ad943a0e",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004281_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 40008,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "2a3f8e2d590b284230a93d0dc846885a8d27f57a2f444b9570f4dbb662191388",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2",
+      "name": "STORM SAND 60X120 R11_20 MM_04",
+      "id": "b6c7745a-34db-4384-862f-dbc292c95c88",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004281_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 29100,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "fe2acf4c16b4044fbf01088f1f15d3587dcc3c86a6bca1d12546b0355927ff6e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3",
+      "name": "STORM SAND 60X120 R11_20 MM_05",
+      "id": "4404af9e-f46b-45e7-932b-a07b842b108d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004281_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39830,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cb30ae7630a290d954b6f8e6b5a0a52acf1cde87a8d538dd1aef00db29b7c595",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4",
+      "name": "STORM SAND 60X120 R11_20 MM_02",
+      "id": "6448fda4-a2a5-4134-9aff-3fe16cca5dbd",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004281_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 31026,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "bf3bc9f5ff881a8f293b76d412c913ef914ee2ef22e0ae4ae791a9773655fa13",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5",
+      "name": "STORM SAND 60X120 R11_20 MM_06",
+      "id": "8b6f3303-3dcb-4364-ae80-173f86d55395",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004281_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 35738,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM SAND - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "ccedea393b2f38006d7701ab3b6d9cf90fab17e09ccee00ca08c115829ab803f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6",
+      "name": "STORM SAND 60X120 R11_20 MM_03",
+      "id": "07ac5048-d6bf-4c86-aff7-dc68989f08a8",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
    "format": "80x80",
    "item_code": "0003998",
    "finish": "Natural",
@@ -1216,6 +1375,309 @@
       "label": "60X60 · Natural · Faccia 12",
       "name": "SAND 60X60_08",
       "id": "fb7ca5e7-d0cf-41b2-a30d-f853f60a133a",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012101",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/storm-sand/pf60012101-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0012101_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-sand-0012101-60x60-r11",
+   "faces": [
+    {
+     "file": "0012101_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12226,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7ca90a481c8a350e97dded6be96615d8947e0c34bdd9bda07537701c90ab6eec",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "STORM SAND 60X60_R11_20 MM_01",
+      "id": "96d420d6-20fe-4d8a-a264-0a90a7144e6c",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012101_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16224,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bc0108f5091d0aeea7e08c4baab46b267d7063fca1e4305f1e999717e1f6b93d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "STORM SAND 60X60_R11_20 MM_02",
+      "id": "bbe48ef5-8f1f-4141-8941-fe011a6cab5a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012101_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15580,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd065faec4097b5d0d3f28d7c2e8113e59a2c4fdc336a0f2437a615010a52497",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "STORM SAND 60X60_R11_20 MM_09",
+      "id": "0164e11d-8679-4af8-ab06-4f1b804913d2",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012101_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18614,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "989978a961b9c145e699fc3b2bea747785528dc3b11008e3a7bfb64ed7e6b62f",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "STORM SAND 60X60_R11_20 MM_07",
+      "id": "79cc07a9-5002-4a90-8555-cd03294b1e71",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012101_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17410,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d88b251d19838f0e3896a465f4feb8a6f7ceec3b6ef8ad07e4b7c207420856ce",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5",
+      "name": "STORM SAND 60X60_R11_20 MM_04",
+      "id": "9c469fc6-298d-4f67-9804-1d25a60b31c0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012101_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16436,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e73a8660f0a3dc6a81c94d847c3e73291a72637146c6af816f6dbe5828a501b8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6",
+      "name": "STORM SAND 60X60_R11_20 MM_06",
+      "id": "b5b3ea4f-a1d7-45ab-9903-29fd092ea4c3",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012101_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18896,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e28df1fe47d590c3d9ff76cb0fb40f5f34cc289109c42df5dcf45e98d30f4b37",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7",
+      "name": "STORM SAND 60X60_R11_20 MM_08",
+      "id": "5be881f2-3707-4522-baab-d4f07ccaf57c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012101_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19074,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5089cee91c8b391d7d8363eba3bbee91e19758ea84a65e79a0f60d9483b88649",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8",
+      "name": "STORM SAND 60X60_R11_20 MM_03",
+      "id": "22197e33-a978-4251-a73c-b4c8b269e203",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012101_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13006,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8cca957eef0ea35ee3b47108fcde1689a9a6bc6525363f72e887b2af2b38916f",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9",
+      "name": "STORM SAND 60X60_R11_20 MM_10",
+      "id": "8ce08d95-5f3b-40f5-8aed-a91688912644",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012101_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16186,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "81450ee223b3397ec31d77c7aabf764b0413ce4030bb804f0e91a653a1eb08ad",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10",
+      "name": "STORM SAND 60X60_R11_20 MM_11",
+      "id": "4d287086-79d8-47d2-b31f-f6d97aad1c77",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012101_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14292,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6d753c93856758294a1eee896b2193d7adcadb96d2cea5480f9696ce291d4e67",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 11",
+      "name": "STORM SAND 60X60_R11_20 MM_12",
+      "id": "4d695f1c-2ee2-4f0b-9423-35c99bddeb9a",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012101_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17288,
+     "source_zip": "PLEIN AIR - STORM SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM SAND - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a1a73a7003b0c36229331ea3026fb82337c3a4b9c215bfa72735dedb85e29df7",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 12",
+      "name": "STORM SAND 60X60_R11_20 MM_05",
+      "id": "d37f35d6-bbb1-4720-abca-54b42d8ce19f",
       "site_position": 12
      }
     }

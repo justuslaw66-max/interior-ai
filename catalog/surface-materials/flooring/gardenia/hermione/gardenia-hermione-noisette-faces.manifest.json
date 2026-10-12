@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/noisette/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - NOISETTE - minimali.zip (9957952 bytes, sha256 f3a652bb7cb5077f13e877021da2c3168c1cf3e4de4d30ad9eb68886efe85b20).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - NOISETTE - minimali.zip (9957952 bytes, sha256 f3a652bb7cb5077f13e877021da2c3168c1cf3e4de4d30ad9eb68886efe85b20); and on 2026-10-13: PLEIN AIR - HERMIONE NOISETTE - minimali.zip (9840993 bytes, sha256 b36875de4cd03659dd1faf91ecfe62406326f2cab67b45183de4a6149c4a0cc8).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -9,6 +9,549 @@
   "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
  },
  "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0202270",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/hermione-noisette/020227012.-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0202270_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-hermione-noisette-0202270-30x120-r11",
+   "faces": [
+    {
+     "file": "0202270_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21642,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "43d855da020056c8ffdb582f1e849cba60ed278c5538e6fe8c4ae471609f8ef7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_01",
+      "id": "75049a19-6ff7-410c-9202-46bbb95b7ec3",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202270_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18762,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "b5c1c0ee3db5d1f1b6f2e86cedef571177d08a20ed39b5eaed15f614dc907b49",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_02",
+      "id": "017bfbe6-754c-4973-8c3a-2504612e4c1e",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202270_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16236,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "f50633dbe3e68c878b370833139d4d2391113031473f9d1f9530f09a293d2243",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 3",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_12",
+      "id": "17b0c90c-2f61-4450-9edd-234f8dda1443",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202270_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18762,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "312ef3dceb18aa9919a3794e7796b0bf05831a2d902115c3a017997c3a09e16f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 4",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_03",
+      "id": "1bb79323-6b01-4912-a43a-2b0cac511abf",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202270_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15590,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "7b3331d9c4108d7ffaf55301294602b6e58a9cea2ce787f3e496a5b6cb0ceefe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 5",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_21",
+      "id": "2dea9b5f-dd1a-4213-8dc9-bf358f62467a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202270_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22410,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "fa6c8f0a6f2ce739ff750324c1b0994963c857050cc5356e1e2854810c99a79b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 6",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_05",
+      "id": "30b027ad-06f4-48fd-83cd-3e284ad21bb1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202270_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19196,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "caf78f30f7939ec9751990f9cba17b64ec58841edc2e78ebf81756b994654e23",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 7",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_16",
+      "id": "38014746-5b26-4d6f-8d25-33a72191c550",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202270_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18788,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "b02fc3bfc749cff341b3745f8a8eca441751ddd3e24911d2b2a717934783657b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 8",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_06",
+      "id": "39dba334-d179-42f8-8358-29f432a6e676",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202270_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19394,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "394d251c49d3ad504878dc55389a23dfa471b61b6fe512f932790ad8af633a1c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 9",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_08",
+      "id": "3a3e3cd9-2a65-4de4-b1f7-b4295c0737bd",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202270_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20102,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "158460e704c06afd2335cf33ae4eddb7ceb1a827de678ccda11ffb26ea5f5b6d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 10",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_14",
+      "id": "411468b0-98a7-455b-b35b-a0e68833643a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202270_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20158,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "f3cc050b1f60be4bddff40797130858b4be0a52f60c4dc1f074f9218ab89290d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 11",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_13",
+      "id": "7ff39a81-93f5-45f2-a173-9e3fdcc17643",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202270_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17280,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "4d3ac0909043dcee5d550ba5e5ce0cb7c4c12d1a0b0a130512ef8e07c7dd7b5c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 12",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_17",
+      "id": "8c5dd37e-df71-4efc-ab94-75e8325d3370",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202270_13.webp",
+     "face": 13,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17952,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_13.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "30b2b5640d4b64d29872966a99cf416fa10adf8d85ddf1b9a31810d48e03c0c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 13",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_15",
+      "id": "9c6f53b5-59ca-43bb-a7ab-b8babd3de411",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202270_14.webp",
+     "face": 14,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16276,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_14.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "d2680eab8f8459278adc9bc3c69bb2fb71d1abe8eae219e73ddd1f18559742d3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 14",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_18",
+      "id": "9dd5fa42-4757-4fd2-8446-eea5d4477d81",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202270_15.webp",
+     "face": 15,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17086,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "4bc261af97c490cfde890f9296e997ed0699ca6a21a2de7dfe02cb0cb2322189",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 15",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_19",
+      "id": "a4be3ab9-a86a-4f42-8b6f-3ea6889bc241",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202270_16.webp",
+     "face": 16,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20480,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_16.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "2c7dbd109879d880ad24b9fe96d07cf623e9374f43aac6ae0e9b5fcca48250bf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 16",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_10",
+      "id": "a95f0a58-4afa-4ec2-bb96-451bc7241d23",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0202270_17.webp",
+     "face": 17,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20138,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_17.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "4f17602d789f842d32aa67cc64b29365e61ce6329768198406d9db271b796199",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 17",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_09",
+      "id": "abe66494-3362-4b99-9ab3-93b4741fba65",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202270_18.webp",
+     "face": 18,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19756,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_18.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "d3171a0664c938f686cd18006ba1f865ef8e51fffb087c44e36c70081ef5384b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 18",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_07",
+      "id": "b0bf6aa6-ec0d-424d-ad7a-7080e0988d00",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0202270_19.webp",
+     "face": 19,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18550,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_19.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "2df3c23d76d6ea510b6b335a9e4d826ec07f6ce0e971ba751903b4aad0c76785",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 19",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_11",
+      "id": "b8a6982d-94a3-420d-8521-f753d48e5dd9",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0202270_20.webp",
+     "face": 20,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18246,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_20.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "24f5b54a96ff5a257298498e00c89d0a0be43256e85f0543582b95a39ca6181c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 20",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_04",
+      "id": "c1471660-d437-45de-bcd5-93b6703b753b",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0202270_21.webp",
+     "face": 21,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17858,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_21.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "bc7655808c2b528d7b0ec2d16729d51a89c691281b1bda3b50788e7613b35daf",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 21",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_22",
+      "id": "d6ecc403-252a-4105-bfd8-2370132f9130",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0202270_22.webp",
+     "face": 22,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17786,
+     "source_zip": "PLEIN AIR - HERMIONE NOISETTE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE NOISETTE - 30X120 - R11 - view_22.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "920a8096874bc8849a2e243e4cb450151e1d5b9c5bef31b0d4f0067007102ed8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 22",
+      "name": "OUT.20 HERMIONE NOISETTE 30X120_20",
+      "id": "ee196d63-8931-499c-ae34-fddd72b57a45",
+      "site_position": 22
+     }
+    }
+   ]
+  },
   {
    "format": "20x120",
    "item_code": "0202267",

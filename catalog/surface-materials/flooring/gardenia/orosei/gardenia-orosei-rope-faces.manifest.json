@@ -338,7 +338,7 @@
    },
    "swatch": "0030226_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-orosei-rope-pf60030226-60x60-nat-197561-0; wall gardenia-wall-tile-orosei-rope-pf60030226-60x60-nat-197561-0",
+   "used_by": "floor gardenia-flooring-orosei-rope-0030261-60x60-r11 (uses 0030226's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0030226's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-rope-pf60030226-60x60-nat-197561-0; wall gardenia-wall-tile-orosei-rope-pf60030226-60x60-nat-197561-0",
    "faces": [
     {
      "file": "0030226_01.webp",
@@ -800,7 +800,7 @@
    },
    "swatch": "0030232_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-orosei-rope-pf60030232-80x80-nat-197566-0; wall gardenia-wall-tile-orosei-rope-pf60030232-80x80-nat-197566-0",
+   "used_by": "floor gardenia-flooring-orosei-rope-0030272-80x80-r11 (uses 0030232's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0030232's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-rope-pf60030232-80x80-nat-197566-0; wall gardenia-wall-tile-orosei-rope-pf60030232-80x80-nat-197566-0",
    "faces": [
     {
      "file": "0030232_01.webp",

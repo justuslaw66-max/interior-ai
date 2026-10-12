@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/storm/grey/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - GREY - minimali.zip (125008328 bytes, sha256 d9e0f37613546204d79cdee71133e0005ac621d973f2a70c6518fe1b153f19fe).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-11: STORM - GREY - minimali.zip (125008328 bytes, sha256 d9e0f37613546204d79cdee71133e0005ac621d973f2a70c6518fe1b153f19fe); and on 2026-10-13: PLEIN AIR - STORM GREY - minimali.zip (37519983 bytes, sha256 2b77a4c7e322717566dc2d1dc69f07e0b8792804f1ab0f9dbac3a00351b6e734).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -688,6 +688,165 @@
    ]
   },
   {
+   "format": "60x120",
+   "item_code": "0004280",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/storm-grey/pf60004280-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0004280_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-grey-0004280-60x120-r11",
+   "faces": [
+    {
+     "file": "0004280_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32554,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "92b55a647b40ed7e87c8766e5e257ad240dcf48442657a7f3a517698f9769cd5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "STORM GREY 60X120 R11_20 MM_01",
+      "id": "f5cb08b1-295c-4e07-a718-db3cff1888a3",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0004280_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 43508,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "1e243ef58b1865b85878d91edc5a1a3839ae6cf56440ec4a86ebc60eae3bde9d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2",
+      "name": "STORM GREY 60X120 R11_20 MM_04",
+      "id": "89f3dce3-32bd-44e2-b65f-4c8a8c936a76",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0004280_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 30150,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "cd043d2eb0499ca4e9eb75fbc6d6dde929ac1de33996d14b133034e9e34f253e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3",
+      "name": "STORM GREY 60X120 R11_20 MM_05",
+      "id": "cda7cfa9-1b6f-4b5b-8f80-db654e89358f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0004280_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 39936,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "e2d32552731d34f5ae568f9ae55937e1eeedcd13302df1cc6e90929d95c619c6",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4",
+      "name": "STORM GREY 60X120 R11_20 MM_03",
+      "id": "f53a406c-c9ff-4137-b358-5a56300dddb4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0004280_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 34198,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d14d94e57cac1fd06abe69830c24eba7d03d7f35159e332a63634f8f82ad130d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5",
+      "name": "STORM GREY 60X120 R11_20 MM_06",
+      "id": "bebed0c4-e0db-4758-9fd5-9ba3e9b43108",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0004280_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 42916,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - STORM GREY - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      1280
+     ],
+     "source_sha256": "d2631c02741530f1ebb3351cf13c9ad2e4d3d111c96cec6096bd2d214e9ac9c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6",
+      "name": "STORM GREY 60X120 R11_20 MM_02",
+      "id": "49bf6919-4e93-4744-9073-a27c611d268d",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
    "format": "80x80",
    "item_code": "0003997",
    "finish": "Natural",
@@ -1216,6 +1375,309 @@
       "label": "60X60 · Natural · Faccia 12",
       "name": "GREY 60X60_12",
       "id": "9bb739dd-6b7b-4f39-b680-70a7f0fc602e",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012102",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/storm-grey/pf60012102-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0012102_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-storm-grey-0012102-60x60-r11",
+   "faces": [
+    {
+     "file": "0012102_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13642,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8d88661a23dd1cfcb2c17a6cefdc95b51ca1495cf8c7616f5c90b703e4d1e4f5",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "STORM GREY 60X60_R11_20 MM_01",
+      "id": "6f9063a0-0533-4ceb-bb36-2d424e628d72",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012102_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20920,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d0a9cdb5b6c4332ec3b2f519d06189aa99f474889bd13219571a4dfacac5c842",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "STORM GREY 60X60_R11_20 MM_07",
+      "id": "e8d7f11f-9999-4d19-aac8-9a1654949752",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012102_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17578,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "55974cefada7881905cd55a6668403859f212732aeb2fdc580f98cce22e447ac",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "STORM GREY 60X60_R11_20 MM_02",
+      "id": "4b05e3d3-d95b-4529-9cc1-adda49015d90",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012102_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22282,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "93f028333fdba4e17f3b336560181a5dfb288964eacfa6e5eb49d5e5e1254a3d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "STORM GREY 60X60_R11_20 MM_03",
+      "id": "223184cd-08e1-408e-b0b8-f108f5af8a82",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012102_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18370,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "db0dad7e3896d11c96679d75a604899661bb7e468405f393c1603aa39f361b56",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5",
+      "name": "STORM GREY 60X60_R11_20 MM_06",
+      "id": "87d69707-48b4-476c-a74f-922fc0942dcb",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012102_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21168,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a50aa721e7a4232e21a1bde61c7b9edaf1671daeb7bc447d5d363c1f99c9cf6d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6",
+      "name": "STORM GREY 60X60_R11_20 MM_08",
+      "id": "0086b701-4d98-4967-a388-37d34b78f3d9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012102_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16972,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "87deb30affde76f4508c1c541d367f60b099bda7698fb5494201974cd609a2c2",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7",
+      "name": "STORM GREY 60X60_R11_20 MM_09",
+      "id": "be93dd33-6521-4c81-b861-2651928d0f85",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012102_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20882,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "292adbaf02ec85a8aabf86a4f52aec0e86566bc9798783ec3931f1ec9f8c0002",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8",
+      "name": "STORM GREY 60X60_R11_20 MM_04",
+      "id": "bfafc11d-7fa0-4ee4-b597-6d4dc1d2c902",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012102_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18518,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "71d6c4fdb00f7b44661e8c6f0999cd55ff1a654192cdb2a8e7e5985802a1d4e2",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9",
+      "name": "STORM GREY 60X60_R11_20 MM_11",
+      "id": "e593b180-c27e-4071-862c-5bb1b61f01b7",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012102_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14196,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "32f5736ccc1ab550a8be71b635319d867b2d7df4883ff5a90fd24288bd83e7cc",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10",
+      "name": "STORM GREY 60X60_R11_20 MM_10",
+      "id": "01b9a46d-688f-472f-b1ed-31f9f54402ea",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012102_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19414,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c97b2e1323b0a781e557da835f33d45fcac96e6a65210a1251df6fc94e99b3ad",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 11",
+      "name": "STORM GREY 60X60_R11_20 MM_05",
+      "id": "c8e1927a-733d-43e1-8244-00b5906f7d7b",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012102_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16152,
+     "source_zip": "PLEIN AIR - STORM GREY - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - STORM GREY - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e1804d8fa45aa7c91692b2ad282c4d49f522a8fe6aed4d08117a4dd1328d165",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 12",
+      "name": "STORM GREY 60X60_R11_20 MM_12",
+      "id": "bca69f58-c6ef-4259-bf8d-837d864062c4",
       "site_position": 12
      }
     }

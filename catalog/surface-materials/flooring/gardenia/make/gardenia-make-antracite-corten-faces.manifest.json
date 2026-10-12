@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/antracite-corten/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ANTRACITE CORTEN - minimali.zip (29473985 bytes, sha256 9e9e71e492958e357ba02a41a9642039dde9264a4d384e929b3e03943ea5b511).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ANTRACITE CORTEN - minimali.zip (29473985 bytes, sha256 9e9e71e492958e357ba02a41a9642039dde9264a4d384e929b3e03943ea5b511); and on 2026-10-13: PLEIN AIR - MAKE ANTRACITE CORTEN - minimali.zip (5624644 bytes, sha256 c405e59c88b901ed872362ca215701ca3d3c841358418f93e3a88acd929a909e).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -226,6 +226,117 @@
       "label": "Faccia 4 (view_04)",
       "name": "MAKE_ANTRACITE_CORTEN_100X100_4",
       "id": "f0532adb-7ba2-429f-a055-c1a36347d69d",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g73054",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/make-antracite-corten/g0073054-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73054_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-antr-corten-g73054-80x80-r11",
+   "faces": [
+    {
+     "file": "g73054_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 11932,
+     "source_zip": "PLEIN AIR - MAKE ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ANTRACITE CORTEN - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "154954f6e5bf36cf47b77e746444ef2c9e2a3f10908db74a822d032723644cfc",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "MAKE ANTRACITE CORTEN 80X80 R11_20 MM_01",
+      "id": "776870c1-67ed-4c76-a718-d7899fc9975b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73054_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 12836,
+     "source_zip": "PLEIN AIR - MAKE ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ANTRACITE CORTEN - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e7f6e4ebf712059d9f1d6fac43820022eb2ed239b59540f582d421b1f91f6b3b",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "MAKE ANTRACITE CORTEN 80X80 R11_20 MM_04",
+      "id": "a97c4399-e6bf-4fd2-a335-ea3f73c8c1fd",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73054_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 20120,
+     "source_zip": "PLEIN AIR - MAKE ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ANTRACITE CORTEN - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4ebc3b3c275b132a13f39a5341d86b5025ebd225e9c07fca48584ff2666ba8c8",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "MAKE ANTRACITE CORTEN 80X80 R11_20 MM_03",
+      "id": "f7e70a1b-d178-4958-9504-fd077ebc3370",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73054_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 11366,
+     "source_zip": "PLEIN AIR - MAKE ANTRACITE CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ANTRACITE CORTEN - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "881dcd0e2597dd90c84a946177d5868e75796864225fe09a4fa7ad4ae091e394",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "MAKE ANTRACITE CORTEN 80X80 R11_20 MM_02",
+      "id": "0624cdda-8b70-4d66-990a-ec4d977f44e9",
       "site_position": 4
      }
     }

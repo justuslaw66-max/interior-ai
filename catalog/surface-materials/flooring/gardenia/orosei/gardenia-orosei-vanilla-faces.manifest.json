@@ -338,7 +338,7 @@
    },
    "swatch": "0030224_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60030224-60x60-nat-197559-0; wall gardenia-wall-tile-orosei-vanilla-pf60030224-60x60-nat-197559-0",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-0030259-60x60-r11 (uses 0030224's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0030224's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-vanilla-pf60030224-60x60-nat-197559-0; wall gardenia-wall-tile-orosei-vanilla-pf60030224-60x60-nat-197559-0",
    "faces": [
     {
      "file": "0030224_01.webp",
@@ -800,7 +800,7 @@
    },
    "swatch": "0030230_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-orosei-vanilla-pf60030230-80x80-nat-197564-0; wall gardenia-wall-tile-orosei-vanilla-pf60030230-80x80-nat-197564-0",
+   "used_by": "floor gardenia-flooring-orosei-vanilla-0030270-80x80-r11 (uses 0030230's faces: ABK's 9 R11 pictures (on Plein Air's page) are 0030230's 9 Natural pictures, byte for byte); floor gardenia-flooring-orosei-vanilla-pf60030230-80x80-nat-197564-0; wall gardenia-wall-tile-orosei-vanilla-pf60030230-80x80-nat-197564-0",
    "faces": [
     {
      "file": "0030230_01.webp",

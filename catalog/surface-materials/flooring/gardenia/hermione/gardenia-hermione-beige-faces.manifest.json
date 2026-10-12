@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/beige/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - BEIGE - minimali.zip (9353528 bytes, sha256 914db6002e713f1bef4a03c19bf742dcdc4d6ced1e729592f1b72f78548d963d).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - BEIGE - minimali.zip (9353528 bytes, sha256 914db6002e713f1bef4a03c19bf742dcdc4d6ced1e729592f1b72f78548d963d); and on 2026-10-13: PLEIN AIR - HERMIONE BEIGE - minimali.zip (31465506 bytes, sha256 df7684f5e9f147d88ab1fb4d4bdaa6d1e34de7d7aaf23a3374f6604d1b7444ba).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -9,6 +9,557 @@
   "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
  },
  "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0202268",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/hermione-beige/020226812.-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0202268_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "duplicates_dropped_site_positions": [
+    16,
+    18,
+    21,
+    22,
+    25,
+    27
+   ],
+   "used_by": "floor gardenia-flooring-hermione-beige-0202268-30x120-r11",
+   "faces": [
+    {
+     "file": "0202268_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19782,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "7c160b667b80736fb0de7d8cad30588576dde77b96b3ee95c43185b3ccb111b8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "X20 HERMIONE BEIGE 30X120_01",
+      "id": "1584e562-9d9d-4efc-9903-b4db88735e79",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202268_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15148,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "76f6ab227a9f770473a9622c32d8067fd2087214e2f71725778be4229e3e8fac",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2",
+      "name": "X20 HERMIONE BEIGE 30X120_12",
+      "id": "000c3cbb-b1f6-4228-8a24-31eb43c33a67",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202268_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18548,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "b1e833ee75554cedacfee85d96ce04383ef37c74e31ffcc405b3338468f92bc0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 3",
+      "name": "X20 HERMIONE BEIGE 30X120_14",
+      "id": "08a41381-dada-4fac-88af-617667bf4a9e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202268_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20610,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "122df3d6679c8152e32a410e41bfb30cbc7a3a363df913e22e1e736ef9389380",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 4",
+      "name": "X20 HERMIONE BEIGE 30X120_07",
+      "id": "0d28091d-0930-4859-bddb-0a921a32c30b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202268_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17464,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "48625a1b0bbd7c94820de08da012818eb3d2d9a1cf955034d13510b0c8b5bb3f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 5",
+      "name": "X20 HERMIONE BEIGE 30X120_22",
+      "id": "1507db44-2802-492b-a1cb-3bf0e5325cb5",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202268_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18510,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "1dc1a9967794cd5484e2c79ddabc57a4c39650db12d3dfd0bf9eb2f4a574e7b3",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 6",
+      "name": "X20 HERMIONE BEIGE 30X120_11",
+      "id": "18af44ca-74fa-48c3-b215-d7193107e4d2",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202268_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19020,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "eb8c997ba7fe9197593320aa40a50225c48080f959d74d77755c5bdd19c40ed8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 7",
+      "name": "OUT.20 HERMIONE BEIGE 30X120_19",
+      "id": "1c2dc394-07ce-4b8b-9b59-c56fb164b5d2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202268_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22256,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "efdd31c149dce8f324e2cb3b070609546fcb5d484f6525cb0aed5f6aa5a583c5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 8",
+      "name": "OUT.20 HERMIONE BEIGE 30X120_16",
+      "id": "27c2bf31-533f-4fbc-a127-de2af4838ab4",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202268_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15976,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "e739477222a35e46a1b96946cccad484de5b365dd445f0beb48bc18f1173cdec",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 9",
+      "name": "X20 HERMIONE BEIGE 30X120_21",
+      "id": "27c8d7d8-7cdc-4b89-ad1f-3ad0b037db46",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202268_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22880,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "fb1f0c598604301c9018ccbf855ff67e8e0e6b1255740232bbcd3eb95dc3bffd",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 10",
+      "name": "X20 HERMIONE BEIGE 30X120_15",
+      "id": "3c8e19a0-b7ab-4909-a2cc-c68416dbdc82",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202268_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23548,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "f162e8a92e915c770e5ff28b501f04f875e89917807ef74b7b65b55cca77b604",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 11",
+      "name": "X20 HERMIONE BEIGE 30X120_10",
+      "id": "3e46346d-42fd-4412-b3bc-e6fb038f9133",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202268_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21394,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "c84c45b3d7d49e8276681d20676e17f71ef6dc4541f8c85e0bac0b6414a49c6e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 12",
+      "name": "X20 HERMIONE BEIGE 30X120_05",
+      "id": "4e1abab4-b655-4873-82cd-51fd6c72473a",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202268_13.webp",
+     "face": 13,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23858,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_13.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "5fb07d7daf8c749ab9190feff0bd37afdb35846a9cbedaa922894b7c2692680e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 13",
+      "name": "X20 HERMIONE BEIGE 30X120_09",
+      "id": "5465656c-fcd3-4fed-8066-a9859ece6f8e",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202268_14.webp",
+     "face": 14,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17098,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_14.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "14447f371e2532a4bd3cd981851bd3fdc8135c89ce6443d163ac5ee870102828",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 14",
+      "name": "X20 HERMIONE BEIGE 30X120_13",
+      "id": "603aa1c5-8476-4f5a-907d-a00c74956689",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202268_15.webp",
+     "face": 15,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16710,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "9b0d3a1294008d85244066c33a1da38c3a15aaf092aef849b302a47b5c5beeb7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 15",
+      "name": "X20 HERMIONE BEIGE 30X120_17",
+      "id": "719f1560-6e67-417e-86ab-e3a0d635d739",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202268_16.webp",
+     "face": 16,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16864,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_17.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "a1e27f59673c5008e8cb56b8582f3247f45b4e65234982e8fb3b5a9a47cf93b2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 17",
+      "name": "OUT.20 HERMIONE BEIGE 30X120_18",
+      "id": "76dbb386-0ea1-4ed3-bfbc-fbef9829487f",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202268_17.webp",
+     "face": 17,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20740,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_19.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "3785e8f5fe9de0074ac21e28767eddd14f9a227978ecf335135b70f5712ccaac",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 19",
+      "name": "X20 HERMIONE BEIGE 30X120_08",
+      "id": "7adf27ed-a62e-4cef-a401-582d094f1391",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0202268_18.webp",
+     "face": 18,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21304,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_20.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "343f897dbd6501a50fc20306483c4e1877e7ca478f11f547803ff859abc8b818",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 20",
+      "name": "X20 HERMIONE BEIGE 30X120_06",
+      "id": "90b710a4-96b5-474a-bb29-aca9ffe77892",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0202268_19.webp",
+     "face": 19,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19204,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_23.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "a1749f5919c6eaacf903a2ae3763c392171ab2ff54e2d00af579022e4c4f750b",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 23",
+      "name": "X20 HERMIONE BEIGE 30X120_20",
+      "id": "a685b349-d4bd-474d-b9ae-896702108e68",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0202268_20.webp",
+     "face": 20,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18734,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_24.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "d6587ad392bb3b86f470d49a67ad28d347c5404c421637e8952a3d41852a5f40",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 24",
+      "name": "X20 HERMIONE BEIGE 30X120_02",
+      "id": "a797376f-c0a0-4cf1-b9d3-e375106bc63f",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0202268_21.webp",
+     "face": 21,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19186,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_26.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "df4248bd993ae378b062b256471e2d7b7cba06a884f911d953c72b7f598fc317",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 26",
+      "name": "X20 HERMIONE BEIGE 30X120_03",
+      "id": "d955cb01-21e0-40fe-aef7-69de2ae4ac56",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0202268_22.webp",
+     "face": 22,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17856,
+     "source_zip": "PLEIN AIR - HERMIONE BEIGE - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE BEIGE - 30X120 - R11 - view_28.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "5e0321b293d2e2d43f94cd12699e2dc1f91f1719619157fde36aac077aa5f048",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 28",
+      "name": "X20 HERMIONE BEIGE 30X120_04",
+      "id": "e9019fb9-6e74-4978-9b7b-5648b22a6079",
+      "site_position": 28
+     }
+    }
+   ]
+  },
   {
    "format": "20x120",
    "item_code": "0202265",

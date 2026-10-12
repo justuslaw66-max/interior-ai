@@ -317,7 +317,7 @@
    },
    "swatch": "0014522_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
+   "used_by": "floor gardenia-flooring-la-geoteca-brennero-0014522-60x120-r11; floor gardenia-flooring-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-brennero-pf60011738-60x120-nat-90399-0 (uses 0014522's faces: ABK's Brennero 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
    "faces": [
     {
      "file": "0014522_01.webp",
