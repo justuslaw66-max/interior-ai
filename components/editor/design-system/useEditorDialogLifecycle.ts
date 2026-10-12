@@ -58,6 +58,7 @@ type DialogSessionOptions = Pick<
 > & {
   generation: number;
   closeDisabledRef: MutableRefObject<boolean>;
+  openerRef: MutableRefObject<HTMLElement | null>;
   restoreFrameRef: MutableRefObject<number | null>;
   generationRef: MutableRefObject<number>;
   unmountedRef: MutableRefObject<boolean>;
@@ -243,7 +244,14 @@ function registerDialogSession(options: DialogSessionOptions) {
   const dialog = options.dialogRef.current;
   const panel = options.panelRef.current;
   if (!dialog || !panel) return;
-  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  // A session that starts again while the dialog stays open (StrictMode runs effects twice in
+  // development; a changed dependency reruns them) finds focus inside the dialog, so it keeps the
+  // opener the first session saw (UX 5h).
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement && dialog.contains(active))) {
+    options.openerRef.current = active instanceof HTMLElement ? active : null;
+  }
+  const opener = options.openerRef.current;
   const token = registerEditorDialogRoot(dialog,
     options.manageBackground || options.waitForEntryTransition,
     options.hideWhenSuperseded,
@@ -292,6 +300,7 @@ function useDialogSessionEffects(
     hideWhenSuperseded, manageBackground, waitForEntryTransition,
     lockBodyScroll,
   } = options;
+  const openerRef = useRef<HTMLElement | null>(null);
   const startSession = useCallback(() => {
     const generation = generationRef.current + 1;
     generationRef.current = generation;
@@ -300,7 +309,7 @@ function useDialogSessionEffects(
       dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
       returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded, manageBackground,
       lockBodyScroll, waitForEntryTransition, generation, requestClose,
-      closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
+      closeDisabledRef, openerRef, restoreFrameRef, generationRef, unmountedRef,
     });
   }, [
     closeButtonRef, closeDisabledRef, dialogRef, generationRef, initialFocusRef,

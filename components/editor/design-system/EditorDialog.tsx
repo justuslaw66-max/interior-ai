@@ -6,6 +6,8 @@ import { useEditorDialogLifecycle } from "@/components/editor/design-system/useE
 
 export type EditorDialogProps = {
   open: boolean;
+  /** alertdialog for a confirmation that interrupts the work (ConfirmDialog). */
+  role?: "dialog" | "alertdialog";
   title: ReactNode;
   description?: ReactNode;
   children: ReactNode;
@@ -29,7 +31,10 @@ export type EditorDialogProps = {
   focusRestorationEnabledRef?: { current: boolean };
   hideWhenSuperseded?: boolean;
   cancelFocusRestorationOnUnmount?: boolean;
-  manageBackground?: boolean; lockBodyScroll?: boolean;
+  /** On by default: the rest of the page is inert and hidden from assistive technology. */
+  manageBackground?: boolean;
+  /** On by default: the page behind doesn't scroll. */
+  lockBodyScroll?: boolean;
   waitForEntryTransition?: boolean;
   placement?: "center" | "right";
   overlayClassName?: string;
@@ -59,11 +64,13 @@ function getDialogThemeClasses(dark: boolean, forceLight: boolean) {
 
 /**
  * Shared modal shell for editor workflows. It owns dialog semantics, focus
- * entry/trapping/return, Escape and backdrop dismissal, and visible focus
- * treatment while leaving domain content to the caller.
+ * entry/trapping/return, Escape and backdrop dismissal, the inert background and
+ * scroll lock (both on by default, UX AX5), and visible focus treatment while
+ * leaving domain content to the caller.
  */
 export function EditorDialog({
   open,
+  role = "dialog",
   title,
   description,
   children,
@@ -80,7 +87,7 @@ export function EditorDialog({
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded = false,
-  manageBackground = false, lockBodyScroll = false,
+  manageBackground = true, lockBodyScroll = true,
   cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
   overlayClassName = "",
@@ -113,7 +120,7 @@ export function EditorDialog({
         placement === "right" ? "justify-end p-0" : "justify-center p-4"
       } ${overlayClassName}`}
       data-testid={testId} data-editor-dialog-state="mounting"
-      role="dialog"
+      role={role}
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
