@@ -37,6 +37,10 @@ export type EditorDialogProps = {
   lockBodyScroll?: boolean;
   waitForEntryTransition?: boolean;
   placement?: "center" | "right";
+  /** The layer's z-index class; z-50 unless the dialog must sit above other overlays. */
+  layerClassName?: string;
+  /** Set while the dialog's action runs. */
+  busy?: boolean;
   overlayClassName?: string;
   panelClassName?: string;
   headerClassName?: string;
@@ -60,6 +64,33 @@ function getDialogThemeClasses(dark: boolean, forceLight: boolean) {
     description: "text-neutral-600 dark:text-neutral-300",
     close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-offset-[#1e2839]",
   };
+}
+
+type EditorDialogCloseButtonProps = {
+  buttonRef: { current: HTMLButtonElement | null };
+  id?: string;
+  label: string;
+  testId?: string;
+  disabled: boolean;
+  className: string;
+  onClick: () => void;
+};
+
+/** The × in the dialog's corner: 44px, with the shared focus ring. */
+function EditorDialogCloseButton({ buttonRef, id, label, testId, disabled, className, onClick }: EditorDialogCloseButtonProps) {
+  return (
+    <button
+      ref={buttonRef} id={id}
+      type="button"
+      aria-label={label}
+      data-testid={testId}
+      disabled={disabled}
+      className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      onClick={onClick}
+    >
+      <span aria-hidden="true">×</span>
+    </button>
+  );
 }
 
 /**
@@ -90,6 +121,7 @@ export function EditorDialog({
   manageBackground = true, lockBodyScroll = true,
   cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
+  layerClassName = "z-50", busy,
   overlayClassName = "",
   panelClassName = "",
   headerClassName = "", contentClassName = "", footerClassName = "",
@@ -116,7 +148,7 @@ export function EditorDialog({
     <div
       ref={dialogRef}
       id={dialogId} tabIndex={-1}
-      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] outline-hidden motion-reduce:transition-none ${
+      className={`fixed inset-0 ${layerClassName} flex items-center bg-black/45 backdrop-blur-[1px] outline-hidden motion-reduce:transition-none ${
         placement === "right" ? "justify-end p-0" : "justify-center p-4"
       } ${overlayClassName}`}
       data-testid={testId} data-editor-dialog-state="mounting"
@@ -124,6 +156,7 @@ export function EditorDialog({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
+      aria-busy={busy}
       onMouseDown={(event) => {
         if (
           closeOnBackdrop &&
@@ -154,17 +187,10 @@ export function EditorDialog({
             ) : null}
           </div>
           {showCloseButton ? (
-            <button
-              ref={closeButtonRef} id={closeButtonId}
-              type="button"
-              aria-label={closeLabel}
-              data-testid={closeButtonTestId}
-              disabled={closeDisabled}
-              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close} ${closeButtonClassName}`}
-              onClick={requestClose}
-            >
-              <span aria-hidden="true">×</span>
-            </button>
+            <EditorDialogCloseButton
+              buttonRef={closeButtonRef} id={closeButtonId} label={closeLabel} testId={closeButtonTestId}
+              disabled={closeDisabled} className={`${themeClasses.close} ${closeButtonClassName}`} onClick={requestClose}
+            />
           ) : null}
         </div>
         <div className={`mt-4 ${contentClassName}`}>{children}</div>

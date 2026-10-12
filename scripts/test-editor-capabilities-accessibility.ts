@@ -98,6 +98,16 @@ for (const required of [
   );
 }
 
+// The save conflict and the backup recovery wait for a choice: Escape and the backdrop don't close
+// them, and they keep their own trap no longer (AX5).
+for (const relativePath of [
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
+]) {
+  const source = read(relativePath);
+  assert.match(source, /<EditorDialog\s+open\s+role="alertdialog"[\s\S]*?\bcloseDisabled\b[\s\S]*?showCloseButton=\{false\}/, relativePath);
+  assert.doesNotMatch(source, /addEventListener\("keydown"/, relativePath);
+}
 // A confirmation interrupts the work, so it is an alertdialog (AX5).
 assert.match(read("components/ConfirmDialog.tsx"), /<EditorDialog\s+open\s+role="alertdialog"/);
 
@@ -202,6 +212,10 @@ for (const relativePath of [
   "components/editor/design-page/DownloadDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
   "components/editor/shop/ShoppingBuyListDialog.tsx",
+  // AX5: these three had focus traps of their own.
+  "components/editor/design-page/PlanTemplateChoiceDialog.tsx",
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
