@@ -125,7 +125,7 @@ test.describe("6. Catalog Compare", () => {
     await searchInput.clear();
 
     await filtersButton.click();
-    await expect(page.getByText("Structured Filters")).toBeVisible();
+    await expect(page.getByText("Structured filters")).toBeVisible();
     await expect(page.getByLabel("Curated only")).toHaveCount(0);
     await expect(page.getByLabel("Wall-friendly")).toHaveCount(0);
     await page.getByLabel("Small-room friendly").check();

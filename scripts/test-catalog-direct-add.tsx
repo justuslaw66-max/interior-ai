@@ -13,7 +13,7 @@ import {
 } from "../lib/editor-action-toast";
 
 // One-step Add (audit finding FU4): consumers' Add places the product and says so in a toast with
-// Undo; "Choose where it goes" opens the preview. Pro keeps its Preview Add or Auto Add choice.
+// Undo; "Choose where it goes" opens the preview. Pro keeps its Preview add or Auto add choice.
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const noop = () => undefined;
@@ -56,8 +56,8 @@ const catalogPanel = read("components/catalog/CatalogPanel.tsx");
 assert.match(catalogPanel, /placesDirectly=\{directAdd\} addDisabled=\{!canEdit\} onChooseSpot=\{onAutoPlaceInRoom\}/);
 assert.equal(renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: false, mode: "auto", onChange: noop })), "");
 const toggle = renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: true, mode: "preview", onChange: noop }));
-assert.match(toggle, /data-testid="placement-add-mode-preview" data-active="true"[^>]*>Preview Add</);
-assert.match(toggle, /data-testid="placement-add-mode-auto" data-active="false"[^>]*>Auto Add</);
+assert.match(toggle, /data-testid="placement-add-mode-preview" data-active="true"[^>]*>Preview add</);
+assert.match(toggle, /data-testid="placement-add-mode-auto" data-active="false"[^>]*>Auto add</);
 
 // The drawer: consumers add in one step, or choose where it goes; Pro previews first.
 const drawer = (placesDirectly: boolean, onChooseSpot?: () => void, addDisabled?: boolean) =>

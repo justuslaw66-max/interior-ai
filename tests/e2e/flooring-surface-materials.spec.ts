@@ -472,7 +472,7 @@ test.describe("Flooring surface materials", () => {
       designId = design.id;
 
       await page.goto(`/share/${shareToken}/export`);
-      await expect(page.getByRole("heading", { name: "Surface Material BOM" })).toBeVisible({
+      await expect(page.getByRole("heading", { name: "Surface material BOM" })).toBeVisible({
         timeout: 30000,
       });
       const bomRow = page.getByRole("row", {

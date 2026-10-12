@@ -63,7 +63,7 @@ export default function FloorPlanRoomTracePanel({
             ? `${floor.rooms.length} added`
             : calibration
               ? "Ready"
-              : "After Step 1"}
+              : "After step 1"}
         </span>
       </summary>
       <div className="mt-2 grid gap-2">

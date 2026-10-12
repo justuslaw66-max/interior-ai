@@ -70,12 +70,12 @@ function ClientPreviewExitAction({
         id={CLIENT_PREVIEW_EXIT_ACTION_ID}
         data-testid="client-preview-exit"
         type="button"
-        aria-label="Exit Presentation"
+        aria-label="Exit presentation"
         className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
         onClick={onExit}
-        title="Exit Presentation Mode (P)"
+        title="Exit presentation mode (P)"
       >
-        ✕ Exit Presentation
+        ✕ Exit presentation
       </button>
     </div>
   );

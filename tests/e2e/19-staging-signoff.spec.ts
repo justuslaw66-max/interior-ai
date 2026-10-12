@@ -197,7 +197,7 @@ test.describe("19. Staging Signoff Evidence", () => {
       const shareSnapshotFingerprint = savedCloudFingerprint;
 
       await page.goto(`/share/${seed.shareToken}/export`);
-      await expect(page.getByText("Export Overview")).toBeVisible({ timeout: 30000 });
+      await expect(page.getByText("Export overview")).toBeVisible({ timeout: 30000 });
       await expectFingerprint(page.getByTestId("qa-export-snapshot-fingerprint"), savedCloudFingerprint);
       const exportSnapshotFingerprint = savedCloudFingerprint;
 

@@ -345,7 +345,7 @@ assert.match(
 );
 assert.match(
   panelRegionSource,
-  /id=\{CLIENT_PREVIEW_EXIT_ACTION_ID\}[\s\S]*?data-testid="client-preview-exit"[\s\S]*?aria-label="Exit Presentation"/,
+  /id=\{CLIENT_PREVIEW_EXIT_ACTION_ID\}[\s\S]*?data-testid="client-preview-exit"[\s\S]*?aria-label="Exit presentation"/,
   "The visible preview Exit action should expose one stable semantic focus target."
 );
 assert.doesNotMatch(

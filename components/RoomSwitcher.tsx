@@ -65,7 +65,7 @@ export const RoomSwitcher: React.FC<RoomSwitcherProps> = ({
       aria-label="House rooms"
     >
       <span className="shrink-0 px-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-        House Plan
+        House plan
       </span>
       {rooms.map((room) => (
         <div
@@ -174,7 +174,7 @@ export const RoomSwitcherVertical: React.FC<RoomSwitcherProps> = ({
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-white p-2 shadow" aria-label="House rooms">
       <div className="px-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-        House Plan
+        House plan
       </div>
       {rooms.map((room) => (
         <div
@@ -239,7 +239,7 @@ export const RoomSwitcherVertical: React.FC<RoomSwitcherProps> = ({
           className="rounded px-3 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 disabled:opacity-50"
           title="Add another room to this design"
         >
-          + Add Room
+          + Add room
         </button>
       )}
     </div>

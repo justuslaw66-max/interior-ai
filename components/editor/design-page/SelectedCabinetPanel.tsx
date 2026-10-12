@@ -503,7 +503,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("placed-package")}
               >
-                Download Placed Package
+                Download placed package
               </button>
               <button
                 type="button"
@@ -516,7 +516,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("installer-work-order")}
               >
-                Download Install Work Order
+                Download install work order
               </button>
               <button
                 type="button"
@@ -529,7 +529,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-field-verification")}
               >
-                Download Field Verification
+                Download field verification
               </button>
               <button
                 type="button"
@@ -542,7 +542,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-finish-schedule")}
               >
-                Download Finish Schedule
+                Download finish schedule
               </button>
               <button
                 type="button"
@@ -555,7 +555,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule")}
               >
-                Download Project Schedule
+                Download project schedule
               </button>
               <button
                 type="button"
@@ -568,7 +568,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule-csv")}
               >
-                Download Project CSV
+                Download project CSV
               </button>
               <button
                 type="button"
@@ -581,7 +581,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-scope")}
               >
-                Download Scope Package
+                Download scope package
               </button>
               <button
                 type="button"
@@ -594,7 +594,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-procurement")}
               >
-                Download Procurement
+                Download procurement
               </button>
               <button
                 type="button"
@@ -607,7 +607,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-quote")}
               >
-                Download Project Quote
+                Download project quote
               </button>
               <button
                 type="button"
@@ -620,7 +620,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-purchase-readiness")}
               >
-                Download Purchase Readiness
+                Download purchase readiness
               </button>
               <button
                 type="button"
@@ -633,7 +633,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-fabrication-release")}
               >
-                Download Fab Release
+                Download fab release
               </button>
               <button
                 type="button"
@@ -646,7 +646,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-approval")}
               >
-                Download Approval
+                Download approval
               </button>
               <button
                 type="button"
@@ -659,7 +659,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-revision")}
               >
-                Download Revision Package
+                Download revision package
               </button>
               <button
                 type="button"
@@ -672,7 +672,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-drawing-set")}
               >
-                Download Drawing Set
+                Download drawing set
               </button>
               <button
                 type="button"
@@ -685,7 +685,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cut-list")}
               >
-                Download Cut List
+                Download cut list
               </button>
               <button
                 type="button"
@@ -698,7 +698,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cnc-batch")}
               >
-                Download CNC Batch
+                Download CNC batch
               </button>
               <button
                 type="button"
@@ -711,7 +711,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-installation-plan")}
               >
-                Download Install Plan
+                Download install plan
               </button>
               <button
                 type="button"
@@ -724,7 +724,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-rfq")}
               >
-                Download Project RFQ
+                Download project RFQ
               </button>
               <button
                 type="button"
@@ -737,7 +737,7 @@ export function SelectedCabinetPanel({
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-handoff")}
               >
-                Download Handoff Bundle
+                Download handoff bundle
               </button>
                 </>
               ) : null}
