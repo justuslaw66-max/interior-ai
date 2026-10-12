@@ -30,7 +30,7 @@ export function CabinetGuidedStepNavigation({
             type="button"
             data-testid={`cabinet-guided-step-${step.id}`}
             aria-current={isActive ? "step" : undefined}
-            className={`group grid min-w-0 gap-1 rounded-xl px-1.5 py-2 text-center transition sm:px-3 ${
+            className={`group grid min-w-0 gap-1 rounded-xl px-0.5 py-2 text-center transition sm:px-3 ${
               isActive
                 ? "bg-neutral-950 text-white shadow-sm"
                 : "text-neutral-500 hover:bg-white hover:text-neutral-950"
@@ -52,7 +52,7 @@ export function CabinetGuidedStepNavigation({
                 <StepIcon className="h-3.5 w-3.5" />
               )}
             </span>
-            <span className="truncate text-[11px] font-semibold sm:text-xs">{step.label}</span>
+            <span className="truncate text-xs font-semibold">{step.label}</span>
           </button>
         );
       })}

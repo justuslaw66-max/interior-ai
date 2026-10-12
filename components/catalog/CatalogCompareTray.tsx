@@ -98,7 +98,7 @@ export default function CatalogCompareTray(props: Props) {
         </button>
       </div>
 
-      <div className="mt-2 grid gap-2 md:grid-cols-3">
+      <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-2">
         {items.map((item) =>
           item.status === "available" ? (
             <AvailableCompareCard key={item.productId} item={item} onRemove={onRemove} onPreview={onPreview} onAdd={onAdd} />

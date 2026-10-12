@@ -221,7 +221,7 @@ export function CabinetPreviewViewSelector({
       role="group"
       aria-label="Preview view"
       aria-describedby={instructionsId}
-      className="inline-flex rounded-lg border border-white/60 bg-white/90 p-1 text-[11px] font-semibold text-neutral-700 shadow-sm backdrop-blur"
+      className="inline-flex rounded-lg border border-white/60 bg-white/90 p-1 text-xs font-semibold text-neutral-700 shadow-sm backdrop-blur"
       data-testid="cabinet-preview-view-selector"
     >
       <span id={instructionsId} className="sr-only">

@@ -297,7 +297,7 @@ export default function CatalogAuthoringEditor({ initialDb, initialYaml, initial
             <div className="mt-1 text-xs text-neutral-600">YAML-backed governance fields tied to the linked asset.</div>
           </div>
           <div
-            className={`rounded-full px-2 py-1 text-[11px] font-medium ${validation?.publishable ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"}`}
+            className={`rounded-full px-2 py-1 text-xs font-medium ${validation?.publishable ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"}`}
           >
             {validation?.publishable ? "publishable" : "needs fixes"}
           </div>

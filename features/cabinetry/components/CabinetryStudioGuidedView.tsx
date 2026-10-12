@@ -442,7 +442,7 @@ export function CabinetryStudioGuidedView({
                     <span
                       role="status"
                       aria-live="polite"
-                      className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-neutral-700 shadow-sm"
+                      className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-white/90 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm"
                     >
                       {previewStatus === "regenerating" ? "Updating preview…" : "Preview ready"}
                     </span>
@@ -538,7 +538,7 @@ export function CabinetryStudioGuidedView({
                                 </span>
                                 <span className="line-clamp-2 text-xs leading-5 text-neutral-500">{preset.description}</span>
                               </span>
-                              <span className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                              <span className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                                 <span className="rounded-full bg-neutral-100 px-2 py-1">{preset.difficulty}</span>
                                 <span className="inline-flex items-center gap-1">
                                   <Clock3 className="h-3 w-3" /> {preset.estimatedMinutes} min
@@ -548,7 +548,7 @@ export function CabinetryStudioGuidedView({
                                   {formatCabinetLabel(preset.safetyClassification)}
                                 </span>
                               </span>
-                              <span className="line-clamp-1 text-[10px] text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
+                              <span className="line-clamp-2 text-xs text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
                                 Best for {preset.applicableRoomTypes.slice(0, 3).map(formatCabinetLabel).join(", ")}
                               </span>
                             </button>
@@ -599,7 +599,7 @@ export function CabinetryStudioGuidedView({
                                   <span className="block text-sm font-semibold text-neutral-950">
                                     {template.name}
                                   </span>
-                                  <span className="mt-1 block text-[10px] uppercase tracking-wide text-neutral-400">
+                                  <span className="mt-1 block text-xs uppercase tracking-wide text-neutral-400">
                                     Saved {new Date(template.savedAt).toLocaleDateString()}
                                   </span>
                                 </span>
@@ -732,22 +732,22 @@ export function CabinetryStudioGuidedView({
                                 </span>
                                 <span className="grid grid-cols-2 gap-2 text-xs">
                                   <span className={`rounded-lg px-2.5 py-2 ${isSelected ? "bg-white/10" : "bg-white"}`}>
-                                    <span className="block text-[10px] uppercase tracking-wide opacity-60">Wall</span>
+                                    <span className="block text-xs uppercase tracking-wide opacity-60">Wall</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(space.availableWidthMm)} × {formatProjectMeasurement(space.availableHeightMm)}</span>
                                   </span>
                                   <span className={`rounded-lg px-2.5 py-2 ${isSelected ? "bg-white/10" : "bg-white"}`}>
-                                    <span className="block text-[10px] uppercase tracking-wide opacity-60">Usable segment</span>
+                                    <span className="block text-xs uppercase tracking-wide opacity-60">Usable segment</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(largestSegmentMm)}</span>
                                   </span>
                                 </span>
-                                <span className={`text-[11px] ${isSelected ? "text-white/65" : "text-neutral-500"}`}>
+                                <span className={`text-xs ${isSelected ? "text-white/65" : "text-neutral-500"}`}>
                                   {space.openings.length
                                     ? `${space.openings.length} ${space.openings.length === 1 ? "opening" : "openings"} considered`
                                     : "Clear wall · no recorded openings"}
                                 </span>
                                 {hostCompatibility ? (
                                   <span
-                                    className={`rounded-lg px-2.5 py-2 text-[11px] font-medium ${
+                                    className={`rounded-lg px-2.5 py-2 text-xs font-medium ${
                                       isSelected
                                         ? "bg-white/10 text-white"
                                         : hostCompatibility.status === "incompatible"
@@ -913,7 +913,7 @@ export function CabinetryStudioGuidedView({
                           >
                             Use this measured area
                           </button>
-                          <p className="text-[11px] leading-5 text-blue-700 sm:col-span-2">
+                          <p className="text-xs leading-5 text-blue-700 sm:col-span-2">
                             Custom areas coordinate dimensions and clearances. Without a modelled wall face, final plan position remains manual.
                           </p>
                         </div>
@@ -988,7 +988,7 @@ export function CabinetryStudioGuidedView({
                                 value={mountingHeightDraft}
                                 onChange={(event) => setMountingHeightDraft(event.target.value)}
                               />
-                              <span className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-[10px] normal-case tracking-normal text-neutral-400">{projectMeasurementUnit}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs normal-case tracking-normal text-neutral-400">{projectMeasurementUnit}</span>
                             </span>
                           </label>
                         </div>
@@ -1356,7 +1356,7 @@ export function CabinetryStudioGuidedView({
                                       <span className="text-xs font-semibold text-neutral-800">
                                         {option.label}
                                       </span>
-                                      <span className="text-[11px] leading-4 text-neutral-500">
+                                      <span className="text-xs leading-4 text-neutral-500">
                                         {option.description}
                                       </span>
                                     </button>
@@ -1415,7 +1415,7 @@ export function CabinetryStudioGuidedView({
                           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-neutral-50 p-3">
                             <div>
                               <p className="text-xs font-semibold text-neutral-800">Shelf spacing</p>
-                              <p className="mt-0.5 text-[11px] text-neutral-500">
+                              <p className="mt-0.5 text-xs text-neutral-500">
                                 Custom starts from the current even layout. Returning to Even replaces custom heights.
                               </p>
                             </div>
@@ -1518,7 +1518,7 @@ export function CabinetryStudioGuidedView({
                             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3">
                               <div>
                                 <p className="text-xs font-semibold text-neutral-800">Door layout</p>
-                                <p className="mt-0.5 text-[11px] text-neutral-500">
+                                <p className="mt-0.5 text-xs text-neutral-500">
                                   Manual starts with the current recommendation. Returning to Recommended replaces the manual count.
                                 </p>
                               </div>
@@ -1543,7 +1543,7 @@ export function CabinetryStudioGuidedView({
                               <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                   <p className="text-xs font-semibold text-neutral-800">Drawer heights</p>
-                                  <p className="mt-0.5 text-[11px] text-neutral-500">
+                                  <p className="mt-0.5 text-xs text-neutral-500">
                                     Custom starts from the visible stack. Equal or Recommended replaces custom proportions.
                                   </p>
                                 </div>

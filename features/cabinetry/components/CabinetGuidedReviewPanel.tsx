@@ -87,7 +87,7 @@ export function CabinetGuidedReviewPanel({
           ["Finish", finishLabel],
         ].map(([label, value]) => (
           <div key={label} className="rounded-2xl border border-neutral-200 bg-white p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
               {label}
             </p>
             <p className="mt-2 text-sm font-semibold text-neutral-900">{value}</p>

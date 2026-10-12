@@ -207,6 +207,14 @@ test.describe("1. Onboarding Activation Flow", () => {
       .poll(() => readPersistedOnboardingState(page), { timeout: 30_000 })
       .toEqual(persistedBeforeReload);
 
+    // The reloaded page's HTML is up before React takes it over, and a click before then is lost
+    // (J's Mac, 9 Oct: Furnish was clicked 0.4 s before the scripts ran). Furnish only ever opens
+    // its step, so click it until the step is current.
+    const furnishStep = page.getByTestId("editor-workflow-furnish").first();
+    await expect(async () => {
+      await furnishStep.click();
+      await expect(furnishStep).toHaveAttribute("aria-current", "step", { timeout: 1_000 });
+    }).toPass({ timeout: 30_000 });
     const catalogReady = await waitForCatalogReady(page);
     expect(catalogReady, "The catalog must be available after reload").toBe(
       true,

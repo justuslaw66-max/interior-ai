@@ -560,6 +560,75 @@ assert.deepEqual(
     corners(slantLevel).some((entry) => hasCorner(slantWall, entry)),
     "A vertex with a slanted wall must keep the shared mitre point."
   );
+
+  // The same T, jog and plain L turned with the plan - a photo deskewed to 2 degrees, a plan drawn at 30: square
+  // corners in the walls' own frame, so the footprints, turned back, are the level ones; the plain L keeps its mitre.
+  for (const degrees of [2, 30]) {
+    const turn = (degrees * Math.PI) / 180;
+    const turned = (entry: { xMm: number; zMm: number }) =>
+      point(entry.xMm * Math.cos(turn) - entry.zMm * Math.sin(turn), entry.xMm * Math.sin(turn) + entry.zMm * Math.cos(turn));
+    const turnedWall = (start: [number, number], end: [number, number], thicknessMm: number, from: string, to: string) =>
+      joinWall(turned(point(...start)), turned(point(...end)), thicknessMm, from, to);
+    const turnedBack = (wall: JoinWall) => {
+      const points = corners(wall).map((entry) =>
+        point(entry.xMm * Math.cos(turn) + entry.zMm * Math.sin(turn), -entry.xMm * Math.sin(turn) + entry.zMm * Math.cos(turn))
+      );
+      const round = (value: number) => Math.round(value * 100) / 100 + 0;
+      return {
+        minX: round(Math.min(...points.map((entry) => entry.xMm))),
+        maxX: round(Math.max(...points.map((entry) => entry.xMm))),
+        minZ: round(Math.min(...points.map((entry) => entry.zMm))),
+        maxZ: round(Math.max(...points.map((entry) => entry.zMm))),
+      };
+    };
+    const [turnedLeft, turnedRight, turnedStem] = applyCanonicalWallFootprintJoins([
+      turnedWall([-1000, 0], [0, 0], 200, "tt-l", "tt-joint"),
+      turnedWall([0, 0], [1000, 0], 200, "tt-joint", "tt-r"),
+      turnedWall([0, 0], [0, 1000], 100, "tt-joint", "tt-s"),
+    ]);
+    assert.deepEqual(turnedBack(turnedLeft), { minX: -1000, maxX: 50, minZ: -100, maxZ: 100 });
+    assert.deepEqual(turnedBack(turnedRight), { minX: -50, maxX: 1000, minZ: -100, maxZ: 100 });
+    assert.deepEqual(
+      turnedBack(turnedStem),
+      { minX: -50, maxX: 50, minZ: -100, maxZ: 1000 },
+      `A T junction turned ${degrees} degrees must close in square corners like a level one.`
+    );
+    const [turnedBefore, , turnedAfter] = applyCanonicalWallFootprintJoins([
+      turnedWall([-1000, 0], [0, 0], 200, "tj-a", "tj-b"),
+      turnedWall([0, 0], [0, 60], 100, "tj-b", "tj-c"),
+      turnedWall([0, 60], [1000, 60], 200, "tj-c", "tj-d"),
+    ]);
+    assert.deepEqual(turnedBack(turnedBefore), { minX: -1000, maxX: 50, minZ: -100, maxZ: 100 });
+    assert.deepEqual(
+      turnedBack(turnedAfter),
+      { minX: -50, maxX: 1000, minZ: -40, maxZ: 160 },
+      `A jog turned ${degrees} degrees must close its corners like a level one.`
+    );
+    const [turnedThick, turnedThin] = applyCanonicalWallFootprintJoins([
+      turnedWall([0, 0], [1000, 0], 200, "tl-corner", "tl-a"),
+      turnedWall([0, 0], [0, 1000], 100, "tl-corner", "tl-b"),
+    ]);
+    assert(
+      corners(turnedThick).some((entry) => hasCorner(turnedThin, entry)),
+      `A plain L turned ${degrees} degrees must keep its shared mitre.`
+    );
+  }
+
+  // A stem meeting a through wall at 60 degrees: mitring each pair of neighbours would cut the through wall's faces
+  // back and leave a wedge open inside it. The through wall's halves keep their plain ends against each other, and
+  // the stem ends on the through wall's centre-line - inside it, never past its far face.
+  const [angledLeft, angledRight, angledStem] = applyCanonicalWallFootprintJoins([
+    joinWall(point(-1000, 0), point(0, 0), 200, "a-l", "a-joint"),
+    joinWall(point(0, 0), point(1000, 0), 200, "a-joint", "a-r"),
+    joinWall(point(0, 0), point(500, 866.025), 100, "a-joint", "a-s"),
+  ]);
+  assert.deepEqual(box(angledLeft), { minX: -1000, maxX: 0, minZ: -100, maxZ: 100 });
+  assert.deepEqual(box(angledRight), { minX: 0, maxX: 1000, minZ: -100, maxZ: 100 });
+  const stemFootprint = angledStem.solids[0].footprint;
+  assert(
+    [stemFootprint.startLeft, stemFootprint.startRight].every((entry) => Math.abs(entry.zMm) < 0.01),
+    "A stem meeting a through wall at an angle must end on the through wall's centre-line."
+  );
 }
 
 assert.throws(
