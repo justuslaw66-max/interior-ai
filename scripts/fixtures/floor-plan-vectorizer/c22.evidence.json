@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.24.0",
+ "exporterVersion": "app-evidence-0.25.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -5134,6 +5134,7 @@
   "cornersSnappedToDucts": 1,
   "subPixelSidesDropped": 0,
   "cornersStraightened": 0,
+  "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 8,
   "unsupportedWallPx": 1193,
   "thickAxisWallPx": 1193,
