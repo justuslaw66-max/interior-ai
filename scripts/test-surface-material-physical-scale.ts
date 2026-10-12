@@ -201,16 +201,17 @@ const isStorm = isGardeniaCollection("storm");
 const isEpoque = isGardeniaCollection("epoque-20");
 const isCamouflage = isGardeniaCollection("camouflage");
 const isBlock = isGardeniaCollection("block");
+const isEterea = isGardeniaCollection("eterea");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
+  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block " +
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block and Eterea " +
     "declare physical-scale data"
 );
 assert.equal(
@@ -227,8 +228,8 @@ for (const material of physicalMaterials) {
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's and Luce's; Bon Ton's decors (Network,
   // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
-  // decors (Crocini, Pillole, Rattan), and Block's Righe decors have a single face; Camouflage's 120x280 slabs have two.
-  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-block-righe-/;
+  // decors (Crocini, Pillole, Rattan), and Block's and Eterea's Righe decors have a single face; Camouflage's 120x280 slabs have two.
+  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-(block|eterea)-righe-/;
   const minimumFaces = singleFace.test(id)
     ? 1
     : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-/.test(id)
@@ -399,7 +400,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block|eterea)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -1036,13 +1037,13 @@ assert.deepEqual(collectionFaceRows(isConcreaPlain), [
 // What the entries take from ABK's pages: thickness per format (6 mm slabs, 8.5 mm otherwise), no configurator
 // pattern ids, the layouts J chose (planks for the wood collections), and no blocker but the price.
 const isFromAbkPages = (entry: { surface_material: { material_id: string } }) =>
-  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock].some((filter) => filter(entry));
+  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea].some((filter) => filter(entry));
 const isWoodPlank = (entry: { surface_material: { material_id: string } }) => isHermione(entry) || isJustNature(entry);
 const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter(isFromAbkPages);
 assert.equal(
   abkSiteEntries.length,
-  252,
-  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16, Epoque 2.0 21, Camouflage 23 and Block 27 items, each for floor and wall"
+  316,
+  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16, Epoque 2.0 21, Camouflage 23, Block 27 and Eterea 32 items, each for floor and wall"
 );
 for (const entry of abkSiteEntries) {
   const id = entry.surface_material.material_id;
@@ -1068,10 +1069,10 @@ assert.equal(
   "the import guard finds every Gardenia entry on faces"
 );
 assert.deepEqual(
-  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block"].map((collection) =>
+  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block", "eterea"].map((collection) =>
     lostToImport.get(collection)
   ),
-  [6, 22, 22, 28, 32, 42, 46, 54]
+  [6, 22, 22, 28, 32, 42, 46, 54, 64]
 );
 
 // Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
@@ -1374,6 +1375,82 @@ assert.deepEqual(
   ]
 );
 
+// Gardenia Eterea (downloaded 12 Oct 2026), from ABK's pages like the eight above. Ice, Jade, Powder and Sand come in Lux at
+// 120x120 and in Lux and Soft at 120x280 and 60x120; ABK's Soft pages list the Lux pictures, so both finishes draw the Lux faces
+// (J, 12 Oct 2026: both, sharing faces). Ice Raw, Jade Raw, Powder Raw and Sand Raw (Natural, 120x120 and 60x120) are colours of
+// their own with pictures of their own (J, 12 Oct 2026: as ABK), and the four Righe are a fluted 60x120 decor with one picture
+// each (J, 12 Oct 2026: include them). Every size is true to its label. Ice's 60x120 page lists each picture twice and Jade's one
+// picture twice, byte for byte; each face is used once.
+assert.equal(physicalMaterials.filter(isEterea).length, 64, "every Eterea entry is on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isEterea).length, 64, "Eterea entries in the catalogue");
+const etereaLux = ["120x280 Lux", "120x280 Soft", "120x120 Lux", "60x120 Lux", "60x120 Soft"];
+const etereaRaw = ["120x120 Nat", "60x120 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isEterea, category),
+    ["Ice", "Jade", "Powder", "Righe", "Sand"].flatMap((name) =>
+      name === "Righe"
+        ? ["Ambra", "Blu Pavone", "Borgogna", "Gesso"].map((colour) => [`Eterea Righe ${colour}`, ["60x120 Nat"]])
+        : [[`Eterea ${name}`, etereaLux], [`Eterea ${name} Raw`, etereaRaw]]
+    )
+  );
+}
+// Each Lux colour: 120x120 on its own faces; 120x280 and 60x120 Lux and Soft on the Lux item's faces. Each Raw colour: 120x120
+// and 60x120 on their own faces.
+const etereaRows = (colour: string, [big, slab, long]: readonly string[], [bigN, longN]: readonly number[]) => [
+  [colour, "1200x1200", bigN, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x600", longN, "600x1200", `${long}_01.webp`],
+  [colour, "1200x600", longN, "600x1200", `${long}_01.webp`],
+  [colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`],
+  [colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`],
+];
+const etereaRawRows = (colour: string, big: string, long: string) => [
+  [colour, "1200x1200", 9, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x600", 18, "600x1200", `${long}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isEterea), [
+  ...etereaRows("ice", ["0030732", "0030726", "0030738"], [8, 18]),
+  ...etereaRawRows("ice-raw", "0030751", "0030757"),
+  ...etereaRows("jade", ["0030737", "0030731", "0030743"], [9, 17]),
+  ...etereaRawRows("jade-raw", "0030756", "0030762"),
+  ...etereaRows("powder", ["0030735", "0030729", "0030741"], [9, 18]),
+  ...etereaRawRows("powder-raw", "0030754", "0030760"),
+  ["righe-ambra", "1200x600", 1, "600x1200", "0030967_01.webp"],
+  ["righe-blu-pavone", "1200x600", 1, "600x1200", "0030969_01.webp"],
+  ["righe-borgogna", "1200x600", 1, "600x1200", "0030968_01.webp"],
+  ["righe-gesso", "1200x600", 1, "600x1200", "0030966_01.webp"],
+  ...etereaRows("sand", ["0030733", "0030727", "0030739"], [9, 18]),
+  ...etereaRawRows("sand-raw", "0030752", "0030758"),
+]);
+// Ice's 60x120 page lists its 18 pictures twice, byte for byte, and Jade's lists one picture twice: the manifests name the
+// repeats left out.
+for (const [colour, dropped] of [["ice", [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]], ["jade", [17]]] as const) {
+  const manifest = JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/eterea/gardenia-eterea-${colour}-faces.manifest.json`),
+      "utf8"
+    )
+  ) as { formats: { format: string; duplicates_dropped_site_positions?: number[] }[] };
+  assert.deepEqual(
+    manifest.formats.find((format) => format.format === "60x120")?.duplicates_dropped_site_positions,
+    [...dropped],
+    `Eterea ${colour} 60x120 repeats`
+  );
+}
+// Colour and look as ABK describes them: every colour marble-effect, the Righe decors too; Jade green, Powder pink, Righe
+// Borgogna red and Blu Pavone blue are "mixed", as the July importer files green, red and blue.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter(isEterea).map((material) =>
+    `${/-eterea-([a-z-]+?)-\d/.exec(material.surface_material.material_id)?.[1]}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "ice-raw: marble white", "ice: marble white", "jade-raw: marble mixed", "jade: marble mixed", "powder-raw: marble mixed",
+    "powder: marble mixed", "righe-ambra: marble beige", "righe-blu-pavone: marble mixed", "righe-borgogna: marble mixed",
+    "righe-gesso: marble white", "sand-raw: marble beige", "sand: marble beige",
+  ]
+);
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -1419,6 +1496,9 @@ const sharedFaces = new Map([
   // Block: R11 items on the Nat 3D item's faces, and the stand-ins on the colour's 120x120 Nat 3D faces.
   ["0031402", "0031174"], ["0031401", "0031173"], ["0031403", "0031175"], ["0031404", "0031176"],
   ...blockStandIns,
+  // Eterea: Soft items on the Lux item's faces.
+  ["0031333", "0030726"], ["0031341", "0030738"], ["0031336", "0030731"], ["0031344", "0030743"],
+  ["0031335", "0030729"], ["0031343", "0030741"], ["0031334", "0030727"], ["0031342", "0030739"],
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
@@ -1437,7 +1517,7 @@ const collectionById = new Map(
     .filter((material) =>
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
+        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])

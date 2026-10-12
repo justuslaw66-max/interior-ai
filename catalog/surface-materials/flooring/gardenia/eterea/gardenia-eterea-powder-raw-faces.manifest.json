@@ -1,0 +1,691 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder-raw/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - POWDER RAW - minimali.zip (43144637 bytes, sha256 6313c8e86333a4f902bf36b93d160edd61cee6522ea38d4f1098ea82b736b8b2).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0030754",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder-raw/pf60030754-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030754_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-powder-raw-0030754-120x120-nat; wall gardenia-wall-tile-eterea-powder-raw-0030754-120x120-nat",
+   "faces": [
+    {
+     "file": "0030754_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38740,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9f231d8d68745bacfcef1bd693dc84ff782b2249b1460b5dac3fe0227694c73c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "ETEREA POWDER RAW 120x120 NAT_02",
+      "id": "0083d63d-161a-4b7f-962a-7c0a88ef18cf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030754_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33632,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d20d1cbe49d67264816e18b08a4fd81a40e799d0727944fd971780e748663093",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "ETEREA POWDER RAW 120x120 NAT_06",
+      "id": "0c287c6e-a37b-481b-a893-fd964f3c7200",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030754_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 39126,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d70a59b1a186c27d10ffaba6965029afb65beef541b2889826cbe7d49821621c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "ETEREA POWDER RAW 120x120 NAT_08",
+      "id": "22a46f20-e68c-4767-a65d-ac03b51e61d6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030754_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 40094,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d2243605a08fc25932a4668096d0c168823cfd25e739cf5bfb71981960ad94e2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "ETEREA POWDER RAW 120x120 NAT_03",
+      "id": "4486f23a-8797-4e6d-9b15-e7249c10db8a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030754_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 41384,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cd82e325049fe0935d7427ba89e5aebf9610e0cb714251a88d8abd8178110786",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "ETEREA POWDER RAW 120x120 NAT_09",
+      "id": "658a0b8a-dd78-41f2-a98c-79be09121da1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030754_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37998,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "551c8164d75f4d8731a5dfe5a9da3c55af9ccabe57cfa72f3181ada5b29cada4",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "ETEREA POWDER RAW 120x120 NAT_05",
+      "id": "94f6ac1a-79cd-4b84-99fc-32ace7bb1f42",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030754_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38920,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6de16a709209a92fd080bb6a0f58f1794a1781e925bf53294e510a36a8b583c2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "ETEREA POWDER RAW 120x120 NAT_04",
+      "id": "acd077e9-7098-46bb-b9fe-654370b1f9eb",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030754_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38142,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3c31de7799cfa8b208f08074b093df7d641b2a51223fd929a96443c5c23dc374",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "ETEREA POWDER RAW 120x120 NAT_07",
+      "id": "af526c1d-6ee4-4387-9170-34e9270e0aad",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030754_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 38100,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - POWDER RAW - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "781db3c3df3b9a4f7a485c56733628396b8348a2e448da7b02abc1fd77bbe5b7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "ETEREA POWDER RAW 120x120 NAT_01",
+      "id": "bd558f8c-c81e-40d5-97c9-9d0823623904",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030760",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder-raw/pf60030760-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030760_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-powder-raw-0030760-60x120-nat; wall gardenia-wall-tile-eterea-powder-raw-0030760-60x120-nat",
+   "faces": [
+    {
+     "file": "0030760_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18534,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "fe4376adfcf89bb78de294400a538130b9018ef8a2a9a74d8792b201e06209dd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "ETEREA POWDER RAW 60x120 NAT_08",
+      "id": "07374e61-c0c0-4b0f-a731-2a1baa0b7739",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030760_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20698,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4fff541cb2cca24f01f5eb41776633b2ad5c7436bc3cc68c7aef4f14fbfa7ce8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "ETEREA POWDER RAW 60x120 NAT_16",
+      "id": "26d2b81e-7773-4dc0-b66d-bd50d3b7a190",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030760_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18260,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d876edfb1414eca8c196dca841db06ab441208e1eeb6edc1dce940f222df2cd3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "ETEREA POWDER RAW 60x120 NAT_13",
+      "id": "2843a785-1c35-4ddf-a57c-a12962acba5c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030760_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18902,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "32dc1fac26569e605f0d8adf2c46544e423a62990baed6c57a855b78bc1a0f67",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "ETEREA POWDER RAW 60x120 NAT_17",
+      "id": "2955c092-5b2c-438a-9f41-c4a80ec58a16",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030760_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18496,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "56eb1422fddc0f81db5635b428c4b982235c32b80e0a5ad9527a5bd0696e78b7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "ETEREA POWDER RAW 60x120 NAT_04",
+      "id": "2a66d9c3-3b8c-48aa-9b4d-51b5acd15243",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030760_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19462,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1e506e4800ead052151babb9e9f6e48835704c4907576d82acca48fc45bd0d51",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "ETEREA POWDER RAW 60x120 NAT_15",
+      "id": "2c4c6745-f145-4a7b-9678-f8479122c7ce",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030760_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15402,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b45e0412afc0c4dab0ee6e0f5c061b754633e77b5318c3575e87620fc043e1b5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "ETEREA POWDER RAW 60x120 NAT_11",
+      "id": "34adb45d-52b9-4c66-9ac8-70d1a8559ef5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030760_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18792,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "e817adc1a889697b45991746db2bcd7646ee9bd63b6f650692792bfd78f5d7b8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "ETEREA POWDER RAW 60x120 NAT_06",
+      "id": "43492233-0e00-4e29-9761-0c403cbda2ec",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030760_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18178,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1ed81b52e68dd6c928088e707cc6fd15a30e27f4e3b12c2c12775cb0dfec04ae",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "ETEREA POWDER RAW 60x120 NAT_12",
+      "id": "60a8251b-e9c7-4b33-a225-dc15569ad3e6",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030760_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20058,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d8c14a2750914973fb582614c6253eb4e5ac6419246af0cf310e7807cb4a3e56",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "ETEREA POWDER RAW 60x120 NAT_01",
+      "id": "65214370-2a94-4f26-9f7e-5c58535c55cc",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030760_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19262,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "50c72b98d81a7259486afc9152cd9c1c57e87c34fdf24d2c9ce330199cfb06a2",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "ETEREA POWDER RAW 60x120 NAT_10",
+      "id": "8e4b2c91-6c32-48cc-8061-4b595f510e44",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030760_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23352,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b53aece109c34fce8a3fb17f73ebcaf61b8d733709ee24eb5644233b69f91399",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "ETEREA POWDER RAW 60x120 NAT_18",
+      "id": "9dc045e6-40b3-4133-821a-6dc4c958e1dd",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030760_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17738,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "491f66b8b85cba366f2462a50ef5bb15ac625bbd9f9d2d79fe19dbbdc8458f05",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "ETEREA POWDER RAW 60x120 NAT_14",
+      "id": "b4f55afd-914e-4625-a4d1-28f4d4a6c487",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030760_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19990,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "975c7d2e084e4f028ba2c895f2b9a30a5c3bea2d0070ac65903d1771feecba25",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "ETEREA POWDER RAW 60x120 NAT_03",
+      "id": "b8e94d18-572d-46aa-9801-109a56b2ce98",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030760_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17680,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c86bdbb90b3c784e46aac5db231256c6fd2d78a9151fe2ad0f164690fa6a6aef",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "ETEREA POWDER RAW 60x120 NAT_07",
+      "id": "bb819072-5a84-471a-8359-458a05757941",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030760_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21120,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "749cc01450cf601d46d7b6c345731b59ac1d1bfa58a74abde6b19670e42b25c0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "ETEREA POWDER RAW 60x120 NAT_05",
+      "id": "cea2ffee-5fe9-476a-972a-43cbe9fe2ddb",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030760_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19226,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b97eb60e498887901c89ca2c0ba066000a53d1265f30c53533d2ddad27c12c7d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "ETEREA POWDER RAW 60x120 NAT_02",
+      "id": "f2d51932-a1b4-4340-ae0f-69c6dd5060c5",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030760_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16746,
+     "source_zip": "ETEREA - POWDER RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - POWDER RAW - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ce2e10415924bcaaebdf53220695944e6c9ee83f58b6f8d75b8116a76a0fcae4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "ETEREA POWDER RAW 60x120 NAT_09",
+      "id": "f5863285-e81f-47fd-8007-3020af09f283",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

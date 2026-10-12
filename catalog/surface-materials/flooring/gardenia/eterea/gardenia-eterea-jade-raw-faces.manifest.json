@@ -1,0 +1,691 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade-raw/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - JADE RAW - minimali.zip (35099144 bytes, sha256 128f474b8868025593b7d77516d6c1955ca47b6be9c0f183d9f9ba31d06953b3).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0030756",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade-raw/pf60030756-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030756_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-jade-raw-0030756-120x120-nat; wall gardenia-wall-tile-eterea-jade-raw-0030756-120x120-nat",
+   "faces": [
+    {
+     "file": "0030756_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 31722,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "13f0802b90ed642fbe5be3bde1f7f72663a6a48e2af846f8a24c45303a3c0609",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "ETEREA JADE RAW 120x120 NAT_06",
+      "id": "06828bde-d574-4e6b-b360-332533644942",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030756_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 34174,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cba5117acc5e5cc6923a061ad90941d9f853af5c350521ee81867b3667e64877",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "ETEREA JADE RAW 120x120 NAT_01",
+      "id": "10e30052-c468-482e-99fc-22fc305be5e0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030756_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 37178,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "48d144765d6791f754fe2e07153da430a51b9b3b92e38777046b162d0a488c4c",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "ETEREA JADE RAW 120x120 NAT_02",
+      "id": "2e0b1f9c-d57a-4358-a5c3-9e8756ef5d29",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030756_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 35448,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "101024b63bb8d9a61466496adf52662a2b378142d6713182db66cfd67c886776",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "ETEREA JADE RAW 120x120 NAT_03",
+      "id": "4a46ee96-db8e-487e-bdd5-a4c66103d715",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030756_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33348,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf5d5a773b415a4fbdd0397b69b317f8dccc9cceaf8a9472556d6d4d01d20049",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "ETEREA JADE RAW 120x120 NAT_08",
+      "id": "5277b437-65cc-49d1-9290-da69a58a15da",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030756_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 35440,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "09f6636367127f306e065a4403e7d86554f3d14ef51842c5f5427a36fb0dcbe5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "ETEREA JADE RAW 120x120 NAT_09",
+      "id": "660f40f2-cc5b-43ac-b73c-8734fd52aaa5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030756_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33274,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5a76503b8c61ee2085a8c9b6e7f0e0eaf7e7c4bb86323225ba2839e369fbee67",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "ETEREA JADE RAW 120x120 NAT_04",
+      "id": "b8bd0bb4-313e-479f-9cad-28cd41ec8fc5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030756_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 32114,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b648afd4481b5651007876b571d3b297d87aa8190db62edcc51aa97407693767",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "ETEREA JADE RAW 120x120 NAT_07",
+      "id": "d82cfeaf-4d02-4e8f-a404-c4de0179306f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030756_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33396,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - JADE RAW - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "90a94f022bd73ee62c5dc09284cd851085226bed312240199afecf0d405e1039",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "ETEREA JADE RAW 120x120 NAT_05",
+      "id": "f45c3b07-a22b-4755-aa8a-c7f18ed010b9",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030762",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade-raw/pf60030762-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030762_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-jade-raw-0030762-60x120-nat; wall gardenia-wall-tile-eterea-jade-raw-0030762-60x120-nat",
+   "faces": [
+    {
+     "file": "0030762_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14522,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ff976878a43f1df19f993b349f4fcfd8cf37cea61b29eff8c561a9e274ea7cbc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "ETEREA JADE RAW 60x120 NAT_14",
+      "id": "195537ea-dcbd-455a-87f2-230efe31f41b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030762_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18116,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "12124e4fd457b4cfd2bf2b71a7a5a7a1fea8a2c46d483b2ddab5231db616d6a8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "ETEREA JADE RAW 60x120 NAT_04",
+      "id": "1c1c606b-1ae1-40c2-b3ad-af76021a7e6f",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030762_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15906,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "32c749e12f01e6e8b53dbdb1b9c3490b7756719069942e27b95f2fa483ce43ca",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "ETEREA JADE RAW 60x120 NAT_07",
+      "id": "1e44137f-b11f-46be-9493-b32d81e9a9db",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030762_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17588,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8d403dd6ececb93ef54763f45bf890e8c85f77178f87b8bde7bf041e1e154b2e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "ETEREA JADE RAW 60x120 NAT_17",
+      "id": "223ab167-7dad-4802-b483-ce3e5fb47c77",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030762_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17684,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "563a4e848ab202e9c7487d7e51b51207033b0e8ac0baf30254f4ef7d9751045a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "ETEREA JADE RAW 60x120 NAT_10",
+      "id": "377a3cd0-2ded-4eb6-b52a-cccfa7e8841e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030762_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14486,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c0e09910c18aef7ca4ff2b556ab6cd70f120f10ecf589fbbf7fc7187392cc881",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "ETEREA JADE RAW 60x120 NAT_12",
+      "id": "378f520d-4493-42bd-b0d4-6ece6ab2700a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030762_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16082,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "86c548dfaec3e6e9a0f5e36ea1067c17f76a9c3ea3052abbd6562fdc9be9e8c6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "ETEREA JADE RAW 60x120 NAT_09",
+      "id": "39f58d36-099d-4cbc-9848-fff3fe5271c6",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030762_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16598,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f227e3e3c3b58f546ef99fe8715a2bf4aeccb942924d83cd31fb6b8a4b2c1ab6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "ETEREA JADE RAW 60x120 NAT_15",
+      "id": "4fccf217-7ec9-4ea4-955e-1465168495d8",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030762_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18094,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "eb3edfe5e4d33a8e31552f66e1aa97145f4ab6ee921203b0563b1e6e67920791",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "ETEREA JADE RAW 60x120 NAT_06",
+      "id": "8814acf3-a5f7-4429-b6da-d51383aa316e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030762_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18166,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "52dd7895ed9cd240664f04f97f669ca50cdd422bd8e5df2bae3e7b2fdd84a1ba",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "ETEREA JADE RAW 60x120 NAT_01",
+      "id": "905ccbc0-152a-49d8-bd9c-ccda300883ac",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030762_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19422,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "790162c7b0c8e8c177047e3396e556d06c0ff184fdf8b3d1514668d64413bfd6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "ETEREA JADE RAW 60x120 NAT_03",
+      "id": "a59ff77f-5040-4c67-8d04-ebbf65239032",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030762_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18604,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b0801cee5d7d2122a63bd163b41b3cd957839c042ae8f5c751ca0a8366e6ee5a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "ETEREA JADE RAW 60x120 NAT_08",
+      "id": "a5b9bf93-6174-4dbb-bc01-89a4a013dc4d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030762_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19438,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "682087d8214d66ce64b4b7ad678debfef365cb15656643857a7e67e203d81faf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "ETEREA JADE RAW 60x120 NAT_18",
+      "id": "d136370d-0c1b-4f16-b6ef-b230d7003e02",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030762_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19242,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d84bdbc44561a81f56f4a1527b9a2648bd98c40794b4c9d58afd7d0799fd4aaa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "ETEREA JADE RAW 60x120 NAT_05",
+      "id": "de19bf4c-cc54-4061-bb80-b45c66736e98",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030762_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16332,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "44eacb41fe8d2b162234a4e8430fa78682f863d89a629f5915ef374ae3a6d1db",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "ETEREA JADE RAW 60x120 NAT_11",
+      "id": "de2fa8e4-5a8f-407d-87a9-ee6a8ab6ac6b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030762_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16916,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d21fe584a20c917677c1d816123ae41f81f12a9ee4012bfcd17f3fa2113b943b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "ETEREA JADE RAW 60x120 NAT_02",
+      "id": "e98a1cdf-231c-4087-88b9-0a16b8d4403e",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030762_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17638,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "942e8da1afc070e1f23d2759adc5ea82ab908356a1a9893ea520487496344043",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "ETEREA JADE RAW 60x120 NAT_13",
+      "id": "ebdfc201-3367-4966-b92a-158d6c5034e4",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030762_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18228,
+     "source_zip": "ETEREA - JADE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - JADE RAW - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "783ad02711c819fac7ab50c70effee5bcd448c4beaa47f178520a1ec2a23ccec",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "ETEREA JADE RAW 60x120 NAT_16",
+      "id": "f817a03e-0ed9-45e0-88a0-d4f4a350c410",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}
