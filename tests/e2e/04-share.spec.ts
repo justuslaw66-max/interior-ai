@@ -97,7 +97,7 @@ test.describe("4. Share Link Read-Only", () => {
         ]);
         expect(response?.status()).toBe(200);
         expect(clientStarted.status()).toBe(200);
-        await expect(page.getByRole("heading", { name: "Surface Material BOM", exact: true })).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByRole("heading", { name: "Surface material BOM", exact: true })).toBeVisible({ timeout: 30_000 });
         const row = page.getByRole("row", { name: new RegExp(`Window Export Room.*${materialId}`) });
         await expect(row).toHaveCount(1);
         await expect(row).toContainText(`All walls · ${materialId}`);
@@ -136,7 +136,7 @@ test.describe("4. Share Link Read-Only", () => {
         const pdfBody = await pdfResponse.body();
         await testInfo.attach(`${state.name}-window-export.pdf`, { body: pdfBody, contentType: "application/pdf" });
         const pdfText = (await extractPdfText(pdfBody)).replace(/\s+/g, " ");
-        expect(pdfText).toContain("Surface Material BOM");
+        expect(pdfText).toContain("Surface material BOM");
         expect(pdfText).toContain("Window Export Room");
         expect(pdfText).toContain(materialName);
         expect(pdfText).toContain(`Surface area ${state.surface} m2`);

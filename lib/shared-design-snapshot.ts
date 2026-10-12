@@ -85,7 +85,7 @@ function projectSharedFloorPlanState(
               element;
             return {
               ...safeElement,
-              label: canonicalStructure?.name ?? "Plan Element",
+              label: canonicalStructure?.name ?? "Plan element",
               ...(canonicalStructure
                 ? { canonicalKind: canonicalStructure.kind }
                 : {}),

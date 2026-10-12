@@ -34,7 +34,7 @@ import { PublicShareUnavailableCard } from "@/components/public-share/PublicShar
 
 export const metadata = {
   robots: { index: false, follow: false },
-  title: "Design Export",
+  title: "Design export",
 };
 
 function formatRoomType(value: string) {
@@ -681,7 +681,7 @@ function PlanOverview({
 	              </svg>
               {furnitureRows.length > 0 ? (
                 <div className="mt-3">
-                  <h4 className="mb-2 text-sm font-semibold text-gray-800">Furniture Footprints</h4>
+                  <h4 className="mb-2 text-sm font-semibold text-gray-800">Furniture footprints</h4>
                   <table className="w-full border-collapse text-xs">
                     <thead>
                       <tr className="border-b bg-gray-50">
@@ -729,7 +729,7 @@ function FurniturePlacementSchedule({ floors }: { floors: PlanDiagramFloor[] }) 
 
   return (
     <section className="avoid-break mb-12">
-      <h2 className="mb-4 text-2xl font-bold text-gray-900">Furniture Placement Schedule</h2>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900">Furniture placement schedule</h2>
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b bg-gray-50">
@@ -771,7 +771,7 @@ function OpeningSchedule({ rows }: { rows: OpeningScheduleRow[] }) {
 
   return (
     <section className="avoid-break mb-12">
-      <h2 className="mb-4 text-2xl font-bold text-gray-900">Door & Window Schedule</h2>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900">Door & window schedule</h2>
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b bg-gray-50">
@@ -815,7 +815,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
     <section id="shopping-list" className="avoid-break mb-12">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Checkout Readiness</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Checkout readiness</h2>
           <div className="mt-1 text-sm text-gray-600">
             {cartReadyCount} to check out here • {retailerLinkCount} retailer link{retailerLinkCount === 1 ? "" : "s"} • {reviewCount} review item{reviewCount === 1 ? "" : "s"}
           </div>
@@ -1062,7 +1062,7 @@ export default async function ExportPage({
                 href={`/share/${shareToken}`}
                 className="text-sm text-blue-600 hover:text-blue-700"
               >
-                ← Back to 3D View
+                ← Back to 3D view
               </Link>
             </div>
             <div className="flex flex-wrap items-start justify-end gap-2">
@@ -1085,7 +1085,7 @@ export default async function ExportPage({
           {/* Cover */}
           <div className="mb-10">
             <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Presentation Pack
+              Presentation pack
             </div>
             <h1 className="mb-3 text-4xl font-bold text-gray-900">{publicDesign.title}</h1>
             <div className="grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
@@ -1103,7 +1103,7 @@ export default async function ExportPage({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Export Package
+                  Export package
                 </div>
                 <h2 className="mt-2 text-2xl font-bold text-gray-900">{packageReadinessLabel}</h2>
                 <p className="mt-2 max-w-2xl text-sm text-gray-600">{packageReadinessDetail}</p>
@@ -1149,7 +1149,7 @@ export default async function ExportPage({
 
           {/* Overview */}
           <section className="avoid-break mb-10">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">Export Overview</h2>
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">Export overview</h2>
             <div className="grid gap-3 sm:grid-cols-4">
               <div className="rounded-lg border bg-gray-50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Rooms</div>
@@ -1164,13 +1164,13 @@ export default async function ExportPage({
                 <div className="mt-1 text-2xl font-bold text-gray-900">{homeSummary.shoppableCount}</div>
               </div>
               <div className="rounded-lg border bg-gray-50 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Estimated Total</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Estimated total</div>
                 <div className="mt-1 text-2xl font-bold text-gray-900">{formatSgd(homeSummary.subtotal)}</div>
               </div>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-4">
               <div className="rounded-lg border bg-white p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Measured Area</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Measured area</div>
                 <div className="mt-1 text-xl font-bold text-gray-900">{formatMeasurement(totalAreaSqm, "m2")}</div>
                 <div className="mt-1 text-xs text-gray-500">{formatMeasurement(totalAreaSqm * SQM_TO_SQFT, "sq ft")}</div>
               </div>
@@ -1180,14 +1180,14 @@ export default async function ExportPage({
                 <div className="mt-1 text-xs text-gray-500">Doors and windows in this design</div>
               </div>
               <div className="rounded-lg border bg-white p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Plan Readiness</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Plan readiness</div>
                 <div className="mt-1 text-xl font-bold text-gray-900">
                   {totalAreaSqm > 0 && totalOpenings > 0 ? "Ready" : "Review"}
                 </div>
                 <div className="mt-1 text-xs text-gray-500">Measurements, doors and windows</div>
               </div>
               <div className="rounded-lg border bg-white p-4" data-testid="export-handoff-integrity">
-                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Handoff Integrity</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Handoff integrity</div>
                 <div className={handoffReady ? "mt-1 text-xl font-bold text-emerald-700" : "mt-1 text-xl font-bold text-amber-700"}>
                   {handoffReady ? "Ready" : "Review"}
                 </div>
@@ -1217,7 +1217,7 @@ export default async function ExportPage({
           {/* Room Schedule */}
           {roomSummaries.length > 0 ? (
             <section className="avoid-break mb-12">
-              <h2 className="mb-4 text-2xl font-bold text-gray-900">Room Schedule</h2>
+              <h2 className="mb-4 text-2xl font-bold text-gray-900">Room schedule</h2>
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b bg-gray-50">
@@ -1297,7 +1297,7 @@ export default async function ExportPage({
                   </div>
                 </div>
                 <div className="rounded-lg border bg-gray-50 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Furniture Fit</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Furniture fit</div>
                   <div className="mt-1 text-lg font-bold text-gray-900">{metrics.densityLabel}</div>
                   <div className="mt-1 text-xs text-gray-500">
                     {formatMeasurement(metrics.densityPer10Sqm, "items / 10 m2")}
@@ -1336,7 +1336,7 @@ export default async function ExportPage({
           {/* Design Notes */}
           {publicDesign.notes && (
             <div className="page-break mb-12">
-              <h2 className="mb-4 text-2xl font-bold text-gray-900">Design Notes</h2>
+              <h2 className="mb-4 text-2xl font-bold text-gray-900">Design notes</h2>
               <div className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
                 {publicDesign.notes}
               </div>
@@ -1347,7 +1347,7 @@ export default async function ExportPage({
 
           {/* Practical Checks */}
           <div className="mb-12">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">Practical Checks</h2>
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">Practical checks</h2>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className={totalAreaSqm > 0 ? "text-green-600" : "text-amber-600"}>

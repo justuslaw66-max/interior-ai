@@ -94,7 +94,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
         </label>
 
         <label className="text-xs text-neutral-600">
-          Catalog Item Id
+          Catalog item ID
           <input
             className="mt-1 w-full rounded border p-2 text-sm"
             value={catalogItemId}
@@ -104,7 +104,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
         </label>
 
         <label className="text-xs text-neutral-600">
-          Model Asset Id
+          Model asset ID
           <input
             className="mt-1 w-full rounded border p-2 text-sm"
             value={normalizedAssetId}
@@ -114,7 +114,7 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
         </label>
 
         <label className="text-xs text-neutral-600 md:col-span-2">
-          Error Message
+          Error message
           <input
             className="mt-1 w-full rounded border p-2 text-sm"
             value={errorMessage}

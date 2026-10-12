@@ -75,7 +75,7 @@ export function SurfaceMaterialBomSection({
   if (!rows.length && !warnings.length) return null;
   return (
     <div className="mb-12">
-      <h2 className="mb-4 text-2xl font-bold text-gray-900">Surface Material BOM</h2>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900">Surface material BOM</h2>
       <p className="mb-3 text-sm text-gray-600">
         Area-based floor and wall finishes with a suggested 10% waste allowance. Suppliers price these separately from the furniture.
       </p>

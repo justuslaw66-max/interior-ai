@@ -586,10 +586,10 @@ export function Furniture({
 
         // Wall snap points (flush to walls, no breathing room)
         const walls = [
-          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
+          { axis: "x" as const, coord: wallLeftX, label: "Left wall" },
+          { axis: "x" as const, coord: wallRightX, label: "Right wall" },
+          { axis: "z" as const, coord: wallFrontZ, label: "Front wall" },
+          { axis: "z" as const, coord: wallBackZ, label: "Back wall" },
         ];
 
         // Compute all snap candidates

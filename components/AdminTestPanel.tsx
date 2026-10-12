@@ -49,7 +49,7 @@ export default function AdminTestPanel() {
 
   return (
     <div className="mt-8 rounded-xl bg-white p-4 shadow">
-      <h2 className="text-lg font-semibold">Testing Panel</h2>
+      <h2 className="text-lg font-semibold">Testing panel</h2>
       <p className="mt-1 text-xs text-neutral-500">
         Use this to simulate add_to_cart / checkout / purchase events for funnel
         testing. Values and currencies are intentionally not recorded as revenue.

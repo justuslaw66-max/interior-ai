@@ -244,7 +244,7 @@ async function expectClientPreviewCommandBarExcluded(
   await expect(page.getByRole("button", { name: /^(?:More|Menu)$/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
   const bodySnapshot = await page.locator("body").ariaSnapshot();
-  expect(bodySnapshot).toContain("Exit Presentation");
+  expect(bodySnapshot).toContain("Exit presentation");
   expect(bodySnapshot).not.toContain('button "More"');
   expect(bodySnapshot).not.toContain('button "Menu"');
   expect(bodySnapshot).not.toContain('button "Save"');
@@ -657,7 +657,7 @@ async function isOutsideTheAccessibilityTree(locator: Locator) {
 
 async function expectShareFallbackTopmost(page: Page) {
   const fallback = page.getByTestId("share-fallback-modal");
-  const namedFallback = page.getByRole("dialog", { name: "Share Link" });
+  const namedFallback = page.getByRole("dialog", { name: "Share link" });
   const close = page.getByTestId("share-fallback-close");
   await expect(fallback).toHaveCount(1);
   await expect(namedFallback).toHaveCount(1);
@@ -669,7 +669,7 @@ async function expectShareFallbackTopmost(page: Page) {
   // The editor behind it, the bar's Share included, is out of reach and out of the tree.
   expect(await isOutsideTheAccessibilityTree(page.getByTestId("editor-command-share"))).toBe(true);
   const accessibilityTree = await page.locator("body").ariaSnapshot();
-  expect(accessibilityTree).toContain("Share Link");
+  expect(accessibilityTree).toContain("Share link");
   expect(accessibilityTree).not.toMatch(/button "Share"(?=[\s:[]|$)/m);
   expect(
     await page.evaluate(() => {
@@ -685,7 +685,7 @@ async function expectShareFallbackTopmost(page: Page) {
 async function expectShareFallbackClosed(page: Page) {
   const share = page.getByTestId("editor-command-share");
   await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
-  await expect(page.getByRole("dialog", { name: "Share Link" })).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Share link" })).toHaveCount(0);
   expect(await isOutsideTheAccessibilityTree(share)).toBe(false);
   await expect(share).toBeFocused();
 }

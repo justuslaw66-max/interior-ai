@@ -1722,7 +1722,7 @@ export default function DesignControlsPlanPanel({
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
-                Surface Summary
+                Surface summary
               </div>
               <div className={progressMetaClass}>{activeSurfaceSummaryRows.length} surfaces</div>
             </div>
