@@ -1,0 +1,757 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - JADE - minimali.zip (23144464 bytes, sha256 22ed3d7f02e223e150bd5e1c30c8831e1676598b413dc3eca50a6114bfc751f2).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0030731",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/pf60030731-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0030731_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-jade-0030731-120x280-lux; floor gardenia-flooring-eterea-jade-0031336-120x280-soft (uses 0030731's faces: ABK's 3 Soft pictures are 0030731's 3 Lux pictures, byte for byte, in another order); wall gardenia-wall-tile-eterea-jade-0030731-120x280-lux; wall gardenia-wall-tile-eterea-jade-0031336-120x280-soft (uses 0030731's faces: ABK's 3 Soft pictures are 0030731's 3 Lux pictures, byte for byte, in another order)",
+   "faces": [
+    {
+     "file": "0030731_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 41908,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - JADE - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "d4997886bc1ef55c5517ef701a2fa22d58a1c2becb3215aa910037b7db7221ed",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "ETEREA JADE 120x280 LUX_02",
+      "id": "2c2feb9b-a868-4f90-9e03-d0dbc2b6961b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030731_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 37202,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - JADE - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "aa4881d2af399ca2bdfc9cf9eb8046106c51fc1f65656ff83792791a418c365a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "ETEREA JADE 120x280 LUX_01",
+      "id": "3707e180-b12e-416f-b02f-0a52e69f6373",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030731_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 34322,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - JADE - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "b98e205bde35ab1c9e0a27598a1265d62e520f4ba1a052880ac7c8eda8b40e5a",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "ETEREA JADE 120x280 LUX_03",
+      "id": "6232ac75-1c4b-4ab3-98e7-b6a065afba15",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0030737",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/pf60030737-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030737_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-jade-0030737-120x120-lux; wall gardenia-wall-tile-eterea-jade-0030737-120x120-lux",
+   "faces": [
+    {
+     "file": "0030737_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16778,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c5796811472f17a8da69d787fd4224cdb8b95534d794b27aadbb8eed13ed7e76",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "ETEREA JADE 120x120 LUX_01",
+      "id": "0335b1f7-acb3-4fa7-b7d0-79d2084ebf68",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030737_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 14710,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1ec9b51791e481a0575a2f59f34523fa47ce78460b5530c32a8bf96bf8ba73b0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "ETEREA JADE 120x120 LUX_03",
+      "id": "1068c9c7-9d86-4ed7-8fd0-d76e9c463095",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030737_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19314,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cccec39a830a1bb0361e59e2d7c4fb8def79e72e8ce891ed3e8871b3a6430c18",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "ETEREA JADE 120x120 LUX_04",
+      "id": "3c25fd4a-c138-4832-943e-b4f9ad6e0fdf",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030737_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 13840,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "837f6df47ab3e2a15d869b5eae78d1326aed115c12b0f1b6d7c31cbc6237cfa9",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "ETEREA JADE 120x120 LUX_07",
+      "id": "78f052f6-ac3f-4ae9-9b06-16de3df9b68d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030737_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 16616,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e74b9b7f15039028a950c6b46af30351dc373d00ac45fc1fadf965f3a28808f5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "ETEREA JADE 120x120 LUX_02",
+      "id": "9bca8dc8-18b5-45e9-a076-3272806f8e3e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030737_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 18170,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d8e04da29f1d243f23f191e5bfae96633c2e4e649f328258bb611f7d9846463b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "ETEREA JADE 120x120 LUX_05",
+      "id": "9ce4fc81-1cef-4f5b-84d4-94103e32f6be",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030737_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15070,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "47a38338a9bb74a523fd28311f1de19105810654c2783592fec87230c7489d1b",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "ETEREA JADE 120x120 LUX_06",
+      "id": "ced4d66c-4c6a-4ea9-be40-4647c258608c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030737_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 15456,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ae0016154c20a010ebd2d7715283f945f22553997e5a0abda3e118634a4f6514",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "ETEREA JADE 120x120 LUX_09",
+      "id": "9915c8a0-25f9-4e23-bbf1-02dfce6bd531",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030737_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 12886,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - JADE - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bdf5d3f05c1da8da2fbfd13ce5dd2b090f55e3cab6b8d363ab4fcc8648853363",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "ETEREA JADE 120x120 LUX_08",
+      "id": "f981fb97-868f-453b-a938-46b49bdaae01",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030743",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/pf60030743-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030743_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    17
+   ],
+   "used_by": "floor gardenia-flooring-eterea-jade-0030743-60x120-lux; floor gardenia-flooring-eterea-jade-0031344-60x120-soft (uses 0030743's faces: ABK's 18 Soft pictures are 0030743's 18 Lux pictures, byte for byte); wall gardenia-wall-tile-eterea-jade-0030743-60x120-lux; wall gardenia-wall-tile-eterea-jade-0031344-60x120-soft (uses 0030743's faces: ABK's 18 Soft pictures are 0030743's 18 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0030743_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8456,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "51328a18abc2b39a51422a2637f7134b5a1b93df2f9bb0814dfd8bd5eb2977ff",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "ETEREA JADE 60x120 LUX_13",
+      "id": "0ebffd76-37c8-47fd-8b64-7f9d0ceec068",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030743_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6922,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5e7c83f339e2796ee078078c3e4ce29539f3227b528736e1d4365f679ebba1d0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "ETEREA JADE 60x120 LUX_17",
+      "id": "17390260-a0ff-4963-a375-afe48294373d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030743_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7984,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2a4e0bc902e205e66014578707de98e62df648e159a0012277d09cc0dab7a7b8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "ETEREA JADE 60x120 LUX_06",
+      "id": "268a869f-fa32-4e4f-9f45-737b3f0c7557",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030743_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8256,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cfecd6a2d4e9bc11cf0efb7be51d8d208ff45ddd3990c0ecea47e4762135c2df",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "ETEREA JADE 60x120 LUX_07",
+      "id": "2a878151-cc28-4395-a3b4-3dac12b6b681",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030743_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7250,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "03521ad9e8dd8a1f8533eb0ffdf375bf9d6071344d4d6597e7daec1bd0663394",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "ETEREA JADE 60x120 LUX_12",
+      "id": "35454281-2760-415f-a913-9c6881695741",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030743_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8394,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "108c8b58744f7109b99e0471f3c4bb46c914cb50498fe741d0553a5f898045c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "ETEREA JADE 60x120 LUX_11",
+      "id": "5286297e-092a-4432-83e8-ebdc448d12b1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030743_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7208,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b036a1b51f4bcff0f35e8408635e99b9dad719ff333740fe1010b5c55f942971",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "ETEREA JADE 60x120 LUX_02",
+      "id": "5354ffae-e6fd-4ccf-bda4-984221344e1c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030743_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6632,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "79711cc83bd542ad4cb765b4bfb95e11a3019345b4b908b653dbdec56f60ee02",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "ETEREA JADE 60x120 LUX_16",
+      "id": "632ead70-b37f-4741-8914-56634831659b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030743_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10652,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "071ef4c61b855f11eba6f403c8aab0a5d276cb06fb17408f4f176f97a09fcc88",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "ETEREA JADE 60x120 LUX_10",
+      "id": "686de3bb-5146-4af7-a272-a3d757c7ac2e",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030743_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 12158,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "31184498f80a17727899170dc0fc0d33ba6528906afdbdd3b8651215164a8857",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "ETEREA JADE 60x120 LUX_08",
+      "id": "68b5a311-aed4-4898-96b5-72237b36e93f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030743_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 7422,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "eb905b241157d8b36294eac0ceb814ba34ce6c3d112af1e65a2e98a76f13ac62",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "ETEREA JADE 60x120 LUX_05",
+      "id": "876a5d5b-8814-4199-8d4d-6ecb8f48fb73",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030743_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8638,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "95ca25527d536ef09f9684363f69ab4e44dbd6cae1882fa145d20c7c87399fcf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "ETEREA JADE 60x120 LUX_09",
+      "id": "8daf266c-4856-4c29-bcb9-dfbe98d05321",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030743_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6498,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8104dca9a741fdaf65514763fb87639913f177d9ee11b77bb24998daea517956",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "ETEREA JADE 60x120 LUX_15",
+      "id": "92bb1045-ec97-4c35-ba82-70ca1d1082f7",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030743_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8670,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "05e19b20c089324cb00f17564e89a1e71ec54d4ecdd30988e32a10dec71d738e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "ETEREA JADE 60x120 LUX_18",
+      "id": "a3de5ae8-63fe-4c69-907b-e7ccc76ce1c5",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030743_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8186,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8ee60d646c551690649dbee15cff73b9053daa311205a8362bb96edc94bcb4eb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "ETEREA JADE 60x120 LUX_04",
+      "id": "a7b24b4d-8fcb-416a-b165-7d723996c2e3",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030743_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9910,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "88e2a0872f1e3ac08afd5d04e701f3529a5b7d5e198897e03e922afcaa71415d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "ETEREA JADE 60x120 LUX_01",
+      "id": "b10206a8-6210-4f65-8be7-9fb8d1943552",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030743_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6610,
+     "source_zip": "ETEREA - JADE - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - JADE - 60X120 - Soft - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c65d03b2e5a4fd6dd6e13088106090c563ee21b268168ef6f18bf5afadb7ff09",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18",
+      "name": "ETEREA JADE 60x120 LUX_14",
+      "id": "f99e53c0-b2f4-4923-be7a-beb96bca1b15",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

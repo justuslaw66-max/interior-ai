@@ -1,0 +1,778 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - SAND - minimali.zip (13693161 bytes, sha256 e46114f634c19e3e606f8e318bb0a2b94fb3999603d6e236af412ee25654a83e).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0030727",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand/pf60030727-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0030727_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-sand-0030727-120x280-lux; floor gardenia-flooring-eterea-sand-0031334-120x280-soft (uses 0030727's faces: ABK's 3 Soft pictures are 0030727's 3 Lux pictures, byte for byte); wall gardenia-wall-tile-eterea-sand-0030727-120x280-lux; wall gardenia-wall-tile-eterea-sand-0031334-120x280-soft (uses 0030727's faces: ABK's 3 Soft pictures are 0030727's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0030727_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 18118,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - SAND - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "f62f9410ef8de5092972b1fc8d3d6f83843c207b85e9c13aa6a47b74aaf4fb6b",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "ETEREA SAND 120x280 LUX_01",
+      "id": "0e74318b-4d71-44ec-9443-9ea5d228e243",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030727_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 15890,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - SAND - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "ee99961e1ef1205e0b0eec306cb4b5fd4389660d80d0ade4231a5b25fc7880d8",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "ETEREA SAND 120x280 LUX_02",
+      "id": "bb7d16fb-b954-4543-8746-d30d5cadac85",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030727_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 18082,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - SAND - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "793ce49034e9d42fef92814954a0e0612beaa6fea9d71693c54680c64a8313d7",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "ETEREA SAND 120x280 LUX_03",
+      "id": "e16967ad-d25a-414f-af07-487d1814ca1f",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0030733",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand/pf60030733-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030733_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-sand-0030733-120x120-lux; wall gardenia-wall-tile-eterea-sand-0030733-120x120-lux",
+   "faces": [
+    {
+     "file": "0030733_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 5968,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "30e03546f85ae4eb2fcb61ea3b956e7ccc03abbd9cfb5d5db955e443c0357b23",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "ETEREA SAND 120x120 LUX_06",
+      "id": "06e080ba-70ee-4158-b5f0-a0c6ab1dbfe1",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030733_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7392,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fa36f904e296d96fad6b21d377be3f4a235af2d8ca6374f28d791bb15fd2e9ed",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "ETEREA SAND 120x120 LUX_09",
+      "id": "9e8f4aeb-c7fb-4014-a124-c1554c2ba7da",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030733_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6514,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7f2cf7ec448f76765a66ef495256ea292b0a4ded5c961cf2607bd6864aeb7d68",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "ETEREA SAND 120x120 LUX_05",
+      "id": "a62bceeb-ce0d-4718-967c-ce1fc482a20e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030733_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7948,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "01814fecf33851f5924341eb292d585f61e62e108850673c7b042629a05ea6a8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "ETEREA SAND 120x120 LUX_01",
+      "id": "a880bfe0-5c4f-4b6a-a629-1b5f1501f4b3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030733_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6566,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bdc93bb0d60ea93c9fa3c729b200153beaf9c9000371d71348e752b96770dbfd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "ETEREA SAND 120x120 LUX_03",
+      "id": "bb94562f-b855-4808-99d6-58e160297199",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030733_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7216,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b5f460fa168429d6ff26317c6942063af5a9c77a5ced085b28b596631e22e94a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "ETEREA SAND 120x120 LUX_02",
+      "id": "bdc93ad3-5019-4784-955e-36fceca2aa88",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030733_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 6772,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a13baeaae83cf6547b78c4ee47e8d6f176ed6c5d84220519feabafd970f302fa",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "ETEREA SAND 120x120 LUX_04",
+      "id": "c65ca255-0a32-4f53-933f-3fdb65b8bd6f",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030733_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 7064,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ff8a74daf195de3e99796fe418216434e159c7a5ef5e7c19f5f3ac0522dd107d",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "ETEREA SAND 120x120 LUX_07",
+      "id": "f2e0ac9a-817f-44c8-990b-0cbb7759ae8f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030733_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 5832,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - SAND - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "334e2afacca0bb2e5b625c2602558ca01edd6506528745791a0a871c6df8a48a",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "ETEREA SAND 120x120 LUX_08",
+      "id": "faec039e-b845-42fd-bcf0-cdf5f6ff2400",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030739",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand/pf60030739-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030739_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-sand-0030739-60x120-lux; floor gardenia-flooring-eterea-sand-0031342-60x120-soft (uses 0030739's faces: ABK's 18 Soft pictures are 0030739's 18 Lux pictures, byte for byte); wall gardenia-wall-tile-eterea-sand-0030739-60x120-lux; wall gardenia-wall-tile-eterea-sand-0031342-60x120-soft (uses 0030739's faces: ABK's 18 Soft pictures are 0030739's 18 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0030739_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4744,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a99cf530b96b9bd95e0d30a2c29394d21f7d28a417f4f4857e96cb662cc7b0ad",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "ETEREA SAND 60x120 LUX_01",
+      "id": "15650eaa-b4af-4a35-af89-ffdb2efa53c7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030739_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3274,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_2.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "0a6af19568b6b7e2fcf2e79c7a6a7f528081df5fc247b7686424ff77d7c1aa5b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "ETEREA SAND 60x120 LUX_07",
+      "id": "60981282-9e6b-4bfe-8b11-f03577effe35",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030739_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3658,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "13fbb4e95114ef43c329f010319e361b31e3828c7a7481c98a5a7e6511c4b49d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "ETEREA SAND 60x120 LUX_03",
+      "id": "66711562-4f4f-4e44-b84a-09ee8190b53b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030739_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3290,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_4.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "cf340484d4132f2be0facb556d8fc6a6959d3ed0e013dd1517e0c81be8ed2c8f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "ETEREA SAND 60x120 LUX_11",
+      "id": "6fe24d03-9e4f-4349-855e-a2e461196622",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030739_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3266,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "03290563ef22af5018dfba3b5c981ca8fcc0de467ea01bec956ae83a96dc6cfc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "ETEREA SAND 60x120 LUX_05",
+      "id": "830e2409-b03c-4ddc-8b6c-d142fcfcf4f4",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030739_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3300,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "23b5498ef2cc00275cf9f327a637b5925ca7f15fcd2849cc21f7826d041ab271",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "ETEREA SAND 60x120 LUX_02",
+      "id": "88bf0928-f8d4-4db5-8da3-35ef7277510b",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030739_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3818,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_7.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "e030447367728046cd827cb0e6f8dc3c91e4a906099636ce15011af22e70dc57",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "ETEREA SAND 60x120 LUX_08",
+      "id": "920d4f0f-a943-48f7-b69a-7dee0a0592b4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030739_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4798,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_8.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "7ac6d0cbabc1df100c5f55b31d0442ce19925453f4e2c57c5c28ec8a7d2c5e5a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "ETEREA SAND 60x120 LUX_18",
+      "id": "a00858eb-63fb-402b-8357-613f4b5b8e79",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030739_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3028,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_9.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "b468ccfaf8a42de9aefb0da957d9673057cd791db316bc3906d16ab7ee427ddc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "ETEREA SAND 60x120 LUX_17",
+      "id": "a3a09293-ae22-454f-90cf-85d220d9f418",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030739_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3550,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_10.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "6e9293b9e185f460d6984031052442e33c272bbcfba495f23a92a8f15cddb3b4",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "ETEREA SAND 60x120 LUX_10",
+      "id": "a9b835df-f177-4e61-a0dd-4d3d2680654a",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030739_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4282,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_11.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "1126e07f37dfb14759a0bccc9816381957325786e8700922aed7029c0b99d3c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "ETEREA SAND 60x120 LUX_13",
+      "id": "b124911b-0c05-4ba2-b41a-88f811fe6d6b",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030739_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2908,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_12.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "3c5af58b5e3e2b0d5a15d815d221414fe163c021d217b3fd6e3338587dc4212f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "ETEREA SAND 60x120 LUX_16",
+      "id": "c274d721-10e5-4c91-87ae-7987607b7bfd",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030739_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3058,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_13.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "083e5fdd42a9d1f1805c91d4daee9ec8424b67a786106c1fc3afffe66b99ac8d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "ETEREA SAND 60x120 LUX_15",
+      "id": "ce696113-d014-4128-a07b-5159051ac533",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030739_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3046,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_14.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "b838bd9bc4e4224d6a8ba109074378e3bdf5816732ce34f611a20972c9c9cee7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "ETEREA SAND 60x120 LUX_14",
+      "id": "d8a4908c-82fa-418f-875b-905246fceef4",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030739_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3470,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "519997b90276136d4fa5b8e714715c1fbd9630809bfaf89eb482cadde5ef9bfb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "ETEREA SAND 60x120 LUX_06",
+      "id": "db850f36-72a7-4fa8-9b04-b420a486f8a9",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030739_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 2862,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_16.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "d1c4db5b220631e2d6f8ac22ffce4d1b8d964fb7089881763bfc27513d6900cd",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "ETEREA SAND 60x120 LUX_12",
+      "id": "dc6a426e-7852-42c3-8860-3ffb84b6d3be",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030739_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3166,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_17.jpg",
+     "source_px": [
+      2044,
+      4096
+     ],
+     "source_sha256": "4eb28366edf49cb4f19c6b43f96692897ba0ddea6f3dad14858c4184f0079560",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 17",
+      "name": "ETEREA SAND 60x120 LUX_09",
+      "id": "e513626e-3512-4ccd-8b00-4e5115d9a861",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030739_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 3758,
+     "source_zip": "ETEREA - SAND - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - SAND - 60X120 - Soft - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "da168ca85d076c1d5d648563dcfd609c2c8fb409d6311358c296d03d635ecf3b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18",
+      "name": "ETEREA SAND 60x120 LUX_04",
+      "id": "fc4f07f1-5b84-47f4-8f93-0bf335bedaa2",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

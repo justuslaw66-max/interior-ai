@@ -28,6 +28,7 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Epoque 2.0, eleven marbles and decors in Natural, Lappato and Antique 3D (new: imported from ABK's pages) | 42 drafts (21 floor, 21 wall); Lappato entries draw the Natural faces | 173 | `catalog/surface-materials/flooring/gardenia/epoque-20/gardenia-epoque-20-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Camouflage, four concretes, two Vernis and a Plissé decor (new: imported from ABK's pages) | 46 drafts (23 floor, 23 wall) | 256 | `catalog/surface-materials/flooring/gardenia/camouflage/gardenia-camouflage-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Block, four stones in Nat 3D and R11, and four Righe decors (new: imported from ABK's pages) | 54 drafts (27 floor, 27 wall); R11 entries draw the Nat 3D faces, and 22 entries with no picture of their own draw the colour's 120x120 faces; Tabacco 120x280 is left out (no picture) | 52 | `catalog/surface-materials/flooring/gardenia/block/gardenia-block-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Eterea, four onyx colours in Lux and Soft, their four Raw colours, and four Righe decors (new: imported from ABK's pages) | 64 drafts (32 floor, 32 wall); Soft entries draw the Lux faces | 230 | `catalog/surface-materials/flooring/gardenia/eterea/gardenia-eterea-<colour>-faces.manifest.json` |
 
 Every other material still uses one picture repeated over the surface.
 
@@ -50,7 +51,7 @@ In `texture_assets` of its `catalog.yaml`:
 - `tileable` is `false`.
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
-- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block entries.
+- `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block and Eterea entries.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -73,6 +74,7 @@ In `texture_assets` of its `catalog.yaml`:
 | Gardenia Just Nature and Luce originals | 1.46 (Luce 120x280) to 3.2 (Luce 80x80); Just Nature 2.16 |
 | Gardenia Storm and Epoque 2.0 originals | 1.9 (Epoque 2.0 60x60 and most 60x120) to 3.94 (Storm 60x60); Storm 120x120 2.13 |
 | Gardenia Camouflage and Block originals | 1.46 (120x280) to 3.94 (Camouflage 60x60); 120x120 and Block's Righe 2.13 |
+| Gardenia Eterea originals | 1.46 (120x280) to 3.41 (60x120); 120x120 and the Righe 2.13, but Sand Raw's 120x120 picture 9, 0.945 |
 | Florim Ardoise Blanc faces in this repository | as supplied, 0.58 to 1.18 |
 
 At today's renderer settings, 0.6 px per mm loses nothing visible. If the renderer starts drawing more pixels per metre (larger canvases, close-ups, or drawing each tile from its face on the GPU), make the faces sharper:
@@ -235,6 +237,20 @@ The next two collections the configurator never had, imported from ABK's pages l
   - **Stand-ins** (J, 12 Oct 2026: "Cut from 120x120"): eleven items have no picture on ABK's download area: the 60x60 Nat 3D and R11 of every colour, and the 60x120 of Burro, Creta and Tabacco. They draw the colour's 120x120 Nat 3D faces, and the renderer cuts true-scale windows from them. Their entries carry the qa flag `stand_in_faces` and say so in their notes.
   - **Tabacco 120x280 is left out** (J, 12 Oct 2026): ABK's page shows no pictures, and the colour's 120x120 faces can't cover a 1200 x 2800 mm slab.
   - **Righe** (Argilla, Burro, Creta, Tabacco): one picture each (2560 x 1282 px), the whole tile with its flutes across the short side, shown with the long side horizontal as the tile is laid. Drawn flat, the flutes show only as their shading.
+
+## Gardenia Eterea specifics (downloaded 12 Oct 2026)
+
+The ninth collection the configurator never had, imported from ABK's pages like the eight above, with the same decisions on floors and walls and layouts, and colour families from ABK's colour words. ABK describes every Eterea colour as marble-effect (the collection page speaks of onyx and a fluted surface), the Righe decors too, so all are filed as `marble`.
+
+- **Downloads:** each colour's signed-in "Download all (.zip)", 12 ZIPs, 220.8 MB. Every site picture (351 on 32 size pages, 230 distinct) was matched to its ZIP file by sha256, and every ZIP file is on the site.
+- **Lux and Soft, sharing faces.** Ice, Jade, Powder and Sand come in Lux at 120x120 and in Lux and Soft at 120x280 (6 mm) and 60x120. ABK's Soft pages list the Lux pages' pictures, byte for byte (Jade 120x280 in another order), so both finishes draw the Lux faces (J, 12 Oct 2026: "Both, sharing faces"). On the Surfaces card they are size options ("60x120 Lux", "60x120 Soft").
+- **Raw colours.** ABK lists Ice Raw, Jade Raw, Powder Raw and Sand Raw (Natural, 120x120 and 60x120) as colours of their own: the same onyx, matt, with pictures of their own. They are listed as colours of their own (J, 12 Oct 2026: "Colours of their own").
+- **Sizes:** 60x120 and 120x120 match each other at their labelled scale (crop test, r 0.87 to 0.99; 0.33 at most at the other scales), Raw and Lux alike. The 120x280 slabs (1775 x 4096 px, 1.1% wider than 1200 x 2800 mm, so not cut) match the other sizes best at about the tile's size (r 0.87 to 0.95 drawn 0.975 to 1 times the tile; 0.78 to 0.88 at the picture's own 1213 mm width, 0.62 to 0.78 at 0.95 or 1.025 times).
+- **Repeats:** Ice's 60x120 page lists each of its 18 pictures twice under two ids, and Jade's 60x120 page one picture twice, byte for byte. Each face is used once; the manifests list the site positions left out.
+- **Righe** (Ambra, Blu Pavone, Borgogna, Gesso; J, 12 Oct 2026: "Include them"): one picture each (2560 x 1282 px), the whole tile with its flutes across the short side, shown with the long side horizontal as the tile is laid. Drawn flat, the flutes show only as their shading. ABK calls them marble-effect like the rest of Eterea, though the pictures show a plain coloured flute (Block's Righe, which ABK calls a solid colour, are filed `plain`).
+- **Colours:** Ice white, Jade green, Powder pink, Sand beige (the Raw colours the same), Righe Gesso white, Ambra beige, Borgogna red and Blu Pavone blue. Green, pink, red and blue have no family of their own in the catalogue, so they are filed `mixed`, as the July importer files green, red and blue.
+- **Resolution:** Sand Raw's 120x120 picture 9 is 1134 px wide (0.945 px per mm), against 2560 for the colour's other eight; still above the 0.6 px per mm the faces are stored at.
+- Every Eterea size ABK lists has pictures of its own, so the record below gains nothing.
 
 ## Sizes with no picture of their own
 
