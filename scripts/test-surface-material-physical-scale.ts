@@ -25,6 +25,7 @@ import {
   getSurfaceMaterialProductDisplayName,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
 import { getAllSurfaceMaterialYamlEntries } from "../lib/surface-material-yaml";
+import { collectNoOwnPictures } from "../lib/surface-material-picture-source";
 import type { SurfaceMaterial } from "../lib/surface-material-schema";
 import type { SurfaceMaterialRenderTuple } from "../lib/surface-material-runtime-types";
 import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
@@ -1461,6 +1462,35 @@ for (const [code, faceCount] of wallOnly) {
     `${code} is a wall-only item with ${faceCount} faces`
   );
 }
+
+// Entries with no picture of their own on ABK's download area, as the admin audit page lists them (J, 12 Oct 2026): each
+// stand-in carries the qa flag stand_in_faces and draws the faces named above; the others keep the configurator's preview.
+// docs/architecture/surface-material-tile-faces.md keeps the same record, with the sizes left out of the catalogue.
+const earlierStandIns = [
+  // La Marmoteca: Soft at 120x120 and 60x120, Grey Wonder 120x120 Soft 3D, and the two 40x120 sizes.
+  "0010680", "0010681", "0014712", "0014713", "0010687", "0010690", "0014467", "0014475", "0010674", "0010675", "0014678",
+  "g27071", "g27075",
+  // Pietra Viva and La Geoteca.
+  "0012260", "0012267", "0012266", "0012912", "0011738", "0011735",
+];
+const noOwnPictures = [...collectNoOwnPictures(getAllSurfaceMaterialYamlEntries())].map(([filePath, noOwnPicture]) => ({
+  code: itemCode(path.basename(path.dirname(filePath))),
+  ...noOwnPicture,
+}));
+const listedStandIns = noOwnPictures.filter((entry) => entry.source === "stand_in");
+assert.deepEqual(
+  [...new Set(listedStandIns.map((entry) => entry.code))].sort(),
+  [...earlierStandIns, ...blockStandIns.map(([code]) => code)].sort(),
+  "every stand-in carries stand_in_faces"
+);
+for (const entry of listedStandIns) {
+  assert.equal(entry.facesOf, sharedFaces.get(entry.code), `stand-in ${entry.code} names the item whose faces it draws`);
+}
+assert.deepEqual(
+  [listedStandIns.length, noOwnPictures.filter((entry) => entry.source === "configurator_preview").length],
+  [58, 52],
+  "30 stand-in items and 26 items on the configurator's preview, for floor and wall"
+);
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
 const baseTuple = PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.find((tuple) => tuple.length === 31);

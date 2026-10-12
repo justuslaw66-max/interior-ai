@@ -9,7 +9,7 @@
   },
   "oversizedFiles": {
     "app/admin/audit/page.tsx": {
-      "lines": 720,
+      "lines": 404,
       "limit": 250
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
@@ -700,12 +700,12 @@
   "functionMetrics": {
     "app/admin/audit/page.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 580
+        "count": 1,
+        "maximum": 366
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 20
       }
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
