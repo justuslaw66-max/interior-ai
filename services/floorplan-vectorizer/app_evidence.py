@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.24.0"
+VERSION = "app-evidence-0.25.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -306,6 +306,9 @@ NO_OVERLAP_CUTS = os.environ.get("AE_NO_OVERLAP_CUTS", "1") != "0"   # two openi
 SCHEMA_CAPS = os.environ.get("AE_SCHEMA_CAPS", "1") != "0"   # the evidence kept within the app's schema limits (round 31)
 CLOSE_SLOTS = float(os.environ.get("AE_CLOSE_SLOTS", "1.5"))   # two rooms' walls with an empty strip this many T wide or less between: one wall (round 31; 0 = off)
 SLOT_OVERLAP = float(os.environ.get("AE_SLOT_OVERLAP", "0.9"))  # ... where the side carried across faces the other along this share of its length at least
+# A slanted piece of a room outline no longer than this many wall widths, between two level / plumb sides, where the
+# walls' ink makes a square corner (a cut corner) or a square step (a jog): the square corner or step (round 32; 0 = off)
+SQUARE_CUTS = float(os.environ.get("AE_SQUARE_CUTS", "2.0"))
 WITHHELD_DOORS = os.environ.get("AE_WITHHELD_DOORS", "1") != "0"   # a door into a room withheld as illegal geometry is found, not placed: not a way out (round 30)
 ONE_WAY_IN = os.environ.get("AE_ONE_WAY_IN", "1") != "0"   # one entrance per flat; no door from a balcony / ledge / yard to the outside (round 30)
 BEDROOM_PAIRS = os.environ.get("AE_BEDROOM_PAIRS", "1") != "0"   # no door between two bedrooms: one of them took in the passage (round 30)
@@ -4933,6 +4936,7 @@ def build(m, gray=None):
     # outline keeps where it turns round the duct: c21's COMMON) would put three rooms on that stretch of wall: it goes
     # to the duct's corner.
     m["_duct_snaps"] = snap_to_ducts(rooms, T)
+    m["_squared_cuts"] = square_cut_corners(rooms, k, T, SQUARE_CUTS * T, m.get("_work_gray")) if SQUARE_CUTS > 0 else 0
     # A wall meant level or plumb whose two ends came out a fraction of a pixel apart (c21's WC wall: 950.25 at the void's
     # corner, 950.09 at the kitchen's) is drawn by the app a hair slanted, and meets the next wall with a step: such ends
     # are put on one line, everywhere they occur.
@@ -5075,7 +5079,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk and not g.get("_unclaimed")) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "roomOutlinesMendedForTheApp": int(m.get("_mended", 0)), "slotsBetweenWallsClosed": int(m.get("_slots_closed", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "leafRowsReadAsCasements": int(m.get("_casement_rows", 0)), "doorsNotPlacedBeyondOpenSpace": int(m.get("_private_out", 0)) + int(m.get("_mixed_out_doors", 0)), "doorsIntoWithheldRoomsNotPlaced": int(m.get("_withheld_doors", 0)), "secondWaysOutNotPlaced": int(m.get("_second_ways_out", 0)), "doorsBetweenTwoBedroomsNotPlaced": int(m.get("_bedroom_pairs", 0)), "doorsOntoLedgesNotPlaced": int(m.get("_ledge_doors", 0)), "secondDoorsIntoSmallRoomsNotPlaced": int(m.get("_twin_doors", 0)), "thinWallsReadAsWalls": int(m.get("_mixed_cells", 0)) if m.get("_mixed_pass") else 0, "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "glassInThinWalls": int(m.get("_glass_windows", 0)), "glassBandsBetweenTwoRooms": int(m.get("_glass_partitions", 0)), "doorwaysToTheOutsideReadAsWindows": int(m.get("_sills", 0)), "cornersWelded": int(m.get("_welded_corners", 0)), "ductsKeptAsSpaces": sum(1 for r_ in rooms if r_.get("duct") is not None), "openingsOnDuctsShut": int(m.get("_duct_openings", 0)), "cornersSnappedToDucts": int(m.get("_duct_snaps", 0)), "subPixelSidesDropped": int(m.get("_subpixel_sides", 0)), "cornersStraightened": int(m.get("_straightened", 0)), "sidesCutAtDuctJogs": int(m.get("_duct_jogs", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "glassInThinWalls": int(m.get("_glass_windows", 0)), "glassBandsBetweenTwoRooms": int(m.get("_glass_partitions", 0)), "doorwaysToTheOutsideReadAsWindows": int(m.get("_sills", 0)), "cornersWelded": int(m.get("_welded_corners", 0)), "ductsKeptAsSpaces": sum(1 for r_ in rooms if r_.get("duct") is not None), "openingsOnDuctsShut": int(m.get("_duct_openings", 0)), "cornersSnappedToDucts": int(m.get("_duct_snaps", 0)), "subPixelSidesDropped": int(m.get("_subpixel_sides", 0)), "cornersStraightened": int(m.get("_straightened", 0)), "cutCornersSquared": int(m.get("_squared_cuts", 0)), "sidesCutAtDuctJogs": int(m.get("_duct_jogs", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
@@ -5272,6 +5276,229 @@ def straighten_axis_sides(rooms, tol):
                     p[ax] = c; moved += 1
     return moved
 
+
+def _axis_of(a, b, tol_deg=0.5):
+    """'h' / 'v' where the side a-b lies within tol_deg of level / plumb, else None"""
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    if math.hypot(dx, dy) < 1e-9:
+        return None
+    ang = abs(math.degrees(math.atan2(dy, dx))) % 180.0
+    if min(ang, 180.0 - ang) <= tol_deg:
+        return "h"
+    return "v" if abs(ang - 90.0) <= tol_deg else None
+
+
+def _on_ink(k, p, r=1):
+    """the wall mass k has ink within r px of p"""
+    H, W = k.shape
+    x, y = int(round(p[0])), int(round(p[1]))
+    if not (0 <= x < W and 0 <= y < H):
+        return False
+    return bool(k[max(0, y - r):min(H, y + r + 1), max(0, x - r):min(W, x + r + 1)].any())
+
+
+def _edges_along(gray, run, T):
+    """the drawing's edges beside a run of slanted pieces (strong gradients of the work image within 0.75 T of a piece,
+    between a tenth and nine tenths of it): the share, by gradient strength, that runs nearer the piece's own direction
+    than the plan's level / plumb.  High where the run follows a wall drawn slanted; low where it cuts across a square
+    corner (whose edges are level and plumb).  None without edges."""
+    pts = np.array(run, float)
+    H, W = gray.shape
+    x0, y0 = np.maximum(0, np.floor(pts.min(0) - T).astype(int))
+    x1, y1 = np.minimum([W, H], np.ceil(pts.max(0) + T).astype(int))
+    if x1 - x0 < 3 or y1 - y0 < 3:
+        return None
+    g = cv2.GaussianBlur(gray[y0:y1, x0:x1].astype(np.float32), (0, 0), 1.0)
+    gx, gy = cv2.Sobel(g, cv2.CV_32F, 1, 0), cv2.Sobel(g, cv2.CV_32F, 0, 1)
+    mag = np.hypot(gx, gy)
+    edge = (np.degrees(np.arctan2(gy, gx)) + 90.0) % 180.0          # an edge runs across its gradient
+    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+    along_run = total = 0.0
+    for p, q in zip(run, run[1:]):
+        L = math.hypot(q[0] - p[0], q[1] - p[1])
+        ux, uy = (q[0] - p[0]) / L, (q[1] - p[1]) / L
+        f = ((xx - p[0]) * ux + (yy - p[1]) * uy) / L
+        d = np.abs((yy - p[1]) * ux - (xx - p[0]) * uy)
+        sel = (f >= 0.1) & (f <= 0.9) & (d <= 0.75 * T) & (mag > 0.25 * mag.max())
+        th = math.degrees(math.atan2(uy, ux)) % 180.0
+        off_run = np.abs((edge[sel] - th + 90.0) % 180.0 - 90.0)
+        off_axis = np.abs((edge[sel] + 45.0) % 90.0 - 45.0)
+        w = mag[sel]
+        along_run += float(w[off_run < off_axis].sum()); total += float(w.sum())
+    return along_run / total if total > 0 else None
+
+
+def square_cut_corners(rooms, k, T, max_len, gray=None):
+    """Round 32 (J, 12 Oct, on the walls built from s042, s057 and s080: tapered walls, a step at a T, a hooked wall end):
+    on a plan drawn level and plumb (four fifths of the outlines' length within half a degree), a run of slanted pieces
+    of a room outline, each no longer than max_len, between two level / plumb sides, is where the trace cut across a
+    corner it should have turned, joined two parallel sides by a diagonal, or dipped into a notch and back. It goes:
+    the two sides meet in the square corner, a square step joins them, or the notch closes - only where the corner and
+    the new sides lie on the walls' ink, never across an opening, and a corner another room shares moves only where that
+    room's sides keep their level / plumb line (a one-piece step keeps both ends, and every room with that piece gets
+    it). A run spanning three quarters of a wall width or more is squared only where the drawing's edges beside it run
+    level and plumb (_edges_along under 0.6, from the work image gray; without it, never): exec's 45-degree wall and
+    c24's slanted one follow their run, and a thick junction's ink alone would not tell them apart.  A change that gives
+    the app a geometry problem it did not have (app_geometry_problems) is undone.  Returns the number of runs squared."""
+    key = lambda p: (round(p[0], 6), round(p[1], 6))
+    near = lambda p, q: math.hypot(p[0] - q[0], p[1] - q[1]) < 1e-6
+    total = level = 0.0
+    for r in rooms:
+        P = r["pts"]
+        for i in range(len(P)):
+            a, b = P[i], P[(i + 1) % len(P)]
+            L = math.hypot(b[0] - a[0], b[1] - a[1])
+            total += L
+            level += L if _axis_of(a, b) else 0.0
+    if total <= 0 or level < 0.8 * total:
+        return 0
+    def ink_line(p, q):
+        return all(_on_ink(k, (p[0] + f * (q[0] - p[0]), p[1] + f * (q[1] - p[1]))) for f in (0.25, 0.5, 0.75))
+    def turns_back(path):
+        seg = [(q[0] - p_[0], q[1] - p_[1]) for p_, q in zip(path, path[1:])]
+        if any(math.hypot(*v) < 1e-6 for v in seg):
+            return True
+        return any(u[0] * w[0] + u[1] * w[1] < 0 and abs(u[0] * w[1] - u[1] * w[0]) <= 1e-6 * math.hypot(*u) * math.hypot(*w)
+                   for u, w in zip(seg, seg[1:]))
+    def slide_shared(r, gone, X, users):
+        """the corners of other rooms at the places in gone, if each can move to X with that room's two sides at it
+        keeping their level / plumb line, their direction and some length; None if any cannot"""
+        moves = []
+        for c in gone:
+            for r_ in rooms:
+                if r_ is r:
+                    continue
+                Q = r_["pts"]
+                for t, q in enumerate(Q):
+                    if not near(q, c):
+                        continue
+                    pc, nc = Q[t - 1], Q[(t + 1) % len(Q)]
+                    for u, w in ((pc, q), (q, nc)):
+                        o_ = _axis_of(u, w)
+                        u2, w2 = (u, X) if w is q else (X, w)
+                        if near(u2, w2) or not o_ or _axis_of(u2, w2) != o_:
+                            return None
+                        if (w[0] - u[0]) * (w2[0] - u2[0]) + (w[1] - u[1]) * (w2[1] - u2[1]) <= 0:
+                            return None
+                    moves.append(q)
+        return moves
+    def one_run(r, users, skip):
+        P, M = r["pts"], r["meta"]
+        n = len(P)
+        for s0 in range(n):                                  # s0: the level / plumb side before the run
+            if not _axis_of(P[s0], P[(s0 + 1) % n]):
+                continue
+            run = []
+            j = (s0 + 1) % n
+            while len(run) < n - 3 and not _axis_of(P[j], P[(j + 1) % n]):
+                run.append(j); j = (j + 1) % n
+            if not run:
+                continue
+            a, b = P[run[0]], P[j]                           # the run goes from a to b; side j (b - pb) is level / plumb
+            pa, pb = P[s0], P[(j + 1) % n]
+            sig = (key(a), key(b))
+            if sig in skip:
+                continue
+            pieces = [math.hypot(P[(q + 1) % n][0] - P[q][0], P[(q + 1) % n][1] - P[q][1]) for q in run]
+            if max(pieces) > max_len or min(pieces) < 1e-6:
+                continue
+            if all(_axis_of(P[q], P[(q + 1) % n], 3.0) for q in run):
+                continue                                     # (within 3 degrees: straighten_axis_sides' job)
+            if any(M[q].get("opening") is not None for q in run):
+                continue
+            inner = [P[q] for q in run[1:]]                  # the corners between the run's pieces go in every case
+            if any(len(users.get(key(c), ())) > 1 for c in inner):
+                continue
+            if math.hypot(b[0] - a[0], b[1] - a[1]) >= 0.75 * T:
+                along = _edges_along(gray, [a] + inner + [b], T) if gray is not None else None
+                if along is None or along >= 0.6:
+                    continue                                 # (a wall drawn slanted, or no picture to tell)
+            o1, o2 = _axis_of(pa, a), _axis_of(b, pb)
+            cands = [[b[0], a[1]]] if o1 == "h" else [[a[0], b[1]]]
+            if o1 == o2:
+                cands.append([a[0], b[1]] if o1 == "h" else [b[0], a[1]])
+            for X in cands:
+                if near(X, a) and near(X, b):
+                    continue
+                if near(X, pa) or near(X, pb) or not _on_ink(k, X):
+                    continue
+                if o1 != o2 or near(X, a) or near(X, b):     # a corner (or a notch): a and b give way to X
+                    path = [pa, X, pb]
+                    gone = [c for c in (a, b) if not near(c, X)]
+                    if not all(ink_line(c, X) for c in gone) or turns_back(path):
+                        continue                             # (the stretches the sides grow by lie on the walls' ink)
+                    # an opening's side may grow to the corner, never shrink
+                    if M[s0].get("opening") is not None and math.hypot(X[0] - pa[0], X[1] - pa[1]) < math.hypot(a[0] - pa[0], a[1] - pa[1]) - 1e-6:
+                        continue
+                    if M[j].get("opening") is not None and math.hypot(pb[0] - X[0], pb[1] - X[1]) < math.hypot(pb[0] - b[0], pb[1] - b[1]) - 1e-6:
+                        continue
+                    # a corner another room shares slides to X only where that room's sides at it keep their line
+                    moves = slide_shared(r, gone, X, users)
+                    if moves is None:
+                        continue
+                    if (a[0] - pa[0]) * (X[0] - pa[0]) + (a[1] - pa[1]) * (X[1] - pa[1]) <= 0 or \
+                       (pb[0] - b[0]) * (pb[0] - X[0]) + (pb[1] - b[1]) * (pb[1] - X[1]) <= 0:
+                        continue                             # (the corner would lie behind pa, or past pb)
+                    new = [[X[0], X[1]]]
+                else:                                        # a step: a - X - b
+                    if len(run) > 1 and any(len(users.get(key(c), ())) > 1 for c in (a, b)):
+                        continue
+                    if not (ink_line(a, X) and ink_line(X, b)) or turns_back([pa, a, X, b, pb]):
+                        continue
+                    new = [a, [X[0], X[1]], b]
+                # rebuild the outline: ... pa, <new>, pb ...  (the sides keep their records: the step's from the run's first piece)
+                order = [(s0 + 1 + t) % n for t in range(len(run) + 1)]   # indices of a, inner..., b
+                keep = [q for q in range(n) if q not in order]
+                newP, newM = [], []
+                for q in range(n):
+                    if q == order[0]:
+                        for t, c in enumerate(new):
+                            newP.append([c[0], c[1]])
+                            newM.append(dict(M[run[0]]) if t < len(new) - 1 else dict(M[j]))
+                    elif q in keep:
+                        newP.append(P[q]); newM.append(M[q])
+                r["pts"][:] = newP; r["meta"][:] = newM
+                if len(new) == 1:
+                    for c_ in moves:                         # (the other rooms' corners that slid to X)
+                        c_[0], c_[1] = X[0], X[1]
+                if len(run) == 1 and len(new) == 3:          # a one-piece step: every other room with that piece gets it too
+                    for r_ in rooms:
+                        if r_ is r:
+                            continue
+                        Q, N = r_["pts"], r_["meta"]
+                        for t in range(len(Q)):
+                            if {key(Q[t]), key(Q[(t + 1) % len(Q)])} == {key(a), key(b)}:
+                                Q.insert(t + 1, [X[0], X[1]]); N.insert(t + 1, dict(N[t]))
+                                break
+                if os.environ.get("AE_LOG_SQUARE"):
+                    print("square %s: %s .. %s (%d pieces) -> %s" % ("corner" if len(new) == 1 else "step", [round(v, 1) for v in a], [round(v, 1) for v in b], len(run), [round(v, 1) for v in X]), file=sys.stderr)
+                return sig
+        return None
+    problems = lambda: {repr(p_) for p_ in app_geometry_problems([r_["pts"] for r_ in rooms])}
+    done = 0
+    before = problems()                                  # (the app's problems with the outlines as they stand)
+    for r in rooms:
+        skip = set()
+        while len(r["pts"]) > 4:
+            users = {}
+            for ri_, r_ in enumerate(rooms):
+                for p_ in r_["pts"]:
+                    users.setdefault(key(p_), set()).add(ri_)
+            saved = [([list(p_) for p_ in r_["pts"]], [dict(me) for me in r_["meta"]]) for r_ in rooms]
+            sig = one_run(r, users, skip)
+            if sig is None:
+                break
+            after = problems()
+            if after - before:                           # the square corner crosses or doubles another room's wall: undone
+                for r_, (P_, M_) in zip(rooms, saved):
+                    r_["pts"][:] = P_; r_["meta"][:] = M_
+                skip.add(sig)
+                if os.environ.get("AE_LOG_SQUARE"):
+                    print("   undone: it gave the app a geometry problem", file=sys.stderr)
+                continue
+            before = after
+            done += 1
+    return done
 
 def drop_subpixel_sides(rooms, min_len):
     """Remove the sides shorter than min_len (working pixels) from every room outline.  Of the side's two corners, the
