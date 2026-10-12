@@ -110,7 +110,7 @@ export function SurfaceMaterialQaSection({
   const draftCount = all.filter((material) => material.publishStatus === "draft").length;
   return (
     <section id="surface-material-qa" className="rounded-xl border p-4">
-      <h2 className="text-lg font-semibold">Surface Material QA</h2>
+      <h2 className="text-lg font-semibold">Surface material QA</h2>
       <p className="mt-1 text-sm text-neutral-600">
         Separate flooring/material catalog checks. Draft blockers are shown for admin import QA and are not furniture cart lines.
       </p>

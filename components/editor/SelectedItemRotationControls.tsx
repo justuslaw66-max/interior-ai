@@ -89,7 +89,7 @@ export default function SelectedItemRotationControls({
               title="Snap to coarse 15° increments for quick positioning"
               onClick={() => onSnapPresetChange(15)}
             >
-              Quick Turns
+              Quick turns
             </button>
             <button
               data-testid="rotation-snap-preset-5"
@@ -98,7 +98,7 @@ export default function SelectedItemRotationControls({
               title="Snap to fine 5° increments for precise angle control"
               onClick={() => onSnapPresetChange(5)}
             >
-              Precise Angle
+              Precise angle
             </button>
             <button
               data-testid="rotation-snap-preset-free"
@@ -107,7 +107,7 @@ export default function SelectedItemRotationControls({
               title="Disable snap for unrestricted rotation"
               onClick={() => onSnapPresetChange(0)}
             >
-              Free Rotate
+              Free rotate
             </button>
           </div>
 

@@ -238,7 +238,7 @@ The next two collections the configurator never had, imported from ABK's pages l
 
 ## Sizes with no picture of their own
 
-A record of the catalogue's sizes with no picture of their own on ABK's download area (no picture, or another size's), kept up to date with each import (J, 12 Oct 2026). The qa flag `stand_in_faces` marks every stand-in and `configurator_preview_asset` the entries on previews. The admin audit page's Surface Material QA reads them (`lib/surface-material-picture-source.ts`): a count of the entries with no picture of their own, the filter "No picture of its own", and on each such row a badge ("Borrowed faces" or "Configurator preview") saying whose faces it draws. `test-surface-material-physical-scale.ts` checks that every stand-in is flagged and draws the faces it should.
+A record of the catalogue's sizes with no picture of their own on ABK's download area (no picture, or another size's), kept up to date with each import (J, 12 Oct 2026). The qa flag `stand_in_faces` marks every stand-in and `configurator_preview_asset` the entries on previews. The admin audit page's Surface material QA reads them (`lib/surface-material-picture-source.ts`): a count of the entries with no picture of their own, the filter "No picture of its own", and on each such row a badge ("Borrowed faces" or "Configurator preview") saying whose faces it draws. `test-surface-material-physical-scale.ts` checks that every stand-in is flagged and draws the faces it should.
 
 | Kind | What the app shows | Entries |
 | --- | --- | --- |

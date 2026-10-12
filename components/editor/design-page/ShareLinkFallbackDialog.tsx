@@ -42,7 +42,7 @@ function ShareLinkFallbackControls({
       <button id={SHARE_LINK_FALLBACK_OPEN_ACTION_ID} data-testid="share-open-button"
         onClick={() => onOpen(url)}
         className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white outline-hidden hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-        Open Link
+        Open link
       </button>
       <button data-testid="share-done-button" onClick={onClose} className={doneClassName}>
         Done
@@ -73,10 +73,10 @@ export function ShareLinkFallbackDialog(props: ShareLinkFallbackDialogProps) {
   return (
     <EditorDialog
       open={Boolean(url)}
-      title="Share Link"
+      title="Share link"
       description="Copy this link to share your design:"
       onClose={onClose}
-      closeLabel="Close Share Link"
+      closeLabel="Close Share link"
       closeButtonId={SHARE_LINK_FALLBACK_CLOSE_ACTION_ID}
       closeButtonTestId="share-fallback-close"
       testId="share-fallback-modal"

@@ -34,7 +34,7 @@ export default function ShoppingList({
     <div className="mb-6">
       <div className="mb-3 flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">Shopping List</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Shopping list</h3>
           <div className="text-xs text-gray-500">
             {roomName} • {shoppingItems.length} item{shoppingItems.length === 1 ? "" : "s"}
             {needsReviewCount > 0 ? ` • ${needsReviewCount} need review` : ""}

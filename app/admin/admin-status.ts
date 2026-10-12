@@ -68,7 +68,7 @@ const SURFACE_PUBLICATION: Dictionary<SurfacePublishStatus> = {
   blocked: { label: "Blocked", tone: "critical" },
 };
 
-/** A surface material with no picture of its own on the manufacturer's download area, in the audit's Surface Material QA. */
+/** A surface material with no picture of its own on the manufacturer's download area, in the audit's Surface material QA. */
 const SURFACE_PICTURE: Dictionary<NoOwnPictureSource> = {
   stand_in: { label: "Borrowed faces", tone: "warning" },
   configurator_preview: { label: "Configurator preview", tone: "warning" },

@@ -219,7 +219,7 @@ export default function StagingSmokeEvidencePanel({ bundle }: Props) {
     <section className="rounded-xl border p-4" data-testid="staging-smoke-evidence">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold">Staging Smoke Evidence</h2>
+          <h2 className="text-lg font-semibold">Staging smoke evidence</h2>
           <p className="mt-1 text-xs text-neutral-600">
             QA-only signoff pack for the beta staging checklist, deployment metadata, fingerprints, exports, and checkout boundary.
           </p>

@@ -272,7 +272,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-dimension-schedule"
         countAttribute="data-dimension-schedule-count"
         count={documentation.dimensionSchedule.length}
-        title="Dimension Schedule"
+        title="Dimension schedule"
         maxHeightClass="max-h-40"
         headings={["Scope", "Size", "Offset"]}
         rows={documentation.dimensionSchedule.map((item) => ({
@@ -290,7 +290,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-drawing-view-schedule"
         countAttribute="data-drawing-view-schedule-count"
         count={documentation.drawingViewSchedule.length}
-        title="Drawing Views"
+        title="Drawing views"
         maxHeightClass="max-h-40"
         headings={["View", "Sheet", "Scale"]}
         rows={documentation.drawingViewSchedule.map((item) => ({
@@ -304,7 +304,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-material-schedule"
         countAttribute="data-material-schedule-count"
         count={documentation.materialSchedule.length}
-        title="Material Schedule"
+        title="Material schedule"
         headings={["Material", "Parts", "Area"]}
         rows={documentation.materialSchedule.map((item) => ({
           id: item.id,
@@ -317,7 +317,7 @@ export function CabinetProductionOutputs({
         testId="cabinet-hardware-schedule"
         countAttribute="data-hardware-schedule-count"
         count={documentation.hardwareSchedule.length}
-        title="Hardware Schedule"
+        title="Hardware schedule"
         maxHeightClass="max-h-36"
         headings={["Hardware", "Qty", "Compatibility"]}
         emptyMessage="No hardware scheduled."

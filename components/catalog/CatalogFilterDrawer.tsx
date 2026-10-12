@@ -43,7 +43,7 @@ export default function CatalogFilterDrawer({
       className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-white p-3 shadow-lg"
     >
       <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-neutral-100 bg-white px-3 py-3">
-        <div className="text-xs font-semibold text-neutral-900">Structured Filters</div>
+        <div className="text-xs font-semibold text-neutral-900">Structured filters</div>
         <button type="button" onClick={onClose} className="text-xs text-neutral-500">Close</button>
       </div>
 

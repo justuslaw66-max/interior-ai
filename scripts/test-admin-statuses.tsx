@@ -298,7 +298,7 @@ assert.match(pager, /That page is no longer available/);
 assert.match(pager, /<a [^>]*href="\/admin\/imports\?before=r4"[^>]*>Previous<\/a>/);
 assert.match(pager, /<span [^>]*>Next<\/span>/, "Next isn't a link on the last page");
 
-// The audit page's Surface Material QA section (app/admin/audit/SurfaceMaterialQaSection.tsx): its filter and sort
+// The audit page's Surface material QA section (app/admin/audit/SurfaceMaterialQaSection.tsx): its filter and sort
 // travel in the page's search params, and each row shows a surface's status, facts and what it is missing.
 const surfaceSummary = (overrides: Partial<SurfaceMaterialAdminAuditSummary>): SurfaceMaterialAdminAuditSummary => ({
   filePath: "catalog/surface-materials/flooring/test/catalog.yaml",
@@ -359,7 +359,7 @@ assert.deepEqual(
     ["missing_assets", ["blocked"]], ["missing_specs", ["blocked"]], ["unresolved_blockers", ["blocked"]],
     ["sample_available", ["live"]], ["missing_links", ["blocked"]], ["no_picture_of_its_own", ["live"]],
   ],
-  "each Surface Material QA filter"
+  "each Surface material QA filter"
 );
 assert.equal(matchesSurfaceMaterialFilter(live, "no_picture_of_its_own"), false, "no picture source, not listed");
 assert.deepEqual(sortSurfaceMaterialSummaries([live, blocked], "blocker_count").map((material) => material.materialId), ["blocked", "live"]);

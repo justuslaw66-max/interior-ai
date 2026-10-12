@@ -1,7 +1,7 @@
 import type { SurfaceMaterialAdminAuditSummary } from "@/lib/surface-material-audit";
 import type { NoOwnPicture } from "@/lib/surface-material-picture-source";
 
-// The Surface Material QA section's filters and sorts, read from the page's search params and written
+// The Surface material QA section's filters and sorts, read from the page's search params and written
 // back into its links.
 export type SurfaceMaterialAuditFilter =
   | "all"

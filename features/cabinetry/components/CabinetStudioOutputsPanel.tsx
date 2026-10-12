@@ -224,7 +224,7 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadSource}
                 label={
-                  busyAction === "source" ? "Exporting…" : "Download Source JSON"
+                  busyAction === "source" ? "Exporting…" : "Download source JSON"
                 }
               />
               <OutputButton
@@ -233,14 +233,14 @@ export function CabinetStudioOutputsPanel({
                 onClick={() => sourceImportInputRef.current?.click()}
                 icon="upload"
                 label={
-                  busyAction === "import" ? "Importing…" : "Import Source JSON"
+                  busyAction === "import" ? "Importing…" : "Import source JSON"
                 }
               />
               <OutputButton
                 testId="cabinet-download-documentation"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDocumentation}
-                label={busyAction === "docs" ? "Exporting…" : "Download Docs CSV"}
+                label={busyAction === "docs" ? "Exporting…" : "Download docs CSV"}
               />
               <OutputButton
                 testId="cabinet-download-shop-drawing-svg"
@@ -249,7 +249,7 @@ export function CabinetStudioOutputsPanel({
                 label={
                   busyAction === "shopDrawing"
                     ? "Exporting…"
-                    : "Download Shop Drawing SVG"
+                    : "Download shop drawing SVG"
                 }
               />
               <OutputButton
@@ -257,7 +257,7 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDxf}
                 label={
-                  busyAction === "dxf" ? "Exporting…" : "Download Fabrication DXF"
+                  busyAction === "dxf" ? "Exporting…" : "Download fabrication DXF"
                 }
               />
               <OutputButton
@@ -271,7 +271,7 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadPackage}
                 label={
-                  busyAction === "package" ? "Exporting…" : "Download Package JSON"
+                  busyAction === "package" ? "Exporting…" : "Download package JSON"
                 }
               />
             </div>

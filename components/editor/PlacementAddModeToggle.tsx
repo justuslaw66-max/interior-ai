@@ -30,7 +30,7 @@ export function PlacementAddModeToggle({ visible, mode, onChange }: PlacementAdd
           className={mode === option ? ACTIVE_CLASS : IDLE_CLASS}
           onClick={() => onChange(option)}
         >
-          {option === "preview" ? "Preview Add" : "Auto Add"}
+          {option === "preview" ? "Preview add" : "Auto add"}
         </button>
       ))}
     </div>

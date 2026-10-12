@@ -157,4 +157,60 @@ for (const key of ALLOWED.keys()) {
 }
 assert.deepEqual(violations, [], `User-facing text breaks the glossary:\n${violations.join("\n")}`);
 
-console.log(`UI glossary checks passed: ${texts.length} strings in ${files.length} files.`);
+// Sentence case (AX10): a label capitalises its first word and names only ("Download cut list",
+// not "Download Cut List"). It is Title Case when every counted word is capitalised. Each "·"
+// segment, sentence and dialog title after "Close" is checked on its own; brackets (keys such as
+// Cmd/Ctrl+Z), acronyms, single letters, numbers, small words and names don't count. Admin's text
+// is read too (its own wording is out of the glossary's scope, but not its case).
+const NAMES = /\b(?:Interior AI|Pro|Free|Google Maps|Google|Furnish|Shop|Surfaces|Levels|Layouts|Favourites|Module \d+|Markdown)\b/g;
+const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "into", "of", "on", "or", "per", "the", "to", "via", "vs", "with"]);
+const isTitleCase = (label: string) =>
+  label.replace(/\([^)]*\)/g, " ").replace(NAMES, "name").split(/\s+·\s+|[.!?]\s+|^Close\s+/).some((segment) => {
+    const words = segment.split(/\s+/).map((part) => part.replace(/^[^\p{L}\d]+|[^\p{L}\d]+$/gu, "")).filter((part) => /\p{L}/u.test(part));
+    const counted = words.filter(
+      (part, index) => !(index > 0 && SMALL_WORDS.has(part.toLowerCase())) && !/^[\p{Lu}\d]+s?$/u.test(part) && !/\d/.test(part)
+    );
+    return words.length <= 7 && counted.length >= 2 && counted.every((part) => /^\p{Lu}/u.test(part));
+  });
+for (const [label, expected] of [
+  ["Download Cut List", true], ["Download cut list", false], ["Close Share Link", true], ["Close Share link", false],
+  ["Continue to Furnish", false], ["Upgrade to Pro", false], ["Undo (Cmd/Ctrl+Z)", false], ["Step 1 · Room goal", false],
+  ["Opening W", false], ["← Back to 3D View", true], ["Surface material BOM", false], ["Sent. Ref", false],
+] as const) {
+  assert.equal(isTitleCase(label), expected, `Sentence case reads "${label}" as ${expected ? "" : "not "}Title Case.`);
+}
+// Product, finish, paint and catalogue names are names, as are default room names saved in designs.
+const NAME_FILES = new Set([
+  "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx",
+  "lib/design-page-product-data.ts", "lib/materialPresets.ts", "lib/design-page-model-maps.ts", "lib/catalog-presets/index.ts",
+  "lib/catalog/view-builders.ts", "lib/catalog/imported-model-assembly.ts", "lib/useDesignPageProductConfiguration.ts",
+  "lib/wall-paint.ts", "components/editor/design-page/ProductModelVariantControls.tsx", "lib/design-page-house-plan.ts",
+]);
+const SENTENCE_CASE_ALLOWED = new Map<string, string>([
+  ["components/editor/FloorPlanAddressFields.tsx|810A Chai Chee Street", "an example address"],
+  ["components/editor/design-page/CanonicalPlanVectorExport.tsx|Liberation Sans", "a font"],
+  ["components/editor/design-controls-plan/WallPaintPicker.tsx|Nippon Paint", "a paint brand"],
+  ["components/editor/design-page/lighting/lightingPresets.ts|Bright & Clear", "a lighting preset's name"],
+  ["components/editor/design-page/lighting/lightingPresets.ts|Natural Daylight", "a lighting preset's name"],
+  ["lib/design-route-payload.ts|Untitled Living Room", "a new design's default name, saved in designs"],
+  ["lib/shared-design-projection-schema.ts|Untitled Living Room", "a new design's default name, saved in designs"],
+  ["lib/useDesignPageExport.ts|Interior AI Room Design - Technical Set", "a PDF document's title"],
+  ["lib/useDesignPageExport.ts|Interior AI Room Design - Presentation Set", "a PDF document's title"],
+  ["lib/useDesignPageExport.ts|Interior AI Room Design - Free Preview", "a PDF document's title"],
+  ["app/admin/clicks/page.tsx|Prisma Studio", "a tool's name"],
+  ["app/admin/floor-plans/[id]/PublicDisplayMetadataEditor.tsx|Housing and Development Board", "an organisation"],
+]);
+const adminTexts = SOURCE_ROOTS.flatMap((directory) => sourceFiles(directory))
+  .filter((file) => /^(?:app\/admin|components\/admin)\//.test(file))
+  .flatMap((file) => uiTextsOf(file));
+const sentenceCaseTexts = [...texts, ...adminTexts];
+const titleCaseLabels = sentenceCaseTexts
+  .filter((item) => !NAME_FILES.has(item.file) && !SENTENCE_CASE_ALLOWED.has(`${item.file}|${item.text}`))
+  .filter((item) => isTitleCase(item.text))
+  .map((item) => `${item.file}:${item.line} "${item.text.slice(0, 90)}"`);
+for (const key of SENTENCE_CASE_ALLOWED.keys()) {
+  assert.ok(sentenceCaseTexts.some((item) => `${item.file}|${item.text}` === key), `Stale sentence-case exception: ${key}`);
+}
+assert.deepEqual(titleCaseLabels, [], `Labels use sentence case (capitalise the first word and names only):\n${titleCaseLabels.join("\n")}`);
+
+console.log(`UI glossary checks passed: ${texts.length} strings in ${files.length} files, and ${adminTexts.length} of Admin's for sentence case.`);

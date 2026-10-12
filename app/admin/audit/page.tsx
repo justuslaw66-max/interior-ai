@@ -140,7 +140,7 @@ export default async function AdminAuditPage({
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-xl border p-4 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Governance Summary</h2>
+            <h2 className="text-lg font-semibold">Governance summary</h2>
             <p className="text-sm text-neutral-600">Coverage between approved ModelAsset rows and catalog mappings.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -267,7 +267,7 @@ export default async function AdminAuditPage({
 
         <div className="rounded-xl border p-4 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold">Quality Summary</h2>
+            <h2 className="text-lg font-semibold">Quality summary</h2>
             <p className="text-sm text-neutral-600">Frozen vocabulary, publish-readiness, variants, and duplicate checks.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -343,7 +343,7 @@ export default async function AdminAuditPage({
       />
 
       <section className="rounded-xl border p-4">
-        <h2 className="text-lg font-semibold">Variant Media Health</h2>
+        <h2 className="text-lg font-semibold">Variant media health</h2>
         <p className="mt-1 text-sm text-neutral-600">
           Detects image-count parity drift, likely packshot-only variants, duplicate URLs, and malformed media links.
         </p>
@@ -392,7 +392,7 @@ export default async function AdminAuditPage({
       </section>
 
       <section className="rounded-xl border p-4">
-        <h2 className="text-lg font-semibold">Operator Checklist</h2>
+        <h2 className="text-lg font-semibold">Operator checklist</h2>
         <div className="mt-2 grid grid-cols-1 gap-2 text-sm text-neutral-700 md:grid-cols-3">
           <div className="rounded-lg border p-3">Run `npm run test:catalog-audit` before publishing new YAML.</div>
           <div className="rounded-lg border p-3">Use the gold-standard checklist for folder naming, taxonomy, and variant completeness.</div>
