@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.25.0"
+VERSION = "app-evidence-0.26.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -309,6 +309,10 @@ SLOT_OVERLAP = float(os.environ.get("AE_SLOT_OVERLAP", "0.9"))  # ... where the 
 # A slanted piece of a room outline no longer than this many wall widths, between two level / plumb sides, where the
 # walls' ink makes a square corner (a cut corner) or a square step (a jog): the square corner or step (round 32; 0 = off)
 SQUARE_CUTS = float(os.environ.get("AE_SQUARE_CUTS", "2.0"))
+# ... where a corner another room has only as a split point of one straight side is cut off by the run, it stays (round 33)
+KEEP_SPLITS = os.environ.get("AE_KEEP_SPLITS", "1") != "0"
+# ... and a run that dips off a side and comes back to its line through a short level / plumb side closes (round 33)
+DIPS = os.environ.get("AE_DIPS", "1") != "0"
 WITHHELD_DOORS = os.environ.get("AE_WITHHELD_DOORS", "1") != "0"   # a door into a room withheld as illegal geometry is found, not placed: not a way out (round 30)
 ONE_WAY_IN = os.environ.get("AE_ONE_WAY_IN", "1") != "0"   # one entrance per flat; no door from a balcony / ledge / yard to the outside (round 30)
 BEDROOM_PAIRS = os.environ.get("AE_BEDROOM_PAIRS", "1") != "0"   # no door between two bedrooms: one of them took in the passage (round 30)
@@ -5086,6 +5090,7 @@ def build(m, gray=None):
     }
     if ONE_T:
         out["diagnostics"]["wallThicknessUnified"] = unify_wall_thickness(out, (scale_work / k_len) if (scale_work and k_len) else None)
+    out["diagnostics"]["jogFacesFlushed"] = flush_jog_faces(out, FLUSH_JOGS) if FLUSH_JOGS > 0 else 0
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels}
@@ -5103,6 +5108,11 @@ ONE_T_SAME = float(os.environ.get("AE_ONE_T_SAME", "1.5"))        # neighbouring
 ONE_T_SPREAD = float(os.environ.get("AE_ONE_T_SPREAD", "1.5"))      # ... as long as the whole group stays within this ratio
 ONE_T_REAL = float(os.environ.get("AE_ONE_T_REAL", "3.0"))        # a different thickness is real when it runs on for this many of its own thicknesses
 ONE_T_OPEN = float(os.environ.get("AE_ONE_T_OPEN", "0.5"))        # a door or window takes the wall it stands in unless that wall is under half its own thickness (a stroke)
+# Round 33 - flush faces at a jog.  Where a wall line changes thickness at a jog (two parallel sides joined by a short side
+# across the wall), the drawing keeps one face straight; the traced centre-lines and the measured thicknesses miss it by a
+# fraction of a pixel, and the app builds the miss as a step in that face (J, 12 Oct, on s070's bottom wall).  A face pair
+# off by at most this many source pixels is made flush by moving the shorter side's centre-line (0 = off).
+FLUSH_JOGS = float(os.environ.get("AE_FLUSH_JOGS", "1.5"))
 
 
 def unify_wall_thickness(out, mm_per_px):
@@ -5179,6 +5189,114 @@ def unify_wall_thickness(out, mm_per_px):
                             r["e"]["thicknessMm"] = int(round(t_new * mm_per_px))
                         changed += 1
     return changed
+
+
+def flush_jog_faces(out, tol):
+    """Round 33: at a jog of a room outline - level / plumb side A, a short side J across the wall, side B parallel to A and
+    running on the same way - where A and B are walls of different thickness and one pair of their faces (A's and B's on
+    the same side) misses by more than a twentieth and at most tol source px, while the other pair is two pixels or more
+    apart (a real change of thickness), the shorter of A and B moves across, so that face runs straight on.  Only where no
+    door, window or passage stands on A, J or B, where every other side meeting the moved side's two corners (in any room)
+    runs across it (else the other one moves, if it can), and where the jog keeps its direction and a pixel of length; a move that gives the app a geometry
+    problem it did not have is undone.  Works on the evidence, after unify_wall_thickness, so the thicknesses are final.
+    Returns the number of sides moved."""
+    E = {e["id"]: e for e in out["wallEdges"]}
+    rooms = out["rooms"]
+    key = lambda p: (round(p[0], 6), round(p[1], 6))
+    def pts(r):
+        return [(q["x"], q["y"]) for q in r["sourcePoints"]]
+    def axis(a, b):
+        if abs(a[1] - b[1]) < 1e-6 and abs(a[0] - b[0]) > 1e-6:
+            return 1                                         # level: the centre-line is a y
+        if abs(a[0] - b[0]) < 1e-6 and abs(a[1] - b[1]) > 1e-6:
+            return 0                                         # plumb: the centre-line is an x
+        return None
+    def sides_at(p):
+        """every side, in every room, with a corner at p: (room, index of the side, its other corner)"""
+        k_ = key(p); out_ = []
+        for ri, r in enumerate(rooms):
+            P = pts(r); n = len(P)
+            for i in range(n):
+                if key(P[i]) == k_:
+                    out_.append((ri, i, P[(i + 1) % n]))
+                    out_.append((ri, (i - 1) % n, P[i - 1]))
+        return out_
+    def outlines():
+        return [pts(r) for r in rooms]
+    before = {repr(p_) for p_ in app_geometry_problems(outlines())}
+    moved = 0
+    for ri in range(len(rooms)):
+        n = len(rooms[ri]["sourcePoints"])
+        for i in range(n):
+            P = pts(rooms[ri]); ids = rooms[ri]["edgeIds"]; n = len(P)
+            if n < 6:
+                break
+            a, b, c, d = P[i], P[(i + 1) % n], P[(i + 2) % n], P[(i + 3) % n]
+            ax = axis(a, b)
+            if ax is None or axis(c, d) != ax or axis(b, c) != 1 - ax:
+                continue
+            al = 1 - ax                                      # along A and B
+            if (b[al] - a[al]) * (d[al] - c[al]) <= 0:
+                continue
+            eA, eJ, eB = E.get(ids[i]), E.get(ids[(i + 1) % n]), E.get(ids[(i + 2) % n])
+            if not (eA and eJ and eB) or eA.get("opening") or eJ.get("opening") or eB.get("opening"):
+                continue
+            tA, tB = float(eA.get("thicknessPx") or 0), float(eB.get("thicknessPx") or 0)
+            if tA <= 0 or tB <= 0:
+                continue
+            cA, cB = a[ax], c[ax]
+            jog = cB - cA
+            best = None
+            for s_ in (1, -1):
+                miss = (cA + s_ * tA / 2.0) - (cB + s_ * tB / 2.0)
+                other = (cA - s_ * tA / 2.0) - (cB - s_ * tB / 2.0)
+                if 0.05 < abs(miss) <= tol and abs(other) >= 2.0:
+                    best = miss
+            if best is None:
+                continue
+            new_jog = jog + best
+            if abs(new_jog) < 1.0 or new_jog * jog <= 0:
+                continue
+            def free(ends):
+                """every other side at the two corners runs across the side (in any room)"""
+                own = {key(ends[0]), key(ends[1])}
+                for p in ends:
+                    for rj, j, q in sides_at(p):
+                        if {key(p), key(q)} != own and axis(p, q) != 1 - ax:
+                            return False                     # (the side itself, in this room or the one beyond it, is skipped)
+                return True
+            # B moves by +miss onto A's face, or A by -miss onto B's: the shorter one that can
+            cands = sorted([(abs(d[al] - c[al]), (c, d), best, "B"), (abs(b[al] - a[al]), (a, b), -best, "A")], key=lambda q: q[0])
+            pick = next((q for q in cands if free(q[1])), None)
+            if pick is None:
+                continue
+            _L, ends, shift, which = pick
+            # move the two corners, in every room and every wall edge that has them
+            moves = {key(p): (p[0] + (shift if ax == 0 else 0.0), p[1] + (shift if ax == 1 else 0.0)) for p in ends}
+            saved = ([[dict(q) for q in r["sourcePoints"]] for r in rooms], [[list(v) for v in e["sourcePx"]] for e in out["wallEdges"]])
+            for r in rooms:
+                for q in r["sourcePoints"]:
+                    t_ = moves.get(key((q["x"], q["y"])))
+                    if t_:
+                        q["x"], q["y"] = t_
+            for e in out["wallEdges"]:
+                for v in e["sourcePx"]:
+                    t_ = moves.get(key(v))
+                    if t_:
+                        v[0], v[1] = t_
+            after = {repr(p_) for p_ in app_geometry_problems(outlines())}
+            if after - before:
+                for r, sp in zip(rooms, saved[0]):
+                    r["sourcePoints"] = sp
+                for e, sp in zip(out["wallEdges"], saved[1]):
+                    e["sourcePx"] = sp
+                continue
+            before = after
+            moved += 1
+            if os.environ.get("AE_LOG_FLUSH"):
+                print("flush jog: room %d side %d, %s moved %.2f px (faces %.2f off, jog %.2f -> %.2f)" % (
+                    ri, i, which, shift, best, jog, new_jog), file=sys.stderr)
+    return moved
 
 
 def weld_shared_ends(rooms, tol):
@@ -5338,8 +5456,13 @@ def square_cut_corners(rooms, k, T, max_len, gray=None):
     room's sides keep their level / plumb line (a one-piece step keeps both ends, and every room with that piece gets
     it). A run spanning three quarters of a wall width or more is squared only where the drawing's edges beside it run
     level and plumb (_edges_along under 0.6, from the work image gray; without it, never): exec's 45-degree wall and
-    c24's slanted one follow their run, and a thick junction's ink alone would not tell them apart.  A change that gives
-    the app a geometry problem it did not have (app_geometry_problems) is undone.  Returns the number of runs squared."""
+    c24's slanted one follow their run, and a thick junction's ink alone would not tell them apart.  Round 33: a corner
+    the run cuts off that another room has only as a split point of one straight side (s057's door jamb at the alcove: the
+    living room's wall runs straight through it) stays, and the new corner goes beside it - the stretch between them may
+    lack ink when the other room already has that very side (KEEP_SPLITS); and a run that leaves a side and comes back to
+    its line through a short level / plumb side (s057's top wall) closes, the side running straight on (DIPS).  A change
+    that gives the app a geometry problem it did not have (app_geometry_problems) is undone.  Returns the number of runs
+    squared."""
     key = lambda p: (round(p[0], 6), round(p[1], 6))
     near = lambda p, q: math.hypot(p[0] - q[0], p[1] - q[1]) < 1e-6
     total = level = 0.0
@@ -5382,6 +5505,32 @@ def square_cut_corners(rooms, k, T, max_len, gray=None):
                             return None
                     moves.append(q)
         return moves
+    def straight_through(r, c):
+        """every other room with a corner at c has it in the middle of one straight side (its two sides there run on in
+        one line): a split point, not a corner of that room"""
+        for r_ in rooms:
+            if r_ is r:
+                continue
+            Q = r_["pts"]
+            for t, q in enumerate(Q):
+                if not near(q, c):
+                    continue
+                u, w = Q[t - 1], Q[(t + 1) % len(Q)]
+                v1, v2 = (q[0] - u[0], q[1] - u[1]), (w[0] - q[0], w[1] - q[1])
+                if abs(v1[0] * v2[1] - v1[1] * v2[0]) > 1e-6 * math.hypot(*v1) * math.hypot(*v2) or v1[0] * v2[0] + v1[1] * v2[1] <= 0:
+                    return False
+        return True
+    def has_side(r, c, X):
+        """another room has a side from c to X (either way)"""
+        for r_ in rooms:
+            if r_ is r:
+                continue
+            Q = r_["pts"]
+            for t in range(len(Q)):
+                u, w = Q[t], Q[(t + 1) % len(Q)]
+                if (near(u, c) and near(w, X)) or (near(u, X) and near(w, c)):
+                    return True
+        return False
     def one_run(r, users, skip):
         P, M = r["pts"], r["meta"]
         n = len(P)
@@ -5420,13 +5569,34 @@ def square_cut_corners(rooms, k, T, max_len, gray=None):
             for X in cands:
                 if near(X, a) and near(X, b):
                     continue
-                if near(X, pa) or near(X, pb) or not _on_ink(k, X):
+                if DIPS and o1 != o2 and (near(X, pb) or near(X, pa)) and not near(X, a) and not near(X, b):
+                    # a dip: the run leaves a side and comes back to its line through a short level / plumb side
+                    # (s057's top wall: level, a 3-degree piece down, 2 px back up, level on the same line) - the run and
+                    # that short side go, and the side runs straight on (round 33)
+                    back = near(X, pb)
+                    short_side, c_, far = (j, b, a) if back else (s0, a, b)
+                    sp, sq = P[short_side], P[(short_side + 1) % n]
+                    if math.hypot(sq[0] - sp[0], sq[1] - sp[1]) > max_len or M[short_side].get("opening") is not None \
+                       or len(users.get(key(c_), ())) > 1 or not ink_line(far, X) or turns_back([pa, far, pb]):
+                        continue
+                    plain = lambda me: dict(me, kind="wall", opening=None)
+                    new, new_meta, shape = ([a], [plain(M[s0])], "dip") if back else ([b], [M[j]], "dip")
+                elif near(X, pa) or near(X, pb) or not _on_ink(k, X):
                     continue
-                if o1 != o2 or near(X, a) or near(X, b):     # a corner (or a notch): a and b give way to X
-                    path = [pa, X, pb]
+                elif o1 != o2 or near(X, a) or near(X, b):   # a corner (or a notch): a and b give way to X
                     gone = [c for c in (a, b) if not near(c, X)]
-                    if not all(ink_line(c, X) for c in gone) or turns_back(path):
-                        continue                             # (the stretches the sides grow by lie on the walls' ink)
+                    if not all(ink_line(c, X) or has_side(r, c, X) for c in gone):
+                        continue                             # (the stretches the sides grow by lie on the walls' ink, or
+                                                             #  another room already has that very side)
+                    # a corner another room has only as a point on one of its straight sides (it splits that side
+                    # there, where this room's corner stood - s057's door jamb at the alcove) stays, and the new
+                    # corner is added beside it (round 33; KEEP_SPLITS)
+                    kept = [c for c in gone if KEEP_SPLITS and len(users.get(key(c), ())) > 1 and straight_through(r, c)]
+                    gone = [c for c in gone if not any(c is k_ for k_ in kept)]
+                    keep_a, keep_b = any(c is a for c in kept), any(c is b for c in kept)
+                    path = [pa] + ([a] if keep_a else []) + [X] + ([b] if keep_b else []) + [pb]
+                    if turns_back(path):
+                        continue
                     # an opening's side may grow to the corner, never shrink
                     if M[s0].get("opening") is not None and math.hypot(X[0] - pa[0], X[1] - pa[1]) < math.hypot(a[0] - pa[0], a[1] - pa[1]) - 1e-6:
                         continue
@@ -5439,29 +5609,39 @@ def square_cut_corners(rooms, k, T, max_len, gray=None):
                     if (a[0] - pa[0]) * (X[0] - pa[0]) + (a[1] - pa[1]) * (X[1] - pa[1]) <= 0 or \
                        (pb[0] - b[0]) * (pb[0] - X[0]) + (pb[1] - b[1]) * (pb[1] - X[1]) <= 0:
                         continue                             # (the corner would lie behind pa, or past pb)
-                    new = [[X[0], X[1]]]
+                    # the sides from the new corners: a kept a runs side s0 on to X (as wall), X runs side j's wall to a
+                    # kept b, and the last corner starts side j as it did
+                    plain = lambda me: dict(me, kind="wall", opening=None)
+                    new = ([a] if keep_a else []) + [[X[0], X[1]]] + ([b] if keep_b else [])
+                    new_meta = ([plain(M[s0])] if keep_a else []) + ([plain(M[j])] if keep_b else []) + [M[j]]
+                    shape = "corner"
                 else:                                        # a step: a - X - b
                     if len(run) > 1 and any(len(users.get(key(c), ())) > 1 for c in (a, b)):
                         continue
                     if not (ink_line(a, X) and ink_line(X, b)) or turns_back([pa, a, X, b, pb]):
                         continue
                     new = [a, [X[0], X[1]], b]
+                    new_meta = [M[run[0]], M[run[0]], M[j]]
+                    shape = "step"
                 # rebuild the outline: ... pa, <new>, pb ...  (the sides keep their records: the step's from the run's first piece)
                 order = [(s0 + 1 + t) % n for t in range(len(run) + 1)]   # indices of a, inner..., b
                 keep = [q for q in range(n) if q not in order]
                 newP, newM = [], []
                 for q in range(n):
                     if q == order[0]:
-                        for t, c in enumerate(new):
+                        for c, me in zip(new, new_meta):
                             newP.append([c[0], c[1]])
-                            newM.append(dict(M[run[0]]) if t < len(new) - 1 else dict(M[j]))
+                            newM.append(dict(me))
                     elif q in keep:
                         newP.append(P[q]); newM.append(M[q])
+                if shape == "dip" and not near(X, pb):       # (a dip back at pa: pa's side now runs along side j's line)
+                    q_ = next(t for t, c in enumerate(newP) if c is pa)
+                    newM[q_] = dict(M[j], kind="wall", opening=None)
                 r["pts"][:] = newP; r["meta"][:] = newM
-                if len(new) == 1:
+                if shape == "corner":
                     for c_ in moves:                         # (the other rooms' corners that slid to X)
                         c_[0], c_[1] = X[0], X[1]
-                if len(run) == 1 and len(new) == 3:          # a one-piece step: every other room with that piece gets it too
+                if len(run) == 1 and shape == "step":        # a one-piece step: every other room with that piece gets it too
                     for r_ in rooms:
                         if r_ is r:
                             continue
@@ -5471,7 +5651,7 @@ def square_cut_corners(rooms, k, T, max_len, gray=None):
                                 Q.insert(t + 1, [X[0], X[1]]); N.insert(t + 1, dict(N[t]))
                                 break
                 if os.environ.get("AE_LOG_SQUARE"):
-                    print("square %s: %s .. %s (%d pieces) -> %s" % ("corner" if len(new) == 1 else "step", [round(v, 1) for v in a], [round(v, 1) for v in b], len(run), [round(v, 1) for v in X]), file=sys.stderr)
+                    print("square %s: %s .. %s (%d pieces) -> %s%s" % (shape, [round(v, 1) for v in a], [round(v, 1) for v in b], len(run), [round(v, 1) for v in X], " (kept %d)" % (len(new) - 1) if shape == "corner" and len(new) > 1 else ""), file=sys.stderr)
                 return sig
         return None
     problems = lambda: {repr(p_) for p_ in app_geometry_problems([r_["pts"] for r_ in rooms])}

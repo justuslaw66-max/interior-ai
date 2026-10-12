@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.25.0",
+ "exporterVersion": "app-evidence-0.26.0",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -4021,6 +4021,7 @@
   "scaleBar": null,
   "areaCheck": null,
   "wallThicknessUnified": 30,
+  "jogFacesFlushed": 0,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }
