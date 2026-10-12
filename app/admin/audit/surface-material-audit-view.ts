@@ -1,4 +1,5 @@
 import type { SurfaceMaterialAdminAuditSummary } from "@/lib/surface-material-audit";
+import type { NoOwnPicture } from "@/lib/surface-material-picture-source";
 
 // The Surface Material QA section's filters and sorts, read from the page's search params and written
 // back into its links.
@@ -11,7 +12,8 @@ export type SurfaceMaterialAuditFilter =
   | "missing_specs"
   | "unresolved_blockers"
   | "sample_available"
-  | "missing_links";
+  | "missing_links"
+  | "no_picture_of_its_own";
 
 export type SurfaceMaterialAuditSort =
   | "blocker_count"
@@ -33,6 +35,7 @@ export const SURFACE_MATERIAL_AUDIT_FILTERS: Array<{
   { id: "unresolved_blockers", label: "Unresolved blockers" },
   { id: "sample_available", label: "Sample available" },
   { id: "missing_links", label: "Missing sample/source link" },
+  { id: "no_picture_of_its_own", label: "No picture of its own" },
 ];
 
 export const SURFACE_MATERIAL_AUDIT_SORTS: Array<{
@@ -58,9 +61,11 @@ export function normalizeSurfaceMaterialSort(value: string | undefined): Surface
   return SURFACE_MATERIAL_AUDIT_SORTS.find((sort) => sort.id === value)?.id ?? "blocker_count";
 }
 
+/** noOwnPicture: the material's entry when its manufacturer has no picture of it (surface-material-picture-source.ts). */
 export function matchesSurfaceMaterialFilter(
   material: SurfaceMaterialAdminAuditSummary,
-  filter: SurfaceMaterialAuditFilter
+  filter: SurfaceMaterialAuditFilter,
+  noOwnPicture: NoOwnPicture | null = null
 ): boolean {
   if (filter === "all") return true;
   if (filter === "draft") return material.publishStatus === "draft";
@@ -71,6 +76,7 @@ export function matchesSurfaceMaterialFilter(
   if (filter === "unresolved_blockers") return material.blockers.length > 0;
   if (filter === "sample_available") return material.sampleAvailable === true;
   if (filter === "missing_links") return !material.sourceUrl || !material.sampleRequestUrl;
+  if (filter === "no_picture_of_its_own") return noOwnPicture !== null;
   return true;
 }
 

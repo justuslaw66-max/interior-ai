@@ -4,6 +4,8 @@ import {
   getRelativeSurfaceMaterialPath,
   type SurfaceMaterialAuditResult,
 } from "@/lib/surface-material-audit";
+import { collectNoOwnPictures, type NoOwnPicture } from "@/lib/surface-material-picture-source";
+import { getAllSurfaceMaterialYamlEntries } from "@/lib/surface-material-yaml";
 import { SurfaceMaterialAuditRow } from "./SurfaceMaterialAuditRow";
 import {
   SURFACE_MATERIAL_AUDIT_FILTERS,
@@ -60,6 +62,21 @@ function SurfaceMaterialAuditControls({
   );
 }
 
+// The record J asked for on 12 Oct 2026: which surfaces have no picture of their own, and how many of each kind.
+function NoOwnPictureSummary({ found, sort }: { found: Map<string, NoOwnPicture>; sort: SurfaceMaterialAuditSort }) {
+  const standIns = [...found.values()].filter((noOwnPicture) => noOwnPicture.source === "stand_in").length;
+  return (
+    <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+      <Link href={surfaceAuditHref("no_picture_of_its_own", sort)} className="font-semibold underline">
+        {found.size} entries have no picture of their own
+      </Link>{" "}
+      on the manufacturer&apos;s download area: {standIns} draw another item&apos;s faces, cut to the tile at true scale, and{" "}
+      {found.size - standIns} show the configurator&apos;s preview. The sizes left out of the catalogue for want of a picture
+      are listed with them in docs/architecture/surface-material-tile-faces.md.
+    </p>
+  );
+}
+
 function ParseErrors({ files }: { files: string[] }) {
   if (files.length === 0) return null;
   return (
@@ -84,7 +101,12 @@ export function SurfaceMaterialQaSection({
   sort: SurfaceMaterialAuditSort;
 }) {
   const all = buildSurfaceMaterialAdminAuditSummaries();
-  const shown = sortSurfaceMaterialSummaries(all.filter((material) => matchesSurfaceMaterialFilter(material, filter)), sort);
+  const noOwnPictures = collectNoOwnPictures(getAllSurfaceMaterialYamlEntries());
+  const noOwnPictureOf = (filePath: string) => noOwnPictures.get(filePath) ?? null;
+  const shown = sortSurfaceMaterialSummaries(
+    all.filter((material) => matchesSurfaceMaterialFilter(material, filter, noOwnPictureOf(material.filePath))),
+    sort
+  );
   const draftCount = all.filter((material) => material.publishStatus === "draft").length;
   return (
     <section id="surface-material-qa" className="rounded-xl border p-4">
@@ -92,12 +114,14 @@ export function SurfaceMaterialQaSection({
       <p className="mt-1 text-sm text-neutral-600">
         Separate flooring/material catalog checks. Draft blockers are shown for admin import QA and are not furniture cart lines.
       </p>
-      <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
         <Tile label="Files scanned" value={audit.files.length} />
         <Tile label="Draft flooring" value={draftCount} />
         <Tile label="Failures" value={audit.failureCount} />
         <Tile label="Warnings" value={audit.warningCount} />
+        <Tile label="No picture of its own" value={noOwnPictures.size} />
       </div>
+      <NoOwnPictureSummary found={noOwnPictures} sort={sort} />
 
       <SurfaceMaterialAuditControls filter={filter} sort={sort} />
 
@@ -108,7 +132,11 @@ export function SurfaceMaterialQaSection({
           </h3>
           <div className="mt-2 space-y-4 text-sm text-neutral-700">
             {shown.map((material) => (
-              <SurfaceMaterialAuditRow key={`${material.materialId}:${material.filePath}`} material={material} />
+              <SurfaceMaterialAuditRow
+                key={`${material.materialId}:${material.filePath}`}
+                material={material}
+                noOwnPicture={noOwnPictureOf(material.filePath)}
+              />
             ))}
           </div>
         </div>

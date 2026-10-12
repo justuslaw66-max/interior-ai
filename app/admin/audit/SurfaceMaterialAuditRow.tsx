@@ -1,4 +1,5 @@
 import { getRelativeSurfaceMaterialPath, type SurfaceMaterialAdminAuditSummary } from "@/lib/surface-material-audit";
+import { describeNoOwnPicture, type NoOwnPicture } from "@/lib/surface-material-picture-source";
 import { AdminStatusBadge } from "../AdminStatusBadge";
 import { formatAuditValue } from "./surface-material-audit-view";
 
@@ -81,7 +82,13 @@ function AuditDetail({ material }: { material: Material }) {
   );
 }
 
-export function SurfaceMaterialAuditRow({ material }: { material: Material }) {
+export function SurfaceMaterialAuditRow({
+  material,
+  noOwnPicture = null,
+}: {
+  material: Material;
+  noOwnPicture?: NoOwnPicture | null;
+}) {
   return (
     <div className="rounded-lg border p-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -90,8 +97,16 @@ export function SurfaceMaterialAuditRow({ material }: { material: Material }) {
           <div className="mt-1 font-mono text-xs text-neutral-700">{material.materialId}</div>
           <div className="mt-1 text-xs text-neutral-500">{getRelativeSurfaceMaterialPath(material.filePath)}</div>
         </div>
-        <AdminStatusBadge kind="surfacePublication" status={material.publishStatus} />
+        <div className="flex flex-wrap gap-2">
+          {noOwnPicture ? <AdminStatusBadge kind="surfacePicture" status={noOwnPicture.source} /> : null}
+          <AdminStatusBadge kind="surfacePublication" status={material.publishStatus} />
+        </div>
       </div>
+      {noOwnPicture ? (
+        <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+          {describeNoOwnPicture(noOwnPicture)}
+        </div>
+      ) : null}
 
       <SurfaceMaterialFacts material={material} />
 
