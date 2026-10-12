@@ -85,7 +85,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             {active ? (
               <>
                 <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
-                <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-1 py-0.5 text-center text-[9px] font-semibold uppercase tracking-wide text-white">
+                <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-0.5 py-0.5 text-center text-xs font-semibold text-white">
                   Selected
                 </span>
               </>
@@ -118,7 +118,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
                 ? getCollectionLabel(section.collectionType, materialType)
                 : getMaterialLabel(materialType)}
             </h4>
-            <span className="text-[11px] text-neutral-500">
+            <span className="text-xs text-neutral-500">
               {section.items.length} option{section.items.length === 1 ? "" : "s"}
             </span>
           </div>
@@ -149,7 +149,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             <div className="mt-1 text-sm font-semibold text-neutral-900">{selectedFinish.label}</div>
           ) : null}
         </div>
-        <div className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-neutral-600">
+        <div className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-600">
           Variant-safe
         </div>
       </div>

@@ -117,16 +117,16 @@ const CASTLERY_CONFIGURATION_GROUPS: Record<
   }>
 > = {
   hamilton: [
-    { key: "standard", label: "STANDARD" },
-    { key: "l-shaped", label: "L-SHAPED" },
-    { key: "armchair", label: "ARMCHAIR" },
-    { key: "sleeper", label: "SLEEPER" },
+    { key: "standard", label: "Standard" },
+    { key: "l-shaped", label: "L-shaped" },
+    { key: "armchair", label: "Armchair" },
+    { key: "sleeper", label: "Sleeper" },
   ],
   dawson: [
-    { key: "standard", label: "STANDARD" },
-    { key: "l-shaped", label: "L-SHAPED" },
-    { key: "u-shaped", label: "U-SHAPED" },
-    { key: "armchair", label: "ARMCHAIR" },
+    { key: "standard", label: "Standard" },
+    { key: "l-shaped", label: "L-shaped" },
+    { key: "u-shaped", label: "U-shaped" },
+    { key: "armchair", label: "Armchair" },
   ],
 };
 
@@ -303,7 +303,7 @@ function CastleryConfigurationSelector({
           <div className="text-sm font-semibold leading-snug">
             {castleryConfigurationLabel(family, activeOption)}
           </div>
-          <div className="mt-0.5 text-[11px] text-[#77646a]">
+          <div className="mt-0.5 text-xs text-[#77646a]">
             Select a layout below
           </div>
         </div>
@@ -324,7 +324,7 @@ function CastleryConfigurationSelector({
                 type="button"
                 data-testid={`${family}-config-tab-${group.key}`}
                 data-active={active ? "true" : "false"}
-                className={`min-h-11 whitespace-nowrap px-1 py-2 text-center text-[9px] font-semibold tracking-[0.08em] sm:px-2 sm:text-[10px] sm:tracking-[0.14em] ${
+                className={`min-h-11 whitespace-nowrap px-1 py-2 text-center text-xs font-semibold sm:px-2 ${
                   active
                     ? "border-b-2 border-[#93452a] text-[#93452a]"
                     : "text-[#4b1225]"
@@ -384,7 +384,7 @@ function CastleryConfigurationSelector({
 
       {orientationOptions.length ? (
         <div className="mt-3" data-testid={`${family}-orientation-selector`}>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#93452a]">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#93452a]">
             Orientation
           </div>
           <div className="grid grid-cols-2 gap-2">

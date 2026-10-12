@@ -47,7 +47,7 @@ export function UnresolvedOpeningMarkers2D({
             }}
             style={{
             background: "rgba(255,255,255,0.96)", border: "1px solid rgba(220,38,38,0.45)",
-            borderRadius: 6, color: "#991b1b", fontSize: 10, fontWeight: 800,
+            borderRadius: 6, color: "#991b1b", fontSize: 12, fontWeight: 800,
             padding: "4px 6px", whiteSpace: "nowrap", cursor: "pointer",
           }}>
             {opening.kind === "door" ? "Door" : "Window"} needs wall repair
