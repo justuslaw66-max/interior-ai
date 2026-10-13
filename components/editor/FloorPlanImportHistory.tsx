@@ -11,7 +11,6 @@ import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error
 import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type FloorPlanImportHistoryProps = {
-  dark?: boolean;
   disabled?: boolean;
   activeJobId: string | null;
   activeJobSnapshot: ConsumerFloorPlanImportJob | null;
@@ -41,7 +40,6 @@ function statusLabel(job: ConsumerFloorPlanImportSummary) {
 }
 
 export default function FloorPlanImportHistory({
-  dark = false,
   disabled = false,
   activeJobId,
   activeJobSnapshot,
@@ -248,17 +246,13 @@ export default function FloorPlanImportHistory({
     });
   };
 
-  const subtle = dark ? "text-neutral-400" : "text-neutral-500";
-  const card = dark
-    ? "designer-control rounded-lg border border-white/10 p-2.5"
-    : "rounded-lg border border-neutral-200 bg-white p-2.5";
-  const secondary = dark
-    ? "designer-control rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-50"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
+  const subtle = "text-neutral-500";
+  const card = "rounded-lg border border-neutral-200 bg-white p-2.5";
+  const secondary = "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
 
   return (
     <details
-      className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
+      className="rounded-lg bg-neutral-50 p-3"
       open={historyOpen}
       onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
       onKeyDownCapture={guardConfirmationEscape}
@@ -269,11 +263,7 @@ export default function FloorPlanImportHistory({
       </p>
       {!loading && jobs.length > 0 ? (
         <div
-          className={`mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 ${
-            dark
-              ? "border-white/10 bg-black/10"
-              : "border-neutral-200 bg-white"
-          }`}
+          className="mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 border-neutral-200 bg-white"
           data-testid="floor-plan-import-bulk-actions"
         >
           <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold">
@@ -314,11 +304,7 @@ export default function FloorPlanImportHistory({
         <div
           role="alertdialog"
           aria-labelledby="floor-plan-bulk-delete-title"
-          className={`mt-2 rounded-md border p-2 ${
-            dark
-              ? "border-red-400/30 bg-red-950/30"
-              : "border-red-200 bg-red-50"
-          }`}
+          className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
           data-testid="floor-plan-import-bulk-delete-confirmation"
         >
           <p
@@ -453,11 +439,7 @@ export default function FloorPlanImportHistory({
                 <div
                   role="alertdialog"
                   aria-labelledby={`floor-plan-delete-title-${job.id}`}
-                  className={`mt-2 rounded-md border p-2 ${
-                    dark
-                      ? "border-red-400/30 bg-red-950/30"
-                      : "border-red-200 bg-red-50"
-                  }`}
+                  className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
                 >
                   <p
                     id={`floor-plan-delete-title-${job.id}`}

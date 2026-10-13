@@ -118,7 +118,6 @@ export type UseDesignPagePresentationQaFacadeInput = {
   };
   configuration: {
     commandPaletteScopeKey: string;
-    designerTheme: boolean;
     canUseAdvancedPlanControls: boolean;
     canUseAdvancedExportStyles: boolean;
     canUseDesigner: ChromeInput["configuration"]["canUseDesigner"];
@@ -197,7 +196,7 @@ export function useDesignPagePresentationQaFacade({
   actions,
 }: UseDesignPagePresentationQaFacadeInput): DesignPagePresentationQaFacade {
   const editorCapabilities = resolveEditorCapabilities(state.editor.plan);
-  const designRename = useDesignPageDesignRename({ snapshot: state.document.snapshot, dark: configuration.designerTheme,
+  const designRename = useDesignPageDesignRename({ snapshot: state.document.snapshot,
     runTransaction: actions.history.runTransaction, setDesignSnapshot: actions.shell.setDesignSnapshot, showToast: actions.feedback.showToast });
   const presentExport = useDesignPagePresentExportController({
     state: {
@@ -383,11 +382,10 @@ export function useDesignPagePresentationQaFacade({
     },
     configuration: {
       commandBar: {
-        dark: configuration.designerTheme,
         compactRoomStatus: configuration.compactRoomStatus,
         showRoomHealth: configuration.showRoomHealth,
       },
-      toolRail: { dark: configuration.designerTheme, aiDesignEnabled: state.editor.aiDesignEnabled },
+      toolRail: { aiDesignEnabled: state.editor.aiDesignEnabled },
       canUseDesigner: configuration.canUseDesigner,
     },
     actions: {
@@ -439,7 +437,6 @@ export function useDesignPagePresentationQaFacade({
       open: commandPalette.state.open,
       query: commandPalette.state.query,
       actions: commandPalette.state.actions,
-      designerTheme: configuration.designerTheme,
       returnFocusIds: commandPalette.state.returnFocusIds,
       focusRestorationEnabledRef: commandPalette.state.focusRestorationEnabledRef,
       onClose: commandPalette.actions.close,

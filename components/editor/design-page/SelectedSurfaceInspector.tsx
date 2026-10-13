@@ -89,7 +89,6 @@ export type SelectedSurfaceInspectorActions = {
 type SelectedSurfaceInspectorProps = {
   state: SelectedSurfaceInspectorState;
   configuration: {
-    dark: boolean;
     /** Pro sees the publish status and has "Adjust pattern" open (UX audit ED5). */
     pro: boolean;
   };
@@ -112,7 +111,6 @@ function WallHeightRow({ wallHeight, actions }: { wallHeight: WallHeightState; a
           stepMm={wallHeight.stepMm}
           keyboardStepMm={wallHeight.keyboardStepMm}
           disabled={wallHeight.disabled}
-          dark={false}
           compact
           testId="selection-inspector-wall-height-input"
           hint={wallHeight.hint}

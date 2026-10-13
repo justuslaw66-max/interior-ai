@@ -9,7 +9,6 @@ import {
 
 export type ShareLinkFallbackDialogProps = {
   url: string | null;
-  dark: boolean;
   copied: boolean;
   errorMessage: string | null;
   onClose: () => void;
@@ -18,16 +17,12 @@ export type ShareLinkFallbackDialogProps = {
 };
 
 function ShareLinkFallbackControls({
-  url, dark, onClose, onCopy, onOpen,
+  url, onClose, onCopy, onOpen,
 }: Omit<ShareLinkFallbackDialogProps, "url" | "copied" | "errorMessage" | "onCopy"> & {
   url: string; onCopy: (url: string) => void;
 }) {
-  const inputClassName = dark
-    ? "designer-control min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm text-neutral-200 font-mono outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-    : "min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
-  const doneClassName = dark
-    ? "designer-control min-h-11 rounded-lg border px-4 py-2 text-sm font-medium outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-    : "min-h-11 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 outline-hidden hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
+  const inputClassName = "min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
+  const doneClassName = "min-h-11 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 outline-hidden hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
   return <>
     <div className="mb-4 flex min-w-0 gap-2">
       <input type="text" readOnly aria-label="Share URL" data-testid="share-url-input"
@@ -68,7 +63,7 @@ function useFallbackCopyLifecycle({ url, onCopy, onClose, onOpen }: ShareLinkFal
 }
 
 export function ShareLinkFallbackDialog(props: ShareLinkFallbackDialogProps) {
-  const { url, dark, copied, errorMessage } = props;
+  const { url, copied, errorMessage } = props;
   const { onClose, onCopy, onOpen } = useFallbackCopyLifecycle(props);
   return (
     <EditorDialog
@@ -83,12 +78,10 @@ export function ShareLinkFallbackDialog(props: ShareLinkFallbackDialogProps) {
       returnFocusIds={SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS}
       cancelFocusRestorationOnUnmount
       manageBackground
-      dark={dark}
-      forceLight={!dark}
-      panelClassName={`${dark ? "designer-panel " : ""}!max-w-md max-h-[calc(100dvh-2rem)] !rounded-xl !p-6 overflow-y-auto`}
+      panelClassName="!max-w-md max-h-[calc(100dvh-2rem)] !rounded-xl !p-6 overflow-y-auto"
       contentClassName="min-w-0"
     >
-      {url ? <ShareLinkFallbackControls {...{ url, dark, onClose, onCopy, onOpen }} /> : null}
+      {url ? <ShareLinkFallbackControls {...{ url, onClose, onCopy, onOpen }} /> : null}
       <p data-testid="share-copy-status" role="status" aria-live="polite" aria-atomic="true"
         className="mt-3 text-sm">
         {errorMessage ?? (copied ? "Share link copied to clipboard!" : "")}

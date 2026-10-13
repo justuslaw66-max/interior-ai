@@ -201,7 +201,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
     configuration: {
       commandPaletteScopeKey: [base.derived.navigation.pathname, base.derived.navigation.searchParams.get("designId") ?? "local", base.state.identity.designId ?? "local", base.derived.navigation.urlWorkspace ?? "default",
         base.state.brief.mode, viewportShell.state.editor.editorMode, base.state.access.plan, coreShell.derived.access.isDesigner ? "pro" : "consumer", coreShell.derived.access.isClientPreview ? "preview" : "editing"].join("|"),
-      designerTheme: coreShell.derived.access.showDesignerTheme,
       canUseAdvancedPlanControls:
         coreShell.derived.access.capabilities.configurePlanLayers,
       canUseAdvancedExportStyles:

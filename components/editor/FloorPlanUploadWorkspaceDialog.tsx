@@ -67,10 +67,7 @@ function WorkspaceHeader({
   );
 }
 
-/**
- * The upload window, light for everyone: Pro uses the standard theme (`showDesignerTheme` is off),
- * and a portal to the page body would sit outside a Pro theme anyway.
- */
+/** The upload window, in a portal to the page body. */
 export function FloorPlanUploadWorkspaceDialog(
   {
     open,
@@ -103,7 +100,7 @@ export function FloorPlanUploadWorkspaceDialog(
           onChooseFile={onChooseFile} />
         <div className="min-h-0 flex-1 overflow-y-auto bg-neutral-100/70 p-3 sm:p-5 lg:p-6">
           <FloorPlanImportWorkspace request={request} choose={choose}
-            trainingBenchmarkOptIn={trainingBenchmarkOptIn} dark={false}
+            trainingBenchmarkOptIn={trainingBenchmarkOptIn}
             disabled={disabled} proMode={proMode} onChooseFile={onChooseFile}
             onHistoryConfirmationOpenChange={onConfirmationOpenChange}
             onTrainingBenchmarkOptInChange={onTrainingBenchmarkOptInChange} />

@@ -26,7 +26,6 @@ export type FloorPlanScaleReviewPanelProps = {
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
   openByDefault?: boolean;
-  dark: boolean;
   disabled: boolean;
 };
 
@@ -34,15 +33,13 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
   const {
     document, floorId, page, calibration, pickingScale, scalePoints,
     onPickingScaleChange, onScalePointsChange, onChange, onError,
-    openByDefault = false, dark, disabled,
+    openByDefault = false, disabled,
   } = props;
   const { input, printedMm, hasConflict, mode, setMode, floor, canMapExistingVertices, scale, apply, canApply,
     firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId, estimateMarks, applyEstimateMark, assumedMm } = useFloorPlanScaleReview(props);
   const status = scaleReviewStatus(hasConflict, calibration);
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
+  const subtle = "text-neutral-600";
 
   return (
     <details data-review-controls="scale" className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || status.open}>

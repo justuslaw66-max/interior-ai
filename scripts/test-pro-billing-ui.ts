@@ -166,7 +166,7 @@ assert.match(
 
 const noop = () => undefined;
 const plansModel = buildDesignPageDialogLayerModel({
-  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("free"), designerTheme: false },
+  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("free") },
   billing: {
     upgrade: {},
     plans: {

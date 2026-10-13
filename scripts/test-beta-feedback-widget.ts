@@ -213,7 +213,6 @@ const dialogModel = buildDesignPageDialogLayerModel({
     isClientPreview: false,
     isAuthenticated: true,
     capabilities: resolveEditorCapabilities("pro"),
-    designerTheme: false,
   },
   billing: {
     upgrade: { open: false },

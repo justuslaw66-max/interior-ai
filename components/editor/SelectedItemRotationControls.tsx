@@ -3,7 +3,6 @@
 type RotationSnapPresetDegrees = 15 | 5 | 0;
 
 type SelectedItemRotationControlsProps = {
-  dark: boolean;
   isDesigner: boolean;
   expanded: boolean;
   selectedRotationDegrees: number;
@@ -20,7 +19,6 @@ type SelectedItemRotationControlsProps = {
 };
 
 export default function SelectedItemRotationControls({
-  dark,
   isDesigner,
   expanded,
   selectedRotationDegrees,
@@ -35,25 +33,15 @@ export default function SelectedItemRotationControls({
   onRotationInputChange,
   onApplyRotationInput,
 }: SelectedItemRotationControlsProps) {
-  const textPrimaryClass = dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-900";
-  const textSecondaryClass = dark
-    ? "designer-text-secondary mt-1 text-xs"
-    : "mt-1 text-xs text-neutral-600";
-  const hintClass = dark
-    ? "designer-text-secondary mt-2 text-xs"
-    : "mt-2 text-xs text-neutral-500";
-  const buttonClass = dark
-    ? "min-h-11 rounded-lg border border-white/15 px-2 py-2 text-xs"
-    : "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
+  const textPrimaryClass = "text-sm font-semibold text-neutral-900";
+  const textSecondaryClass = "mt-1 text-xs text-neutral-600";
+  const hintClass = "mt-2 text-xs text-neutral-500";
+  const buttonClass = "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
   const snapPresetClass = (preset: RotationSnapPresetDegrees) =>
     `min-h-11 rounded-lg border px-2 py-1.5 text-xs ${
       rotationSnapPresetDegrees === preset
         ? "designer-accent-border"
-        : dark
-          ? "border-white/15"
-          : "border-neutral-200 text-neutral-800"
+        : "border-neutral-200 text-neutral-800"
     }`;
 
   return (
@@ -70,13 +58,7 @@ export default function SelectedItemRotationControls({
             Snap locks rotation to common angles. Disable for fine control.
           </div>
           {isDesigner ? (
-            <div
-              className={
-                dark
-                  ? "designer-text-secondary mt-1 text-xs"
-                  : "mt-1 text-xs text-neutral-500"
-              }
-            >
+            <div className="mt-1 text-xs text-neutral-500">
               Pro tip: hold Option/Alt while dragging the rotate handle for free rotation.
             </div>
           ) : null}
@@ -189,11 +171,7 @@ export default function SelectedItemRotationControls({
               <div className="mt-2 flex items-center gap-2">
                 <input
                   data-testid="rotation-input"
-                  className={
-                    dark
-                      ? "min-h-11 w-full rounded-lg border border-white/15 bg-transparent px-2 py-1.5 text-xs"
-                      : "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900"
-                  }
+                  className="min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900"
                   type="number"
                   step="0.1"
                   value={rotationInputValue}
@@ -210,11 +188,7 @@ export default function SelectedItemRotationControls({
                 />
                 <button
                   data-testid="rotation-input-apply"
-                  className={
-                    dark
-                      ? "min-h-11 rounded-lg border border-white/15 px-3 py-1.5 text-xs"
-                      : "min-h-11 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-800"
-                  }
+                  className="min-h-11 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-800"
                   disabled={disabled}
                   onClick={onApplyRotationInput}
                 >

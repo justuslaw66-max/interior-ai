@@ -19,7 +19,7 @@ import {
 const noop = () => undefined;
 type AccountProps = ComponentProps<typeof CommandBarAccountMenu>;
 const base: AccountProps = {
-  dark: false, containerRef: createRef<HTMLDivElement>(), open: false, onToggle: noop, onClose: noop,
+  containerRef: createRef<HTMLDivElement>(), open: false, onToggle: noop, onClose: noop,
   menuButtonClass: "menu-button", menuPanelClass: "menu-panel", isAuthed: true, accountReady: true,
   accountName: "justus", planLabel: "Free", canManageBilling: false, isOpeningBillingPortal: false,
   onManageBilling: noop, onViewPlans: noop,
@@ -60,7 +60,7 @@ assert.match(phoneMember, /data-testid="editor-account-plan"[^>]*>Free<[\s\S]*da
 assert.doesNotMatch(phoneMember, /editor-command-account"|role="menu"/, "The items sit in the Menu, not a menu of their own.");
 
 const getPro = (canUpgrade: boolean, accountReady = true) =>
-  renderToStaticMarkup(createElement(CommandBarGetProButton, { dark: false, accountReady, canUpgrade, onGetPro: noop }));
+  renderToStaticMarkup(createElement(CommandBarGetProButton, { accountReady, canUpgrade, onGetPro: noop }));
 assert.equal(getPro(false), "", "Get Pro waits for the plan and never shows for Pro.");
 assert.equal(getPro(true, false), "", "Get Pro waits for the session, like Sign in and Account.");
 assert.match(getPro(true), new RegExp(`id="${PLANS_GET_PRO_OPENER_ID}"[^>]*data-testid="editor-command-get-pro"`));
@@ -87,7 +87,7 @@ assert.match(read("lib/useDesignPageBilling.ts"), /finally \{\s*setPlanLoaded\(t
 assert.match(read("components/editor/design-page/PlansDialog.tsx"), /getPlansReturnFocusIds\(state\.openedFromUpgrade, state\.openerId\)/);
 const commandBar = read("components/editor/EditorCommandBar.tsx");
 assert.match(commandBar,
-  /<CommandBarGetProButton dark=\{dark\} accountReady=\{props\.accountReady\} canUpgrade=\{props\.canUpgrade\} onGetPro=\{props\.onGetPro\} \/>/);
+  /<CommandBarGetProButton accountReady=\{props\.accountReady\} canUpgrade=\{props\.canUpgrade\} onGetPro=\{props\.onGetPro\} \/>/);
 assert.match(commandBar, /phone=\{!wide\}\s*accountSlot=\{<AccountMenuItems \{\.\.\.account\} onClose=\{\(\) => setOverflowOpen\(false\)\} \/>\}/,
   "On phones the Menu holds the account's items.");
 assert.match(commandBar, /\{wide \? moreMenu : null\}\s*\{wide \? \(\s*<CommandBarAccountMenu/,

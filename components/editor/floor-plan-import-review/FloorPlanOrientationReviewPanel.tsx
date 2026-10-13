@@ -15,7 +15,6 @@ type FloorPlanOrientationReviewPanelProps = {
   document: FloorPlanDocumentV2;
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
-  dark: boolean;
   disabled: boolean;
 };
 
@@ -27,7 +26,6 @@ export default function FloorPlanOrientationReviewPanel({
   document,
   onChange,
   onError,
-  dark,
   disabled,
 }: FloorPlanOrientationReviewPanelProps) {
   const previews = useMemo(
@@ -51,11 +49,7 @@ export default function FloorPlanOrientationReviewPanel({
           <button
             key={choice.id}
             type="button"
-            className={
-              dark
-                ? "rounded-md border border-white/10 p-1.5 text-xs"
-                : "rounded-md border border-neutral-200 bg-white p-1.5 text-xs"
-            }
+            className="rounded-md border border-neutral-200 bg-white p-1.5 text-xs"
             disabled={disabled || choice.id === "normal"}
             onClick={() => {
               try {
@@ -77,13 +71,7 @@ export default function FloorPlanOrientationReviewPanel({
           </button>
         ))}
       </div>
-      <p
-        className={
-          dark
-            ? "mt-1 text-xs text-neutral-400"
-            : "mt-1 text-xs text-neutral-600"
-        }
-      >
+      <p className="mt-1 text-xs text-neutral-600">
         Thumbnails are relative to the current candidate. Registration points
         rotate or mirror with geometry so the source overlay remains aligned.
       </p>

@@ -59,29 +59,21 @@ export function CollapsiblePlanHeader({
 }
 
 export function PlanToolSection({
-  dark,
   section,
   title,
   collapsed,
   children,
   onToggle,
 }: {
-  dark: boolean;
   section: CollapsiblePlanSection;
   title: string;
   collapsed: boolean;
   children: ReactNode;
   onToggle: () => void;
 }) {
-  const sectionClass = dark
-    ? "border-b border-white/10 last:border-b-0"
-    : "border-b border-neutral-100 last:border-b-0";
-  const headerClass = dark
-    ? "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-white/5"
-    : "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-neutral-50";
-  const titleClass = dark
-    ? "text-sm font-semibold text-neutral-100"
-    : "text-sm font-semibold text-neutral-800";
+  const sectionClass = "border-b border-neutral-100 last:border-b-0";
+  const headerClass = "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-neutral-50";
+  const titleClass = "text-sm font-semibold text-neutral-800";
 
   return (
     <section data-testid={`plan-tool-section-${section}`} className={sectionClass}>
@@ -105,7 +97,7 @@ export function PlanToolSection({
 }
 
 export function PlanToolTile({
-  dark, id, testId,
+  id, testId,
   icon,
   label,
   shortcut,
@@ -114,7 +106,7 @@ export function PlanToolTile({
   title,
   onClick,
 }: {
-  dark: boolean; id?: string;
+  id?: string;
   testId: string;
   icon: PlanToolIconName;
   label: string;
@@ -127,16 +119,10 @@ export function PlanToolTile({
   const className = [
     "group relative isolate flex min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-[2px] border px-1.5 py-2 text-center transition-[transform,background-color,border-color,box-shadow] duration-150 focus:outline-hidden focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
     disabled
-      ? dark
-        ? "cursor-not-allowed border-transparent bg-white/[0.035] text-neutral-400 focus-visible:ring-offset-[var(--bg-panel)]"
-        : "cursor-not-allowed border-transparent bg-[#f6f6f7] text-neutral-500 focus-visible:ring-offset-white"
+      ? "cursor-not-allowed border-transparent bg-[#f6f6f7] text-neutral-500 focus-visible:ring-offset-white"
       : active
-        ? dark
-          ? "border-blue-400/70 bg-blue-400/15 text-blue-100 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-400/20 focus-visible:ring-offset-[var(--bg-panel)]"
-          : "border-blue-400 bg-blue-50 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-100/70 focus-visible:ring-offset-white"
-        : dark
-          ? "border-transparent bg-white/[0.055] text-neutral-100 hover:border-white/15 hover:bg-white/10 focus-visible:ring-offset-[var(--bg-panel)]"
-          : "border-transparent bg-[#f6f6f7] text-[#30333a] hover:border-[#d9dce0] hover:bg-[#f1f2f3] focus-visible:ring-offset-white",
+        ? "border-blue-400 bg-blue-50 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-100/70 focus-visible:ring-offset-white"
+        : "border-transparent bg-[#f6f6f7] text-[#30333a] hover:border-[#d9dce0] hover:bg-[#f1f2f3] focus-visible:ring-offset-white",
   ].join(" ");
 
   return (
@@ -153,30 +139,20 @@ export function PlanToolTile({
       title={title}
       onClick={onClick}
     >
-      <PlanToolIcon name={icon} dark={dark} muted={disabled} />
+      <PlanToolIcon name={icon} muted={disabled} />
       <span
         className={[
           "block text-[12px] font-normal leading-[1.25] tracking-normal",
           disabled
-            ? dark
-              ? "text-neutral-400"
-              : "text-[#64686f]"
-            : dark
-              ? "text-neutral-100"
-              : "text-[#30333a]",
+            ? "text-[#64686f]"
+            : "text-[#30333a]",
         ].join(" ")}
       >
         {label}
         {shortcut ? (
           <>
             {" "}
-            <span
-              className={
-                dark
-                  ? "whitespace-nowrap text-neutral-100"
-                  : "whitespace-nowrap text-[#30333a]"
-              }
-            >
+            <span className="whitespace-nowrap text-[#30333a]">
               ({shortcut})
             </span>
           </>

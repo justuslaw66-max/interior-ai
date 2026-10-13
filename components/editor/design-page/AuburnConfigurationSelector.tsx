@@ -135,15 +135,11 @@ export type AuburnConfigurationSelectorActions = {
 
 export type AuburnConfigurationSelectorProps = {
   state: AuburnConfigurationSelectorState;
-  configuration: {
-    dark: boolean;
-  };
   actions: AuburnConfigurationSelectorActions;
 };
 
 export function AuburnConfigurationSelector({
   state,
-  configuration,
   actions,
 }: AuburnConfigurationSelectorProps) {
   const activeGroup = state.groups.find((group) => group.key === state.activeGroupKey);
@@ -151,20 +147,10 @@ export function AuburnConfigurationSelector({
   return (
     <div className="pt-3" data-testid="auburn-configuration-selector">
       <div className="flex items-baseline justify-between gap-3">
-        <div
-          className={
-            configuration.dark
-              ? "designer-text-primary text-sm font-semibold"
-              : "text-sm font-semibold text-neutral-900"
-          }
-        >
+        <div className="text-sm font-semibold text-neutral-900">
           Configuration
         </div>
-        <div
-          className={
-            configuration.dark ? "designer-text-secondary text-xs" : "text-xs text-neutral-500"
-          }
-        >
+        <div className="text-xs text-neutral-500">
           {state.configurationCount} configurations
         </div>
       </div>

@@ -123,7 +123,6 @@ import { planPaletteOpeningSummary } from "@/lib/consumer-room-setup-copy";
 
 export default function DesignControlsPlanPanel({
   floorPlanLifecycleIdentity,
-  dark,
   isClientPreview,
   isDesigner,
   canEdit,
@@ -353,9 +352,7 @@ export default function DesignControlsPlanPanel({
     });
   };
 
-  const titleClass = dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-800";
+  const titleClass = "text-sm font-semibold text-neutral-800";
   const isPlanSectionCollapsed = (section: CollapsiblePlanSection) => collapsedPlanSections[section];
   const setPlanSectionCollapsed = (section: CollapsiblePlanSection, collapsed: boolean) => {
     setCollapsedPlanSections((current) => ({ ...current, [section]: collapsed }));
@@ -501,14 +498,6 @@ export default function DesignControlsPlanPanel({
   ]);
   const planStartButtonClass = (mode: Exclude<PlanStartMode, "start">) => {
     const isActive = planStartMode === mode;
-    if (dark) {
-      return [
-        "rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-        isActive
-          ? "border-blue-400/45 bg-blue-500/20 text-blue-100"
-          : "designer-control border text-neutral-100",
-      ].join(" ");
-    }
     return [
       "rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
       isActive
@@ -669,39 +658,17 @@ export default function DesignControlsPlanPanel({
     onPlanCompletionHandled,
     planCompletionSignal,
   ]);
-  const progressCardClass = dark
-    ? "designer-divider mt-2 border-t px-1 py-3"
-    : "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5";
-  const progressRowClass = dark
-    ? "designer-raised rounded-md px-3 py-2"
-    : "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
-  const compactStatusClass = dark
-    ? "designer-raised rounded-md px-2.5 py-2"
-    : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2";
-  const progressLabelClass = dark
-    ? "text-xs font-semibold text-neutral-100"
-    : "text-xs font-semibold text-neutral-900";
-  const progressMetaClass = dark
-    ? "mt-0.5 text-xs text-neutral-400"
-    : "mt-0.5 text-xs text-neutral-500";
-  const progressReadyClass = dark
-    ? "designer-status-ready rounded-full px-2 py-1 text-xs font-semibold"
-    : "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
-  const progressTodoClass = dark
-    ? "designer-status-warning rounded-full px-2 py-1 text-xs font-semibold"
-    : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
-  const progressViewClass = dark
-    ? "designer-status-info rounded-full px-2 py-1 text-xs font-semibold"
-    : "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700";
-  const progressActionClass = dark
-    ? "designer-control-active rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
-    : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
-  const progressSecondaryActionClass = dark
-    ? "designer-control rounded-lg border px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
-    : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
-  const collapsedToggleClass = dark
-    ? "designer-control shrink-0 rounded-lg border px-2.5 py-1.5 text-xs font-semibold"
-    : "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100";
+  const progressCardClass = "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5";
+  const progressRowClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
+  const compactStatusClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2";
+  const progressLabelClass = "text-xs font-semibold text-neutral-900";
+  const progressMetaClass = "mt-0.5 text-xs text-neutral-500";
+  const progressReadyClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
+  const progressTodoClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
+  const progressViewClass = "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700";
+  const progressActionClass = "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
+  const progressSecondaryActionClass = "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
+  const collapsedToggleClass = "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100";
   const renderCollapsibleHeader = ({
     section,
     title,
@@ -728,9 +695,7 @@ export default function DesignControlsPlanPanel({
       />
     );
   };
-  const planToolGridClass = dark
-    ? "designer-recessed designer-divider grid grid-cols-3 gap-2 border-t p-2"
-    : "grid grid-cols-3 gap-2 border-t border-neutral-100 bg-white p-2";
+  const planToolGridClass = "grid grid-cols-3 gap-2 border-t border-neutral-100 bg-white p-2";
   const renderPlanToolSection = ({
     section,
     title,
@@ -743,7 +708,6 @@ export default function DesignControlsPlanPanel({
     const collapsed = isPlanSectionCollapsed(section);
     return (
       <PlanToolSection
-        dark={dark}
         section={section}
         title={title}
         collapsed={collapsed}
@@ -775,7 +739,6 @@ export default function DesignControlsPlanPanel({
     onClick?: () => void;
   }) => (
     <PlanToolTile
-      dark={dark}
       id={id}
       testId={testId}
       icon={icon}
@@ -1074,7 +1037,6 @@ export default function DesignControlsPlanPanel({
   };
   const renderWallPaintPicker = () => (
     <WallPaintPicker
-      dark={dark}
       activeTargetSettings={activeTargetSettings}
       wallPaintFamilyFilter={wallPaintFamilyFilter}
       setWallPaintFamilyFilter={setWallPaintFamilyFilter}
@@ -1166,16 +1128,12 @@ export default function DesignControlsPlanPanel({
     label: string,
     options: string[]
   ) => (
-    <label className={dark ? "block text-xs font-semibold text-neutral-200" : "block text-xs font-semibold text-neutral-700"}>
+    <label className="block text-xs font-semibold text-neutral-700">
       {label}
       <select
         data-testid={`surfaces-filter-${key}`}
         value={surfaceFilters[key] ?? ""}
-        className={
-          dark
-            ? "designer-control mt-1 h-9 w-full rounded-lg border px-2 text-xs text-neutral-100"
-            : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs text-neutral-800"
-        }
+        className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs text-neutral-800"
         onChange={(event) => setSurfaceFilter(key, event.currentTarget.value)}
       >
       <option value="">All</option>
@@ -1187,21 +1145,11 @@ export default function DesignControlsPlanPanel({
     </select>
   </label>
   );
-  const floorMaterialMetaClass = dark
-    ? "block text-xs text-neutral-400"
-    : "block text-xs text-neutral-500";
-  const floorFieldLabelClass = dark
-    ? "text-xs font-semibold text-neutral-200"
-    : "text-xs font-semibold text-neutral-700";
-  const floorInputClass = dark
-    ? "designer-control h-9 w-full rounded-lg border px-2 text-right text-sm text-neutral-100"
-    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
-  const consumerFieldLabelClass = dark
-    ? "flex flex-col gap-1 text-xs font-semibold text-neutral-200"
-    : "flex flex-col gap-1 text-xs font-semibold text-neutral-700";
-  const consumerInputClass = dark
-    ? "designer-control min-h-10 rounded-lg border px-2.5 py-2 text-sm text-neutral-100 disabled:opacity-50"
-    : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
+  const floorMaterialMetaClass = "block text-xs text-neutral-500";
+  const floorFieldLabelClass = "text-xs font-semibold text-neutral-700";
+  const floorInputClass = "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
+  const consumerFieldLabelClass = "flex flex-col gap-1 text-xs font-semibold text-neutral-700";
+  const consumerInputClass = "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
@@ -1215,21 +1163,10 @@ export default function DesignControlsPlanPanel({
       : "-";
   const activeRoomClearWidth = Math.max(0, roomWidth - (activeRoomWallThicknessMm / 1000) * 2);
   const activeRoomClearDepth = Math.max(0, roomDepth - (activeRoomWallThicknessMm / 1000) * 2);
-  const measurementTileClass = dark
-    ? "designer-raised rounded-lg px-3 py-2"
-    : "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
-  const measurementValueClass = dark
-    ? "text-sm font-semibold text-neutral-100"
-    : "text-sm font-semibold text-neutral-950";
-  const measurementLabelClass = dark
-    ? "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-400"
-    : "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-500";
+  const measurementTileClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
+  const measurementValueClass = "text-sm font-semibold text-neutral-950";
+  const measurementLabelClass = "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-500";
   const measurementCheckClass = (ready: boolean) => {
-    if (dark) {
-      return ready
-        ? "rounded-full bg-emerald-400/15 px-2 py-1 text-xs font-semibold text-emerald-200"
-        : "rounded-full bg-amber-400/15 px-2 py-1 text-xs font-semibold text-amber-200";
-    }
     return ready
       ? "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
       : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
@@ -1258,14 +1195,6 @@ export default function DesignControlsPlanPanel({
   ];
   const surfaceMaterialCardClass = (materialId: string, selectedOverride?: boolean) => {
     const isSelected = selectedOverride ?? activeTargetMaterialId === materialId;
-    if (dark) {
-      return [
-        "rounded-lg border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected
-          ? "border-emerald-300/45 bg-emerald-400/15"
-          : "designer-control border",
-      ].join(" ");
-    }
     return [
       "rounded-lg border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50",
       isSelected
@@ -1278,11 +1207,11 @@ export default function DesignControlsPlanPanel({
       ref={surfaceWorkspaceRef}
       data-testid="room-surfaces-floor-panel" data-floor-material-id={activeRoomFloorMaterialId}
       data-surface-target={activeSurfaceTarget} data-surface-material-id={activeTargetMaterialId ?? ""}
-      open={roomFinishPanelOpen} status={surfaceCatalog.status} dark={dark} retryActionClass={progressSecondaryActionClass} onRetry={surfaceCatalog.retry}
-      className={dark ? "designer-raised mt-2 rounded-lg p-2" : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"}
+      open={roomFinishPanelOpen} status={surfaceCatalog.status} retryActionClass={progressSecondaryActionClass} onRetry={surfaceCatalog.retry}
+      className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
     >
       {!hasRooms ? (
-        <EmptyFloorPlanSurfacesActions dark={dark} isDesigner={isDesigner}
+        <EmptyFloorPlanSurfacesActions isDesigner={isDesigner}
           progressActionClass={progressActionClass} progressSecondaryActionClass={progressSecondaryActionClass}
           progressMetaClass={progressMetaClass}
           onStartDrawRoomSetup={startDrawRoomSetup} onSelectUploadMode={() => setPlanStartMode("upload")}
@@ -1309,7 +1238,7 @@ export default function DesignControlsPlanPanel({
       {surfaceTab === "tiles" ? (
         <>
           {activeSurfaceTarget !== "floor" && activeSurfaceTarget !== "ceiling" ? (
-            <div className={dark ? "designer-raised mt-2 grid grid-cols-2 gap-1 rounded-lg p-1" : "mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1"}>
+            <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1">
               {[
                 { id: "paint" as const, label: "Paint" },
                 { id: "materials" as const, label: "Materials" },
@@ -1320,12 +1249,8 @@ export default function DesignControlsPlanPanel({
                   data-testid={`wall-surface-mode-${mode.id}`}
                   className={
                     wallSurfaceMode === mode.id
-                      ? dark
-                        ? "rounded-md bg-white px-2 py-1.5 text-xs font-semibold text-neutral-950"
-                        : "rounded-md bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
-                      : dark
-                        ? "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-300 hover:bg-white/10"
-                        : "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
+                      ? "rounded-md bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
+                      : "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
                   }
                   onClick={() => setWallSurfaceMode(mode.id)}
                 >
@@ -1349,11 +1274,7 @@ export default function DesignControlsPlanPanel({
                 value={flooringSearch}
                 onChange={(event) => setFlooringSearch(event.currentTarget.value)}
                 placeholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
-                className={
-                  dark
-                    ? "designer-control h-9 w-full rounded-lg border px-2.5 text-sm text-neutral-100 placeholder:text-neutral-500"
-                    : "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 placeholder:text-neutral-400"
-                }
+                className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 placeholder:text-neutral-400"
               />
             </label>
             <button
@@ -1372,9 +1293,7 @@ export default function DesignControlsPlanPanel({
               className={
                 surfaceFilters.recommendedOnly
                   ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
-                  : dark
-                    ? "designer-status-pending rounded-full px-2 py-1 text-xs font-semibold"
-                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
+                  : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
               }
               onClick={toggleRecommendedSurfaceFilter}
             >
@@ -1386,9 +1305,7 @@ export default function DesignControlsPlanPanel({
               className={
                 surfaceFilters.favoritesOnly
                   ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
-                  : dark
-                    ? "designer-status-pending rounded-full px-2 py-1 text-xs font-semibold"
-                    : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
+                  : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
               }
               onClick={toggleFavoriteSurfaceFilter}
             >
@@ -1415,7 +1332,7 @@ export default function DesignControlsPlanPanel({
           </div>
 
           {surfaceFilterDrawerOpen ? (
-            <div data-testid="surfaces-filter-drawer" className={dark ? "designer-recessed mt-2 grid gap-2 rounded-lg p-2" : "mt-2 grid gap-2 rounded-lg border border-neutral-200 bg-white p-2"}>
+            <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-neutral-200 bg-white p-2">
               {renderSurfaceFilterSelect("brand", "Brand", surfaceFilterOptions.brand)}
               {renderSurfaceFilterSelect("collection", "Collection", surfaceFilterOptions.collection)}
               {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
@@ -1471,8 +1388,8 @@ export default function DesignControlsPlanPanel({
                         style={getSurfaceMaterialSwatchStyle(material)}
                       />
                       <span className={surfaceViewMode === "grid" ? "mt-2 block min-w-0" : "block min-w-0"}>
-                        <span className={dark ? "block truncate text-xs text-neutral-400" : "block truncate text-xs text-neutral-500"}>{getSurfaceMaterialCollectionLabel(material)}</span>
-                        <span className={dark ? "block truncate text-sm font-semibold text-neutral-100" : "block truncate text-sm font-semibold text-neutral-900"} title={material.surface_material.product_name}>
+                        <span className="block truncate text-xs text-neutral-500">{getSurfaceMaterialCollectionLabel(material)}</span>
+                        <span className="block truncate text-sm font-semibold text-neutral-900" title={material.surface_material.product_name}>
                           {getSurfaceMaterialModelName(material)}
                         </span>
                         <span className={floorMaterialMetaClass}>
@@ -1507,7 +1424,6 @@ export default function DesignControlsPlanPanel({
                       materialId={materialId}
                       productName={displayName}
                       favorite={favorite}
-                      dark={dark}
                       detailsClassName={progressSecondaryActionClass}
                       onToggleFavorite={() => toggleFavoriteSurfaceMaterialGroup(group)}
                       onOpenDetails={() => selectSurfaceMaterial(materialId, "details")}
@@ -1516,7 +1432,7 @@ export default function DesignControlsPlanPanel({
                 );
               })
             ) : (
-              <div className={dark ? "rounded-lg border border-white/10 p-3 text-xs text-neutral-400" : "rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500"}>
+              <div className="rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500">
                 {isDesigner
                   ? activeSurfaceTarget === "floor"
                     ? "No flooring materials match the current filters."
@@ -1541,7 +1457,7 @@ export default function DesignControlsPlanPanel({
             </button>
           ) : null}
 
-          <div data-testid="surface-product-detail" className={dark ? "designer-recessed mt-3 rounded-lg p-2" : "mt-3 rounded-lg border border-neutral-200 bg-white p-2"}>
+          <div data-testid="surface-product-detail" className="mt-3 rounded-lg border border-neutral-200 bg-white p-2">
             <div className="flex items-start gap-2">
               {selectedSurfaceMaterial ? (
                 <span
@@ -1559,7 +1475,7 @@ export default function DesignControlsPlanPanel({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <div className={dark ? "truncate text-sm font-semibold text-neutral-100" : "truncate text-sm font-semibold text-neutral-950"} title={selectedSurfaceMaterial?.surface_material.product_name ?? activeSurfaceDisplayName}>
+                <div className="truncate text-sm font-semibold text-neutral-950" title={selectedSurfaceMaterial?.surface_material.product_name ?? activeSurfaceDisplayName}>
                   {selectedSurfaceMaterial
                     ? getSurfaceMaterialProductDisplayName(selectedSurfaceMaterial)
                     : activeSurfaceDisplayName}
@@ -1637,10 +1553,10 @@ export default function DesignControlsPlanPanel({
               ) ?? activeSurfaceSummaryRows.find((entry) => entry.room.id === room.id && entry.target === "floor");
             const active = room.id === activeRoomId;
             return (
-              <div key={room.id} className={dark ? "designer-raised rounded-lg p-2" : "rounded-lg border border-neutral-200 bg-white p-2"}>
+              <div key={room.id} className="rounded-lg border border-neutral-200 bg-white p-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-900"}>
+                    <div className="truncate text-xs font-semibold text-neutral-900">
                       {room.name}
                     </div>
                     <div className={progressMetaClass}>
@@ -1717,11 +1633,11 @@ export default function DesignControlsPlanPanel({
       {surfaceSummaryOpen ? (
         <div
           data-testid="surface-summary-panel"
-          className={dark ? "designer-recessed mt-3 rounded-lg p-2" : "mt-3 rounded-lg border border-neutral-200 bg-white p-2"}
+          className="mt-3 rounded-lg border border-neutral-200 bg-white p-2"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+              <div className="text-xs font-semibold text-neutral-900">
                 Surface summary
               </div>
               <div className={progressMetaClass}>{activeSurfaceSummaryRows.length} surfaces</div>
@@ -1732,10 +1648,10 @@ export default function DesignControlsPlanPanel({
           </div>
           <div className="mt-2 grid gap-2">
             {activeSurfaceSummaryRows.map((row) => (
-              <div key={row.id} data-testid={`surface-summary-row-${row.id}`} className={dark ? "designer-raised rounded-lg p-2" : "rounded-lg border border-neutral-200 bg-neutral-50 p-2"}>
+              <div key={row.id} data-testid={`surface-summary-row-${row.id}`} className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-950"}>
+                    <div className="truncate text-xs font-semibold text-neutral-950">
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
@@ -1750,7 +1666,7 @@ export default function DesignControlsPlanPanel({
                   </span>
                 </div>
                 {row.sampleUrl ? (
-                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className={dark ? "mt-2 inline-block text-xs font-semibold text-blue-300" : "mt-2 inline-block text-xs font-semibold text-blue-700"}>
+                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-blue-700">
                     Request sample / quote
                   </a>
                 ) : null}
@@ -1828,16 +1744,12 @@ export default function DesignControlsPlanPanel({
                   <details
                     key={issue.id}
                     data-testid={`plan-quality-issue-${index}`}
-                    className={
-                      dark
-                        ? "designer-raised rounded-md px-2.5 py-1.5 text-xs text-neutral-300"
-                        : "rounded-md bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-600"
-                    }
+                    className="rounded-md bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-600"
                   >
                     <summary className="cursor-pointer font-semibold">
                       {issue.suggestedFix}
                     </summary>
-                    <div className={dark ? "mt-1 text-neutral-400" : "mt-1 text-neutral-500"}>
+                    <div className="mt-1 text-neutral-500">
                       {issue.detail}
                     </div>
                     <button
@@ -1881,24 +1793,14 @@ export default function DesignControlsPlanPanel({
   const floorPlanCollapsed = isPlanSectionCollapsed("floorPlan");
 
   return (
-    <div className={dark ? "overflow-hidden px-2 pb-2" : undefined}>
-      <FloorPlanImportArrivalNote dark={dark} />
+    <div>
+      <FloorPlanImportArrivalNote />
       {showRoomSetupWizard && (
         <div
           data-testid="plan-tool-palette"
-          className={
-            dark
-              ? "designer-raised overflow-hidden rounded-sm"
-              : "overflow-hidden rounded-sm border border-neutral-200 bg-white"
-          }
+          className="overflow-hidden rounded-sm border border-neutral-200 bg-white"
         >
-          <div
-            className={
-              dark
-                ? "border-b border-white/10 px-3 py-3 text-neutral-100"
-                : "border-b border-neutral-100 px-3 py-3 text-neutral-900"
-            }
-          >
+          <div className="border-b border-neutral-100 px-3 py-3 text-neutral-900">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-base font-semibold">Room setup</div>
@@ -1934,7 +1836,6 @@ export default function DesignControlsPlanPanel({
           {!floorPlanCollapsed && (
             <>
               <ConsumerRoomSetupCard
-                dark={dark}
                 canEdit={canEdit}
                 canEditPlanGeometry={canEditPlanGeometry}
                 hasRooms={hasRooms} roomIsDraft={roomIsDraft}
@@ -2071,7 +1972,7 @@ export default function DesignControlsPlanPanel({
                         onClick: openStartTemplates(PLAN_TEMPLATE_LIBRARY_ACTION_ID),
                       })}
                     </div>
-                    <AddRoomTemplateTiles dark={dark} canEdit={canEdit} measurementUnit={measurementUnit}
+                    <AddRoomTemplateTiles canEdit={canEdit} measurementUnit={measurementUnit}
                       onAddRoomTemplate={onAddRoomTemplate} />
                   </>
                 ),
@@ -2081,17 +1982,11 @@ export default function DesignControlsPlanPanel({
         </div>
       )}
       {showStartPanel && (
-        <div
-          className={
-            dark
-              ? "designer-raised mb-2 rounded-lg p-2.5"
-              : "mb-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2.5"
-          }
-        >
+        <div className="mb-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2.5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className={titleClass}>{hasRooms ? "Add to plan" : "Start your room"}</div>
-              <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+              <div className="mt-1 text-xs text-neutral-500">
                 {hasRooms
                   ? "Add another room, upload a floor plan, or draw by hand."
                   : "Choose a room and size. You can adjust it anytime."}
@@ -2100,11 +1995,7 @@ export default function DesignControlsPlanPanel({
             {showPlanDetails && (
               <button
                 type="button"
-                className={
-                  dark
-                    ? "rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-semibold text-neutral-200"
-                    : "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700"
-                }
+                className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700"
                 data-testid="close-plan-start-workflow"
                 onClick={closePlanStartWorkflow}
               >
@@ -2116,11 +2007,7 @@ export default function DesignControlsPlanPanel({
           {!hasRooms && (
             <div
               data-testid="guided-room-start"
-              className={
-                dark
-                  ? "designer-raised mt-3 rounded-lg p-3"
-                  : "mt-3 rounded-lg border border-neutral-200 bg-white p-3"
-              }
+              className="mt-3 rounded-lg border border-neutral-200 bg-white p-3"
             >
               <div className="grid gap-2">
                 <label className={consumerFieldLabelClass}>
@@ -2166,7 +2053,6 @@ export default function DesignControlsPlanPanel({
                   stepMm={10}
                   keyboardStepMm={50}
                   disabled={!canEditPlanGeometry}
-                  dark={dark}
                   compact
                   testId="guided-room-width-input"
                   onCommit={(valueMm) => onRoomWidthInputChange((valueMm / 1000).toFixed(2))}
@@ -2180,7 +2066,6 @@ export default function DesignControlsPlanPanel({
                   stepMm={10}
                   keyboardStepMm={50}
                   disabled={!canEditPlanGeometry}
-                  dark={dark}
                   compact
                   testId="guided-room-depth-input"
                   onCommit={(valueMm) => onRoomDepthInputChange((valueMm / 1000).toFixed(2))}
@@ -2203,13 +2088,7 @@ export default function DesignControlsPlanPanel({
           )}
 
           <details className="mt-3" open={planStartMode !== "start"}>
-            <summary
-              className={
-                dark
-                  ? "cursor-pointer text-xs font-semibold text-neutral-300"
-                  : "cursor-pointer text-xs font-semibold text-neutral-600"
-              }
-            >
+            <summary className="cursor-pointer text-xs font-semibold text-neutral-600">
               Other ways to start
             </summary>
             <div className="mt-2 grid gap-2">
@@ -2246,13 +2125,7 @@ export default function DesignControlsPlanPanel({
           </details>
 
           {planStartMode === "upload" && !floorPlanUnderlay && (
-            <div
-              className={
-                dark
-                  ? "designer-recessed mt-3 rounded-lg p-3 text-xs text-neutral-300"
-                  : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
-              }
-            >
+            <div className="mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600">
               Upload your floor plan, then trace rooms, doors, and windows over it.
             </div>
           )}
@@ -2279,37 +2152,27 @@ export default function DesignControlsPlanPanel({
                   key={step.label}
                   className={
                     step.active
-                      ? dark
-                        ? "rounded-lg border border-white/15 bg-white/10 px-2 py-2"
-                        : "rounded-lg border border-neutral-900 bg-white px-2 py-2"
-                      : dark
-                        ? "designer-raised rounded-lg px-2 py-2"
-                        : "rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2"
+                      ? "rounded-lg border border-neutral-900 bg-white px-2 py-2"
+                      : "rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2"
                   }
                 >
                   <div className="flex items-center gap-1.5">
                     <span
                       className={
                         step.ready
-                          ? dark
-                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-400/20 text-xs font-bold text-emerald-100"
-                            : "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700"
+                          ? "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700"
                           : step.active
-                            ? dark
-                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-bold text-neutral-950"
-                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white"
-                            : dark
-                              ? "flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-neutral-300"
-                              : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600"
+                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white"
+                            : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600"
                       }
                     >
                       {index + 1}
                     </span>
-                    <span className={dark ? "truncate text-xs font-semibold text-neutral-100" : "truncate text-xs font-semibold text-neutral-900"}>
+                    <span className="truncate text-xs font-semibold text-neutral-900">
                       {step.label}
                     </span>
                   </div>
-                  <div className={dark ? "mt-1 truncate text-xs text-neutral-400" : "mt-1 truncate text-xs text-neutral-500"}>
+                  <div className="mt-1 truncate text-xs text-neutral-500">
                     {step.meta}
                   </div>
                 </div>
@@ -2355,13 +2218,7 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
           <details className="mt-2">
-            <summary
-              className={
-                dark
-                  ? "cursor-pointer text-xs font-semibold text-neutral-300"
-                  : "cursor-pointer text-xs font-semibold text-neutral-600"
-              }
-            >
+            <summary className="cursor-pointer text-xs font-semibold text-neutral-600">
               Measurements
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -2392,13 +2249,9 @@ export default function DesignControlsPlanPanel({
               {measurementChecks.map((check) => (
                 <div
                   key={check.label}
-                  className={
-                    dark
-                      ? "designer-raised flex items-center justify-between gap-2 rounded-lg px-2.5 py-2"
-                      : "flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2"
-                  }
+                  className="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2"
                 >
-                  <span className={dark ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-600"}>
+                  <span className="text-xs font-semibold text-neutral-600">
                     {check.label}
                   </span>
                   <span className={measurementCheckClass(check.ready)}>{check.value}</span>
@@ -2440,7 +2293,7 @@ export default function DesignControlsPlanPanel({
               )}
               <div
                 data-testid="mobile-selected-room-dimensions"
-                className={dark ? "mt-2 grid grid-cols-2 gap-2 border-t border-white/10 pt-2 md:hidden" : "mt-2 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2 md:hidden"}
+                className="mt-2 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2 md:hidden"
               >
                 <MeasurementField
                   label="Width"
@@ -2451,7 +2304,6 @@ export default function DesignControlsPlanPanel({
                   stepMm={10}
                   keyboardStepMm={50}
                   disabled={!canEditPlanGeometry}
-                  dark={dark}
                   compact
                   touchFriendly
                   testId="mobile-room-width-input"
@@ -2466,7 +2318,6 @@ export default function DesignControlsPlanPanel({
                   stepMm={10}
                   keyboardStepMm={50}
                   disabled={!canEditPlanGeometry}
-                  dark={dark}
                   compact
                   touchFriendly
                   testId="mobile-room-depth-input"
@@ -2484,7 +2335,7 @@ export default function DesignControlsPlanPanel({
                     wallSpanMeters={visiblePlanOpeningWallSpanMeters}
                     maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
                     measurementUnit={measurementUnit}
-                    dark={dark} proMode={isDesigner}
+                    proMode={isDesigner}
                     onChange={onUpdateOpeningMetrics}
                   />
                 </div>
@@ -2531,19 +2382,13 @@ export default function DesignControlsPlanPanel({
                   {simplePlanControls ? "Simple planning view." : "Detailed drafting view."}
                 </div>
               </div>
-              <div
-                className={
-                  dark
-                    ? "designer-raised grid grid-cols-2 rounded-lg p-1"
-                    : "grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1"
-                }
-              >
+              <div className="grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1">
                 <button
                   type="button"
                   className={
                     simplePlanControls
                       ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
+                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white"
                   }
                   onClick={() => onSimplePlanControlsChange(true)}
                 >
@@ -2556,7 +2401,7 @@ export default function DesignControlsPlanPanel({
                   className={
                     !simplePlanControls
                       ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white dark:text-neutral-300 dark:hover:bg-white/10"
+                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white"
                   }
                   onClick={() => {
                     if (isDesigner) onSimplePlanControlsChange(false);
@@ -2571,7 +2416,6 @@ export default function DesignControlsPlanPanel({
             <FloorPlanToolStrip
               activeTool={activeFloorPlanTool}
               disabled={!canEdit}
-              dark={dark}
               canAddOpening={hasRooms}
               onSelect={onSelectFloorPlanTool}
               onDrawRoom={onDrawFloorPlanRoom}
@@ -2590,35 +2434,19 @@ export default function DesignControlsPlanPanel({
                 {activeFloorLabel} · {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"}
               </div>
             </div>
-            <span
-              className={
-                dark
-                  ? "rounded-full bg-white/10 px-2 py-1 text-xs font-semibold text-neutral-200"
-                  : "rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-600"
-              }
-            >
+            <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-600">
               {floorOptions.length} level{floorOptions.length === 1 ? "" : "s"}
             </span>
           </div>
 
-          <div
-            className={
-              dark
-                ? "designer-raised mt-3 grid gap-1.5 rounded-lg p-2"
-                : "mt-3 grid gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
-            }
-          >
+          <div className="mt-3 grid gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
             {floorOptions.map((option) => {
               const isActive = option.level === activeFloorLevel;
               return (
                 <div
                   key={option.level}
                   className={
-                    dark
-                      ? `flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
-                          isActive ? "bg-blue-400/15 text-blue-100" : "text-neutral-300"
-                        }`
-                      : `flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
+                    `flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
                           isActive ? "bg-blue-50 text-blue-800" : "text-neutral-600"
                         }`
                   }
@@ -2632,20 +2460,14 @@ export default function DesignControlsPlanPanel({
             })}
           </div>
 
-          <div
-            className={
-              dark
-                ? "designer-raised mt-2 flex items-center justify-between rounded-lg px-3 py-2 text-xs"
-                : "mt-2 flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs"
-            }
-          >
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs">
             <span className={floorFieldLabelClass}>Stacked 3D floors</span>
             <span className={stackedFloorView ? "font-semibold text-blue-600" : progressMetaClass}>
               {stackedFloorView ? "On" : "Off"}
             </span>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3 dark:border-white/10">
+          <div className="mt-3 border-t border-neutral-200/60 pt-3">
             <div className="grid gap-2">
               <div className="grid grid-cols-[1fr_7rem] items-center gap-3">
                 <span className={floorFieldLabelClass}>Interior area</span>
@@ -2660,14 +2482,12 @@ export default function DesignControlsPlanPanel({
                 stepMm={10}
                 keyboardStepMm={50}
                 disabled={!canEditActiveRoomWallHeight}
-                dark={dark}
                 compact
                 hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on ${activeFloorLabel}.`}
                 onCommit={onActiveRoomHeightMmChange}
               />
               <FloorPlanPropertyEvidenceControl
                 evidence={activeRoomWallHeightEvidence}
-                dark={dark}
                 disabled={!canEditActiveRoomWallHeight}
                 testId="plan-panel-floor-wall-height-evidence"
                 onConfirm={(evidence, measurementNote) =>
@@ -2687,7 +2507,6 @@ export default function DesignControlsPlanPanel({
                 stepMm={5}
                 keyboardStepMm={5}
                 disabled={!canEditPlanGeometry}
-                dark={dark}
                 compact
                 onCommit={onActiveRoomWallThicknessMmChange}
               />
@@ -2700,13 +2519,11 @@ export default function DesignControlsPlanPanel({
                 stepMm={5}
                 keyboardStepMm={5}
                 disabled={!canEditActiveRoomSlabThickness}
-                dark={dark}
                 compact
                 onCommit={onActiveRoomSlabThicknessMmChange}
               />
               <FloorPlanPropertyEvidenceControl
                 evidence={activeRoomSlabThicknessEvidence}
-                dark={dark}
                 disabled={!canEditActiveRoomSlabThickness}
                 testId="plan-panel-slab-thickness-evidence"
                 onConfirm={(evidence, measurementNote) =>
@@ -2727,14 +2544,13 @@ export default function DesignControlsPlanPanel({
                 stepMm={1}
                 keyboardStepMm={1}
                 disabled={!canEditPlanGeometry}
-                dark={dark}
                 compact
                 onCommit={onActiveRoomBaseboardDepthMmChange}
               />
             </div>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3 dark:border-white/10">
+          <div className="mt-3 border-t border-neutral-200/60 pt-3">
             <div className={titleClass}>Opacity</div>
             <label className="mt-3 grid grid-cols-[3.5rem_1fr_3.75rem] items-center gap-2">
               <span className={floorFieldLabelClass}>Wall</span>
@@ -2786,7 +2602,7 @@ export default function DesignControlsPlanPanel({
             </label>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3 dark:border-white/10">
+          <div className="mt-3 border-t border-neutral-200/60 pt-3">
             <div className={titleClass}>Ceiling</div>
             <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
               <label className="flex items-center gap-2">
@@ -2832,19 +2648,13 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
           {renderSurfaceMaterialBrowser()}
-            <div
-              className={
-                dark
-                  ? "designer-raised mt-3 rounded-xl p-3"
-                  : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"
-              }
-            >
+            <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+                  <div className="text-xs font-semibold text-neutral-900">
                     Pattern direction
                   </div>
-                  <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
+                  <div className="mt-0.5 text-xs text-neutral-500">
                     {activeFloorRotationDeg} deg
                   </div>
                 </div>
@@ -2870,10 +2680,10 @@ export default function DesignControlsPlanPanel({
               {isDesigner && (
                 <label className="mt-3 block">
                   <div className="flex items-center justify-between gap-3">
-                    <span className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+                    <span className="text-xs font-semibold text-neutral-900">
                       Pattern size
                     </span>
-                    <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                    <span className="text-xs text-neutral-500">
                       {activeFloorScale.toFixed(1)}x
                     </span>
                   </div>
@@ -2899,23 +2709,19 @@ export default function DesignControlsPlanPanel({
       {floorPlanTraceOpeningMode && (
         <div
           data-testid="floor-plan-opening-active-card"
-          className={
-            dark
-              ? "mt-3 rounded-xl border border-emerald-400/20 bg-emerald-400/10 p-3"
-              : "mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3"
-          }
+          className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className={dark ? "text-sm font-semibold text-emerald-100" : "text-sm font-semibold text-emerald-900"}>
+              <div className="text-sm font-semibold text-emerald-900">
                 {floorPlanTraceOpeningKind === "door" ? "Door tool active" : "Window tool active"}
               </div>
-              <div className={dark ? "mt-1 text-xs text-emerald-100/75" : "mt-1 text-xs text-emerald-800"}>
+              <div className="mt-1 text-xs text-emerald-800">
                 {floorPlanUnderlay
                   ? "Pick two points along the same wall. Green means it fits."
                   : "Move near a wall, then click when the preview turns green."}
               </div>
-              <div className={dark ? "mt-1 text-xs font-semibold text-emerald-100/70" : "mt-1 text-xs font-semibold text-emerald-700"}>
+              <div className="mt-1 text-xs font-semibold text-emerald-700">
                 Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
               </div>
             </div>
@@ -2935,11 +2741,7 @@ export default function DesignControlsPlanPanel({
               onChange={(event) =>
                 onFloorPlanTraceOpeningKindChange(event.target.value as RoomOpening2D["kind"])
               }
-              className={
-                dark
-                  ? "designer-control min-w-28 rounded-lg border px-2 py-2 text-sm text-neutral-100"
-                  : "min-w-28 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-sm text-neutral-900"
-              }
+              className="min-w-28 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-sm text-neutral-900"
             >
               <option value="door">Door</option>
               <option value="window">Window</option>
@@ -2992,7 +2794,6 @@ export default function DesignControlsPlanPanel({
           )}
           pdfPageChanging={floorPlanPdfRenderingPage !== null}
           disabled={isClientPreview}
-          dark={dark}
           onPdfPageChange={onFloorPlanPdfPageChange}
           onOpacityChange={onFloorPlanOpacityChange}
           onLockChange={onFloorPlanLockChange}
@@ -3019,7 +2820,6 @@ export default function DesignControlsPlanPanel({
           <RoomConnectionChecklist
             items={roomConnectionChecklistItems} measurementUnit={measurementUnit}
             disabled={isClientPreview}
-            dark={dark}
             variant={isDesigner ? "pro" : "consumer"}
             collapsed={isPlanSectionCollapsed("connections")}
             onCollapsedChange={(collapsed) => setPlanSectionCollapsed("connections", collapsed)}
@@ -3038,11 +2838,7 @@ export default function DesignControlsPlanPanel({
             event.preventDefault();
             closePlanStartWorkflow();
           }}
-          className={
-            dark
-              ? "designer-raised mt-3 rounded-xl p-3"
-              : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
-          }
+          className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
         >
           <h2
             ref={templatePickerHeadingRef}
@@ -3054,7 +2850,6 @@ export default function DesignControlsPlanPanel({
           </h2>
           <div className="mt-3">
             <FloorPlanAddressSearch
-              dark={dark}
               canEdit={canEdit} measurementUnit={measurementUnit}
               onApplyPlanTemplate={onApplyPlanTemplate}
             />
@@ -3062,13 +2857,7 @@ export default function DesignControlsPlanPanel({
         </div>
       )}
       {isDesigner && (
-        <div
-          className={
-            dark
-              ? "designer-raised mt-3 rounded-xl p-3"
-              : "mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
-          }
-        >
+        <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
           <div className={titleClass}>Room setup</div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <label className="flex flex-col gap-1 text-xs font-medium text-neutral-600">

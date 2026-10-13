@@ -167,7 +167,6 @@ const panelModelInput = {
     hasSelectedProduct: true,
   },
   configuration: {
-    designerTheme: false,
     isDesigner: false,
     isClientPreview: true,
   },

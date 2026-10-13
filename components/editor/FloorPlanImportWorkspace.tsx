@@ -14,7 +14,7 @@ type FloorPlanImportWorkspaceProps = {
   request: { file: File; trainingBenchmarkOptIn: boolean } | null;
   choose: FloorPlanUploadChooseState;
   trainingBenchmarkOptIn: boolean;
-  dark: boolean; disabled: boolean; proMode: boolean;
+  disabled: boolean; proMode: boolean;
   onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
 };
@@ -34,7 +34,7 @@ const initialStoredJobId = () => typeof window === "undefined" ? null : readActi
 export default function FloorPlanImportWorkspace({
   request, choose,
   trainingBenchmarkOptIn,
-  dark, disabled, proMode,
+  disabled, proMode,
   onChooseFile, onHistoryConfirmationOpenChange,
   onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
@@ -67,7 +67,7 @@ export default function FloorPlanImportWorkspace({
     setActiveImportJobId(job.id);
   }, []);
 
-  const subtle = dark ? "text-neutral-400" : "text-neutral-500";
+  const subtle = "text-neutral-500";
   const activeRequest=request!==ignoredRequest?request:null;
   const hasActiveImport=Boolean(activeRequest||resumeJobId);
   return (
@@ -77,7 +77,7 @@ export default function FloorPlanImportWorkspace({
     >
       <main className="min-w-0">
         {hasActiveImport && choose.fileProblem ? (
-          <p role="alert" className={`mb-3 text-sm font-semibold ${dark ? "text-red-300" : "text-red-700"}`}>
+          <p role="alert" className="mb-3 text-sm font-semibold text-red-700">
             {choose.fileProblem}
           </p>
         ) : null}
@@ -87,21 +87,17 @@ export default function FloorPlanImportWorkspace({
             file={activeRequest?.file ?? null}
             resumeJobId={activeRequest ? null : resumeJobId}
             trainingBenchmarkOptIn={request?.trainingBenchmarkOptIn ?? false}
-            dark={dark} disabled={disabled} proMode={proMode}
+            disabled={disabled} proMode={proMode}
             onChooseFile={onChooseFile}
             onActiveJobIdChange={recordActiveImportJob}
             onJobUpdate={recordJobUpdate}
           />
         ) : (
-          <FloorPlanUploadChooseStep {...choose} dark={dark} disabled={disabled} onChooseFile={onChooseFile} />
+          <FloorPlanUploadChooseStep {...choose} disabled={disabled} onChooseFile={onChooseFile} />
         )}
       </main>
       <details
-        className={
-          dark
-            ? "designer-recessed mt-4 rounded-xl p-3"
-            : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
-        }
+        className="mt-4 rounded-xl border border-neutral-200 bg-white p-3"
         data-testid="floor-plan-import-secondary-options" data-floor-plan-workspace-history="true"
         open={secondaryOptionsOpen}
         onToggle={(event) => setSecondaryOptionsOpen(event.currentTarget.open)}
@@ -115,11 +111,7 @@ export default function FloorPlanImportWorkspace({
         </p>
         <div className="mt-3 grid min-w-0 items-start gap-3 lg:grid-cols-2">
           <div
-            className={
-              dark
-                ? "designer-raised rounded-lg p-3"
-                : "rounded-lg bg-neutral-50 p-3"
-            }
+            className="rounded-lg bg-neutral-50 p-3"
             data-testid="floor-plan-private-upload-disclosure"
           >
             <div className="text-xs font-semibold">Private by default</div>
@@ -129,11 +121,7 @@ export default function FloorPlanImportWorkspace({
               your floor plan are sent to our AI provider with storage of its
               replies turned off.
             </p>
-            <label
-              className={`mt-3 flex items-start gap-2 text-xs leading-5 ${
-                dark ? "text-neutral-300" : "text-neutral-600"
-              }`}
-            >
+            <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-neutral-600">
               <input
                 type="checkbox"
                 className="mt-1"
@@ -149,7 +137,6 @@ export default function FloorPlanImportWorkspace({
             </label>
           </div>
           <FloorPlanImportHistory
-            dark={dark}
             disabled={disabled}
             activeJobId={activeImportJobId}
             activeJobSnapshot={activeJobSnapshot}

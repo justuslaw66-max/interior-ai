@@ -154,7 +154,6 @@ function buildPresentationFixture({
               access: {
                 isDesigner,
                 isClientPreview,
-                showDesignerTheme: isDesigner,
               },
             },
             state: {
@@ -444,7 +443,7 @@ const furnishing = adaptReadModel(
   buildReadModel({ rooms: [roomA, roomB], viewMode: "3d", editorMode: "adjust" })
 );
 assert.ok(furnishing.state.navigator);
-assert.deepEqual(Object.keys(furnishing.configuration.navigator), ["dark"]);
+assert.equal("navigator" in furnishing.configuration, false, "The navigator takes no configuration: nothing disables it.");
 
 const openingEdits: Parameters<BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"]>[] = [];
 const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, viewMode: "3d" }),

@@ -1,24 +1,8 @@
-type SceneReadyVeilProps = {
-  configuration: {
-    dark: boolean;
-    backgroundColor: string;
-  };
-};
-
-export function SceneReadyVeil({ configuration }: SceneReadyVeilProps) {
+export function SceneReadyVeil() {
   return (
     <div
       data-testid="scene-ready-veil"
-      className={
-        configuration.dark
-          ? "absolute inset-0 z-20 flex items-end justify-center px-4 pb-8 text-neutral-950"
-          : "absolute inset-0 z-20 flex items-end justify-center bg-white px-4 pb-8 text-neutral-950"
-      }
-      style={
-        configuration.dark
-          ? { backgroundColor: configuration.backgroundColor }
-          : undefined
-      }
+      className="absolute inset-0 z-20 flex items-end justify-center bg-white px-4 pb-8 text-neutral-950"
     >
       <div className="w-[min(340px,calc(100vw-2rem))] rounded-lg border border-neutral-200 bg-white/95 px-4 py-3 text-sm font-semibold shadow-lg">
         <div className="flex items-center justify-between gap-4">

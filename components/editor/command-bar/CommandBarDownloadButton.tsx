@@ -4,7 +4,6 @@ import { Download } from "lucide-react";
 import { EDITOR_DOWNLOAD_OPENER_ID } from "@/lib/editor-download-focus";
 
 type CommandBarDownloadButtonProps = {
-  dark: boolean;
   /** Without a handler there is no Download button. */
   onDownload?: () => void;
 };
@@ -13,7 +12,7 @@ type CommandBarDownloadButtonProps = {
  * Download opens pictures or a PDF of the design (audit finding SX2). Phones have no room for it
  * beside Save and Share, so they reach it through More; wide screens show its name.
  */
-export function CommandBarDownloadButton({ dark, onDownload }: CommandBarDownloadButtonProps) {
+export function CommandBarDownloadButton({ onDownload }: CommandBarDownloadButtonProps) {
   if (!onDownload) return null;
   return (
     <button
@@ -23,11 +22,7 @@ export function CommandBarDownloadButton({ dark, onDownload }: CommandBarDownloa
       aria-label="Download"
       aria-haspopup="dialog"
       title="Download pictures or a PDF"
-      className={
-        dark
-          ? "designer-control hidden h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border text-sm font-bold leading-none md:inline-flex xl:w-auto xl:pl-3 xl:pr-3.5"
-          : "hidden h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:inline-flex xl:w-auto xl:pl-3 xl:pr-3.5"
-      }
+      className="hidden h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:inline-flex xl:w-auto xl:pl-3 xl:pr-3.5"
       onClick={onDownload}
     >
       <Download className="h-4 w-4" aria-hidden="true" />

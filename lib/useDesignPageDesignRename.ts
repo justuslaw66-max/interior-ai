@@ -7,7 +7,6 @@ import type { DesignSnapshot } from "@/lib/room-types";
 
 export type UseDesignPageDesignRenameInput = {
   snapshot: DesignSnapshot;
-  dark: boolean;
   runTransaction: (name: string, action: () => void) => void;
   setDesignSnapshot: (snapshot: DesignSnapshot) => void;
   showToast: (message: string) => void;
@@ -19,7 +18,7 @@ export type UseDesignPageDesignRenameInput = {
  */
 export function applyDesignRename(
   value: string,
-  input: Omit<UseDesignPageDesignRenameInput, "dark">
+  input: UseDesignPageDesignRenameInput
 ) {
   const next = cleanDesignTitle(value);
   if (!next || next === resolveDesignTitle(input.snapshot.title)) return false;
@@ -35,7 +34,6 @@ export function useDesignPageDesignRename(input: UseDesignPageDesignRenameInput)
   const title = resolveDesignTitle(input.snapshot.title);
   const dialog: DesignRenameDialogProps = {
     open,
-    dark: input.dark,
     value,
     onValueChange: setValue,
     onCancel: () => setOpen(false),

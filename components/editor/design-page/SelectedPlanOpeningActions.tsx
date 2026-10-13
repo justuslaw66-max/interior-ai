@@ -10,7 +10,6 @@ type SelectedPlanOpeningActionsProps = {
     measurementUnit: PlanMeasurementUnit;
   };
   configuration: {
-    dark: boolean;
     canEdit: boolean;
   };
   actions: {
@@ -31,20 +30,16 @@ export function SelectedPlanOpeningActions({
   return (
     <div
       data-testid="selected-plan-opening-actions" data-touch-area
-      className={
-        configuration.dark
-          ? "designer-work-surface absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs md:flex"
-          : "absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur md:flex"
-      }
+      className="absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur md:flex"
       style={{ maxWidth: "calc(100% - 2rem)" }}
     >
       <span className="font-semibold">
         {state.kind === "door" ? "Door" : "Window"} selected
       </span>
-      <span className={configuration.dark ? "text-neutral-400" : "text-neutral-500"}>
+      <span className="text-neutral-500">
         {state.wall}
       </span>
-      <span className={configuration.dark ? "text-neutral-400" : "text-neutral-500"}>
+      <span className="text-neutral-500">
         Width
       </span>
       <MeasurementField
@@ -56,7 +51,6 @@ export function SelectedPlanOpeningActions({
         stepMm={50}
         keyboardStepMm={50}
         disabled={!configuration.canEdit}
-        dark={configuration.dark}
         compact
         touchFriendly
         hideLabel
@@ -67,11 +61,7 @@ export function SelectedPlanOpeningActions({
       <button
         type="button"
         data-testid="selected-plan-opening-delete"
-        className={
-          configuration.dark
-            ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold"
-            : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
-        }
+        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
         onClick={actions.deleteOpening}
       >
         Delete

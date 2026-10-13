@@ -24,8 +24,8 @@ function Harness() {
       onSourcePoint={(point) => setPoints((current) => current.length >= 2 ? [point] : [...current, point])} onDocumentChange={change} />
     <FloorPlanScaleReviewPanel document={document} floorId="apartment" sourceId="authored-source" page={page}
       calibration={document.floors[0].calibrations[0]} pickingScale={picking} scalePoints={points}
-      onPickingScaleChange={setPicking} onScalePointsChange={setPoints} onChange={change} onError={setError} openByDefault dark={false} disabled={false} />
-    <FloorPlanOrientationReviewPanel document={document} onChange={change} onError={setError} dark={false} disabled={false} />
+      onPickingScaleChange={setPicking} onScalePointsChange={setPoints} onChange={change} onError={setError} openByDefault disabled={false} />
+    <FloorPlanOrientationReviewPanel document={document} onChange={change} onError={setError} disabled={false} />
     {error && <p role="alert">{error}</p>}
     <output data-testid="fixture-document">{JSON.stringify(document)}</output>
     <output data-testid="fixture-readiness">{JSON.stringify(collectScaleMeasurementIssues(document))}</output>

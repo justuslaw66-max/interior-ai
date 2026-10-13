@@ -35,7 +35,7 @@ type FloorPlanImportReviewPanelProps = {
   retryingDetection?: boolean;
   onSubmit: (reviewIssues?: FloorPlanReviewIssue[]) => void;
   submitting: boolean;
-  disabled?: boolean; proMode?: boolean; dark?: boolean;
+  disabled?: boolean; proMode?: boolean;
 };
 
 function issuePrerequisite(
@@ -123,7 +123,7 @@ export default function FloorPlanImportReviewPanel({
   retryingDetection = false,
   onSubmit,
   submitting,
-  disabled = false, proMode = false, dark = false,
+  disabled = false, proMode = false,
 }: FloorPlanImportReviewPanelProps) {
   const floor = candidate.floors[0];
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
@@ -133,10 +133,8 @@ export default function FloorPlanImportReviewPanel({
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
   if (!floor) return null;
   const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
+  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
   const unresolvedCritical = issues.filter(isFloorPlanMvpBlockingIssue);
   const blockingPrerequisites = unresolvedCritical
     .map((issue) => issuePrerequisite(issue, candidate, entranceOpeningId))
@@ -341,32 +339,14 @@ export default function FloorPlanImportReviewPanel({
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <span
-            className={
-              dark
-                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
-                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
-            }
-          >
+          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
             {namedRooms.length} room{namedRooms.length === 1 ? "" : "s"}
           </span>
-          <span
-            className={
-              dark
-                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
-                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
-            }
-          >
+          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
             {floor.dimensions.length} measurement
             {floor.dimensions.length === 1 ? "" : "s"}
           </span>
-          <span
-            className={
-              dark
-                ? "rounded-full bg-white/10 px-3 py-1.5 font-semibold"
-                : "rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm"
-            }
-          >
+          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
             {floor.openings.length} opening
             {floor.openings.length === 1 ? "" : "s"}
           </span>
@@ -374,11 +354,7 @@ export default function FloorPlanImportReviewPanel({
       </div>
       {needsManualRecovery ? (
         <div
-          className={
-            dark
-              ? "mt-4 rounded-xl border border-amber-300/20 bg-amber-300/10 p-4"
-              : "mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4"
-          }
+          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4"
           data-testid="floor-plan-import-simple-recovery"
         >
           <div className="text-sm font-semibold">
@@ -396,11 +372,7 @@ export default function FloorPlanImportReviewPanel({
             {onRetryDetection ? (
               <button
                 type="button" data-floor-plan-workspace-focus="primary"
-                className={
-                  dark
-                    ? "designer-control-active rounded-lg border px-4 py-2 text-xs font-semibold"
-                    : "rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-700"
-                }
+                className="rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-700"
                 disabled={disabled || submitting || retryingDetection}
                 onClick={onRetryDetection}
               >
@@ -414,11 +386,7 @@ export default function FloorPlanImportReviewPanel({
             {onChooseFile ? (
               <button
                 type="button"
-                className={
-                  dark
-                    ? "designer-control rounded-lg border px-4 py-2 text-xs font-semibold"
-                    : "rounded-lg border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold hover:bg-neutral-50"
-                }
+                className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold hover:bg-neutral-50"
                 disabled={disabled || submitting}
                 onClick={onChooseFile}
               >
@@ -446,17 +414,10 @@ export default function FloorPlanImportReviewPanel({
         consumerMode proMode={proMode}
         manualToolsOpen={manualToolsOpen}
         onManualToolsOpenChange={setManualToolsOpen}
-        dark={dark}
         disabled={disabled}
       />
       {namedRooms.length > 0 ? (
-        <details
-          className={
-            dark
-              ? "designer-recessed mt-4 rounded-xl p-3"
-              : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
-          }
-        >
+        <details className="mt-4 rounded-xl border border-neutral-200 bg-white p-3">
           <summary className="cursor-pointer text-xs font-semibold">
             Edit room names (optional)
           </summary>
@@ -479,13 +440,7 @@ export default function FloorPlanImportReviewPanel({
           </div>
         </details>
       ) : null}
-      <details
-        className={
-          dark
-            ? "designer-recessed mt-3 rounded-xl p-3"
-            : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"
-        }
-      >
+      <details className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
         <summary className="cursor-pointer text-xs font-semibold">
           Optional plan details
         </summary>
@@ -522,7 +477,6 @@ export default function FloorPlanImportReviewPanel({
                 </label>
                 <FloorPlanPropertyEvidenceControl
                   evidence={evidence}
-                  dark={dark}
                   disabled={disabled}
                   testId={`import-review-${property}-evidence`}
                   onConfirm={(nextEvidence, note) =>
@@ -602,17 +556,12 @@ export default function FloorPlanImportReviewPanel({
         ) : null}
         <FloorPlanOptionalConfigurationPanel
           document={candidate}
-          dark={dark}
           disabled={disabled}
           compact
         />
       </details>
       <details
-        className={
-          dark
-            ? "designer-recessed mt-3 rounded-xl p-3"
-            : "mt-3 rounded-xl border border-neutral-200 bg-white p-3"
-        }
+        className="mt-3 rounded-xl border border-neutral-200 bg-white p-3"
         data-testid="floor-plan-import-technical-details"
       >
         <summary className="cursor-pointer text-xs font-semibold">
@@ -634,11 +583,7 @@ export default function FloorPlanImportReviewPanel({
             return (
               <div
                 key={issue.id}
-                className={
-                  dark
-                    ? "flex gap-2 rounded-md bg-white/5 p-2 text-xs"
-                    : "flex gap-2 rounded-md bg-neutral-50 p-2 text-xs"
-                }
+                className="flex gap-2 rounded-md bg-neutral-50 p-2 text-xs"
               >
                 <input
                   aria-label={`Resolve ${issue.message}`}
@@ -709,13 +654,7 @@ export default function FloorPlanImportReviewPanel({
         </div>
       </details>
       {!needsManualRecovery ? (
-        <div
-          className={
-            dark
-              ? "designer-recessed mt-4 rounded-xl p-4"
-              : "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"
-          }
-        >
+        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
           <div className="text-sm font-semibold">Looks like your floor plan?</div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             Continue to run the final check. Your current design will
