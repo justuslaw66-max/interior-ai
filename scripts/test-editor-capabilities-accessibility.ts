@@ -216,6 +216,8 @@ for (const relativePath of [
   "components/editor/design-page/PlanTemplateChoiceDialog.tsx",
   "components/editor/design-page/CloudSaveConflictDialog.tsx",
   "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
+  // AX5: the Lighting drawer is the shared dialog's sheet.
+  "components/editor/design-page/LightingSettingsDrawer.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(

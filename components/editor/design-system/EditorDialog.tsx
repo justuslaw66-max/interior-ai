@@ -20,6 +20,8 @@ export type EditorDialogProps = {
   dark?: boolean;
   forceLight?: boolean;
   testId?: string;
+  /** A test id for the panel itself, where a test measures the sheet rather than its layer. */
+  panelTestId?: string;
   dialogId?: string;
   closeButtonTestId?: string;
   closeButtonId?: string;
@@ -36,7 +38,8 @@ export type EditorDialogProps = {
   /** On by default: the page behind doesn't scroll. */
   lockBodyScroll?: boolean;
   waitForEntryTransition?: boolean;
-  placement?: "center" | "right";
+  /** Centred, or a sheet: from the bottom on phones and down the right side from sm (AX5). */
+  placement?: EditorDialogPlacement;
   /** The layer's z-index class; z-50 unless the dialog must sit above other overlays. */
   layerClassName?: string;
   /** Set while the dialog's action runs. */
@@ -47,6 +50,23 @@ export type EditorDialogProps = {
   contentClassName?: string;
   footerClassName?: string;
 };
+
+export type EditorDialogPlacement = "center" | "sheet";
+
+/**
+ * Where the panel sits. A sheet dims the page less, so what it adjusts (Lighting's scene) stays
+ * readable behind it.
+ */
+function getDialogPlacementClasses(placement: EditorDialogPlacement) {
+  if (placement === "sheet") return {
+    layer: "bg-black/30 backdrop-blur-[1px]",
+    panel: "absolute inset-x-0 bottom-0 max-h-[85vh] max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t p-5 shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[25rem] sm:rounded-none sm:border-l sm:border-t-0 sm:p-6",
+  };
+  return {
+    layer: "items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]",
+    panel: "w-full max-w-md rounded-2xl border p-5 shadow-2xl",
+  };
+}
 
 function getDialogThemeClasses(dark: boolean, forceLight: boolean) {
   if (dark) return {
@@ -113,7 +133,7 @@ export function EditorDialog({
   showCloseButton = true,
   dark = false,
   forceLight = false,
-  testId, dialogId,
+  testId, panelTestId, dialogId,
   closeButtonTestId, closeButtonId, closeButtonClassName = "",
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
@@ -133,6 +153,7 @@ export function EditorDialog({
   const internalCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = providedCloseButtonRef ?? internalCloseButtonRef;
   const themeClasses = getDialogThemeClasses(dark, forceLight);
+  const placementClasses = getDialogPlacementClasses(placement);
   const requestClose = useEditorDialogLifecycle({
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
     returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
@@ -148,9 +169,7 @@ export function EditorDialog({
     <div
       ref={dialogRef}
       id={dialogId} tabIndex={-1}
-      className={`fixed inset-0 ${layerClassName} flex items-center bg-black/45 backdrop-blur-[1px] outline-hidden motion-reduce:transition-none ${
-        placement === "right" ? "justify-end p-0" : "justify-center p-4"
-      } ${overlayClassName}`}
+      className={`fixed inset-0 ${layerClassName} flex outline-hidden motion-reduce:transition-none ${placementClasses.layer} ${overlayClassName}`}
       data-testid={testId} data-editor-dialog-state="mounting"
       role={role}
       aria-modal="true"
@@ -169,8 +188,8 @@ export function EditorDialog({
     >
       <div
         ref={panelRef}
-        tabIndex={-1} data-editor-dialog-state="mounting"
-        className={`w-full max-w-md rounded-2xl border p-5 shadow-2xl outline-hidden transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
+        tabIndex={-1} data-editor-dialog-state="mounting" data-testid={panelTestId}
+        className={`${placementClasses.panel} outline-hidden transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
       >
         <div className={`flex items-start justify-between gap-4 ${headerClassName}`}>
           <div className="min-w-0">

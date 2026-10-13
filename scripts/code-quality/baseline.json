@@ -1684,12 +1684,6 @@
         "maximum": 17
       }
     },
-    "components/editor/design-page/LightingSettingsDrawer.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 125
-      }
-    },
     "components/editor/design-page/LocalBackupRecoveryDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1817,7 +1811,7 @@
     "components/editor/design-system/EditorDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 100
+        "maximum": 99
       }
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -1859,7 +1853,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 124
+        "maximum": 123
       }
     },
     "components/editor/EditorToolRail.tsx": {

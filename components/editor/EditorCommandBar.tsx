@@ -219,7 +219,6 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
             viewMode === "3d"
           }
           dark={dark}
-          returnFocusRef={moreButtonRef}
           onClose={closeLightingSettings}
         >
           {lightingSettingsSlot}
