@@ -1,0 +1,455 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-vein/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip (17954619 bytes, sha256 353197fb76e5a8142027a3c3b5126b0b43f55c561b438a6e8b9fdcd9c24798d0).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x90",
+   "item_code": "0007180",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-vein/pf60007180-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 900
+   },
+   "swatch": "0007180_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    6
+   ],
+   "duplicates_note": "picture 6 (NAVONA) is picture 7 (ANTIQVA, the export of the page's other pictures) again, exported anew (image matching), so it is used once",
+   "used_by": "floor gardenia-flooring-plein-air-travertine-honey-vein-0007180-60x90-r11",
+   "faces": [
+    {
+     "file": "0007180_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 31374,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "aa4c211dca11eb9485d766a34f31606c6ed9a5f56c2f5b3de8259b10ce5fd766",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 1 (view_01)",
+      "name": "ANTIQVA HONEY VEIN 60X90_01",
+      "id": "e5205602-98dd-4ec4-815b-efe4960d16f7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0007180_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 24022,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "6376bdaa9ece0bd563cab756eee91458219cc9d4e5590741f891c2574a74ddf6",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 2 (view_02)",
+      "name": "ANTIQVA HONEY VEIN 60X90_02",
+      "id": "ee54c26e-27af-49b2-930a-5405722185c0",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0007180_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 27378,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "ce83733270f9a17f67673d4a41cd6a35c6f7cd86d6c8f1d4d970f16a79552ed7",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 3 (view_03)",
+      "name": "ANTIQVA HONEY VEIN 60X90_03",
+      "id": "e897cea1-7bdc-4cd4-bc48-906703d62c9d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0007180_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 36508,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "c3497c95c6bf11cb5c23b4a781167a08cef25348d941f4e96650a77d2dd923ac",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 4 (view_04)",
+      "name": "ANTIQVA HONEY VEIN 60X90_04",
+      "id": "733d3ed1-5998-4a62-8ad6-52c251e9147c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0007180_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 31654,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "7a06ad054abefe73ed4071da3492aacfdfe5a6876d159c8003b825ff8d37379e",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 5 (view_05)",
+      "name": "ANTIQVA HONEY VEIN 60X90_05",
+      "id": "ec4f263f-8d1a-4c66-b5e9-7891022cd726",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0007180_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 25656,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_6 (2).jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "232c0607fb0980845bc4aa41e360228f438575e4c50f8e059747e1d41ab5fffc",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 7 (view_06)",
+      "name": "ANTIQVA HONEY VEIN 60X90_06",
+      "id": "d76356da-f195-45bf-b80b-68e3005bb789",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0007180_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 30278,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "f39c1f73f682992128ce1db2c447d91e49cadf5be88cab1199a1a34a92998a4e",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 8 (view_07)",
+      "name": "ANTIQVA HONEY VEIN 60X90_07",
+      "id": "04ee8eb3-3399-485b-a295-faeec17e1841",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0007180_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 30658,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "bf3321a7aa1f80b0487890a438a75e195d6abf25fbcb871f632c97036bfe38fd",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 9 (view_08)",
+      "name": "ANTIQVA HONEY VEIN 60X90_08",
+      "id": "c01a0338-123f-48d8-a3d9-a2da6935547d",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0007180_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 37274,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X90 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "f6e64ac6d68b9024329a9bf388cfce81327c102433532211e9c05bf3052e8a0f",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 10 (view_09)",
+      "name": "ANTIQVA HONEY VEIN 60X90_09",
+      "id": "99fc9d90-c257-48b4-8b8f-119fb67dacf3",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012104",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-vein/pf60012104-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0012104_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-travertine-honey-vein-0012104-60x60-r11",
+   "faces": [
+    {
+     "file": "0012104_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20488,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "47abdd7d1b9d1b577ce34c19e8a74a2908a05bdc36f21cfe9d7f4d187b457a41",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "ANTIQVA HONEY VEIN 60X60_01",
+      "id": "1e80e731-632a-4c03-b437-ac07d829a452",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012104_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15262,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "a9ec1f5836cf754d61860c1fed36731f5729ddc305f1dd9dd3336e23613c589b",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2 (view_02)",
+      "name": "ANTIQVA HONEY VEIN 60X60_02",
+      "id": "f1ccaa64-04ce-47a5-9aaa-b2e9690c39a5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012104_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18422,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d2bb8f3209487b32c5daf8a23e3189fad1e1fadfc7aca57767e749e44b76ad47",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_03)",
+      "name": "ANTIQVA HONEY VEIN 60X60_03",
+      "id": "07fc871f-10c5-4a65-a64b-5c7644d3e647",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012104_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24956,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "99a5928ec12e1f1cce5751bc9d2f0891390d4c6d47a3ffc4539e01b903549b95",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4 (view_04)",
+      "name": "ANTIQVA HONEY VEIN 60X60_04",
+      "id": "beb415b4-ac60-4861-9d2c-54d9a3405fb6",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012104_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21432,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "46c5bbc99160ebd4b4a5cdd8244502e01739fcabbd58b440a5afe8b23f54f7fb",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5 (view_05)",
+      "name": "ANTIQVA HONEY VEIN 60X60_05",
+      "id": "a0432c00-e780-4509-8631-66aebc1102e2",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012104_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16578,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e0ffb68aa4c15e52f60fcac539bfbaf83c084097a3a9da70a4d94719da90cdbd",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6 (view_06)",
+      "name": "ANTIQVA HONEY VEIN 60X60_06",
+      "id": "59d778b0-8b22-45bb-acbe-b72d2594a6bc",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012104_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19258,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6482c747013e12b4828ac70914c3ad5a1ebe075410c369647704d58eac87ed08",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7 (view_07)",
+      "name": "ANTIQVA HONEY VEIN 60X60_07",
+      "id": "699c6784-4268-44de-9302-5527048bad85",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012104_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24748,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY VEIN - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY VEIN - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0bb3f9c4a361f321dab4e2502061564a4fd839c3f648d3da161faf2a9aedcb37",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8 (view_09)",
+      "name": "ANTIQVA HONEY VEIN 60X60_09",
+      "id": "faf0d047-ed3c-4e3b-98bb-b8777a6e3b71",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

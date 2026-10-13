@@ -1,0 +1,379 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - BELGIAN STONE SAND - minimali.zip (12397170 bytes, sha256 d7698c7daa9ebdf8b3485932227ddb32705269f7e0bae2eb2640a89518337037).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012110",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-sand/pf60012110-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012110_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-belgian-stone-sand-0012110-80x80-r11",
+   "faces": [
+    {
+     "file": "0012110_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 54186,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "eb52d12ac1205c3c6ce34bbf2bdcc5bcc2f5409b53b8f77d6e6fe5d9e6c5bf22",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "SOUL SAND 80x80_01",
+      "id": "5344c1b5-78ef-4e40-8d42-3a74d1fa910f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012110_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47508,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "c2fdd36b5069c868280534cb891f97986820057d4ad9a55ddcdba5bcd0c08dbc",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2 (view_02)",
+      "name": "SOUL SAND 80x80_02",
+      "id": "a825db38-6fce-4fbe-b5a8-31d2649d002d",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012110_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 54476,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7f84d581cfae6bdc0330ab4bf9979378419863b4fac4f77ccd02296be3f8500e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3 (view_03)",
+      "name": "SOUL SAND 80x80_03",
+      "id": "6e20e284-0f37-468b-b305-12a50755d454",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012110_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 42284,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "cd0b1c5d0d49e5a872c689e951cd52512d765d9e522fb1152e3408f7077f8969",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4 (view_04)",
+      "name": "SOUL SAND 80x80_04",
+      "id": "9b1382a7-af52-4adf-afd1-3c8abfe72f07",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012110_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 53836,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6ac511c2e1e6d35abe40057ae103772ddab565d9cc2c174d3bd07ecfdc45a6ed",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5 (view_05)",
+      "name": "SOUL SAND 80x80_05",
+      "id": "b163993f-9593-45b5-b14e-6c88a9e3bc21",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012110_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41282,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "8d2c90bb20c0a65a40b96673f8e6cad87cbd7b10f75bd8e0d8f5f0dcc5c73d3f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6 (view_06)",
+      "name": "SOUL SAND 80x80_06",
+      "id": "f9d44190-b83a-4a7b-b597-3251461e5404",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012110_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 60632,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE SAND - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6f7d59d65113f6c0e263335f4d1530d237e8d8ac7310592d0bb3a81836819310",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7 (view_07)",
+      "name": "SOUL SAND 80x80_07",
+      "id": "a9afc62f-4f14-487e-b8a3-cc280a42a1e4",
+      "site_position": 7
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0014527",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-sand/pf60014527-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0014527_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-belgian-stone-sand-0014527-60x60-r11",
+   "faces": [
+    {
+     "file": "0014527_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25010,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "51e5dcb11b5f3c1d9fa179037749c4765e228e68f230e638ed57cb48a872c3e7",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_01",
+      "id": "cf2fe8ac-c8d4-4775-9130-9875e295b130",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014527_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21960,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "406e68453486d45044e029c3e23266644aab140fc6a8a00f608e409e4e18ffd9",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_02",
+      "id": "26b6c388-b9c8-4494-9269-5591ea9b5646",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0014527_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28582,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7ce8da6d7d45c11b9244f83ad330174bbb6aa7fbe52e385a034f15853c2dec5b",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_07",
+      "id": "0984b94f-aa5a-4c74-b691-fec289535682",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0014527_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25234,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ace18de5f7e912e8c40828ddad6da1f9278d51b4f146304652ee231f0f693a38",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_03",
+      "id": "94c861cc-7203-4613-a512-43f5a53cf723",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0014527_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25442,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e24feb9c8f7d3ce1c4d09ff8886a43ca74666eef2fd6a1d6b1f5dcfcee118ec1",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_05",
+      "id": "079070c2-475b-41fa-8449-521abf9a475b",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0014527_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18956,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7c1071b52a511540f81fd457944d590452317c7259fc58fff4025b730e7fe2da",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_04",
+      "id": "0a8814eb-7fd9-4ccf-8b22-298b5214d9ae",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0014527_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18780,
+     "source_zip": "PLEIN AIR - BELGIAN STONE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE SAND - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7aad985561383eeb1525059600cf6043b82b208b5409fbad090e2efbe7c37eb3",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7",
+      "name": "BELGIAN STONE SAND 60X60 R11_20MM_06",
+      "id": "62e52b66-a5b9-4f7e-863f-86e653290110",
+      "site_position": 7
+     }
+    }
+   ]
+  }
+ ]
+}

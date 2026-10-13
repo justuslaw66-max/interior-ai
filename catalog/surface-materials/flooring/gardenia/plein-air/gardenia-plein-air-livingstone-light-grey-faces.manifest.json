@@ -1,0 +1,148 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-light-grey/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip (11570153 bytes, sha256 de96ebe4cec904db0cf35c7730c8d6d6725875511e97266d55b0855ef29e60ad).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0020646",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-light-grey/pf60020646-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0020646_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-livingstone-light-grey-0020646-80x80-r11",
+   "faces": [
+    {
+     "file": "0020646_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 53440,
+     "source_zip": "PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE LIGHT GREY - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c961a0ef8490a0a975aa51e3450fc83997134360a31cdce5a008fdbe03f3942c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "LIVINGSTONE LIGHT GREY 80X80 R11_20 MM_01",
+      "id": "63b3d7f7-6c46-4b9b-b18b-f6714c3c922b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020646_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52468,
+     "source_zip": "PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE LIGHT GREY - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6944b8ca52889efd85be8f45965a1911b604ff19bf08728c9e3b69735b81c59a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "LIVINGSTONE LIGHT GREY Y 80X80 R11_20 MM_04",
+      "id": "28d2b95d-d5e3-4a16-8866-4a30ce00dccb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020646_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 52468,
+     "source_zip": "PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE LIGHT GREY - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "746577552ded105c8e9124e0a387066596e1ce738e9559b1d4f305ef35bad567",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "LIVINGSTONE  LIGHT GREY  80X80 R11_20 MM_02",
+      "id": "57c4e61a-e52c-4015-9011-3bcac1d3eeae",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020646_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47356,
+     "source_zip": "PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE LIGHT GREY - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "127f0b54353cc82a46a9c63d2845c93a24479d20f5dba64e91b1c2e7ea4f0e41",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "LIVINGSTONE LIGHT GREY  80X80 R11_20 MM_05",
+      "id": "ef643d64-763e-4ed0-9378-be1094e26cab",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020646_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41400,
+     "source_zip": "PLEIN AIR - LIVINGSTONE LIGHT GREY - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE LIGHT GREY - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b08a50c662166d1e288d0a2fa9807967ef2cea1b8291f038411adee669a40e5a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "LIVINGSTONE LIGHT GREY  80X80 R11_20 MM_03",
+      "id": "7dd5ec1d-3c4a-464b-a3fa-e296faf82d3b",
+      "site_position": 5
+     }
+    }
+   ]
+  }
+ ]
+}

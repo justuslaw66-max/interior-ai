@@ -1,0 +1,634 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip (31394142 bytes, sha256 df2709b031e547c89f17261543a80f1befb1fd41edf9bcb72eaa96cf0e48a34c).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012106",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/pf60012106-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012106_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-travertine-honey-cross-0012106-80x80-r11",
+   "faces": [
+    {
+     "file": "0012106_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31854,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "298deb7131f997752403b61ff84de8efc1c78ea686b5843ed66729cd8064595b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_01",
+      "id": "ca80f441-fbb9-43e0-89e4-2b796cde21f0",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012106_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36322,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c0d4782ea8a968dd19e8a8e5afd0f7be5dc2f1a8394899bea206e4ae6c795186",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_02",
+      "id": "414978dc-a6c5-4e9f-b9c3-fa52fc90daa2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012106_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29242,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ca3d5d6621f4aecfae70352a27d0886a8ca887825d7725e12fe8fbffa834b979",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_04",
+      "id": "ba16e00c-803b-42fe-8668-efbc43f1f7d5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012106_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34754,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "32b36f8c16fd3fe02142800d463146c3f579c4710035b6efbf81dafd98d4af23",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_06",
+      "id": "3c935cb8-7402-4158-ab7f-acee2ff099a2",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012106_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33224,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5f64851ff40781479c0f4000aab5d0f89e23be0b01d917aba428790b56e2813b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_05",
+      "id": "ae9e353d-5911-4e83-930e-febe4c43e3e6",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012106_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32170,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "346b9fac1e35e59ace561e7b5bf5182abba6e52dcd777cae5b879c4cd51d9565",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "TRAVERTINE HONEY CROSS 80X80 R11_20MM_03",
+      "id": "f4a04629-e54c-4846-8ddf-d2f8eb6a02f4",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x90",
+   "item_code": "0007181",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/pf60007181-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 900
+   },
+   "swatch": "0007181_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-travertine-honey-cross-0007181-60x90-r11",
+   "faces": [
+    {
+     "file": "0007181_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 38974,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "5a4e804afbe91186f81873674afcc6448119555a12907d3c59eb35868a420645",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 1 (view_01)",
+      "name": "ANTIQVA HONEY CROSS 60X90_01",
+      "id": "b2a32b6c-fb94-41d6-bd17-eb6b1b4623b2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0007181_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 41934,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "9ca372cd2313b2ac6923b176c28ed5d4e8fdceeac51ddd8ae01be51332cc5cc3",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 2 (view_02)",
+      "name": "ANTIQVA HONEY CROSS 60X90_02",
+      "id": "8719bdb8-d054-4d66-9518-a812b0c76f59",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0007181_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 35126,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "62556957f706188416c8356763a5b4c0309f6d01af8a7924b9cfd9e519ad5064",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 3 (view_03)",
+      "name": "ANTIQVA HONEY CROSS 60X90_03",
+      "id": "889d6a40-63c9-4197-93ea-555d5641a5be",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0007181_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 30360,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "c6fedc99be76165845eb030f6d8a1ebce0eeeb9a4cce59f86072afca4480d8ef",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 4 (view_04)",
+      "name": "ANTIQVA HONEY CROSS 60X90_04",
+      "id": "2f584971-b9d0-4323-8201-acdfb363b915",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0007181_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 38156,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "ee8f207b3da5be1f806d71c0f1ead857ca0dbd015dbdc661d150f5d09135ec95",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 5 (view_05)",
+      "name": "ANTIQVA HONEY CROSS 60X90_05",
+      "id": "7ecc8ce0-fcda-497e-a91d-617ca7d5b243",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0007181_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 34154,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "e5683fddd6c5fa4232076342d87180a7ac845c5e9c8e13aed05439e46eed98f9",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 6 (view_06)",
+      "name": "ANTIQVA HONEY CROSS 60X90_06",
+      "id": "52e2abb1-eb12-448d-9474-6375b6bf7ab7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0007181_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 35954,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "996dd317bd6d0f03c1fc6b0c53278bfa719805d7f5a8fb1465eae12e52aa3377",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 7 (view_07)",
+      "name": "ANTIQVA HONEY CROSS 60X90_07",
+      "id": "40ab9227-90f8-4e52-9e1e-5c9be9313acc",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0007181_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 40098,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "2e0a659da5c1e42a83589775133a99218589135087b94e3a434b8e42d4c93d75",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 8 (view_08)",
+      "name": "ANTIQVA HONEY CROSS 60X90_08",
+      "id": "d6ae7187-cea9-4972-b00d-d14e9b8df182",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0007181_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 43664,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X90 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "632edaa9045fb2dc449cb8032c65064a2da19334107e7b9ac1393d6e28b64799",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 9 (view_09)",
+      "name": "ANTIQVA HONEY CROSS 60X90_09",
+      "id": "872ea8aa-30fa-4c44-8984-100d45a6311b",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012103",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/pf60012103-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0012103_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-travertine-honey-cross-0012103-60x60-r11",
+   "faces": [
+    {
+     "file": "0012103_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27236,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ca2614d25f7d8cbc4ae9e023edf5fbea373ead4b8d47458d1521c6b6c22c8815",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "ANTIQVA HONEY CROSS 60X60_01",
+      "id": "bba4bd7a-7444-42c0-9cbd-b4d5d678eae5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012103_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27102,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e398f80237e47067991d96750ba1ddbba1eece0fd104d5f4159c18a229a529f7",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2 (view_02)",
+      "name": "ANTIQVA HONEY CROSS 60X60_02",
+      "id": "a4a69b9f-32ae-4b9c-842c-d02d6249fad3",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012103_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 22890,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "06ba487c7ea94ee087f791e78ea68e0c2c52ffa1e2b6de59a25e9e8be09ab540",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_03)",
+      "name": "ANTIQVA HONEY CROSS 60X60_03",
+      "id": "5856fc88-cc94-4ecc-8615-22d730c38d8b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012103_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19138,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "85df47f18514debb84ceec5464194a2fbe4fa5415af48d9d14b02b8bfdc7a6c7",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4 (view_04)",
+      "name": "ANTIQVA HONEY CROSS 60X60_04",
+      "id": "8b1f8bd4-3c08-47d8-9b5d-05f96cc268c0",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012103_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26428,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e5cba3ae1c760ccdf5179c48227a36223b55d4f0ab096d8765ef765ff15011ff",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5 (view_05)",
+      "name": "ANTIQVA HONEY CROSS 60X60_05",
+      "id": "814ffa4d-72e6-41ee-85ba-900989d6dfd7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012103_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 21610,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "4b16641fffe60c1db12bf7d1e14ac3082ca78bc4fa0e96c4d3b3c8c0e7c0c990",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6 (view_06)",
+      "name": "ANTIQVA HONEY CROSS 60X60_06",
+      "id": "ddcec3a6-773a-4c4e-965e-295b949aaf87",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012103_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24744,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "73d7edb5f8c929dc1b77baba70c334f573a84f16e77f191d33b72b6995304fbe",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7 (view_07)",
+      "name": "ANTIQVA HONEY CROSS 60X60_07",
+      "id": "87b292a0-ca8f-443f-89e6-5a85763a3019",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012103_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25750,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1953b05dc30f7404dc72be75645918b95cf3804ee6533584bf0de733b6185b14",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8 (view_08)",
+      "name": "ANTIQVA HONEY CROSS 60X60_08",
+      "id": "f0387558-fe74-46dc-9a21-9d5640be2216",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012103_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31160,
+     "source_zip": "PLEIN AIR - TRAVERTINE HONEY CROSS - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - TRAVERTINE HONEY CROSS - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e191e728585186e04039ca491024abf92b8ac7ce8886e83a3a1b67efd6361013",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9 (view_09)",
+      "name": "ANTIQVA HONEY CROSS 60X60_09",
+      "id": "4a3a22e0-dbca-4795-aedf-f312c9081770",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}
