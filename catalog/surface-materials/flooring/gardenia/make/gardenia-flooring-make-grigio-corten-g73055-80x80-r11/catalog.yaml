@@ -45,6 +45,7 @@ classification:
     - kitchen
     - bathroom
     - hallway
+    - balcony
     - commercial
     - hospitality
 physical_specs:
