@@ -1,18 +1,28 @@
 import { SlidersHorizontal } from "lucide-react";
+import { CATALOG_FILTER_POPOVER_ID } from "./CatalogFilterDrawer";
+
+/** Filters' id: closing the filter popover returns focus here (UX AX5). */
+export const CATALOG_FILTERS_TOGGLE_ID = "catalog-filters-toggle";
 
 type Props = {
   onToggleDrawer: () => void;
   activeFilterCount?: number;
+  open?: boolean;
 };
 
 export default function CatalogFiltersBar({
   onToggleDrawer,
   activeFilterCount = 0,
+  open = false,
 }: Props) {
   return (
     <div className="flex min-w-0 items-center gap-2">
       <button
+        id={CATALOG_FILTERS_TOGGLE_ID}
         type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={open ? CATALOG_FILTER_POPOVER_ID : undefined}
         onClick={onToggleDrawer}
         className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
       >
