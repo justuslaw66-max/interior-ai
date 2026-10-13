@@ -475,10 +475,12 @@ assert.ok(
   ),
   "only Make's mosaics keep their previews"
 );
+// Beige's and Mint's 60x120 and 60x60 R11 (ABK's Plein Air items, named R11 on 13 Oct 2026) are floor-only.
+const falaiseOutdoor = ["120x120 Nat", "60x120 Nat", "60x120 R11", "80x80 Nat", "60x60 Nat", "60x60 R11"];
 assert.deepEqual(collectionCards(isFalaise, "flooring"), [
-  ["Falaise Beige", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise Beige", falaiseOutdoor],
   ["Falaise Grey", ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
-  ["Falaise Mint", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise Mint", falaiseOutdoor],
   ["Falaise White", ["120x280 Nat", "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
 ]);
 const falaiseNat = ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
@@ -585,7 +587,7 @@ const tabulaeCards = (r11: string[]) => {
     ["Tabulae Refined Miele Nat", [...r11, ...refined]],
   ];
 };
-assert.deepEqual(collectionCards(isTabulae, "flooring"), tabulaeCards(["30x120"]));
+assert.deepEqual(collectionCards(isTabulae, "flooring"), tabulaeCards(["30x120 R11"]));
 assert.deepEqual(collectionCards(isTabulae, "wall_tile"), tabulaeCards([]));
 const bonTonMarble = ["120x120", "120x120 Nat", "60x120", "60x120 Nat", "5x120"];
 const bonTonDecors = [["Bon Ton Network", ["60x120"]], ["Bon Ton Octagon", ["60x120"]]];
@@ -675,13 +677,13 @@ for (const category of ["flooring", "wall_tile"]) {
     ["Pietra Viva Limoges White", camargueLimoges(["120x280 Nat"])],
   ]);
 }
-// The 80x80 R11 entries (no "Nat") are floor-only, as is Ceppo di Gre's 80x80.
+// The 80x80 R11 entries (named R11 on 13 Oct 2026) are floor-only, as is Ceppo di Gre's 80x80; Bourgogne's are on walls too.
 const geoteca = (floor: boolean, r11: boolean, nat80 = true) =>
-  ["120x280 Nat", "120x120 Nat", "60x120 Nat", ...(r11 && floor ? ["80x80"] : []), ...(nat80 ? ["80x80 Nat"] : [])];
+  ["120x280 Nat", "120x120 Nat", "60x120 Nat", ...(nat80 ? ["80x80 Nat"] : []), ...(r11 && floor ? ["80x80 R11"] : [])];
 for (const [category, floor] of [["flooring", true], ["wall_tile", false]] as const) {
   assert.deepEqual(collectionCards(isLaGeoteca, category), [
-    ["La Geoteca Bourgogne Beige", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
-    ["La Geoteca Bourgogne Silver", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Bourgogne Beige", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
+    ["La Geoteca Bourgogne Silver", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
     ["La Geoteca Brennero", geoteca(floor, true)],
     ["La Geoteca Ceppo Di Gre'", geoteca(floor, true, false)],
     ["La Geoteca Dec Plis Bou Bei", ["60x120 Nat"]],
@@ -691,7 +693,7 @@ for (const [category, floor] of [["flooring", true], ["wall_tile", false]] as co
     ["La Geoteca Marfil", geoteca(floor, false)],
     ["La Geoteca Negresco", ["120x120 Nat", "60x120 Nat"]],
     ["La Geoteca Serena", geoteca(floor, true)],
-    ["La Geoteca Trav Ivory Cross", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Trav Ivory Cross", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
     ["La Geoteca Trav Ivory Vein", ["120x280 Nat", "120x120 Nat", "60x120 Nat"]],
   ]);
 }
@@ -1581,6 +1583,7 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)
     [20, "R11", true],
     `${id}: 20 mm, R11, outdoor`
   );
+  assert.ok(entry.classification.room_suitability.includes("balcony"), `${id} suits a balcony`);
   assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
   assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
   assert.deepEqual(
@@ -1593,6 +1596,39 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)
     `${id} layouts`
   );
   assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+}
+// The July import's entries that are only ABK's Plein Air R11 items (J, 13 Oct 2026: follow what ABK says) are named and described
+// as the outdoor sizes above: R11 in the name, 20 mm, R11, outdoor, and on floors a balcony. Entries the July import folded an indoor
+// item into (Dorica Avorio and Crema 60x120, Pietra Viva's seven) keep their names and facts. Trav Ivory Cross 80x80 is folded together
+// with Vein's 80x80 R11, also an outdoor item (an entry of its own since 13 Oct).
+const julyOutdoorCodes = ["0017583", "0017586", "0017767", "0017768", "pf60012083", "pf60012085", "pf60012086", "pf60013072",
+  "pf60016026", "pf60016027", "pf60016183", "pf60021253", "pf60021254"];
+const julyOutdoor = getAllSurfaceMaterialYamlEntries().filter((entry) =>
+  julyOutdoorCodes.some((code) => entry.surface_material.material_id.includes(`-${code}-`))
+);
+assert.deepEqual(
+  julyOutdoor.map((entry) => entry.surface_material.surface_category).sort().join(),
+  [...Array(13).fill("flooring"), "wall_tile", "wall_tile", "wall_tile"].join(),
+  "13 floor entries and the wall entries of Bourgogne Beige, Bourgogne Silver and Trav Ivory Cross"
+);
+for (const entry of julyOutdoor) {
+  const id = entry.surface_material.material_id;
+  assert.match(entry.surface_material.product_name, / R11$/, `${id} is named R11`);
+  assert.deepEqual(
+    [entry.physical_specs.total_thickness_mm, entry.physical_specs.slip_rating, entry.physical_specs.suitable_for_outdoor],
+    [20, "R11", true],
+    `${id}: 20 mm, R11, outdoor`
+  );
+  assert.equal(
+    entry.classification.room_suitability.includes("balcony"),
+    entry.surface_material.surface_category === "flooring",
+    `${id}: a balcony on floors`
+  );
+  assert.equal(
+    entry.import_governance.qa_flags.includes("gardenia_equivalent_variant_collapsed"),
+    id.includes("-pf60016183-"),
+    `${id}: no indoor item folded in`
+  );
 }
 const pleinAirStandIns = [["0014519", "0012911"], ["0014518", "0012908"]] as const;
 

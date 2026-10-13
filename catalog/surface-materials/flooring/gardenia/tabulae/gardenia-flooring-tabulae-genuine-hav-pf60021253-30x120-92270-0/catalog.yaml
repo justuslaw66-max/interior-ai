@@ -4,7 +4,7 @@ surface_material:
   brand: Gardenia & Ariana
   collection: Tabulae
   material_id: gardenia-flooring-tabulae-genuine-hav-pf60021253-30x120-92270-0
-  product_name: Gardenia Tabulae Genuine Hav 30x120
+  product_name: Gardenia Tabulae Genuine Hav 30x120 R11
   slug: gardenia-flooring-tabulae-genuine-hav-pf60021253-30x120-92270-0
   surface_category: flooring
   material_family: tile
@@ -26,6 +26,7 @@ source:
     - "Collection page sizes: 10x60, 5x120, 23.4x148, 20x120, 15x85, 60x120, 60x60, 30x120."
     - "Available configurator formats: PF60021141 20x120 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021156 20x120 ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021253 30x120 PAVIMENTO patterns Sfals_random_1,pieno_01,Spina_01; PF60021107 23,4x148 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021145 10x60 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "Outdoor size (J, 2026-10-13: follow what ABK says): ABK lists item 0021253 on its Plein Air pages, colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/tabulae-genuine-havana/30x120/: TABULAE GENUINE HAVANA 30X120, finish R11, thickness 20 mm, porcelain stoneware. The July configurator import had not named its finish; it is named and described as the outdoor sizes added on 13 Oct. Balcony is among its rooms."
 classification:
   flooring_type: tile
   design_effect: wood
@@ -47,6 +48,7 @@ classification:
     - kitchen
     - bathroom
     - hallway
+    - balcony
     - commercial
     - hospitality
 physical_specs:
@@ -55,14 +57,14 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 300
-  total_thickness_mm: null
+  total_thickness_mm: 20
   wear_layer_mm: null
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R11
   suitable_for_wet_area: null
-  suitable_for_outdoor: null
+  suitable_for_outdoor: true
   commercial_grade: null
 texture_assets:
   swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/0021253_swatch.webp
