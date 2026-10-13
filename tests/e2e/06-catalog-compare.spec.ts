@@ -124,6 +124,17 @@ test.describe("6. Catalog Compare", () => {
     await searchInput.fill("sofa");
     await searchInput.clear();
 
+    // Structured filters is a popover under Filters (UX AX5): it takes focus when it opens, and
+    // Escape or Close shut it and return focus to Filters.
+    await filtersButton.click();
+    const filterPopover = page.getByRole("dialog", { name: "Structured filters" });
+    await expect(filterPopover).toBeFocused();
+    await expect(filtersButton).toHaveAttribute("aria-expanded", "true");
+    await page.keyboard.press("Escape");
+    await expect(filterPopover).toHaveCount(0);
+    await expect(filtersButton).toBeFocused();
+    await expect(filtersButton).toHaveAttribute("aria-expanded", "false");
+
     await filtersButton.click();
     await expect(page.getByText("Structured filters")).toBeVisible();
     await expect(page.getByLabel("Curated only")).toHaveCount(0);
@@ -132,6 +143,8 @@ test.describe("6. Catalog Compare", () => {
     await expect(page.getByLabel("Small-room friendly")).toBeChecked();
     await page.getByLabel("Small-room friendly").uncheck();
     await page.getByRole("button", { name: "Close" }).click();
+    await expect(filterPopover).toHaveCount(0);
+    await expect(filtersButton).toBeFocused();
 
     const previewButtons = page.getByRole("button", { name: "View details" });
     await expect(previewButtons.first()).toBeVisible();

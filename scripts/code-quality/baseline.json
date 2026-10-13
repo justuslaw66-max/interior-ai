@@ -105,7 +105,7 @@
       "limit": 250
     },
     "components/catalog/CatalogFilterDrawer.tsx": {
-      "lines": 256,
+      "lines": 254,
       "limit": 250
     },
     "components/catalog/CatalogItemDrawer.tsx": {

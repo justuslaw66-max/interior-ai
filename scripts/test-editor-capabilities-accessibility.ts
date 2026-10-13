@@ -232,6 +232,23 @@ for (const relativePath of [
   );
 }
 
+// AX5: Structured filters is a non-modal popover under Filters, named by its title. Escape and
+// Close return focus to Filters, which says whether it's open.
+const filterPopoverSource = read("components/catalog/CatalogFilterDrawer.tsx");
+assert.match(
+  filterPopoverSource,
+  /id=\{CATALOG_FILTER_POPOVER_ID\} role="dialog" aria-labelledby=\{CATALOG_FILTER_POPOVER_TITLE_ID\} tabIndex=\{-1\}/
+);
+assert.doesNotMatch(filterPopoverSource, /aria-modal/, "the filter popover leaves the catalogue usable");
+assert.match(
+  read("components/catalog/CatalogFiltersBar.tsx"),
+  /id=\{CATALOG_FILTERS_TOGGLE_ID\}[\s\S]*?aria-expanded=\{open\}[\s\S]*?aria-controls=\{open \? CATALOG_FILTER_POPOVER_ID : undefined\}/
+);
+assert.match(
+  read("components/catalog/CatalogFilterPopover.tsx"),
+  /popover\.focus\(\{ preventScroll: true \}\)[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.focus\(\)[\s\S]*?event\.key !== "Escape"[\s\S]*?close\(\)/
+);
+
 // Present & export retired in phase 4's small PR: Share and Download are in the command bar.
 assert.ok(
   !existsSync(join(process.cwd(), "components/editor/design-page/PresentExportDialog.tsx")),
