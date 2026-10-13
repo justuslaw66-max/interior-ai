@@ -1,0 +1,103 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-concrete/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - NATIVE CONCRETE - minimali.zip (5526817 bytes, sha256 cea9f57b26d7b76915d1a84ceeb204aaa6e58449dd9b9308880eec5eb1177cd0).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g56793",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-concrete/g0056793-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g56793_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    4
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-native-concrete-g56793-80x80-r11",
+   "faces": [
+    {
+     "file": "g56793_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 13644,
+     "source_zip": "PLEIN AIR - NATIVE CONCRETE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE CONCRETE - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b554db6f77ff3feaab47b01e00c8aee3e1a18d93c2464ded74a39b726b2482f6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE CONCRETE 80X80 R11 20 MM_01",
+      "id": "8ed2e392-99e1-4d70-976c-a0e74ee6b1af",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g56793_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 12824,
+     "source_zip": "PLEIN AIR - NATIVE CONCRETE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE CONCRETE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b74578b0a1c1c8aa3f0615545c72f98e9aa1ec190eb51f2bd006f8f19fc192b3",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "NATIVE CONCRETE 80X80 R11 20 MM_02",
+      "id": "a71fda49-645e-4be7-9563-4ea69e81dc13",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g56793_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 9418,
+     "source_zip": "PLEIN AIR - NATIVE CONCRETE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE CONCRETE - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a442a51ca4c3a91aa986df345b61f8c979fb31edcbcde848d8ab9c7cb913dcad",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "NATIVE CONCRETE 80X80 R11 20 MM_04",
+      "id": "0c7531e5-0097-4743-82c4-545616b4534d",
+      "site_position": 3
+     }
+    }
+   ]
+  }
+ ]
+}

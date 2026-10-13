@@ -1,0 +1,76 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/raye-honey/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - RAYÉ HONEY - minimali.zip (2679638 bytes, sha256 506929dcf5d62e5b7c47bcdb2f0d53f35f7f347f5a4d2f05e64420dc07eb477f).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0014949",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/raye-honey/pf60014949-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0014949_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-plein-air-raye-honey-0014949-30x120-r11",
+   "faces": [
+    {
+     "file": "0014949_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 14514,
+     "source_zip": "PLEIN AIR - RAYÉ HONEY - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - RAYÉ HONEY - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "85a55595b6a84a45a5ce1424419c6a74e0eade2eb04fe6da842328a4359520e0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "RAYE HONEY 30X120 R11_20 MM_01",
+      "id": "142ac1ac-894a-4cc9-aa77-b699cd6c33f4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014949_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 14258,
+     "source_zip": "PLEIN AIR - RAYÉ HONEY - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - RAYÉ HONEY - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "755f723abdac0b7728af49999d766481a08f8e86fad9d2f35b75537ce96d3fe6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2",
+      "name": "RAYE HONEY 30X120 R11_20 MM_02",
+      "id": "2d47ecfb-785a-4de6-aead-003e96934308",
+      "site_position": 2
+     }
+    }
+   ]
+  }
+ ]
+}

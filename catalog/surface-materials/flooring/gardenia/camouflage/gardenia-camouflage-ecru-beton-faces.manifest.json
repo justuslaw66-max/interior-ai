@@ -271,7 +271,7 @@
     13
    ],
    "duplicates_note": "picture 10 is picture 24 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 11 is picture 20 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 12 is picture 23 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 13 is picture 21 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 2 is picture 1 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 3 is picture 15 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 4 is picture 22 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 5 is picture 18 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 6 is picture 17 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy; picture 7 is picture 19 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 8 is picture 16 exported again without a colour profile (image matching r 0.98), so the face is used once, from its sRGB copy; picture 9 is picture 14 exported again without a colour profile (image matching r 0.99), so the face is used once, from its sRGB copy",
-   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016237-60x120-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0016237-60x120-nat",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016237-60x120-nat; floor gardenia-flooring-camouflage-ecru-beton-0016317-60x120-r11 (uses 0016237's faces: ABK's 12 R11 pictures (on Plein Air's page) are 0016237's 12 faces, byte for byte (its copies with no colour profile; the faces are drawn from the sRGB copies)); wall gardenia-wall-tile-camouflage-ecru-beton-0016237-60x120-nat",
    "faces": [
     {
      "file": "0016237_01.webp",
@@ -892,7 +892,7 @@
    },
    "swatch": "0018160_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0018160-60x60-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0018160-60x60-nat",
+   "used_by": "floor gardenia-flooring-camouflage-ecru-beton-0016318-60x60-r11 (uses 0018160's faces: ABK's 24 R11 pictures (on Plein Air's page) are 0018160's 24 Nat P.tech pictures, byte for byte); floor gardenia-flooring-camouflage-ecru-beton-0018160-60x60-nat; wall gardenia-wall-tile-camouflage-ecru-beton-0018160-60x60-nat",
    "faces": [
     {
      "file": "0018160_01.webp",

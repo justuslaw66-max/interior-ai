@@ -1,0 +1,148 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-cream/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LIVINGSTONE CREAM - minimali.zip (11755328 bytes, sha256 d00f03ff1f312dbc2a81ec921f1508496aa0466246ce8465c0d6ff16c978434e).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0020645",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-cream/pf60020645-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0020645_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-livingstone-cream-0020645-80x80-r11",
+   "faces": [
+    {
+     "file": "0020645_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46498,
+     "source_zip": "PLEIN AIR - LIVINGSTONE CREAM - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE CREAM - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f7b2c3a4c8f96f60b54f48eab94fa68000cc2ae82b7d9e7d960b5e50c29e4229",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "LIVINGSTONE CREAM 80X80 R11_20 MM_01",
+      "id": "6e58703c-2614-4bf1-83c5-33f7d64b817d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020645_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34680,
+     "source_zip": "PLEIN AIR - LIVINGSTONE CREAM - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE CREAM - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3a51884bec0994f56635b350dbc809dfc7b5767a3d99c4fef13dae76cbcfc90e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "LIVINGSTONE CREAM 80X80 R11_20 MM_03",
+      "id": "d8fd9923-4aaa-4eda-8ba3-497cde333396",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020645_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44248,
+     "source_zip": "PLEIN AIR - LIVINGSTONE CREAM - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE CREAM - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ab0ba164313375069c88a768a4284aef9322def89cfa544638ff100f85fd5f6e",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "LIVINGSTONE CREAM 80X80 R11_20 MM_04",
+      "id": "f41f8d31-ef35-46e9-a792-71c3bde75604",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020645_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38694,
+     "source_zip": "PLEIN AIR - LIVINGSTONE CREAM - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE CREAM - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e45de1398a2f5d28a93b1bb5c7656773a19d3dc2e856e6135bf76decd234c704",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "LIVINGSTONE CREAM 80X80 R11_20 MM_05",
+      "id": "a659c76c-2343-401c-bab0-f87e2fc52b8d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020645_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 47114,
+     "source_zip": "PLEIN AIR - LIVINGSTONE CREAM - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE CREAM - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4c12ab794827e669eb64aa0bd7ed6ca8854f078776c34df70b4c8377ccce3639",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "LIVINGSTONE CREAM 80X80 R11_20 MM_02",
+      "id": "b0b9d5dc-a9b7-444d-9d30-5e205c12a204",
+      "site_position": 5
+     }
+    }
+   ]
+  }
+ ]
+}

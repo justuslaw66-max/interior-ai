@@ -1,0 +1,76 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/raye-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - RAYÉ SAND - minimali.zip (3042556 bytes, sha256 4a1d1cf3ab296b52981bf5e3fd96b0426576e30f6d2784c77f118ed13c9df53d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0014329",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/raye-sand/pf60014329-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0014329_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-plein-air-raye-sand-0014329-30x120-r11",
+   "faces": [
+    {
+     "file": "0014329_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20832,
+     "source_zip": "PLEIN AIR - RAYÉ SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - RAYÉ SAND - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "9b45baad125e7bccaca67b8cd8f7411fd13164d91fd3b1d8177c26ad810b6fc5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "RAYE SAND 30X120 R11_20 MM_01",
+      "id": "c60702f1-7fa6-4485-b880-60af1f9c57f5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0014329_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20744,
+     "source_zip": "PLEIN AIR - RAYÉ SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - RAYÉ SAND - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "8668a064da7cc805e4b759b02c2baa0e6e6a5a46e7de0ea3b604b88399fb41ce",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2",
+      "name": "RAYE SAND 30X120 R11_20 MM_02",
+      "id": "3a4344ce-7896-4173-9c55-0f8d388fe84b",
+      "site_position": 2
+     }
+    }
+   ]
+  }
+ ]
+}

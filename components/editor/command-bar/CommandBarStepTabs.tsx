@@ -26,6 +26,19 @@ const STEP_ICONS: Record<CommandBarStep["id"], LucideIcon> = {
 };
 
 /**
+ * Selects a step and keeps focus on it in every browser, so it survives the panel it replaces. A
+ * modal over the page (the product drawer) keeps the bar inert until the switch closes it, so the
+ * step takes focus once that has happened, if nothing else did (UX AX5).
+ */
+function selectStep(button: HTMLButtonElement, step: CommandBarStep) {
+  button.focus();
+  step.onSelect();
+  window.requestAnimationFrame(() => {
+    if (document.activeElement === document.body && button.isConnected) button.focus();
+  });
+}
+
+/**
  * The three design steps, Plan · Furnish · Shop, always in view (audit finding ED1). From tablet
  * width up they sit in the command bar. Phones have no room for them there, so the same nav
  * becomes a bar along the bottom of the screen, as in the phone mockups.
@@ -45,11 +58,7 @@ export function CommandBarStepTabs({ dark, steps, focusFallbackStepId }: Command
             aria-current={step.active ? "step" : undefined}
             aria-label={step.label}
             className={stepButtonClass(step.active, dark)}
-            onClick={(event) => {
-              // Keep focus on the step in every browser, so it survives the panel it replaces.
-              event.currentTarget.focus();
-              step.onSelect();
-            }}
+            onClick={(event) => selectStep(event.currentTarget, step)}
           >
             <StepIcon aria-hidden="true" className="h-5 w-5 md:hidden" />
             <span aria-hidden="true" className={stepNumberClass(step.active, dark)}>

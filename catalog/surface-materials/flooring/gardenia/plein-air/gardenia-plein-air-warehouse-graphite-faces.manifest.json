@@ -1,0 +1,196 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-graphite/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip (16695182 bytes, sha256 ccfff4a1f6e96b3defdf27675217758ca3353a96d2946980357d86d2e4aaaf76).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012109",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-graphite/pf60012109-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012109_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-warehouse-graphite-0012109-80x80-r11",
+   "faces": [
+    {
+     "file": "0012109_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37004,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "965012e0cc9478241783471118715e3962ebac662cd3d9a17d0e5c0441d071db",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_03",
+      "id": "3542753d-a1be-4c4c-95dc-a6e35a90ce07",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012109_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41698,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1c7cfb83b38dec8930986995f4d0909cb039ddc815feb1f0f5ef661902454d2f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_05",
+      "id": "feca251e-37ad-4fc2-b610-535b5ffeef20",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012109_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33958,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1c92661e44f5a53bb3acd3ef52302d19df1c635ab50b126c3b771ed00480c093",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_02",
+      "id": "bff15f3a-e8dc-4145-a552-d94501295a1e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012109_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 35388,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d2649b0c8d06a7d9ef65ea85ebf206848293851b5b5dab676e440cf78d09f72c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_01",
+      "id": "c5d0eb66-c90b-4eaf-9a6e-6842b1fc4982",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012109_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25750,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c4ac1ce199617719f4b53319b0b3735da2d8e96b841129cf8c97c5de565c6962",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_07",
+      "id": "6a061791-15a6-4e44-ab56-2ecd703a7a67",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012109_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 42650,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "13705d19bde834d25eb185baacade78d9504c255377311f8d234388d7b86ea54",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_04",
+      "id": "85e8c764-95d8-4ec9-bb41-6767d964baac",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012109_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27152,
+     "source_zip": "PLEIN AIR - WAREHOUSE GRAPHITE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE GRAPHITE - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aa601890985062111f3032fd9c5754fa8079e5cc0bca30e54b67ec2b6e44a356",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7",
+      "name": "WAREHOUSE GRAPHITE 80X80 R11_20 MM_06",
+      "id": "571305b8-18b5-47da-9d05-70547eb465a1",
+      "site_position": 7
+     }
+    }
+   ]
+  }
+ ]
+}

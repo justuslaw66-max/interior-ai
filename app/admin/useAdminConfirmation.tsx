@@ -23,7 +23,6 @@ export function useAdminConfirmation(): {
   const dialog = pending ? (
     <ConfirmDialog
       open
-      manageBackground
       title={pending.title}
       description={pending.description}
       confirmLabel={pending.confirmLabel}

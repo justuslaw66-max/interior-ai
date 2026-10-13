@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/travertino-ivory-vein/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: DORICA - TRAVERTINO IVORY VEIN - minimali.zip (20608017 bytes, sha256 5c9f10bd419ee960c52566fd4c76870e354b59dddc02168c04737f6fd0730dee).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: DORICA - TRAVERTINO IVORY VEIN - minimali.zip (20608017 bytes, sha256 5c9f10bd419ee960c52566fd4c76870e354b59dddc02168c04737f6fd0730dee); and on 2026-10-13: PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip (9994966 bytes, sha256 e5f0caa57b383966fad82f02005ade7555b4446c899773901a335b43d9536a9e).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -482,6 +482,165 @@
       "name": "DORICA TRAVERTINO IVORY VEIN 60X120_09",
       "id": "93ef7ae5-0620-4cf6-8296-d63cafe582b4",
       "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0016184",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/dorica-travertino-ivory-vein/pf60016184-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0016184_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-trav-ivory-vein-0016184-80x80-r11",
+   "faces": [
+    {
+     "file": "0016184_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36688,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2878da5d47ff090945714dca67b84e44e0ac31a090bbeafb7ef5240d4d24128f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_05",
+      "id": "6144f1d1-10a8-4b8d-bbc4-fec3627b03ae",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0016184_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38422,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3fc8729dc50e9a3578b1663c47839cd6cf57bdf1c3ff0ee99a4183293e2b8f16",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_04",
+      "id": "161b3834-98a9-4aef-ab25-8119f010e637",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0016184_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36986,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4b6819b8821627e3c1ef93dc94b4f50ac2847b0308e6a17b0665c9a5fbe41c8b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_02",
+      "id": "c56ef646-e6d8-41dc-92e2-a916a45d99c1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0016184_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36050,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5e877777d78ab4a18ef12cd42652e064384b2dffe2203d265e306def06eff987",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_06",
+      "id": "d59d2c85-dfa0-45c1-a1e1-e80870bf802c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0016184_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 38840,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "279c71aa1ef99facb08f8349bfbd5ef7cf4cefc68ff1596e62b9e6a716226d6c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_01",
+      "id": "70a42315-9664-454a-ae9b-39872e700e0e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0016184_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 36274,
+     "source_zip": "PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - DORICA TRAVERTINO IVORY VEIN - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0984399bdd5feb73456ab5fb3a4ffa7447c61d8c4262ffe551ad74c985a27d08",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "DORICA TRAVERTINO IVORY VEIN RETT 80X80 R11_20 MM_03",
+      "id": "01bbfba6-8c1b-4c60-9186-e5180ccf842e",
+      "site_position": 6
      }
     }
    ]

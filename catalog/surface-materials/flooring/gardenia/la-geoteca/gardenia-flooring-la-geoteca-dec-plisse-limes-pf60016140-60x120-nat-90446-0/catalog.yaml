@@ -15,7 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: 1 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/plisse-limestone/pf60016140-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-la-geoteca-plisse-limestone-faces.manifest.json. Each covers 600x1200 mm."
+    - "Tile face: the single item picture from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/la-geoteca/plisse-limestone/pf60016140-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the original is sharper, see gardenia-la-geoteca-plisse-limestone-faces.manifest.json. It covers 600x1200 mm."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60016140/0/90446 for floor use.
     - "Configurator format: 60x120 Nat; surface destination: ENTRAMBE."

@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/grigio-corten/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - GRIGIO CORTEN - minimali.zip (29410351 bytes, sha256 c57dd2bd0e52ef287faa0cb72af69aa8a542cece5680be17b2df18f5cc2c3c62).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - GRIGIO CORTEN - minimali.zip (29410351 bytes, sha256 c57dd2bd0e52ef287faa0cb72af69aa8a542cece5680be17b2df18f5cc2c3c62); and on 2026-10-13: PLEIN AIR - MAKE GRIGIO CORTEN - minimali.zip (6710119 bytes, sha256 ea5bb4037a063a873c058527a208ad4af837445fbfd7047aa9e6eea8142fa322).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -226,6 +226,117 @@
       "label": "Faccia 4 (view_04)",
       "name": "MAKE_GRIGIO_CORTEN_100x100_4",
       "id": "ba23cc1a-21e1-4d84-8c57-a2b6ba793bda",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g73055",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/make-grigio-corten/g0073055-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73055_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-grigio-corten-g73055-80x80-r11",
+   "faces": [
+    {
+     "file": "g73055_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 13698,
+     "source_zip": "PLEIN AIR - MAKE GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE GRIGIO CORTEN - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "42e1c6df81855cf81008bdeb73fd6e46600a235ebb2b3f4bd5d2c9de7e054261",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "MAKE GRIGIO CORTEN 80X80 R11_20 MM_01",
+      "id": "39d98d65-f38c-4617-9eee-09175b283693",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73055_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 19944,
+     "source_zip": "PLEIN AIR - MAKE GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE GRIGIO CORTEN - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e5cc00579475e9a9171b919782ccc703d3a0c41cfbe53bfe7f42a0bad936cca9",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "MAKE GRIGIO CORTEN 80X80 R11_20 MM_04",
+      "id": "0e8e458e-1acf-4852-8cf8-087f61bcf78a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73055_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 19452,
+     "source_zip": "PLEIN AIR - MAKE GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE GRIGIO CORTEN - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4b39ab3c2d7798fb7d12a1ec5497d9b74f78b69e3ae2a1d2a9e858eeba920b99",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "MAKE GRIGIO CORTEN 80X80 R11_20 MM_03",
+      "id": "cfab8638-e1c5-4d34-9446-1114abc4a5df",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73055_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 26778,
+     "source_zip": "PLEIN AIR - MAKE GRIGIO CORTEN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE GRIGIO CORTEN - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0d883d0e737208a19922340912f843fa96f9b454fdbe368888aedef337a9d731",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "MAKE GRIGIO CORTEN 80X80 R11_20 MM_02",
+      "id": "100884af-930a-42d1-9bfc-336434d3666f",
       "site_position": 4
      }
     }

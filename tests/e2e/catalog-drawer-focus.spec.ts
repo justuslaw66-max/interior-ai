@@ -114,7 +114,12 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
     await expect(pinnedOpener).toHaveCount(1);
 
     await pinnedOpener.click();
+    // While it's open, the page behind is inert and hidden from assistive technology (UX AX5).
+    const search = page.getByRole("textbox", { name: "Search catalogue products" });
+    await expect(page.getByTestId("catalog-item-drawer-close")).toBeFocused();
+    await expect(search).toHaveCount(0);
     await closeDrawerWithBackdrop(page);
+    await expect(search).toHaveCount(1);
 
     expect(identity).toMatchObject({ action: "details", source: "product-card" });
     await expect(semanticTargets(page, identity)).toHaveCount(1);

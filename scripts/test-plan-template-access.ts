@@ -889,7 +889,7 @@ assert.match(
 
 assert.match(
   planTemplateChoiceDialogSource,
-  /data-testid="new-plan-choice-dialog"[\s\S]*?data-testid="new-plan-cancel"[\s\S]*?data-testid="new-plan-replace-current"[\s\S]*?data-testid="new-plan-save-current"/,
+  /testId="new-plan-choice-dialog"[\s\S]*?data-testid="new-plan-cancel"[\s\S]*?data-testid="new-plan-replace-current"[\s\S]*?data-testid="new-plan-save-current"/,
   "The plan choice dialog should expose Cancel, Replace current, and Save current & start new actions."
 );
 

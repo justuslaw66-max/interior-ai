@@ -743,7 +743,7 @@
    },
    "swatch": "0013117_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0; wall gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0",
+   "used_by": "floor gardenia-flooring-la-geoteca-ceppo-di-gre-0014525-60x120-r11 (uses 0013117's faces: ABK's 10 R11 pictures (on Plein Air's page) are 0013117's Nat P.tech pictures, byte for byte); floor gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0; wall gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0",
    "faces": [
     {
      "file": "0013117_01.webp",

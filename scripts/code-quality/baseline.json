@@ -105,11 +105,11 @@
       "limit": 250
     },
     "components/catalog/CatalogFilterDrawer.tsx": {
-      "lines": 256,
+      "lines": 254,
       "limit": 250
     },
     "components/catalog/CatalogItemDrawer.tsx": {
-      "lines": 476,
+      "lines": 471,
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
@@ -1431,7 +1431,7 @@
     "components/catalog/CatalogItemDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 426
+        "maximum": 421
       },
       "complexFunctions": {
         "count": 1,
@@ -1545,7 +1545,7 @@
     "components/editor/design-page/CloudSaveConflictDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 139
+        "maximum": 76
       }
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
@@ -1684,16 +1684,10 @@
         "maximum": 17
       }
     },
-    "components/editor/design-page/LightingSettingsDrawer.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 125
-      }
-    },
     "components/editor/design-page/LocalBackupRecoveryDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 81
       }
     },
     "components/editor/design-page/PlacedCabinetAssetMarkers.tsx": {
@@ -1749,7 +1743,7 @@
     "components/editor/design-page/PlanTemplateChoiceDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 139
+        "maximum": 78
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
@@ -1817,7 +1811,7 @@
     "components/editor/design-system/EditorDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 104
+        "maximum": 99
       }
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -1859,7 +1853,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 124
+        "maximum": 123
       }
     },
     "components/editor/EditorToolRail.tsx": {

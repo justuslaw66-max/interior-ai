@@ -1,7 +1,8 @@
-import type {
-  CatalogFilterState,
-  SofaSeatCapacityBucket,
-} from "@/lib/catalog/view-builders";
+import type { CatalogFilterState, SofaSeatCapacityBucket } from "@/lib/catalog/view-builders";
+
+/** The popover's id, for Filters' aria-controls, and its title's (UX AX5). */
+export const CATALOG_FILTER_POPOVER_ID = "catalog-filter-popover";
+const CATALOG_FILTER_POPOVER_TITLE_ID = "catalog-filter-popover-title";
 
 type Props = {
   open: boolean;
@@ -15,10 +16,7 @@ type Props = {
   onPatch: (patch: Partial<CatalogFilterState>) => void;
 };
 
-const SOFA_SEAT_CAPACITY_OPTIONS: Array<{
-  value: SofaSeatCapacityBucket;
-  label: string;
-}> = [
+const SOFA_SEAT_CAPACITY_OPTIONS: Array<{ value: SofaSeatCapacityBucket; label: string }> = [
   { value: "2", label: "2 seater" },
   { value: "3", label: "3 seater" },
   { value: "4_plus", label: "4+ seater" },
@@ -38,12 +36,12 @@ export default function CatalogFilterDrawer({
   if (!open) return null;
 
   return (
-    <div
+    <div id={CATALOG_FILTER_POPOVER_ID} role="dialog" aria-labelledby={CATALOG_FILTER_POPOVER_TITLE_ID} tabIndex={-1}
       data-testid="catalog-filter-drawer"
-      className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-white p-3 shadow-lg"
+      className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-white p-3 shadow-lg outline-hidden"
     >
       <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-neutral-100 bg-white px-3 py-3">
-        <div className="text-xs font-semibold text-neutral-900">Structured filters</div>
+        <div id={CATALOG_FILTER_POPOVER_TITLE_ID} className="text-xs font-semibold text-neutral-900">Structured filters</div>
         <button type="button" onClick={onClose} className="text-xs text-neutral-500">Close</button>
       </div>
 

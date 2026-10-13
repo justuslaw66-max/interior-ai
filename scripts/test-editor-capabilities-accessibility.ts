@@ -81,7 +81,10 @@ const dialogPrimitive = read(
   "components/editor/design-system/EditorDialog.tsx"
 );
 for (const required of [
-  'role="dialog"',
+  'role = "dialog"',
+  "role={role}",
+  // Every modal makes the rest of the page inert and stops it scrolling, unless it opts out (AX5).
+  "manageBackground = true, lockBodyScroll = true,",
   'aria-modal="true"',
   "aria-labelledby={titleId}",
   "aria-describedby={description ? descriptionId : undefined}",
@@ -94,6 +97,19 @@ for (const required of [
     `shared dialog primitive must preserve ${required}`
   );
 }
+
+// The save conflict and the backup recovery wait for a choice: Escape and the backdrop don't close
+// them, and they keep their own trap no longer (AX5).
+for (const relativePath of [
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
+]) {
+  const source = read(relativePath);
+  assert.match(source, /<EditorDialog\s+open\s+role="alertdialog"[\s\S]*?\bcloseDisabled\b[\s\S]*?showCloseButton=\{false\}/, relativePath);
+  assert.doesNotMatch(source, /addEventListener\("keydown"/, relativePath);
+}
+// A confirmation interrupts the work, so it is an alertdialog (AX5).
+assert.match(read("components/ConfirmDialog.tsx"), /<EditorDialog\s+open\s+role="alertdialog"/);
 
 const dialogLifecycle = read(
   "components/editor/design-system/useEditorDialogLifecycle.ts"
@@ -118,6 +134,9 @@ for (const required of [
   // The opener first among the return targets (UX 4d): Rename design from the Menu returns there.
   "if (opener?.id && semanticIds.includes(opener.id)) {",
   "semanticIds.unshift(opener.id);",
+  // A rerun session (StrictMode, a changed dependency) keeps the first session's opener (5h).
+  "if (!(active instanceof HTMLElement && dialog.contains(active))) {",
+  "const opener = options.openerRef.current;",
   ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
@@ -193,6 +212,12 @@ for (const relativePath of [
   "components/editor/design-page/DownloadDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
   "components/editor/shop/ShoppingBuyListDialog.tsx",
+  // AX5: these three had focus traps of their own.
+  "components/editor/design-page/PlanTemplateChoiceDialog.tsx",
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
+  // AX5: the Lighting drawer is the shared dialog's sheet.
+  "components/editor/design-page/LightingSettingsDrawer.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
@@ -206,6 +231,47 @@ for (const relativePath of [
     `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
   );
 }
+
+// AX5: Structured filters is a non-modal popover under Filters, named by its title. Escape and
+// Close return focus to Filters, which says whether it's open.
+const filterPopoverSource = read("components/catalog/CatalogFilterDrawer.tsx");
+assert.match(
+  filterPopoverSource,
+  /id=\{CATALOG_FILTER_POPOVER_ID\} role="dialog" aria-labelledby=\{CATALOG_FILTER_POPOVER_TITLE_ID\} tabIndex=\{-1\}/
+);
+assert.doesNotMatch(filterPopoverSource, /aria-modal/, "the filter popover leaves the catalogue usable");
+assert.match(
+  read("components/catalog/CatalogFiltersBar.tsx"),
+  /id=\{CATALOG_FILTERS_TOGGLE_ID\}[\s\S]*?aria-expanded=\{open\}[\s\S]*?aria-controls=\{open \? CATALOG_FILTER_POPOVER_ID : undefined\}/
+);
+assert.match(
+  read("components/catalog/CatalogFilterPopover.tsx"),
+  /popover\.focus\(\{ preventScroll: true \}\)[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.focus\(\)[\s\S]*?event\.key !== "Escape"[\s\S]*?close\(\)/
+);
+// A press outside it closes it, except on Filters, whose own toggle handles it (J, 13 Oct).
+assert.match(
+  read("components/catalog/CatalogFilterPopover.tsx"),
+  /holderRef\.current\?\.contains\(target\)\) return;[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.contains\(target\)\) return;[\s\S]*?addEventListener\("pointerdown", closeOnOutsidePointer\)/
+);
+
+// AX5: the product drawer is on the shared lifecycle, with its own markup. Focus goes back to the
+// product's action, found again by product and source, and nothing is restored when the catalogue
+// goes. The transparent layer is the dialog, so a press on it closes the drawer.
+const catalogDrawerLifecycle = read("components/catalog/useCatalogDrawerFocusRestoration.ts");
+assert.match(
+  catalogDrawerLifecycle,
+  /useEditorDialogLifecycle\(\{[\s\S]*?resolveReturnFocusTarget,[\s\S]*?cancelFocusRestorationOnUnmount: true, manageBackground: true,\s*lockBodyScroll: true/
+);
+assert.doesNotMatch(
+  catalogDrawerLifecycle,
+  /addEventListener\("keydown"|body\.style\.overflow/,
+  "the product drawer has no trap or scroll lock of its own"
+);
+assert.match(
+  read("components/catalog/CatalogItemDrawer.tsx"),
+  /ref=\{dialogRef\} tabIndex=\{-1\} role="dialog" aria-modal="true" aria-labelledby=\{titleId\}[\s\S]*?data-testid="catalog-item-drawer-backdrop"[\s\S]*?event\.target === event\.currentTarget\) requestClose\(\)/
+);
+assert.match(dialogFocusRestoration, /const resolve = options\.resolveReturnFocusTarget;/);
 
 // Present & export retired in phase 4's small PR: Share and Download are in the command bar.
 assert.ok(
