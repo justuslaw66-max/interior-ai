@@ -248,6 +248,11 @@ assert.match(
   read("components/catalog/CatalogFilterPopover.tsx"),
   /popover\.focus\(\{ preventScroll: true \}\)[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.focus\(\)[\s\S]*?event\.key !== "Escape"[\s\S]*?close\(\)/
 );
+// A press outside it closes it, except on Filters, whose own toggle handles it (J, 13 Oct).
+assert.match(
+  read("components/catalog/CatalogFilterPopover.tsx"),
+  /holderRef\.current\?\.contains\(target\)\) return;[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.contains\(target\)\) return;[\s\S]*?addEventListener\("pointerdown", closeOnOutsidePointer\)/
+);
 
 // Present & export retired in phase 4's small PR: Share and Download are in the command bar.
 assert.ok(

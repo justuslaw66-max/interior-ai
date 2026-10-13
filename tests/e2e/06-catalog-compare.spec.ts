@@ -145,6 +145,12 @@ test.describe("6. Catalog Compare", () => {
     await page.getByRole("button", { name: "Close" }).click();
     await expect(filterPopover).toHaveCount(0);
     await expect(filtersButton).toBeFocused();
+    // A press outside it closes it too, and focus goes where the press went (J, 13 Oct).
+    await filtersButton.click();
+    await expect(filterPopover).toBeFocused();
+    await searchInput.click();
+    await expect(filterPopover).toHaveCount(0);
+    await expect(searchInput).toBeFocused();
 
     const previewButtons = page.getByRole("button", { name: "View details" });
     await expect(previewButtons.first()).toBeVisible();
