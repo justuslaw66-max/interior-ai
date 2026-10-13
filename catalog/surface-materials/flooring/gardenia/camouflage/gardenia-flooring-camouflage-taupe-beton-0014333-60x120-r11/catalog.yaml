@@ -49,6 +49,13 @@ classification:
     - balcony
     - commercial
     - hospitality
+  outdoor_uses:
+    - terrace
+    - balcony
+    - patio
+    - garden
+    - path
+    - pool_edge
 physical_specs:
   plank_or_tile_format: tile
   plank_width_mm: null

@@ -106,6 +106,8 @@ export type SurfaceMaterial = {
     tone: string[];
     style_cluster: string[];
     room_suitability: string[];
+    /** Where an outdoor floor tile goes (vocabulary `outdoor_use`); see docs/architecture/surface-material-outdoor-tiles.md. */
+    outdoor_uses?: string[];
   };
   physical_specs: {
     plank_or_tile_format?: SurfacePlankOrTileFormat;
@@ -161,6 +163,16 @@ export type SurfaceMaterial = {
     publish_blockers: string[];
     qa_flags: string[];
   };
+};
+
+/**
+ * What the browser data says about an outdoor floor tile: where it goes, how it can be laid, and the same colour's indoor
+ * floor entries (derived from the catalogue, so it can't drift). Built by the generator; see lib/surface-material-outdoor.ts.
+ */
+export type SurfaceMaterialOutdoorProfile = {
+  uses: string[];
+  laying: string[];
+  indoor_twin_ids: string[];
 };
 
 export const SURFACE_MATERIAL_VOCABULARY = {
@@ -254,6 +266,9 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "hospitality",
     "education",
   ],
+  // Gardenia's outdoor tiles go "from the terrace to the balconies, from the paths to the gardens, from the patio to the pool"
+  // (blog.gardenia.it, read 13 Oct 2026).
+  outdoor_use: ["terrace", "balcony", "patio", "garden", "path", "pool_edge"],
   installation_method: [
     "unknown",
     "click_lock",
@@ -262,6 +277,10 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "sheet_roll",
     "decking_clip",
     "direct_stick",
+    // Outdoor laying Gardenia names for its 20 mm outdoor tiles (Native), besides glue on a screed (direct_stick).
+    "dry_lay_on_grass",
+    "dry_lay_on_gravel_or_sand",
+    "raised_installation",
   ],
   purchase_mode: ["quote_or_sample", "direct_checkout", "affiliate", "unknown"],
   license_status: ["confirmed", "needs_permission", "supplier_reference_only", "unknown"],

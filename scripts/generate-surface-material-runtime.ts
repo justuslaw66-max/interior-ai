@@ -2,8 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { auditSurfaceMaterialEntry } from "../lib/surface-material-audit";
+import {
+  buildSurfaceMaterialOutdoorProfiles,
+  getSurfaceMaterialOutdoorFailures,
+} from "../lib/surface-material-outdoor";
 import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
-import type { SurfaceMaterial } from "../lib/surface-material-schema";
+import type { SurfaceMaterial, SurfaceMaterialOutdoorProfile } from "../lib/surface-material-schema";
 import type {
   SurfaceMaterialCatalogMetadata,
   SurfaceMaterialRenderBaseTuple,
@@ -66,7 +70,11 @@ function findCatalogFiles(rootDir: string): string[] {
 function readSurfaceMaterial(filePath: string): SurfaceMaterialYamlEntry {
   const entry = parse(fs.readFileSync(filePath, "utf8")) as SurfaceMaterial;
   const audit = auditSurfaceMaterialEntry(entry, filePath);
-  const failures = [...audit.failures, ...getSurfacePhysicalAssetFailures(entry)];
+  const failures = [
+    ...audit.failures,
+    ...getSurfacePhysicalAssetFailures(entry),
+    ...getSurfaceMaterialOutdoorFailures(entry),
+  ];
   if (failures.length > 0) {
     throw new Error(
       `Invalid surface material ${path.relative(process.cwd(), filePath)}:\n${failures.join("\n")}`
@@ -185,7 +193,10 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
   };
 }
 
-function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCatalogMetadata {
+function toCatalogMetadata(
+  entry: SurfaceMaterialYamlEntry,
+  outdoor: SurfaceMaterialOutdoorProfile | undefined
+): SurfaceMaterialCatalogMetadata {
   return {
     material_id: entry.surface_material.material_id,
     surface_material: { collection: entry.surface_material.collection ?? null },
@@ -198,6 +209,8 @@ function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCata
       tone: entry.classification.tone,
       style_cluster: entry.classification.style_cluster,
       room_suitability: entry.classification.room_suitability,
+      // Only outdoor floors carry it, so the other entries' data stays as it was.
+      ...(outdoor ? { outdoor } : {}),
     },
     physical_specs: {
       total_thickness_mm: entry.physical_specs.total_thickness_mm ?? null,
@@ -248,7 +261,10 @@ function buildRenderFile(entries: SurfaceMaterialYamlEntry[]): string {
 }
 
 function buildCatalogFile(entries: SurfaceMaterialYamlEntry[]): string {
-  const metadata = sortMaterials(entries).map(toCatalogMetadata);
+  const outdoorProfiles = buildSurfaceMaterialOutdoorProfiles(entries);
+  const metadata = sortMaterials(entries).map((entry) =>
+    toCatalogMetadata(entry, outdoorProfiles.get(entry.surface_material.material_id))
+  );
   return `${[
     ...generatedHeader(),
     'import type { SurfaceMaterialCatalogMetadata } from "../surface-material-runtime-types";',

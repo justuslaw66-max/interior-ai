@@ -1,3 +1,4 @@
+import { getSurfaceMaterialOutdoorSearchTerms } from "@/lib/surface-material-outdoor";
 import type { SurfaceMaterialCatalogRecord } from "@/lib/surface-material-runtime";
 
 import {
@@ -78,6 +79,8 @@ function getSurfaceMaterialSearchText(material: SurfaceMaterialCatalogRecord) {
     ...(material.classification?.tone ?? []),
     ...(material.classification?.style_cluster ?? []),
     ...(material.classification?.room_suitability ?? []),
+    // An outdoor floor is found by "outdoor" and where it goes: terrace, patio, pool edge (13 Oct 2026).
+    ...getSurfaceMaterialOutdoorSearchTerms(material),
   ]
     .filter(Boolean)
     .join(" ")

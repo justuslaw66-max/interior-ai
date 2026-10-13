@@ -242,6 +242,27 @@ for (const [field, query] of [
   );
 }
 
+// Outdoor floors are found by where they go (13 Oct 2026): "terrace", "patio", "pool" and "outdoor" find every card with an
+// outdoor size and no other card; "grass" finds Plein Air Native, the range Gardenia says can be dry laid on grass. ("garden" is
+// part of every Gardenia name, so it isn't a test of this.)
+const outdoorGroupIds = groups
+  .filter((group) => group.variants.some((variant) => variant.classification.outdoor))
+  .map((group) => group.id)
+  .sort();
+assert.equal(outdoorGroupIds.length, 66, "cards with an outdoor size: 36 of catalogued colours, 30 of Plein Air's own");
+for (const query of ["terrace", "Patio", "pool", "outdoor"]) {
+  assert.deepEqual(
+    runProductionSurfaceFilter({ search: query }).map((group) => group.id).sort(),
+    outdoorGroupIds,
+    `a search for "${query}" finds the cards with an outdoor size`
+  );
+}
+assert.deepEqual(
+  runProductionSurfaceFilter({ search: "grass" }).map((group) => getSurfaceMaterialModelName(group.primary)).sort(),
+  ["Native Concrete", "Native Mud", "Native Sand", "Native Silver"],
+  "a search for grass finds the outdoor range that can be dry laid on it"
+);
+
 const mismatchingFilterCases: Array<[string, SurfaceFilterState]> = [
   ["brand", { brand: "impossible-brand" }],
   ["effect", { effect: "Impossible Effect" }],

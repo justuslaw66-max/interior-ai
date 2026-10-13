@@ -47,6 +47,12 @@ old client projection.
 | Full YAML price/currency, installation, wet-area/slip data, source notes/region, checkout, and QA fields | C/E — server/admin/BOM or not in former client runtime | Canonical YAML and `catalog-registry` | `surface-material-bom.ts`, share CSV/PDF, and admin/audit code use the canonical validated server record. These fields were never in the former generated client runtime and are not duplicated into either new projection. |
 | Test-only material records | D — tests only | Test fixture generated module | Schema and fixture-isolation tests import them directly; production output and chunks contain no test marker. |
 
+Added since: `classification.outdoor` (13 Oct 2026), class B, in the lazy catalog metadata of outdoor floors only (other
+entries' metadata is unchanged): `uses`, `laying` and `indoor_twin_ids`, built by the generator from the YAML's
+`classification.outdoor_uses` and `physical_specs.installation_method` and the same colour's indoor floor entries
+(`lib/surface-material-outdoor.ts`). The surface search reads it; nothing else does yet. See
+`docs/architecture/surface-material-outdoor-tiles.md`.
+
 ## Runtime and loading contract
 
 `lib/surface-material-runtime.ts` synchronously decodes the compact render

@@ -29,6 +29,7 @@ source:
     - "Collection page sizes: 80x80, 60x120, 60x90, 60x60, 30x120."
     - "Slip rating and outdoor use: ABK's colour pages give every Plein Air format as R11 (anti-slip), 20 mm, and the collection page describes it for exterior spaces."
     - "ABK's pages did not expose package quantity, price, or seamless texture QA data."
+    - "Laying: glued on a screed, dry on grass, dry on gravel or sand, or raised, the four ways Gardenia names for Native (https://blog.gardenia.it/en/outdoor-tiles-here-are-the-gardenia-collections, read 2026-10-13)."
 classification:
   flooring_type: tile
   design_effect: concrete
@@ -52,6 +53,13 @@ classification:
     - balcony
     - commercial
     - hospitality
+  outdoor_uses:
+    - terrace
+    - balcony
+    - patio
+    - garden
+    - path
+    - pool_edge
 physical_specs:
   plank_or_tile_format: tile
   plank_width_mm: null
@@ -62,6 +70,9 @@ physical_specs:
   wear_layer_mm: null
   installation_method:
     - direct_stick
+    - dry_lay_on_grass
+    - dry_lay_on_gravel_or_sand
+    - raised_installation
   waterproof: null
   slip_rating: R11
   suitable_for_wet_area: null
