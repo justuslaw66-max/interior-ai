@@ -254,6 +254,25 @@ assert.match(
   /holderRef\.current\?\.contains\(target\)\) return;[\s\S]*?getElementById\(CATALOG_FILTERS_TOGGLE_ID\)\?\.contains\(target\)\) return;[\s\S]*?addEventListener\("pointerdown", closeOnOutsidePointer\)/
 );
 
+// AX5: the product drawer is on the shared lifecycle, with its own markup. Focus goes back to the
+// product's action, found again by product and source, and nothing is restored when the catalogue
+// goes. The transparent layer is the dialog, so a press on it closes the drawer.
+const catalogDrawerLifecycle = read("components/catalog/useCatalogDrawerFocusRestoration.ts");
+assert.match(
+  catalogDrawerLifecycle,
+  /useEditorDialogLifecycle\(\{[\s\S]*?resolveReturnFocusTarget,[\s\S]*?cancelFocusRestorationOnUnmount: true, manageBackground: true,\s*lockBodyScroll: true/
+);
+assert.doesNotMatch(
+  catalogDrawerLifecycle,
+  /addEventListener\("keydown"|body\.style\.overflow/,
+  "the product drawer has no trap or scroll lock of its own"
+);
+assert.match(
+  read("components/catalog/CatalogItemDrawer.tsx"),
+  /ref=\{dialogRef\} tabIndex=\{-1\} role="dialog" aria-modal="true" aria-labelledby=\{titleId\}[\s\S]*?data-testid="catalog-item-drawer-backdrop"[\s\S]*?event\.target === event\.currentTarget\) requestClose\(\)/
+);
+assert.match(dialogFocusRestoration, /const resolve = options\.resolveReturnFocusTarget;/);
+
 // Present & export retired in phase 4's small PR: Share and Download are in the command bar.
 assert.ok(
   !existsSync(join(process.cwd(), "components/editor/design-page/PresentExportDialog.tsx")),

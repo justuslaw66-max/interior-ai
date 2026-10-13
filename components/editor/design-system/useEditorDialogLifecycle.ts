@@ -37,6 +37,7 @@ type EditorDialogLifecycleOptions = {
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string; returnFocusIds?: readonly string[];
+  resolveReturnFocusTarget?: () => HTMLElement | null; // Keep it stable: a new one restarts the session.
   focusRestorationEnabledRef?: { current: boolean };
   hideWhenSuperseded: boolean; cancelFocusRestorationOnUnmount: boolean;
   manageBackground: boolean;
@@ -51,7 +52,7 @@ type DialogSessionOptions = Pick<
   | "panelRef"
   | "closeButtonRef"
   | "initialFocusRef"
-  | "returnFocusId" | "returnFocusIds" | "focusRestorationEnabledRef" | "hideWhenSuperseded"
+  | "returnFocusId" | "returnFocusIds" | "resolveReturnFocusTarget" | "focusRestorationEnabledRef" | "hideWhenSuperseded"
   | "manageBackground"
   | "lockBodyScroll"
   | "waitForEntryTransition"
@@ -296,7 +297,7 @@ function useDialogSessionEffects(
 ) {
   const {
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
-    returnFocusId, returnFocusIds, focusRestorationEnabledRef,
+    returnFocusId, returnFocusIds, resolveReturnFocusTarget, focusRestorationEnabledRef,
     hideWhenSuperseded, manageBackground, waitForEntryTransition,
     lockBodyScroll,
   } = options;
@@ -307,13 +308,13 @@ function useDialogSessionEffects(
     cancelPendingRestoration(restoreFrameRef);
     return registerDialogSession({
       dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded, manageBackground,
+      returnFocusIds, resolveReturnFocusTarget, focusRestorationEnabledRef, hideWhenSuperseded, manageBackground,
       lockBodyScroll, waitForEntryTransition, generation, requestClose,
       closeDisabledRef, openerRef, restoreFrameRef, generationRef, unmountedRef,
     });
   }, [
     closeButtonRef, closeDisabledRef, dialogRef, generationRef, initialFocusRef,
-    panelRef, requestClose, restoreFrameRef, returnFocusId, returnFocusIds,
+    panelRef, requestClose, restoreFrameRef, returnFocusId, returnFocusIds, resolveReturnFocusTarget,
     focusRestorationEnabledRef, unmountedRef, hideWhenSuperseded,
     manageBackground, waitForEntryTransition,
     lockBodyScroll,
@@ -332,7 +333,7 @@ function useDialogSessionEffects(
 
 export function useEditorDialogLifecycle({
   open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
-  returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
+  returnFocusId, returnFocusIds, resolveReturnFocusTarget, focusRestorationEnabledRef, hideWhenSuperseded,
   cancelFocusRestorationOnUnmount, manageBackground, waitForEntryTransition,
   lockBodyScroll = false,
   closeDisabled, onClose,
@@ -355,7 +356,7 @@ export function useEditorDialogLifecycle({
   useDialogSessionEffects(
     {
       open, dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
+      returnFocusIds, resolveReturnFocusTarget, focusRestorationEnabledRef, hideWhenSuperseded,
       cancelFocusRestorationOnUnmount, manageBackground,
       lockBodyScroll, waitForEntryTransition, closeDisabled,
       onClose,

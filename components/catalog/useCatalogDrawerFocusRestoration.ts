@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useEditorDialogLifecycle } from "@/components/editor/design-system/useEditorDialogLifecycle";
 
 export type CatalogDrawerFocusSource = "product-card" | "compare-tray";
 
@@ -18,15 +19,6 @@ export type CatalogDrawerFocusRestorationRequest = {
 
 const SEMANTIC_TARGET_SELECTOR = "[data-catalog-drawer-focus-product-id]";
 const FALLBACK_SELECTOR = "[data-catalog-drawer-focus-fallback]";
-const MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[aria-modal="true"]';
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
 
 export function getCatalogDrawerFocusAttributes(target: CatalogDrawerFocusTarget) {
   return {
@@ -112,48 +104,6 @@ function isActionable(element: HTMLElement) {
   return !(element instanceof HTMLButtonElement || element instanceof HTMLInputElement) || !element.disabled;
 }
 
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(isActionable);
-}
-
-function handleDrawerKeyDown(event: KeyboardEvent, panel: HTMLElement, onClose: () => void) {
-  if (!(event.target instanceof Node) || !panel.contains(event.target)) return;
-  if (event.key === "Escape") {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    onClose();
-    return;
-  }
-  if (event.key !== "Tab") return;
-  const focusable = getFocusableElements(panel);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    panel.focus();
-    return;
-  }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-  if (event.shiftKey && (active === first || !panel.contains(active))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-function hasAnotherActiveModal(excludedModal?: HTMLElement | null) {
-  return Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR)).some(
-    (modal) => modal !== excludedModal && isVisible(modal)
-  );
-}
-
-function focusDrawerOnEntry(panel: HTMLElement | null, initialFocus: HTMLElement | null) {
-  if (!panel || !initialFocus || hasAnotherActiveModal(panel) || !isActionable(initialFocus)) return;
-  initialFocus.focus();
-}
-
 function findCurrentSemanticTarget(request: CatalogDrawerFocusRestorationRequest) {
   if (matchesTarget(request.directElement, request.target) && isActionable(request.directElement)) {
     return request.directElement;
@@ -167,78 +117,57 @@ function findCurrentSemanticTarget(request: CatalogDrawerFocusRestorationRequest
   );
 }
 
-function restoreCatalogDrawerFocus(request: CatalogDrawerFocusRestorationRequest | null) {
-  if (!request?.catalogScope.isConnected || hasAnotherActiveModal()) return;
+/**
+ * Where focus goes back to when the product drawer closes: the action that opened it, found again
+ * by product and source even if the catalogue has rendered it anew, else the results' fallback.
+ */
+export function resolveCatalogDrawerReturnTarget(request: CatalogDrawerFocusRestorationRequest | null) {
+  if (!request?.catalogScope.isConnected) return null;
   const target =
     findCurrentSemanticTarget(request) ??
     request.catalogScope.querySelector<HTMLElement>(FALLBACK_SELECTOR);
-  if (!target || !isActionable(target)) return;
-  target.focus({ preventScroll: true });
+  return target && isActionable(target) ? target : null;
 }
 
-type CatalogDrawerFocusRestorationOptions = {
+type CatalogDrawerDialogOptions = {
   open: boolean;
   contentAvailable: boolean;
+  dialogRef: RefObject<HTMLElement | null>;
   panelRef: RefObject<HTMLElement | null>;
-  initialFocusRef: RefObject<HTMLElement | null>;
+  closeButtonRef: RefObject<HTMLButtonElement | null>;
   restorationRequest: CatalogDrawerFocusRestorationRequest | null;
   onClose: () => void;
 };
 
-export function useCatalogDrawerFocusRestoration(options: CatalogDrawerFocusRestorationOptions) {
-  const { open, contentAvailable, panelRef, initialFocusRef, restorationRequest, onClose } =
-    options;
+/**
+ * The product drawer on the shared dialog lifecycle (UX AX5): Close takes focus, Tab stays in the
+ * drawer, Escape closes it, the page behind is inert and doesn't scroll, and a newer modal keeps
+ * Escape and focus. Closing returns focus to the product's action; when the catalogue goes (a
+ * step change), nothing is restored. The drawer closes itself when its product is no longer
+ * available.
+ */
+export function useCatalogDrawerDialog(options: CatalogDrawerDialogOptions) {
+  const { open, contentAvailable, dialogRef, panelRef, closeButtonRef, restorationRequest, onClose } = options;
   const onCloseRef = useRef(onClose);
-  const restoreFrameRef = useRef<number | null>(null);
-  const restorationGenerationRef = useRef(0);
-  const unmountedRef = useRef(false);
-
+  const requestRef = useRef(restorationRequest);
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
-
+  // Closing clears the request, so keep the one the drawer was open with.
+  useEffect(() => {
+    if (open) requestRef.current = restorationRequest;
+  }, [open, restorationRequest]);
   useEffect(() => {
     if (!shouldCloseCatalogDrawerForUnavailableContent(open, contentAvailable)) return;
     onCloseRef.current();
   }, [contentAvailable, open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const generation = restorationGenerationRef.current + 1;
-    restorationGenerationRef.current = generation;
-    if (restoreFrameRef.current !== null) window.cancelAnimationFrame(restoreFrameRef.current);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const entryFrame = window.requestAnimationFrame(() =>
-      focusDrawerOnEntry(panelRef.current, initialFocusRef.current)
-    );
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const panel = panelRef.current;
-      if (panel && !hasAnotherActiveModal(panel)) {
-        handleDrawerKeyDown(event, panel, () => onCloseRef.current());
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.cancelAnimationFrame(entryFrame);
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      restoreFrameRef.current = window.requestAnimationFrame(() => {
-        restoreFrameRef.current = null;
-        if (unmountedRef.current || restorationGenerationRef.current !== generation) return;
-        restoreCatalogDrawerFocus(restorationRequest);
-      });
-    };
-  }, [initialFocusRef, open, panelRef, restorationRequest]);
-
-  useEffect(() => {
-    unmountedRef.current = false;
-    return () => {
-      unmountedRef.current = true;
-      restorationGenerationRef.current += 1;
-      if (restoreFrameRef.current !== null) window.cancelAnimationFrame(restoreFrameRef.current);
-    };
-  }, []);
+  const resolveReturnFocusTarget = useCallback(
+    () => resolveCatalogDrawerReturnTarget(requestRef.current),
+    []
+  );
+  return useEditorDialogLifecycle({
+    open: open && contentAvailable, dialogRef, panelRef, closeButtonRef, resolveReturnFocusTarget,
+    hideWhenSuperseded: false, cancelFocusRestorationOnUnmount: true, manageBackground: true,
+    lockBodyScroll: true, waitForEntryTransition: false, closeDisabled: false, onClose,
+  });
 }
