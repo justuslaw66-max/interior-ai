@@ -403,7 +403,7 @@ assert.deepEqual(collectionCards(isDorica, "wall_tile"), [
 const oxideSizes = ["120x280", "120x120", "60x120", "80x80"];
 for (const category of ["flooring", "wall_tile"]) {
   assert.deepEqual(collectionCards(isOxide, category), [
-    ["Oxide Alluminum", oxideSizes],
+    ["Oxide Aluminum", oxideSizes],
     ["Oxide Brass", oxideSizes],
     ["Oxide Green", oxideSizes],
     ["Oxide Iron", oxideSizes],
@@ -438,6 +438,7 @@ assert.deepEqual(collectionFaceRows(isDorica), [
   ["greige", "1200x1200", 8, "1200x1200", "0010004_01.webp"],
   ["greige", "1200x600", 16, "600x1200", "0010007_01.webp"],
 ]);
+// Oxide Aluminum's ids keep the July import's "alluminum"; its names follow ABK (J, 13 Oct 2026).
 assert.deepEqual(collectionFaceRows(isOxide), [
   ["alluminum", "1200x1200", 7, "1200x1200", "g69310_01.webp"],
   ["alluminum", "1200x600", 14, "600x1200", "g69320_01.webp"],
