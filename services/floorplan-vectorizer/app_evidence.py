@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.26.1"
+VERSION = "app-evidence-0.27.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -5095,6 +5095,7 @@ def build(m, gray=None):
     if ONE_T:
         out["diagnostics"]["wallThicknessUnified"] = unify_wall_thickness(out, (scale_work / k_len) if (scale_work and k_len) else None)
     out["diagnostics"]["jogFacesFlushed"] = flush_jog_faces(out, FLUSH_JOGS) if FLUSH_JOGS > 0 else 0
+    out["diagnostics"]["facesFitToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES) if FIT_FACES > 0 else 0
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels}
@@ -5301,6 +5302,522 @@ def flush_jog_faces(out, tol):
                 print("flush jog: room %d side %d, %s moved %.2f px (faces %.2f off, jog %.2f -> %.2f)" % (
                     ri, i, which, shift, best, jog, new_jog), file=sys.stderr)
     return moved
+
+
+# Round 35 - wall and window faces where the drawing has them.  The traced centre-lines and the one-thickness-per-wall-line
+# rule put every piece of a wall line on one centre-line with one thickness.  The drawing often has thick blocks (RC walls,
+# columns) with thin windows or infill between them, the thin piece flush with one face of the blocks (J, 13 Oct, on his
+# own HDB plan: the top window of BEDROOM 3 is a thin band flush with the room side of the two columns, and the app made it
+# a 400 mm window wall); and a wall, a window and a column of one wall line drawn flush on one face came out with their
+# centre-lines 4 and 8 px apart, a step in both faces.  Each level / plumb wall and window piece takes the faces the drawing
+# shows (the dark band across it, measured on the work image; a wall drawn as two outlines is one band), faces of one wall
+# line within FIT_FACES px (or 0.2 T) of each other are made one straight face, and where two pieces of one line now differ
+# in centre-line by a pixel or more a short jog joins them.  Guards: a wall's band stays near its trace and never thins it
+# to one drawn line or under 80 mm; a window's band stays within its line's walls, and the window never stands out past
+# them; two rooms' pieces over one stretch of wall take both their faces.  A wall line whose change leans a side, makes an
+# outline double back, gives the app a geometry problem it did not have, or fails, is put back exactly as it was.
+FIT_FACES = float(os.environ.get("AE_FIT_FACES", "1.5"))
+FIT_FACES_LOG = os.environ.get("AE_FIT_FACES_LOG")
+
+
+def _from_source(S, X, Y, _cache={}):
+    """source px -> working px (the inverse of ToSource)"""
+    x, y = X * S.pre, Y * S.pre
+    if S.Hi is not None:
+        Hm = _cache.get(id(S))
+        if Hm is None:
+            Hm = _cache[id(S)] = np.linalg.inv(S.Hi)
+        q = Hm @ np.array([x, y, 1.0])
+        x, y = float(q[0] / q[2]), float(q[1] / q[2])
+    else:
+        dx, dy = x - S.cx, y - S.cy
+        x, y = S.cx + S.a * dx + S.b * dy, S.cy - S.b * dx + S.a * dy
+    return (x - S.ox) * S.ws, (y - S.oy) * S.ws
+
+
+def _sample(gray, x, y):
+    H_, W_ = gray.shape
+    if not (0 <= x < W_ - 1 and 0 <= y < H_ - 1):
+        return 255.0
+    x0, y0 = int(x), int(y); fx, fy = x - x0, y - y0
+    g = gray[y0:y0 + 2, x0:x0 + 2].astype(np.float64)
+    return float(g[0, 0] * (1 - fx) * (1 - fy) + g[0, 1] * fx * (1 - fy) + g[1, 0] * (1 - fx) * fy + g[1, 1] * fx * fy)
+
+
+def drawn_band(gray, S, ax, c, a, b, t, multi=False):
+    """the dark band the drawing has across a level (ax 'h': centre-line y = c, from x = a to b) or plumb edge, in source
+    px: (lo, hi) as medians over stations at 20-80 % of its length, or None when fewer than 60 % of them show one.  At a
+    station the band is the dark run (darker than halfway between the paper and the darkest point within t/2 of the
+    centre-line) through that darkest point, gaps of up to 0.75 t bridged in a wall (one drawn as two outlines) and 0.5 t in a
+    window (several thin lines)."""
+    step = 0.5
+    reach = t / 2.0 + max(3.0, 0.5 * t)
+    offs = np.arange(-reach, reach + 1e-9, step)
+    inner = np.abs(offs) <= t / 2.0
+    gap = (max(1.5, 0.5 * t) if multi else max(1.0, 0.75 * t)) / step    # a window: frame and glass lines; a wall: drawn
+                                                                         # solid, or as two outlines (room4, J's plan)
+    L = b - a
+    n = max(3, min(40, int(L / 2.0)))
+    lows, highs = [], []
+    for s in np.linspace(a + 0.2 * L, a + 0.8 * L, n):
+        v = np.array([_sample(gray, *_from_source(S, *((s, c + d) if ax == "h" else (c + d, s)))) for d in offs])
+        paper, i_dark = float(np.percentile(v, 90)), int(np.argmin(np.where(inner, v, 1e9)))
+        if paper - v[i_dark] < 40.0:
+            continue
+        dark = v < (paper + v[i_dark]) / 2.0
+        lo = hi = i_dark
+        miss = 0
+        for i in range(i_dark - 1, -1, -1):
+            if dark[i]:
+                lo, miss = i, 0
+            else:
+                miss += 1
+                if miss > gap:
+                    break
+        miss = 0
+        for i in range(i_dark + 1, len(offs)):
+            if dark[i]:
+                hi, miss = i, 0
+            else:
+                miss += 1
+                if miss > gap:
+                    break
+        if lo == 0 or hi == len(offs) - 1:
+            continue                                         # the run leaves the window: not one band
+        lows.append(offs[lo] - step / 2.0); highs.append(offs[hi] + step / 2.0)
+    if len(lows) < 0.6 * n:
+        return None
+    return c + float(np.median(lows)), c + float(np.median(highs))
+
+
+def _corner_keys(E, rooms):
+    """one key per corner: rooms' corners and edges' ends within half a pixel of each other are the same corner (welding
+    leaves some a few tenths apart)"""
+    canon, grid = {}, {}
+    def key(p):
+        k6 = (round(p[0], 6), round(p[1], 6))
+        if k6 in canon:
+            return canon[k6]
+        gx, gy = int(math.floor(p[0] / 0.5)), int(math.floor(p[1] / 0.5))
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for q in grid.get((gx + dx, gy + dy), ()):
+                    if abs(q[0] - p[0]) <= 0.5 and abs(q[1] - p[1]) <= 0.5:
+                        canon[k6] = q
+                        return q
+        grid.setdefault((gx, gy), []).append(k6); canon[k6] = k6
+        return k6
+    for e in E:
+        for v in e["sourcePx"]:
+            key(v)
+    for r in rooms:
+        for q in r["sourcePoints"]:
+            key((q["x"], q["y"]))
+    return key
+
+
+def _drawn_pieces(E, gray, S, mm_px):
+    """1  the pieces: level / plumb edges, with the drawn band of each wall and window.  A wall's band must lie within its
+    trace (a quarter of its thickness either side) and never thins it to one drawn line or under 80 mm; a window's band is
+    checked against its line's walls later (_line_plan)."""
+    pcs = {}
+    for e in E:
+        (x0, y0), (x1, y1) = e["sourcePx"][:2]
+        t = float(e.get("thicknessPx") or 0)
+        if t <= 0:
+            continue
+        if abs(y0 - y1) < 1e-6 and abs(x0 - x1) > 1e-6:
+            ax, c, a, b = "h", y0, min(x0, x1), max(x0, x1)
+        elif abs(x0 - x1) < 1e-6 and abs(y0 - y1) > 1e-6:
+            ax, c, a, b = "v", x0, min(y0, y1), max(y0, y1)
+        else:
+            continue
+        kind = (e.get("opening") or {}).get("kind") or "wall"
+        band = None
+        if kind in ("wall", "window") and b - a >= max(6.0, 0.5 * t):
+            band = drawn_band(gray, S, ax, c, a, b, t, multi=(kind == "window"))
+        if band:
+            w = band[1] - band[0]
+            if kind == "wall":
+                m_out = max(2.0, 0.25 * t)
+                if not (0.45 * t <= w <= 1.8 * t) or band[0] < c - t / 2.0 - m_out or band[1] > c + t / 2.0 + m_out \
+                        or w < max(0.6 * t, min(t, 80.0 / mm_px if mm_px else 0.0)):
+                    band = None
+            elif not (max(2.5, 0.12 * t) <= w <= 1.15 * t):
+                band = None
+        pcs[e["id"]] = {"e": e, "ax": ax, "c": c, "a": a, "b": b, "t": t, "kind": kind, "band": band,
+                        "ends": [tuple(e["sourcePx"][0]), tuple(e["sourcePx"][1])]}
+    return pcs
+
+
+def _wall_lines(pcs, key):
+    """2  wall lines: pieces of one axis meeting end to end, directly or through a jog across the line no longer than the
+    larger thickness, and twins (two rooms' pieces over one stretch of one wall, one room seeing a wall where the other sees
+    a window) even where their ends do not meet.  Returns (neighbours per piece, the lines of two pieces or more)."""
+    at = {}
+    for pid, p in pcs.items():
+        for q in p["ends"]:
+            at.setdefault(key(q), []).append(pid)
+    def along(p, q):
+        return q[0] if p["ax"] == "h" else q[1]
+    nb = {pid: set() for pid in pcs}
+    for pid, p in pcs.items():
+        for q in p["ends"]:
+            for oid in at.get(key(q), []):
+                if oid == pid:
+                    continue
+                if pcs[oid]["ax"] == p["ax"]:
+                    nb[pid].add(oid)
+                    continue
+                j = pcs[oid]
+                if j["b"] - j["a"] <= max(p["t"], 1.0) and j["kind"] == "wall":
+                    far = j["ends"][1] if key(j["ends"][0]) == key(q) else j["ends"][0]
+                    for rid in at.get(key(far), []):
+                        if rid not in (pid, oid) and pcs[rid]["ax"] == p["ax"] and abs(along(p, q) - along(p, far)) < 1e-6:
+                            nb[pid].add(rid); nb[rid].add(pid)
+    by_ax = {}
+    for p in pcs.values():
+        by_ax.setdefault(p["ax"], []).append(p)
+    for ps_ in by_ax.values():
+        ps_.sort(key=lambda p: p["c"])
+        for i, p in enumerate(ps_):
+            for q in ps_[i + 1:]:
+                if q["c"] - p["c"] >= 0.5:
+                    break
+                if min(p["b"], q["b"]) - max(p["a"], q["a"]) > 0.5:
+                    nb[p["e"]["id"]].add(q["e"]["id"]); nb[q["e"]["id"]].add(p["e"]["id"])
+    seen, lines = set(), []
+    for pid in pcs:
+        if pid in seen:
+            continue
+        comp, stack = [], [pid]; seen.add(pid)
+        while stack:
+            u = stack.pop(); comp.append(u)
+            for w in sorted(nb[u]):                         # (sorted: a set's order follows the hash seed)
+                if w not in seen:
+                    seen.add(w); stack.append(w)
+        if len(comp) > 1:
+            lines.append(comp)
+    return nb, lines
+
+
+def _face_lines(P, tol_):
+    """3  each piece's faces: the drawn faces of the line clustered within tol_ (length-weighted) on each side, a piece
+    taking the cluster nearest its own face when within tol_"""
+    new = {}
+    for side in (0, 1):
+        vals = sorted((p["band"][side], max(p["b"] - p["a"], 1e-6)) for p in P if p["band"])
+        groups = []
+        for v, w in vals:
+            if groups and v - groups[-1][-1][0] <= tol_:
+                groups[-1].append((v, w))
+            else:
+                groups.append([(v, w)])
+        lines_ = [sum(v * w for v, w in g) / sum(w for v, w in g) for g in groups]
+        for p in P:
+            f = p["band"][side] if p["band"] else p["c"] + (p["t"] / 2.0 if side else -p["t"] / 2.0)
+            near = min(lines_, key=lambda L_: abs(L_ - f)) if lines_ else None
+            new.setdefault(id(p), [None, None])[side] = near if near is not None and abs(near - f) <= tol_ else f
+    return new
+
+
+def _drop_stray_window_bands(P):
+    """a window's drawn faces stand within its line's traced walls (a window traced off the wall's middle still has its
+    frame there, J's BEDROOM 3), or within its own trace where the line has no walls: else the band is not the window's"""
+    tw = [(p["c"] - p["t"] / 2.0, p["c"] + p["t"] / 2.0) for p in P if p["kind"] == "wall"]
+    for p in P:
+        if p["kind"] == "window" and p["band"]:
+            lo_, hi_ = (min(f[0] for f in tw), max(f[1] for f in tw)) if tw else (p["c"] - p["t"] / 2.0, p["c"] + p["t"] / 2.0)
+            m_out = max(2.0, 0.25 * p["t"])
+            if p["band"][0] < lo_ - m_out or p["band"][1] > hi_ + m_out:
+                p["band"] = None
+
+
+def _clamp_windows(P, new):
+    """no face of a window stands out past its line's walls' outermost faces (a ledge or railing line drawn beside the
+    frame, J's BEDROOM 2)"""
+    walls_ = [new[id(p)] for p in P if p["kind"] == "wall"]
+    if not walls_:
+        return
+    env = (min(f[0] for f in walls_), max(f[1] for f in walls_))
+    for p in P:
+        if p["kind"] == "window" and p["band"]:
+            lo, hi = max(new[id(p)][0], env[0]), min(new[id(p)][1], env[1])
+            new[id(p)] = [lo, hi] if hi - lo >= max(1.0, 0.12 * p["t"]) else [p["c"] - p["t"] / 2.0, p["c"] + p["t"] / 2.0]
+
+
+def _line_plan(P, nb, key, tol_):
+    """3-5 for one wall line: {edge id: (centre-line, thickness)} of the pieces that change"""
+    ids = {p["e"]["id"]: p for p in P}
+    _drop_stray_window_bands(P)
+    new = _face_lines(P, tol_)
+    _clamp_windows(P, new)
+    # 4  doors and passages take the faces of the pieces they stand between when those agree
+    for p in P:
+        if p["kind"] in ("wall", "window") or p["band"]:
+            continue
+        ns = [ids[i] for i in sorted(nb[p["e"]["id"]]) if i in ids]
+        if ns and all(abs(new[id(n_)][0] - new[id(ns[0])][0]) <= 0.25 and abs(new[id(n_)][1] - new[id(ns[0])][1]) <= 0.25 for n_ in ns):
+            new[id(p)] = list(new[id(ns[0])])
+        else:
+            new[id(p)] = [p["c"] - p["t"] / 2.0, p["c"] + p["t"] / 2.0]
+    plan = {}
+    for p in P:
+        lo, hi = new[id(p)]
+        c2, t2 = (lo + hi) / 2.0, hi - lo
+        if t2 >= 1.0 and (abs(c2 - p["c"]) >= 0.25 or abs(t2 - p["t"]) >= 0.25):
+            plan[p["e"]["id"]] = (c2, t2)
+    if not plan:
+        return plan
+    # 5  pieces meeting end to end keep one centre-line unless they now differ by a pixel or more: such pieces are grouped
+    #    (through every joint under a pixel) and the group takes its length-weighted centre-line; twins take the faces of
+    #    both together (what the app draws of the two)
+    cen = {i: plan.get(i, (p["c"], p["t"]))[0] for i, p in ids.items()}
+    parent = {i: i for i in cen}
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for i, p in ids.items():
+        for oid in sorted(nb[i]):
+            if oid in ids and any(key(u) == key(v) for u in p["ends"] for v in ids[oid]["ends"]) and abs(cen[i] - cen[oid]) < 1.0:
+                parent[root(i)] = root(oid)
+    for p in P:
+        for q in P:
+            if p is not q and abs(p["c"] - q["c"]) < 0.5 and min(p["b"], q["b"]) - max(p["a"], q["a"]) > 0.5:
+                fp, fq = (plan.get(o["e"]["id"], (o["c"], o["t"])) for o in (p, q))
+                lo, hi = min(fp[0] - fp[1] / 2.0, fq[0] - fq[1] / 2.0), max(fp[0] + fp[1] / 2.0, fq[0] + fq[1] / 2.0)
+                plan[p["e"]["id"]] = plan[q["e"]["id"]] = ((lo + hi) / 2.0, hi - lo)
+                cen[p["e"]["id"]] = cen[q["e"]["id"]] = (lo + hi) / 2.0
+                parent[root(p["e"]["id"])] = root(q["e"]["id"])
+    groups_ = {}
+    for i in cen:
+        groups_.setdefault(root(i), []).append(i)
+    for g in groups_.values():
+        if len(g) < 2 or max(cen[i] for i in g) - min(cen[i] for i in g) < 1e-9:
+            continue
+        w_ = {i: max(ids[i]["b"] - ids[i]["a"], 1e-6) for i in g}
+        cm = sum(cen[i] * w_[i] for i in g) / sum(w_.values())
+        for i in g:
+            plan[i] = (cm, plan.get(i, (ids[i]["c"], ids[i]["t"]))[1])
+    return {i: v for i, v in plan.items() if abs(v[0] - ids[i]["c"]) >= 0.25 or abs(v[1] - ids[i]["t"]) >= 0.25}
+
+
+_NO_MM = object()
+
+
+def _snapshot(E, rooms):
+    return (list(E), [([list(v) for v in e["sourcePx"]], e["thicknessPx"], e.get("thicknessMm", _NO_MM)) for e in E],
+            [[dict(q) for q in r["sourcePoints"]] for r in rooms], [r["edgeIds"][:] for r in rooms])
+
+
+def _restore(E, rooms, saved):
+    """the edges (with any a jog's closing took out), their ends and thicknesses, and the rooms, exactly as before"""
+    E[:] = saved[0]
+    for e, (sp, t, tm) in zip(E, saved[1]):
+        if len(e["sourcePx"]) == len(sp):                    # in place: the scale estimate's door list shares these
+            for v, w in zip(e["sourcePx"], sp):
+                v[:] = w
+        else:
+            e["sourcePx"] = sp
+        e["thicknessPx"] = t
+        if tm is _NO_MM:
+            e.pop("thicknessMm", None)
+        else:
+            e["thicknessMm"] = tm
+    for r, sp, ids in zip(rooms, saved[2], saved[3]):
+        r["sourcePoints"] = sp; r["edgeIds"] = ids
+
+
+def fit_drawn_faces(out, gray, S, T, tol):
+    """Round 35 (see above).  Returns the number of pieces whose faces moved.  Each wall line is done on its own; a line
+    whose change leans a side, makes an outline double back, gives the app a geometry problem it did not have, or cannot be
+    done (an error is counted in the diagnostics as faceLinesThatFailed) is put back exactly as it was."""
+    if gray is None or tol <= 0:
+        return 0
+    E = out["wallEdges"]; rooms = out["rooms"]
+    key = _corner_keys(E, rooms)
+    tol_ = max(tol, 0.2 * T)
+    pcs = _drawn_pieces(E, gray, S, (out.get("scale") or {}).get("millimetresPerPixel"))
+    nb, lines = _wall_lines(pcs, key)
+    outlines = lambda: [[(q["x"], q["y"]) for q in r["sourcePoints"]] for r in rooms]
+    before, slant0, spike0 = {repr(p_) for p_ in app_geometry_problems(outlines())}, _slanted(out), _spikes(out)
+    moved = failed = 0
+    next_id = [max((int(e["id"][1:]) for e in E if e["id"][1:].isdigit()), default=0) + 1]
+    for comp in lines:
+        live = {e["id"] for e in E}                          # (a jog closed up by a line done before is gone)
+        P = [pcs[i] for i in comp if i in live]
+        for p in P:                                          # a line done before may have moved these pieces' ends
+            p["ends"] = [tuple(v) for v in p["e"]["sourcePx"][:2]]
+            u = [v[0] if p["ax"] == "h" else v[1] for v in p["ends"]]
+            p["a"], p["b"] = min(u), max(u)
+        P = [p for p in P if p["b"] - p["a"] > 1e-6]
+        if len(P) < 2:
+            continue
+        saved = _snapshot(E, rooms)
+        try:
+            plan = _line_plan(P, nb, key, tol_)
+            if not plan:
+                continue
+            res = _apply_face_plan(out, pcs, plan, nb, key, next_id, {p["e"]["id"] for p in P})
+        except Exception as ex:                              # a refinement: the line stays as traced, the export goes on
+            plan, res = {}, "it failed: %s: %s" % (type(ex).__name__, ex)
+            failed += 1
+        ok = res is True
+        if ok and _slanted(out) > slant0:
+            res, ok = "a side would lean", False
+        if ok and _spikes(out) > spike0:
+            res, ok = "an outline would double back (h1 low-res: a window moved past the corner its jog meets)", False
+        after = {repr(p_) for p_ in app_geometry_problems(outlines())} if ok else None
+        if not ok or after - before:
+            _restore(E, rooms, saved)
+            if FIT_FACES_LOG:
+                print("faces: line %s left (%s)" % (",".join(sorted(comp)), res if not ok else "app problem: %s" % sorted(after - before)[:2]), file=sys.stderr)
+            continue
+        before, slant0, spike0 = after, _slanted(out), _spikes(out)
+        moved += len(plan)
+        if FIT_FACES_LOG:
+            print("faces: line %s: %s" % (",".join(sorted(comp)), "; ".join("%s c %.1f->%.1f t %.1f->%.1f" % (
+                i, pcs[i]["c"], c2, pcs[i]["t"], t2) for i, (c2, t2) in sorted(plan.items()))), file=sys.stderr)
+    out.setdefault("diagnostics", {})["faceLinesThatFailed"] = failed
+    return moved
+
+
+def _spikes(out):
+    """places where a room's outline doubles back on itself along one line (a side and the next one level, or both plumb,
+    running opposite ways): the app takes the wall there as used twice by the loop"""
+    n = 0
+    for r in out["rooms"]:
+        P = [(q["x"], q["y"]) for q in r["sourcePoints"]]
+        for i in range(len(P)):
+            a, b, c = P[i - 1], P[i], P[(i + 1) % len(P)]
+            for k in (0, 1):
+                o = 1 - k
+                if abs(a[o] - b[o]) < 1e-6 and abs(b[o] - c[o]) < 1e-6 and (b[k] - a[k]) * (c[k] - b[k]) < 0:
+                    n += 1
+    return n
+
+
+def _slanted(out):
+    """room sides and wall edges that are neither level nor plumb"""
+    n = 0
+    for e in out["wallEdges"]:
+        (x0, y0), (x1, y1) = e["sourcePx"][:2]
+        n += abs(x0 - x1) > 1e-6 and abs(y0 - y1) > 1e-6
+    for r in out["rooms"]:
+        P = r["sourcePoints"]
+        for i in range(len(P)):
+            a, b = P[i], P[(i + 1) % len(P)]
+            n += abs(a["x"] - b["x"]) > 1e-6 and abs(a["y"] - b["y"]) > 1e-6
+    return n
+
+
+def _length(e):
+    (x0, y0), (x1, y1) = e["sourcePx"][:2]
+    return math.hypot(x1 - x0, y1 - y0)
+
+
+def _apply_face_plan(out, pcs, plan, nb, key, next_id, line_ids):
+    """moves the pieces of one wall line to their planned centre-lines and thicknesses: each end of a moved piece moves
+    across the line by the piece's shift - in every room and every edge that has it - where every other side meeting it
+    runs across the line (a corner or a jog); where it meets a piece of the same line that shifts by a different amount,
+    a jog is put in between.  False when an end cannot move cleanly (the line is then left as it was)."""
+    E = out["wallEdges"]; rooms = out["rooms"]
+    mm_px = (out.get("scale") or {}).get("millimetresPerPixel")
+    shift = {pid: plan[pid][0] - pcs[pid]["c"] for pid in plan}
+    moves, jogs = {}, []
+    for pid in plan:
+        p = pcs[pid]
+        for q in p["ends"]:
+            k_ = key(q)
+            same = [o for o in sorted(nb[pid]) if o in line_ids and any(key(v) == k_ for v in pcs[o]["ends"])]
+            other_side = [o for o in same if abs(shift.get(o, 0.0) - shift[pid]) >= 1e-6]
+            if other_side:
+                if len(same) != 1:
+                    return "a joint of %s with %d pieces of its line" % (pid, len(same))
+                o = other_side[0]
+                if o not in plan or pid < o:                 # (one jog per joint; a piece that stays never asks for one)
+                    jogs.append((k_, q, pid, o))
+                continue
+            d = shift[pid]
+            m_ = (q[0], q[1] + d) if p["ax"] == "h" else (q[0] + d, q[1])
+            if k_ in moves and moves[k_] != m_:
+                return "an end of %s pulled two ways" % pid
+            moves[k_] = m_
+    # every other side at a moving end must run across the line (else the end cannot slide along it): a room's side
+    # along the line there must be one of the moving pieces
+    for r in rooms:
+        Pp = [(q["x"], q["y"]) for q in r["sourcePoints"]]; ids = r["edgeIds"]; n = len(Pp)
+        for i in range(n):
+            if key(Pp[i]) not in moves:
+                continue
+            ax = next(pcs[pid]["ax"] for pid in plan if key(Pp[i]) in {key(v) for v in pcs[pid]["ends"]})
+            for j, eid in ((i - 1, ids[(i - 1) % n]), ((i + 1) % n, ids[i])):
+                a_, b_ = Pp[i], Pp[j]
+                along_line = abs(a_[1] - b_[1]) < 0.5 if ax == "h" else abs(a_[0] - b_[0]) < 0.5
+                if along_line and eid not in plan:
+                    return "a side along the line at %s (%s) that does not move with it" % (Pp[i], eid)
+    short_before = {e["id"] for e in E if _length(e) < 0.75}
+    for r in rooms:
+        for q in r["sourcePoints"]:
+            m_ = moves.get(key((q["x"], q["y"])))
+            if m_:
+                q["x"], q["y"] = m_
+    for e in E:
+        for v in e["sourcePx"]:
+            m_ = moves.get(key(v))
+            if m_:
+                v[0], v[1] = m_
+    # a jog between two pieces that now meet on one centre-line closes up: it is taken out of every room and the edges
+    # (only one this line's moves shortened: a short edge the trace already had is not this line's to take out)
+    gone = {e["id"] for e in E if e["id"] not in plan and not e.get("opening") and len(e["sourcePx"]) == 2
+            and _length(e) < 0.75} - short_before
+    for r in rooms:
+        ids = r["edgeIds"]
+        for i in range(len(ids) - 1, -1, -1):
+            if ids[i] in gone:
+                if len(ids) <= 3:
+                    return "a room would lose a side it needs"
+                n_ = len(ids)
+                del ids[i]
+                del r["sourcePoints"][i + 1 if i + 1 < n_ else i]   # (the side's end merges into its start)
+    E[:] = [e for e in E if e["id"] not in gone]
+    # jogs where two pieces of the line meet and shift by different amounts
+    for k_, q, pid, oid in jogs:
+        p, o = pcs[pid], pcs[oid]
+        dp, do = shift.get(pid, 0.0), shift.get(oid, 0.0)
+        qp = (q[0], q[1] + dp) if p["ax"] == "h" else (q[0] + dp, q[1])
+        qo = (q[0], q[1] + do) if p["ax"] == "h" else (q[0] + do, q[1])
+        if math.hypot(qp[0] - qo[0], qp[1] - qo[1]) < 1.0:
+            return "a jog under a pixel at %s" % (q,)
+        jid = "e%d" % next_id[0]; next_id[0] += 1
+        # the jog is as thick as it is long (at least a pixel), never thicker than either piece: a thicker jog would stand
+        # out past a short neighbour's end, across the wall it meets (BALCONY / BEDROOM 3 on J's plan)
+        tj = min(plan.get(pid, (p["c"], p["t"]))[1], plan.get(oid, (o["c"], o["t"]))[1], max(1.0, abs(dp - do)))
+        E.append({"id": jid, "kind": "wall_centerline", "sourcePx": [list(qp), list(qo)], "thicknessPx": round(tj, 2),
+                  "thicknessMm": int(round(tj * mm_px)) if mm_px else None, "opening": None})
+        for e in (p["e"], o["e"]):
+            for v in e["sourcePx"]:
+                if key(v) == k_:
+                    v[0], v[1] = qp if e is p["e"] else qo
+        for r in rooms:
+            Pp = [(q2["x"], q2["y"]) for q2 in r["sourcePoints"]]; ids = r["edgeIds"]; n = len(Pp)
+            for i in range(n):
+                if key(Pp[i]) != k_:
+                    continue
+                e_in, e_out = ids[(i - 1) % n], ids[i]       # side i-1 ends at point i, side i starts there
+                if {e_in, e_out} != {pid, oid}:
+                    return "a room meets the jog at %s from another side" % (q,)
+                first, second = (qp, qo) if e_in == pid else (qo, qp)
+                r["sourcePoints"][i:i + 1] = [{"x": first[0], "y": first[1]}, {"x": second[0], "y": second[1]}]
+                ids.insert(i, jid)
+                break
+    for pid, (c2, t2) in plan.items():
+        e = pcs[pid]["e"]
+        e["thicknessPx"] = round(t2, 2)
+        if e.get("thicknessMm") is not None and mm_px:
+            e["thicknessMm"] = int(round(t2 * mm_px))
+    return True
 
 
 def weld_shared_ends(rooms, tol):
