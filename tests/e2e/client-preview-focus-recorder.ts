@@ -289,12 +289,23 @@ export async function installClientPreviewFocusRecorder(page: Page) {
       return [...new Set(reasons)];
     };
 
+    // A modal dialog that opened after the exit (Upgrade to Pro, when the plan changed) makes the
+    // page behind it inert and hidden (AX5). The exit has still settled: the command bar waits
+    // behind that dialog. Everything else about the command bar must have settled.
+    const exitSettlementReasons = () =>
+      commandBarSettlementReasons().filter(
+        (reason) =>
+          !newerDialogOwnsFocus() ||
+          (reason !== "inert-target-or-ancestor" &&
+            reason !== "aria-hidden-target-or-ancestor")
+      );
+
     const advanceExitPhaseIfSettled = () => {
       if (phase === "C_EXIT_REQUESTED") setPhase("D_EXIT_SETTLING");
       if (
         phase === "D_EXIT_SETTLING" &&
         !previewIsActive() &&
-        commandBarSettlementReasons().length === 0
+        exitSettlementReasons().length === 0
       ) {
         setPhase("E_POST_EXIT_RESTORATION");
       }

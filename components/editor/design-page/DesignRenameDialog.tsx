@@ -19,8 +19,6 @@ export type DesignRenameDialogProps = {
   returnFocusIds?: readonly string[];
   /** Saving (My designs waits for the server): Save stays off. */
   busy?: boolean;
-  /** Hides everything else from assistive technology while open (My designs' page). */
-  manageBackground?: boolean;
 };
 
 /**
@@ -35,7 +33,7 @@ export function DesignRenameDialog({
   onValueChange,
   onCancel,
   onSave,
-  returnFocusIds = DESIGN_RENAME_RETURN_FOCUS_IDS, busy = false, manageBackground = false,
+  returnFocusIds = DESIGN_RENAME_RETURN_FOCUS_IDS, busy = false,
 }: DesignRenameDialogProps) {
   const canSave = value.trim().length > 0 && !busy;
   return (
@@ -44,7 +42,7 @@ export function DesignRenameDialog({
       title="Rename design"
       onClose={onCancel}
       closeLabel="Close Rename design"
-      testId="design-rename-dialog" manageBackground={manageBackground}
+      testId="design-rename-dialog"
       returnFocusIds={returnFocusIds}
       dark={dark}
       forceLight={!dark}
