@@ -10,6 +10,7 @@ import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
 import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
 import { AiLayoutRoomLimit } from "./AiLayoutRoomLimit";
+import { Button } from "@/components/ui/Button";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -284,13 +285,14 @@ export default function DesignControlsAiPanel({
         </div>
 
         <AiLayoutReadinessChecklist checks={readinessChecks} />
-        <button id={GUEST_AI_LAYOUT_OPENER_ID}
-          className="mt-4 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+        <Button
+          id={GUEST_AI_LAYOUT_OPENER_ID}
+          variant="primary" size="touch" className="mt-4 w-full"
           disabled={!briefReady}
           onClick={() => onRunAiLayout(requestedRoles)}
         >
           {aiLayoutProposal ? "Suggest another" : "Suggest a layout"}
-        </button>
+        </Button>
         <div className="mt-2 text-xs text-neutral-500">
           {briefReady
             ? "Review the result before saving, exporting, or shopping."
@@ -361,28 +363,25 @@ export default function DesignControlsAiPanel({
           )}
 
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white"
+            <Button
+              variant="primary" size="regular"
               onClick={onApplyAiLayoutProposal}
             >
               Apply layout
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-800"
+            </Button>
+            <Button
+              variant="secondary" size="regular"
               onClick={() => onTryAiLayoutAgain(requestedRoles)}
             >
               Try again
-            </button>
+            </Button>
           </div>
-          <button
-            type="button"
-            className="mt-2 text-xs font-semibold text-neutral-600"
+          <Button
+            variant="quiet" size="compact" className="mt-2"
             onClick={onClearAiLayoutProposal}
           >
             Dismiss proposal
-          </button>
+          </Button>
         </div>
       )}
     </div>

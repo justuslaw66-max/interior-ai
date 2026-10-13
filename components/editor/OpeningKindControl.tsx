@@ -7,6 +7,7 @@ import {
   type DesignPageOpeningMetricsPatch,
 } from "@/lib/design-page-opening-metrics";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { Button } from "@/components/ui/Button";
 
 type OpeningKindControlProps = {
   opening: Pick<
@@ -32,14 +33,13 @@ function BlockedKindPlan({
     >
       <div>{plan.explanation}</div>
       {proMode && plan.approvedOverridePatch ? (
-        <button
-          type="button"
+        <Button
           data-testid={`${testId}-approve-override`}
-          className="mt-2 rounded-md bg-amber-900 px-2 py-1 font-semibold text-white"
+          variant="primary" size="compact" className="mt-2"
           onClick={() => approve(plan.approvedOverridePatch!)}
         >
           Approve reviewed override
-        </button>
+        </Button>
       ) : <div className="mt-1">Open Pro tools to review an evidence override.</div>}
     </div>
   );

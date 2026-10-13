@@ -7,6 +7,7 @@ import {
 } from "@/components/editor/design-system/EditorDialog";
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
 import type { AINotesResponse } from "@/lib/design-page-types";
+import { Button } from "@/components/ui/Button";
 
 export type AiNotesDialogProps = {
   open: boolean;
@@ -78,13 +79,12 @@ export function AiNotesDialog({
                         {suggestion.label}
                       </p>
                       {canApplySuggestions ? (
-                        <button
-                          type="button"
+                        <Button
                           onClick={() => onApplySuggestion(suggestion.action)}
-                          className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white outline-hidden hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                          variant="primary" size="touch"
                         >
                           Apply
-                        </button>
+                        </Button>
                       ) : (
                         <button
                           type="button"

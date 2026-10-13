@@ -129,11 +129,11 @@
       "limit": 250
     },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
-      "lines": 445,
+      "lines": 438,
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 294,
+      "lines": 293,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -141,7 +141,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 293,
+      "lines": 289,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -177,7 +177,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
-      "lines": 645,
+      "lines": 621,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -185,7 +185,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 390,
+      "lines": 389,
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
@@ -193,7 +193,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 2958,
+      "lines": 2943,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -217,19 +217,19 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 648,
+      "lines": 646,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
-      "lines": 489,
+      "lines": 480,
       "limit": 250
     },
     "components/editor/FloorPlanUploadPanel.tsx": {
-      "lines": 777,
+      "lines": 766,
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 630,
+      "lines": 627,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
-      "lines": 511,
+      "lines": 510,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -1469,7 +1469,7 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 185
+        "maximum": 180
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -1491,13 +1491,13 @@
     "components/editor/design-controls-plan/WallPaintPicker.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 280
+        "maximum": 279
       }
     },
     "components/editor/design-page/AiNotesDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 96
+        "maximum": 95
       }
     },
     "components/editor/design-page/AuburnConfigurationSelector.tsx": {
@@ -1509,13 +1509,13 @@
     "components/editor/design-page/BetaStartPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 84
+        "maximum": 83
       }
     },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 375
+        "maximum": 367
       },
       "complexFunctions": {
         "count": 1,
@@ -1525,13 +1525,13 @@
     "components/editor/design-page/CloudSaveConflictDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 65
+        "maximum": 63
       }
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 202
+        "maximum": 200
       },
       "complexFunctions": {
         "count": 1,
@@ -1553,7 +1553,7 @@
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 218
+        "maximum": 213
       },
       "complexFunctions": {
         "count": 1,
@@ -1613,7 +1613,7 @@
     "components/editor/design-page/DesignValidationFeedback.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 166
+        "maximum": 163
       }
     },
     "components/editor/design-page/EditorCommandPalette.tsx": {
@@ -1625,7 +1625,7 @@
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 197
+        "maximum": 192
       },
       "complexFunctions": {
         "count": 1,
@@ -1663,7 +1663,7 @@
     "components/editor/design-page/LocalBackupRecoveryDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 80
+        "maximum": 78
       }
     },
     "components/editor/design-page/PlacedCabinetAssetMarkers.tsx": {
@@ -1679,13 +1679,13 @@
     "components/editor/design-page/PlanCanvasFocusControl.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 69
+        "maximum": 65
       }
     },
     "components/editor/design-page/PlanCanvasGuidance.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 71
+        "maximum": 69
       }
     },
     "components/editor/design-page/PlanManualQuickActions.tsx": {
@@ -1703,7 +1703,7 @@
     "components/editor/design-page/PlanRoomSummaryCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 116
+        "maximum": 115
       }
     },
     "components/editor/design-page/PlansDialog.tsx": {
@@ -1715,7 +1715,7 @@
     "components/editor/design-page/PlanTemplateChoiceDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 77
+        "maximum": 74
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
@@ -1757,7 +1757,7 @@
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 590
+        "maximum": 565
       },
       "complexFunctions": {
         "count": 1,
@@ -1789,7 +1789,7 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 305
+        "maximum": 303
       },
       "complexFunctions": {
         "count": 1,
@@ -1809,7 +1809,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 2835
+        "maximum": 2819
       },
       "complexFunctions": {
         "count": 2,
@@ -1949,13 +1949,13 @@
     "components/editor/FloorPlanCatalogResultList.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 108
+        "maximum": 106
       }
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 587
+        "maximum": 584
       },
       "complexFunctions": {
         "count": 1,
@@ -1965,7 +1965,7 @@
     "components/editor/FloorPlanImportHistory.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 448
+        "maximum": 438
       },
       "complexFunctions": {
         "count": 2,
@@ -1981,7 +1981,7 @@
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 116
+        "maximum": 115
       }
     },
     "components/editor/FloorPlanPageSelectionPanel.tsx": {
@@ -1999,7 +1999,7 @@
     "components/editor/FloorPlanUploadPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 647
+        "maximum": 635
       },
       "complexFunctions": {
         "count": 1,
@@ -2009,7 +2009,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 567
+        "maximum": 563
       },
       "complexFunctions": {
         "count": 1,
@@ -2121,7 +2121,7 @@
     "components/editor/RoomConnectionChecklist.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 88
+        "maximum": 84
       }
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -2149,7 +2149,7 @@
     "components/editor/SelectedItemDetailsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 440
+        "maximum": 438
       },
       "complexFunctions": {
         "count": 1,

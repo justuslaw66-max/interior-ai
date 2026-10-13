@@ -7,6 +7,7 @@ import {
   floorPlanPropertyEvidenceLabel,
   type FloorPlanConsumerMeasurementEvidenceV2,
 } from "@/lib/floor-plan-measured-property-mutations";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanPropertyEvidenceControlProps = {
   evidence: FloorPlanPropertyEvidenceV2 | null | undefined;
@@ -70,11 +71,13 @@ function EvidenceConfirmation({
           <option value="user_confirmed">I confirm this value</option>
           <option value="site_measured">Measured on site</option>
         </select>
-        <button type="button" className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 disabled:opacity-40"
+        <Button
+          variant="secondary" size="compact"
           disabled={disabled || (selectedEvidence === "site_measured" && measurementNote.trim().length < 4)}
-          onClick={() => onConfirm(selectedEvidence, measurementNote.trim() || undefined)}>
+          onClick={() => onConfirm(selectedEvidence, measurementNote.trim() || undefined)}
+        >
           Confirm displayed value
-        </button>
+        </Button>
       </div>
       {selectedEvidence === "site_measured" ? (
         <input aria-label="Site measurement method" className={controlClass} disabled={disabled} maxLength={240}

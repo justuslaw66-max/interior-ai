@@ -8,6 +8,7 @@ import {
   buildPlanRoomSummary,
   formatPlanRoomMetricLabel,
 } from "@/lib/plan-room-summary";
+import { Button } from "@/components/ui/Button";
 
 export type PlanRoomSummaryCardState = {
   rooms: HousePlanRoom2D[];
@@ -127,10 +128,9 @@ export function PlanRoomSummaryCard({
               <span className={`text-xs leading-4 ${mutedClass}`}>
                 Shift-click or ⌘/Ctrl-click rooms to compare.
               </span>
-              <button
-                type="button"
+              <Button
                 data-testid={hasAllRoomsSelected ? "clear-room-selection" : "select-all-rooms"}
-                className="shrink-0 rounded-md border border-neutral-200 px-2 py-1 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
+                variant="secondary" size="compact" className="shrink-0"
                 onClick={
                   hasAllRoomsSelected
                     ? actions.clearRoomSelection
@@ -138,7 +138,7 @@ export function PlanRoomSummaryCard({
                 }
               >
                 {hasAllRoomsSelected ? "Deselect all" : "Select all"}
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

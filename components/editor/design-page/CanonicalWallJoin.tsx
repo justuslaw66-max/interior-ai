@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
+import { Button } from "@/components/ui/Button";
 
 const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
 
@@ -30,7 +31,7 @@ export function CanonicalWallJoin({ floor, wall, commit }: {
       <label className="col-span-2">New room name after join<input className={inputStyle} value={roomName} onChange={(event) => setRoomName(event.target.value)} /></label>
       <p className="col-span-2">A dividing partition keeps the existing name on the boundary side reached from start to end. An enclosed loop keeps it with the surrounding space. The new room inherits finishes for review.</p>
       {!enabled && <p className="col-span-2 text-amber-700">Choose a free endpoint of a wall. An existing room corner or shared junction cannot be joined by this tool.</p>}
-      <button type="button" className="col-span-2 rounded border border-neutral-400 px-2 py-1.5 aria-disabled:opacity-40" aria-disabled={!enabled} onClick={join}>Join proposed endpoint</button>
+      <Button variant="secondary" size="compact" className="col-span-2" aria-disabled={!enabled} onClick={join}>Join proposed endpoint</Button>
     </div>
   </details>;
 }

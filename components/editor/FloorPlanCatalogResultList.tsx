@@ -6,6 +6,7 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 
 import { floorPlanOrientationLabel } from "./FloorPlanSelectionContext";
+import { Button } from "@/components/ui/Button";
 type ResultGroup = { projectName: string; plans: FloorPlanCatalogSearchResult[] };
 
 type FloorPlanCatalogResultListProps = {
@@ -87,24 +88,22 @@ export default function FloorPlanCatalogResultList({
                     <p data-testid="floor-plan-orientation" className={`mt-1 text-xs ${subtle}`}>{floorPlanOrientationLabel(result)} Preview shows the published source when available.</p>
                     <p className={`mt-1 text-xs leading-4 ${subtle}`}>{result.verificationNote}</p>
                     <div className="mt-3 grid gap-2">
-                      <button
-                        type="button"
+                      <Button
                         data-testid={`apply-address-floor-plan-${result.layoutId}`}
                         disabled={!canEdit || applyingResultId !== null}
                         aria-busy={isApplying}
                         onClick={() => onUse(result, true)}
-                        className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
+                        variant="primary" size="compact"
                       >
                         {isApplying ? "Opening…" : "Start a new design"}
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         disabled={!canEdit || applyingResultId !== null}
                         onClick={() => onUse(result, false)}
-                        className="rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                        variant="secondary" size="compact"
                       >
                         Replace current design…
-                      </button>
+                      </Button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3">
                       {result.sourceUrl && result.sourcePage !== null ? (

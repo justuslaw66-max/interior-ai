@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 
 export type PlanCanvasFocusMode = "scale" | "door" | "window" | "room";
 
@@ -60,42 +61,38 @@ export function PlanCanvasFocusControl({ state, actions }: PlanCanvasFocusContro
         )}
       </span>
       {state.canUndo && (
-        <button
-          type="button"
+        <Button
           data-testid="plan-focus-undo"
-          className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+          variant="secondary" size="compact" className="shrink-0"
           onClick={actions.undo}
         >
           Undo
-        </button>
+        </Button>
       )}
       {state.canClear && (
-        <button
-          type="button"
+        <Button
           data-testid="plan-focus-clear"
-          className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+          variant="secondary" size="compact" className="shrink-0"
           onClick={actions.clear}
         >
           Clear
-        </button>
+        </Button>
       )}
-      <button
-        type="button"
+      <Button
         data-testid="plan-focus-panel-toggle"
-        className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+        variant="secondary" size="compact" className="shrink-0"
         onClick={actions.togglePanel}
       >
         {state.focused ? "Panel" : "Focus"}
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
         data-testid="plan-focus-done"
         aria-label={state.guided ? "Finish plan focus mode" : "Cancel manual plan tool"}
-        className="shrink-0 rounded-lg bg-neutral-950 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800"
+        variant="primary" size="compact" className="shrink-0"
         onClick={actions.finish}
       >
         {state.guided ? "Done" : "Cancel"}
-      </button>
+      </Button>
     </div>
   );
 }

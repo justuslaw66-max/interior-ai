@@ -12,6 +12,7 @@ import type { RoomType } from "@/lib/room-types";
 import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
 import { RoomSetupStartActions } from "@/components/editor/RoomSetupStartActions";
 import { RoomSetupStatusBadge, roomSetupStatus } from "@/components/editor/RoomSetupStatusBadge";
+import { Button } from "@/components/ui/Button";
 
 export type ConsumerRoomSetupCardProps = {
   canEdit: boolean;
@@ -72,7 +73,6 @@ export function ConsumerRoomSetupCard({
   const labelClass = "text-xs font-semibold text-neutral-700";
   const inputClass = "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
   const secondaryActionClass = "min-h-11 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
-  const primaryActionClass = "min-h-11 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-blue-600/30 disabled:opacity-50";
 
   return (
     <section
@@ -173,15 +173,14 @@ export function ConsumerRoomSetupCard({
       ) : null}
 
       {!hasRooms ? (
-        <button
-          type="button"
+        <Button
           data-testid="guided-create-room"
-          className={`${primaryActionClass} mt-3 w-full`}
+          variant="primary" size="touch" className="mt-3 w-full"
           disabled={!canEditPlanGeometry}
           onClick={actions.createRoom}
         >
           Create {roomTypeLabel.toLowerCase()}
-        </button>
+        </Button>
       ) : (
         <div className="mt-3 grid gap-2">
           <div
@@ -197,35 +196,32 @@ export function ConsumerRoomSetupCard({
             {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
           </div>
           <div className="grid grid-cols-2 gap-2" aria-label="Doors & windows">
-            <button
-              type="button"
+            <Button
               data-testid="plan-tool-door"
-              className={secondaryActionClass}
+              variant="secondary" size="touch"
               disabled={!canEditPlanGeometry}
               onClick={() => actions.addOpening("door")}
             >
               Add door
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="plan-tool-window"
-              className={secondaryActionClass}
+              variant="secondary" size="touch"
               disabled={!canEditPlanGeometry}
               onClick={() => actions.addOpening("window")}
             >
               Add window
-            </button>
+            </Button>
           </div>
-          <button
-            type="button"
+          <Button
             data-testid="room-setup-continue-furnish"
-            className={primaryActionClass}
+            variant="primary" size="touch"
             disabled={!canEdit || hasConnectionBlockers}
             aria-describedby={hasConnectionBlockers ? "room-setup-opening-status" : undefined}
             onClick={actions.continueToFurnish}
           >
             Continue to Furnish
-          </button>
+          </Button>
         </div>
       )}
 

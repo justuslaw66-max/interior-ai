@@ -4,6 +4,7 @@ import { useRef } from "react";
 
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import type { DesignPageCloudSaveConflictState } from "@/lib/useDesignPagePersistence";
+import { Button } from "@/components/ui/Button";
 
 export type CloudSaveConflictDialogProps = {
   state: DesignPageCloudSaveConflictState | null;
@@ -59,25 +60,23 @@ export function CloudSaveConflictDialog({
         </p>
       ) : null}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <button
-          type="button"
+        <Button
           data-testid="cloud-conflict-reload"
-          className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+          variant="secondary" size="regular"
           disabled={state.isWorking}
           onClick={() => void onReloadCloudCopy()}
         >
           Discard local changes & reload
-        </button>
-        <button
+        </Button>
+        <Button
           ref={primaryActionRef}
-          type="button"
           data-testid="cloud-conflict-save-copy"
-          className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50"
+          variant="primary" size="regular"
           disabled={state.isWorking}
           onClick={() => void onSaveAsNewCopy()}
         >
           {state.isWorking ? "Resolving…" : "Save local as new copy"}
-        </button>
+        </Button>
       </div>
     </EditorDialog>
   );

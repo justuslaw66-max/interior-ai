@@ -20,6 +20,7 @@ import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfiguratio
 import { useFloorPlanExactSearchRequests } from "./useFloorPlanExactSearchRequests";
 import { useFloorPlanResultApplicationRequests } from "./useFloorPlanResultApplicationRequests";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanAddressSearchProps = {
   canEdit: boolean;
@@ -162,9 +163,9 @@ export default function FloorPlanAddressSearch({
           <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Directory requests are not available yet. You can still upload your own floor plan now.
           </p>
-          <button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} type="button" className={`${control} mt-2`} onClick={requestUpload}>
+          <Button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} variant="secondary" size="compact" className="mt-2" onClick={requestUpload}>
             Upload floor plan
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -197,10 +198,10 @@ export default function FloorPlanAddressSearch({
             compact
           />
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button type="button" className={control} onClick={cancelPendingApplication}>Cancel</button>
-            <button type="button" className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white" disabled={applicationDisabled} onClick={confirmPendingApplication}>
+            <Button variant="secondary" size="compact" onClick={cancelPendingApplication}>Cancel</Button>
+            <Button variant="primary" size="compact" disabled={applicationDisabled} onClick={confirmPendingApplication}>
               Use selected reviewed layout
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -219,14 +220,14 @@ export default function FloorPlanAddressSearch({
       ) : null}
 
       {hasExactInput && searchCursor ? (
-        <button type="button" className={`${control} mt-3 w-full`} disabled={status === "loading"} onClick={() => void loadMoreSearch()}>
+        <Button variant="secondary" size="compact" className="mt-3 w-full" disabled={status === "loading"} onClick={() => void loadMoreSearch()}>
           Show more matches
-        </button>
+        </Button>
       ) : null}
       {!hasAddress && browseOpen && browseCursor ? (
-        <button type="button" className={`${control} mt-3 w-full`} disabled={browseStatus === "loading"} onClick={() => void loadBrowse(browseCursor, true)}>
+        <Button variant="secondary" size="compact" className="mt-3 w-full" disabled={browseStatus === "loading"} onClick={() => void loadBrowse(browseCursor, true)}>
           Show more approved plans
-        </button>
+        </Button>
       ) : null}
     </section>
   );

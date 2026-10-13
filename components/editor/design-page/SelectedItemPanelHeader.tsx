@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 export type SelectedItemPanelLockLabel = "Lock" | "Unlock" | "Lock selected" | "Unlock selected";
 
 type SelectedItemPanelHeaderProps = {
@@ -19,14 +20,13 @@ export function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel,
       <span className="text-[13px] font-bold text-neutral-600">Selected</span>
       <div className="flex items-center gap-1">
         {isDesigner ? (
-          <button
-            type="button"
+          <Button
             disabled={!canEdit}
             onClick={onToggleLock}
-            className="min-h-8 rounded-lg border border-neutral-200 px-3 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50"
+            variant="secondary" size="compact"
           >
             {lockLabel}
-          </button>
+          </Button>
         ) : null}
         <button
           type="button"

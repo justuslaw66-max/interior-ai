@@ -10,6 +10,7 @@ import type {
 import type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
+import { Button } from "@/components/ui/Button";
 
 export type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
 
@@ -141,24 +142,22 @@ export function SelectedCabinetPanel({
                     : "Footprint unavailable"}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
+                  <Button
                     data-testid="selected-cabinet-center"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    variant="secondary" size="regular"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.center}
                   >
                     Centre
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     data-testid="selected-cabinet-snap-wall"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    variant="secondary" size="regular"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.snapToWall}
                   >
                     Snap wall
-                  </button>
+                  </Button>
                 </div>
                 <div className="mt-2 grid grid-cols-4 gap-2">
                   <button
@@ -199,24 +198,22 @@ export function SelectedCabinetPanel({
                   </button>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
+                  <Button
                     data-testid="selected-cabinet-rotate-quarter"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    variant="secondary" size="regular"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.rotateByDegrees(90)}
                   >
                     +90 deg
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     data-testid="selected-cabinet-reset-rotation"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
+                    variant="secondary" size="regular"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.resetRotation}
                   >
                     Reset rotation
-                  </button>
+                  </Button>
                 </div>
               </div>
               {isDesigner ? (
@@ -448,196 +445,175 @@ export function SelectedCabinetPanel({
                   </div>
                 </div>
               ) : null}
-              <button
-                type="button"
+              <Button
                 data-testid="selected-cabinet-download-placed-package"
-                className="mt-3 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-3 w-full"
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("placed-package")}
               >
                 Download placed package
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-installer-work-order"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("installer-work-order")}
               >
                 Download install work order
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-field-verification"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-field-verification")}
               >
                 Download field verification
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-finish-schedule"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-finish-schedule")}
               >
                 Download finish schedule
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-schedule"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule")}
               >
                 Download project schedule
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-schedule-csv"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule-csv")}
               >
                 Download project CSV
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-scope"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-scope")}
               >
                 Download scope package
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-procurement"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-procurement")}
               >
                 Download procurement
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-quote"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-quote")}
               >
                 Download project quote
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-purchase-readiness"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-purchase-readiness")}
               >
                 Download purchase readiness
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-fabrication-release"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-fabrication-release")}
               >
                 Download fab release
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-approval-package"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-approval")}
               >
                 Download approval
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-revision-package"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-revision")}
               >
                 Download revision package
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-drawing-set"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-drawing-set")}
               >
                 Download drawing set
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-cut-list"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cut-list")}
               >
                 Download cut list
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-cnc-batch"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cnc-batch")}
               >
                 Download CNC batch
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-installation-plan"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-installation-plan")}
               >
                 Download install plan
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-rfq"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-rfq")}
               >
                 Download project RFQ
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="selected-cabinet-download-project-handoff"
-                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-handoff")}
               >
                 Download handoff bundle
-              </button>
+              </Button>
                 </>
               ) : null}
-              <button
-                type="button"
+              <Button
                 data-testid="edit-placed-millwork"
-                className="mt-4 min-h-10 w-full rounded-lg bg-blue-600 px-3 text-sm font-semibold text-white disabled:opacity-40"
+                variant="primary" size="regular" className="mt-4 w-full"
                 disabled={!canEdit || !canUseCabinetryStudio}
                 onClick={actions.edit}
               >
                 <span data-testid="edit-placed-cabinet">Edit built-in</span>
-              </button>
-              <button
-                type="button"
-                className="mt-2 min-h-10 w-full rounded-lg bg-neutral-100 px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
+              </Button>
+              <Button
+                variant="secondary" size="regular" className="mt-2 w-full"
                 disabled={!canEdit}
                 onClick={actions.delete}
               >
                 Delete built-in
-              </button>
+              </Button>
             </div>
           </div>
         </div>

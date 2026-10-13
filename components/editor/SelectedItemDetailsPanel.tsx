@@ -10,6 +10,7 @@ import type { StyleConsistencyReport } from "@/lib/style-consistency";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import MeasurementField from "./MeasurementField";
+import { Button } from "@/components/ui/Button";
 
 type SelectedItemDetailsPanelProps = {
   isDesigner: boolean;
@@ -237,26 +238,24 @@ export default function SelectedItemDetailsPanel({
         <div className={compactPanelClass} data-testid="selected-item-placement">
           <div className={sectionTitleClass}>Placement</div>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
+            <Button
+              variant="secondary" size="touch"
               disabled={itemActionsDisabled}
               onClick={onCenterInRoom}
               data-testid="selected-item-center"
               title="Centre selected item in room"
             >
               Centre
-            </button>
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
+            </Button>
+            <Button
+              variant="secondary" size="touch"
               disabled={itemActionsDisabled}
               onClick={onSnapToWall}
               data-testid="selected-item-snap-wall"
               title="Snap selected item to nearest wall"
             >
               Snap wall
-            </button>
+            </Button>
           </div>
 
           <div

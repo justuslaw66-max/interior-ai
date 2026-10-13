@@ -1,6 +1,7 @@
 "use client";
 
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
+import { Button } from "@/components/ui/Button";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -83,15 +84,14 @@ export function FurnishImportedModels(props: FurnishImportedModelsProps) {
           <div className="text-xs text-neutral-600">{selected.familyLabel}</div>
         </div>
       ) : null}
-      <button
-        type="button"
+      <Button
         data-testid="add-imported-btn"
-        className="mt-3 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+        variant="secondary" size="regular" className="mt-3"
         onClick={props.onAdd}
         disabled={!selectedProductId || !props.canEdit}
       >
         Add to {props.activeRoomName}
-      </button>
+      </Button>
     </details>
   );
 }

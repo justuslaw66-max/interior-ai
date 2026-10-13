@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 /**
  * Takes `floorPlanImport` off the address, so the note doesn't come back on a reload. The `null`
@@ -31,14 +32,16 @@ export function FloorPlanImportArrivalNote() {
           to Furnish.
         </p>
       </div>
-      <button type="button" data-testid="floor-plan-import-arrival-dismiss"
-        className="min-h-11 shrink-0 rounded-lg px-3 text-xs font-bold border border-emerald-300 bg-white hover:bg-emerald-100"
+      <Button
+        data-testid="floor-plan-import-arrival-dismiss"
+        variant="secondary" size="touch" className="shrink-0"
         onClick={() => {
           setDismissedId(importId);
           forgetArrival();
-        }}>
+        }}
+      >
         Got it
-      </button>
+      </Button>
     </div>
   );
 }

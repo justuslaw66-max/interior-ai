@@ -13,6 +13,7 @@ import {
 } from "@/lib/wall-paint";
 import type { SurfaceTargetMode } from "./surfaceCatalog";
 import { WALL_PAINT_VISIBLE_INCREMENT } from "./surfaceCatalog";
+import { Button } from "@/components/ui/Button";
 
 type WallPaintSource = "swatch" | "nippon" | "custom";
 
@@ -170,14 +171,13 @@ export function WallPaintPicker({
               Colour family: {activeWallPaintFamilyFilter.id === "all" ? "ALL" : activeWallPaintFamilyFilter.label.toUpperCase()}
             </div>
             {wallPaintFamilyFilter !== "all" ? (
-              <button
-                type="button"
+              <Button
                 data-testid="wall-paint-family-clear"
-                className="text-xs font-semibold text-neutral-500 hover:text-neutral-900"
+                variant="quiet" size="compact"
                 onClick={() => setWallPaintFamilyFilter("all")}
               >
                 All
-              </button>
+              </Button>
             ) : null}
           </div>
           <div

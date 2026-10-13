@@ -152,7 +152,7 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { rawButtons: 784, emojiButtons: 7 };
+const LIMITS = { rawButtons: 567, emojiButtons: 3 };
 const counts = { rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);

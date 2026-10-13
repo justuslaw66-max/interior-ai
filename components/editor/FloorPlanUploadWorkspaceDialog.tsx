@@ -8,6 +8,7 @@ import {
   FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID,
   FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID,
 } from "@/lib/floor-plan-upload-dialog-focus";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanUploadWorkspaceDialogProps = {
   open: boolean;
@@ -51,10 +52,13 @@ function WorkspaceHeader({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {signedIn ? (
-          <button id={FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID} type="button"
+          <Button
+            id={FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID}
             data-floor-plan-workspace-focus="primary"
-            className="min-h-11 rounded-lg bg-neutral-900 px-3 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50"
-            disabled={disabled} onClick={onChooseFile}>Choose file</button>
+            variant="primary" size="touch"
+            disabled={disabled}
+            onClick={onChooseFile}
+          >Choose file</Button>
         ) : null}
         <button ref={closeButtonRef} id={FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID}
           type="button" aria-label="Close floor plan upload"

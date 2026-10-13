@@ -5,6 +5,7 @@ import type {
   HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
 import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
+import { Button } from "@/components/ui/Button";
 
 type RoomConnectionChecklistProps = {
   items: HouseRoomConnectionChecklistItem[];
@@ -43,8 +44,6 @@ export default function RoomConnectionChecklist({
   const connectedClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
   const needsClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
   const reviewClass = "rounded-full bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700";
-  const buttonClass = "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
-  const toggleClass = "rounded-lg border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-600";
   const getStatusClass = (status: HouseRoomConnectionChecklistItem["status"]) => {
     if (status === "connected" || status === "reachable") return connectedClass;
     if (status === "needs_doorway") return needsClass;
@@ -66,14 +65,13 @@ export default function RoomConnectionChecklist({
       <div className="flex items-center justify-between gap-2">
         <div className={titleClass}>Connections</div>
         {onCollapsedChange ? (
-          <button
-            type="button"
-            className={toggleClass}
+          <Button
+            variant="secondary" size="compact"
             aria-expanded={!collapsed}
             onClick={() => onCollapsedChange(!collapsed)}
           >
             {collapsed ? "Expand" : "Collapse"}
-          </button>
+          </Button>
         ) : null}
       </div>
       {collapsed ? null : (
@@ -95,15 +93,14 @@ export default function RoomConnectionChecklist({
               </div>
             </div>
             {item.status === "needs_doorway" && item.doorwaySuggestion && (
-              <button
-                type="button"
+              <Button
                 data-testid="room-connection-add-doorway"
-                className={`${buttonClass} mt-2`}
+                variant="primary" size="compact" className="mt-2"
                 disabled={disabled}
                 onClick={() => onAddDoorway(item.doorwaySuggestion!)}
               >
                 Add connecting door
-              </button>
+              </Button>
             )}
           </div>
         ))}

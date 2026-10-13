@@ -1,5 +1,6 @@
 import MeasurementField from "@/components/editor/MeasurementField";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { Button } from "@/components/ui/Button";
 
 type SelectedPlanOpeningActionsProps = {
   state: {
@@ -58,14 +59,13 @@ export function SelectedPlanOpeningActions({
         className="w-[132px]"
         onCommit={actions.changeWidthMm}
       />
-      <button
-        type="button"
+      <Button
         data-testid="selected-plan-opening-delete"
-        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
+        variant="danger" size="compact"
         onClick={actions.deleteOpening}
       >
         Delete
-      </button>
+      </Button>
     </div>
   );
 }

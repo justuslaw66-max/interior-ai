@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 
 type RotationSnapPresetDegrees = 15 | 5 | 0;
 
@@ -186,14 +187,14 @@ export default function SelectedItemRotationControls({
                   onBlur={onApplyRotationInput}
                   aria-label="Exact rotation angle in degrees"
                 />
-                <button
+                <Button
                   data-testid="rotation-input-apply"
-                  className="min-h-11 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-800"
+                  variant="secondary" size="touch"
                   disabled={disabled}
                   onClick={onApplyRotationInput}
                 >
                   Apply
-                </button>
+                </Button>
               </div>
             </>
           ) : null}

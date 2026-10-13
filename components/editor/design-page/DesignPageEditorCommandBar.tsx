@@ -9,6 +9,7 @@ import type {
   LightingPreset,
 } from "@/lib/lightingPresets";
 import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
+import { Button } from "@/components/ui/Button";
 
 type EditorCommandBarProps = ComponentProps<typeof EditorCommandBar>;
 type RoomPlanStatusBarProps = ComponentProps<typeof RoomPlanStatusBar>;
@@ -188,19 +189,17 @@ export function DesignPageEditorCommandBar({
             </div>
           ) : null}
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <button
-              type="button"
+            <Button
               data-testid="editor-command-overflow-fit-view"
-              className="rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50"
+              variant="secondary" size="compact"
               disabled={!actions.room.onFitPlan}
               onClick={actions.room.onFitPlan}
             >
               Fit to screen
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="editor-command-overflow-view-toggle"
-              className="rounded-lg bg-neutral-950 px-2 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"
+              variant="primary" size="compact"
               onClick={() =>
                 actions.room.onViewModeChange(
                   room.viewMode === "2d" ? "3d" : "2d"
@@ -208,7 +207,7 @@ export function DesignPageEditorCommandBar({
               }
             >
               {room.viewMode === "2d" ? "Switch to 3D" : "Switch to 2D"}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

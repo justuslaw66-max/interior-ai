@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
+import { Button } from "@/components/ui/Button";
 
 export type PlanTemplateChoiceDialogProps = {
   open: boolean;
@@ -61,29 +62,26 @@ export function PlanTemplateChoiceDialog({
         </div>
       ) : null}
       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-        <button
-          type="button"
+        <Button
           data-testid="new-plan-cancel"
-          className="min-h-10 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="secondary" size="regular"
           disabled={busy}
           onClick={onCancel}
         >
           Cancel
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           data-testid="new-plan-replace-current"
-          className="min-h-10 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="secondary" size="regular"
           disabled={busy}
           onClick={onReplaceCurrent}
         >
           Replace current design
-        </button>
-        <button
+        </Button>
+        <Button
           ref={primaryActionRef}
-          type="button"
           data-testid="new-plan-save-current"
-          className="min-h-10 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+          variant="primary" size="regular"
           disabled={busy}
           onClick={isAuthenticated ? onSaveCurrentAndStartNew : onSignIn}
         >
@@ -92,7 +90,7 @@ export function PlanTemplateChoiceDialog({
             : isAuthenticated
               ? "Save current & start new"
               : "Sign in to save & start new"}
-        </button>
+        </Button>
       </div>
     </EditorDialog>
   );
