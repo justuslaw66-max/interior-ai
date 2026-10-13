@@ -60,7 +60,7 @@ export type DesignPageEditorChromeProps = {
  * canvas: from md the canvas toolbar and the Keyboard shortcuts corner (UX 4c), and on phones two
  * pills, 2D | 3D and Undo/Redo (UX 4d).
  */
-function CanvasControls({ state, configuration, actions }: DesignPageEditorChromeProps) {
+function CanvasControls({ state, actions }: Omit<DesignPageEditorChromeProps, "configuration">) {
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
   const bar = state.commandBar.commandBar;
   const barActions = actions.commandBar.commandBar;
@@ -123,7 +123,7 @@ export function DesignPageEditorChrome({
         configuration={configuration.commandBar}
         actions={actions.commandBar}
       />
-      <CanvasControls state={state} configuration={configuration} actions={actions} />
+      <CanvasControls state={state} actions={actions} />
       <LeaveAtDesignLimitDialog {...state.leaveAtDesignLimit} />
 
       {state.betaStart.visible ? (
