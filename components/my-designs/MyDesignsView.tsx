@@ -99,12 +99,12 @@ function MyDesignsDialogs({ state }: { state: MyDesignsPageState }) {
   return (
     <>
       <DesignRenameDialog open={dialog?.kind === "rename"} dark={false} busy={dialog?.kind === "rename" && dialog.busy}
-        value={dialog?.kind === "rename" ? dialog.value : ""} returnFocusIds={returnFocusIds} manageBackground
+        value={dialog?.kind === "rename" ? dialog.value : ""} returnFocusIds={returnFocusIds}
         onValueChange={(value) => state.setDialog((current) => (current?.kind === "rename" ? { ...current, value } : current))}
         onCancel={() => state.setDialog(null)} onSave={() => void saveRename(state)} />
       <ConfirmDialog open={dialog?.kind === "delete"} title={`Delete ${dialog?.card.title ?? "this design"}?`}
         description="It's removed from My designs for good, and its shared link stops working."
-        confirmLabel="Delete" destructive busy={dialog?.kind === "delete" && dialog.busy} returnFocusIds={returnFocusIds} manageBackground
+        confirmLabel="Delete" destructive busy={dialog?.kind === "delete" && dialog.busy} returnFocusIds={returnFocusIds}
         onCancel={() => state.setDialog(null)} onConfirm={() => void confirmDelete(state)} />
       <ShareDesignDialog open={dialog?.kind === "share"} designTitle={dialog?.card.title ?? ""}
         url={dialog?.kind === "share" ? dialog.url : null} errorMessage={dialog?.kind === "share" ? dialog.error : null}

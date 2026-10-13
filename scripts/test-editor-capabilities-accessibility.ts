@@ -81,7 +81,10 @@ const dialogPrimitive = read(
   "components/editor/design-system/EditorDialog.tsx"
 );
 for (const required of [
-  'role="dialog"',
+  'role = "dialog"',
+  "role={role}",
+  // Every modal makes the rest of the page inert and stops it scrolling, unless it opts out (AX5).
+  "manageBackground = true, lockBodyScroll = true,",
   'aria-modal="true"',
   "aria-labelledby={titleId}",
   "aria-describedby={description ? descriptionId : undefined}",
@@ -94,6 +97,19 @@ for (const required of [
     `shared dialog primitive must preserve ${required}`
   );
 }
+
+// The save conflict and the backup recovery wait for a choice: Escape and the backdrop don't close
+// them, and they keep their own trap no longer (AX5).
+for (const relativePath of [
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
+]) {
+  const source = read(relativePath);
+  assert.match(source, /<EditorDialog\s+open\s+role="alertdialog"[\s\S]*?\bcloseDisabled\b[\s\S]*?showCloseButton=\{false\}/, relativePath);
+  assert.doesNotMatch(source, /addEventListener\("keydown"/, relativePath);
+}
+// A confirmation interrupts the work, so it is an alertdialog (AX5).
+assert.match(read("components/ConfirmDialog.tsx"), /<EditorDialog\s+open\s+role="alertdialog"/);
 
 const dialogLifecycle = read(
   "components/editor/design-system/useEditorDialogLifecycle.ts"
@@ -118,6 +134,9 @@ for (const required of [
   // The opener first among the return targets (UX 4d): Rename design from the Menu returns there.
   "if (opener?.id && semanticIds.includes(opener.id)) {",
   "semanticIds.unshift(opener.id);",
+  // A rerun session (StrictMode, a changed dependency) keeps the first session's opener (5h).
+  "if (!(active instanceof HTMLElement && dialog.contains(active))) {",
+  "const opener = options.openerRef.current;",
   ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
@@ -193,6 +212,10 @@ for (const relativePath of [
   "components/editor/design-page/DownloadDialog.tsx",
   "components/editor/design-page/ShareLinkFallbackDialog.tsx",
   "components/editor/shop/ShoppingBuyListDialog.tsx",
+  // AX5: these three had focus traps of their own.
+  "components/editor/design-page/PlanTemplateChoiceDialog.tsx",
+  "components/editor/design-page/CloudSaveConflictDialog.tsx",
+  "components/editor/design-page/LocalBackupRecoveryDialog.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
