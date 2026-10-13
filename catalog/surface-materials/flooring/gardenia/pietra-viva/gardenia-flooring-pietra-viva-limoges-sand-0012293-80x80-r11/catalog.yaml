@@ -1,0 +1,152 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Pietra Viva
+  material_id: gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-r11
+  product_name: Gardenia Pietra Viva Limoges Sand 80x80 R11
+  slug: gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-r11
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: the 12 single item pictures of item 0012331 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/limoges-sand/pf60012331-v102/), because ABK's 12 R11 pictures (on Plein Air's page) are 0012331's Nat P.tech pictures, byte for byte. Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-limoges-sand-faces.manifest.json. Each covers 800x800 mm; the renderer cuts tile-sized windows at true scale."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-13: ABK lists this outdoor size on its Plein Air pages. Gardenia's RealityRemod configurator, which the July import read, showed it as one variant with the 8.5 mm Nat item 0012331, and the July import filed both as gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-nat-140000-0; that entry now stands for 0012331, and this item has an entry of its own (J, 2026-10-13)."
+    - "ABK item 0012293 (pf60012293) for floor use: 80X80 R11, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/pietra-viva-limoges-sand/pf60012293-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/pietra-viva-limoges-sand/80x80/: PIETRA VIVA LIMOGES SAND 80X80, finish R11, thickness 20 mm, porcelain stoneware."
+    - "Outdoor size: Plein Air is ABK's outdoor range, the 20 mm R11 (anti-slip) versions of its collections. Its sizes of collections the catalogue has are listed with their own collection, as R11 sizes on the colour's card, for floors only (J, 2026-10-13)."
+    - "Look and colour family: as the colour's other sizes in the catalogue, so this size joins its card."
+    - "Layouts: straight, brick and vertical brick, as the July entry it was split from."
+    - "Plein Air collection page technology: Porcelain stoneware."
+    - "Plein Air collection page description: The Plein Air collection transfers the material sensations of Gardenia&Ariana’s main ceramic tile collections to exterior spaces. The collection combines the high technical performance of extra-thick products with a sophisticated aesthetic inspired by the timeless appeal of stone and the natural warmth of wood. Available in a range of sizes and complemented by coordinated finishing elements, the Plein Air collection caters for all stylistic and design needs in outdoor spaces."
+    - "Plein Air collection page sizes: 80x80, 60x120, 60x90, 60x60, 30x120; thickness 20 mm."
+    - "ABK's pages did not expose package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: beige
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - warm
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+    - commercial
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - balcony
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 800
+  tile_length_mm: 800
+  total_thickness_mm: 20
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: R11
+  suitable_for_wet_area: null
+  suitable_for_outdoor: true
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 80
+    height: 80
+  image_physical_size_mm:
+    width: 800
+    height: 800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_01.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_02.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_03.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_04.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_05.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_06.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_07.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_08.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_09.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_10.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_11.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/pietra-viva/0012331_12.webp
+      width_mm: 800
+      height_mm: 800
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry
+    - gardenia_plein_air_outdoor_size

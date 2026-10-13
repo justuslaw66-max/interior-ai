@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 1394, "the browser must join all 1394 render and catalog identities");
+assert.equal(records.length, 1403, "the browser must join all 1403 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -75,8 +75,8 @@ assert.equal(
 );
 assert.equal(
   getSurfaceMaterialGroupSizeLabels(doricaGroup).length,
-  5,
-  "the Dorica Crema browser group must retain all five size variants"
+  6,
+  "the Dorica Crema browser group must retain all six size variants (the outdoor 60x120 R11 since 13 Oct 2026)"
 );
 
 const dorica120 = doricaGroup.variants.find(

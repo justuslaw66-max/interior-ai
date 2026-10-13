@@ -529,7 +529,7 @@
    },
    "swatch": "0010009_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-dorica-crema-0010009-60x120-nat-196273-0; floor gardenia-flooring-dorica-crema-0010148-60x120-196276-0 (for 0010148: same visible variant as 0010589 (R11), whose pictures are 0010009's); wall gardenia-wall-tile-dorica-crema-0010009-60x120-nat-196273-0",
+   "used_by": "floor gardenia-flooring-dorica-crema-0010009-60x120-nat-196273-0; floor gardenia-flooring-dorica-crema-0010148-60x120-196276-0 (for 0010589, the 60x120 R11, whose pictures are 0010009's); floor gardenia-flooring-dorica-crema-0010148-60x120-r11 (for 0010148, the Plein Air 60x120 R11: ABK's pictures of it are these faces exported again at 2560x1280 px); wall gardenia-wall-tile-dorica-crema-0010009-60x120-nat-196273-0",
    "faces": [
     {
      "file": "0010009_01.webp",

@@ -15,9 +15,9 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: the 16 single item pictures of item 0010009 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010009-v102/), because same visible variant as 0010589 (R11), whose pictures are 0010009's. Downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-dorica-crema-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
+    - "Tile faces: the 16 single item pictures of item 0010009 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/dorica/crema/pf60010009-v102/), because this item's pictures (0010589's) are 0010009's. Downloaded signed in on 2026-10-06, stored at 0.6 px per mm; the originals are sharper, see gardenia-dorica-crema-faces.manifest.json. Each covers 600x1200 mm; the renderer cuts tile-sized windows at true scale."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
-    - Gardenia tile item GARDENIA/0010148/0/196276 for floor use.
+    - Gardenia tile item GARDENIA/0010589/0/196280 for floor use.
     - "Configurator format: 60x120; surface destination: PAVIMENTO."
     - "Configurator pattern IDs: pieno_01, pieno_02, pieno_05."
     - "Collection page technology: Full body porcelain."
@@ -27,7 +27,8 @@ source:
     - "Collection page color availability for Crema: Crema 6 mm NAT: 120x280 (48”x112”) | 8,5 mm NAT: 120x120 (48”x48”), 20x120 (8”x48”) | 8,5 mm NAT, R11, Antique 3D: 60x120 (24”x48”)| 20 mm R11: 60x120 (24”x48”)."
     - "Available configurator formats: 0010006 120x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010519 20x120 Nat ENTRAMBE patterns Spina_01,Sfals_random_1,pieno_01,pieno_02,pieno_05; 0010009 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010148 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010589 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010819 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010000 120x280 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
-    - "Equivalent Gardenia configurator item codes represented by this visible variant: GARDENIA/0010589/0/196280."
+    - "Split (J, 2026-10-13): the configurator showed this item as one variant with GARDENIA/0010148/0/196276, ABK's 20 mm R11 outdoor item (Plein Air), and the July import filed both here under that item's code. The outdoor item has an entry of its own (gardenia-flooring-dorica-crema-0010148-60x120-r11); this entry keeps its id, so saved designs keep their floor, and stands for 0010589."
+    - "Thickness 8.5 mm and slip rating R11: the collection page's 60x120 R11 (above)."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -58,12 +59,12 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 600
-  total_thickness_mm: null
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R11
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null
@@ -166,4 +167,3 @@ import_governance:
     - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
-    - gardenia_equivalent_variant_collapsed

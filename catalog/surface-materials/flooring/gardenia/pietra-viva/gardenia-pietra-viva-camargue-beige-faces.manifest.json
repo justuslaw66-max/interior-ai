@@ -465,7 +465,7 @@
    },
    "swatch": "0014186_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-camargue-beige-0014325-60x120-nat-139972-0 (uses 0014186's faces: ABK's 18 R11 pictures (on Plein Air's page) are 0014186's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014186-60x120-nat-139969-0; wall gardenia-wall-tile-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte)",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte); floor gardenia-flooring-pietra-viva-camargue-beige-0014325-60x120-nat-139972-0 (0014186 itself; the id keeps the outdoor item's code, split on 2026-10-13); floor gardenia-flooring-pietra-viva-camargue-beige-0014325-60x120-r11 (uses 0014186's faces: ABK's 18 R11 pictures (on Plein Air's page) are 0014186's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014186-60x120-nat-139969-0; wall gardenia-wall-tile-pietra-viva-camargue-beige-0014188-60x120-139971-0 (uses 0014186's faces: ABK's 18 Antique 3D pictures are 0014186's Nat P.tech pictures, byte for byte)",
    "faces": [
     {
      "file": "0014186_01.webp",
@@ -912,7 +912,7 @@
    },
    "swatch": "0014669_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0016100-80x80-nat-139986-0 (uses 0014669's faces: ABK's 16 R11 pictures (on Plein Air's page) are 0014669's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014669-80x80-nat-139974-0",
+   "used_by": "floor gardenia-flooring-pietra-viva-camargue-beige-0016100-80x80-nat-139986-0 (0014669 itself; the id keeps the outdoor item's code, split on 2026-10-13); floor gardenia-flooring-pietra-viva-camargue-beige-0016100-80x80-r11 (uses 0014669's faces: ABK's 16 R11 pictures (on Plein Air's page) are 0014669's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-camargue-beige-0014669-80x80-nat-139974-0",
    "faces": [
     {
      "file": "0014669_01.webp",
