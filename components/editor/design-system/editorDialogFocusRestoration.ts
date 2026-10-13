@@ -11,6 +11,8 @@ import {
 type RestorationOptions = {
   returnFocusId?: string;
   returnFocusIds?: readonly string[];
+  /** Names the return target when the dialog closes, for targets an id can't find (UX AX5). */
+  resolveReturnFocusTarget?: () => HTMLElement | null;
   focusRestorationEnabledRef?: { current: boolean };
   generation: number;
   restoreFrameRef: MutableRefObject<number | null>;
@@ -26,20 +28,16 @@ function canRestore(options: RestorationOptions) {
 }
 
 function restoreSemanticTarget(
-  semanticIds: readonly string[],
+  resolveCandidates: () => HTMLElement[],
   options: RestorationOptions,
   framesRemaining = 12
 ) {
   options.restoreFrameRef.current = window.requestAnimationFrame(() => {
     options.restoreFrameRef.current = null;
     if (!canRestore(options)) return;
-    const candidates = semanticIds
-      .map((id) => document.getElementById(id))
-      .filter((candidate): candidate is HTMLElement =>
-        candidate instanceof HTMLElement &&
-        isEligibleReturnFocusTarget(candidate) &&
-        isElementInTopmostEditorDialog(candidate)
-      );
+    const candidates = resolveCandidates().filter((candidate) =>
+      isEligibleReturnFocusTarget(candidate) && isElementInTopmostEditorDialog(candidate)
+    );
     const target = candidates.find(isValidReturnFocusTarget);
     if (target) {
       if (document.activeElement !== target) {
@@ -55,9 +53,23 @@ function restoreSemanticTarget(
       });
     }
     if (framesRemaining > 1) {
-      restoreSemanticTarget(semanticIds, options, framesRemaining - 1);
+      restoreSemanticTarget(resolveCandidates, options, framesRemaining - 1);
     }
   });
+}
+
+function semanticCandidateResolver(semanticIds: readonly string[], options: RestorationOptions) {
+  const resolve = options.resolveReturnFocusTarget;
+  if (resolve) {
+    return () => {
+      const target = resolve();
+      return target ? [target] : [];
+    };
+  }
+  if (semanticIds.length === 0) return null;
+  return () => semanticIds
+    .map((id) => document.getElementById(id))
+    .filter((candidate): candidate is HTMLElement => candidate instanceof HTMLElement);
 }
 
 export function scheduleEditorDialogFocusRestoration(
@@ -75,14 +87,15 @@ export function scheduleEditorDialogFocusRestoration(
     semanticIds.splice(semanticIds.indexOf(opener.id), 1);
     semanticIds.unshift(opener.id);
   }
+  const resolveCandidates = semanticCandidateResolver(semanticIds, options);
   options.restoreFrameRef.current = window.requestAnimationFrame(() => {
     // React removes a closing portal after layout-effect cleanup. Wait one
     // paint before rejecting a semantic target as visually obscured.
     options.restoreFrameRef.current = window.requestAnimationFrame(() => {
       options.restoreFrameRef.current = null;
       if (!ownedTopmostFocus || !canRestore(options)) return;
-      if (semanticIds.length > 0) {
-        restoreSemanticTarget(semanticIds, options);
+      if (resolveCandidates) {
+        restoreSemanticTarget(resolveCandidates, options);
       } else if (
         opener &&
         isElementInTopmostEditorDialog(opener) &&

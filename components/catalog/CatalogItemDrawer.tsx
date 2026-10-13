@@ -11,7 +11,7 @@ import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
 import { CatalogItemDrawerAddSection, type CatalogItemDrawerFavourite } from "./CatalogItemDrawerAddSection";
 import LazyImage from "@/components/common/LazyImage";
-import { useCatalogDrawerFocusRestoration, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
+import { useCatalogDrawerDialog, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
 
 type RelatedSection = {
   title: string;
@@ -69,15 +69,12 @@ export default function CatalogItemDrawer({
 }: Props) {
   const [selectedPurchaseOptionId, setSelectedPurchaseOptionId] = useState<string | null>(null);
   const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  useCatalogDrawerFocusRestoration({
-    open,
-    contentAvailable: Boolean(detail),
-    panelRef,
-    initialFocusRef: closeButtonRef,
-    restorationRequest: focusRestoration,
-    onClose,
+  const requestClose = useCatalogDrawerDialog({
+    open, contentAvailable: Boolean(detail), dialogRef, panelRef, closeButtonRef,
+    restorationRequest: focusRestoration, onClose,
   });
 
   const selectedPurchaseOption = useMemo(() => {
@@ -122,21 +119,19 @@ export default function CatalogItemDrawer({
     : undefined;
 
   return createPortal(
-    <>
-      <div
-        data-testid="catalog-item-drawer-backdrop"
-        className="fixed inset-0 z-[89] bg-transparent"
-        aria-hidden="true"
-        onPointerDown={onClose}
-      />
+    <div
+      ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId}
+      data-testid="catalog-item-drawer-backdrop" data-editor-dialog-state="mounting"
+      className="fixed inset-0 z-[90] bg-transparent outline-hidden"
+      onPointerDown={(event) => {
+        if (event.target === event.currentTarget) requestClose();
+      }}
+    >
       <aside
         ref={panelRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
+        tabIndex={-1} data-editor-dialog-state="mounting"
         data-testid="catalog-item-drawer"
-        className="fixed bottom-6 right-4 top-bar-3 z-[90] md:top-bar-6 flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-hidden"
+        className="fixed bottom-6 right-4 top-bar-3 md:top-bar-6 flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-hidden"
       >
       <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
         <div>
@@ -150,7 +145,7 @@ export default function CatalogItemDrawer({
         <button
           ref={closeButtonRef}
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           data-testid="catalog-item-drawer-close"
           className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
         >
@@ -470,7 +465,7 @@ export default function CatalogItemDrawer({
         retailerUrl={selectedRetailerUrl} isCompared={isCompared} placesDirectly={placesDirectly}
         onAdd={onAdd} addDisabled={addDisabled} onChooseSpot={onChooseSpot} onToggleCompare={onToggleCompare} onClose={onClose} favourite={favourite} />
       </aside>
-    </>,
+    </div>,
     document.body
   );
 }

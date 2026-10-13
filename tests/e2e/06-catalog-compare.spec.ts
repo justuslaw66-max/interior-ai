@@ -145,6 +145,12 @@ test.describe("6. Catalog Compare", () => {
     await page.getByRole("button", { name: "Close" }).click();
     await expect(filterPopover).toHaveCount(0);
     await expect(filtersButton).toBeFocused();
+    // A press outside it closes it too, and focus goes where the press went (J, 13 Oct).
+    await filtersButton.click();
+    await expect(filterPopover).toBeFocused();
+    await searchInput.click();
+    await expect(filterPopover).toHaveCount(0);
+    await expect(searchInput).toBeFocused();
 
     const previewButtons = page.getByRole("button", { name: "View details" });
     await expect(previewButtons.first()).toBeVisible();
@@ -272,10 +278,13 @@ test.describe("6. Catalog Compare", () => {
     await previewButton.focus();
     await page.keyboard.press("Enter");
 
-    const drawer = page.getByTestId("catalog-item-drawer");
+    // The modal dialog is the shared lifecycle's full-screen layer, named by the drawer's title, and
+    // the drawer is the panel inside it, as for every EditorDialog (UX AX5).
+    const dialog = page.getByRole("dialog", { name: /^Review exact variant$/i });
+    const drawer = dialog.getByTestId("catalog-item-drawer");
     const closeButton = page.getByTestId("catalog-item-drawer-close");
-    await expect(drawer).toHaveAttribute("role", "dialog");
-    await expect(drawer).toHaveAttribute("aria-modal", "true");
+    await expect(dialog).toHaveAttribute("aria-modal", "true");
+    await expect(drawer).toBeVisible();
     await expect(closeButton).toBeFocused();
 
     await page.keyboard.press("Shift+Tab");
