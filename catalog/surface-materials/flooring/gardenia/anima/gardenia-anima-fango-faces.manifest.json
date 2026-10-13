@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/fango/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - FANGO - minimali.zip, 84715724 bytes, sha256 066c52e7e0cd4fc615c11a768484a156123885b6989117cf75ee5358e11e7624).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-02 (ANIMA - FANGO - minimali.zip, 84715724 bytes, sha256 066c52e7e0cd4fc615c11a768484a156123885b6989117cf75ee5358e11e7624); and on 2026-10-13 (PLEIN AIR - ANIMA FANGO - minimali.zip, 64056279 bytes, sha256 84a1b204db470b2dbbaf5b795e401a6ca24e369e7c2e28d43f855db6d74be6d3), for the 80x80 R11 item on Plein Air's page.",
  "note": "The download holds each face twice, the same picture exported two ways: a lighter JPG with an sRGB profile and a darker JPG without a profile (lighter is about 0.93 x darker + 14.5 in level). The lighter sRGB copy is used for every face (J, 2026-10-04), turned upright where it is landscape. Face numbers are ABK's numbers on the lighter copy's name.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -619,6 +619,244 @@
       "label": "60X60 · Nat P.tech · Faccia 28",
       "name": "ANIMA FANGO 60X60_14",
       "id": "f8c61a97-8e88-498b-b111-f8e644816d06"
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0012097",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/anima-fango/pf60012097-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012097_swatch.webp",
+   "note": "Plein Air's outdoor 80x80 (R11, 20 mm). ABK's page lists each of its 7 faces twice, a lighter sRGB copy (2560 px) and a darker copy with no profile (1600 px); the lighter copies are used, as for Anima's other sizes, numbered in the site's order.",
+   "faces": [
+    {
+     "file": "0012097_01.webp",
+     "face": 1,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49930,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "be53a9de00f41725dc21ce151d0c8775b1e381fd0b182c059d028b75df98aabc",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_1.jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "b00abe9b20cf2441ceda4d21038ad66cbae619f36f5bc80b272ee8dea2826e01",
+      "match_r": 0.996,
+      "site_position": 1
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2 (view_01)",
+      "name": "ANIMA FANGO R11 80X80_01",
+      "id": "b019f9ff-de3e-4169-a2f3-46a1959418c1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012097_02.webp",
+     "face": 2,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 56670,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a6343c9bfe2dcdf83a0d33d924e581f9096638037e67f2d76b93777d31678cea",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_2 (2).jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "1704f3107debdb7b0894292f84b457395ebb67fee5a890ee5cbffc5bfa491a86",
+      "match_r": 0.997,
+      "site_position": 3
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 10",
+      "name": "ANIMA FANGO R11 80X80_02",
+      "id": "1a3740ab-0980-4a45-bf49-04f7a76b1804",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012097_03.webp",
+     "face": 3,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 54064,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ba43673cfcc2ba24485609cf43ccce41593144097aa3ec3ea18955ee974456af",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_3 (2).jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "fdf57a649223fe34b1aa2ab0f32ff37a3b7636805b881d3207438ffdea507d23",
+      "match_r": 0.996,
+      "site_position": 4
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 13",
+      "name": "ANIMA FANGO R11 80X80_03",
+      "id": "86980aea-8dbe-46bb-86da-2fd6eecef691",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0012097_04.webp",
+     "face": 4,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 59034,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b47823757ad95cf0372995883b116dea868cb79803570a8d77cc3d7bef6d05ec",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_4.jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "24cd3fb98645121a69b1a47ca432b94f6f6e12b3a6fdfce7feb3a8a3b954aade",
+      "match_r": 0.996,
+      "site_position": 5
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 9",
+      "name": "ANIMA FANGO R11 80X80_04",
+      "id": "1697ac01-e642-4946-94cc-5b8fcd6363d8",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012097_05.webp",
+     "face": 5,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 57260,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "48a57051e8f320e38f310c7a903863b5fbc6be24d6de705ed4077aae69379ec7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_5.jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "6f7b80e77175e05e59b87b786ad111aa6b2ba8c88465f55209b33644d908a536",
+      "match_r": 0.997,
+      "site_position": 6
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 14",
+      "name": "ANIMA FANGO R11 80X80_05",
+      "id": "86a50882-745e-4a96-be48-7797d3eaf16d",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0012097_06.webp",
+     "face": 6,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55978,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c43e3278bd1f69c93fb4d371b952788b9e6d8d01e8d44e665ff1c979acdd060a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_6.jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "386da3047f9d0a5a163156e91652a3c1771bda4827208bf1cc0c7ba85330fd01",
+      "match_r": 0.997,
+      "site_position": 7
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 11",
+      "name": "ANIMA FANGO R11 80X80_06",
+      "id": "49faeb8b-9f5c-4fec-910d-2c0098113e83",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012097_07.webp",
+     "face": 7,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44088,
+     "source_zip": "PLEIN AIR - ANIMA FANGO - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c13e3864edece90f76722853f8e69fff6c1dd3162b95f1cea900200ae5c4fb96",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "darker_copy": {
+      "file": "80X80-R11/PLEIN AIR - ANIMA FANGO - 80X80 - R11 - view_7 (2).jpg",
+      "px": [
+       1600,
+       1600
+      ],
+      "sha256": "6378ba1c1be595d8b2cea23b4a54953f6681d187a99551c3f491f4be12e6e35a",
+      "match_r": 0.995,
+      "site_position": 8
+     },
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 12",
+      "name": "ANIMA FANGO R11 80X80_07",
+      "id": "71cdfca1-0784-42f3-b034-a02cd5ff0a3b",
+      "site_position": 12
      }
     }
    ]

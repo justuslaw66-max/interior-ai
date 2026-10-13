@@ -1,0 +1,136 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Anima
+  material_id: gardenia-flooring-anima-beige-0012159-80x80-r11
+  product_name: Gardenia Anima Beige 80x80 R11
+  slug: gardenia-flooring-anima-beige-0012159-80x80-r11
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: the 7 single item pictures of item 0007809 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/anima/beige/pf60007809-v102/), because 7 of ABK's 13 R11 pictures (on Plein Air's page) are 0007809's 7 lighter sRGB copies, the faces' sources, byte for byte, and the other 6 are six of those faces again with no colour profile (image matching). Lighter sRGB copies from the signed-in download of 2026-10-02, stored at 0.6 px per mm; the originals are sharper, see gardenia-anima-beige-faces.manifest.json. Each covers one whole 800x800 mm tile."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-13: ABK lists this outdoor size on its Plein Air pages, and Gardenia's RealityRemod configurator, which the July import read, doesn't have it."
+    - "ABK item 0012159 (pf60012159) for floor use: 80X80 R11, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/anima-beige/pf60012159-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/anima-beige/80x80/: ANIMA BEIGE 80X80, finish R11, thickness 20 mm, porcelain stoneware."
+    - "Outdoor size: Plein Air is ABK's outdoor range, the 20 mm R11 (anti-slip) versions of its collections. Its sizes of collections the catalogue has are listed with their own collection, as R11 sizes on the colour's card, for floors only (J, 2026-10-13)."
+    - "Look and colour family: as the colour's other sizes in the catalogue, so this size joins its card."
+    - "Layouts: straight, brick and vertical brick, as the colour's other 80x80 entries."
+    - "Plein Air collection page technology: Porcelain stoneware."
+    - "Plein Air collection page description: The Plein Air collection transfers the material sensations of Gardenia&Ariana’s main ceramic tile collections to exterior spaces. The collection combines the high technical performance of extra-thick products with a sophisticated aesthetic inspired by the timeless appeal of stone and the natural warmth of wood. Available in a range of sizes and complemented by coordinated finishing elements, the Plein Air collection caters for all stylistic and design needs in outdoor spaces."
+    - "Plein Air collection page sizes: 80x80, 60x120, 60x90, 60x60, 30x120; thickness 20 mm."
+    - "ABK's pages did not expose package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: beige
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - warm
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+    - commercial
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 800
+  tile_length_mm: 800
+  total_thickness_mm: 20
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: R11
+  suitable_for_wet_area: null
+  suitable_for_outdoor: true
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/anima/0007809_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/anima/0007809_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 80
+    height: 80
+  image_physical_size_mm:
+    width: 800
+    height: 800
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_01.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_02.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_03.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_04.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_05.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_06.webp
+      width_mm: 800
+      height_mm: 800
+    - url: /assets/catalog/surface-materials/gardenia/anima/0007809_07.webp
+      width_mm: 800
+      height_mm: 800
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry
+    - gardenia_plein_air_outdoor_size

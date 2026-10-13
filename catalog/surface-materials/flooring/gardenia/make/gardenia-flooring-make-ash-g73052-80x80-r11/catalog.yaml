@@ -1,0 +1,121 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Make
+  material_id: gardenia-flooring-make-ash-g73052-80x80-r11
+  product_name: Gardenia Make Ash 80x80 R11
+  slug: gardenia-flooring-make-ash-g73052-80x80-r11
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 4 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/make-ash/g0073052-v102/), downloaded signed in on 2026-10-13, stored at 0.6 px per mm; the originals are sharper, see gardenia-make-ash-faces.manifest.json. Each covers 1000x1000 mm. ABK's 80x80 R11 pictures are the colour's 80x80 Natural faces exported again, a little lighter (whole-picture matching, r 0.95 to 0.98, one to one), so they show the same 1000x1000 mm graphic squeezed to 800 mm: drawn as 1000 mm their crops are found in the colour's 100x100 and 60x120 pictures (r 0.66 to 0.97). So they are declared as 1000x1000 mm faces; the renderer cuts true-scale 800x800 windows from them."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-13: ABK lists this outdoor size on its Plein Air pages. Gardenia's RealityRemod configurator, which the July import read, lists it as the same visible variant as G0073022 (Make Ash 80x80), so the July import filed it under that entry; ABK's Plein Air page shows R11 pictures of its own, so it is listed here as an R11 size of its own."
+    - "ABK item g73052 (g0073052) for floor use: 80X80 R11, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/make-ash/g0073052-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/make-ash/80x80/: MAKE ASH 80X80, finish R11, thickness 20 mm, porcelain stoneware."
+    - "Outdoor size: Plein Air is ABK's outdoor range, the 20 mm R11 (anti-slip) versions of its collections. Its sizes of collections the catalogue has are listed with their own collection, as R11 sizes on the colour's card, for floors only (J, 2026-10-13)."
+    - "Look and colour family: as the colour's other sizes in the catalogue, so this size joins its card."
+    - "Layouts: straight and vertical brick, as the colour's other 80x80 entries."
+    - "Plein Air collection page technology: Porcelain stoneware."
+    - "Plein Air collection page description: The Plein Air collection transfers the material sensations of Gardenia&Ariana’s main ceramic tile collections to exterior spaces. The collection combines the high technical performance of extra-thick products with a sophisticated aesthetic inspired by the timeless appeal of stone and the natural warmth of wood. Available in a range of sizes and complemented by coordinated finishing elements, the Plein Air collection caters for all stylistic and design needs in outdoor spaces."
+    - "Plein Air collection page sizes: 80x80, 60x120, 60x90, 60x60, 30x120; thickness 20 mm."
+    - "ABK's pages did not expose package quantity, price, or seamless texture QA data."
+classification:
+  flooring_type: tile
+  design_effect: plain
+  color_family: unknown
+  tone:
+    - neutral
+    - durable
+    - clean
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 800
+  tile_length_mm: 800
+  total_thickness_mm: 20
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: R11
+  suitable_for_wet_area: null
+  suitable_for_outdoor: true
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/make/g73052_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/make/g73052_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 80
+    height: 80
+  image_physical_size_mm:
+    width: 1000
+    height: 1000
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/make/g73052_01.webp
+      width_mm: 1000
+      height_mm: 1000
+    - url: /assets/catalog/surface-materials/gardenia/make/g73052_02.webp
+      width_mm: 1000
+      height_mm: 1000
+    - url: /assets/catalog/surface-materials/gardenia/make/g73052_03.webp
+      width_mm: 1000
+      height_mm: 1000
+    - url: /assets/catalog/surface-materials/gardenia/make/g73052_04.webp
+      width_mm: 1000
+      height_mm: 1000
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry
+    - gardenia_plein_air_outdoor_size

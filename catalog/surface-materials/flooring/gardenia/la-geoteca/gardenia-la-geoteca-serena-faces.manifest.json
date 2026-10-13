@@ -266,7 +266,7 @@
    },
    "swatch": "0014520_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
+   "used_by": "floor gardenia-flooring-la-geoteca-serena-0014520-60x120-r11; floor gardenia-flooring-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026)); wall gardenia-wall-tile-la-geoteca-serena-pf60011735-60x120-nat-90396-0 (uses 0014520's faces: ABK's Serena 60x120 Nat P.tech page shows no pictures; the 60x120 R11 pictures (on Plein Air's page) stand in, as ABK's R11 pictures are the Nat P.tech ones wherever La Geoteca has both (J, 9 Oct 2026))",
    "faces": [
     {
      "file": "0014520_01.webp",
