@@ -212,8 +212,10 @@ function createDialogInputHandlers(
   const keydown = (event: KeyboardEvent) => {
     if (!isTopmostEditorDialog(token)) return;
     if (event.key === "Escape" && !options.closeDisabledRef.current) {
-      event.preventDefault();
       event.stopImmediatePropagation();
+      // A control that handled Escape itself (a field reverting, a drag cancelled) keeps it (UX AX5).
+      if (event.defaultPrevented) return;
+      event.preventDefault();
       options.requestClose();
     } else if (event.key === "Tab") {
       if (
